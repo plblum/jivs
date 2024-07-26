@@ -4,7 +4,7 @@
  */
 
 import { ConditionConfig } from "../../Interfaces/Conditions";
-import { ConditionConfigResults, ConfigIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigResults, CAIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { ensureError } from "../../Utilities/ErrorHandling";
@@ -63,7 +63,7 @@ implements IConditionConfigAnalyzer<TServices> {
         }
         catch (e) {
             let error = ensureError(e);
-            results.severity = ConfigIssueSeverity.error;
+            results.severity = CAIssueSeverity.error;
             results.message = error.message;
             return false;
         }        

@@ -1,7 +1,7 @@
 import { ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer } from './../../../src/Services/ConfigAnalysisService/ConditionConfigPropertyAnalyzerClasses';
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
-    AnalysisArgs, ConfigAnalysisServiceOptions, ConfigIssueSeverity, ConfigPropertyResult,
+    AnalysisArgs, ConfigAnalysisServiceOptions, CAIssueSeverity, ConfigPropertyResult,
     IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
     IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, LookupKeyServiceInfoBase, ValidatorConfigResults, ValueHostConfigResults, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
 } from "../../../src/Interfaces/ConfigAnalysisService";
@@ -764,8 +764,8 @@ describe('ValidationManagerConfigAnalysisService', () => {
         expect(validatorConfigResults2.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
         let prop1 = validatorConfigResults1.properties[0] as ConfigPropertyResult;
         let prop2 = validatorConfigResults2.properties[0] as ConfigPropertyResult;
-        expect(prop1.severity).toBe(ConfigIssueSeverity.info);
-        expect(prop2.severity).toBe(ConfigIssueSeverity.info);
+        expect(prop1.severity).toBe(CAIssueSeverity.info);
+        expect(prop2.severity).toBe(CAIssueSeverity.info);
         expect(prop1.message).toMatch(/conditionType/);
         expect(prop2.message).toMatch(/conditionType/);
         expect(prop1.propertyName).toEqual('errorCode');
@@ -783,7 +783,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
         expect(validatorConfigResults3.condition!.conditionType).toEqual(ConditionType.RegExp);
         expect(validatorConfigResults3.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
         let prop3 = validatorConfigResults3.properties[0] as ConfigPropertyResult;
-        expect(prop3.severity).toBe(ConfigIssueSeverity.info);
+        expect(prop3.severity).toBe(CAIssueSeverity.info);
         expect(prop3.message).toMatch(/conditionType/);
         expect(prop3.propertyName).toEqual('errorCode');
 

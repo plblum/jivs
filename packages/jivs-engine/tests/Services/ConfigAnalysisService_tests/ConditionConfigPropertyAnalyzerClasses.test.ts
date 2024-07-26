@@ -5,7 +5,7 @@ import { CompareToSecondValueHostConditionBaseConfig } from './../../../src/Cond
 import { ConditionCategory, SupportsDataTypeConverter } from './../../../src/Interfaces/Conditions';
 import { DataTypeConverterLookupKeyAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
-import { ConditionConfigResults, ConditionConfigWithChildrenResults, ConfigIssueSeverity, conditionFeature } from '../../../src/Interfaces/ConfigAnalysisService';
+import { ConditionConfigResults, ConditionConfigWithChildrenResults, CAIssueSeverity, conditionFeature } from '../../../src/Interfaces/ConfigAnalysisService';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { checkConfigPropertyResultsFromArray, createServices, setupHelper } from './support';
@@ -159,7 +159,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conversionLookupKey',
             'Not found. Please register',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with secondConversionLookupKey = Number does not find matching converter and reports property error', () => {
@@ -180,7 +180,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'secondConversionLookupKey',
             'Not found. Please register',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conversionLookupKey = " " does not change results', () => {
@@ -248,7 +248,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conversionLookupKey',
             'Value is not an exact match',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
 
@@ -269,7 +269,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conversionLookupKey',
             'Value is not an exact match',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     // same cases using secondConversionLookupKey
@@ -292,7 +292,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'secondConversionLookupKey',
             'Value is not an exact match',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     // null and empty string cases
@@ -371,7 +371,7 @@ describe('ConditionTypeConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionType',
             'conditionType must be assigned',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionType = "" reports "conditionType must be assigned" error', () => {
@@ -388,7 +388,7 @@ describe('ConditionTypeConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionType',
             'conditionType must be assigned',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionType that is not registered reports "ConditionType not registered:" error', () => {
@@ -405,7 +405,7 @@ describe('ConditionTypeConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionType',
             'The condition type is not found in the ConditionFactory.',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionType that has whitespace reports "Remove whitespace" error', () => {
@@ -422,7 +422,7 @@ describe('ConditionTypeConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionType',
             'Remove whitespace',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     // case insensitive match is reported as "Change to " error
@@ -440,7 +440,7 @@ describe('ConditionTypeConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionType',
             'Change to testCondition.',
-            ConfigIssueSeverity.info);
+            CAIssueSeverity.info);
 
     });
 
@@ -514,7 +514,7 @@ describe('ConditionCategoryPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'category',
             'override the default category',
-            ConfigIssueSeverity.info);
+            CAIssueSeverity.info);
 
     });
     test('analyze with a category that is not known reports "The category property is not recognized." error', () => {
@@ -532,7 +532,7 @@ describe('ConditionCategoryPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'category',
             'The category property is not recognized.',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with a category that is not known but is a case insensitive match reports "Change to" info message', () => {
@@ -550,7 +550,7 @@ describe('ConditionCategoryPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'category',
             'Change to Contents.',
-            ConfigIssueSeverity.info);
+            CAIssueSeverity.info);
 
     });
 
@@ -595,7 +595,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionConfigs',
             'Must be an array with at least one condition',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionConfigs = [] is an error with message "Must be an array with at least one condition"', () => {
@@ -613,7 +613,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionConfigs',
             'Must be an array with at least one condition',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionConfigs = a number is an error with message "Must be an array with at least one condition"', () => {
@@ -631,7 +631,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'conditionConfigs',
             'Must be an array with at least one condition',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with conditionConfigs containing a single ConditionConfig that has no errors creates an entry for that condition in results.children', () => {
@@ -693,7 +693,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(chdConfigResults.children[0].properties, 0,
             'conditionType',
             'whitespace',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     // similar with 3 test cases, only the second has an error with a property result for conditionType
@@ -720,7 +720,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(chdConfigResults.children[1].properties, 0,
             'conditionType',
             'whitespace',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
         expect(chdConfigResults.children[0].properties).toHaveLength(0);
         expect(chdConfigResults.children[2].properties).toHaveLength(0);
@@ -749,7 +749,7 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         expect(chdConfigResults1.conditionType).toBe('notRegistered');
         expect(chdConfigResults1.children).toBeUndefined();
         expect(chdConfigResults1.message).toContain('ConditionType not registered');
-        expect(chdConfigResults1.severity).toBe(ConfigIssueSeverity.error);
+        expect(chdConfigResults1.severity).toBe(CAIssueSeverity.error);
 
         expect(chdConfigResults.children[0].conditionType).toBe('testCondition');
         expect(chdConfigResults.children[2].conditionType).toBe('testCondition3');
@@ -798,7 +798,7 @@ describe('ConditionWithOneChildPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'childConditionConfig',
             'Must be a condition object',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with childConditionConfig = a number is an error with message "Must be a condition object"', () => {
@@ -816,7 +816,7 @@ describe('ConditionWithOneChildPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'childConditionConfig',
             'Must be a condition object',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('analyze with childConditionConfig containing a ConditionConfig that has no errors creates an entry for that condition in results.child', () => {
@@ -864,7 +864,7 @@ describe('ConditionWithValueHostNamePropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'valueHostName',
             'ValueHostName does not exist',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('valueHostName is valid syntax and exists in results.valueHostNames array does not add a ConditionPropertyResult', () => {
@@ -909,7 +909,7 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'secondValueHostName',
             'ValueHostName does not exist',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     test('secondValueHostName is valid syntax and exists in results.valueHostNames array does not add a ConditionPropertyResult', () => {
@@ -951,7 +951,7 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
             checkConfigPropertyResultsFromArray(results.properties, 0,
                 'secondValueHostName',
                 'Value must be defined',
-                ConfigIssueSeverity.error);
+                CAIssueSeverity.error);
         } else {
             expect(results.properties).toHaveLength(0);
         }
@@ -1036,7 +1036,7 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'secondValue',
             'Value cannot be converted to Lookup Key',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
 
     });
     // secondValue = null, reports an error
@@ -1057,7 +1057,7 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.properties, 0,
             'secondValue',
             'Value should not be null.',
-            ConfigIssueSeverity.warning);
+            CAIssueSeverity.warning);
 
     });
     function testSecondValueUndefined(conditionType: string, expectedError: boolean) {
@@ -1078,7 +1078,7 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
             checkConfigPropertyResultsFromArray(results.properties, 0,
                 'secondValue',
                 'Value must be defined',
-                ConfigIssueSeverity.error);
+                CAIssueSeverity.error);
         } else {
             expect(results.properties).toHaveLength(0);
         }

@@ -6,7 +6,7 @@
 import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, ConfigIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -137,7 +137,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         if (sampleValue === undefined)
         {
             results.message = `No sample value found for Lookup Key ${lookupKey} in condition ${cleanCT}. Cannot determine a comparer.`;
-            results.severity = ConfigIssueSeverity.warning; 
+            results.severity = CAIssueSeverity.warning; 
             return results;
         }
         // find a matching Comparer. Its likely there isn't one, and we'll progress onto using the default Comparer against the sample values.
@@ -177,13 +177,13 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             if (!(e instanceof InvalidTypeError))
             {
                 results.message = (e as Error).message;
-                results.severity = ConfigIssueSeverity.error;
+                results.severity = CAIssueSeverity.error;
                 return results;
             }
         }
         // none found. We'll report an warning.
         results.message = `Cannot check the comparer used with Lookup Key ${lookupKey} in condition ${cleanCT}. Be sure to either supply one in DataTypeComparerService or setup the conversionLookupKey property to convert to a supported Lookup Key.`;
-        results.severity = ConfigIssueSeverity.warning;
+        results.severity = CAIssueSeverity.warning;
         results.notFound = true;
         return results;
     }

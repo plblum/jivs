@@ -4,7 +4,7 @@ import { createValidationServicesForTesting, registerAllConditions } from "../..
 import { ComparersResult } from "../../../src/Interfaces/DataTypeComparerService";
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { ConditionCategory, ConditionConfig } from '../../../src/Interfaces/Conditions';
-import { ConfigIssueSeverity, ComparerServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, ComparerServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { DataTypeComparerAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
 import { setupHelper } from './support';
@@ -429,7 +429,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 expect(lkService.classFound).toBeUndefined();
                 expect(lkService.instance).toBeUndefined();
                 expect(lkService.notFound).toBe(true);
-                expect(lkService.severity).toBe(ConfigIssueSeverity.warning);
+                expect(lkService.severity).toBe(CAIssueSeverity.warning);
                 expect(lkService.message).toContain('Cannot check the comparer');
                 expect(lkService.dataExamples).toBeUndefined();
             });
@@ -492,7 +492,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 expect(lkService.classFound).toBeUndefined();
                 expect(lkService.instance).toBeUndefined();
                 expect(lkService.notFound).toBe(true);
-                expect(lkService.severity).toBe(ConfigIssueSeverity.warning);
+                expect(lkService.severity).toBe(CAIssueSeverity.warning);
                 expect(lkService.message).toContain('Cannot check the comparer');
                 expect(lkService.dataExamples).toBeUndefined();
             });
@@ -512,7 +512,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 expect(lkService.classFound).toBeUndefined();
                 expect(lkService.instance).toBeUndefined();
                 expect(lkService.notFound).toBeUndefined();
-                expect(lkService.severity).toBe(ConfigIssueSeverity.warning);
+                expect(lkService.severity).toBe(CAIssueSeverity.warning);
                 expect(lkService.message).toContain('No sample value found');
                 expect(lkService.dataExamples).toBeUndefined();
             });

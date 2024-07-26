@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, ILookupKeyAnalyzer, ConfigResultMessageBase, ConfigIssueSeverity, AnalysisArgs, IConfigAnalysisResults, ClassNotFound } from "../../Interfaces/ConfigAnalysisService";
+import { LookupKeyServiceInfoBase, ILookupKeyAnalyzer, IssueForCAResultBase, CAIssueSeverity, AnalysisArgs, IConfigAnalysisResults, ClassNotFound } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 
@@ -49,21 +49,21 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
 
     protected notFound(info: ClassNotFound, lookupKey: string, cultureId?: string): void {
         info.notFound = true;
-        info.severity = ConfigIssueSeverity.error;
+        info.severity = CAIssueSeverity.error;
         if (cultureId)
             info.message = `No ${this.classGeneralName} for LookupKey "${lookupKey}" with culture "${cultureId}"`;
         else
             info.message = `No ${this.classGeneralName} for LookupKey "${lookupKey}"`;
     }
 
-    protected noSampleValue(info: ConfigResultMessageBase, valueHostConfig: ValueHostConfig, lookupKey: string): void {
-        info.severity = ConfigIssueSeverity.warning;
+    protected noSampleValue(info: IssueForCAResultBase, valueHostConfig: ValueHostConfig, lookupKey: string): void {
+        info.severity = CAIssueSeverity.warning;
         info.message = `No sample value found for ValueHost name "${valueHostConfig.name}" and lookup key "${lookupKey}". Cannot verify the ${this.classGeneralName}. Consider adding an entry to options.valueHostsSampleValues or options.lookupKeysSampleValues`;
 
     }
 
-    protected errorThrown(info: ConfigResultMessageBase, e: Error): void {
-        info.severity = ConfigIssueSeverity.error;
+    protected errorThrown(info: IssueForCAResultBase, e: Error): void {
+        info.severity = CAIssueSeverity.error;
         info.message = e.message;
     }
 }

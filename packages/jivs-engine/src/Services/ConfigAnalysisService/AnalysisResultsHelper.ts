@@ -6,7 +6,7 @@
 import { LookupKey } from "../../DataTypes/LookupKeys";
 import {
     IConfigAnalysisResults, LookupKeyInfo, ILookupKeyAnalyzer, ConfigPropertyResult,
-    ConfigIssueSeverity,
+    CAIssueSeverity,
     LocalizedPropertyResult,
     LocalizedTextResult, AnalysisArgs,
     IAnalysisResultsHelper,
@@ -65,7 +65,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
 
     //#region helper methods 
 
-    public addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void {
+    public addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void {
         this.analysisArgs.results.lookupKeysIssues.push({ feature, lookupKey: lookupKey, severity: severity, message });
     }
 
@@ -159,7 +159,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         function caseInsensitiveMessage(lookupKey: string, actual: string): void {
             if (!silent && lookupKey !== actual)
                 self.addlookupKeysIssue(lookupKeyFeature, trimmedLK,
-                    ConfigIssueSeverity.warning,
+                    CAIssueSeverity.warning,
                     `Lookup key "${trimmedLK}" is a case insensitive match for "${temp}". Make it a case sensitive match.`);
         }
         let self = this;
@@ -182,7 +182,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             return identifier.dataTypeLookupKey;
         }
         if (!silent)
-            this.addlookupKeysIssue(lookupKeyFeature, lookupKey, ConfigIssueSeverity.warning,
+            this.addlookupKeysIssue(lookupKeyFeature, lookupKey, CAIssueSeverity.warning,
                 `Lookup key "${trimmedLK}" not already known. It may be fine, or may have typo. If valid, register it in LookupKeyFallbackService or IdentifierService`);
         return trimmedLK;
 
@@ -237,7 +237,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             }
         }
         if (lookupKey !== originalLK) {
-            this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.error,
+            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
                 `Value is not an exact match to the expected value of "${lookupKey}". Fix it.`, properties);
 
             return;
@@ -251,7 +251,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             if (serviceInfo.tryFallback) {
                 let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                 if (fallbackLookupKey)
-                    this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.warning,
+                    this.addConfigPropertyResult(propertyName, CAIssueSeverity.warning,
                         `Lookup key "${lookupKey}" does not have a ${className} registered but it will also try the Lookup Key "${fallbackLookupKey}".`, properties);
                 else
                     notFound = true;
@@ -261,12 +261,12 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         }
         else {
             if (!knownLK)
-                this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.info,
+                this.addConfigPropertyResult(propertyName, CAIssueSeverity.info,
                     `Lookup key "${lookupKey}" is unknown. That may be OK, but consider whether it should be registered in the LookupKeyFallbackService or DataTypeIdentifierService.`, properties);
             return;            
         }
         if (notFound)
-            this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.error,
+            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
                 `Not found. Please register a ${className} to ${servicePropertyName}.`, properties);         
     }
 
@@ -304,17 +304,17 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 switch (details.result) {
                     case 'localized':
                         cultureResult.text = details.text;
-                        cultureResult.severity = ConfigIssueSeverity.info;
+                        cultureResult.severity = CAIssueSeverity.info;
                         if (details.actualCultureId !== cultureId)
                             cultureResult.message = `Localized text was found using culture "${details.actualCultureId}".`;
                         break;
                     case 'fallback':
                         cultureResult.message = msg + ` It will use "${fallbackText}" found in the ${propertyNamePrefix} property.`;
-                        cultureResult.severity = ConfigIssueSeverity.warning;
+                        cultureResult.severity = CAIssueSeverity.warning;
                         break;
                     case 'notFound':
                         cultureResult.message = msg + ` No text will be used because the ${propertyNamePrefix} property is unassigned.`;
-                        cultureResult.severity = ConfigIssueSeverity.error;
+                        cultureResult.severity = CAIssueSeverity.error;
                         break;
                 }
             }
@@ -351,7 +351,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 }
             }
             else {
-                this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.error,
+                this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
                     `Syntax error in: ${message}. Token "${match}" is not valid.`, properties);
             }
 
@@ -429,7 +429,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             }
             else
                 msg = 'ValueHostName does not exist';
-            this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.error, msg, properties);
+            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error, msg, properties);
         }
     }
 
@@ -467,7 +467,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         if (typeof value === 'string') {
             if (value.trim().length === 0)  // empty string does not report an issue
                 return;
-            this.checkNeedsTrimming(value, propertyName, properties, ConfigIssueSeverity.warning);
+            this.checkNeedsTrimming(value, propertyName, properties, CAIssueSeverity.warning);
             // continues with warning established
         }
 
@@ -482,12 +482,12 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             let dtcResult = this.services.dataTypeConverterService.convertUntilResult(
                 value, valueLookupKey ?? null, conversionLookupKey);
             if (!dtcResult.resolvedValue) {
-                this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.error,
+                this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
                     `Value cannot be converted to Lookup Key "${conversionLookupKey}"`, properties);
             }
         }
         else if (!valueLookupKey) {
-            this.addConfigPropertyResult(propertyName, ConfigIssueSeverity.info,
+            this.addConfigPropertyResult(propertyName, CAIssueSeverity.info,
                 'Value could not be validated', properties);
         }
     }
@@ -498,7 +498,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param severity 
      * @param errorMessage 
      */
-    public createConfigPropertyResult(propertyName: string, severity: ConfigIssueSeverity,
+    public createConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
         errorMessage: string): ConfigPropertyResult {
         return {
             feature: propertyNameFeature,
@@ -515,7 +515,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param errorMessage 
      * @param properties 
      */
-    public addConfigPropertyResult(propertyName: string, severity: ConfigIssueSeverity,
+    public addConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
         errorMessage: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
         properties.push(this.createConfigPropertyResult(propertyName, severity, errorMessage));
     }
@@ -534,7 +534,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      */
     public checkIsNotUndefined(value: any, propertyName: string,
         properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity = ConfigIssueSeverity.error): boolean
+        severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value === undefined) {
             properties.push(this.createConfigPropertyResult(propertyName, severity, 'Value must be defined.'));
@@ -558,10 +558,10 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * When false, stop execution. The value was null.
      */
     public checkIsNotNull(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity = ConfigIssueSeverity.error): boolean
+        severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value === null) {
-            let result = severity === ConfigIssueSeverity.error ?
+            let result = severity === CAIssueSeverity.error ?
                 this.createConfigPropertyResult(propertyName, severity, 'Value must not be null.') :
                 this.createConfigPropertyResult(propertyName, severity, 'Value should not be null.');
             properties.push(result);
@@ -584,7 +584,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * When false, stop execution. The value was not a string.
      */
     public checkIsString(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity = ConfigIssueSeverity.error): boolean
+        severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (typeof value !== 'string') {
             properties.push(this.createConfigPropertyResult(propertyName, severity, 'Must be a string.'));
@@ -608,10 +608,10 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     * When false, stop execution. The value was an empty string.
     */
     public checkIsNotEmptyString(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity = ConfigIssueSeverity.error): boolean
+        severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value.trim().length === 0) {
-            let result = severity === ConfigIssueSeverity.error ?
+            let result = severity === CAIssueSeverity.error ?
                 this.createConfigPropertyResult(propertyName, severity, 'Value must not be empty string.') :
                 this.createConfigPropertyResult(propertyName, severity, 'Value should not be empty string.');
             properties.push(result);
@@ -634,7 +634,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * When false, stop execution. The value was a string with enclosing whitespace.
      */
     public checkNeedsTrimming(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity = ConfigIssueSeverity.error): boolean
+        severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value.trim() !== value) {
             properties.push(this.createConfigPropertyResult(propertyName, severity, 'Remove whitespace.'));

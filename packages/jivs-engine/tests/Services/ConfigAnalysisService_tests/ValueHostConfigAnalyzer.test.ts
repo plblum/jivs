@@ -1,5 +1,5 @@
 import { DataTypeComparerAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
-import { ConfigIssueSeverity, IConditionConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigResults, ValueHostConfigResults, conditionFeature, lookupKeyFeature, validatorFeature, valueHostFeature } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, IConditionConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigResults, ValueHostConfigResults, conditionFeature, lookupKeyFeature, validatorFeature, valueHostFeature } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValueHostConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
@@ -91,7 +91,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(valueHostFeature);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(results.validators).toBeUndefined();
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
         });
@@ -108,7 +108,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(valueHostFeature);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(results.validators).toBeUndefined();
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
         });
@@ -125,7 +125,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(valueHostFeature);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
 
             expect(results.validators).toBeUndefined();
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
@@ -164,7 +164,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results2.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'valueHostName',
-                `The ValueHostConfig name "${testConfig1.name}" is a case insensitive match to another. It must be unique.`, ConfigIssueSeverity.error);
+                `The ValueHostConfig name "${testConfig1.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
             expect(results2.feature).toBe(valueHostFeature);
@@ -188,7 +188,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results2.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'valueHostName',
-                `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, ConfigIssueSeverity.error);
+                `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
             expect(results2.feature).toBe(valueHostFeature);
@@ -212,7 +212,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results2.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'valueHostName',
-                `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, ConfigIssueSeverity.error);
+                `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
             expect(results2.feature).toBe(valueHostFeature);
@@ -391,7 +391,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.enablerCondition!.feature).toBe(conditionFeature);
             expect(results.enablerCondition!.conditionType).toBe(ConditionType.EqualToValue);
             checkLookupKeysInfoForService(helper.results.lookupKeysInfo, 'Custom', ServiceName.comparer);
-            expect(results.enablerCondition!.severity).toBe(ConfigIssueSeverity.warning);
+            expect(results.enablerCondition!.severity).toBe(CAIssueSeverity.warning);
             expect(results.enablerCondition!.message).toContain('No sample value found');
         });
     });
@@ -495,21 +495,21 @@ describe('ValueHostConfigAnalyzer', () => {
             let results = analyzer.analyze(testValueHostConfig, null, []);
             expect(results.properties).toHaveLength(6);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'valueHostType', 'The ValueHostConfig is not recognized', ConfigIssueSeverity.error);
+                'valueHostType', 'The ValueHostConfig is not recognized', CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results.properties, 1,
-                'valueHostName', 'leading or trailing whitespace.', ConfigIssueSeverity.error);
+                'valueHostName', 'leading or trailing whitespace.', CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results.properties, 2,
-                'dataType', 'not an exact match', ConfigIssueSeverity.error);
+                'dataType', 'not an exact match', CAIssueSeverity.error);
 
             checkLocalizedPropertyResultFromArray(results.properties, 3, 'label',
                 1, 'en', 'en', undefined, true);
 
             // parserLookupKey is not associated with a parser object and no fallback
             checkConfigPropertyResultsFromArray(results.properties, 4,
-                'parserLookupKey', 'Not found', ConfigIssueSeverity.error);
+                'parserLookupKey', 'Not found', CAIssueSeverity.error);
             // calcFn is not a function
             checkConfigPropertyResultsFromArray(results.properties, 5,
-                'calcFn', 'Value must be a function', ConfigIssueSeverity.error);
+                'calcFn', 'Value must be a function', CAIssueSeverity.error);
         });
     });
 

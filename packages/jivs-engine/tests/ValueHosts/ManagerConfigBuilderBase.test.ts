@@ -6,7 +6,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, ConfigAnalysisServiceOptions, ConfigIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, ConfigAnalysisServiceOptions, CAIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
@@ -442,7 +442,7 @@ describe('analyze()', () => {
         let si = checkLookupKeysInfoForService(result.results.lookupKeysInfo,
             'CustomKey', ServiceName.comparer) as ComparerServiceClassRetrieval;
         expect(si).toBeDefined();
-        expect(si.severity).toBe(ConfigIssueSeverity.warning); 
+        expect(si.severity).toBe(CAIssueSeverity.warning); 
     });
 });
 

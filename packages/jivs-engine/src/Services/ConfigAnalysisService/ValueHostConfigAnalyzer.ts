@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ValueHostConfigResults, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ConfigPropertyResult, ConfigIssueSeverity, propertyNameFeature, valueHostFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ValueHostConfigResults, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ConfigPropertyResult, CAIssueSeverity, propertyNameFeature, valueHostFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValidatorsValueHostBaseConfig } from "../../Interfaces/ValidatorsValueHostBase";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
@@ -42,7 +42,7 @@ implements IValueHostConfigAnalyzer<TServices> {
     protected checkForValiability(config: ValueHostConfig, results: ValueHostConfigResults): boolean {
         if (results.valueHostName === '[Missing]') {
             results.message = 'The ValueHostConfig name is missing. It is required.';
-            results.severity = ConfigIssueSeverity.error;
+            results.severity = CAIssueSeverity.error;
             return false;
         }
         return true
@@ -63,7 +63,7 @@ implements IValueHostConfigAnalyzer<TServices> {
                 results.properties.push(<ConfigPropertyResult>{
                     feature: propertyNameFeature,
                     propertyName: 'valueHostName',
-                    severity: ConfigIssueSeverity.error,
+                    severity: CAIssueSeverity.error,
                     message: `The ValueHostConfig name "${config.name}" is a case insensitive match to another. It must be unique.`
                 });
             }

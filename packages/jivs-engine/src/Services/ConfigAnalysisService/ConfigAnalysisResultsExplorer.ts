@@ -7,7 +7,7 @@ import {
     IConfigAnalysisResultsExplorer, IConfigAnalysisResults, IConfigAnalysisSearchCriteria, LookupKeyServiceInfoBase,
     CAPathedResult,
     CAExplorerFactory,
-    ConfigAnalysisResultBase,
+    CAResultBase,
     ICAExplorerBase,
     LookupKeyInfo,
     ParserForCultureClassRetrieval,
@@ -161,7 +161,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
  * on the feature property. These classes are registered with the ConfigAnalysisResultsExplorer
  * and are created in a factory approach based on the config result object.
  */
-export abstract class CAExplorerBase<T extends ConfigAnalysisResultBase> implements ICAExplorerBase<T>
+export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplorerBase<T>
 {
     constructor(result: T) {
         assertNotNull(result, 'result');
@@ -182,7 +182,7 @@ export abstract class CAExplorerBase<T extends ConfigAnalysisResultBase> impleme
     
     /**
      * A fixed value representing the only feature string that is supported by this class.
-     * Each ConfigAnalysisResultBase object has a feature property that is matched to this one.
+     * Each CAResultBase object has a feature property that is matched to this one.
      */
     public abstract feature(): string;
 
@@ -192,7 +192,7 @@ export abstract class CAExplorerBase<T extends ConfigAnalysisResultBase> impleme
  * These are used to build a path to the object in the configuration.
  * It is null when the feature lacks some useful identifer.
  * This value, together with feature(), are used to build a path to the
- * associated ConfigAnalysisResultBase object. It is used in the path even if null.
+ * associated CAResultBase object. It is used in the path even if null.
  */    
     public abstract identifier(): string | null;
 
@@ -273,7 +273,7 @@ export abstract class CAExplorerBase<T extends ConfigAnalysisResultBase> impleme
      * Return a list of all children of the result that match the criteria
      * or [] if no children are available.
      */
-    public abstract children(): Array<ConfigAnalysisResultBase>;
+    public abstract children(): Array<CAResultBase>;
 
 }
 
@@ -295,7 +295,7 @@ class LookupKeyInfoExplorer extends CAExplorerBase<LookupKeyInfo>
         return this.matchStringCriteria(criteria.lookupKeys, this.result.lookupKey);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return this.result.services ?? [];
     }
 }
@@ -318,7 +318,7 @@ class DataTypeLookupKeyServiceInfoExplorer extends CAExplorerBase<LookupKeyServi
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -340,7 +340,7 @@ class ParserLookupKeyServiceInfoExplorer extends CAExplorerBase<ParserForCulture
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return this.result.matches ?? [];
     }
 }
@@ -363,7 +363,7 @@ class ComparerLookupKeyServiceInfoExplorer extends CAExplorerBase<ComparerServic
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -386,7 +386,7 @@ class ConverterLookupKeyServiceInfoExplorer extends CAExplorerBase<ConverterServ
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }  
@@ -409,8 +409,8 @@ class FormatterLookupKeyServiceInfoExplorer extends CAExplorerBase<FormatterServ
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
-        return (this.result.requests as Array<ConfigAnalysisResultBase>) ?? [];
+    public children(): Array<CAResultBase> {
+        return (this.result.requests as Array<CAResultBase>) ?? [];
     }
 }   
 
@@ -432,7 +432,7 @@ class IdentifierLookupKeyServiceInfoExplorer extends CAExplorerBase<IdentifierSe
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -455,7 +455,7 @@ class PropertyResultExplorer extends CAExplorerBase<ConfigPropertyResult>
         return this.matchStringCriteria(criteria.propertyNames, this.result.propertyName);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -486,7 +486,7 @@ class LocalizedPropertyResultExplorer extends CAExplorerBase<LocalizedPropertyRe
         return this.matchStringCriteria(criteria.propertyNames, this.result.l10nPropertyName);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -509,7 +509,7 @@ class ErrorResultExplorer extends CAExplorerBase<ConfigErrorResult>
         return true;
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
+    public children(): Array<CAResultBase> {
         return [];
     }
 }
@@ -532,8 +532,8 @@ class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigResul
         return this.matchStringCriteria(criteria.valueHostNames, this.result.valueHostName);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
-        let children: Array<ConfigAnalysisResultBase> = [];
+    public children(): Array<CAResultBase> {
+        let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
         if (this.result.validators)
@@ -563,8 +563,8 @@ class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigResul
         return this.matchStringCriteria(criteria.errorCodes, this.result.errorCode);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
-        let children: Array<ConfigAnalysisResultBase> = [];
+    public children(): Array<CAResultBase> {
+        let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
 
@@ -593,11 +593,11 @@ class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigResul
         return this.matchStringCriteria(criteria.conditionTypes, this.result.conditionType);
     }
 
-    public children(): Array<ConfigAnalysisResultBase> {
-        let children: Array<ConfigAnalysisResultBase> = [];
+    public children(): Array<CAResultBase> {
+        let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
-        let conditionChildren = (this.result as any).children as Array<ConfigAnalysisResultBase>;
+        let conditionChildren = (this.result as any).children as Array<CAResultBase>;
         if (conditionChildren)
             children = children.concat(conditionChildren);
         return children;
@@ -638,7 +638,7 @@ export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
      * @param configResult 
      * @returns A new ConfigResultsExplorer object assigned to the configResult object.
      */
-    public create(configResult: ConfigAnalysisResultBase): ICAExplorerBase<ConfigAnalysisResultBase> {
+    public create(configResult: CAResultBase): ICAExplorerBase<CAResultBase> {
         let fn = this._explorers.get(configResult.feature);
         if (fn) {
             return fn(configResult);

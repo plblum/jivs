@@ -4,7 +4,7 @@
  */
 
 import {
-    ConfigErrorResult, ConfigIssueSeverity, ConfigResults,
+    ConfigErrorResult, CAIssueSeverity, ConfigResults,
     IConfigAnalyzer, IConfigPropertyAnalyzer,
     errorFeature
 } from "../../Interfaces/ConfigAnalysisService";
@@ -91,7 +91,7 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigResults
                 let error = ensureError(e);
                 results.properties.push(<ConfigErrorResult>{
                     feature: errorFeature,
-                    severity: ConfigIssueSeverity.error,
+                    severity: CAIssueSeverity.error,
                     message: error.message,
                     analyzerClassName: valueForLog(analyzer)
                 });

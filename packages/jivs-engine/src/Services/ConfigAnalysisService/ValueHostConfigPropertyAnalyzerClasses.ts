@@ -4,7 +4,7 @@
  */
 
 import { CalcValueHostConfig } from "../../Interfaces/CalcValueHost";
-import { ConfigIssueSeverity, IAnalysisResultsHelper, ValueHostConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, IAnalysisResultsHelper, ValueHostConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
 import { InputValueHostConfig } from "../../Interfaces/InputValueHost";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -49,7 +49,7 @@ export class ValueHostTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
             results.properties.push({
                 feature: propertyNameFeature,
                 propertyName: 'valueHostType',
-                severity: ConfigIssueSeverity.error,
+                severity: CAIssueSeverity.error,
                 message: `The ValueHostConfig is not recognized by the ValueHostFactory. ${error.message}}`
             });
         }
@@ -74,7 +74,7 @@ export class ValueHostNamePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
             results.properties.push({
                 feature: propertyNameFeature,
                 propertyName: 'valueHostName',
-                severity: ConfigIssueSeverity.error,
+                severity: CAIssueSeverity.error,
                 message: message
             });
         }
@@ -103,7 +103,7 @@ export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBas
             results.properties.push({
                 feature: propertyNameFeature,
                 propertyName: 'dataType',
-                severity: ConfigIssueSeverity.info,
+                severity: CAIssueSeverity.info,
                 message: `No dataType assigned. LookupKeys that depend on dataType will not be checked. Otherwise this is a valid configuration, where the actual runtime value will be used to determine the lookup key.`
             });
         }
@@ -163,7 +163,7 @@ export class CalcFnPropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase 
                 results.properties.push({
                     feature: propertyNameFeature,
                     propertyName: 'calcFn',
-                    severity: ConfigIssueSeverity.error,
+                    severity: CAIssueSeverity.error,
                     message: 'Value must be a function'
                 });
             }
@@ -180,7 +180,7 @@ export class CalcFnPropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase 
                 results.properties.push({
                     feature: propertyNameFeature,
                     propertyName: 'calcFn',
-                    severity: ConfigIssueSeverity.error,
+                    severity: CAIssueSeverity.error,
                     message: 'Function required'
                 });
         }

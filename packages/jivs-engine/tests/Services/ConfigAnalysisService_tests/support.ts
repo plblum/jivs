@@ -1,6 +1,6 @@
 import {
-    IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigResults, ConfigIssueSeverity,
-    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyInfo, MultiClassRetrieval, LookupKeyServiceInfoBase, ParserForCultureClassRetrieval, ConfigResultMessageBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
+    IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigResults, CAIssueSeverity,
+    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyInfo, MultiClassRetrieval, LookupKeyServiceInfoBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
     parserForCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
     parserServiceFeature,
     parserServiceClassRetrievalFeature
@@ -103,7 +103,7 @@ export class MockAnalyzer implements ILookupKeyAnalyzer{
         this._feature = feature;
         if (result.feature === undefined)
             result.feature = feature;
-        let msg = result as ConfigResultMessageBase;
+        let msg = result as IssueForCAResultBase;
         if (msg.message === undefined)
             msg.message = 'test' + feature;
         this._result = result;
@@ -162,7 +162,7 @@ export function checkValueHostConfigResults(result: ValueHostConfigResults | und
 export function checkConfigPropertyResultsFromArray(results: Array<ConfigPropertyResult | ConfigErrorResult>,
     index: number, expectedPropertyName: string,
     expectedPartialMessage: string | undefined,
-    expectedSeverity: ConfigIssueSeverity | undefined): ConfigPropertyResult {
+    expectedSeverity: CAIssueSeverity | undefined): ConfigPropertyResult {
     let issue = results[index] as ConfigPropertyResult;
     expect(issue).toBeDefined();
     checkConfigPropertyResults(issue, expectedPropertyName, expectedPartialMessage, expectedSeverity);
@@ -171,7 +171,7 @@ export function checkConfigPropertyResultsFromArray(results: Array<ConfigPropert
 export function checkConfigPropertyResults(result: ConfigPropertyResult | undefined,
     expectedPropertyName: string,
     expectedPartialMessage: string | undefined,
-    expectedSeverity: ConfigIssueSeverity | undefined): ConfigPropertyResult {
+    expectedSeverity: CAIssueSeverity | undefined): ConfigPropertyResult {
 
     expect(result).toBeDefined();
     expect(result!.propertyName).toContain(expectedPropertyName);
@@ -290,7 +290,7 @@ export function checkLocalizedPropertyResult(pi: LocalizedPropertyResult,
     else
         expect(ct.text).toContain(expectedCultureText);
     if (hasFallback === undefined) {
-        expect(ct.severity).toBe(ConfigIssueSeverity.info);
+        expect(ct.severity).toBe(CAIssueSeverity.info);
         if (actualCultureId !== cultureId)
             expect(ct.message).toContain('Localized text was found');
         else
@@ -299,11 +299,11 @@ export function checkLocalizedPropertyResult(pi: LocalizedPropertyResult,
     else {
         expect(ct.message).toContain('localization not declared in TextLocalizerService');
         if (hasFallback) {
-            expect(ct.severity).toBe(ConfigIssueSeverity.warning);
+            expect(ct.severity).toBe(CAIssueSeverity.warning);
             expect(ct.message).toContain(`found in the ${propertyNamePrefix} property`);
         }
         else {
-            expect(ct.severity).toBe(ConfigIssueSeverity.error);
+            expect(ct.severity).toBe(CAIssueSeverity.error);
             expect(ct.message).toContain('No text will be used');
         }
     }
@@ -337,7 +337,7 @@ export function checkCultureSpecificClassRetrievalNotFoundInService(
     expect(request!.feature).toBe(expectedRequestFeature);
     expect(request!.requestedCultureId).toBe(expectedCultureId);
     expect(request!.actualCultureId).toBeUndefined();
-    expect(request!.severity).toBe(ConfigIssueSeverity.error);
+    expect(request!.severity).toBe(CAIssueSeverity.error);
     expect(request!.message).toContain('for LookupKey');
     expect(request!.classFound).toBeUndefined();
     expect(request!.instance).toBeUndefined();
@@ -348,6 +348,6 @@ export function checkSyntaxError(propertyResult: ConfigPropertyResult,
 
     expect(propertyResult.feature).toBe(propertyNameFeature);
     expect(propertyResult.propertyName).toBe(expectedPropertyName);
-    expect(propertyResult.severity).toBe(ConfigIssueSeverity.error);
+    expect(propertyResult.severity).toBe(CAIssueSeverity.error);
     expect(propertyResult.message).toContain('Syntax error');
 }    

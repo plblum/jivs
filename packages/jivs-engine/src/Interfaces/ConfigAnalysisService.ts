@@ -225,7 +225,7 @@ export interface IConfigAnalysisSearchCriteria {
      * Match to any severity listed or all severities if undefined.
      * Use null for no severity assigned, which means there is no issue on the record.
      */
-    severities?: Array<ConfigIssueSeverity | null>;
+    severities?: Array<CAIssueSeverity | null>;
 
 //#region identities for specific ConfigAnalysisResult objects based on their feature property.    
     /**
@@ -274,7 +274,7 @@ export interface IConfigAnalysisSearchCriteria {
  * It basically holds the ConfigAnalysisResult and the path to it.
  * The idea is to flatten the results which are a tree into a single array.
  */
-export interface CAPathedResult<T extends ConfigAnalysisResultBase> {
+export interface CAPathedResult<T extends CAResultBase> {
     path: Array<{ feature: string, identifier: string }>;
     result: T;
 }
@@ -289,7 +289,7 @@ export interface IConfigAnalysisOutputService {
  * on the feature property. These classes are registered with the ConfigAnalysisResultsExplorer
  * and are created in a factory approach based on the config result object.
  */
-export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
+export interface ICAExplorerBase<T extends CAResultBase> {
     /**
      * Gets the result of the configuration analysis, which is an object structure
      * with data from Configuration objects in valueHostResults,
@@ -300,7 +300,7 @@ export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
 
     /**
      * A fixed value representing the only feature string that is supported by this class.
-     * Each ConfigAnalysisResultBase object has a feature property that is matched to this one.
+     * Each CAResultBase object has a feature property that is matched to this one.
      */
     feature(): string;
 
@@ -339,27 +339,9 @@ export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
      * Return a list of all children of the result that match the criteria
      * or [] if no children are available.
      */
-    children(): Array<ConfigAnalysisResultBase>;
+    children(): Array<CAResultBase>;
 
 }
-
-// /**
-//  * Classes that implement will be created for each object found in IConfigAnalysisResults.valueHostResults.,
-//  * based on the feature property. The ConfigAnalysisResultsExplorer is a factory of these.
-//  */
-// export interface ICAConfigResultsExplorer<T extends ConfigResults<TConfig>, TConfig>  extends ICAExplorerBase<T>
-// {
-
-// }
-// // same for IConfigAnalysisResults.lookupKeysInfo
-// /**
-//  * Classes that implement will be created for each object found in IConfigAnalysisResults.lookupKeysInfo,
-//  * based on the feature property. The ConfigAnalysisResultsExplorer is a factory of these.
-//  */
-// export interface ICALookupKeysInfoExplorer<T extends LookupKeyServiceInfoBase> extends ICAExplorerBase<T>
-// {
-    
-// }
 
 /**
  * Factory to create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
@@ -372,7 +354,7 @@ export interface CAExplorerFactory {
      * @param configResult 
      * @returns A new ConfigResultsExplorer object assigned to the configResult object.
      */
-    create(configResult: ConfigAnalysisResultBase): ICAExplorerBase<ConfigAnalysisResultBase>;
+    create(configResult: CAResultBase): ICAExplorerBase<CAResultBase>;
 
     /**
      * Register a new ConfigResultsExplorer with this object.
@@ -384,7 +366,7 @@ export interface CAExplorerFactory {
 
 }
 
-export type ExplorerCreatorHandler = (configResult: ConfigAnalysisResultBase) => ICAExplorerBase<ConfigAnalysisResultBase>;
+export type ExplorerCreatorHandler = (configResult: CAResultBase) => ICAExplorerBase<CAResultBase>;
 
 
 /**
@@ -523,45 +505,33 @@ export interface IDataTypeComparerAnalyzer {
 /**
  * Represents the base structure for a configuration analysis result.
  */
-export interface ConfigAnalysisResultBase {
+export interface CAResultBase {
     feature: string;
 }
 
 
 
 /**
- * Represents a configuration result message.
+ * To extend CAResultBase to support an issue.
+ * Issues include a message and severity (CAIssueSeverity).
  * Its severity determines how to handle the message.
  * Intended to be added to other interfaces, not used on its own.
  */
-export interface ConfigResultMessageBase {
-    severity?: ConfigIssueSeverity;
+export interface IssueForCAResultBase {
+    severity?: CAIssueSeverity;
     message?: string;    
 }
 
 /**
- * Represents the severity level of a configuration issue.
- * These can be filtered by the user to only show certain levels of issues
- * in the ConfigAnalysisOutput.
+ * Represents the severity level of a configuration issue that implements IssueForCAResultBase.
  */
-export enum ConfigIssueSeverity {
+export enum CAIssueSeverity {
     info = 'info',
     warning = 'warning',
     error = 'error'
 }
 
-
-/**
- * Represents a message containing the result of a configuration analysis.
- * This is a complete object, for lists of general messages like in 
- * ConfigAnalysisResults.lookupKeysIssues.
- */
-export interface ConfigResultMessage extends ConfigResultMessageBase, ConfigAnalysisResultBase
-{
-
-}
-
-export interface LookupKeyIssue extends ConfigResultMessageBase, ConfigAnalysisResultBase {
+export interface LookupKeyIssue extends IssueForCAResultBase, CAResultBase {
     lookupKey: string;
 }
 
@@ -572,7 +542,7 @@ export const lookupKeyFeature = 'LookupKey';
  * Invalid lookup keys are reported in ConfigAnalysisResults.lookupKeysIssues
  * and with the PropertyInfo object specifically supplying the invalid key.
  */
-export interface LookupKeyInfo extends ConfigAnalysisResultBase {
+export interface LookupKeyInfo extends CAResultBase {
     feature: 'LookupKey';   // use lookupKeyFeature const
     lookupKey: string;
     /**
@@ -587,7 +557,7 @@ export interface LookupKeyInfo extends ConfigAnalysisResultBase {
 
 export const dataTypeFeature = 'DataType';
 
-export interface LookupKeyServiceInfoBase extends ConfigAnalysisResultBase
+export interface LookupKeyServiceInfoBase extends CAResultBase
 {
     feature: 'DataType' | ServiceName;  // use consts dataTypeFeature, parserServiceFeature, etc.
     
@@ -602,7 +572,7 @@ export interface LookupKeyServiceInfoBase extends ConfigAnalysisResultBase
  * A class requested from the services/factories or 
  * error details when the class was not found.
  */
-export interface ClassRetrievalBase extends ConfigResultMessageBase
+export interface ClassRetrievalBase extends IssueForCAResultBase
 { 
     /**
      * The class Type found to handle the request, such as "BooleanParser", 
@@ -625,7 +595,7 @@ export interface ClassRetrievalBase extends ConfigResultMessageBase
 /**
  * For Retrieval objects where the class may not be found.
  */
-export interface ClassNotFound extends ConfigResultMessageBase { 
+export interface ClassNotFound extends IssueForCAResultBase { 
     /**
      * When true, the class was not found.
      */
@@ -645,8 +615,8 @@ export interface OneClassRetrieval extends
  * For services that have child result classes, this is a base class
  * that offers classRetrieval and error messages.
  */
-export interface ServiceChildResultBase extends ClassRetrievalBase, ConfigAnalysisResultBase,
-    ConfigResultMessageBase {
+export interface ServiceChildResultBase extends ClassRetrievalBase, CAResultBase,
+    IssueForCAResultBase {
 }
 
 export const identifierServiceFeature = ServiceName.identifier;
@@ -725,8 +695,8 @@ export const parserForCultureFeature = 'CultureSpecificParser';    // parsers fo
  * This reflects the list for a single lookup key and cultureID.
  */
 export interface ParserForCultureClassRetrieval extends
-    ConfigAnalysisResultBase,
-    ConfigResultMessage,
+    CAResultBase,
+    IssueForCAResultBase,
     ClassNotFound {
     feature : 'CultureSpecificParser'; // use parserForCultureFeature
     cultureId: string;
@@ -775,7 +745,7 @@ export interface FormatterForCultureClassRetrieval
  * If there are valiability errors, they are reported in its own message and severity properties.
  * @typedef TConfig - The type of the configuration object:
  */
-export interface ConfigResults<TConfig> extends ConfigAnalysisResultBase, ConfigResultMessageBase
+export interface ConfigResults<TConfig> extends CAResultBase, IssueForCAResultBase
 {
     /**
      * errors or warnings found amongst the properties of the TConfig object
@@ -797,7 +767,7 @@ export const l10nPropertiesFeature = 'l10nProperties';
  * Most properties only report warnings and errors. Some, like 
  * localization, may report info messages describing the results of the analysis.
  */
-export interface ConfigPropertyResult extends ConfigAnalysisResultBase, ConfigResultMessageBase {
+export interface ConfigPropertyResult extends CAResultBase, IssueForCAResultBase {
     feature: 'Property' | 'l10nProperties'; // use propertyNameFeature, l10nPropertiesFeature
     /**
      * May be more than one property as several may be analyzed together.
@@ -823,7 +793,7 @@ export interface LocalizedPropertyResult extends ConfigPropertyResult {
      */
     cultureText: { [cultureId: string]: LocalizedTextResult };
 }
-export interface LocalizedTextResult extends ConfigResultMessageBase
+export interface LocalizedTextResult extends IssueForCAResultBase
 {
     /**
      * The result of the localization when successful.
@@ -836,9 +806,9 @@ export const errorFeature = 'Error';
 /**
  * Use when an error is throw. It can identify its source and message.
  */
-export interface ConfigErrorResult extends ConfigAnalysisResultBase, ConfigResultMessageBase {
+export interface ConfigErrorResult extends CAResultBase, IssueForCAResultBase {
     feature: 'Error';   // use errorFeature const
-    severity: ConfigIssueSeverity.error;
+    severity: CAIssueSeverity.error;
     analyzerClassName: string;
 }
 
@@ -916,7 +886,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
 
     results: IConfigAnalysisResults; 
 
-    addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void;
+    addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void;
 
     /**
      * Add support for a specific service to analyze lookup keys.
@@ -1074,7 +1044,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @param severity 
      * @param errorMessage 
      */
-    createConfigPropertyResult(propertyName: string, severity: ConfigIssueSeverity,
+    createConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
         errorMessage: string): ConfigPropertyResult;
     
     /**
@@ -1085,7 +1055,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @param errorMessage 
      * @param properties 
      */
-    addConfigPropertyResult(propertyName: string, severity: ConfigIssueSeverity,
+    addConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
         errorMessage: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
 
     /**
@@ -1103,7 +1073,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      */
     checkIsNotUndefined(value: any, propertyName: string,
         properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity): boolean;
+        severity: CAIssueSeverity): boolean;
 
     /**
      * Reports an error when the value is null.
@@ -1119,7 +1089,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * When false, stop execution. The value was null.
      */
     checkIsNotNull(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity): boolean;
+        severity: CAIssueSeverity): boolean;
     
     /**
      * Reports an error when the value is not a string.
@@ -1135,7 +1105,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * When false, stop execution. The value was not a string.
      */
     checkIsString(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity): boolean;
+        severity: CAIssueSeverity): boolean;
     
     /**
     * Reports an error when the value is an empty string, after trimming.
@@ -1151,7 +1121,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     * When false, stop execution. The value was an empty string.
     */
     checkIsNotEmptyString(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity): boolean;
+        severity: CAIssueSeverity): boolean;
     
     /**
      * Reports an error when the value is a string that has enclosing whitespace.
@@ -1167,7 +1137,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * When false, stop execution. The value was a string with enclosing whitespace.
      */
     checkNeedsTrimming(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
-        severity: ConfigIssueSeverity): boolean;
+        severity: CAIssueSeverity): boolean;
     
 
 }

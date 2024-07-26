@@ -1,6 +1,6 @@
 import {
     ConditionConfigResults,
-    ConfigIssueSeverity, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
+    CAIssueSeverity, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
     conditionFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ConditionConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer';
@@ -77,7 +77,7 @@ describe('ConditionConfigAnalyzer', () => {
             expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
 
@@ -97,7 +97,7 @@ describe('ConditionConfigAnalyzer', () => {
             expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);            
+            expect(results.severity).toBe(CAIssueSeverity.error);            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
         });
@@ -116,7 +116,7 @@ describe('ConditionConfigAnalyzer', () => {
             expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);            
+            expect(results.severity).toBe(CAIssueSeverity.error);            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
         });
@@ -229,15 +229,15 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, vhc, []);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'conditionType', 'Change to TestCondition', ConfigIssueSeverity.info);
+                'conditionType', 'Change to TestCondition', CAIssueSeverity.info);
             checkConfigPropertyResultsFromArray(results.properties, 1,
-                'category', 'The category property is present', ConfigIssueSeverity.info);
+                'category', 'The category property is present', CAIssueSeverity.info);
             checkConfigPropertyResultsFromArray(results.properties, 2,
-                'valueHostName', 'ValueHostName does not exist', ConfigIssueSeverity.error);
+                'valueHostName', 'ValueHostName does not exist', CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results.properties, 3,
-                'secondValueHostName', 'ValueHostName does not exist', ConfigIssueSeverity.error);
+                'secondValueHostName', 'ValueHostName does not exist', CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results.properties, 4,
-                'secondConversionLookupKey', 'Value is not an exact match', ConfigIssueSeverity.error);
+                'secondConversionLookupKey', 'Value is not an exact match', CAIssueSeverity.error);
         });
  
         describe('Conditions that use Comparers may report an error message if the comparer is not available', () => {
@@ -300,7 +300,7 @@ describe('ConditionConfigAnalyzer', () => {
                 const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
                 let results = analyzer.analyze(testConfig, testValueHostConfig, []);
                 expect(results.message).toContain('Comparison configuration');
-                expect(results.severity).toBe(ConfigIssueSeverity.warning);
+                expect(results.severity).toBe(CAIssueSeverity.warning);
             });
 
         });

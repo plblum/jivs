@@ -7,7 +7,7 @@ import { CompareToSecondValueHostConditionBaseConfig } from "../../Conditions/Co
 import { ConditionWithChildrenBaseConfig } from "../../Conditions/ConditionWithChildrenBase";
 import { ConditionWithOneChildBaseConfig } from "../../Conditions/ConditionWithOneChildBase";
 import { ConditionCategory, ConditionConfig, SupportsDataTypeConverter } from "../../Interfaces/Conditions";
-import { ConditionConfigResults, ConditionConfigWithChildrenResults, ConfigIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigResults, ConditionConfigWithChildrenResults, CAIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from "../../Utilities/Utilities";
@@ -75,24 +75,24 @@ export class ConditionTypeConfigPropertyAnalyzer extends ConditionConfigProperty
         let ct = cleanString(config.conditionType);
         if (!ct) {
             helper.addConfigPropertyResult(
-                'conditionType', ConfigIssueSeverity.error,
+                'conditionType', CAIssueSeverity.error,
                 'conditionType must be assigned.', results.properties);
             return;
         }
         helper.checkNeedsTrimming(config.conditionType, 'conditionType',
             results.properties,
-            ConfigIssueSeverity.error
+            CAIssueSeverity.error
         );
         let realCT = helper.services.conditionFactory.findRealName(ct);
         if (realCT === null) {
             helper.addConfigPropertyResult(
-                'conditionType', ConfigIssueSeverity.error,
+                'conditionType', CAIssueSeverity.error,
                 `The condition type is not found in the ConditionFactory.`, results.properties);
         }
         else if (realCT !== ct) {
             helper.addConfigPropertyResult(
                 // use info because case insensitive match is supported
-                'conditionType', ConfigIssueSeverity.info,
+                'conditionType', CAIssueSeverity.info,
                 `Change to ${realCT}.`, results.properties);
         }
     }
@@ -115,17 +115,17 @@ export class ConditionCategoryPropertyAnalyzer extends ConditionConfigPropertyAn
                 let ciCategory = findCaseInsensitiveValueInStringEnum(category, ConditionCategory);
                 if (ciCategory === undefined) {
                     helper.addConfigPropertyResult(
-                        'category', ConfigIssueSeverity.error,
+                        'category', CAIssueSeverity.error,
                         'The category property is not recognized.', results.properties);
                 }
                 else if (category !== ciCategory) {
                     helper.addConfigPropertyResult(
-                        'category', ConfigIssueSeverity.info,
+                        'category', CAIssueSeverity.info,
                         `Change to ${ciCategory}.`, results.properties);
                 }
                 else {
                     helper.addConfigPropertyResult(
-                        'category', ConfigIssueSeverity.info,
+                        'category', CAIssueSeverity.info,
                         'The category property is present. It will override the default category.', results.properties);
                 }
             }
@@ -150,7 +150,7 @@ export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigProper
             !Array.isArray(container.conditionConfigs) ||
             container.conditionConfigs.length === 0)
             helper.addConfigPropertyResult(
-                'conditionConfigs', ConfigIssueSeverity.error,
+                'conditionConfigs', CAIssueSeverity.error,
                 'Must be an array with at least one condition', results.properties);
         else {
             let chdConfigResults = results as ConditionConfigWithChildrenResults;
@@ -181,7 +181,7 @@ export class ConditionWithOneChildPropertyAnalyzer extends ConditionConfigProper
             return; // we don't know if the actual config is really a ConditionWithChildrenBaseConfig.
 
         if (!isPlainObject(container.childConditionConfig)) // including null
-            helper.addConfigPropertyResult('childConditionConfig', ConfigIssueSeverity.error, 
+            helper.addConfigPropertyResult('childConditionConfig', CAIssueSeverity.error, 
                 'Must be a condition object', results.properties)
         
         else {
@@ -227,7 +227,7 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
         if (secondValueHostName === undefined &&
             this.ensurePropertyIsDefinedConditionTypes.has(config.conditionType))
         {
-            helper.checkIsNotUndefined(secondValueHostName, 'secondValueHostName', results.properties, ConfigIssueSeverity.error);
+            helper.checkIsNotUndefined(secondValueHostName, 'secondValueHostName', results.properties, CAIssueSeverity.error);
             return;
         }
 
@@ -272,10 +272,10 @@ export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPro
         if (secondValue === undefined &&
             this.ensurePropertyIsDefinedConditionTypes.has(config.conditionType))
         {
-            helper.checkIsNotUndefined(secondValue, 'secondValue', results.properties, ConfigIssueSeverity.error);
+            helper.checkIsNotUndefined(secondValue, 'secondValue', results.properties, CAIssueSeverity.error);
             return;
         }
-        if (helper.checkIsNotNull(secondValue, 'secondValue', results.properties, ConfigIssueSeverity.warning))
+        if (helper.checkIsNotNull(secondValue, 'secondValue', results.properties, CAIssueSeverity.warning))
             helper.checkValuePropertyContents(secondValue, 'secondValue', valueHostConfig.dataType,  secondConversionLookupKey, results.properties);
     }
 /**

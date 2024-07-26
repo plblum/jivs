@@ -1,6 +1,6 @@
 import {
     ConditionConfigResults,
-    ConfigIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigResults,
+    CAIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigResults,
     conditionFeature,
     validatorFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
@@ -86,7 +86,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
         });
@@ -105,7 +105,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
         });
@@ -124,7 +124,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(0);
         });
@@ -148,7 +148,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'errorCode', 'Error code must not contain whitespace.', ConfigIssueSeverity.error);
+                'errorCode', 'Error code must not contain whitespace.', CAIssueSeverity.error);
         });
         // errorCode is not assigned and conditionConfig has conditionType. results.errorCode is set to conditionType and info message in results.properties
         it('with ValidatorConfig.errorCode=undefined and conditionConfig.conditionType="TestCondition", should initialize results correctly, result.errorCode="TestCondition" and info in result.properties', () => {
@@ -168,7 +168,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'errorCode', 'Using the conditionType "TestCondition"', ConfigIssueSeverity.info);
+                'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
         // same with errorCode=null
         it('with ValidatorConfig.errorCode=null and conditionConfig.conditionType="TestCondition", should initialize results correctly, result.errorCode="TestCondition" and info in result.properties', () => {
@@ -189,7 +189,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'errorCode', 'Using the conditionType "TestCondition"', ConfigIssueSeverity.info);
+                'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
 
         // same with errorCode=''
@@ -211,7 +211,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'errorCode', 'Using the conditionType "TestCondition"', ConfigIssueSeverity.info);
+                'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
         // errorCode=undefined, conditionConfig=null, and conditionCreator is assigned to a function. results.errorCode is set to '[Unknown at this time]' and warning in results.properties
         it('with ValidatorConfig.errorCode=undefined, conditionConfig=null, and conditionCreator assigned, should initialize results correctly, result.errorCode="[Unknown at this time]" and warning in result.properties', () => {
@@ -232,7 +232,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results.properties, 0,
-                'errorCode', 'conditionCreator is setup and will supply an error code when used.', ConfigIssueSeverity.warning);
+                'errorCode', 'conditionCreator is setup and will supply an error code when used.', CAIssueSeverity.warning);
         });
         // with an invalid validatorType="TEST", because its not in the ValidatorFactory,
         // results gets error message "The validatorType property is not valid"
@@ -249,7 +249,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
             expect(results.message).toContain('The validatorType property is not valid');
-            expect(results.severity).toBe(ConfigIssueSeverity.error);
+            expect(results.severity).toBe(CAIssueSeverity.error);
         });
     });
 
@@ -286,7 +286,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results2.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'errorCode',
-                `Duplicate error code "${testConfig1.errorCode}". All must be unique.`, ConfigIssueSeverity.error);
+                `Duplicate error code "${testConfig1.errorCode}". All must be unique.`, CAIssueSeverity.error);
         });
 
         // same but case insensitive duplicate match
@@ -305,7 +305,7 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results2.properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'errorCode',
-                `Duplicate error code "${testConfig2.errorCode}". All must be unique.`, ConfigIssueSeverity.error);
+                `Duplicate error code "${testConfig2.errorCode}". All must be unique.`, CAIssueSeverity.error);
         });
         // same with whitespace differences
         it('should report duplicate config error after the same-named config is added with whitespace differences', () => {
@@ -324,10 +324,10 @@ describe('ValidatorConfigAnalyzer', () => {
             // whitespaceerror in results2.properties[0]
             checkConfigPropertyResultsFromArray(results2.properties, 0,
                 'errorCode',
-                `Error code must not contain whitespace.`, ConfigIssueSeverity.error);
+                `Error code must not contain whitespace.`, CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results2.properties, 1,
                 'errorCode',
-                `Duplicate error code "TestEC". All must be unique.`, ConfigIssueSeverity.error);   // whitespace trimmed here
+                `Duplicate error code "TestEC". All must be unique.`, CAIssueSeverity.error);   // whitespace trimmed here
         });
     });
 
@@ -447,11 +447,11 @@ describe('ValidatorConfigAnalyzer', () => {
             checkLocalizedPropertyResultFromArray(results.properties, 1, 'summaryMessage',
                 1, 'en', '*', undefined, false);
             // checkConfigPropertyResultsFromArray(results.properties, 0,
-            //     'errorMessage', 'localization not declared in TextLocalizerService.', ConfigIssueSeverity.error);
+            //     'errorMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
             // checkConfigPropertyResultsFromArray(results.properties, 1,
-            //     'summaryMessage', 'localization not declared in TextLocalizerService.', ConfigIssueSeverity.error);
+            //     'summaryMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(results.properties, 2,
-                'conditionCreator', 'Cannot supply both conditionCreator', ConfigIssueSeverity.error);
+                'conditionCreator', 'Cannot supply both conditionCreator', CAIssueSeverity.error);
         });
  
     });

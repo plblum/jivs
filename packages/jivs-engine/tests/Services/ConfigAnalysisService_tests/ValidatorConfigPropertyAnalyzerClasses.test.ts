@@ -1,6 +1,6 @@
 import { NumberFormatter } from "../../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
-import { ConfigPropertyResult, ConfigIssueSeverity, LocalizedPropertyResult, ValidatorConfigResults, IConfigAnalysisResults, validatorFeature, formatterForCultureFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { ConfigPropertyResult, CAIssueSeverity, LocalizedPropertyResult, ValidatorConfigResults, IConfigAnalysisResults, validatorFeature, formatterForCultureFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "../../../src/Interfaces/ValidatorsValueHostBase";
@@ -119,7 +119,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let results = executeFunction(services, { errorMessage: () => 'This is a test message' });
                 expect(results.vcResults.properties).toHaveLength(1);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
-                expect(prop.severity).toBe(ConfigIssueSeverity.info);
+                expect(prop.severity).toBe(CAIssueSeverity.info);
                 expect(prop.message).toBe('The errorMessage property is a function. It will not be analyzed.');
             });
             // same for summaryMessage
@@ -129,7 +129,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let results = executeFunction(services, { summaryMessage: () => 'This is a test message' });
                 expect(results.vcResults.properties).toHaveLength(1);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
-                expect(prop.severity).toBe(ConfigIssueSeverity.info);
+                expect(prop.severity).toBe(CAIssueSeverity.info);
                 expect(prop.message).toBe('The summaryMessage property is a function. It will not be analyzed.');
             });
         });
@@ -454,7 +454,7 @@ describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.vcResults.properties, 0,
             'conditionCreator', 
             'Cannot supply both conditionCreator and conditionConfig',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
         
     });
     test('should add a property when conditionCreator is not a function and conditionConfig is null', () => {
@@ -468,6 +468,6 @@ describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
         checkConfigPropertyResultsFromArray(results.vcResults.properties, 0,
             'conditionCreator', 
             'Must be a function.',
-            ConfigIssueSeverity.error);
+            CAIssueSeverity.error);
     });
 });

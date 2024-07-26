@@ -1,6 +1,6 @@
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig } from "../../../src/Interfaces/CalcValueHost";
-import { ConfigIssueSeverity, LocalizedPropertyResult, ValueHostConfigResults, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, LocalizedPropertyResult, ValueHostConfigResults, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
@@ -58,7 +58,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
 
         checkValueHostConfigResults(setup.results, 'testValueHost');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostType',
-            'not recognized by the ValueHostFactory', ConfigIssueSeverity.error);
+            'not recognized by the ValueHostFactory', CAIssueSeverity.error);
     });
     //  valueHostType is unknown adds a configIssue on valueHostType field
     test('should add a config issue when valueHostType is unknown', () => {
@@ -75,7 +75,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
 
         checkValueHostConfigResults(setup.results, 'testValueHost');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostType',
-            'not recognized by the ValueHostFactory', ConfigIssueSeverity.error);
+            'not recognized by the ValueHostFactory', CAIssueSeverity.error);
     });
     // no error for ValueHostType.Calc
     test('should not add a config issue when valueHostType is Calc', () => {
@@ -172,7 +172,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, ' testValueHost ');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
-            'leading or trailing whitespace', ConfigIssueSeverity.error);
+            'leading or trailing whitespace', CAIssueSeverity.error);
     });
     // valueHostName is null is a configIssue
     test('should add config issue when valueHostName is null', () => {
@@ -187,7 +187,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
-            'no name assigned', ConfigIssueSeverity.error);
+            'no name assigned', CAIssueSeverity.error);
     });
     // valueHostName is empty string is a configIssue
     test('should add config issue when valueHostName is an empty string', () => {
@@ -203,7 +203,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
 
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
-            'no name assigned', ConfigIssueSeverity.error);
+            'no name assigned', CAIssueSeverity.error);
     });
     // valueHostName is whitespace is a configIssue
     test('should add config issue when valueHostName is whitespace', () => {
@@ -218,7 +218,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
-            'no name assigned', ConfigIssueSeverity.error);
+            'no name assigned', CAIssueSeverity.error);
     });
 
 });
@@ -239,7 +239,7 @@ describe('DataTypePropertyAnalyzer class', () => {
             testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
             checkValueHostConfigResults(setup.results, 'testValueHost');
             checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'dataType',
-                'No dataType assigned', ConfigIssueSeverity.info);
+                'No dataType assigned', CAIssueSeverity.info);
 
         });
         // dataType is custom is a lookupKeyIssue, but not config issue
@@ -257,7 +257,7 @@ describe('DataTypePropertyAnalyzer class', () => {
             checkValueHostConfigResults(setup.results, 'testValueHost');
 
             checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'dataType',
-                'Lookup key "custom" is unknown', ConfigIssueSeverity.info);
+                'Lookup key "custom" is unknown', CAIssueSeverity.info);
             checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
         });
         // dataType is LookupKey.Number is no configIssue
@@ -487,7 +487,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkConfigPropertyResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
-            'Not found', ConfigIssueSeverity.error);
+            'Not found', CAIssueSeverity.error);
         checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
     });
     // pass in a parserLookupKey that is unknown, but not null
@@ -508,7 +508,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkConfigPropertyResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
-            'it will also try the Lookup Key "Number"', ConfigIssueSeverity.warning);
+            'it will also try the Lookup Key "Number"', CAIssueSeverity.warning);
         expect(setup.helper.results.lookupKeysIssues).toHaveLength(0);
 
     });
@@ -587,7 +587,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
-            'Function required', ConfigIssueSeverity.error);
+            'Function required', CAIssueSeverity.error);
     });
     // calcFn is undefined is a configIssue
     test('calcFn is undefined adds a configPropertyResult with an error', () => {
@@ -604,7 +604,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
-            'Function required', ConfigIssueSeverity.error);
+            'Function required', CAIssueSeverity.error);
     });
     // calcFn is not a function adds a configPropertyResult with an error
     test('calcFn is not a function adds a configPropertyResult with an error', () => {
@@ -621,7 +621,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
         checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
-            'Value must be a function', ConfigIssueSeverity.error);
+            'Value must be a function', CAIssueSeverity.error);
     });
     // subclass CalcFnPropertyAnalyzer to override its calcValueHostType with "TEST" and write a test to confirm it works
     test('user should be able to subclass CalcFnPropertyAnalyzer and override calcValueHostType with "TEST" to support custom CalcValueHostConfigs', () => {

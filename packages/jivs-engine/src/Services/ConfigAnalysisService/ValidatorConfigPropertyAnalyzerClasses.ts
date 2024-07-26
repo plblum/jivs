@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ConfigIssueSeverity, ConfigPropertyResult, IAnalysisResultsHelper, ValidatorConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, ConfigPropertyResult, IAnalysisResultsHelper, ValidatorConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../Interfaces/Validator";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -95,7 +95,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
                 propResults.push({
                     feature: propertyNameFeature,
                     propertyName: propertyName,
-                    severity: ConfigIssueSeverity.info,
+                    severity: CAIssueSeverity.info,
                     message: `The ${propertyName} property is a function. It will not be analyzed.`
                 });
             }
@@ -127,11 +127,11 @@ export class ConditionCreatorConfigPropertyAnalyzer extends ValidatorConfigPrope
         };
         if (config.conditionCreator) {
             if (typeof config.conditionCreator !== 'function') {
-                propResult.severity = ConfigIssueSeverity.error;
+                propResult.severity = CAIssueSeverity.error;
                 propResult.message = 'Must be a function.';
             }
             else if (config.conditionConfig) {
-                propResult.severity = ConfigIssueSeverity.error;
+                propResult.severity = CAIssueSeverity.error;
                 propResult.message = 'Cannot supply both conditionCreator and conditionConfig.';
             }
         }

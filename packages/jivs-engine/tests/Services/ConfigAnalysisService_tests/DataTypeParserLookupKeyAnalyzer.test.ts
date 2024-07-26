@@ -7,7 +7,7 @@ import { createAnalysisArgs } from "./support";
 import { IDataTypeParser } from '../../../src/Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../../../src/Interfaces/DataTypes';
 import { CultureService } from '../../../src/Services/CultureService';
-import { ConfigIssueSeverity, ConfigResultMessageBase, ParserForCultureClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature, ParserServiceByLookupKey } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, IssueForCAResultBase, ParserForCultureClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature, ParserServiceByLookupKey } from "../../../src/Interfaces/ConfigAnalysisService";
 
 const toNumberParserLookupKey = 'toNumber';
 class ToNumberParser implements IDataTypeParser<number> {
@@ -104,7 +104,7 @@ function verifyResults(result: ParserServiceByLookupKey,
 
 function verifyParserForCultureClassRetrieval(plk: ParserForCultureClassRetrieval,
     cultureId: string, expectedMatchCount: number,
-    expectedErrorMessage?: string, expectedSeverity?: ConfigIssueSeverity) {
+    expectedErrorMessage?: string, expectedSeverity?: CAIssueSeverity) {
     expect(plk).toBeDefined();
     expect(plk.feature).toBe(parserForCultureFeature);
     expect(plk.cultureId).toEqual(cultureId);
@@ -141,7 +141,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
             const result = testItem.analyze('TestKey', valueHostConfig) as ParserServiceByLookupKey;
             verifyResults(result, 1, true);
             let match = result.requests[0] as ParserForCultureClassRetrieval;
-            verifyParserForCultureClassRetrieval(match, 'en', 0, 'No DataTypeParser for LookupKey "TestKey" with culture "en"', ConfigIssueSeverity.error);
+            verifyParserForCultureClassRetrieval(match, 'en', 0, 'No DataTypeParser for LookupKey "TestKey" with culture "en"', CAIssueSeverity.error);
 
         });
 
@@ -317,11 +317,11 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
         verifyResults(result, 3, true);
         let plk = result.requests[0] as ParserForCultureClassRetrieval;
-        verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en"', ConfigIssueSeverity.error);
+        verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en"', CAIssueSeverity.error);
         plk = result.requests[1] as ParserForCultureClassRetrieval;
-        verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en-US"', ConfigIssueSeverity.error);
+        verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en-US"', CAIssueSeverity.error);
         plk = result.requests[2] as ParserForCultureClassRetrieval;
-        verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "fr"', ConfigIssueSeverity.error);
+        verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "fr"', CAIssueSeverity.error);
     });
     // similar but there is a match for one culture, but not the others
     test('parserKey is known, 3 cultures exist, and parser is only supported on one culture. Returns one parser per culture with no requests', () => {
@@ -341,9 +341,9 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
         verifyResults(result, 3, false);
         let plk = result.requests[0] as ParserForCultureClassRetrieval;
-        verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en"', ConfigIssueSeverity.error);
+        verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en"', CAIssueSeverity.error);
         plk = result.requests[1] as ParserForCultureClassRetrieval;
-        verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en-US"', ConfigIssueSeverity.error);
+        verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en-US"', CAIssueSeverity.error);
         plk = result.requests[2] as ParserForCultureClassRetrieval;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 1);
         verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'fr');
@@ -366,9 +366,9 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
         const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
         verifyResults(result, 1, false);
-        let crm = result.requests[0] as ConfigResultMessageBase;
+        let crm = result.requests[0] as IssueForCAResultBase;
         expect(crm).toBeDefined();
-        expect(crm.severity).toEqual(ConfigIssueSeverity.error);
+        expect(crm.severity).toEqual(CAIssueSeverity.error);
         expect(crm.message).toBe('ERROR');
 
     });

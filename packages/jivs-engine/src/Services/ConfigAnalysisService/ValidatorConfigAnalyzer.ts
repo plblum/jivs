@@ -5,7 +5,7 @@
 
 import {
     ValidatorConfigResults, IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer,
-    ConfigPropertyResult, ConfigIssueSeverity,
+    ConfigPropertyResult, CAIssueSeverity,
     propertyNameFeature,
     validatorFeature
 } from "../../Interfaces/ConfigAnalysisService";
@@ -82,21 +82,21 @@ export class ValidatorConfigAnalyzer
         // check syntax which is disallows spaces
         if (resolvedErrorCode && /\s/.test(valc.errorCode!)) {
             // this error may get overwritten by other checks
-            propResult.severity = ConfigIssueSeverity.error;
+            propResult.severity = CAIssueSeverity.error;
             propResult.message = 'Error code must not contain whitespace.';
         }        
         if (!resolvedErrorCode && valc.conditionConfig) {
             let ct = cleanString(valc.conditionConfig.conditionType);
             if (ct) {
                 resolvedErrorCode = ct;
-                propResult.severity = ConfigIssueSeverity.info;
+                propResult.severity = CAIssueSeverity.info;
                 propResult.message = `Using the conditionType "${resolvedErrorCode}"`;
             }
         }
         if (!resolvedErrorCode)
             if (valc.conditionCreator) {
                 resolvedErrorCode = '[Unknown at this time]';
-                propResult.severity = ConfigIssueSeverity.warning;
+                propResult.severity = CAIssueSeverity.warning;
                 propResult.message = `conditionCreator is setup and will supply an error code when used.`;
             }
             else {
@@ -122,11 +122,11 @@ export class ValidatorConfigAnalyzer
         if (results.errorCode === '[Missing]')
         {
             results.message = 'Must supply an error code.';
-            results.severity = ConfigIssueSeverity.error;
+            results.severity = CAIssueSeverity.error;
         }
         if (!this.helper.services.validatorFactory.canCreate(config)) {
             results.message = 'The validatorType property is not valid. Register it with the ValidatorFactory.';
-            results.severity = ConfigIssueSeverity.error;
+            results.severity = CAIssueSeverity.error;
         }
         return true;
     }
@@ -150,7 +150,7 @@ export class ValidatorConfigAnalyzer
                 let propResult: ConfigPropertyResult = {
                     feature: propertyNameFeature,
                     propertyName: 'errorCode',
-                    severity: ConfigIssueSeverity.error,
+                    severity: CAIssueSeverity.error,
                     message: `Duplicate error code "${results.errorCode}". All must be unique.`
                 };
                 results.properties.push(propResult);

@@ -4,7 +4,7 @@ import { IDataTypeConverter } from "../../../src/Interfaces/DataTypeConverters";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { createValidationServicesForTesting } from "../../TestSupport/createValidationServices";
 import { IValidationServices } from '../../../src/Interfaces/ValidationServices';
-import { ConfigIssueSeverity, ConverterServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, ConverterServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
 import { sampleValueByLookupKey, createAnalysisArgs } from './support';
 
@@ -146,7 +146,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined();
             expect(result!.instance).toBeUndefined();
-            expect(result!.severity).toBe(ConfigIssueSeverity.warning);
+            expect(result!.severity).toBe(CAIssueSeverity.warning);
             expect(result!.message).toMatch('DataTypeConverter');
             expect(result!.message).toMatch('No sample value');
             expect(result!.dataExamples).toBeUndefined();
@@ -190,7 +190,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined
             expect(result!.instance).toBeUndefined();
-            expect(result!.severity).toBe(ConfigIssueSeverity.warning);
+            expect(result!.severity).toBe(CAIssueSeverity.warning);
             expect(result!.message).toMatch('DataTypeConverter');
             expect(result!.message).toMatch('No sample value');        
             expect(result!.dataExamples).toBeUndefined();
@@ -213,7 +213,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined
             expect(result!.instance).toBeUndefined();
-            expect(result!.severity).toBe(ConfigIssueSeverity.error);
+            expect(result!.severity).toBe(CAIssueSeverity.error);
             expect(result!.message).toMatch('No DataTypeConverter for LookupKey');
             expect(result!.dataExamples).toEqual([expectedSampleValue]);
         });

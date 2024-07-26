@@ -1,4 +1,4 @@
-import { ConfigIssueSeverity, ConfigResults, IConfigPropertyAnalyzer, propertyNameFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, ConfigResults, IConfigPropertyAnalyzer, propertyNameFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
@@ -31,7 +31,7 @@ class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestCo
             results.properties.push({
                 feature: propertyNameFeature,
                 propertyName: 'name',
-                severity: ConfigIssueSeverity.error,
+                severity: CAIssueSeverity.error,
                 message: 'Must be unique.'
             });
         }
@@ -114,7 +114,7 @@ describe('Publicify_ConfigAnalyzerBase', () => {
         let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
         expect(results2.properties).toHaveLength(1);
         checkConfigPropertyResultsFromArray(results2.properties, 0,
-            'name', 'Must be unique.', ConfigIssueSeverity.error);
+            'name', 'Must be unique.', CAIssueSeverity.error);
 
         expect(results2.config).toBe(testConfig2);
         expect(results2.feature).toBe('Test');
@@ -143,7 +143,7 @@ describe('Publicify_ConfigAnalyzerBase', () => {
         expect(results.properties).toHaveLength(1);
         let propResult = results.properties[0];
         expect(propResult.feature).toBe('Error');
-        expect(propResult.severity).toBe(ConfigIssueSeverity.error);
+        expect(propResult.severity).toBe(CAIssueSeverity.error);
         expect(propResult.message).toBe('TEST ERROR');
 
     });

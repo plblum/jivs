@@ -4,7 +4,7 @@ import { IDataTypeFormatter } from "../../../src/Interfaces/DataTypeFormatters";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { createValidationServicesForTesting } from "../../TestSupport/createValidationServices";
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
-import { ConfigIssueSeverity, FormatterServiceClassRetrieval, OneClassRetrieval, formatterForCultureFeature, formatterServiceFeature } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, FormatterServiceClassRetrieval, OneClassRetrieval, formatterForCultureFeature, formatterServiceFeature } from '../../../src/Interfaces/ConfigAnalysisService';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
 import { sampleValueByLookupKey, createAnalysisArgs, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, createServices } from './support';
 import { DataTypeResolution } from '../../../src/Interfaces/DataTypes';

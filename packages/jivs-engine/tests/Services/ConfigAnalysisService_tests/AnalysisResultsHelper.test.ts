@@ -11,7 +11,7 @@ import {
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
-import { ConfigIssueSeverity, IConfigAnalysisResults, LookupKeyInfo, LookupKeyServiceInfoBase } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, IConfigAnalysisResults, LookupKeyInfo, LookupKeyServiceInfoBase } from '../../../src/Interfaces/ConfigAnalysisService';
 import { createValidationServicesForTesting } from '../../TestSupport/createValidationServices';
 import {
     MockAnalyzer, MockAnalyzerWithFallback, checkLocalizedPropertyResultFromArray,
@@ -66,7 +66,7 @@ describe('AnalysisResultsHelper', () => {
         public get publicify_results(): IConfigAnalysisResults {
             return super.results;
         }   
-        public publicify_addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void {
+        public publicify_addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void {
             super.addlookupKeysIssue(feature, lookupKey, severity, message);
         }
 
@@ -123,9 +123,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let mockArgs = createAnalysisArgs(services, [], {});
             let testItem = new Publicify_AnalysisResultsHelper(mockArgs);            
-            testItem.publicify_addlookupKeysIssue('testFeature', 'testLookupKey', ConfigIssueSeverity.warning, 'testMessage');
+            testItem.publicify_addlookupKeysIssue('testFeature', 'testLookupKey', CAIssueSeverity.warning, 'testMessage');
             expect(testItem.publicify_results.lookupKeysIssues).toEqual([
-                { feature: 'testFeature', lookupKey: 'testLookupKey', severity: ConfigIssueSeverity.warning, message: 'testMessage' }
+                { feature: 'testFeature', lookupKey: 'testLookupKey', severity: CAIssueSeverity.warning, message: 'testMessage' }
             ]);
         });
     });
@@ -485,7 +485,7 @@ describe('AnalysisResultsHelper', () => {
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             )
             checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                'Value is not an exact match to the expected value of "Number". Fix it.', ConfigIssueSeverity.error);
+                'Value is not an exact match to the expected value of "Number". Fix it.', CAIssueSeverity.error);
 
             checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
@@ -505,7 +505,7 @@ describe('AnalysisResultsHelper', () => {
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             );
             checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                'Value is not an exact match to the expected value of "Number". Fix it.', ConfigIssueSeverity.error);
+                'Value is not an exact match to the expected value of "Number". Fix it.', CAIssueSeverity.error);
 
             checkLookupKeyIssue(testItem.results, 0, 'number', 'case insensitive match');            
         });
@@ -524,7 +524,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkLookupKeyProperty('PropertyName', 'custom',
                 null, valueHostConfig, properties);
             checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                'Lookup key "custom" is unknown.', ConfigIssueSeverity.info);
+                'Lookup key "custom" is unknown.', CAIssueSeverity.info);
 
             checkLookupKeyInfoForNoService(testItem.results.lookupKeysInfo, 'custom', ServiceName.formatter);
             checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
@@ -585,7 +585,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', ConfigIssueSeverity.error);
+                    'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'custom', ServiceName.formatter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
             });
@@ -606,7 +606,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', ConfigIssueSeverity.error);
+                    'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
@@ -627,7 +627,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Lookup key "Custom" does not have a DataTypeFormatter registered but it will also try the Lookup Key "Number".', ConfigIssueSeverity.warning);
+                    'Lookup key "Custom" does not have a DataTypeFormatter registered but it will also try the Lookup Key "Number".', CAIssueSeverity.warning);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
@@ -648,7 +648,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Not found. Please register a DataTypeConverter to dataTypeConverterService.', ConfigIssueSeverity.error);
+                    'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'custom', ServiceName.converter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
             });
@@ -670,7 +670,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Not found. Please register a DataTypeConverter to dataTypeConverterService.', ConfigIssueSeverity.error);
+                    'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
@@ -692,7 +692,7 @@ describe('AnalysisResultsHelper', () => {
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
-                    'Not found. Please register', ConfigIssueSeverity.error);
+                    'Not found. Please register', CAIssueSeverity.error);
                 checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
@@ -1203,7 +1203,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValueHostNameExists(123, 'PropertyName', properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Must be a string', ConfigIssueSeverity.error);
+                'PropertyName', 'Must be a string', CAIssueSeverity.error);
         });
         test('name that is an exact match to a value host name in the valueHostConfigs array makes no changes to properties', () => {
             let testItem = setupForTheseTests();
@@ -1220,7 +1220,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValueHostNameExists('testValueHost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'ValueHostName does not exist', ConfigIssueSeverity.error);
+                'PropertyName', 'ValueHostName does not exist', CAIssueSeverity.error);
         });
         test('name that is a case insensitive match to a value host name in the valueHostConfigs array makes error "Change to "${name}"', () => {
             let testItem = setupForTheseTests();
@@ -1230,7 +1230,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValueHostNameExists('testvaluehost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Change to "testValueHost"', ConfigIssueSeverity.error);
+                'PropertyName', 'Change to "testValueHost"', CAIssueSeverity.error);
         });
         test('name that has surrounding whitespace adds error "Remove whitespace"', () => {
             let testItem = setupForTheseTests();
@@ -1240,7 +1240,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValueHostNameExists('  testValueHost  ', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Remove whitespace', ConfigIssueSeverity.error);
+                'PropertyName', 'Remove whitespace', CAIssueSeverity.error);
         });
         test('With non-empty valueHostConfigs array, valid name syntax that is not found in the array will always report "ValueHostName does not exist"', () => {
             let testItem = setupForTheseTests();
@@ -1250,7 +1250,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValueHostNameExists('anotherValueHost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'ValueHostName does not exist', ConfigIssueSeverity.error);
+                'PropertyName', 'ValueHostName does not exist', CAIssueSeverity.error);
         });
 
     });
@@ -1343,7 +1343,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValuePropertyContents('123', 'PropertyName', null, LookupKey.Boolean, properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', ConfigIssueSeverity.error);
+                'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', CAIssueSeverity.error);
         });
         test('number value is assigned and valueLookupKey=LookupKey.Number and conversionLookupKey = null, no changes to properties', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
@@ -1369,7 +1369,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValuePropertyContents('123', 'PropertyName', LookupKey.String, LookupKey.Boolean, properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', ConfigIssueSeverity.error);
+                'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', CAIssueSeverity.error);
         });
         test('string value is assigned and valueLookupKey=null and conversionLookupKey = null, no changes to properties', () => {
             let testItem = setupForTheseTests();    // StringDataTypeIdentifier registered
@@ -1386,7 +1386,7 @@ describe('AnalysisResultsHelper', () => {
             testItem.checkValuePropertyContents({ value: 123 }, 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
-                'PropertyName', 'Value could not be validated', ConfigIssueSeverity.info);
+                'PropertyName', 'Value could not be validated', CAIssueSeverity.info);
         });
         // same but with conversionLookupKey=Number. Since there is no DataTypeConverter,
         // the message is "cannot be converted to Lookup Key "Number"
@@ -1398,7 +1398,7 @@ describe('AnalysisResultsHelper', () => {
             expect(properties).toHaveLength(1);
             checkConfigPropertyResultsFromArray(properties, 0,
                 'PropertyName', 'Value cannot be converted to Lookup Key "Number"',
-                ConfigIssueSeverity.error);
+                CAIssueSeverity.error);
         });
         // same but valueLookupKey="Custom" and no conversionLookupKey
         // No error added to properties
@@ -1418,9 +1418,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotUndefined(value, propertyName, properties, ConfigIssueSeverity.error);
+            testItem.checkIsNotUndefined(value, propertyName, properties, CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value must be defined.', ConfigIssueSeverity.error);
+                propertyName, 'Value must be defined.', CAIssueSeverity.error);
         
         });
         // same but with a severity=warning
@@ -1431,9 +1431,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotUndefined(value, propertyName, properties, ConfigIssueSeverity.warning);
+            testItem.checkIsNotUndefined(value, propertyName, properties, CAIssueSeverity.warning);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value must be defined.', ConfigIssueSeverity.warning);
+                propertyName, 'Value must be defined.', CAIssueSeverity.warning);
         
         });
         
@@ -1456,9 +1456,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotNull(value, propertyName, properties, ConfigIssueSeverity.error);
+            testItem.checkIsNotNull(value, propertyName, properties, CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value must not be null.', ConfigIssueSeverity.error);
+                propertyName, 'Value must not be null.', CAIssueSeverity.error);
         
         });
         // same but with a severity=warning
@@ -1469,9 +1469,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotNull(value, propertyName, properties, ConfigIssueSeverity.warning);
+            testItem.checkIsNotNull(value, propertyName, properties, CAIssueSeverity.warning);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value should not be null.', ConfigIssueSeverity.warning);
+                propertyName, 'Value should not be null.', CAIssueSeverity.warning);
         
         });
         
@@ -1494,9 +1494,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotEmptyString(value, propertyName, properties, ConfigIssueSeverity.error);
+            testItem.checkIsNotEmptyString(value, propertyName, properties, CAIssueSeverity.error);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value must not be empty string.', ConfigIssueSeverity.error);
+                propertyName, 'Value must not be empty string.', CAIssueSeverity.error);
         
         });
         // same but with a severity=warning
@@ -1507,9 +1507,9 @@ describe('AnalysisResultsHelper', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
-            testItem.checkIsNotEmptyString(value, propertyName, properties, ConfigIssueSeverity.warning);
+            testItem.checkIsNotEmptyString(value, propertyName, properties, CAIssueSeverity.warning);
             checkConfigPropertyResultsFromArray(properties, 0,
-                propertyName, 'Value should not be empty string.', ConfigIssueSeverity.warning);
+                propertyName, 'Value should not be empty string.', CAIssueSeverity.warning);
         
         });
         
