@@ -3,7 +3,7 @@ import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
     AnalysisArgs, ConfigAnalysisServiceOptions, CAIssueSeverity, ConfigPropertyResult,
     IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
-    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, LookupKeyServiceInfoBase, ValidatorConfigResults, ValueHostConfigResults, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
+    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, ServiceWithLookupKeyCAResultBase, ValidatorConfigResults, ValueHostConfigResults, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../../src/Interfaces/DataTypeIdentifier";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
@@ -33,9 +33,9 @@ describe('ConfigAnalysisServiceBase class', () => {
         protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
             let helper = new AnalysisResultsHelper(args);
             this._helper = helper;
-            helper.registerLookupKeyAnalyzer(ServiceName.converter, new MockAnalyzer(ServiceName.converter, {} as LookupKeyServiceInfoBase));
-            helper.registerLookupKeyAnalyzer(ServiceName.identifier, new MockAnalyzer(ServiceName.identifier, {} as LookupKeyServiceInfoBase));
-            helper.registerLookupKeyAnalyzer(ServiceName.comparer, new MockAnalyzer(ServiceName.comparer, {} as LookupKeyServiceInfoBase));
+            helper.registerLookupKeyAnalyzer(ServiceName.converter, new MockAnalyzer(ServiceName.converter, {} as ServiceWithLookupKeyCAResultBase));
+            helper.registerLookupKeyAnalyzer(ServiceName.identifier, new MockAnalyzer(ServiceName.identifier, {} as ServiceWithLookupKeyCAResultBase));
+            helper.registerLookupKeyAnalyzer(ServiceName.comparer, new MockAnalyzer(ServiceName.comparer, {} as ServiceWithLookupKeyCAResultBase));
             return helper;
         }
         /**

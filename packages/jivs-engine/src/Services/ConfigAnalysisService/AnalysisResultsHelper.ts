@@ -5,7 +5,7 @@
 
 import { LookupKey } from "../../DataTypes/LookupKeys";
 import {
-    IConfigAnalysisResults, LookupKeyResult, ILookupKeyAnalyzer, ConfigPropertyResult,
+    IConfigAnalysisResults, LookupKeyCAResult, ILookupKeyAnalyzer, ConfigPropertyResult,
     CAIssueSeverity,
     LocalizedPropertyResult,
     LocalizedTextResult, AnalysisArgs,
@@ -85,7 +85,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         return this.analysisArgs.sampleValues.getSampleValue(lookupKey, valueHostConfig);
     }
     /**
-     * Tries to add a lookup key and adds the associated service as a LookupKeyResult object
+     * Tries to add a lookup key and adds the associated service as a LookupKeyCAResult object
      * into results.lookupKeyResults.
      * Validates the lookup key string.
      * Uses LookupKeyAnalyzers to analyze service specific lookup keys against
@@ -95,7 +95,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param serviceName - The name of the service associated with the lookup key.
      * If null, it means registering just the dataType, which uses ServiceName.identifier.
      * @param valueHostConfig - The configuration for the value host.
-     * @returns The lookup key added to the LookupKeyResult object.
+     * @returns The lookup key added to the LookupKeyCAResult object.
      * This value may have been updated from the original lookupKey, if the original
      * needed trimming or a case sensitive match.
      */
@@ -112,7 +112,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             // try a case insensitive match, and use the first one found, even if its not the same case as the user intended
             lk = this.results.lookupKeyResults.find(lk => lk.lookupKey.toLowerCase() === lookupKey.toLowerCase());
             if (!lk) {
-                lk = <LookupKeyResult>{
+                lk = <LookupKeyCAResult>{
                     feature: lookupKeyFeature,
                     lookupKey: lookupKey,
                     usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
@@ -189,14 +189,14 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     }
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyResult object if needed.
+ * It also uses registerLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking
  *   using the result from checkForRealLookupKeyName. Report the correct lookup key name
  *   if it was fixed.
- * - LookupKey is found in LookupKeyResult. Continue checking.
- * - LookupKey is not found in LookupKeyResult. Error. "Not found. Please add to [servicename]."
+ * - LookupKey is found in LookupKeyCAResult. Continue checking.
+ * - LookupKey is not found in LookupKeyCAResult. Error. "Not found. Please add to [servicename]."
  * - With a service name, Error. "Not found. Please add to [servicename]."
  * - LookupKey is not found and not registered in DataTypeIdentifierService or even the LookupKey enum,
  *   reports an info message. "Lookup key "[lookupKey]" is unknown."

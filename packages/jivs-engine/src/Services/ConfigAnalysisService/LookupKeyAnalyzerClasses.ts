@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, ILookupKeyAnalyzer, IssueForCAResultBase, CAIssueSeverity, AnalysisArgs, IConfigAnalysisResults, ClassNotFound } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, ILookupKeyAnalyzer, IssueForCAResultBase, CAIssueSeverity, AnalysisArgs, IConfigAnalysisResults, ClassNotFound } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 
@@ -43,9 +43,9 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
-     * Add it to the LookupKeyResult.services array.
+     * Add it to the LookupKeyCAResult.services array.
      */
-    public abstract analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase;
+    public abstract analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase;
 
     protected notFound(info: ClassNotFound, lookupKey: string, cultureId?: string): void {
         info.notFound = true;
@@ -70,7 +70,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
 
 /**
  * For services that have a single object to report on per key.
- * Adds OneClassRetrieval to LookupKeyResult.services.
+ * Adds OneClassRetrieval to LookupKeyCAResult.services.
  */
 export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices>
     extends LookupKeyAnalyzerBase<TData, TServices> 
@@ -81,7 +81,7 @@ export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IVal
 /**
  * For services that may have multiple objects to report on per key,
  * such as on for each cultureId.
- * Adds MultiClassRetrieval to LookupKeyResult.services.
+ * Adds MultiClassRetrieval to LookupKeyCAResult.services.
  */
 export abstract class MultipleClassesPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices> extends
     LookupKeyAnalyzerBase<TData, TServices> {

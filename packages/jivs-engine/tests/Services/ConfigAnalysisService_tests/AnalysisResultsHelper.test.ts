@@ -11,7 +11,7 @@ import {
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
-import { CAIssueSeverity, IConfigAnalysisResults, LookupKeyResult, LookupKeyServiceInfoBase } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResultBase } from '../../../src/Interfaces/ConfigAnalysisService';
 import { createValidationServicesForTesting } from '../../TestSupport/createValidationServices';
 import {
     MockAnalyzer, MockAnalyzerWithFallback, checkLocalizedPropertyResultFromArray,
@@ -90,11 +90,11 @@ describe('AnalysisResultsHelper', () => {
         let mockArgs = createAnalysisArgs(services, [], {});            
         let testItem = new Publicify_AnalysisResultsHelper(mockArgs);
         testItem.registerLookupKeyAnalyzer(ServiceName.formatter,
-            new MockAnalyzer(ServiceName.formatter, {} as LookupKeyServiceInfoBase));
+            new MockAnalyzer(ServiceName.formatter, {} as ServiceWithLookupKeyCAResultBase));
         testItem.registerLookupKeyAnalyzer(ServiceName.converter,
-            new MockAnalyzer(ServiceName.converter, {} as LookupKeyServiceInfoBase));
+            new MockAnalyzer(ServiceName.converter, {} as ServiceWithLookupKeyCAResultBase));
         testItem.registerLookupKeyAnalyzer(ServiceName.identifier,
-            new MockAnalyzer(ServiceName.identifier, {} as LookupKeyServiceInfoBase));
+            new MockAnalyzer(ServiceName.identifier, {} as ServiceWithLookupKeyCAResultBase));
         return testItem;
     };
     describe('basics', () => {
@@ -135,7 +135,7 @@ describe('AnalysisResultsHelper', () => {
 
         describe('Using LookupKey without a service name - useAsDataType is true', () => {
             test('should add a custom lookup key to results.lookupKeyResults', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -150,7 +150,7 @@ describe('AnalysisResultsHelper', () => {
             });
 
             test('should add the LookupKey.Number to results.lookupKeyResults', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
@@ -164,7 +164,7 @@ describe('AnalysisResultsHelper', () => {
             });
             // same but with 'testKey' added to LookupKeyFallbackservice to map to LookupKey.Number 
             test('should add a custom lookup key registered in LookupKeyFallbackService to LookupKey.Number to results.lookupKeyResults', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -182,7 +182,7 @@ describe('AnalysisResultsHelper', () => {
         describe('Using LookupKey with a service name', () => {
 // unless the service is identifier, useAsDataType is false
             test('should add an custom lookup key to results.lookupKeyResults and report \"not already known\" in LookupKeyIssues', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -221,8 +221,8 @@ describe('AnalysisResultsHelper', () => {
                 expect(() => testItem.registerLookupKey('testKey', ServiceName.logger, { name: 'testValueHost' })).toThrow('No analyzer found');
             });
             // add both formatter and converter with the same lookup key creates two entries
-            test('should add two services to the same lookup key into LookupKeyResult.services array', () => {
-                const expectedResult: LookupKeyResult = {
+            test('should add two services to the same lookup key into LookupKeyCAResult.services array', () => {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -239,7 +239,7 @@ describe('AnalysisResultsHelper', () => {
             });
             // same as before but with case insensitive differences between lookup keys
             test('should add two services with case insensitive differences between lookup keys', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -256,7 +256,7 @@ describe('AnalysisResultsHelper', () => {
             });
             // same as before but with surrounding whitespace on second lookup key
             test('should add two services with lead/trail whitespace differences between the lookup keys', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -272,8 +272,8 @@ describe('AnalysisResultsHelper', () => {
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // add the same service twice, with different messages results in the first message registered. No changes based on the second
-            test('should add 1 LookupKeyResult.service entry with two calls using the same service name', () => {
-                const expectedResult: LookupKeyResult = {
+            test('should add 1 LookupKeyCAResult.service entry with two calls using the same service name', () => {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -288,8 +288,8 @@ describe('AnalysisResultsHelper', () => {
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // the tryFallback feature is used when the lookup key is rejected by the analyzer and LookupKeyFallbackService is used to map the key to LookupKey.Number has its fallback.
-            test('should generate two service entries into LookupKeyResult.services array when adding a custom lookup key registered in LookupKeyFallbackService as the key its mapped to when the analyzer cannot find the custom key', () => {
-                const expectedResult: LookupKeyResult = {
+            test('should generate two service entries into LookupKeyCAResult.services array when adding a custom lookup key registered in LookupKeyFallbackService as the key its mapped to when the analyzer cannot find the custom key', () => {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -297,7 +297,7 @@ describe('AnalysisResultsHelper', () => {
                         { feature: parserServiceFeature, tryFallback: true, message: 'testFallback' } as any,
                     ]
                 };
-                const expectedResult2: LookupKeyResult = {
+                const expectedResult2: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: false,
@@ -310,7 +310,7 @@ describe('AnalysisResultsHelper', () => {
                     new MockAnalyzerWithFallback(ServiceName.parser, 'testKey', {
                         feature: parserServiceFeature,
                         message: 'testFallback',
-                    } as LookupKeyServiceInfoBase));
+                    } as ServiceWithLookupKeyCAResultBase));
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
                 testItem.registerLookupKey('testKey', ServiceName.parser, { name: 'testValueHost' });
 
@@ -319,7 +319,7 @@ describe('AnalysisResultsHelper', () => {
 
             // add serviceName=identifier sets usedAsDataType=true
             test('should set usedAsDataType=true when the service name is identifier', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -335,7 +335,7 @@ describe('AnalysisResultsHelper', () => {
 
             // with 2 services, and the second one is identifier, usedAsDataType is true
             test('should set usedAsDataType=true when the service name is identifier and there are multiple services', () => {
-                const expectedResult: LookupKeyResult = {
+                const expectedResult: LookupKeyCAResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -546,11 +546,11 @@ describe('AnalysisResultsHelper', () => {
             }
             // test cases:
             // 1. lookupKey is the same as the identifier's dataTypeLookupKey does not add a ConfigPropertyResult
-            //    but does add a LookupKeyResult with the identifier service
+            //    but does add a LookupKeyCAResult with the identifier service
             // 2. case insensitive match to the identifier's dataTypeLookupKey adds a ConfigPropertyResult
             //   with "Value is not an exact match" error message.
             
-            test('should add a LookupKeyResult with the identifier service when lookupKey matches the identifier dataTypeLookupKey', () => {
+            test('should add a LookupKeyCAResult with the identifier service when lookupKey matches the identifier dataTypeLookupKey', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -973,7 +973,7 @@ describe('AnalysisResultsHelper', () => {
             expect(prop).toBeDefined();
             checkSyntaxError(prop, 'PropertyName');
         });
-        // token is valid and has a real second part, the lookup key will get registered with LookupKeyResult as a formatter service
+        // token is valid and has a real second part, the lookup key will get registered with LookupKeyCAResult as a formatter service
         test('Valid token with Number as lookupKey results in lookup key info being registered', () => {
             let services = createServices();
             services.dataTypeFormatterService.register(new NumberFormatter(null));

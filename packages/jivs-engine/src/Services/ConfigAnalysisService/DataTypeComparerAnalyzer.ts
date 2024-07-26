@@ -6,7 +6,7 @@
 import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyCAResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";

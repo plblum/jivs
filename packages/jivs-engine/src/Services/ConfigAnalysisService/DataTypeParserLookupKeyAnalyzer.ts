@@ -2,7 +2,7 @@
  * Support the DataTypeParserService and its IDataTypeParser objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { LookupKeyServiceInfoBase, ParserServiceByLookupKey, CultureSpecificClassRetrieval, OneClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, ParserServiceByLookupKey, CultureSpecificClassRetrieval, OneClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeParser } from "../../Interfaces/DataTypeParsers";
 import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -62,7 +62,7 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
         return 'DataTypeParser';
     }
 
-    public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
+    public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
         let info: ParserServiceByLookupKey = {
             feature: parserServiceFeature,

@@ -71,7 +71,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
         //   User passes the expected partial message, severity, result expected from checkConditionConfig
         // - It returns the Helper object.
         // - Setup to fully support the NumberHosterComparer and NumberHosterIdentifier.
-        // - A LookupKeyResult alreaedy exists for expectedLookupKey. It may have the service for
+        // - A LookupKeyCAResult alreaedy exists for expectedLookupKey. It may have the service for
         //  comparer already defined based on existingService flag.
         function checkConditionConfig(conditionConfig: ConditionConfig,
             valueHostConfig: ValueHostConfig,
@@ -90,7 +90,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             let helper = setupHelper(services);
             let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
             if (existingServiceInfo)// prior line created LKI without the service
-            { // now we'll emulate the LookupKeyServiceInfoBase having the comparer service
+            { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                 let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                 lkResult!.services.push(existingServiceInfo);
             }
@@ -104,7 +104,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
         // 1. Using checkConditionConfig(), try all variations that disqualifies the inputs.
         //    They should all return true and have no message/severity.        
         // 2. Same, but all cases are not disqualified. Instead, they all 
-        //    setup the LookupKeyServiceInfoBase for comparer with either the 
+        //    setup the ServiceWithLookupKeyCAResultBase for comparer with either the 
         //    BooleanDataTypeComparer (for LookupKey=Number) or "defaultComparer"
         //    for LookupKey=Number or String.
         // 3. Same, but use NumberHosterComparer, which is a custom comparer that uses
@@ -291,7 +291,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'conversionLookupKey', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'secondConversionLookupKey', 'BooleanDataTypeComparer');
             });
-            describe('Multiple calls for the same LookupKey only updates LookupKeyResult on the first call. Second call always returns true with no further changes', () => {
+            describe('Multiple calls for the same LookupKey only updates LookupKeyCAResult on the first call. Second call always returns true with no further changes', () => {
 
                 test('A prior call for LookupKey + comparer is setup and has classFound="evidence". This call should make no further changes and return true', () => {
                     const expectedLookupKey = LookupKey.Number;
@@ -362,7 +362,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                     helper.analysisArgs.sampleValues.registerSampleValue(expectedLookupKey, sampleValue);
                 let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
                 if (existingService)// prior line created LKI without the service
-                { // now we'll emulate the LookupKeyServiceInfoBase having the comparer service
+                { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                     let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                     let serviceInfo: ComparerServiceClassRetrieval = {
                         feature: ServiceName.comparer,

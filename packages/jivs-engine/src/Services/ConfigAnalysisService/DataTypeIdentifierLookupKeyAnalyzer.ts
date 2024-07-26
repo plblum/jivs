@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, IdentifierServiceClassRetrieval, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, IdentifierServiceClassRetrieval, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../Interfaces/DataTypeIdentifier";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -17,7 +17,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * Instead, the data value supplied to its supportsValue() function 
  * will determine if it can SUPPLY a lookup key.
  * Our task is to take all registered DataTypeIdentifiers and add them
- * to the LookupKeyResult.services specific to their data type.
+ * to the LookupKeyCAResult.services specific to their data type.
  * All of that happens in the ConfigAnalysisService.gatherDataTypeIdentifierLookupKeys function.
  * When that calls tryAdd, it will use this to create the LookupKeyServiceInfo.
  * As a result, this will never be called for a missing lookupKey and need
@@ -53,7 +53,7 @@ export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAna
         return 'DataTypeIdentifier';
     }
 
-    public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
+    public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
         let info: IdentifierServiceClassRetrieval = {
             feature: identifierServiceFeature
         };

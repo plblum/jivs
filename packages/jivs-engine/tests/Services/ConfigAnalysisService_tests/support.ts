@@ -1,6 +1,6 @@
 import {
     IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigResults, CAIssueSeverity,
-    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyResult, MultiClassRetrieval, LookupKeyServiceInfoBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
+    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
     parserForCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
     parserServiceFeature,
     parserServiceClassRetrievalFeature
@@ -99,7 +99,7 @@ export function createAnalysisArgs(services: IValidationServices,
 
 export class MockAnalyzer implements ILookupKeyAnalyzer{
     constructor(feature: ServiceName | 'DataType',
-        result: LookupKeyServiceInfoBase) {
+        result: ServiceWithLookupKeyCAResultBase) {
         this._feature = feature;
         if (result.feature === undefined)
             result.feature = feature;
@@ -110,18 +110,18 @@ export class MockAnalyzer implements ILookupKeyAnalyzer{
 
     }
     private _counter: number = 0;
-    private _result: LookupKeyServiceInfoBase;
+    private _result: ServiceWithLookupKeyCAResultBase;
     private _feature: ServiceName | 'DataType';
     protected get feature(): ServiceName | 'DataType' {
         return this._feature;
     }
-    analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase {
+    analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
         return { ...this._result, counter : this._counter++ } as any;
     }
 }
 export class MockAnalyzerWithFallback extends MockAnalyzer {
     constructor(feature: ServiceName | 'DataType', rejectedLookupKey: string,
-        result: LookupKeyServiceInfoBase) {
+        result: ServiceWithLookupKeyCAResultBase) {
         super(feature, result);
         this._rejectedLookupKey = rejectedLookupKey;
 
@@ -129,7 +129,7 @@ export class MockAnalyzerWithFallback extends MockAnalyzer {
 
     private _rejectedLookupKey: string;
 
-    analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase {
+    analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
         if (key === this._rejectedLookupKey) {
             return { feature: this.feature, tryFallback: true, message: 'testFallback' } as any;
         }
@@ -192,8 +192,8 @@ export function checkLookupKeyIssue(allResults: IConfigAnalysisResults,
     expect(issue.message).toContain(expectedPartialMessage);
     return issue;
 }
-export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyResult>,
-    expectedLookupKey: string): LookupKeyResult {
+export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyCAResult>,
+    expectedLookupKey: string): LookupKeyCAResult {
 
     let lkResult = lookupKeyResults.find(lk => lk.lookupKey === expectedLookupKey);
     expect(lkResult).toBeDefined();
@@ -201,23 +201,23 @@ export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyResult>,
 
     return lkResult!;
 }
-// function to take LookupKeyResult and determine if a ServiceName is present and if it has any messages
-export function checkLookupKeyResultsForService(lookupKeyResults: Array<LookupKeyResult>,
-    lookupKey: string, serviceName: ServiceName): LookupKeyServiceInfoBase {
+// function to take LookupKeyCAResult and determine if a ServiceName is present and if it has any messages
+export function checkLookupKeyResultsForService(lookupKeyResults: Array<LookupKeyCAResult>,
+    lookupKey: string, serviceName: ServiceName): ServiceWithLookupKeyCAResultBase {
 
     let lkResult = checkLookupKeyResults(lookupKeyResults, lookupKey);
 
     return checkLookupKeyResultForService(lkResult, serviceName);
 }
-export function checkLookupKeyResultForService(lkResult: LookupKeyResult,
-    serviceName: ServiceName): LookupKeyServiceInfoBase {
+export function checkLookupKeyResultForService(lkResult: LookupKeyCAResult,
+    serviceName: ServiceName): ServiceWithLookupKeyCAResultBase {
 
     let serviceInfo = lkResult!.services.find(si => si.feature === serviceName);
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);
     return serviceInfo!;
 }
-export function checkLookupKeyResultsForNoService(lookupKeyResults: Array<LookupKeyResult>,
+export function checkLookupKeyResultsForNoService(lookupKeyResults: Array<LookupKeyCAResult>,
     lookupKey: string, serviceName: ServiceName): void {
 
     let lkResult = checkLookupKeyResults(lookupKeyResults, lookupKey);
@@ -226,7 +226,7 @@ export function checkLookupKeyResultsForNoService(lookupKeyResults: Array<Lookup
     expect(serviceInfo).toBeUndefined();
 }
 
-export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResult: LookupKeyResult,
+export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResult: LookupKeyCAResult,
     serviceName: ServiceName,
     expectedRequestCount: number = 0): MultiClassRetrieval {
 
@@ -240,7 +240,7 @@ export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResu
     return serviceInfo;
 }        
 
-export function checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo: LookupKeyServiceInfoBase,
+export function checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo: ServiceWithLookupKeyCAResultBase,
     indexIntoRequests: number,
     indexIntoMatches: number,
     expectedCultureId: string, expectedClassFound: string,

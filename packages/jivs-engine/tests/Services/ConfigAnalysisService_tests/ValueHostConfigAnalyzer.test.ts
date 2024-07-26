@@ -329,9 +329,9 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.enablerCondition!.conditionType).toBe(ConditionType.RequireText);
         });
         // using EqualToValueConditionConfig, it will need to setup a comparer.
-        // The LookupKeyResult for service comparer should be setup without error
+        // The LookupKeyCAResult for service comparer should be setup without error
         // when dataType=String.
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyResult for String identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyCAResult for String identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: LookupKey.String,
@@ -363,7 +363,7 @@ describe('ValueHostConfigAnalyzer', () => {
         // similar but now the comparer fails to be setup and adds a warning message
         // to the results.enablerCondition object.
         // It fails because the LookupKey is "Custom" which is unknown
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyResult for Custom identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyCAResult for Custom identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: 'Custom',

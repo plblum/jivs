@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, ConverterServiceClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, ConverterServiceClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeConverter } from "../../Interfaces/DataTypeConverters";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -47,7 +47,7 @@ export class DataTypeConverterLookupKeyAnalyzer extends OneClassPerLookupKeyAnal
      * with the option valueHostsSampleValues.
      * @returns 
      */
-    public analyze(key: string, valueHostConfig: ValueHostConfig): LookupKeyServiceInfoBase {
+    public analyze(key: string, valueHostConfig: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
         let result: ConverterServiceClassRetrieval = {
             feature: ServiceName.converter,
 

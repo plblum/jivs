@@ -115,7 +115,7 @@ export interface AnalysisArgs<TServices extends IValueHostsServices> {
 
     /**
      * Analyzer for identifying if a ConditionConfig needs a comparer.
-     * It sets up LookupKeyResult.services for the ServiceName.comparer.
+     * It sets up LookupKeyCAResult.services for the ServiceName.comparer.
      */
     comparerAnalyzer?: IDataTypeComparerAnalyzer;
 }
@@ -142,7 +142,7 @@ export interface IConfigAnalysisResults {
      * Identifies the Class that was successfully identified in a service's registry
      * or reports an error if not found.
      */
-    lookupKeyResults: Array<LookupKeyResult>;
+    lookupKeyResults: Array<LookupKeyCAResult>;
 
     /**
      * A list of all lookup keys used that were not found in the services,
@@ -176,7 +176,7 @@ export interface IConfigAnalysisResultsExplorer {
     countConfigResults(criteria: IConfigAnalysisSearchCriteria | null): number;
 
     /**
-     * Return a count of the number of LookupKeyResult objects and all children
+     * Return a count of the number of LookupKeyCAResult objects and all children
      * found in the lookupKeyResults array matching the criteria.
      * @param criteria 
      */
@@ -190,7 +190,7 @@ export interface IConfigAnalysisResultsExplorer {
     collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
 
     /**
-     * Return a list of all LookupKeyResult objects found in the lookupKeyResults array,
+     * Return a list of all LookupKeyCAResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
      */
     collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
@@ -230,13 +230,13 @@ export interface IConfigAnalysisSearchCriteria {
 //#region identities for specific ConfigAnalysisResult objects based on their feature property.    
     /**
      * Match to any lookupKey listed or all lookupKeys if undefined.
-     * Only applies to LookupKeyResult objects.
+     * Only applies to LookupKeyCAResult objects.
      * Case insensitive match.
      */
     lookupKeys?: Array<string>;
     /**
      * Match to any serviceName listed or all serviceNames if undefined.
-     * Only applies to LookupKeyServiceInfoBase objects
+     * Only applies to ServiceWithLookupKeyCAResultBase objects
      * Case insensitive match.
      */
     serviceNames?: Array<string>;
@@ -469,9 +469,9 @@ export interface ILookupKeyAnalyzer {
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
-     * Add it to the LookupKeyResult.services array.
+     * Add it to the LookupKeyCAResult.services array.
      */
-    analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase;
+    analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase;
 }
 
 /**
@@ -546,7 +546,7 @@ export const lookupKeyFeature = 'LookupKey';
  * Invalid lookup keys are reported in ConfigAnalysisResults.lookupKeysIssues
  * and with the PropertyInfo object specifically supplying the invalid key.
  */
-export interface LookupKeyResult extends CAResultBase {
+export interface LookupKeyCAResult extends CAResultBase {
     feature: 'LookupKey';   // use lookupKeyFeature const
     lookupKey: string;
     /**
@@ -556,12 +556,17 @@ export interface LookupKeyResult extends CAResultBase {
     /**
      * Services in use associated with the lookup key like parser, formatter, etc.
      */
-    services: Array<LookupKeyServiceInfoBase>;
+    services: Array<ServiceWithLookupKeyCAResultBase>;
 }
 
 export const dataTypeFeature = 'DataType';
 
-export interface LookupKeyServiceInfoBase extends CAResultBase
+/**
+ * For all services that use a lookup key, this is the base class for the LookupKeyCAResult.services array.
+ * Features are 'DataType' or any ServiceName that supports a lookup key.
+ * 'DataType' is used when the lookup key is just a data type (ValueHostConfig.dataType property).
+ */
+export interface ServiceWithLookupKeyCAResultBase extends CAResultBase
 {
     feature: 'DataType' | ServiceName;  // use consts dataTypeFeature, parserServiceFeature, etc.
     
@@ -610,7 +615,7 @@ export interface ClassNotFound extends IssueForCAResultBase {
  * It describes the class found or the error when not found.
  */
 export interface OneClassRetrieval extends
-    LookupKeyServiceInfoBase,
+    ServiceWithLookupKeyCAResultBase,
     ClassRetrievalBase,
     ClassNotFound{ 
 } 
@@ -626,7 +631,7 @@ export interface ServiceChildResultBase extends ClassRetrievalBase, CAResultBase
 export const identifierServiceFeature = ServiceName.identifier;
 
 /**
- * The LookupKeyServiceInfoBase object for the DataTypeIdenfierService.
+ * The ServiceWithLookupKeyCAResultBase object for the DataTypeIdenfierService.
  */
 export interface IdentifierServiceClassRetrieval extends OneClassRetrieval {
     feature: ServiceName.identifier;    // use identifierServiceFeature const
@@ -635,7 +640,7 @@ export interface IdentifierServiceClassRetrieval extends OneClassRetrieval {
 export const converterServiceFeature = ServiceName.converter;
 
 /**
- * The LookupKeyServiceInfoBase object for the DataTypeConverterService.
+ * The ServiceWithLookupKeyCAResultBase object for the DataTypeConverterService.
  */
 export interface ConverterServiceClassRetrieval extends OneClassRetrieval {
     feature: ServiceName.converter; // use converterServiceFeature const
@@ -644,7 +649,7 @@ export interface ConverterServiceClassRetrieval extends OneClassRetrieval {
 export const comparerServiceFeature = ServiceName.comparer;
 
 /**
- * The LookupKeyServiceInfoBase object for the DataTypeComparerService.
+ * The ServiceWithLookupKeyCAResultBase object for the DataTypeComparerService.
  */
 export interface ComparerServiceClassRetrieval extends OneClassRetrieval {
     feature: ServiceName.comparer;  // use comparerServiceFeature const
@@ -657,7 +662,7 @@ export interface ComparerServiceClassRetrieval extends OneClassRetrieval {
  * If the case has a result, it includes the class name. Otherwise it 
  * reports an error.
  */
-export interface MultiClassRetrieval extends LookupKeyServiceInfoBase, ClassNotFound {
+export interface MultiClassRetrieval extends ServiceWithLookupKeyCAResultBase, ClassNotFound {
     requests: Array<ClassRetrievalBase>;
 }
 /**
@@ -683,7 +688,7 @@ export interface CultureSpecificClassRetrieval extends ServiceChildResultBase   
 export const parserServiceFeature = ServiceName.parser;
 
 /**
- * The LookupKeyServiceInfoBase object for the DataTypeParserService.
+ * The ServiceWithLookupKeyCAResultBase object for the DataTypeParserService.
  * It's requests array holds the results of the analysis for each cultureId,
  * using the ParserForCultureClassRetrieval object. Deeper down in 
  * ParserForCultureClassRetrieval.matches is the actual class retrieval.
@@ -711,7 +716,7 @@ export const parserServiceClassRetrievalFeature = 'ParserClass';
 /**
  * For the individual parser classes found for a single lookup key.
  * These are retained by ParserForCultureClassRetrieval.parsers.
- * Therefore they are not descendants of LookupKeyServiceInfoBase.
+ * Therefore they are not descendants of ServiceWithLookupKeyCAResultBase.
  * They are not used to report an error or "not found".
  * That's reserved for the ParserForCultureClassRetrieval object.
  */
@@ -724,7 +729,7 @@ export interface ParserServiceClassRetrieval
 export const formatterServiceFeature = ServiceName.formatter;
 
 /**
- * The LookupKeyServiceInfoBase object for the DataTypeFormatterService.
+ * The ServiceWithLookupKeyCAResultBase object for the DataTypeFormatterService.
  */
 export interface FormatterServiceClassRetrieval extends MultiClassRetrieval {
     feature: ServiceName.formatter; // use formatterServiceFeature const
@@ -915,7 +920,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     getSampleValue(lookupKey: string, valueHostConfig: ValueHostConfig): any;
 
     /**
-     * Tries to add a lookup key and adds the associated service as a LookupKeyResult object
+     * Tries to add a lookup key and adds the associated service as a LookupKeyCAResult object
      * into results.lookupKeyResults.
      * Validates the lookup key string.
      * Uses LookupKeyAnalyzers to analyze service specific lookup keys against
@@ -924,7 +929,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @param lookupKey - The lookup key to add.
      * @param serviceName - The name of the service associated with the lookup key.
      * @param valueHostConfig - The configuration for the value host.
-     * @returns The lookup key added to the LookupKeyResult object.
+     * @returns The lookup key added to the LookupKeyCAResult object.
      * This value may have been updated from the original lookupKey, if the original
      * needed trimming or a case sensitive match.
      * If there was no lookup key, returns null.
@@ -933,14 +938,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
 
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyResult object if needed.
+ * It also uses registerLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking
  *   using the result from checkForRealLookupKeyName. Report the correct lookup key name
  *   if it was fixed.
- * - LookupKey is found in LookupKeyResult. Continue checking.
- * - LookupKey is not found in LookupKeyResult. Error. "Not found. Please add to [servicename]."
+ * - LookupKey is found in LookupKeyCAResult. Continue checking.
+ * - LookupKey is not found in LookupKeyCAResult. Error. "Not found. Please add to [servicename]."
  * - With a service name, Error. "Not found. Please add to [servicename]."
  * 
  * All errors are added into the ConfigPropertyResult object that is added to the properties parameter.

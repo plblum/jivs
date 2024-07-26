@@ -4,12 +4,12 @@
  */
 
 import {
-    IConfigAnalysisResultsExplorer, IConfigAnalysisResults, IConfigAnalysisSearchCriteria, LookupKeyServiceInfoBase,
+    IConfigAnalysisResultsExplorer, IConfigAnalysisResults, IConfigAnalysisSearchCriteria, ServiceWithLookupKeyCAResultBase,
     CAPathedResult,
     CAExplorerFactory,
     CAResultBase,
     ICAExplorerBase,
-    LookupKeyResult,
+    LookupKeyCAResult,
     ParserForCultureClassRetrieval,
     OneClassRetrieval,
     MultiClassRetrieval,
@@ -90,7 +90,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         return this.collectWithConfigs(preppedCriteria).length;
     }
     /**
-     * Return a count of the number of LookupKeyResult objects and all children
+     * Return a count of the number of LookupKeyCAResult objects and all children
      * found in the lookupKeyResults array matching the criteria.
      * @param criteria 
      */
@@ -113,7 +113,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         return matches;
     }
     /**
-     * Return a list of all LookupKeyResult objects found in the lookupKeyResults array,
+     * Return a list of all LookupKeyCAResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
      */
     public collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
@@ -278,10 +278,10 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
 }
 
 /**
- * For exploring LookupKeyResult objects. Their identifier is the lookupKey property
+ * For exploring LookupKeyCAResult objects. Their identifier is the lookupKey property
  * and their feature is 'LookupKey'.
  */
-class LookupKeyResultExplorer extends CAExplorerBase<LookupKeyResult>
+class LookupKeyResultExplorer extends CAExplorerBase<LookupKeyCAResult>
 {
     public feature(): string {
         return lookupKeyFeature;
@@ -301,10 +301,10 @@ class LookupKeyResultExplorer extends CAExplorerBase<LookupKeyResult>
 }
 
 /**
- * For exploring LookupKeyServiceInfoBase objects that reflect a "DataType" without a service. 
+ * For exploring ServiceWithLookupKeyCAResultBase objects that reflect a "DataType" without a service. 
  * Their identifier is the service property is null and their feature is 'DataType'.
  */
-class DataTypeLookupKeyServiceInfoExplorer extends CAExplorerBase<LookupKeyServiceInfoBase>
+class DataTypeLookupKeyServiceInfoExplorer extends CAExplorerBase<ServiceWithLookupKeyCAResultBase>
 {
 
     public feature(): string {
@@ -617,8 +617,8 @@ export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
         this.populate();
     }
     protected populate(): void {
-        this.register(lookupKeyFeature, (result) => new LookupKeyResultExplorer(result as LookupKeyResult));
-        this.register(dataTypeFeature, (result) => new DataTypeLookupKeyServiceInfoExplorer(result as LookupKeyServiceInfoBase));
+        this.register(lookupKeyFeature, (result) => new LookupKeyResultExplorer(result as LookupKeyCAResult));
+        this.register(dataTypeFeature, (result) => new DataTypeLookupKeyServiceInfoExplorer(result as ServiceWithLookupKeyCAResultBase));
         this.register(parserServiceFeature, (result) => new ParserLookupKeyServiceInfoExplorer(result as ParserForCultureClassRetrieval));
         this.register(comparerServiceFeature, (result) => new ComparerLookupKeyServiceInfoExplorer(result as ComparerServiceClassRetrieval));
         this.register(converterServiceFeature, (result) => new ConverterLookupKeyServiceInfoExplorer(result as ConverterServiceClassRetrieval));

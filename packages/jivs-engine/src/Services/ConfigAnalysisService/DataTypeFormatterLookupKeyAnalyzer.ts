@@ -2,7 +2,7 @@
  * Support the DataTypeFormatterService and its IDataTypeFormatter objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { LookupKeyServiceInfoBase, FormatterForCultureClassRetrieval, FormatterServiceClassRetrieval, formatterServiceFeature, formatterForCultureFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, FormatterForCultureClassRetrieval, FormatterServiceClassRetrieval, formatterServiceFeature, formatterForCultureFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeFormatter } from "../../Interfaces/DataTypeFormatters";
 import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -57,7 +57,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
         return 'DataTypeFormatter';
     }
 
-    public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
+    public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
         let info: FormatterServiceClassRetrieval = {
             feature: formatterServiceFeature,
