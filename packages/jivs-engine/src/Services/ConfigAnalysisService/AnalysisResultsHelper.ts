@@ -11,7 +11,10 @@ import {
     LocalizedTextResult, AnalysisArgs,
     IAnalysisResultsHelper,
     ConfigErrorResult,
-    ClassNotFound
+    ClassNotFound,
+    lookupKeyFeature,
+    propertyNameFeature,
+    l10nPropertiesFeature
 } from "../../Interfaces/ConfigAnalysisService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValidatorConfig, IValidator } from "../../Interfaces/Validator";
@@ -112,7 +115,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             lk = this.results.lookupKeysInfo.find(lk => lk.lookupKey.toLowerCase() === lookupKey.toLowerCase());
             if (!lk) {
                 lk = <LookupKeyInfo>{
-                    feature: 'LookupKey',
+                    feature: lookupKeyFeature,
                     lookupKey: lookupKey,
                     usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
                     services: []
@@ -157,7 +160,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     public checkForRealLookupKeyName(lookupKey: string, silent: boolean = false): string {
         function caseInsensitiveMessage(lookupKey: string, actual: string): void {
             if (!silent && lookupKey !== actual)
-                self.addlookupKeysIssue('LookupKey', trimmedLK,
+                self.addlookupKeysIssue(lookupKeyFeature, trimmedLK,
                     ConfigIssueSeverity.warning,
                     `Lookup key "${trimmedLK}" is a case insensitive match for "${temp}". Make it a case sensitive match.`);
         }
@@ -181,7 +184,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             return identifier.dataTypeLookupKey;
         }
         if (!silent)
-            this.addlookupKeysIssue('LookupKey', lookupKey, ConfigIssueSeverity.warning,
+            this.addlookupKeysIssue(lookupKeyFeature, lookupKey, ConfigIssueSeverity.warning,
                 `Lookup key "${trimmedLK}" not already known. It may be fine, or may have typo. If valid, register it in LookupKeyFallbackService or IdentifierService`);
         return trimmedLK;
 
@@ -286,7 +289,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
         if (l10nKey) {
             let info: LocalizedPropertyResult = {
-                feature: 'l10nProperties',
+                feature: l10nPropertiesFeature,
                 propertyName: propertyNamePrefix,
                 l10nPropertyName: propertyNamePrefix + 'l10n',
                 l10nKey: l10nKey,
@@ -500,7 +503,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     public createConfigPropertyResult(propertyName: string, severity: ConfigIssueSeverity,
         errorMessage: string): ConfigPropertyResult {
         return {
-            feature: 'Property',
+            feature: propertyNameFeature,
             propertyName: propertyName,
             severity: severity,
             message: errorMessage

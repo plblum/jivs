@@ -6,7 +6,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { ConfigAnalysisServiceOptions, ConfigIssueSeverity, OneClassRetrieval } from "../../src/Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, ConfigAnalysisServiceOptions, ConfigIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
@@ -20,7 +20,6 @@ import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interface
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
 import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
 import { DataTypePropertyAnalyzer } from "../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
-import { ValueHostsManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
     FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
@@ -413,7 +412,7 @@ describe('analyze()', () => {
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
         let si = checkLookupKeysInfoForService(result.results.lookupKeysInfo,
-            LookupKey.Number, ServiceName.comparer) as OneClassRetrieval;
+            LookupKey.Number, ServiceName.comparer) as ComparerServiceClassRetrieval;
         expect(si).toBeDefined();
         expect(si.severity).toBeUndefined();    // because we resolved the comparer
     });
@@ -441,7 +440,7 @@ describe('analyze()', () => {
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
         let si = checkLookupKeysInfoForService(result.results.lookupKeysInfo,
-            'CustomKey', ServiceName.comparer) as OneClassRetrieval;
+            'CustomKey', ServiceName.comparer) as ComparerServiceClassRetrieval;
         expect(si).toBeDefined();
         expect(si.severity).toBe(ConfigIssueSeverity.warning); 
     });

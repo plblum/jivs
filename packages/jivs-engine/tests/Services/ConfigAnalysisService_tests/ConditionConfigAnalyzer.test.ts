@@ -1,6 +1,7 @@
 import {
     ConditionConfigResults,
-    ConfigIssueSeverity, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer
+    ConfigIssueSeverity, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
+    conditionFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ConditionConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
@@ -55,7 +56,7 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Condition');
+            expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('TestCondition');
             expect(results.properties).toHaveLength(0);
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
@@ -73,7 +74,7 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Condition');
+            expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
             expect(results.severity).toBe(ConfigIssueSeverity.error);
@@ -93,7 +94,7 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Condition');
+            expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
             expect(results.severity).toBe(ConfigIssueSeverity.error);            
@@ -112,7 +113,7 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Condition');
+            expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('[Missing]');
             expect(results.message).toContain('conditionType property not assigned');
             expect(results.severity).toBe(ConfigIssueSeverity.error);            
@@ -132,7 +133,7 @@ describe('ConditionConfigAnalyzer', () => {
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Condition');
+            expect(results.feature).toBe(conditionFeature);
             expect(results.conditionType).toBe('TestCondition');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();

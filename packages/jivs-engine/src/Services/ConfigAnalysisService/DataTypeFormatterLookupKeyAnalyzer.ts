@@ -2,7 +2,7 @@
  * Support the DataTypeFormatterService and its IDataTypeFormatter objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { LookupKeyServiceInfoBase, MultiClassRetrieval, CultureSpecificClassRetrieval, ConfigResultMessage } from "../../Interfaces/ConfigAnalysisService";
+import { LookupKeyServiceInfoBase, FormatterForCultureClassRetrieval, FormatterServiceClassRetrieval, formatterServiceFeature, formatterForCultureFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeFormatter } from "../../Interfaces/DataTypeFormatters";
 import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -20,21 +20,21 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  * by LookupKeyFallbackService so the caller to try that lookup key next.
  * 
  * The results are:
- * - Creates the MultiClassRetrieval with the key and feature = 'formatter'.
+ * - Creates the FormatterServiceClassRetrieval with the key and feature = 'formatter'.
  * - Runs the same process for each CultureID in results.cultureIds.
- *   Each will add CultureSpecificClassRetrieval to MultiClassRetrieval.requests,
+ *   Each will add FormatterForCultureClassRetrieval to FormatterServiceClassRetrieval.requests,
  *   reporting all of its info, which may include an error message.
  * - If it finds a matching formatter in the DataTypeFormatterService, 
- *   CultureSpecificClassRetrieval will have these properties set:
+ *   FormatterForCultureClassRetrieval will have these properties set:
  *   classFound, instance, requestedCultureId, actualCultureId.
- * - If the formatter is not found, CultureSpecificClassRetrieval
+ * - If the formatter is not found, FormatterForCultureClassRetrieval
  *   will have these properties set: message, error, requestedCultureId.
   *   ```ts
- *   {  // MultiClassRetrieval
- *      feature: ServiceName.formatter,
- *      requests: [ // CultureSpecificClassRetrieval objects
+ *   {  // FormatterServiceClassRetrieval
+ *      feature: formatterServiceFormatter,
+ *      requests: [ // FormatterForCultureClassRetrieval objects
  *      {
- *          feature: ServiceName.formatter,
+ *          feature: formatterForCultureFeature,
  *          requestedCultureId: 'en-US',
  *     // when found
  *          classFound: 'MyFormatter',
@@ -48,8 +48,6 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  *   }
  *   ```
  */
-
-
 export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookupKeyAnalyzer<IDataTypeFormatter, IValidationServices> {
     constructor(args: AnalysisArgs<IValidationServices>) {
         super(args);
@@ -61,8 +59,8 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
 
     public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
 
-        let info: MultiClassRetrieval = {
-            feature: ServiceName.formatter,
+        let info: FormatterServiceClassRetrieval = {
+            feature: formatterServiceFeature,
             requests: []
         };
         let lookupKey = key ?? container.dataType;
@@ -80,8 +78,8 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
                     // istanbul ignore next
                     info.tryFallback = false;
                     // istanbul ignore next
-                    let errorInfo: CultureSpecificClassRetrieval = {
-                        feature: ServiceName.formatter,
+                    let errorInfo: FormatterForCultureClassRetrieval = {
+                        feature: formatterForCultureFeature,
                         requestedCultureId: cultureId,
                         notFound: true
                     }
@@ -108,7 +106,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      *   until it finds a match or has run out of fallbacks.
      * - If it has none after that point, tries the LookupKeyFallbackService
      *   to get a new lookupKey that is supposed to be compatible with the original.
-     *   Instead of trying to find with that key, it returns CultureSpecificClassRetrieval
+     *   Instead of trying to find with that key, it returns FormatterForCultureClassRetrieval
      *   with a message about using another lookupKey, and the caller should try 
      *   to handle the new lookupKey.
      * @param lookupKey - The key to find a formatter for. This may not be the actual lookupKey 
@@ -116,15 +114,15 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      * @param startingCultureId - The first culture to try.
      * @returns 
      */
-    public analyzeForCulture(lookupKey: string, startingCultureId: string): CultureSpecificClassRetrieval {
-        let info: CultureSpecificClassRetrieval = {
-            feature: ServiceName.formatter,
+    public analyzeForCulture(lookupKey: string, startingCultureId: string): FormatterForCultureClassRetrieval {
+        let info: FormatterForCultureClassRetrieval = {
+            feature: formatterForCultureFeature,
             requestedCultureId: startingCultureId
         };
         this.analyzeForCultureRecursive(info, lookupKey, startingCultureId);
         return info;
     }
-    protected analyzeForCultureRecursive(info: CultureSpecificClassRetrieval,
+    protected analyzeForCultureRecursive(info: FormatterForCultureClassRetrieval,
         lookupKey: string, startingCultureId: string): void {
 
         let cultureId: string | null = startingCultureId;

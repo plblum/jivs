@@ -1,17 +1,17 @@
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig } from "../../../src/Interfaces/CalcValueHost";
-import { AnalysisArgs, ConfigIssueSeverity, LocalizedPropertyResult, MultiClassRetrieval, OneClassRetrieval, ParserClassRetrieval, ValueHostConfigResults } from "../../../src/Interfaces/ConfigAnalysisService";
+import { ConfigIssueSeverity, LocalizedPropertyResult, ValueHostConfigResults, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
 
 import {
-    createAnalysisArgs, checkValueHostConfigResultsInArray, checkValueHostConfigResults,
-    checkConfigPropertyResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult,
-    checkLookupKeyInfoForService, checkServiceInfoForParserClassRetrieval, createServices,
+    checkValueHostConfigResults,
+    checkConfigPropertyResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult, createServices,
     setupHelper,
-    checkLookupKeysInfoForService
+    checkLookupKeysInfoForService,
+    checkServiceInfoForCultureSpecificParserRetrieval
 } from "./support";
 import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
 import { InputValueHostConfig } from "../../../src/Interfaces/InputValueHost";
@@ -36,7 +36,7 @@ function setupForTheseTests(services: IValidationServices,
     let helper = setupHelper(services);
     // this should emulate the ValueHostConfigAnalyzer.analyze() function's creation of the results
     let results: ValueHostConfigResults = {
-        feature: 'ValueHost',
+        feature: valueHostFeature,
         config: config,
         valueHostName: config.name,
         properties: []
@@ -538,7 +538,8 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
 
         let serviceInfo = checkLookupKeysInfoForService(
             setup.helper.results.lookupKeysInfo, LookupKey.Number, ServiceName.parser);
-        checkServiceInfoForParserClassRetrieval(serviceInfo, 0, 0, 'en', 'NumberParser', NumberParser);
+        
+        checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo, 0, 0, 'en', 'NumberParser', NumberParser);
     });
 });
 describe('CalcFnPropertyAnalyzer class', () => {

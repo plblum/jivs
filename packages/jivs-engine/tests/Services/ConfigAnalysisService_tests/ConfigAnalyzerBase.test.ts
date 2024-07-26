@@ -1,4 +1,4 @@
-import { ConfigIssueSeverity, ConfigResults, IConfigPropertyAnalyzer } from "../../../src/Interfaces/ConfigAnalysisService";
+import { ConfigIssueSeverity, ConfigResults, IConfigPropertyAnalyzer, propertyNameFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
@@ -29,7 +29,7 @@ class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestCo
         let duplicate = existingResults.find(vhc => vhc.config.name.toLowerCase() === lc);
         if (duplicate) {
             results.properties.push({
-                feature: 'Property',
+                feature: propertyNameFeature,
                 propertyName: 'name',
                 severity: ConfigIssueSeverity.error,
                 message: 'Must be unique.'

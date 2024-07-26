@@ -14,7 +14,7 @@ import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ConfigAnalysisServiceOptions, IConfigAnalysisOutput } from "./ConfigAnalysisService";
+import { ConfigAnalysisServiceOptions, IConfigAnalysisResultsExplorer } from "./ConfigAnalysisService";
 
 /**
  * Base interface for a ValueHostsManagerConfigBuilder and Modifier.
@@ -57,7 +57,7 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
      * @returns Tools to look for issues and report on the configuration. Its methods are used
      * with your testing code.
      */
-    analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput;
+    analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
 
 }
 

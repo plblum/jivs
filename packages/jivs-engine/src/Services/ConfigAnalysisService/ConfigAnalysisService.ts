@@ -5,7 +5,7 @@
 
 import {
     AnalysisArgs,
-    ConfigAnalysisServiceOptions, IConditionConfigPropertyAnalyzer, IConfigAnalysisOutput, IConfigAnalysisResults,
+    ConfigAnalysisServiceOptions, IConditionConfigPropertyAnalyzer, IConfigAnalysisResultsExplorer, IConfigAnalysisResults,
     IConfigAnalysisService,
     IValidatorConfigPropertyAnalyzer,
     IValueHostConfigPropertyAnalyzer
@@ -30,6 +30,7 @@ import { ValidatorConfigAnalyzer } from './ValidatorConfigAnalyzer';
 import { ValueHostConfigAnalyzer } from './ValueHostConfigAnalyzer';
 import { DataTypeComparerAnalyzer } from './DataTypeComparerAnalyzer';
 import { IAnalysisResultsHelper } from './../../Interfaces/ConfigAnalysisService';
+import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from "./ConfigAnalysisResultsExplorer";
 
 /**
  * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisService:interface
@@ -50,14 +51,14 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    public analyze(config: TConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput;
+    public analyze(config: TConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder or Modifier object
      * @param builder 
      * @param options 
      */
-    public analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput;
-    public analyze(arg1: TConfig | ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput {
+    public analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
+    public analyze(arg1: TConfig | ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer {
         let config: TConfig;
         if (arg1 instanceof ManagerConfigBuilderBase)
             config = arg1.snapshot();
@@ -79,7 +80,8 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
 
         this.gatherDataTypeIdentifierLookupKeys(helper);
 
-        return new ConfigAnalysisOutput(results);
+        return new ConfigAnalysisResultsExplorer<TServices>(results,
+            new ConfigAnalysisResultsExplorerFactory(), this.getServices());
     }
 
     /**
@@ -297,23 +299,4 @@ export class ValidationManagerConfigAnalysisService extends ConfigAnalysisServic
         analysisArgs.validatorConfigAnalyzer = new ValidatorConfigAnalyzer(helper, this.validatorConfigPropertyAnalyzers);
     }
 
-}
-
-/**
- * Expose the results of the analysis, offering different ways to show it.
- */
-export class ConfigAnalysisOutput implements IConfigAnalysisOutput {
-    results: IConfigAnalysisResults;
-
-    constructor(results: IConfigAnalysisResults) {
-        this.results = results;
-    }
-
-    toConsole(): void {
-        console.log(this.results);
-    }
-
-    toLogger(): void {
-        // Send to a LoggerService object   
-    }
 }

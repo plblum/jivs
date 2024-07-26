@@ -2,13 +2,13 @@
  * Support the DataTypeParserService and its IDataTypeParser objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { LookupKeyServiceInfoBase, MultiClassRetrieval, CultureSpecificClassRetrieval, OneClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { LookupKeyServiceInfoBase, ParserServiceByLookupKey, CultureSpecificClassRetrieval, OneClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeParser } from "../../Interfaces/DataTypeParsers";
 import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { ensureError, CodingError } from "../../Utilities/ErrorHandling";
 import { AnalysisArgs } from "../../Interfaces/ConfigAnalysisService";
-import { ParserClassRetrieval } from '../../Interfaces/ConfigAnalysisService';
+import { ParserForCultureClassRetrieval } from '../../Interfaces/ConfigAnalysisService';
 import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 
 /**
@@ -21,26 +21,26 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  * by LookupKeyFallbackService so the caller to try that lookup key next.
  * 
  * The results are:
- * - Creates the MultiClassRetrieval with the key and feature = 'parser'.
+ * - Creates the ParserServiceByLookupKey with the key and feature = 'Parser'.
  * - Runs the same process for each CultureID in results.cultureIds.
- *   Each will add ParserClassRetrieval to MultiClassRetrieval.requests,
+ *   Each will add ParserForCultureClassRetrieval to ParserServiceByLookupKey.requests,
  *   reporting all of its info, which may include an error message.
  * - If it finds matching parsers in the DataTypeParserService, 
- *   ParserClassRetrieval will have these properties set:
- *   cultureId and matches which will have OneClassRetrieval
- * - If no parser is found, ParserClassRetrieval
+ *   ParserForCultureClassRetrieval will have these properties set:
+ *   cultureId and matches which will have ParserServiceClassRetrieval
+ * - If no parser is found, ParserForCultureClassRetrieval
  *   will have these properties set: message, error, cultureId.
  *   ```ts
- *   {  // MultiClassRetrieval
- *      feature: ServiceName.parser,
- *      requests: [ // ParserClassRetrieval objects
+ *   {  // ParserServiceByLookupKey
+ *      feature: parserServiceFeature,
+ *      requests: [ // ParserForCultureClassRetrieval objects
  *      {
- *          feature: ServiceName.parser,
+ *          feature: parserServiceFeature,
  *          cultureId: 'en-US',
  *    // when found
- *          matches: [ // OneClassRetrieval objects for each found
+ *          matches: [ // ParserServiceClassRetrieval objects for each found
  *          {
- *              feature: ServiceName.parser,
+ *              feature: parserServiceFeature,
  *              classFound: 'MyParser',
  *              instance: parserInstance,
  *          } // and more if multiple matches
@@ -64,8 +64,8 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
 
     public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
 
-        let info: MultiClassRetrieval = {
-            feature: ServiceName.parser,
+        let info: ParserServiceByLookupKey = {
+            feature: parserServiceFeature,
             requests: []
         };
         let lookupKey = key ?? container.dataType;
@@ -80,10 +80,11 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
                 }
                 catch (e) {
                     info.tryFallback = false;
-                    let errorInfo: CultureSpecificClassRetrieval = {
-                        feature: ServiceName.parser,
-                        requestedCultureId: cultureId,
-                        notFound: true
+                    let errorInfo: ParserForCultureClassRetrieval = {
+                        feature: parserForCultureFeature,
+                        cultureId: cultureId,
+                        notFound: true,
+                        matches: []
                     }
                     info.requests.push(errorInfo);
                     this.errorThrown(errorInfo, ensureError(e));                    
@@ -102,9 +103,9 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
      * @param startingCultureId - The first culture to try.
      * @returns 
      */
-    public analyzeForCulture(lookupKey: string, startingCultureId: string): ParserClassRetrieval {
-        let info: ParserClassRetrieval = {
-            feature: ServiceName.parser,
+    public analyzeForCulture(lookupKey: string, startingCultureId: string): ParserForCultureClassRetrieval {
+        let info: ParserForCultureClassRetrieval = {
+            feature: parserForCultureFeature,
             cultureId: startingCultureId,
             matches: []
         };
@@ -112,10 +113,10 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
         let parsersFound = this.services.dataTypeParserService.compatible(lookupKey, startingCultureId);
         if (parsersFound) {
             parsersFound.forEach(parser => {
-                let sci: OneClassRetrieval = {
+                let sci: ParserServiceClassRetrieval = {
                     classFound: parser.constructor.name,
                     instance: parser,
-                    feature: ServiceName.parser,
+                    feature: parserServiceClassRetrievalFeature,
                     //!!FUTURE                    dataExamples: []
                 };
                 info.matches.push(sci);

@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, OneClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { LookupKeyServiceInfoBase, IdentifierServiceClassRetrieval, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../Interfaces/DataTypeIdentifier";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -22,6 +22,27 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * When that calls tryAdd, it will use this to create the LookupKeyServiceInfo.
  * As a result, this will never be called for a missing lookupKey and need
  * to report an error. It has been coded to support the error case anyway.
+ * 
+ * Expected results:
+ * - Creates an IdentifierServiceClassRetrieval for feature='identifier'.
+ * 
+ * When found:
+ * ```ts
+ * {  // IdentifierServiceClassRetrieval
+ *      feature: identifierServiceFeature,
+ *      classFound: 'MyIdentifier',
+ *      instance: identifierInstance,
+ * }
+ * ```
+ * When not found:
+ * ```ts
+ * {  // IdentifierServiceClassRetrieval
+ *      feature: identifierServiceFeature,
+ *      severity: 'error',
+ *      message: 'error message',
+ *      notFound: true,
+ * }
+ * ```
  */
 export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAnalyzer<IDataTypeIdentifier, IValueHostsServices> {
     constructor(args: AnalysisArgs<IValueHostsServices>) {
@@ -33,8 +54,8 @@ export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAna
     }
 
     public analyze(key: string, container: ValueHostConfig): LookupKeyServiceInfoBase {
-        let info: OneClassRetrieval = {
-            feature: ServiceName.identifier
+        let info: IdentifierServiceClassRetrieval = {
+            feature: identifierServiceFeature
         };
 
         let dti = this.services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === key);

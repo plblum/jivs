@@ -1,6 +1,8 @@
 import {
     ConditionConfigResults,
-    ConfigIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigResults
+    ConfigIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigResults,
+    conditionFeature,
+    validatorFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValidatorConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValidatorConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
@@ -25,7 +27,7 @@ class MockConditionConfigAnalyzer implements IConditionConfigAnalyzer<IValidatio
     analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigResults[]): ConditionConfigResults {
         this.ranCount++;
         return <ConditionConfigResults>{
-            feature: 'Condition',
+            feature: conditionFeature,
             conditionType: config.conditionType ?? '[Missing]',
             config: config,
             properties: []
@@ -63,7 +65,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('TESTEC');
             expect(results.properties).toHaveLength(0);
@@ -80,7 +82,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
@@ -99,7 +101,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
@@ -118,7 +120,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
@@ -138,7 +140,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('TESTEC');
             expect(results.message).toBeUndefined();
@@ -158,7 +160,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
@@ -179,7 +181,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
@@ -201,7 +203,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
@@ -222,7 +224,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.condition).toBeUndefined();
             expect(results.errorCode).toBe('[Unknown at this time]');
             expect(results.message).toBeUndefined();
@@ -245,7 +247,7 @@ describe('ValidatorConfigAnalyzer', () => {
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe('Validator');
+            expect(results.feature).toBe(validatorFeature);
             expect(results.message).toContain('The validatorType property is not valid');
             expect(results.severity).toBe(ConfigIssueSeverity.error);
         });

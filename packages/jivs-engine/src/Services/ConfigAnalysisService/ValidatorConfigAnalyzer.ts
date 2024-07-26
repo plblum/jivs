@@ -5,7 +5,9 @@
 
 import {
     ValidatorConfigResults, IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer,
-    ConfigPropertyResult, ConfigIssueSeverity
+    ConfigPropertyResult, ConfigIssueSeverity,
+    propertyNameFeature,
+    validatorFeature
 } from "../../Interfaces/ConfigAnalysisService";
 import { ValidatorConfig } from "../../Interfaces/Validator";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -31,7 +33,7 @@ export class ValidatorConfigAnalyzer
     }
     protected initResults(config: ValidatorConfig): ValidatorConfigResults {
         let vcResults: ValidatorConfigResults = {
-            feature: 'Validator',
+            feature: validatorFeature,
             errorCode: null!,   // will be assigned in resolveErrorCode
             config: config,
             properties: []
@@ -67,7 +69,7 @@ export class ValidatorConfigAnalyzer
     protected resolveErrorCode(config: ValidatorConfig,
         vcResults: ValidatorConfigResults): void {
         let propResult: ConfigPropertyResult = {
-            feature: 'Property',
+            feature: propertyNameFeature,
             propertyName: 'errorCode',
             severity: undefined!,
             message: ''
@@ -146,7 +148,7 @@ export class ValidatorConfigAnalyzer
             if (existingResults.find(vr => (vr !== results) &&
                 vr.errorCode.toLowerCase() === lcEC)) {
                 let propResult: ConfigPropertyResult = {
-                    feature: 'Property',
+                    feature: propertyNameFeature,
                     propertyName: 'errorCode',
                     severity: ConfigIssueSeverity.error,
                     message: `Duplicate error code "${results.errorCode}". All must be unique.`

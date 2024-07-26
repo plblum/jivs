@@ -1,6 +1,10 @@
 import { ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer } from './../../../src/Services/ConfigAnalysisService/ConditionConfigPropertyAnalyzerClasses';
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
-import { AnalysisArgs, ConfigAnalysisServiceOptions, ConfigIssueSeverity, ConfigPropertyResult, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer, IConfigAnalysisOutput, IConfigAnalysisResults, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, LookupKeyServiceInfoBase, ValidatorConfigResults, ValueHostConfigResults } from "../../../src/Interfaces/ConfigAnalysisService";
+import {
+    AnalysisArgs, ConfigAnalysisServiceOptions, ConfigIssueSeverity, ConfigPropertyResult,
+    IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
+    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, LookupKeyServiceInfoBase, ValidatorConfigResults, ValueHostConfigResults, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
+} from "../../../src/Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../../src/Interfaces/DataTypeIdentifier";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
@@ -243,12 +247,12 @@ describe('ConfigAnalysisServiceBase class', () => {
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
             expect(setup.results.lookupKeysInfo).toEqual([
                 {
-                    feature: 'LookupKey',
+                    feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     services: [
-                        { feature: ServiceName.converter, message: 'testConverter', counter: 0 } as any,
-                        { feature: ServiceName.identifier, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any,
+                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
@@ -271,11 +275,11 @@ describe('ConfigAnalysisServiceBase class', () => {
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
             expect(setup.results.lookupKeysInfo).toEqual([
                 {
-                    feature: 'LookupKey',
+                    feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     services: [
-                        { feature: ServiceName.identifier, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
@@ -364,7 +368,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             };
             let testItem = new Publicify_ConfigAnalysisServiceBase();
             testItem.services = services;
-            let analysisOutput: IConfigAnalysisOutput | null = null;
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
             expect(() => analysisOutput = testItem.analyze(valueHostManagerConfig, {})).not.toThrow();
             expect(analysisOutput).toBeDefined();
             expect(analysisOutput!.results).toBeDefined();
@@ -391,7 +395,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
             ]);
-            let analysisOutput: IConfigAnalysisOutput | null = null;
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
             expect(() => analysisOutput = testItem.analyze(valueHostManagerConfig, {})).not.toThrow();
             expect(analysisOutput).toBeDefined();
             expect(analysisOutput!.results).toBeDefined();
@@ -400,18 +404,18 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.valueHostNames).toEqual(['testValueHost1']);
             expect(results.lookupKeysInfo).toEqual([
                 {
-                    feature: 'LookupKey',
+                    feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     services: [
-                        { feature: ServiceName.identifier, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.configIssues).toHaveLength(1);
             expect(results.configIssues[0]).toEqual({
-                feature: 'ValueHost',
+                feature: valueHostFeature,
                 valueHostName: 'testValueHost1',
                 properties: [],
                 config: {
@@ -438,7 +442,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
             ]);
-            let analysisOutput: IConfigAnalysisOutput | null = null;
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
             expect(() => analysisOutput = testItem.analyze(valueHostManagerConfig, undefined)).not.toThrow();
             expect(testItem.publicify_options).toEqual({});
         });
@@ -454,7 +458,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
             ]);
-            let analysisOutput: IConfigAnalysisOutput | null = null;
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
             expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
             expect(analysisOutput).toBeDefined();
             expect(analysisOutput!.results).toBeDefined();
@@ -463,18 +467,18 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.valueHostNames).toEqual(['testValueHost1']);
             expect(results.lookupKeysInfo).toEqual([
                 {
-                    feature: 'LookupKey',
+                    feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     services: [
-                        { feature: ServiceName.identifier, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.configIssues).toHaveLength(1);
             expect(results.configIssues[0]).toEqual({
-                feature: 'ValueHost',
+                feature: valueHostFeature,
                 valueHostName: 'testValueHost1',
                 properties: [],
                 config: {
@@ -527,7 +531,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         let testItem = new Publicify_ValueHostsManagerConfigAnalysisService();
         testItem.services = services;
 
-        let analysisOutput: IConfigAnalysisOutput | null = null;
+        let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
         expect(analysisOutput).toBeDefined();
         
@@ -570,7 +574,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
             new ValueHostNamePropertyAnalyzer(),
             new DataTypePropertyAnalyzer()
         ]);
-        let analysisOutput: IConfigAnalysisOutput | null = null;
+        let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
         expect(analysisOutput).toBeDefined();
         expect(analysisOutput!.results).toBeDefined();
@@ -644,7 +648,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
         let testItem = new Publicify_ValidationManagerConfigAnalysisService();
         testItem.services = services;
 
-        let analysisOutput: IConfigAnalysisOutput | null = null;
+        let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
         expect(analysisOutput).toBeDefined();
         
@@ -721,7 +725,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
             new ConditionWithSecondValueHostNamePropertyAnalyzer()
         ]);
 
-        let analysisOutput: IConfigAnalysisOutput | null = null;
+        let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
         expect(analysisOutput).toBeDefined();
         expect(analysisOutput!.results).toBeDefined();

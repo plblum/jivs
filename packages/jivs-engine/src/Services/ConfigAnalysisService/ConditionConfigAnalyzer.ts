@@ -4,7 +4,7 @@
  */
 
 import { ConditionConfig } from "../../Interfaces/Conditions";
-import { ConditionConfigResults, ConfigIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigResults, ConfigIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { ensureError } from "../../Utilities/ErrorHandling";
@@ -32,7 +32,7 @@ implements IConditionConfigAnalyzer<TServices> {
     }
     protected initResults(config: ConditionConfig): ConditionConfigResults {
         return {
-            feature: 'Condition',
+            feature: conditionFeature,
             conditionType: cleanString(config.conditionType) ?? '[Missing]',
 
             config: config,

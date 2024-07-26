@@ -4,7 +4,7 @@ import { IDataTypeConverter } from "../../../src/Interfaces/DataTypeConverters";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { createValidationServicesForTesting } from "../../TestSupport/createValidationServices";
 import { IValidationServices } from '../../../src/Interfaces/ValidationServices';
-import { ConfigIssueSeverity, OneClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { ConfigIssueSeverity, ConverterServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
 import { sampleValueByLookupKey, createAnalysisArgs } from './support';
 
@@ -95,7 +95,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestStringToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestStringToNumberConverter);
@@ -121,7 +121,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestStringToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestStringToNumberConverter);
@@ -142,7 +142,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined();
             expect(result!.instance).toBeUndefined();
@@ -166,7 +166,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             });
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestToNumberConverter);
@@ -186,7 +186,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined
             expect(result!.instance).toBeUndefined();
@@ -209,7 +209,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined
             expect(result!.instance).toBeUndefined();
@@ -231,7 +231,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             });
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestStringToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestStringToNumberConverter);
@@ -252,7 +252,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             });
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestStringToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestStringToNumberConverter);
@@ -273,7 +273,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             });
             let analyzer = new DataTypeConverterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as ConverterServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('TestStringToNumberConverter');
             expect(result!.instance).toBeInstanceOf(TestStringToNumberConverter);

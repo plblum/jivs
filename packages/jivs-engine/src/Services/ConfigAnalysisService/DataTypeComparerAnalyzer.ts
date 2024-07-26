@@ -6,7 +6,7 @@
 import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ConfigIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, ConfigIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -28,10 +28,44 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * 
  * Comparison is done by specific Conditions. We don't even bother if after evaluating
  * all ValueHostConfigs, we've found no evidence needing a comparer.
+ * To qualify, the ConditionConfig must have a category of "Comparison" or
+ * the Condition object created from the ConditionConfig must have a category of "Comparison".
  * 
- * This class maintains a list of ConditionTypes that have been found to need a comparer.
- * It provides a way for the ConditionConfigAnalyzer to notify it of the ConditionType.
- * 
+ * When there is a result, it is the ComparerServiceClassRetrieval object.
+ * When the class is found:
+ * ```ts
+ * {  // ComparerServiceClassRetrieval
+ *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      classFound: 'MyComparer',
+ *      instance: comparerInstance,
+ *      dataExamples: [sampleValue]
+ * }
+ * ```
+ * When the defaultComparer function is used:
+ * ```ts
+ * {  // ComparerServiceClassRetrieval
+ *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      classFound: 'defaultComparer',
+ *      dataExamples: [sampleValue]
+ * }
+ * ```
+ * When there is an error or warning:
+ * ```ts
+ * {  // ComparerServiceClassRetrieval
+ *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      message: 'error message',
+ *      severity: 'error' | 'warning'
+ * }
+ * ```
+ * When the comparer is not found:
+ * ```ts
+ * {  // ComparerServiceClassRetrieval
+ *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      message: 'error message',
+ *      severity: 'warning',
+ *      notFound: true
+ * }
+ * ```
  */
 
 export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
@@ -61,10 +95,10 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
      * 
      * @param conditionConfig 
      * @returns When null, no reason to evaluate for the comparer. Otherwise, the same
-     * OneClassRetrieval object that was added to the LookupKeysInfo.services array.
+     * ComparerServiceClassRetrieval object that was added to the LookupKeysInfo.services array.
      */
     public checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig):
-        OneClassRetrieval | null {
+        ComparerServiceClassRetrieval | null {
 // anything to disqualify this condition from the check?
         let cleanCT = cleanString(conditionConfig.conditionType);
         if (!cleanCT)
@@ -87,33 +121,33 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
                 return null;
             lookupKeyInfo = lookupKeysInfo.find(lki => lki.lookupKey === lookupKey)!;
         }
-        let serviceInfo = lookupKeyInfo.services.find(si => si.feature === ServiceName.comparer);
+        let serviceInfo = lookupKeyInfo.services.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
         // if we have already found a comparer, we don't need to do anything.
         if (serviceInfo)
             return serviceInfo;
-        let comparerResults: OneClassRetrieval = {
-            feature: ServiceName.comparer
+        let results: ComparerServiceClassRetrieval = {
+            feature: comparerServiceFeature
         };
         // we'll add the remaining fields in the remaining code
-        lookupKeyInfo.services.push(comparerResults);
+        lookupKeyInfo.services.push(results);
 
         // we need to find a comparer. We'll use the sample values to try to find one.
         // The compare() function needs two values. We'll pass it the same value twice.
         let sampleValue = this.helper.getSampleValue(lookupKey, valueHostConfig);
         if (sampleValue === undefined)
         {
-            comparerResults.message = `No sample value found for Lookup Key ${lookupKey} in condition ${cleanCT}. Cannot determine a comparer.`;
-            comparerResults.severity = ConfigIssueSeverity.warning; 
-            return comparerResults;
+            results.message = `No sample value found for Lookup Key ${lookupKey} in condition ${cleanCT}. Cannot determine a comparer.`;
+            results.severity = ConfigIssueSeverity.warning; 
+            return results;
         }
         // find a matching Comparer. Its likely there isn't one, and we'll progress onto using the default Comparer against the sample values.
         let dtcs = this.helper.services.dataTypeComparerService;
         let comparer = dtcs.find(sampleValue, sampleValue, lookupKey, lookupKey);
         if (comparer) {
-            comparerResults.classFound = comparer.constructor.name;
-            comparerResults.instance = comparer;
-            comparerResults.dataExamples = [sampleValue];
-            return comparerResults;
+            results.classFound = comparer.constructor.name;
+            results.instance = comparer;
+            results.dataExamples = [sampleValue];
+            return results;
         }
         // like with DataTypeComparerService, we'll try the lookup key fallbacks to find a comparer.
         let lkfs = this.helper.services.lookupKeyFallbackService;
@@ -121,19 +155,19 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         if (lookupKeyFallback !== lookupKey) {
             comparer = dtcs.find(sampleValue, sampleValue, lookupKeyFallback, lookupKeyFallback);
             if (comparer) {
-                comparerResults.classFound = comparer.constructor.name;
-                comparerResults.instance = comparer;
-                comparerResults.dataExamples = [sampleValue];
-                return comparerResults;
+                results.classFound = comparer.constructor.name;
+                results.instance = comparer;
+                results.dataExamples = [sampleValue];
+                return results;
             }
         }
 
         try {
             let compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
             if (compareResult !== ComparersResult.Undetermined) {
-                comparerResults.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
-                comparerResults.dataExamples = [sampleValue];
-                return comparerResults;
+                results.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
+                results.dataExamples = [sampleValue];
+                return results;
             }
         }
         catch (e)
@@ -142,16 +176,16 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
             if (!(e instanceof InvalidTypeError))
             {
-                comparerResults.message = (e as Error).message;
-                comparerResults.severity = ConfigIssueSeverity.error;
-                return comparerResults;
+                results.message = (e as Error).message;
+                results.severity = ConfigIssueSeverity.error;
+                return results;
             }
         }
         // none found. We'll report an warning.
-        comparerResults.message = `Cannot check the comparer used with Lookup Key ${lookupKey} in condition ${cleanCT}. Be sure to either supply one in DataTypeComparerService or setup the conversionLookupKey property to convert to a supported Lookup Key.`;
-        comparerResults.severity = ConfigIssueSeverity.warning;
-        comparerResults.notFound = true;
-        return comparerResults;
+        results.message = `Cannot check the comparer used with Lookup Key ${lookupKey} in condition ${cleanCT}. Be sure to either supply one in DataTypeComparerService or setup the conversionLookupKey property to convert to a supported Lookup Key.`;
+        results.severity = ConfigIssueSeverity.warning;
+        results.notFound = true;
+        return results;
     }
 
     /**

@@ -25,7 +25,7 @@ import { resolveErrorCode } from '../Utilities/Validation';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValueHostsManager } from './ValueHostsManager';
-import { ConfigAnalysisServiceOptions, IConfigAnalysisOutput } from '../Interfaces/ConfigAnalysisService';
+import { ConfigAnalysisServiceOptions, IConfigAnalysisResultsExplorer } from '../Interfaces/ConfigAnalysisService';
 
 
 /**
@@ -299,7 +299,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @returns Tools to look for issues and report on the configuration. Its methods are used
      * with your testing code.
      */
-    public analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput
+    public analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer
     {
         this.assertNotDisposed();
         return this.baseConfig.services.configAnalysisService.analyze(this, options);

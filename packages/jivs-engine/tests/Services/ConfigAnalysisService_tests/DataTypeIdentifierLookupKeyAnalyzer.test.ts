@@ -2,7 +2,7 @@ import { IDataTypeIdentifier } from '../../../src/Interfaces/DataTypeIdentifier'
 import { createValidationServicesForTesting } from "../../TestSupport/createValidationServices";
 import { IValidationServices } from '../../../src/Interfaces/ValidationServices';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
-import { OneClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { IdentifierServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import { createAnalysisArgs } from './support';
@@ -60,7 +60,7 @@ describe('DataTypeIdentifierLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeIdentifierLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as IdentifierServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('NumberHosterIdentifier');
             expect(result!.instance).toBeInstanceOf(NumberHosterIdentifier);
@@ -86,7 +86,7 @@ describe('DataTypeIdentifierLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeIdentifierLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as IdentifierServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBe('NumberDataTypeIdentifier');
             expect(result!.instance).toBeInstanceOf(NumberDataTypeIdentifier);
@@ -114,7 +114,7 @@ describe('DataTypeIdentifierLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeIdentifierLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as OneClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as IdentifierServiceClassRetrieval;
             expect(result).toBeDefined();
             expect(result!.classFound).toBeUndefined();
             expect(result!.instance).toBeUndefined();

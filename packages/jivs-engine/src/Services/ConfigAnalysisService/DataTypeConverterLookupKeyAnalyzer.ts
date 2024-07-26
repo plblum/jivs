@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { LookupKeyServiceInfoBase, OneClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { LookupKeyServiceInfoBase, ConverterServiceClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeConverter } from "../../Interfaces/DataTypeConverters";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -21,7 +21,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * 
  * 
  * Expected results:
- * - Creates a OneClassRetrieval for feature='converter'.
+ * - Creates a ConverterServiceClassRetrieval for feature='converter'.
  * - Needs to get a sample value from the SampleValues class based on the 
  *   lookup key and ValueHostConfig. If it cannot find a sample value, it will 
  *   report a warning and return an error message.
@@ -48,7 +48,7 @@ export class DataTypeConverterLookupKeyAnalyzer extends OneClassPerLookupKeyAnal
      * @returns 
      */
     public analyze(key: string, valueHostConfig: ValueHostConfig): LookupKeyServiceInfoBase {
-        let result: OneClassRetrieval = {
+        let result: ConverterServiceClassRetrieval = {
             feature: ServiceName.converter,
 
         };

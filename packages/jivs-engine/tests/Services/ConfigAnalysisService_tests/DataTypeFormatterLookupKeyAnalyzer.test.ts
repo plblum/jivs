@@ -4,7 +4,7 @@ import { IDataTypeFormatter } from "../../../src/Interfaces/DataTypeFormatters";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { createValidationServicesForTesting } from "../../TestSupport/createValidationServices";
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
-import { ConfigIssueSeverity, MultiClassRetrieval, OneClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { ConfigIssueSeverity, FormatterServiceClassRetrieval, OneClassRetrieval, formatterForCultureFeature, formatterServiceFeature } from '../../../src/Interfaces/ConfigAnalysisService';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
 import { sampleValueByLookupKey, createAnalysisArgs, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, createServices } from './support';
 import { DataTypeResolution } from '../../../src/Interfaces/DataTypes';
@@ -71,11 +71,11 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeFormatterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as MultiClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as FormatterServiceClassRetrieval;
             expect(result).toBeDefined();
-            expect(result!.feature).toBe(ServiceName.formatter);
+            expect(result!.feature).toBe(formatterServiceFeature);
             expect(result!.notFound).toBeUndefined();
-            checkCultureSpecificClassRetrievalFoundInService(result, 'en', 'en',
+            checkCultureSpecificClassRetrievalFoundInService(result, formatterForCultureFeature, 'en', 'en',
                 'NumberFormatter', NumberFormatter);
 
         });
@@ -95,11 +95,11 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeFormatterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(null!, valueHostConfig) as MultiClassRetrieval;
+            let result = analyzer.analyze(null!, valueHostConfig) as FormatterServiceClassRetrieval;
             expect(result).toBeDefined();
-            expect(result!.feature).toBe(ServiceName.formatter);
+            expect(result!.feature).toBe(formatterServiceFeature);
             expect(result!.notFound).toBeUndefined();
-            checkCultureSpecificClassRetrievalFoundInService(result, 'en', 'en',
+            checkCultureSpecificClassRetrievalFoundInService(result, formatterForCultureFeature, 'en', 'en',
                 'NumberFormatter', NumberFormatter);
 
         });
@@ -116,11 +116,11 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
             });
             let analyzer = new DataTypeFormatterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as MultiClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as FormatterServiceClassRetrieval;
             expect(result).toBeDefined();
-            expect(result!.feature).toBe(ServiceName.formatter);
+            expect(result!.feature).toBe(formatterServiceFeature);
             expect(result!.notFound).toBeUndefined();
-            checkCultureSpecificClassRetrievalFoundInService(result, 'en', 'en',
+            checkCultureSpecificClassRetrievalFoundInService(result, formatterForCultureFeature, 'en', 'en',
                 'TestToNumberFormatter', TestToNumberFormatter);
 
         });
@@ -137,11 +137,11 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let analyzer = new DataTypeFormatterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as MultiClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as FormatterServiceClassRetrieval;
             expect(result).toBeDefined();
-            expect(result!.feature).toBe(ServiceName.formatter);
+            expect(result!.feature).toBe(formatterServiceFeature);
             expect(result!.notFound).toBe(true);
-            checkCultureSpecificClassRetrievalNotFoundInService(result, 'en');
+            checkCultureSpecificClassRetrievalNotFoundInService(result, formatterForCultureFeature, 'en');
         });
 
         // cultures with fallback: 'en-US' -> 'en'. Test Formatter only handles 'en'
@@ -181,14 +181,14 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
             );
             let analyzer = new DataTypeFormatterLookupKeyAnalyzer(mockAnalysisArgs);
 
-            let result = analyzer.analyze(resultKey, valueHostConfig) as MultiClassRetrieval;
+            let result = analyzer.analyze(resultKey, valueHostConfig) as FormatterServiceClassRetrieval;
             expect(result).toBeDefined();
-            expect(result!.feature).toBe(ServiceName.formatter);
+            expect(result!.feature).toBe(formatterServiceFeature);
             expect(result!.notFound).toBeUndefined();
  //           checkCultureSpecificClassRetrievalNotFoundInService(result, 'en-US');
-            checkCultureSpecificClassRetrievalFoundInService(result, 'en-US', 'en',
+            checkCultureSpecificClassRetrievalFoundInService(result, formatterForCultureFeature, 'en-US', 'en',
                 'ENOnlyNumberFormatter', ENOnlyNumberFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(result, 'en', 'en',
+            checkCultureSpecificClassRetrievalFoundInService(result, formatterForCultureFeature, 'en', 'en',
                 'ENOnlyNumberFormatter', ENOnlyNumberFormatter);
             
         });

@@ -42,13 +42,13 @@ export interface IConfigAnalysisService extends IService, IServicesAccessor {
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput;
+    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder or Modifier object
      * @param builder 
      * @param options 
      */
-    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput;    
+    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;    
 
     /**
      * Lazyloads all ValueHostConfigPropertyAnalyzers.
@@ -164,20 +164,234 @@ export interface IConfigAnalysisResults {
 }
 
 /**
- * The output of the configuration analysis.
+ * Tool to explore the results of the configuration analysis. 
+ * This is the result of the IConfigAnalysisService's analyze method.
+ * It provides methods to count, collect, and report the results,
+ * all based on the criteria supplied.
+ * Intended for your testing code and to write the results to something that can store them,
+ * even if you don't have a testing situation.
  */
-export interface IConfigAnalysisOutput {
+export interface IConfigAnalysisResultsExplorer {
     results: IConfigAnalysisResults;
+
     /**
-     * Send to the console.
+     * Return a count of the number of ConfigResult objects found in the ConfigIssues array
+     * matching the criteria.
+     * @param criteria When null, return all results.
      */
-    toConsole(): void;
+    countConfigResults(criteria: IConfigAnalysisSearchCriteria | null): number;
+
     /**
-     * Send to a LoggerService object. 
-     * @param logger - When null, use the logger already in the service.
+     * Return a count of the number of LookupKeyInfo objects and all children
+     * found in the LookupKeysInfo array matching the criteria.
+     * @param criteria 
      */
-    toLogger(logger?: ILoggerService): void;
+    countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number;
+
+    /**
+     * Return a list of all ConfigResult objects found in the ConfigIssues array,
+     * wrapped in a CAPathedResult object.
+     * @param criteria 
+     */
+    collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
+
+    /**
+     * Return a list of all LookupKeyInfo objects found in the LookupKeysInfo array,
+     * wrapped in a CAPathedResult object.
+     */
+    collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
+
+    // which data type service did you expect on a ConfigResult object when there was one found?
+
+    // which ConfigResults objects indicate a missing data type service?
+
+    // reportWithConfigs takes results from Array<PathedConfigResults>, runs them
+    // through a formatter, and passes the result into an output service like the logger,
+    // localizationService, etc.
+    // reportWithConfigs(criteria: IConfigAnalysisSearchCriteria, formatter: IConfigAnalysisOutputFormatter, outputService: IConfigAnalysisOutputService): void;
+
+    // reportWithLookupKeys(criteria: IConfigAnalysisSearchCriteria, formatter: IConfigAnalysisOutputFormatter, outputService: IConfigAnalysisOutputService): void;
+
 }
+
+/**
+ * For Explorer's count and collect methods, this is the criteria to match against.
+ * To match, all assigned criteria must match SO LONG AS
+ * it is applicable to the object being evaluated.
+ * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
+ */
+export interface IConfigAnalysisSearchCriteria {
+    /**
+     * Match to any feature listed or all features if undefined.
+     * Case insensitive match.
+     */
+    features?: Array<string>;
+
+    /**
+     * Match to any severity listed or all severities if undefined.
+     * Use null for no severity assigned, which means there is no issue on the record.
+     */
+    severities?: Array<ConfigIssueSeverity | null>;
+
+//#region identities for specific ConfigAnalysisResult objects based on their feature property.    
+    /**
+     * Match to any lookupKey listed or all lookupKeys if undefined.
+     * Only applies to LookupKeyInfo objects.
+     * Case insensitive match.
+     */
+    lookupKeys?: Array<string>;
+    /**
+     * Match to any serviceName listed or all serviceNames if undefined.
+     * Only applies to LookupKeyServiceInfoBase objects
+     * Case insensitive match.
+     */
+    serviceNames?: Array<string>;
+
+    /**
+     * Match to any valueHostName listed or all valueHostNames if undefined.
+     * Case insensitive match.
+     */
+    valueHostNames?: Array<string>;
+
+    /**
+     * Match to any errorCode listed or all errorCodes if undefined.
+     * Only applies to ValidatorConfigResults objects.
+     * Case insensitive match.
+     */
+    errorCodes?: Array<string>;
+
+    /**
+     * Match to any conditionType listed or all conditionTypes if undefined.
+     * Only applies to ConditionConfigResults objects.
+     * Case insensitive match.
+     */
+    conditionTypes?: Array<string>;
+
+    /**
+     * Match to any propertyName listed or all propertyNames if undefined.
+     * Only applies to ConfigPropertyResult objects.
+     * Case insensitive match.
+     */
+    propertyNames?: Array<string>;
+//#endregion identities for specific ConfigAnalysisResult objects based on their feature property.    
+}
+/**
+ * Represents a result of evaluating a single ConfigAnalysisResult object.
+ * It basically holds the ConfigAnalysisResult and the path to it.
+ * The idea is to flatten the results which are a tree into a single array.
+ */
+export interface CAPathedResult<T extends ConfigAnalysisResultBase> {
+    path: Array<{ feature: string, identifier: string }>;
+    result: T;
+}
+
+export interface IConfigAnalysisOutputFormatter {
+}
+export interface IConfigAnalysisOutputService {
+}
+
+/**
+ * For building an object that can handle a specific type of configuration object based 
+ * on the feature property. These classes are registered with the ConfigAnalysisResultsExplorer
+ * and are created in a factory approach based on the config result object.
+ */
+export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
+    /**
+     * Gets the result of the configuration analysis, which is an object structure
+     * with data from Configuration objects in configIssues,
+     * and data from Lookup Keys and their associated services in lookupKeysInfo.
+     * @returns The result of the configuration analysis.
+     */
+    result: T;
+
+    /**
+     * A fixed value representing the only feature string that is supported by this class.
+     * Each ConfigAnalysisResultBase object has a feature property that is matched to this one.
+     */
+    feature(): string;
+
+/**
+ * Provides a way to identify the specific instance of this object.
+ * Example values are valueHostName, lookupKey, errorCode, conditionType, or the property name of a config object.
+ * These are used to build a path to the object in the configuration.
+ */
+    identifier(): string | null;
+
+    /**
+     * Determines if the result matches the criteria.
+     * It does not evaluate any children of the result.
+     * 
+     * To match, all assigned criteria must match SO LONG AS
+     * it is applicable to the object being evaluated.
+     * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
+
+     * @param criteria When null, it means include all and thus return null.
+     */
+    match(criteria: IConfigAnalysisSearchCriteria | null): boolean;
+
+    /**
+     * Using match on itself and its children, collect all results that match the criteria
+     * into the matches array.
+     * @param criteria - The criteria to match against. When null, include all.
+     * @param matches - Where to add any generated CAPathedResult objects.
+     * @param path The feature + identifier from each parent object to this object. When this calls a child,
+     * it creates a new path from this plus its own identifier. Nothing is added if the identifier is null.
+     * @param factory The factory to create entries going into matches.
+     */
+    collect(criteria: IConfigAnalysisSearchCriteria | null, matches: Array<CAPathedResult<T>>,
+        path: Array<{ feature: string, identifier: string }>, factory: CAExplorerFactory): void;
+    
+    /**
+     * Return a list of all children of the result that match the criteria
+     * or [] if no children are available.
+     */
+    children(): Array<ConfigAnalysisResultBase>;
+
+}
+
+// /**
+//  * Classes that implement will be created for each object found in IConfigAnalysisResults.configIssues.,
+//  * based on the feature property. The ConfigAnalysisResultsExplorer is a factory of these.
+//  */
+// export interface ICAConfigResultsExplorer<T extends ConfigResults<TConfig>, TConfig>  extends ICAExplorerBase<T>
+// {
+
+// }
+// // same for IConfigAnalysisResults.lookupKeysInfo
+// /**
+//  * Classes that implement will be created for each object found in IConfigAnalysisResults.lookupKeysInfo,
+//  * based on the feature property. The ConfigAnalysisResultsExplorer is a factory of these.
+//  */
+// export interface ICALookupKeysInfoExplorer<T extends LookupKeyServiceInfoBase> extends ICAExplorerBase<T>
+// {
+    
+// }
+
+/**
+ * Factory to create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
+ */
+export interface CAExplorerFactory {
+    /**
+     * Create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
+     * It is a factory method that creates the object from the functions registered with 
+     * registerConfigResultsExplorer().
+     * @param configResult 
+     * @returns A new ConfigResultsExplorer object assigned to the configResult object.
+     */
+    create(configResult: ConfigAnalysisResultBase): ICAExplorerBase<ConfigAnalysisResultBase>;
+
+    /**
+     * Register a new ConfigResultsExplorer with this object.
+     * @param feature - The feature that will be used to identify the object by the factory.
+     * @param explorerCreator - Once identified, this function will create the object. It is passed the ConfigResults object
+     * which is expected to be assigned to the result property of the object.
+     */
+    register(feature: string, explorerCreator: ExplorerCreatorHandler): void;
+
+}
+
+export type ExplorerCreatorHandler = (configResult: ConfigAnalysisResultBase) => ICAExplorerBase<ConfigAnalysisResultBase>;
+
 
 /**
  * Options for the configuration analysis service.
@@ -358,6 +572,7 @@ export interface LookupKeyIssue extends ConfigResultMessageBase, ConfigAnalysisR
     lookupKey: string;
 }
 
+export const lookupKeyFeature = 'LookupKey';
 /**
  * Each Lookup Key found gets one of these objects in the results.
  * It encapsulates all the services that use the lookup key.
@@ -365,7 +580,7 @@ export interface LookupKeyIssue extends ConfigResultMessageBase, ConfigAnalysisR
  * and with the PropertyInfo object specifically supplying the invalid key.
  */
 export interface LookupKeyInfo extends ConfigAnalysisResultBase {
-    feature: 'LookupKey';
+    feature: 'LookupKey';   // use lookupKeyFeature const
     lookupKey: string;
     /**
      * When true, the lookup key is used as a DataType.
@@ -377,9 +592,11 @@ export interface LookupKeyInfo extends ConfigAnalysisResultBase {
     services: Array<LookupKeyServiceInfoBase>;
 }
 
+export const dataTypeFeature = 'DataType';
+
 export interface LookupKeyServiceInfoBase extends ConfigAnalysisResultBase
 {
-    feature: 'DataType' | ServiceName;
+    feature: 'DataType' | ServiceName;  // use consts dataTypeFeature, parserServiceFeature, etc.
     
     /**
      * Tell caller to use the LookupKeyFallbackService to find a fallback lookup key.
@@ -432,6 +649,42 @@ export interface OneClassRetrieval extends
 } 
 
 /**
+ * For services that have child result classes, this is a base class
+ * that offers classRetrieval and error messages.
+ */
+export interface ServiceChildResultBase extends ClassRetrievalBase, ConfigAnalysisResultBase,
+    ConfigResultMessageBase {
+}
+
+export const identifierServiceFeature = ServiceName.identifier;
+
+/**
+ * The LookupKeyServiceInfoBase object for the DataTypeIdenfierService.
+ */
+export interface IdentifierServiceClassRetrieval extends OneClassRetrieval {
+    feature: ServiceName.identifier;    // use identifierServiceFeature const
+}
+
+export const converterServiceFeature = ServiceName.converter;
+
+/**
+ * The LookupKeyServiceInfoBase object for the DataTypeConverterService.
+ */
+export interface ConverterServiceClassRetrieval extends OneClassRetrieval {
+    feature: ServiceName.converter; // use converterServiceFeature const
+}
+
+export const comparerServiceFeature = ServiceName.comparer;
+
+/**
+ * The LookupKeyServiceInfoBase object for the DataTypeComparerService.
+ */
+export interface ComparerServiceClassRetrieval extends OneClassRetrieval {
+    feature: ServiceName.comparer;  // use comparerServiceFeature const
+}
+
+
+/**
  * For services that return multiple classes to handle the request.
  * The list of requests is for each case attempted, such as each cultureId.
  * If the case has a result, it includes the class name. Otherwise it 
@@ -445,7 +698,7 @@ export interface MultiClassRetrieval extends LookupKeyServiceInfoBase, ClassNotF
  * Allows for each culture to identify its own class, albeit the same class may be 
  * used by multiple cultures.
  */
-export interface CultureSpecificClassRetrieval extends OneClassRetrieval   {
+export interface CultureSpecificClassRetrieval extends ServiceChildResultBase   {
 
     /**
      * When cultureId is used to find the service, this is the requested cultureId.
@@ -460,16 +713,66 @@ export interface CultureSpecificClassRetrieval extends OneClassRetrieval   {
 
 }
 
+export const parserServiceFeature = ServiceName.parser;
+
+/**
+ * The LookupKeyServiceInfoBase object for the DataTypeParserService.
+ * It's requests array holds the results of the analysis for each cultureId,
+ * using the ParserForCultureClassRetrieval object. Deeper down in 
+ * ParserForCultureClassRetrieval.matches is the actual class retrieval.
+ */
+export interface ParserServiceByLookupKey extends MultiClassRetrieval {
+    feature: ServiceName.parser; // use parserServiceFeature const
+}
+
+
+export const parserForCultureFeature = 'CultureSpecificParser';    // parsers for a specific culture
 /**
  * Parsers may have multiple DataTypeParser objects for a single lookup key and cultureID.
  * This reflects the list for a single lookup key and cultureID.
  */
-export interface ParserClassRetrieval extends
+export interface ParserForCultureClassRetrieval extends
     ConfigAnalysisResultBase,
     ConfigResultMessage,
-    ClassNotFound{
+    ClassNotFound {
+    feature : 'CultureSpecificParser'; // use parserForCultureFeature
     cultureId: string;
-    matches: Array<OneClassRetrieval>;
+    matches: Array<ServiceChildResultBase>;
+}
+
+export const parserServiceClassRetrievalFeature = 'ParserClass';
+/**
+ * For the individual parser classes found for a single lookup key.
+ * These are retained by ParserForCultureClassRetrieval.parsers.
+ * Therefore they are not descendants of LookupKeyServiceInfoBase.
+ * They are not used to report an error or "not found".
+ * That's reserved for the ParserForCultureClassRetrieval object.
+ */
+export interface ParserServiceClassRetrieval
+    extends ServiceChildResultBase {
+    feature: 'ParserClass'; // use parserServiceClassRetrievalFeature const
+}
+
+
+export const formatterServiceFeature = ServiceName.formatter;
+
+/**
+ * The LookupKeyServiceInfoBase object for the DataTypeFormatterService.
+ */
+export interface FormatterServiceClassRetrieval extends MultiClassRetrieval {
+    feature: ServiceName.formatter; // use formatterServiceFeature const
+}
+
+export const formatterForCultureFeature = 'FormatterForCulture';    // formatters for a specific culture
+
+/**
+ * Formatters may have multiple DataTypeFormatter objects for a single lookup key and cultureID.
+ * These are retained by FormatterServiceClassRetrieval.requests.
+ * They can hold a class retrieval, message/severity, or not found.
+ */
+export interface FormatterForCultureClassRetrieval
+    extends CultureSpecificClassRetrieval, ClassNotFound {
+    feature: 'FormatterForCulture'; // use formatterForCultureFeature const
 }
 
 /**
@@ -492,6 +795,9 @@ export interface ConfigResults<TConfig> extends ConfigAnalysisResultBase, Config
     config: TConfig;
 }
 
+export const propertyNameFeature = 'Property';
+export const l10nPropertiesFeature = 'l10nProperties';
+
 /**
  * Documents the results of the analysis of a specific property of
  * a Config object.
@@ -499,7 +805,7 @@ export interface ConfigResults<TConfig> extends ConfigAnalysisResultBase, Config
  * localization, may report info messages describing the results of the analysis.
  */
 export interface ConfigPropertyResult extends ConfigAnalysisResultBase, ConfigResultMessageBase {
-    feature: 'Property' | 'l10nProperties';
+    feature: 'Property' | 'l10nProperties'; // use propertyNameFeature, l10nPropertiesFeature
     /**
      * May be more than one property as several may be analyzed together.
      */
@@ -509,7 +815,7 @@ export interface ConfigPropertyResult extends ConfigAnalysisResultBase, ConfigRe
  * For a pair of properties related to localization, such as "label" and "labell10n".
  */
 export interface LocalizedPropertyResult extends ConfigPropertyResult {
-    feature: 'l10nProperties';
+    feature: 'l10nProperties';  // use l10nPropertiesFeature
     /**
      * The localization key passed to TextLocalizerService.
      */
@@ -532,20 +838,24 @@ export interface LocalizedTextResult extends ConfigResultMessageBase
      */
     text?: string;
 }
+
+export const errorFeature = 'Error';
 /**
  * Use when an error is throw. It can identify its source and message.
  */
 export interface ConfigErrorResult extends ConfigAnalysisResultBase, ConfigResultMessageBase {
-    feature: 'Error';
+    feature: 'Error';   // use errorFeature const
     severity: ConfigIssueSeverity.error;
     analyzerClassName: string;
 }
+
+export const valueHostFeature = 'ValueHost';
 
 /**
  * Represents the analysis results for a ValueHostConfig object.
  */
 export interface ValueHostConfigResults extends ConfigResults<ValueHostConfig> { 
-    feature: 'ValueHost';
+    feature: 'ValueHost';   // use valueHostFeature const
     valueHostName: string;
     /**
      * If the valueHostType supports validatorConfigs, any 
@@ -559,12 +869,13 @@ export interface ValueHostConfigResults extends ConfigResults<ValueHostConfig> {
     enablerCondition?: ConditionConfigResults;
 }
 
+export const validatorFeature = 'Validator';
 /**
  * Issues found around the validatorConfig, such as invalid error messages and problem
  * with the condition.
  */
 export interface ValidatorConfigResults extends ConfigResults<ValidatorConfig> {
-    feature: 'Validator';
+    feature: 'Validator';   // use validatorFeature const
     /**
      * The errorCode of the validator.
      */
@@ -577,11 +888,12 @@ export interface ValidatorConfigResults extends ConfigResults<ValidatorConfig> {
     condition?: ConditionConfigResults;
 }
 
+export const conditionFeature = 'Condition';
 /**
  * Issues found with the condition itself.
  */
 export interface ConditionConfigResults extends ConfigResults<ConditionConfig>, ClassRetrievalBase {
-    feature: 'Condition';
+    feature: 'Condition';   // use conditionFeature const
     conditionType: string;
 }
 

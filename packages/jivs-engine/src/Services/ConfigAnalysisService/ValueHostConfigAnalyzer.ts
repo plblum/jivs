@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ValueHostConfigResults, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ConfigPropertyResult, ConfigIssueSeverity } from "../../Interfaces/ConfigAnalysisService";
+import { ValueHostConfigResults, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ConfigPropertyResult, ConfigIssueSeverity, propertyNameFeature, valueHostFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValidatorsValueHostBaseConfig } from "../../Interfaces/ValidatorsValueHostBase";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
@@ -29,7 +29,7 @@ implements IValueHostConfigAnalyzer<TServices> {
     }
     protected initResults(config: ValueHostConfig): ValueHostConfigResults {
         let result: ValueHostConfigResults = {
-            feature: 'ValueHost',
+            feature: valueHostFeature,
             valueHostName: cleanString(config.name) ?? '',
             properties: [],
             config: config
@@ -61,7 +61,7 @@ implements IValueHostConfigAnalyzer<TServices> {
 
             if (duplicate) {
                 results.properties.push(<ConfigPropertyResult>{
-                    feature: 'Property',
+                    feature: propertyNameFeature,
                     propertyName: 'valueHostName',
                     severity: ConfigIssueSeverity.error,
                     message: `The ValueHostConfig name "${config.name}" is a case insensitive match to another. It must be unique.`
