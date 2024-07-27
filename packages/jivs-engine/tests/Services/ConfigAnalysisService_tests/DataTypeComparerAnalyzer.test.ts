@@ -4,7 +4,7 @@ import { createValidationServicesForTesting, registerAllConditions } from "../..
 import { ComparersResult } from "../../../src/Interfaces/DataTypeComparerService";
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { ConditionCategory, ConditionConfig } from '../../../src/Interfaces/Conditions';
-import { CAIssueSeverity, ComparerServiceCAResult } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAFeature, CAIssueSeverity, ComparerServiceCAResult } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { DataTypeComparerAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
 import { setupHelper } from './support';
@@ -306,7 +306,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                     let lkService = checkConditionConfig(conditionConfig,
                         valueHostConfig, expectedLookupKey, true,
                         {
-                            feature: ServiceName.comparer,
+                            feature: CAFeature.comparer,
                             classFound: 'evidence',
                         })!;  // existing service
                     expect(lkService).toBeDefined();
@@ -327,7 +327,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                     let lkService = checkConditionConfig(conditionConfig,
                         valueHostConfig, expectedLookupKey, true,
                         {
-                            feature: ServiceName.comparer,
+                            feature: CAFeature.comparer,
                             notFound: true,
                             message: 'evidence of prior call'
                         })!;  // existing service
@@ -365,7 +365,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                     let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                     let serviceInfo: ComparerServiceCAResult = {
-                        feature: ServiceName.comparer,
+                        feature: CAFeature.comparer,
                     };
                     lkResult!.serviceResults.push(serviceInfo);
                 }

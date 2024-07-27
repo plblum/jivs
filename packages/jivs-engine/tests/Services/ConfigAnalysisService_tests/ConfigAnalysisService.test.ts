@@ -3,7 +3,10 @@ import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
     AnalysisArgs, ConfigAnalysisServiceOptions, CAIssueSeverity, PropertyCAResult,
     IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
-    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, ServiceWithLookupKeyCAResultBase, ValidatorConfigCAResult, ValueHostConfigCAResult, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
+    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer,
+    IValueHostConfigPropertyAnalyzer, ServiceWithLookupKeyCAResultBase,
+    ValidatorConfigCAResult, ValueHostConfigCAResult,
+    CAFeature
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../../src/Interfaces/DataTypeIdentifier";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
@@ -245,12 +248,12 @@ describe('ConfigAnalysisServiceBase class', () => {
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
             expect(setup.results.lookupKeyResults).toEqual([
                 {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any,
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.converter, message: 'testConverter', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
@@ -273,11 +276,11 @@ describe('ConfigAnalysisServiceBase class', () => {
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
             expect(setup.results.lookupKeyResults).toEqual([
                 {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
@@ -401,18 +404,18 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.valueHostNames).toEqual(['testValueHost1']);
             expect(results.lookupKeyResults).toEqual([
                 {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.valueHostResults).toHaveLength(1);
             expect(results.valueHostResults[0]).toEqual({
-                feature: valueHostFeature,
+                feature: CAFeature.valueHost,
                 valueHostName: 'testValueHost1',
                 properties: [],
                 config: {
@@ -463,18 +466,18 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.valueHostNames).toEqual(['testValueHost1']);
             expect(results.lookupKeyResults).toEqual([
                 {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.valueHostResults).toHaveLength(1);
             expect(results.valueHostResults[0]).toEqual({
-                feature: valueHostFeature,
+                feature: CAFeature.valueHost,
                 valueHostName: 'testValueHost1',
                 properties: [],
                 config: {

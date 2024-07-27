@@ -3,10 +3,11 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ComparerServiceCAResult, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyCAResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import {
+    ComparerServiceCAResult, CAIssueSeverity, IDataTypeComparerAnalyzer, CAFeature
+} from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -35,7 +36,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * When the class is found:
  * ```ts
  * {  // ComparerServiceCAResult
- *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      feature: CAFeature.comparer, // = ServiceName.comparer
  *      classFound: 'MyComparer',
  *      instance: comparerInstance,
  *      dataExamples: [sampleValue]
@@ -44,7 +45,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * When the defaultComparer function is used:
  * ```ts
  * {  // ComparerServiceCAResult
- *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      feature: CAFeature.comparer, // = ServiceName.comparer
  *      classFound: 'defaultComparer',
  *      dataExamples: [sampleValue]
  * }
@@ -52,7 +53,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * When there is an error or warning:
  * ```ts
  * {  // ComparerServiceCAResult
- *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      feature: CAFeature.comparer, // = ServiceName.comparer
  *      message: 'error message',
  *      severity: 'error' | 'warning'
  * }
@@ -60,7 +61,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * When the comparer is not found:
  * ```ts
  * {  // ComparerServiceCAResult
- *      feature: comparerServiceFeature, // = ServiceName.comparer
+ *      feature: CAFeature.comparer, // = ServiceName.comparer
  *      message: 'error message',
  *      severity: 'warning',
  *      notFound: true
@@ -126,7 +127,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         if (serviceInfo)
             return serviceInfo;
         let results: ComparerServiceCAResult = {
-            feature: comparerServiceFeature
+            feature: CAFeature.comparer
         };
         // we'll add the remaining fields in the remaining code
         lookupKeyResult.serviceResults.push(results);

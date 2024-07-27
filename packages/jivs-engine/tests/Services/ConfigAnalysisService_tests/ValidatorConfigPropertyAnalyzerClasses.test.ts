@@ -1,6 +1,9 @@
 import { NumberFormatter } from "../../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
-import { PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult, ValidatorConfigCAResult, IConfigAnalysisResults, validatorFeature, formattersByCultureFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import {
+    PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult, ValidatorConfigCAResult, IConfigAnalysisResults,
+    CAFeature
+} from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "../../../src/Interfaces/ValidatorsValueHostBase";
@@ -31,7 +34,7 @@ function createValidatorConfigResults(): ValidatorConfigCAResult {
         conditionConfig: { conditionType: 'Test' }
     };                
     return {
-        feature: validatorFeature,
+        feature: CAFeature.validator,
         properties: [],
         config: vc,
         errorCode: null!
@@ -84,7 +87,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 
             });
             // token has a custom lookup key that has no compatible Formatter reports Not found error
@@ -99,7 +102,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en');
+                    serviceInfo, CAFeature.formattersByCulture, 'en');
             });
 
             test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
@@ -161,7 +164,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
             });
             // token has a custom lookup key that has no compatible Formatter reports Not found error
@@ -175,7 +178,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en');
+                    serviceInfo, CAFeature.formattersByCulture, 'en');
             });
             test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
@@ -245,7 +248,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'errorMessage', 1, 'en', 'en', '{Token:Number}', undefined);
             });
@@ -264,7 +267,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en');
+                    serviceInfo, CAFeature.formattersByCulture, 'en');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'errorMessage', 1, 'en', 'en', '{Token:Custom}', undefined);                
             });
@@ -338,7 +341,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', '{Token:Number}', undefined);                   
             });
@@ -355,7 +358,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formattersByCultureFeature, 'en');
+                    serviceInfo, CAFeature.formattersByCulture, 'en');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', '{Token:Custom}', undefined);                   
             });

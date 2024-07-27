@@ -3,7 +3,10 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { CAIssueSeverity, PropertyCAResult, IAnalysisResultsHelper, ValidatorConfigCAResult, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import {
+    CAIssueSeverity, PropertyCAResult, IAnalysisResultsHelper, ValidatorConfigCAResult,
+    CAFeature
+} from "../../Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../Interfaces/Validator";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -93,7 +96,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
             let em: string | null | undefined = '';
             if (typeof fallbackValue === 'function') {
                 propResults.push({
-                    feature: propertyNameFeature,
+                    feature: CAFeature.property,
                     propertyName: propertyName,
                     severity: CAIssueSeverity.info,
                     message: `The ${propertyName} property is a function. It will not be analyzed.`
@@ -120,7 +123,7 @@ export class ConditionCreatorConfigPropertyAnalyzer extends ValidatorConfigPrope
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
         let propResult: PropertyCAResult = {
-            feature: propertyNameFeature,
+            feature: CAFeature.property,
             propertyName: 'conditionCreator',
             severity: undefined!,
             message: ''

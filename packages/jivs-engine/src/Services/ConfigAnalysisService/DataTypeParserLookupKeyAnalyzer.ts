@@ -2,11 +2,13 @@
  * Support the DataTypeParserService and its IDataTypeParser objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CultureSpecificClassRetrieval, OneClassRetrieval, parserServiceFeature, parsersByCultureFeature, ParserFoundCAResult, parserFoundFeature } from "../../Interfaces/ConfigAnalysisService";
+import {
+    ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParserFoundCAResult
+} from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeParser } from "../../Interfaces/DataTypeParsers";
-import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
+import { IValidationServices } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
-import { ensureError, CodingError } from "../../Utilities/ErrorHandling";
+import { ensureError } from "../../Utilities/ErrorHandling";
 import { AnalysisArgs } from "../../Interfaces/ConfigAnalysisService";
 import { ParsersByCultureCAResult } from '../../Interfaces/ConfigAnalysisService';
 import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
@@ -32,15 +34,15 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  *   will have these properties set: message, error, cultureId.
  *   ```ts
  *   {  // ParserServiceCAResult
- *      feature: parserServiceFeature,
+ *      feature: CAFeature.parser,
  *      requests: [ // ParsersByCultureCAResult objects
  *      {
- *          feature: parserServiceFeature,
+ *          feature: CAFeature.parser,
  *          cultureId: 'en-US',
  *    // when found
  *          parserResults: [ // ParserFoundCAResult objects for each found
  *          {
- *              feature: parserServiceFeature,
+ *              feature: CAFeature.parser,
  *              classFound: 'MyParser',
  *              instance: parserInstance,
  *          } // and more if multiple matches
@@ -65,7 +67,7 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
         let info: ParserServiceCAResult = {
-            feature: parserServiceFeature,
+            feature: CAFeature.parser,
             results: []
         };
         let lookupKey = key ?? container.dataType;
@@ -81,7 +83,7 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
                 catch (e) {
                     info.tryFallback = false;
                     let errorInfo: ParsersByCultureCAResult = {
-                        feature: parsersByCultureFeature,
+                        feature: CAFeature.parsersByCulture,
                         cultureId: cultureId,
                         notFound: true,
                         parserResults: []
@@ -105,7 +107,7 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
      */
     public analyzeForCulture(lookupKey: string, startingCultureId: string): ParsersByCultureCAResult {
         let info: ParsersByCultureCAResult = {
-            feature: parsersByCultureFeature,
+            feature: CAFeature.parsersByCulture,
             cultureId: startingCultureId,
             parserResults: []
         };
@@ -116,7 +118,7 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
                 let sci: ParserFoundCAResult = {
                     classFound: parser.constructor.name,
                     instance: parser,
-                    feature: parserFoundFeature,
+                    feature: CAFeature.parserFound,
                     //!!FUTURE                    dataExamples: []
                 };
                 info.parserResults.push(sci);

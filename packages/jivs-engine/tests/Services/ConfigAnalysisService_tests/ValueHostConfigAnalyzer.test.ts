@@ -1,5 +1,5 @@
 import { DataTypeComparerAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
-import { CAIssueSeverity, IConditionConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigCAResult, ValueHostConfigCAResult, conditionFeature, lookupKeyFeature, validatorFeature, valueHostFeature } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, IConditionConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigCAResult, ValueHostConfigCAResult, CAFeature } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValueHostConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
@@ -18,7 +18,6 @@ import { NumberParser } from '../../../src/DataTypes/DataTypeParsers';
 import { DataTypeParserLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeParserLookupKeyAnalyzer';
 import { DataTypeParserService } from '../../../src/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '../../../src/Interfaces/ValidatorsValueHostBase';
-import { registerAllConditions } from '../../TestSupport/createValidationServices';
 import { ConditionType } from '../../../src/Conditions/ConditionTypes';
 import { EqualToValueCondition, EqualToValueConditionConfig, RequireTextCondition, RequireTextConditionConfig } from '../../../src/Conditions/ConcreteConditions';
 import { ConditionConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer';
@@ -34,7 +33,7 @@ class MockValidatorConfigAnalyzer implements IValidatorConfigAnalyzer {
     analyze(config: ValidatorConfig, valueHostConfig: ValueHostConfig | null, existingResults: ValidatorConfigCAResult[]): ValidatorConfigCAResult {
         this.ranCount++;
         return <ValidatorConfigCAResult>{
-            feature: validatorFeature,
+            feature: CAFeature.validator,
             errorCode: 'TESTEC',
             config: config,
             properties: []
@@ -70,7 +69,7 @@ describe('ValueHostConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe(valueHostFeature);
+            expect(results.feature).toBe(CAFeature.valueHost);
             expect(results.valueHostName).toBe('Test');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();
@@ -89,7 +88,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.valueHostName).toBe('[Missing]');
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe(valueHostFeature);
+            expect(results.feature).toBe(CAFeature.valueHost);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
             expect(results.severity).toBe(CAIssueSeverity.error);
             expect(results.validatorResults).toBeUndefined();
@@ -106,7 +105,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.valueHostName).toBe('[Missing]');
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe(valueHostFeature);
+            expect(results.feature).toBe(CAFeature.valueHost);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
             expect(results.severity).toBe(CAIssueSeverity.error);
             expect(results.validatorResults).toBeUndefined();
@@ -123,7 +122,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.valueHostName).toBe('[Missing]');
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe(valueHostFeature);
+            expect(results.feature).toBe(CAFeature.valueHost);
             expect(results.message).toContain('The ValueHostConfig name is missing. It is required.');
             expect(results.severity).toBe(CAIssueSeverity.error);
 
@@ -140,7 +139,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.valueHostName).toBe('Test');
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testConfig);
-            expect(results.feature).toBe(valueHostFeature);
+            expect(results.feature).toBe(CAFeature.valueHost);
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();
             expect(results.validatorResults).toBeUndefined();
@@ -167,7 +166,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 `The ValueHostConfig name "${testConfig1.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
-            expect(results2.feature).toBe(valueHostFeature);
+            expect(results2.feature).toBe(CAFeature.valueHost);
             expect(results2.valueHostName).toBe('Test');
             expect(results2.validatorResults).toBeUndefined();
 
@@ -191,7 +190,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
-            expect(results2.feature).toBe(valueHostFeature);
+            expect(results2.feature).toBe(CAFeature.valueHost);
             expect(results2.valueHostName).toBe('test');
             expect(results2.validatorResults).toBeUndefined();
 
@@ -215,7 +214,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 `The ValueHostConfig name "${testConfig2.name}" is a case insensitive match to another. It must be unique.`, CAIssueSeverity.error);
         
             expect(results2.config).toBe(testConfig2);
-            expect(results2.feature).toBe(valueHostFeature);
+            expect(results2.feature).toBe(CAFeature.valueHost);
             expect(results2.valueHostName).toBe('Test');    // trimmed
             expect(results2.validatorResults).toBeUndefined();
         });
@@ -325,7 +324,7 @@ describe('ValueHostConfigAnalyzer', () => {
             const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerConditionResult).toBeDefined();
-            expect(results.enablerConditionResult!.feature).toBe(conditionFeature);
+            expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
             expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.RequireText);
         });
         // using EqualToValueConditionConfig, it will need to setup a comparer.
@@ -356,7 +355,7 @@ describe('ValueHostConfigAnalyzer', () => {
             const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerConditionResult).toBeDefined();
-            expect(results.enablerConditionResult!.feature).toBe(conditionFeature);
+            expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
             expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualToValue);
             checkLookupKeyResultsForService(helper.results.lookupKeyResults, LookupKey.String, ServiceName.comparer);
         });
@@ -388,7 +387,7 @@ describe('ValueHostConfigAnalyzer', () => {
             const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerConditionResult).toBeDefined();
-            expect(results.enablerConditionResult!.feature).toBe(conditionFeature);
+            expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
             expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualToValue);
             checkLookupKeyResultsForService(helper.results.lookupKeyResults, 'Custom', ServiceName.comparer);
             expect(results.enablerConditionResult!.severity).toBe(CAIssueSeverity.warning);
@@ -412,7 +411,7 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.config).toBe(testValueHostConfig);
             expect(helper.results.lookupKeyResults).toEqual([
                 {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     serviceResults: []

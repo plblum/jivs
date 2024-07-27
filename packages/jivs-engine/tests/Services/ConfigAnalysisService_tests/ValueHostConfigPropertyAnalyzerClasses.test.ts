@@ -1,6 +1,6 @@
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig } from "../../../src/Interfaces/CalcValueHost";
-import { CAIssueSeverity, LocalizedPropertyCAResult, ValueHostConfigCAResult, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, LocalizedPropertyCAResult, ValueHostConfigCAResult, CAFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
@@ -36,7 +36,7 @@ function setupForTheseTests(services: IValidationServices,
     let helper = setupHelper(services);
     // this should emulate the ValueHostConfigAnalyzer.analyze() function's creation of the results
     let results: ValueHostConfigCAResult = {
-        feature: valueHostFeature,
+        feature: CAFeature.valueHost,
         config: config,
         valueHostName: config.name,
         properties: []

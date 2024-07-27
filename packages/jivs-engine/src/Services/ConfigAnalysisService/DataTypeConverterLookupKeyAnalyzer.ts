@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult, CAFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeConverter } from "../../Interfaces/DataTypeConverters";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -49,7 +49,7 @@ export class DataTypeConverterLookupKeyAnalyzer extends OneClassPerLookupKeyAnal
      */
     public analyze(key: string, valueHostConfig: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
         let result: ConverterServiceCAResult = {
-            feature: ServiceName.converter,
+            feature: CAFeature.converter,
 
         };
         let sampleValue = this.analysisArgs.sampleValues.getSampleValue(

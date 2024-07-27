@@ -7,7 +7,10 @@ import { createAnalysisArgs } from "./support";
 import { IDataTypeParser } from '../../../src/Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../../../src/Interfaces/DataTypes';
 import { CultureService } from '../../../src/Services/CultureService';
-import { CAIssueSeverity, IssueForCAResultBase, ParsersByCultureCAResult, parserServiceFeature, parsersByCultureFeature, ParserFoundCAResult, ParserServiceCAResult, parserFoundFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import {
+    CAIssueSeverity, IssueForCAResultBase, ParsersByCultureCAResult,
+    CAFeature, ParserFoundCAResult, ParserServiceCAResult
+} from "../../../src/Interfaces/ConfigAnalysisService";
 
 const toNumberParserLookupKey = 'toNumber';
 class ToNumberParser implements IDataTypeParser<number> {
@@ -95,7 +98,7 @@ function manyParsers(services: IValidationServices) {
 function verifyResults(result: ParserServiceCAResult,
     expectedRequestsCount: number, expectedTryFallback: boolean | undefined): ParserServiceCAResult {
     expect(result).toBeDefined();
-    expect(result.feature).toBe(parserServiceFeature);
+    expect(result.feature).toBe(CAFeature.parser);
     expect(result.results).toBeDefined();
     expect(result.results).toHaveLength(expectedRequestsCount);
     expect(result.tryFallback).toBe(expectedTryFallback);
@@ -106,7 +109,7 @@ function verifyParserForCultureClassRetrieval(plk: ParsersByCultureCAResult,
     cultureId: string, expectedParsersCount: number,
     expectedErrorMessage?: string, expectedSeverity?: CAIssueSeverity) {
     expect(plk).toBeDefined();
-    expect(plk.feature).toBe(parsersByCultureFeature);
+    expect(plk.feature).toBe(CAFeature.parsersByCulture);
     expect(plk.cultureId).toEqual(cultureId);
     expect(plk.severity).toEqual(expectedSeverity);
     expect(plk.message).toEqual(expectedErrorMessage);
@@ -118,7 +121,7 @@ function verifyParserFoundCAResult(
     expectedClassFound: string, expectedInstance: any, expectedCaseIdentifier: string) {
     let scmlk = plk.parserResults[scmlkIndex] as ParserFoundCAResult;
     expect(scmlk).toBeDefined();
-    expect(scmlk.feature).toBe(parserFoundFeature);
+    expect(scmlk.feature).toBe(CAFeature.parserFound);
     expect(scmlk.classFound).toEqual(expectedClassFound);
     expect(scmlk.instance).toBeInstanceOf(expectedInstance);
     expect(scmlk.instance.caseIdentifier).toEqual(expectedCaseIdentifier);

@@ -2,9 +2,12 @@
  * Support the DataTypeFormatterService and its IDataTypeFormatter objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { ServiceWithLookupKeyCAResultBase, FormattersByCultureCAResult, FormatterServiceCAResult, formatterServiceFeature, formattersByCultureFeature } from "../../Interfaces/ConfigAnalysisService";
+import {
+    ServiceWithLookupKeyCAResultBase, FormattersByCultureCAResult, FormatterServiceCAResult,
+    CAFeature
+} from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeFormatter } from "../../Interfaces/DataTypeFormatters";
-import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
+import { IValidationServices } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { ensureError, CodingError } from "../../Utilities/ErrorHandling";
 import { AnalysisArgs } from "../../Interfaces/ConfigAnalysisService";
@@ -34,7 +37,7 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  *      feature: formatterServiceFormatter,
  *      results: [ // FormattersByCultureCAResult objects
  *      {
- *          feature: formattersByCultureFeature,
+ *          feature: CAFeature.formattersByCulture,
  *          requestedCultureId: 'en-US',
  *     // when found
  *          classFound: 'MyFormatter',
@@ -60,7 +63,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
         let info: FormatterServiceCAResult = {
-            feature: formatterServiceFeature,
+            feature: CAFeature.formatter,
             results: []
         };
         let lookupKey = key ?? container.dataType;
@@ -79,7 +82,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
                     info.tryFallback = false;
                     // istanbul ignore next
                     let errorInfo: FormattersByCultureCAResult = {
-                        feature: formattersByCultureFeature,
+                        feature: CAFeature.formattersByCulture,
                         requestedCultureId: cultureId,
                         notFound: true
                     }
@@ -116,7 +119,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      */
     public analyzeForCulture(lookupKey: string, startingCultureId: string): FormattersByCultureCAResult {
         let info: FormattersByCultureCAResult = {
-            feature: formattersByCultureFeature,
+            feature: CAFeature.formattersByCulture,
             requestedCultureId: startingCultureId
         };
         this.analyzeForCultureRecursive(info, lookupKey, startingCultureId);

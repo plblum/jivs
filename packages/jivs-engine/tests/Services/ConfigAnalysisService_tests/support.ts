@@ -1,9 +1,7 @@
 import {
+    CAFeature,
     IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigCAResult, CAIssueSeverity,
-    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
-    parsersByCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
-    parserServiceFeature,
-    parserFoundFeature
+    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
@@ -65,7 +63,7 @@ export function createAnalysisArgs(services: IValidationServices,
     mockAnalysisArgs.conditionConfigAnalyzer = <IConditionConfigAnalyzer<any>>{
         analyze: (conditionConfig, valueHostConfig, existingResults) => {
             return {
-                feature: conditionFeature,
+                feature: CAFeature.condition,
                 conditionType: conditionConfig.conditionType,
                 properties: [],
                 config: conditionConfig
@@ -76,7 +74,7 @@ export function createAnalysisArgs(services: IValidationServices,
         
         analyze: (validatorConfig, valueHostConfig, existingResults) => {
             return {
-                feature: validatorFeature,
+                feature: CAFeature.validator,
                 properties: [],
                 config: validatorConfig,
                 errorCode: 'anything'
@@ -86,7 +84,7 @@ export function createAnalysisArgs(services: IValidationServices,
     mockAnalysisArgs.valueHostConfigAnalyzer = <IValueHostConfigAnalyzer<any>>{
         analyze: (valueHostConfig, alt, existingResults) => {
             return {
-                feature: valueHostFeature,
+                feature: CAFeature.valueHost,
                 properties: [],
                 config: valueHostConfig,
                 valueHostName: valueHostConfig.name
@@ -155,7 +153,7 @@ export function checkValueHostConfigResultsInArray(results: Array<ValueHostConfi
 export function checkValueHostConfigResults(result: ValueHostConfigCAResult | undefined,
     expectedValueHostName: string) : void {
     expect(result).toBeDefined();
-    expect(result!.feature).toBe(valueHostFeature);
+    expect(result!.feature).toBe(CAFeature.valueHost);
     expect(result!.valueHostName).toBe(expectedValueHostName);
     expect(result!.config).toBeDefined();
 }
@@ -175,7 +173,7 @@ export function checkPropertyCAResults(result: PropertyCAResult | undefined,
 
     expect(result).toBeDefined();
     expect(result!.propertyName).toContain(expectedPropertyName);
-    expect(result!.feature).toMatch(/^(Property|l10nProperties)$/);   // 
+    expect(result!.feature).toMatch(/^(Property|l10nProperty)$/);   // 
     expect(result!.severity).toBe(expectedSeverity);
     if (expectedPartialMessage === undefined)
         expect(result!.message).toBeUndefined();
@@ -187,7 +185,7 @@ export function checkLookupKeyIssue(allResults: IConfigAnalysisResults,
     index: number, expectedLookupKey: string, expectedPartialMessage: string): LookupKeyIssue {
     let issue = allResults.lookupKeysIssues[index];
     expect(issue).toBeDefined();
-    expect(issue.feature).toBe(lookupKeyFeature);
+    expect(issue.feature).toBe(CAFeature.lookupKey);
     expect(issue.lookupKey).toBe(expectedLookupKey);
     expect(issue.message).toContain(expectedPartialMessage);
     return issue;
@@ -197,7 +195,7 @@ export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyCAResult>
 
     let lkResult = lookupKeyResults.find(lk => lk.lookupKey === expectedLookupKey);
     expect(lkResult).toBeDefined();
-    expect(lkResult!.feature).toBe(lookupKeyFeature);
+    expect(lkResult!.feature).toBe(CAFeature.lookupKey);
 
     return lkResult!;
 }
@@ -245,15 +243,15 @@ export function checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo: S
     indexIntoMatches: number,
     expectedCultureId: string, expectedClassFound: string,
     expectedInstanceType: any): void {
-    expect(serviceInfo.feature).toBe(parserServiceFeature);
+    expect(serviceInfo.feature).toBe(CAFeature.parser);
     let mcr = serviceInfo as MultiClassRetrieval;
     let request = mcr.results[indexIntoRequests] as ParsersByCultureCAResult;
     expect(request).toBeDefined();
-    expect(request.feature).toBe(parsersByCultureFeature);
+    expect(request.feature).toBe(CAFeature.parsersByCulture);
     expect(request.cultureId).toBe(expectedCultureId);
     let parserResult = request.parserResults[indexIntoMatches];
     expect(parserResult).toBeDefined();
-    expect(parserResult.feature).toBe(parserFoundFeature);
+    expect(parserResult.feature).toBe(CAFeature.parserFound);
     expect(parserResult.classFound).toBe(expectedClassFound);
     expect(parserResult.instance).toBeInstanceOf(expectedInstanceType);
 }
@@ -346,7 +344,7 @@ export function checkCultureSpecificClassRetrievalNotFoundInService(
 export function checkSyntaxError(propertyResult: PropertyCAResult,
     expectedPropertyName: string): void {
 
-    expect(propertyResult.feature).toBe(propertyNameFeature);
+    expect(propertyResult.feature).toBe(CAFeature.property);
     expect(propertyResult.propertyName).toBe(expectedPropertyName);
     expect(propertyResult.severity).toBe(CAIssueSeverity.error);
     expect(propertyResult.message).toContain('Syntax error');

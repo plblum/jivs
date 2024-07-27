@@ -3,9 +3,8 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, CAFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../Interfaces/DataTypeIdentifier";
-import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { AnalysisArgs } from "../../Interfaces/ConfigAnalysisService";
@@ -29,7 +28,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * When found:
  * ```ts
  * {  // IdentifierServiceCAResult
- *      feature: identifierServiceFeature,
+ *      feature: CAFeature.identifier,
  *      classFound: 'MyIdentifier',
  *      instance: identifierInstance,
  * }
@@ -37,7 +36,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * When not found:
  * ```ts
  * {  // IdentifierServiceCAResult
- *      feature: identifierServiceFeature,
+ *      feature: CAFeature.identifier,
  *      severity: 'error',
  *      message: 'error message',
  *      notFound: true,
@@ -55,7 +54,7 @@ export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAna
 
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
         let info: IdentifierServiceCAResult = {
-            feature: identifierServiceFeature
+            feature: CAFeature.identifier
         };
 
         let dti = this.services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === key);

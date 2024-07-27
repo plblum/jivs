@@ -4,7 +4,8 @@
  */
 
 import { ConditionConfig } from "../../Interfaces/Conditions";
-import { ConditionConfigCAResult, CAIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigCAResult, CAIssueSeverity, IConditionConfigAnalyzer, 
+    IConditionConfigPropertyAnalyzer, CAFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { ensureError } from "../../Utilities/ErrorHandling";
@@ -32,7 +33,7 @@ implements IConditionConfigAnalyzer<TServices> {
     }
     protected initResults(config: ConditionConfig): ConditionConfigCAResult {
         return {
-            feature: conditionFeature,
+            feature: CAFeature.condition,
             conditionType: cleanString(config.conditionType) ?? '[Missing]',
 
             config: config,

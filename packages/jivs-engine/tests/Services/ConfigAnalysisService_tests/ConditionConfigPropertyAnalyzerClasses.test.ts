@@ -5,7 +5,10 @@ import { CompareToSecondValueHostConditionBaseConfig } from './../../../src/Cond
 import { ConditionCategory, SupportsDataTypeConverter } from './../../../src/Interfaces/Conditions';
 import { DataTypeConverterLookupKeyAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
-import { ConditionConfigCAResult, ConditionConfigWithChildrenResults, CAIssueSeverity, conditionFeature } from '../../../src/Interfaces/ConfigAnalysisService';
+import {
+    ConditionConfigCAResult, ConditionConfigWithChildrenResults, CAIssueSeverity,
+    CAFeature
+} from '../../../src/Interfaces/ConfigAnalysisService';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { checkPropertyCAResultsFromArray, createServices, setupHelper } from './support';
@@ -51,7 +54,7 @@ function createValueHostConfig(): ValueHostConfig {
 }    
 function createConditionResults(config: ConditionConfig): ConditionConfigCAResult {
     return {
-        feature: conditionFeature,
+        feature: CAFeature.condition,
         conditionType: config.conditionType ?? '[Missing]',
         config: config,
         properties: []

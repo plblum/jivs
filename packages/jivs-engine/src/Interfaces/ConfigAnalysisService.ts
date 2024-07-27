@@ -502,6 +502,24 @@ export interface IDataTypeComparerAnalyzer {
 
 //#region description of results
 
+export enum CAFeature{
+    valueHost = 'ValueHost',
+    validator = 'Validator',
+    condition = 'Condition',
+    lookupKey = 'LookupKey',
+    identifier = ServiceName.identifier,
+    converter = ServiceName.converter,
+    comparer = ServiceName.comparer,
+    parser = ServiceName.parser,
+    parsersByCulture = 'ParsersByCulture',
+    parserFound = 'ParserFound',
+    formatter = ServiceName.formatter,
+    formattersByCulture = 'FormattersByCulture',
+    property = 'Property',
+    l10nProperty = 'l10nProperty',
+    error = 'Error',
+}
+
 /**
  * Represents the base structure for a configuration analysis result.
  */
@@ -539,7 +557,6 @@ export interface LookupKeyIssue extends IssueForCAResultBase, CAResultBase {
     lookupKey: string;
 }
 
-export const lookupKeyFeature = 'LookupKey';
 /**
  * Each Lookup Key found gets one of these objects in the results.
  * It encapsulates all the services that use the lookup key.
@@ -547,7 +564,7 @@ export const lookupKeyFeature = 'LookupKey';
  * and with the PropertyInfo object specifically supplying the invalid key.
  */
 export interface LookupKeyCAResult extends CAResultBase {
-    feature: 'LookupKey';   // use lookupKeyFeature const
+    feature: CAFeature.lookupKey
     lookupKey: string;
     /**
      * When true, the lookup key is used as a DataType.
@@ -559,8 +576,6 @@ export interface LookupKeyCAResult extends CAResultBase {
     serviceResults: Array<ServiceWithLookupKeyCAResultBase>;
 }
 
-export const dataTypeFeature = 'DataType';
-
 /**
  * For all services that use a lookup key, this is the base class for the LookupKeyCAResult.services array.
  * Features are 'DataType' or any ServiceName that supports a lookup key.
@@ -568,8 +583,6 @@ export const dataTypeFeature = 'DataType';
  */
 export interface ServiceWithLookupKeyCAResultBase extends CAResultBase
 {
-    feature: 'DataType' | ServiceName;  // use consts dataTypeFeature, parserServiceFeature, etc.
-    
     /**
      * Tell caller to use the LookupKeyFallbackService to find a fallback lookup key.
      * This is true when there is no match for the lookup key.
@@ -617,7 +630,7 @@ export interface ClassNotFound extends IssueForCAResultBase {
 export interface OneClassRetrieval extends
     ServiceWithLookupKeyCAResultBase,
     ClassRetrieval,
-    ClassNotFound{ 
+    ClassNotFound { 
 } 
 
 /**
@@ -630,31 +643,27 @@ export interface ServiceChildResultBase extends
     IssueForCAResultBase {
 }
 
-export const identifierServiceFeature = ServiceName.identifier;
-
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeIdenfierService.
  */
 export interface IdentifierServiceCAResult extends OneClassRetrieval {
-    feature: ServiceName.identifier;    // use identifierServiceFeature const
+    feature: CAFeature.identifier;
 }
 
-export const converterServiceFeature = ServiceName.converter;
 
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeConverterService.
  */
 export interface ConverterServiceCAResult extends OneClassRetrieval {
-    feature: ServiceName.converter; // use converterServiceFeature const
+    feature: CAFeature.converter;
 }
 
-export const comparerServiceFeature = ServiceName.comparer;
 
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeComparerService.
  */
 export interface ComparerServiceCAResult extends OneClassRetrieval {
-    feature: ServiceName.comparer;  // use comparerServiceFeature const
+    feature: CAFeature.comparer; 
 }
 
 
@@ -687,8 +696,6 @@ export interface CultureSpecificClassRetrieval extends ServiceChildResultBase   
 
 }
 
-export const parserServiceFeature = ServiceName.parser;
-
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeParserService.
  * It's results array holds the results of the analysis for each cultureId,
@@ -696,10 +703,9 @@ export const parserServiceFeature = ServiceName.parser;
  * ParsersByCultureCAResult.parserResults is the actual class retrieval.
  */
 export interface ParserServiceCAResult extends MultiClassRetrieval {
-    feature: ServiceName.parser; // use parserServiceFeature const
+    feature: CAFeature.parser;
 }
 
-export const parsersByCultureFeature = 'ParsersByCulture';
 /**
  * Parsers may have multiple DataTypeParser objects for a single lookup key and cultureId.
  * This reflects the list for a single lookup key and cultureId.
@@ -710,12 +716,11 @@ export interface ParsersByCultureCAResult extends
     CAResultBase,
     IssueForCAResultBase,
     ClassNotFound {
-    feature : 'ParsersByCulture'; // use parsersByCultureFeature
+    feature: CAFeature.parsersByCulture;
     cultureId: string;
     parserResults: Array<ParserFoundCAResult>;
 }
 
-export const parserFoundFeature = 'ParserFound';
 /**
  * For the individual parser classes found for a single lookup key.
  * These are retained by ParsersByCultureCAResult.parsers.
@@ -725,11 +730,9 @@ export const parserFoundFeature = 'ParserFound';
  */
 export interface ParserFoundCAResult
     extends ServiceChildResultBase {
-    feature: 'ParserFound'; // use parserFoundFeature const
+    feature: CAFeature.parserFound;
 }
 
-
-export const formatterServiceFeature = ServiceName.formatter;
 
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeFormatterService.
@@ -737,10 +740,8 @@ export const formatterServiceFeature = ServiceName.formatter;
  * using the FormattersByCultureCAResult object.
  */
 export interface FormatterServiceCAResult extends MultiClassRetrieval {
-    feature: ServiceName.formatter; // use formatterServiceFeature const
+    feature: CAFeature.formatter;
 }
-
-export const formattersByCultureFeature = 'FormattersByCulture';    // formatters for a specific culture
 
 /**
  * Formatters may have multiple DataTypeFormatter objects for a single lookup key and cultureID.
@@ -749,7 +750,7 @@ export const formattersByCultureFeature = 'FormattersByCulture';    // formatter
  */
 export interface FormattersByCultureCAResult
     extends CultureSpecificClassRetrieval, ClassNotFound {
-    feature: 'FormattersByCulture'; // use formattersByCultureFeature const
+    feature: CAFeature.formattersByCulture;
 }
 
 /**
@@ -772,8 +773,6 @@ export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueF
     config: TConfig;
 }
 
-export const propertyNameFeature = 'Property';
-export const l10nPropertiesFeature = 'l10nProperties';
 
 /**
  * Documents the results of the analysis of a specific property of
@@ -782,7 +781,7 @@ export const l10nPropertiesFeature = 'l10nProperties';
  * localization, may report info messages describing the results of the analysis.
  */
 export interface PropertyCAResult extends CAResultBase, IssueForCAResultBase {
-    feature: 'Property' | 'l10nProperties'; // use propertyNameFeature, l10nPropertiesFeature
+    feature: CAFeature.property | CAFeature.l10nProperty; 
     /**
      * May be more than one property as several may be analyzed together.
      */
@@ -792,7 +791,7 @@ export interface PropertyCAResult extends CAResultBase, IssueForCAResultBase {
  * For a pair of properties related to localization, such as "label" and "labell10n".
  */
 export interface LocalizedPropertyCAResult extends PropertyCAResult {
-    feature: 'l10nProperties';  // use l10nPropertiesFeature
+    feature: CAFeature.l10nProperty;
     /**
      * The localization key passed to TextLocalizerService.
      */
@@ -816,17 +815,14 @@ export interface LocalizedTextResult extends IssueForCAResultBase
     text?: string;
 }
 
-export const errorFeature = 'Error';
 /**
  * Use when an error is throw. It can identify its source and message.
  */
 export interface ErrorCAResult extends CAResultBase, IssueForCAResultBase {
-    feature: 'Error';   // use errorFeature const
+    feature: CAFeature.error;
     severity: CAIssueSeverity.error;
     analyzerClassName: string;
 }
-
-export const valueHostFeature = 'ValueHost';
 
 /**
  * Represents the analysis results for a ValueHostConfig object.
@@ -834,7 +830,11 @@ export const valueHostFeature = 'ValueHost';
  * If it has an enablerCondition, its results are in the enablerConditionResult.
  */
 export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<ValueHostConfig> { 
-    feature: 'ValueHost';   // use valueHostFeature const
+    feature: CAFeature.valueHost;
+    /**
+     * From valueHostConfig.name.
+     * If config.name is unassigned, empty string or whitespace, expect a string like "[Missing]"
+     */
     valueHostName: string;
     /**
      * If the valueHostType supports validatorConfigs, any 
@@ -848,15 +848,16 @@ export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<Value
     enablerConditionResult?: ConditionConfigCAResult;
 }
 
-export const validatorFeature = 'Validator';
 /**
  * Issues found around the validatorConfig, such as invalid error messages and problem
  * with the condition.
  */
 export interface ValidatorConfigCAResult extends ConfigObjectCAResultsBase<ValidatorConfig> {
-    feature: 'Validator';   // use validatorFeature const
+    feature: CAFeature.validator;
     /**
-     * The errorCode of the validator.
+     * The errorCode of the validator, which is from either ValidatorConfig.errorCode
+     * or ValidatorConfig.conditionConfig.conditionType.
+     * If the errorCode could not be resolved, expect a string like "[Missing]".
      */
     errorCode: string;
 
@@ -867,12 +868,14 @@ export interface ValidatorConfigCAResult extends ConfigObjectCAResultsBase<Valid
     conditionResult?: ConditionConfigCAResult;
 }
 
-export const conditionFeature = 'Condition';
 /**
  * Issues found with the condition itself.
  */
 export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<ConditionConfig>, ClassRetrieval {
-    feature: 'Condition';   // use conditionFeature const
+    feature: CAFeature.condition;
+    /**
+     * From conditionConfig.conditionType. If unassigned, empty string or whitespace, expect a string like "[Missing]".
+     */
     conditionType: string;
 }
 

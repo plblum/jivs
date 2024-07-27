@@ -4,7 +4,7 @@
  */
 
 import { CalcValueHostConfig } from "../../Interfaces/CalcValueHost";
-import { CAIssueSeverity, IAnalysisResultsHelper, ValueHostConfigCAResult, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, IAnalysisResultsHelper, ValueHostConfigCAResult, CAFeature } from "../../Interfaces/ConfigAnalysisService";
 import { InputValueHostConfig } from "../../Interfaces/InputValueHost";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -47,7 +47,7 @@ export class ValueHostTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
         } catch (e) {
             let error = ensureError(e);
             results.properties.push({
-                feature: propertyNameFeature,
+                feature: CAFeature.property,
                 propertyName: 'valueHostType',
                 severity: CAIssueSeverity.error,
                 message: `The ValueHostConfig is not recognized by the ValueHostFactory. ${error.message}}`
@@ -72,7 +72,7 @@ export class ValueHostNamePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
         valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         function addIssue(message: string): void {
             results.properties.push({
-                feature: propertyNameFeature,
+                feature: CAFeature.property,
                 propertyName: 'valueHostName',
                 severity: CAIssueSeverity.error,
                 message: message
@@ -101,7 +101,7 @@ export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBas
                 valueHostConfig ?? config, results.properties, 'DataType', 'dataType');
         else {
             results.properties.push({
-                feature: propertyNameFeature,
+                feature: CAFeature.property,
                 propertyName: 'dataType',
                 severity: CAIssueSeverity.info,
                 message: `No dataType assigned. LookupKeys that depend on dataType will not be checked. Otherwise this is a valid configuration, where the actual runtime value will be used to determine the lookup key.`
@@ -161,7 +161,7 @@ export class CalcFnPropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase 
         if (config.calcFn) {
             if (typeof config.calcFn !== 'function') {
                 results.properties.push({
-                    feature: propertyNameFeature,
+                    feature: CAFeature.property,
                     propertyName: 'calcFn',
                     severity: CAIssueSeverity.error,
                     message: 'Value must be a function'
@@ -178,7 +178,7 @@ export class CalcFnPropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase 
             // meant to require a calcFn field and override the calcValueHostType property.
             if (config.valueHostType === this.calcValueHostType)
                 results.properties.push({
-                    feature: propertyNameFeature,
+                    feature: CAFeature.property,
                     propertyName: 'calcFn',
                     severity: CAIssueSeverity.error,
                     message: 'Function required'

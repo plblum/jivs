@@ -2,12 +2,7 @@ import { DataTypeIdentifierLookupKeyAnalyzer } from '../../../src/Services/Confi
 import { DataTypeConverterLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import {
     AnalysisArgs, ErrorCAResult, PropertyCAResult, FormatterServiceCAResult, MultiClassRetrieval, ValidatorConfigCAResult,
-    converterServiceFeature,
-    formattersByCultureFeature,
-    formatterServiceFeature,
-    identifierServiceFeature,
-    lookupKeyFeature,
-    parserServiceFeature
+    CAFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
@@ -136,7 +131,7 @@ describe('AnalysisResultsHelper', () => {
         describe('Using LookupKey without a service name - useAsDataType is true', () => {
             test('should add a custom lookup key to results.lookupKeyResults', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     serviceResults: []
@@ -151,7 +146,7 @@ describe('AnalysisResultsHelper', () => {
 
             test('should add the LookupKey.Number to results.lookupKeyResults', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
                     serviceResults: []
@@ -165,7 +160,7 @@ describe('AnalysisResultsHelper', () => {
             // same but with 'testKey' added to LookupKeyFallbackservice to map to LookupKey.Number 
             test('should add a custom lookup key registered in LookupKeyFallbackService to LookupKey.Number to results.lookupKeyResults', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     serviceResults: []
@@ -183,11 +178,11 @@ describe('AnalysisResultsHelper', () => {
 // unless the service is identifier, useAsDataType is false
             test('should add an custom lookup key to results.lookupKeyResults and report \"not already known\" in LookupKeyIssues', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -223,12 +218,12 @@ describe('AnalysisResultsHelper', () => {
             // add both formatter and converter with the same lookup key creates two entries
             test('should add two services to the same lookup key into LookupKeyCAResult.services array', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
-                        { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any,
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.converter, message: 'testConverter', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -240,12 +235,12 @@ describe('AnalysisResultsHelper', () => {
             // same as before but with case insensitive differences between lookup keys
             test('should add two services with case insensitive differences between lookup keys', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
-                        { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.converter, message: 'testConverter', counter: 0 } as any
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -257,12 +252,12 @@ describe('AnalysisResultsHelper', () => {
             // same as before but with surrounding whitespace on second lookup key
             test('should add two services with lead/trail whitespace differences between the lookup keys', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
-                        { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.converter, message: 'testConverter', counter: 0 } as any
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -274,11 +269,11 @@ describe('AnalysisResultsHelper', () => {
             // add the same service twice, with different messages results in the first message registered. No changes based on the second
             test('should add 1 LookupKeyCAResult.service entry with two calls using the same service name', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -290,25 +285,25 @@ describe('AnalysisResultsHelper', () => {
             // the tryFallback feature is used when the lookup key is rejected by the analyzer and LookupKeyFallbackService is used to map the key to LookupKey.Number has its fallback.
             test('should generate two service entries into LookupKeyCAResult.services array when adding a custom lookup key registered in LookupKeyFallbackService as the key its mapped to when the analyzer cannot find the custom key', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: parserServiceFeature, tryFallback: true, message: 'testFallback' } as any,
+                        { feature: CAFeature.parser, tryFallback: true, message: 'testFallback' } as any,
                     ]
                 };
                 const expectedResult2: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: false,
                     serviceResults: [
-                        { feature: parserServiceFeature, message: 'testFallback', counter: 0 } as any,
+                        { feature: CAFeature.parser, message: 'testFallback', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKeyAnalyzer(ServiceName.parser,
                     new MockAnalyzerWithFallback(ServiceName.parser, 'testKey', {
-                        feature: parserServiceFeature,
+                        feature: CAFeature.parser,
                         message: 'testFallback',
                     } as ServiceWithLookupKeyCAResultBase));
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
@@ -320,11 +315,11 @@ describe('AnalysisResultsHelper', () => {
             // add serviceName=identifier sets usedAsDataType=true
             test('should set usedAsDataType=true when the service name is identifier', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -336,12 +331,12 @@ describe('AnalysisResultsHelper', () => {
             // with 2 services, and the second one is identifier, usedAsDataType is true
             test('should set usedAsDataType=true when the service name is identifier and there are multiple services', () => {
                 const expectedResult: LookupKeyCAResult = {
-                    feature: lookupKeyFeature,
+                    feature: CAFeature.lookupKey,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
                     serviceResults: [
-                        { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
-                        { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
+                        { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 };
                 let testItem = setupForTheseTests();
@@ -986,7 +981,7 @@ describe('AnalysisResultsHelper', () => {
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
             let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
             let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 1) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature,
+            checkCultureSpecificClassRetrievalFoundInService(mcr, CAFeature.formattersByCulture,
                 'en', 'en', 'NumberFormatter', NumberFormatter);
         });
         // same as above with 2 cultures, en and en-US that fallsback to en
@@ -1007,8 +1002,8 @@ describe('AnalysisResultsHelper', () => {
             //     'NumberFormatter', NumberFormatter, 'en-US', 'en-US');
             let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
             let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 2) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature, 'en-US', 'en-US', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(mcr, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(mcr, CAFeature.formattersByCulture, 'en-US', 'en-US', 'NumberFormatter', NumberFormatter);
         });
 
 
@@ -1030,9 +1025,9 @@ describe('AnalysisResultsHelper', () => {
             // checkCultureRequestContainsClassName(numberSI,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
             let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formattersByCultureFeature, 'en');
+            checkCultureSpecificClassRetrievalNotFoundInService(customSI, CAFeature.formattersByCulture, 'en');
             let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
         // same but we actually have a Formatter for "custom"
@@ -1057,7 +1052,7 @@ describe('AnalysisResultsHelper', () => {
             executeFunction(testItem, message, 1, 0);
 
             let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(customSI, CAFeature.formattersByCulture, 'en', 'en', 'CustomFormatter', CustomFormatter);
         });
 
         // with 2 cultures, en and en-US with fallback to en, our customFormatter 
@@ -1088,8 +1083,8 @@ describe('AnalysisResultsHelper', () => {
             executeFunction(testItem, message, 1, 0);
 
             let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en-US', 'en', 'CustomFormatter', CustomFormatter);   
+            checkCultureSpecificClassRetrievalFoundInService(customSI, CAFeature.formattersByCulture, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(customSI, CAFeature.formattersByCulture, 'en-US', 'en', 'CustomFormatter', CustomFormatter);   
         });
 
         // message has two different tokens with different lookupkeys and one token without. It has 1 culture. Results should have two requests found
@@ -1114,9 +1109,9 @@ describe('AnalysisResultsHelper', () => {
             executeFunction(testItem, message, 2, 0);
 
             let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(customSI, CAFeature.formattersByCulture, 'en', 'en', 'CustomFormatter', CustomFormatter);
             let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
 
@@ -1144,12 +1139,12 @@ describe('AnalysisResultsHelper', () => {
             executeFunction(testItem, message, 2, 0);
 
             let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formattersByCultureFeature, 'fr');
+            checkCultureSpecificClassRetrievalFoundInService(customSI, CAFeature.formattersByCulture, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalNotFoundInService(customSI, CAFeature.formattersByCulture, 'fr');
             // NumberFormatter supports all cultures so it should be found for both
             let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'fr', 'fr', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, CAFeature.formattersByCulture, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, CAFeature.formattersByCulture, 'fr', 'fr', 'NumberFormatter', NumberFormatter);
         });
 
     });    

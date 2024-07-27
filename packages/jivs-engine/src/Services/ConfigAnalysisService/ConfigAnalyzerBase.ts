@@ -6,7 +6,7 @@
 import {
     ErrorCAResult, CAIssueSeverity, ConfigObjectCAResultsBase,
     IConfigAnalyzer, IConfigPropertyAnalyzer,
-    errorFeature
+    CAFeature
 } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
@@ -90,7 +90,7 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
             catch (e) {
                 let error = ensureError(e);
                 results.properties.push(<ErrorCAResult>{
-                    feature: errorFeature,
+                    feature: CAFeature.error,
                     severity: CAIssueSeverity.error,
                     message: error.message,
                     analyzerClassName: valueForLog(analyzer)
