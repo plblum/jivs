@@ -4,10 +4,10 @@
  */
 
 import {
-    IConfigAnalysisResultsExplorer, IConfigAnalysisResults, IConfigAnalysisSearchCriteria,
-    ServiceWithLookupKeyCAResultBase,
+    IConfigAnalysisResultsExplorer, IConfigAnalysisResults,
+    IConfigAnalysisSearchCriteria,
     CAPathedResult,
-    CAExplorerFactory,
+    ICAExplorerFactory,
     CAResultBase,
     ICAExplorerBase,
     LookupKeyCAResult,
@@ -22,10 +22,17 @@ import {
     IdentifierServiceCAResult,
     ConverterServiceCAResult,
     ComparerServiceCAResult,
-    FormatterServiceCAResult
+    FormatterServiceCAResult,
+    ParserServiceCAResult,
+    ParserFoundCAResult,
+    FormattersByCultureCAResult,
+    ICASearcher,
+    CAIssueSeverity,
+    CAResultPath
 } from "../../Interfaces/ConfigAnalysisService";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { CodingError, assertNotNull } from "../../Utilities/ErrorHandling";
+import { deepClone } from "../../Utilities/Utilities";
 
 /**
  * Tool to explore the results of the configuration analysis. 
@@ -38,7 +45,7 @@ import { CodingError, assertNotNull } from "../../Utilities/ErrorHandling";
 export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices>
     implements IConfigAnalysisResultsExplorer {
     constructor(results: IConfigAnalysisResults,
-        factory: CAExplorerFactory,
+        factory: ICAExplorerFactory,
         services: TServices) {
         assertNotNull(results, 'results');
         assertNotNull(services, 'services');
@@ -56,13 +63,18 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         return this._results;
     }
     private readonly _results: IConfigAnalysisResults;
+
+    protected get services(): TServices
+    {
+        return this._services.deref() as TServices;
+    }
     private readonly _services: WeakRef<TServices>;
 
-    protected get factory(): CAExplorerFactory
+    protected get factory(): ICAExplorerFactory
     {
         return this._factory;
     }   
-    private _factory: CAExplorerFactory;
+    private _factory: ICAExplorerFactory;
 
 
     /**
@@ -71,8 +83,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * @param criteria When null, return all results.
      */
     public countConfigResults(criteria: IConfigAnalysisSearchCriteria | null): number {
-        let preppedCriteria = this.prepCriteria(criteria);
-        return this.collectWithConfigs(preppedCriteria).length;
+        return this.collectWithConfigs(criteria).length;
     }
     /**
      * Return a count of the number of LookupKeyCAResult objects and all children
@@ -80,37 +91,170 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * @param criteria 
      */
     public countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number {
-        let preppedCriteria = this.prepCriteria(criteria);
-        return this.collectWithLookupKeys(preppedCriteria).length;
+        return this.collectWithLookupKeys(criteria).length;
+    }
+
+    /**
+     * Returns true if it finds one ConfigResults object that matches the criteria.
+     * This is effectively the same idea as countConfigResults(criteria) but doesn't
+     * waste time counting them all.
+     * @param criteria 
+     */
+    public hasMatchInConfigResults(criteria: IConfigAnalysisSearchCriteria): boolean
+    {
+        let preppedCriteria = new CASearcher(criteria);
+        return this.results.valueHostResults.some((configResults) => {
+            const explorer = this.factory.create(configResults);
+            return explorer.hasMatch(preppedCriteria, this.factory);
+        });
+    }
+
+    /**
+     * Returns true if it finds one LookupKeyCAResult object that matches the criteria.
+     * This is effectively the same idea as countLookupKeyResults(criteria) but doesn't
+     * waste time counting them all.
+     * @param criteria 
+     */
+    public hasMatchInLookupKeyResults(criteria: IConfigAnalysisSearchCriteria): boolean
+    {
+        let preppedCriteria = new CASearcher(criteria);
+        return this.results.lookupKeyResults.some((lookupKeyResult) => {
+            const explorer = this.factory.create(lookupKeyResult);
+            return explorer.hasMatch(preppedCriteria, this.factory);
+        });
     }
     /**
      * Return a list of all ConfigResult objects found in the ConfigIssues array,
      * wrapped in a CAPathedResult object.
+     * When a CAResultBases object is found, it is added to the list
+     * and its children are evaluated.
+     * When not found, children are not evaluated.
      * @param criteria 
      */
     public collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
-        let preppedCriteria = this.prepCriteria(criteria);
+        let preppedCriteria = new CASearcher(criteria);
         this.results.valueHostResults.forEach((configResults) => {
             const explorer = this.factory.create(configResults);
-            explorer.collect(preppedCriteria, matches, [], this.factory);
+            explorer.collect(preppedCriteria, matches, {}, this.factory);
         });
         return matches;
     }
     /**
      * Return a list of all LookupKeyCAResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
+     * When a CAResultBases object is found, it is added to the list
+     * and its children are evaluated.
+     * When not found, children are not evaluated. 
      */
     public collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
-        let preppedCriteria = this.prepCriteria(criteria);
+        let preppedCriteria = new CASearcher(criteria);
         this.results.lookupKeyResults.forEach((lookupKeyResult) => {
             const explorer = this.factory.create(lookupKeyResult);
-            explorer.collect(preppedCriteria, matches, [], this.factory);
+            explorer.collect(preppedCriteria, matches, {}, this.factory);
         });
         return matches;
     }
 
+   /**
+     * With the results of a collect function, return a specific ConfigResult object
+     * which is the first one found that matches the supplied path.
+     * @remarks
+     * This function was designed for testing purposes.
+     * It lets your testing code review the results of the collect functions.
+     * @param path 
+     * The CAResultPath object, where the key is the feature and the value is the identifier,
+     * although the feature may have a number appended to it if there are multiple children with the same feature:
+     * "Condition", "Condition2", "Condition3", etc.
+     * Path strings are matched case insensitively.
+     * @param foundResults 
+     * @returns The first ConfigResult object that matches the path, or null if no match is found.
+     */
+    public getByResultPath(path: CAResultPath, foundResults: Array<CAPathedResult<any>>): CAResultBase | null {
+        /**
+         * Case insensitive matching on both key and value.
+         * @param foundResult 
+         * @returns 
+         */
+        function pathMatches(foundResult: CAPathedResult<any>): boolean {
+            if (pathLength !== Object.keys(foundResult.path).length)
+                return false;
+            let pathValue: string | null | undefined = undefined;   // when undefined by the end, it is not a match
+            let foundValue: string | null | undefined = undefined;  // when undefined by the end, it is not a match
+            for (let key in path) {
+                pathValue = path[key];
+                foundValue = foundResult.path[key];
+                if (foundValue === undefined)
+                { // case insensitive matching to key
+                    let keyLC = key.toLowerCase();
+                    for (let foundKey in foundResult.path) {
+                        let foundKeyLC = foundKey.toLowerCase();
+                        if (foundKeyLC === keyLC)
+                        {
+                            foundValue = foundResult.path[foundKey];
+                            if (foundValue === undefined)
+                                return false;
+                        }
+                    }
+                }
+                // these values can be null or strings. Ensure strings are lower case.
+                if (typeof pathValue === 'string')
+                    pathValue = pathValue.toLowerCase();
+                if (typeof foundValue === 'string')
+                    foundValue = foundValue.toLowerCase();
+                if (pathValue !== foundValue)
+                    return false;
+            }
+            return true;
+        }
+        let foundResult: CAResultBase | null = null;
+        // determine that both the path and the foundResult.path have the same length
+        let pathLength = Object.keys(path).length;
+
+
+        // compare each path in the foundResults array to the path object.
+        // Stop on the first found
+        for (let result of foundResults) {
+            if (pathMatches(result)) {
+                foundResult = result.result;
+                break;
+            }
+        }
+        return foundResult;
+    }
+}
+
+/**
+ * Provides the tools to match values from a CAResult against
+ * the search criteria.
+ */
+export class CASearcher implements ICASearcher {
+
+    constructor(criteria: IConfigAnalysisSearchCriteria | null) {
+        this._allMatch = criteria === null || Object.keys(criteria).length === 0;
+        this._criteria = this._allMatch ? {} : this.prepCriteria(criteria)!;
+    }
+    
+    protected get criteria(): IConfigAnalysisSearchCriteria {
+        return this._criteria;
+    }
+    private _criteria: IConfigAnalysisSearchCriteria;
+    /**
+     * When true, there are no criteria setup. All results are considered a match.
+     */
+    public get allMatch(): boolean
+    {
+        return this._criteria === null || Object.keys(this._criteria).length === 0;
+    }
+    private _allMatch: boolean;
+
+    /**
+     * When true, the search should skip children when the parent does not match.
+     */
+    public get skipChildrenIfParentMismatch(): boolean {
+        return this.criteria.skipChildrenIfParentMismatch ?? false;
+    }
     /**
      * Return a clone of the criteria object with all string values converted to lowercase.
      * This is to prepare for case-insensitive matching without having 
@@ -138,7 +282,133 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
             return newCriteria as IConfigAnalysisSearchCriteria;
         }
         return null;
+    }    
+
+    /**
+     * Determines if the given feature matches the search criteria.
+     * @param feature The feature to match.
+     * @returns True if the feature matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+
+    public matchFeature(feature: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(feature, this.criteria.features);
     }
+
+    /**
+     * Determines if the given severity matches the search criteria.
+     * @param severity The severity to match. When supplied with null,
+     * it means that the severity property is undefined in the Result.
+     * @returns True if the severity matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchSeverity(severity: CAIssueSeverity | null | undefined): boolean | undefined {
+        if (this.allMatch)
+            return true;
+        if (!this.criteria.severities || this.criteria.severities.length === 0)
+            return undefined;        
+        if (severity === undefined)
+            severity = null;
+        // severity of null will match if the criteria includes null in the array.
+        return this.criteria.severities.includes(severity);
+    }
+
+    /**
+     * Determines if the given lookup key matches the search criteria.
+     * @param lookupKey The lookup key to match.
+     * @returns True if the lookup key matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchLookupKey(lookupKey: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(lookupKey, this.criteria.lookupKeys);
+    }
+
+    /**
+     * Determines if the given service name matches the search criteria.
+     * @param serviceName The service name to match.
+     * @returns True if the service name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchServiceName(serviceName: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(serviceName, this.criteria.serviceNames);
+    }
+
+
+    /**
+     * Determines if the given value host name matches the search criteria.
+     * @param valueHostName The value host name to match.
+     * @returns True if the value host name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchValueHostName(valueHostName: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(valueHostName, this.criteria.valueHostNames);
+    }
+
+    /**
+     * Determines if the given error code matches the search criteria.
+     * @param errorCode The error code to match.
+     * @returns True if the error code matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchErrorCode(errorCode: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(errorCode, this.criteria.errorCodes);
+    }
+
+    /**
+     * Determines if the given condition type matches the search criteria.
+     * @param conditionType The condition type to match.
+     * @returns True if the condition type matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchConditionType(conditionType: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(conditionType, this.criteria.conditionTypes);
+    }
+
+    /**
+     * Determines if the given property name matches the search criteria.
+     * @param propertyName The property name to match.
+     * @returns True if the property name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchPropertyName(propertyName: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(propertyName, this.criteria.propertyNames);
+    }
+
+    /**
+     * Determines if the given culture ID matches the search criteria.
+     * @param cultureId The culture ID to match.
+     * @returns True if the culture ID matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    public matchCultureId(cultureId: string | null | undefined): boolean | undefined {
+        return this.matchStringCriteria(cultureId, this.criteria.cultureIds);
+    }
+
+    /**
+     * 
+     * @param valuesToMatch - From a single property of Criteria. Expects all strings to be lowercase.
+     * @param valueFromResult - To compare to valuesToMatch case insensitively.
+     * @returns When valuesToMatch is null or empty, return undefined
+     */
+    protected matchStringCriteria(valueFromResult: string | null | undefined, valuesToMatch: Array<string> | undefined): boolean | undefined {
+        if (this.allMatch) {
+            return true;
+        }
+        if (!valuesToMatch || valuesToMatch.length === 0)
+            return undefined;
+        if (!valueFromResult)
+            return false;
+        return valuesToMatch.includes(valueFromResult.toLowerCase());
+    }    
 }
 
 /**
@@ -182,6 +452,28 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     public abstract identifier(): string | null;
 
     /**
+     * Creates this element's entry into the CAPathedResult.path.
+     * The path is built from feature() and identifier().
+     * Note that Identifier can be null.
+     * Tt is possible to have duplicate feature entries, especially
+     * when conditions have their own child conditions. In that case, the feature
+     * is repeated with a number appended to it after the first. 
+     * For example, "Condition2", "Condition3".
+     * @returns 
+     */
+    protected addPathElement(path: CAResultPath): void {
+        let baseFeature = this.feature();
+        let feature = baseFeature;
+        let identifier = this.identifier();
+        let count = 1;
+        while (path[feature] !== undefined) {
+            count++;
+            feature = `${baseFeature}${count}`;
+        }
+        path[feature] = identifier;
+    }
+
+    /**
      * Determines if the result matches the criteria.
      * It does not evaluate any children of the result.
      * 
@@ -189,69 +481,112 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
      * it is applicable to the object being evaluated.
      * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
      * 
-     * @param criteria When null, it means include all and thus return null.
-     * NOTE: Expects all strings in the criteria to be lowercase already.
+     * @param searcher - A search tool with criteria to match against.
+     * @returns True if the result matches the all applicable criteria, 
+     * false if it does not match at least one of the applicible criteria,
+     * and undefined if the criteria is not applicable to the object.
      */
-    public match(criteria: IConfigAnalysisSearchCriteria | null): boolean {
-        if (!criteria)
+    public matchThis(searcher: ICASearcher): boolean | undefined {
+        if (!searcher || searcher.allMatch)
             return true;
-        if (!this.matchStringCriteria(criteria.features, this.feature()))
+        let fResult = searcher.matchFeature(this.feature());
+        if (fResult === false)
             return false;
-        // match severities
-        let resultSeverity = (this.result as any).severity;
-        if (criteria.severities && (resultSeverity !== undefined)) {
-            if (!criteria.severities.includes(resultSeverity.severity))
-                return false;
-        }
-        else if (criteria.severities === null)
-            // severity must be undefined in result
-            if (resultSeverity !== undefined)
-                return false;
-        return this.matchWorker(criteria);
+        let sResult = searcher.matchSeverity((this.result as any).severity);
+        if (sResult === false)
+            return false;
+        let wResult = this.matchThisWorker(searcher);
+        if (wResult === false)
+            return false;
+        if (fResult === undefined && sResult === undefined && wResult === undefined)
+            return undefined;
+        if ((fResult ?? true) && (sResult ?? true) && (wResult ?? true))
+            return true;
+        return false;
     }
 
     /**
      * Provides a way for subclasses to extend the match method to include their own criteria.
-     * Note that the match() method has already handled criteria = null
+     * Note that the matchThis() method has already handled criteria = null
      * and these criteria members: features, severities.
-     * @param criteria 
+     * @param searcher - A search tool with criteria to match against.
+     * @returns True if the result matches the all applicable criteria, 
+     * false if it does not match at least one of the applicible criteria,
+     * and undefined if the criteria is not applicable to the object.
      */
-    protected abstract matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean;
+    protected abstract matchThisWorker(searcher: ICASearcher): boolean | undefined;
+
 
     /**
-     * 
-     * @param valuesToMatch - From a single property of Criteria. Expects all strings to be lowercase.
-     * @param valueFromResult - To compare to valuesToMatch case insensitively.
-     * @returns When valuesToMatch is null or empty, return true.
+     * Returns true if it finds one ConfigResults object that matches the criteria
+     * amongst itself and all of its children.
+     * It differs from collect() in that it evaluates all children,
+     * and stops upon finding the first match.
+     * NOTE: Expects all strings in the criteria to be lowercase already.
+     * @param searcher - A search tool with criteria to match against.
+     * @param factory - The factory to create entries going into matches.
      */
-    protected matchStringCriteria(valuesToMatch: Array<string> | undefined, valueFromResult: string): boolean {
-        if (!valuesToMatch || valuesToMatch.length === 0) {
-            return true;
-        }
-        return valuesToMatch.includes(valueFromResult.toLowerCase());
+    public hasMatch(searcher: ICASearcher, factory: ICAExplorerFactory): boolean
+    {
+        return this.findOne(searcher, factory) !== null;
     }
+
+    /**
+     * Returns the first ConfigResults object that matches the criteria
+     * amongst itself and all of its children.
+     * @param searcher 
+     * @param factory 
+     * @path Collects feature/identifier pairs to form the path to this object.
+     * @returns The first ConfigResults object that matches the criteria,
+     * or null if no match is found.
+     */
+    public findOne(searcher: ICASearcher, factory: ICAExplorerFactory,
+        path: CAResultPath = {}): CAPathedResult<CAResultBase> | null
+    {
+        let newPath = deepClone(path);
+        this.addPathElement(newPath);
+
+        let match = this.matchThis(searcher);
+        if (match)
+            return { path: newPath, result: this.result };
+        
+        if (match !== false || !searcher.skipChildrenIfParentMismatch)
+            for (let child of this.children()) {
+                let childExplorer = factory.create(child);
+                let result = childExplorer.findOne(searcher, factory, newPath);
+                if (result !== null)
+                    return result;
+            }
+        return null;
+    }
+
 
     /**
      * Using match on itself and its children, collect all results that match the criteria
      * into the matches array.
-     * NOTE: Expects all strings in the criteria to be lowercase already.
-     * @param criteria - The criteria to match against. When null, include all.
+     * Only includes the children if this object matches the criteria or the criteria
+     * was not applicable to this object.
+     * @param searcher - a search tool with criteria to match against.
      * @param matches - Where to add any generated CAPathedResult objects.
      * @param path The feature + identifier from each parent object to this object. When this calls a child,
      * it creates a new path from this plus its own identifier. Nothing is added if the identifier is null.
      * @param factory The factory to create entries going into matches.
      */
-    public collect(criteria: IConfigAnalysisSearchCriteria | null, matches: Array<CAPathedResult<T>>,
-        path: Array<{ feature: string; identifier: string; }>, factory: CAExplorerFactory): void {
-        if (this.match(criteria)) {
-            let newPath = path.slice();
-            newPath.push({ feature: this.feature(), identifier: this.identifier() ?? '' });
+    public collect(searcher: ICASearcher, matches: Array<CAPathedResult<T>>,
+        path: CAResultPath,
+        factory: ICAExplorerFactory): void {
+        let newPath = deepClone(path);
+        this.addPathElement(newPath);
+
+        let match = this.matchThis(searcher);
+        if (match === true) {
             matches.push({ path: newPath, result: this.result });
         }   
-        this.children().forEach((child) => {
-            let childExplorer = factory.create(child);
-            childExplorer.collect(criteria, matches, path, factory);
-        });
+        if (match !== false || !searcher.skipChildrenIfParentMismatch)
+            this.children().forEach((child) => {
+                let childExplorer = factory.create(child);
+                childExplorer.collect(searcher, matches, newPath, factory);
+            });
     }
 
     /**
@@ -261,227 +596,13 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     public abstract children(): Array<CAResultBase>;
 
 }
-
-/**
- * For exploring LookupKeyCAResult objects. Their identifier is the lookupKey property
- * and their feature is 'LookupKey'.
- */
-class LookupKeyCAResultExplorer extends CAExplorerBase<LookupKeyCAResult>
-{
-    public feature(): string {
-        return CAFeature.lookupKey;
-    }
-
-    public identifier(): string | null {
-        return this.result.lookupKey;
-    }
-
-    public matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return this.matchStringCriteria(criteria.lookupKeys, this.result.lookupKey);
-    }
-
-    public children(): Array<CAResultBase> {
-        return this.result.serviceResults ?? [];
-    }
-}
-
-/**
- * For exploring ParserClassRetrieval objects. Their identifier is null
- * and their feature is ServiceName.parser.
- */
-class ParserLookupKeyServiceInfoExplorer extends CAExplorerBase<ParsersByCultureCAResult>
-{
-    public feature(): string {
-        return CAFeature.parser;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return this.result.parserResults ?? [];
-    }
-}
-
-/**
- * For exploring ComparerServiceCAResult objects associated with ServiceName.comparer.
- * Their identifier is null and their feature is ServiceName.comparer.
- */
-class ComparerLookupKeyServiceInfoExplorer extends CAExplorerBase<ComparerServiceCAResult>
-{
-    public feature(): string {
-        return CAFeature.comparer;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}
-
-/**
- * For exploring ConverterServiceCAResult objects associated with ServiceName.converter.
- * Their identifier is null and their feature is ServiceName.converter.
- */
-class ConverterLookupKeyServiceInfoExplorer extends CAExplorerBase<ConverterServiceCAResult>
-{
-    public feature(): string {
-        return CAFeature.converter;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}  
-
-/**
- * For exploring MultiClassRetrieval objects associated with ServiceName.formatter.
- * Their identifier is null and their feature is ServiceName.formatter.
- */
-class FormatterLookupKeyServiceInfoExplorer extends CAExplorerBase<FormatterServiceCAResult>
-{
-    public feature(): string {
-        return CAFeature.formatter;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return (this.result.results as Array<CAResultBase>) ?? [];
-    }
-}   
-
-/**
- * For exploring IdentifierServiceCAResult objects associated with ServiceName.identifier.
- * Their identifier is null and their feature is ServiceName.identifier.
- */
-class IdentifierLookupKeyServiceInfoExplorer extends CAExplorerBase<IdentifierServiceCAResult>
-{
-    public feature(): string {
-        return CAFeature.identifier;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}
-
-/**
- * For exploring PropertyCAResult objects. Their identifier is the propertyName property
- * and their feature is 'Property'.
- */
-class PropertyResultExplorer extends CAExplorerBase<PropertyCAResult>
-{
-    public feature(): string {
-        return CAFeature.property;
-    }
-
-    public identifier(): string | null {
-        return this.result.propertyName;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return this.matchStringCriteria(criteria.propertyNames, this.result.propertyName);
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}
-
-/**
- * For exploring LocalizedPropertyCAResult objects. Their identifier is the l10nPropertyName property
- * and their feature is 'l10nProperty'.
- */
-class LocalizedPropertyResultExplorer extends CAExplorerBase<LocalizedPropertyCAResult>
-{
-    public feature(): string {
-        return CAFeature.l10nProperty;
-    }
-
-    public identifier(): string | null {
-        return this.result.l10nPropertyName;
-    }
-
-    /**
-     * Matches both the propertyName and l10nPropertyName properties against criteria.propertyNames.
-     * @param criteria 
-     * @returns 
-     */
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        if (!this.matchStringCriteria(criteria.propertyNames, this.result.propertyName))
-            return false;
-
-        return this.matchStringCriteria(criteria.propertyNames, this.result.l10nPropertyName);
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}
-
-/**
- * For exploring ErrorCAResult objects. Their identifier is null
- * and their feature is 'Error'.
- */
-class ErrorResultExplorer extends CAExplorerBase<ErrorCAResult>
-{
-    public feature(): string {
-        return CAFeature.error;
-    }
-
-    public identifier(): string | null {
-        return null;
-    }
-
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return true;
-    }
-
-    public children(): Array<CAResultBase> {
-        return [];
-    }
-}
-
+//#region top level config explorers
 /**
  * For exploring ValueHostConfigCAResult objects. Their identifier is the valueHostName property
- * and their feature is 'ValueHost'.
+ * and their feature is CAFeature.ValueHost.
  * They contain several types of children: from properties, validators, and enablerCondition.
  */
-class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigCAResult>
+export class ValueHostConfigCAResultExplorer extends CAExplorerBase<ValueHostConfigCAResult>
 {
     public feature(): string {
         return CAFeature.valueHost;
@@ -490,10 +611,14 @@ class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigCARes
     public identifier(): string | null {
         return this.result.valueHostName;
     }
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return this.matchStringCriteria(criteria.valueHostNames, this.result.valueHostName);
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchValueHostName(this.result.valueHostName);
     }
 
+    /**
+     * Several sources: properties, validatorResults, enablerConditionResult.
+     * @returns 
+     */
     public children(): Array<CAResultBase> {
         let children: Array<CAResultBase> = [];
         if (this.result.properties)
@@ -508,10 +633,10 @@ class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigCARes
 
 /**
  * For exploring ValidatorConfigCAResult objects. Their identifier is the errorCode property
- * and their feature is 'Validator'.
+ * and their feature is CAFeature.Validator.
  * They contain several types of children: from properties and condition.
  */
-class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigCAResult>
+export class ValidatorConfigCAResultExplorer extends CAExplorerBase<ValidatorConfigCAResult>
 {
     public feature(): string {
         return CAFeature.validator;
@@ -521,8 +646,8 @@ class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigCARes
         return this.result.errorCode;
     }
 
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return this.matchStringCriteria(criteria.errorCodes, this.result.errorCode);
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchErrorCode(this.result.errorCode);
     }
 
     public children(): Array<CAResultBase> {
@@ -539,9 +664,9 @@ class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigCARes
 
 /**
  * For exploring ConditionConfigCAResult objects. Their identifier is the conditionType property
- * and their feature is 'Condition'.
+ * and their feature is CAFeature.Condition.
  */
-class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigCAResult>
+export class ConditionConfigCAResultExplorer extends CAExplorerBase<ConditionConfigCAResult>
 {
     public feature(): string {
         return CAFeature.condition;
@@ -551,19 +676,310 @@ class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigCARes
         return this.result.conditionType;
     }
 
-    protected matchWorker(criteria: IConfigAnalysisSearchCriteria): boolean {
-        return this.matchStringCriteria(criteria.conditionTypes, this.result.conditionType);
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchConditionType(this.result.conditionType);
     }
 
+    /**
+     * Children are from properties.
+     * @returns 
+     */
     public children(): Array<CAResultBase> {
         let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
-        let conditionChildren = (this.result as any).children as Array<CAResultBase>;
-        if (conditionChildren)
-            children = children.concat(conditionChildren);
         return children;
 
+    }
+}
+
+//#endregion
+
+//#region LookupKey and its service explorers
+/**
+ * For exploring LookupKeyCAResult objects. Their identifier is the lookupKey property
+ * and their feature is CAFeature.LookupKey.
+ */
+export class LookupKeyCAResultExplorer extends CAExplorerBase<LookupKeyCAResult>
+{
+    public feature(): string {
+        return CAFeature.lookupKey;
+    }
+
+    public identifier(): string | null {
+        return this.result.lookupKey;
+    }
+
+    public matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchLookupKey(this.result.lookupKey);
+    }
+
+    public children(): Array<CAResultBase> {
+        return this.result.serviceResults ?? [];
+    }
+}
+
+/**
+ * For exploring IdentifierServiceCAResult objects.
+ * Their identifier is null and their feature is CAFeature.identifier.
+ */
+export class IdentifierServiceCAResultExplorer extends CAExplorerBase<IdentifierServiceCAResult>
+{
+    public feature(): string {
+        return CAFeature.identifier;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+
+/**
+ * For exploring ConverterServiceCAResult objects.
+ * Their identifier is null and their feature is CAFeature.converter.
+ */
+export class ConverterServiceCAResultExplorer extends CAExplorerBase<ConverterServiceCAResult>
+{
+    public feature(): string {
+        return CAFeature.converter;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}  
+
+
+/**
+ * For exploring ComparerServiceCAResult objects.
+ * Their identifier is null and their feature is CAFeature.comparer.
+ */
+export class ComparerServiceCAResultExplorer extends CAExplorerBase<ComparerServiceCAResult>
+{
+    public feature(): string {
+        return CAFeature.comparer;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+
+/**
+ * For exploring ParserClassRetrieval objects. Their identifier is null
+ * and their feature is CAFeature.parser.
+ */
+export class ParserServiceCAResultExplorer extends CAExplorerBase<ParserServiceCAResult>
+{
+    public feature(): string {
+        return CAFeature.parser;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return this.result.results ?? [];
+    }
+}
+
+/**
+ * For exploring ParsersByCultureCAResult objects.
+ * Their identifier is the cultureId property and their feature is CAFeature.parsersByCulture.
+ * Supports criteria.cultureIds.
+ */
+export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCultureCAResult> {
+    public feature(): string {
+        return CAFeature.parsersByCulture;
+    }
+
+    public identifier(): string | null {
+        return this.result.cultureId;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchCultureId(this.result.cultureId);
+    }
+
+    public children(): Array<CAResultBase> {
+        return this.result.parserResults ?? [];
+    }
+}
+
+/**
+ * For exploring ParserFoundCAResult objects.
+ * Their identifier is null and their feature is CAFeature.parserFound.
+ */
+export class ParserFoundCAResultExplorer extends CAExplorerBase<ParserFoundCAResult> {
+    public feature(): string {
+        return CAFeature.parserFound;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+
+/**
+ * For exploring FormatterServiceCAResult objects.
+ * Their identifier is null and their feature is ServiceName.formatter.
+ */
+export class FormatterServiceCAResultExplorer extends CAExplorerBase<FormatterServiceCAResult>
+{
+    public feature(): string {
+        return CAFeature.formatter;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return this.result.results ?? [];
+    }
+}   
+
+/**
+ * For exploring FormattersByCultureCAResult objects.
+ * Their identifier is the requestedCultureId property and their feature is CAFeature.formattersByCulture.
+ */
+export class FormattersByCultureCAResultExplorer extends CAExplorerBase<FormattersByCultureCAResult> {
+    public feature(): string {
+        return CAFeature.formattersByCulture;
+    }
+
+    public identifier(): string | null {
+        return this.result.requestedCultureId;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchCultureId(this.result.requestedCultureId);
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+//#endregion 
+
+
+/**
+ * For exploring PropertyCAResult objects. Their identifier is the propertyName property
+ * and their feature is CAFeature.Property.
+ */
+export class PropertyCAResultExplorer extends CAExplorerBase<PropertyCAResult>
+{
+    public feature(): string {
+        return CAFeature.property;
+    }
+
+    public identifier(): string | null {
+        return this.result.propertyName;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return searcher.matchPropertyName(this.result.propertyName);
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+
+/**
+ * For exploring LocalizedPropertyCAResult objects. Their identifier is the l10nPropertyName property
+ * and their feature is CAFeature.l10nProperty.
+ */
+export class LocalizedPropertyCAResultExplorer extends CAExplorerBase<LocalizedPropertyCAResult>
+{
+    public feature(): string {
+        return CAFeature.l10nProperty;
+    }
+
+    public identifier(): string | null {
+        return this.result.l10nPropertyName;
+    }
+
+    /**
+     * Matches both the propertyName and l10nPropertyName properties against criteria.propertyNames.
+     * In this case, either match is sufficient to return true.
+     * @returns 
+     */
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        // if either is true, return true
+        let pResult = searcher.matchPropertyName(this.result.propertyName);
+        let lpResult = searcher.matchPropertyName(this.result.l10nPropertyName);
+        if (pResult || lpResult)
+            return true;
+        // we are left with only false and undefined
+        return (pResult === false || lpResult === false) ? false : undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
+    }
+}
+
+/**
+ * For exploring ErrorCAResult objects. Their identifier is null
+ * and their feature is CAFeature.Error.
+ */
+export class ErrorCAResultExplorer extends CAExplorerBase<ErrorCAResult>
+{
+    public feature(): string {
+        return CAFeature.error;
+    }
+
+    public identifier(): string | null {
+        return null;
+    }
+
+    protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+        return undefined;
+    }
+
+    public children(): Array<CAResultBase> {
+        return [];
     }
 }
 
@@ -571,27 +987,29 @@ class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigCARes
  * A factory for creating the appropriate ConfigResultsExplorer object 
  * for the ConfigResults object based its the feature property.
  */
-export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
+export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
 {
     constructor()
     {
-        this._explorers = new Map<string, ExplorerCreatorHandler>();
+        this._explorers = new Map<string, ExplorerCreatorHandler<CAResultBase>>();
         this.populate();
     }
     protected populate(): void {
+        this.register(CAFeature.valueHost, (result) => new ValueHostConfigCAResultExplorer(result as ValueHostConfigCAResult));
+        this.register(CAFeature.validator, (result) => new ValidatorConfigCAResultExplorer(result as ValidatorConfigCAResult));
+        this.register(CAFeature.condition, (result) => new ConditionConfigCAResultExplorer(result as ConditionConfigCAResult));
         this.register(CAFeature.lookupKey, (result) => new LookupKeyCAResultExplorer(result as LookupKeyCAResult));
-//        this.register(CAFeature.dataType, (result) => new DataTypeLookupKeyServiceInfoExplorer(result as ServiceWithLookupKeyCAResultBase));
-        this.register(CAFeature.parser, (result) => new ParserLookupKeyServiceInfoExplorer(result as ParsersByCultureCAResult));
-        this.register(CAFeature.comparer, (result) => new ComparerLookupKeyServiceInfoExplorer(result as ComparerServiceCAResult));
-        this.register(CAFeature.converter, (result) => new ConverterLookupKeyServiceInfoExplorer(result as ConverterServiceCAResult));
-        this.register(CAFeature.formatter, (result) => new FormatterLookupKeyServiceInfoExplorer(result as FormatterServiceCAResult));
-        this.register(CAFeature.identifier, (result) => new IdentifierLookupKeyServiceInfoExplorer(result as IdentifierServiceCAResult));
-        this.register(CAFeature.property, (result) => new PropertyResultExplorer(result as PropertyCAResult));
-        this.register(CAFeature.l10nProperty, (result) => new LocalizedPropertyResultExplorer(result as LocalizedPropertyCAResult));
-        this.register(CAFeature.error, (result) => new ErrorResultExplorer(result as ErrorCAResult));
-        this.register(CAFeature.valueHost, (result) => new ValueHostConfigResultsExplorer(result as ValueHostConfigCAResult));
-        this.register(CAFeature.validator, (result) => new ValidatorConfigResultsExplorer(result as ValidatorConfigCAResult));
-        this.register(CAFeature.condition, (result) => new ConditionConfigResultsExplorer(result as ConditionConfigCAResult));
+        this.register(CAFeature.identifier, (result) => new IdentifierServiceCAResultExplorer(result as IdentifierServiceCAResult));
+        this.register(CAFeature.converter, (result) => new ConverterServiceCAResultExplorer(result as ConverterServiceCAResult));
+        this.register(CAFeature.comparer, (result) => new ComparerServiceCAResultExplorer(result as ComparerServiceCAResult));
+        this.register(CAFeature.parser, (result) => new ParserServiceCAResultExplorer(result as ParserServiceCAResult));
+        this.register(CAFeature.parsersByCulture, (result) => new ParsersByCultureCAResultExplorer(result as ParsersByCultureCAResult));
+        this.register(CAFeature.parserFound, (result) => new ParserFoundCAResultExplorer(result as ParserFoundCAResult));
+        this.register(CAFeature.formatter, (result) => new FormatterServiceCAResultExplorer(result as FormatterServiceCAResult));
+        this.register(CAFeature.formattersByCulture, (result) => new FormattersByCultureCAResultExplorer(result as FormattersByCultureCAResult));
+        this.register(CAFeature.property, (result) => new PropertyCAResultExplorer(result as PropertyCAResult));
+        this.register(CAFeature.l10nProperty, (result) => new LocalizedPropertyCAResultExplorer(result as LocalizedPropertyCAResult));
+        this.register(CAFeature.error, (result) => new ErrorCAResultExplorer(result as ErrorCAResult));
     }
     /**
      * Create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
@@ -614,8 +1032,8 @@ export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
      * @param explorerCreator - Once identified, this function will create the object. It is passed the ConfigResults object
      * which is expected to be assigned to the result property of the object.
      */
-    public register(feature: string, explorerCreator: ExplorerCreatorHandler): void {
+    public register<T extends CAResultBase>(feature: string, explorerCreator: ExplorerCreatorHandler<T>): void {
         this._explorers.set(feature, explorerCreator);
     }
-    private _explorers: Map<string, ExplorerCreatorHandler>;
+    private _explorers: Map<string, ExplorerCreatorHandler<any>>;   // 'any' is used because CAResultBase resulted in TS2352 error due to TypeScript limitations.
 }

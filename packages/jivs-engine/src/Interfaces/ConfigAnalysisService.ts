@@ -169,6 +169,22 @@ export interface IConfigAnalysisResultsExplorer {
     results: IConfigAnalysisResults;
 
     /**
+     * Returns true if it finds one ConfigResults object that matches the criteria.
+     * This is effectively the same idea as countConfigResults(criteria) but doesn't
+     * waste time counting them all.
+     * @param criteria 
+     */
+    hasMatchInConfigResults(criteria: IConfigAnalysisSearchCriteria): boolean;
+
+    /**
+     * Returns true if it finds one LookupKeyCAResult object that matches the criteria.
+     * This is effectively the same idea as countLookupKeyResults(criteria) but doesn't
+     * waste time counting them all.
+     * @param criteria 
+     */
+    hasMatchInLookupKeyResults(criteria: IConfigAnalysisSearchCriteria): boolean;
+
+    /**
      * Return a count of the number of ConfigResult objects found in the ConfigIssues array
      * matching the criteria.
      * @param criteria When null, return all results.
@@ -185,15 +201,32 @@ export interface IConfigAnalysisResultsExplorer {
     /**
      * Return a list of all ConfigResult objects found in the ConfigIssues array,
      * wrapped in a CAPathedResult object.
+     * Only includes the children if this object matches the criteria.
      * @param criteria 
      */
-    collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
+    collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: ICAExplorerFactory): Array<CAPathedResult<any>>;
 
     /**
      * Return a list of all LookupKeyCAResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
+     * Only includes the children if this object matches the criteria.
      */
-    collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
+    collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: ICAExplorerFactory): Array<CAPathedResult<any>>;
+
+    /**
+     * With the results of a collect function, return a specific ConfigResult object
+     * which is the first one found that matches the supplied path.
+     * @remarks
+     * This function was designed for testing purposes.
+     * It lets your testing code review the results of the collect functions.
+     * @param path 
+     * The CAResultPath object, where the key is the feature and the value is the identifier,
+     * although the feature may have a number appended to it if there are multiple children with the same feature:
+     * "Condition", "Condition2", "Condition3", etc.
+     * @param foundResults 
+     * @returns The first ConfigResult object that matches the path, or null if no match is found.
+     */
+    getByResultPath(path: CAResultPath, foundResults: Array<CAPathedResult<any>>): CAResultBase | null;
 
     // which data type service did you expect on a ConfigResult object when there was one found?
 
@@ -215,6 +248,11 @@ export interface IConfigAnalysisResultsExplorer {
  * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
  */
 export interface IConfigAnalysisSearchCriteria {
+    /**
+     * When true, a parent object must match the criteria in order to evaluate its children.
+     * When false or undefined, the children are evaluated regardless of the parent.
+     */
+    skipChildrenIfParentMismatch?: boolean;
     /**
      * Match to any feature listed or all features if undefined.
      * Case insensitive match.
@@ -267,17 +305,132 @@ export interface IConfigAnalysisSearchCriteria {
      * Case insensitive match.
      */
     propertyNames?: Array<string>;
+
+    /**
+     * Match to any cultureId listed or all cultures if undefined.
+     * Only applies to CAResult objects that use a culture ID as its identity string.
+     * Case insensitive match.
+     */
+    cultureIds?: Array<string>;
 //#endregion identities for specific ConfigAnalysisResult objects based on their feature property.    
 }
+
+/**
+ * Represents a searcher for configuration analysis criteria.
+ */
+export interface ICASearcher {
+    /**
+     * When true, a parent object must match the criteria in order to evaluate its children.
+     * When false or undefined, the children are evaluated regardless of the parent.
+     */
+    skipChildrenIfParentMismatch?: boolean;
+    
+    /**
+     * When true, there are no criteria setup. All results are considered a match.
+     */
+    allMatch: boolean;
+    /**
+     * Determines if the given feature matches the search criteria.
+     * @param feature The feature to match.
+     * @returns True if the feature matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchFeature(feature: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given severity matches the search criteria.
+     * @param severity The severity to match. When supplied with null,
+     * it means that the severity property is undefined in the Result.
+     * @returns True if the severity matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchSeverity(severity: CAIssueSeverity | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given lookup key matches the search criteria.
+     * @param lookupKey The lookup key to match.
+     * @returns True if the lookup key matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchLookupKey(lookupKey: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given service name matches the search criteria.
+     * @param serviceName The service name to match.
+     * @returns True if the service name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchServiceName(serviceName: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given value host name matches the search criteria.
+     * @param valueHostName The value host name to match.
+     * @returns True if the value host name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchValueHostName(valueHostName: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given error code matches the search criteria.
+     * @param errorCode The error code to match.
+     * @returns True if the error code matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchErrorCode(errorCode: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given condition type matches the search criteria.
+     * @param conditionType The condition type to match.
+     * @returns True if the condition type matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchConditionType(conditionType: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given property name matches the search criteria.
+     * @param propertyName The property name to match.
+     * @returns True if the property name matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchPropertyName(propertyName: string | null | undefined): boolean | undefined;
+
+    /**
+     * Determines if the given culture ID matches the search criteria.
+     * @param cultureId The culture ID to match.
+     * @returns True if the culture ID matches the search criteria,
+     * false if it does not match the search criteria,
+     * and undefined if the criteria is not applicable to the object.
+     */
+    matchCultureId(cultureId: string | null | undefined): boolean | undefined;
+}
+
+
 /**
  * Represents a result of evaluating a single ConfigAnalysisResult object.
  * It basically holds the ConfigAnalysisResult and the path to it.
  * The idea is to flatten the results which are a tree into a single array.
  */
 export interface CAPathedResult<T extends CAResultBase> {
-    path: Array<{ feature: string, identifier: string }>;
+    /**
+     * Each CAResultExplorer supplies its feature() and identifer() values
+     * to create one entry here. The object key is the feature and the value is the identifier.
+     * However, it is possible to have duplicate feature entries, especially
+     * when conditions have their own child conditions. In that case, the feature
+     * is repeated with a number appended to it after the first. For example, "Condition2", "Condition3".
+     */
+    path: CAResultPath;
     result: T;
 }
+
+export type CAResultPath = {[feature: string]: string | null};
 
 export interface IConfigAnalysisOutputFormatter {
 }
@@ -319,21 +472,45 @@ export interface ICAExplorerBase<T extends CAResultBase> {
      * it is applicable to the object being evaluated.
      * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
 
-     * @param criteria When null, it means include all and thus return null.
+     * @param searcher - A search tool with the criteria to match against.
+     * @returns True if the result matches the all applicable criteria, 
+     * false if it does not match at least one of the applicible criteria,
+     * and undefined if the criteria is not applicable to the object.
      */
-    match(criteria: IConfigAnalysisSearchCriteria | null): boolean;
+    matchThis(searcher: ICASearcher): boolean | undefined;
+
+    /**
+     * Returns true if it finds one ConfigResults object that matches the criteria
+     * amongst itself and all of its children.
+     * It differs from collect() in that it evaluates all children,
+     * and stops upon finding the first match.
+     */
+    hasMatch(searcher: ICASearcher, factory: ICAExplorerFactory): boolean;
+
+    /**
+     * Returns the first ConfigResults object that matches the criteria
+     * amongst itself and all of its children.
+     * @param searcher 
+     * @param factory 
+     * @path Collects feature/identifier pairs to form the path to this object.
+     * 
+     * @returns The first ConfigResults object that matches the criteria,
+     * or null if no match is found.
+     */
+    findOne(searcher: ICASearcher, factory: ICAExplorerFactory,
+        path?: CAResultPath): CAPathedResult<CAResultBase> | null;
 
     /**
      * Using match on itself and its children, collect all results that match the criteria
      * into the matches array.
-     * @param criteria - The criteria to match against. When null, include all.
+     * @param searcher - A search tool with the criteria to match against.
      * @param matches - Where to add any generated CAPathedResult objects.
      * @param path The feature + identifier from each parent object to this object. When this calls a child,
-     * it creates a new path from this plus its own identifier. Nothing is added if the identifier is null.
+     * it creates a new object from this plus its own feature + identifier.
      * @param factory The factory to create entries going into matches.
      */
-    collect(criteria: IConfigAnalysisSearchCriteria | null, matches: Array<CAPathedResult<T>>,
-        path: Array<{ feature: string, identifier: string }>, factory: CAExplorerFactory): void;
+    collect(searcher: ICASearcher, matches: Array<CAPathedResult<T>>,
+        path: CAResultPath, factory: ICAExplorerFactory): void;
     
     /**
      * Return a list of all children of the result that match the criteria
@@ -346,7 +523,7 @@ export interface ICAExplorerBase<T extends CAResultBase> {
 /**
  * Factory to create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
  */
-export interface CAExplorerFactory {
+export interface ICAExplorerFactory {
     /**
      * Create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
      * It is a factory method that creates the object from the functions registered with 
@@ -362,11 +539,11 @@ export interface CAExplorerFactory {
      * @param explorerCreator - Once identified, this function will create the object. It is passed the ConfigResults object
      * which is expected to be assigned to the result property of the object.
      */
-    register(feature: string, explorerCreator: ExplorerCreatorHandler): void;
+    register<T extends CAResultBase>(feature: string, explorerCreator: ExplorerCreatorHandler<T>): void;
 
 }
 
-export type ExplorerCreatorHandler = (configResult: CAResultBase) => ICAExplorerBase<CAResultBase>;
+export type ExplorerCreatorHandler<T extends CAResultBase> = (configResult: T) => ICAExplorerBase<T>;
 
 
 /**
@@ -704,6 +881,8 @@ export interface CultureSpecificClassRetrieval extends ServiceChildResultBase   
  */
 export interface ParserServiceCAResult extends MultiClassRetrieval {
     feature: CAFeature.parser;
+
+    results: Array<ParsersByCultureCAResult>;
 }
 
 /**
@@ -741,6 +920,7 @@ export interface ParserFoundCAResult
  */
 export interface FormatterServiceCAResult extends MultiClassRetrieval {
     feature: CAFeature.formatter;
+    results: Array<FormattersByCultureCAResult>;
 }
 
 /**
@@ -751,26 +931,6 @@ export interface FormatterServiceCAResult extends MultiClassRetrieval {
 export interface FormattersByCultureCAResult
     extends CultureSpecificClassRetrieval, ClassNotFound {
     feature: CAFeature.formattersByCulture;
-}
-
-/**
- * For interfaces that are the top level of results for a single config object.
- * It includes the results of the analysis of the properties of the config object.
- * It also includes the config object itself.
- * If there are valiability errors, they are reported in its own message and severity properties.
- * @typedef TConfig - The type of the configuration object:
- */
-export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueForCAResultBase
-{
-    /**
-     * errors or warnings found amongst the properties of the TConfig object
-     * expect properties that hold Config objects themselves.
-     */    
-    properties: Array<PropertyCAResult|ErrorCAResult>;
-    /**
-     * The configuration object analyzed.
-     */
-    config: TConfig;
 }
 
 
@@ -822,6 +982,26 @@ export interface ErrorCAResult extends CAResultBase, IssueForCAResultBase {
     feature: CAFeature.error;
     severity: CAIssueSeverity.error;
     analyzerClassName: string;
+}
+
+/**
+ * For interfaces that are the top level of results for a single config object.
+ * It includes the results of the analysis of the properties of the config object.
+ * It also includes the config object itself.
+ * If there are valiability errors, they are reported in its own message and severity properties.
+ * @typedef TConfig - The type of the configuration object:
+ */
+export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueForCAResultBase
+{
+    /**
+     * errors or warnings found amongst the properties of the TConfig object
+     * expect properties that hold Config objects themselves.
+     */    
+    properties: Array<PropertyCAResult|ErrorCAResult>;
+    /**
+     * The configuration object analyzed.
+     */
+    config: TConfig;
 }
 
 /**
