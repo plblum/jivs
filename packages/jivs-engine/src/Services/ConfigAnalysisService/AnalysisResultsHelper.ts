@@ -62,11 +62,6 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     }
 
     //#region helper methods 
-
-    public addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void {
-        this.analysisArgs.results.lookupKeysIssues.push({ feature, lookupKey: lookupKey, severity: severity, message });
-    }
-
     /**
      * Tries to get a sample value for the lookup key or valueHost.
      * If it is not found, returns undefined.
@@ -103,7 +98,8 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         // we accept whitespace errors here and will report them at their source
         if (lookupKey.trim().length === 0) return null;  // ignore empty strings
 
-        lookupKey = this.checkForRealLookupKeyName(lookupKey);  // lookupKey is not trimmed here as we want to capture mismatches
+        let realInfo = this.checkForRealLookupKeyName(lookupKey);  // lookupKey is not trimmed here as we want to capture mismatches
+        lookupKey = realInfo.resolvedLookupKey;
         
         let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey);
         if (!lk) {
@@ -116,6 +112,10 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                     usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
                     serviceResults: []
                 };
+                if (realInfo.severity !== undefined)
+                    lk.severity = realInfo.severity;
+                if (realInfo.message)
+                    lk.message = realInfo.message;
                 this.results.lookupKeyResults.push(lk);
             }
         };
@@ -150,39 +150,34 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * - LookupKeyFallbackService
      * - IdentifierService
      * @param lookupKey - whitespace will be trimmed before testing
-     * @param silent - If true, do not report issues. Default is false.
      * @returns The correct lookup key name, if found. Otherwise, the original lookup key.
+     * It can report an error for the caller to assign to its Result.severity and Result.message properties.
      */
-    public checkForRealLookupKeyName(lookupKey: string, silent: boolean = false): string {
-        function caseInsensitiveMessage(lookupKey: string, actual: string): void {
-            if (!silent && lookupKey !== actual)
-                self.addlookupKeysIssue(CAFeature.lookupKey, trimmedLK,
-                    CAIssueSeverity.warning,
-                    `Lookup key "${trimmedLK}" is a case insensitive match for "${temp}". Make it a case sensitive match.`);
-        }
-        let self = this;
+    public checkForRealLookupKeyName(lookupKey: string): {
+        resolvedLookupKey: string,
+        severity?: CAIssueSeverity,
+        message?: string
+    } {
         let trimmedLK = lookupKey.trim(); // don't report trimming errors here. They are reported with the property that supplied them
         let temp = findCaseInsensitiveValueInStringEnum(trimmedLK, LookupKey) ?? null;  // case insensitive match finds the actual match
         if (temp) {
-            caseInsensitiveMessage(trimmedLK, temp);
-            return temp;
+            return { resolvedLookupKey: temp }; // no error for trimming or case insensitive match. Leave that to caller
         }
         // prove that we at least know this lookup key
         temp = this.services.lookupKeyFallbackService.find(lookupKey);
         //!!! future support looking up case insensitive matches in LookupKeyFallbackService
         if (temp)
-            return trimmedLK;
+            return { resolvedLookupKey: trimmedLK };
 
-        //!!! future support looking up case insensitive matches in IdentifierService
         let identifier = this.services.dataTypeIdentifierService.findByLookupKey(trimmedLK, true);
         if (identifier) {
-            caseInsensitiveMessage(trimmedLK, identifier.dataTypeLookupKey);
-            return identifier.dataTypeLookupKey;
+            return { resolvedLookupKey: identifier.dataTypeLookupKey };
         }
-        if (!silent)
-            this.addlookupKeysIssue(CAFeature.lookupKey, lookupKey, CAIssueSeverity.warning,
-                `Lookup key "${trimmedLK}" not already known. It may be fine, or may have typo. If valid, register it in LookupKeyFallbackService or IdentifierService`);
-        return trimmedLK;
+        return {
+            resolvedLookupKey: trimmedLK,
+            severity: CAIssueSeverity.warning,
+            message: `Lookup key "${trimmedLK}" not already known. It may be fine, or may have typo. If valid, register it in LookupKeyFallbackService or IdentifierService`
+         };
 
     }
 /**

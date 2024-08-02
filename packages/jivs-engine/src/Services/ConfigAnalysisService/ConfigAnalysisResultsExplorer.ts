@@ -79,7 +79,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
 
     /**
      * Returns true if any ConfigResult objects with severity of 'error' are found
-     * in either the ConfigIssues array or the LookupKeyIssues array.
+     * in either the ValueHostResults array or the LookupKeyResults array.
      */
     public hasErrors(): boolean
     {
@@ -101,7 +101,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     }
 
     /**
-     * Return a count of the number of ConfigResult objects found in the ConfigIssues array
+     * Return a count of the number of ConfigResult objects found in the ValueHostResults array
      * matching the criteria.
      * @param criteria When null, return all results.
      */
@@ -147,7 +147,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         });
     }
     /**
-     * Return a list of all ConfigResult objects found in the ConfigIssues array,
+     * Return a list of all ConfigResult objects found in the ValueHostResults array,
      * wrapped in a CAPathedResult object.
      * When a CAResultBases object is found, it is added to the list
      * and its children are evaluated.

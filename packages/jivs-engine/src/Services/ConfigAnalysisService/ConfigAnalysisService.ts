@@ -94,7 +94,6 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
             cultureIds: [],
             valueHostNames: [],
             lookupKeyResults: [],
-            lookupKeysIssues: [],
             valueHostResults: []
         };
 

@@ -145,12 +145,6 @@ export interface IConfigAnalysisResults {
     lookupKeyResults: Array<LookupKeyCAResult>;
 
     /**
-     * A list of all lookup keys used that were not found in the services,
-     * often due to case insensitive match or having whitespace.
-     */
-    lookupKeysIssues: Array<LookupKeyIssue>;
-
-    /**
      * A list of all issues found in the ValueHostConfig objects, such as missing properties,
      * and their ValidatorConfigs and ConditionConfigs.
      */
@@ -185,7 +179,7 @@ export interface IConfigAnalysisResultsExplorer {
     hasMatchInLookupKeyResults(criteria: IConfigAnalysisSearchCriteria): boolean;
 
     /**
-     * Return a count of the number of ConfigResult objects found in the ConfigIssues array
+     * Return a count of the number of ConfigResult objects found in the ValueHostResults array
      * matching the criteria.
      * @param criteria When null, return all results.
      */
@@ -199,7 +193,7 @@ export interface IConfigAnalysisResultsExplorer {
     countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number;
 
     /**
-     * Return a list of all ConfigResult objects found in the ConfigIssues array,
+     * Return a list of all ConfigResult objects found in the ValueHostResults array,
      * wrapped in a CAPathedResult object.
      * Only includes the children if this object matches the criteria.
      * @param criteria 
@@ -230,7 +224,7 @@ export interface IConfigAnalysisResultsExplorer {
 
     /**
      * Returns true if any ConfigResult objects with severity of 'error' are found
-     * in either the ConfigIssues array or the LookupKeyIssues array.
+     * in either the ValueHostResults array or the LookupKeyResults array.
      */
     hasErrors(): boolean;
 
@@ -654,7 +648,8 @@ export interface ILookupKeyAnalyzer {
     /**
      * Analyzes the key, creating an entry in the results describing it and reports any issues found.
      * If the object depends on cultures too, internally should use results.cultureIds.
-     * Implementation should expect to catch errors and write them to results.lookupKeysIssues.
+     * Implementation should expect to catch errors and write them to the appropriate
+     * result object's severity and message properties.
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
@@ -818,22 +813,13 @@ export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<Condi
     childrenResults?: Array<ConditionConfigCAResult>;
 }
 
-
-/**
- * Tracking additional issues on a specific LookupKey.
- * On ConfigAnalysisResults.lookupKeysIssues.
- */
-export interface LookupKeyIssue extends IssueForCAResultBase, CAResultBase {
-    lookupKey: string;
-}
-
 /**
  * Each Lookup Key found gets one of these objects in the results.
  * It encapsulates all the services that use the lookup key.
- * Invalid lookup keys are reported in ConfigAnalysisResults.lookupKeysIssues
- * and with the PropertyInfo object specifically supplying the invalid key.
+ * Invalid lookup keys are reported here with severity of 'error' and 
+ * an appropriate message.
  */
-export interface LookupKeyCAResult extends CAResultBase {
+export interface LookupKeyCAResult extends CAResultBase, IssueForCAResultBase {
     feature: CAFeature.lookupKey
     lookupKey: string;
     /**
@@ -1096,7 +1082,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
 
     results: IConfigAnalysisResults; 
 
-    addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void;
+    // addlookupKeysIssue(feature: string, lookupKey: string, severity: CAIssueSeverity, message: string): void;
 
     /**
      * Add support for a specific service to analyze lookup keys.
@@ -1174,10 +1160,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * - LookupKeyFallbackService
      * - IdentifierService
      * @param lookupKey - whitespace will be trimmed before testing
-     * @param silent - If true, do not report issues. Default is false.
      * @returns The correct lookup key name, if found. Otherwise, the original lookup key.
+     * It can report an error for the caller to assign to its Result.severity and Result.message properties.
      */
-    checkForRealLookupKeyName(lookupKey: string, silent: boolean): string;
+    checkForRealLookupKeyName(lookupKey: string): {
+        resolvedLookupKey: string,
+        severity?: CAIssueSeverity,
+        errorMessage?: string
+    };
     /**
      * Using the two properties for localization, check if the localization property (l10n) 
      * is declared in the TextLocalizerService for all cultures. 

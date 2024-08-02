@@ -39,7 +39,8 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
     /**
      * Analyzes the key, creating an entry in the results describing it and reports any issues found.
      * If the object depends on cultures too, internally should use results.cultureIds.
-     * Implementation should expect to catch errors and write them to results.lookupKeysIssues.
+     * Implementation should expect to catch errors and write them to results.severity and results.message
+     * of the appropriate results object.
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.

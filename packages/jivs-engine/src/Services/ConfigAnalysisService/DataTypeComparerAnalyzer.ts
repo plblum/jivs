@@ -112,7 +112,8 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
 
         let lookupKeyResults = this.helper.results.lookupKeyResults;        
 
-        lookupKey = this.helper.checkForRealLookupKeyName(lookupKey, true);
+        let realInfo = this.helper.checkForRealLookupKeyName(lookupKey);
+        lookupKey = realInfo.resolvedLookupKey;
         let lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey);
         if (!lookupKeyResult)
         {

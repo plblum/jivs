@@ -144,7 +144,6 @@ describe('ConfigAnalysisServiceBase class', () => {
                 cultureIds: ['en', 'fr'],
                 valueHostNames: ['testValueHost1', 'testValueHost2'],
                 lookupKeyResults: [],
-                lookupKeysIssues: [],
                 valueHostResults: []
             });
         });
@@ -163,7 +162,6 @@ describe('ConfigAnalysisServiceBase class', () => {
                 cultureIds: ['en', 'fr'],
                 valueHostNames: [],
                 lookupKeyResults: [],
-                lookupKeysIssues: [],
                 valueHostResults: []
             });
         });
@@ -377,7 +375,6 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.cultureIds).toEqual(['en']);
             expect(results.valueHostNames).toHaveLength(0);
             expect(results.lookupKeyResults).toHaveLength(0);
-            expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.valueHostResults).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
             expect(testItem.publicify_getServices()).toBe(services);
@@ -412,7 +409,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                     ]
                 }
             ]);
-            expect(results.lookupKeysIssues).toHaveLength(0);
+
             expect(results.valueHostResults).toHaveLength(1);
             expect(results.valueHostResults[0]).toEqual({
                 feature: CAFeature.valueHost,
@@ -474,7 +471,6 @@ describe('ConfigAnalysisServiceBase class', () => {
                     ]
                 }
             ]);
-            expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.valueHostResults).toHaveLength(1);
             expect(results.valueHostResults[0]).toEqual({
                 feature: CAFeature.valueHost,
@@ -789,7 +785,5 @@ describe('ValidationManagerConfigAnalysisService', () => {
         expect(prop3.severity).toBe(CAIssueSeverity.info);
         expect(prop3.message).toMatch(/conditionType/);
         expect(prop3.propertyName).toEqual('errorCode');
-
-        expect(results.lookupKeysIssues).toHaveLength(0);
     });
 });

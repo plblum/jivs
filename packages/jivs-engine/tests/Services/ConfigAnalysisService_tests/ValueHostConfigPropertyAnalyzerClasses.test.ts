@@ -8,7 +8,7 @@ import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisServi
 
 import {
     checkValueHostConfigResults,
-    checkPropertyCAResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult, createServices,
+    checkPropertyCAResultsFromArray, checkLocalizedPropertyResult, createServices,
     setupHelper,
     checkLookupKeyResultsForService,
     checkServiceInfoForCultureSpecificParserRetrieval
@@ -258,7 +258,6 @@ describe('DataTypePropertyAnalyzer class', () => {
 
             checkPropertyCAResultsFromArray(setup.results.properties, 0, 'dataType',
                 'Lookup key "custom" is unknown', CAIssueSeverity.info);
-            checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
         });
         // dataType is LookupKey.Number is no configIssue
         test('should not add a config issue when dataType is LookupKey.Number', () => {
@@ -273,7 +272,6 @@ describe('DataTypePropertyAnalyzer class', () => {
             let testItem = new DataTypePropertyAnalyzer();
             testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
             expect(setup.results.properties).toHaveLength(0);
-            expect(setup.helper.results.lookupKeysIssues).toHaveLength(0);
         });
         // when valueHostConfig itself is null, it uses config as a source
         test('should not add a config issue when valueHostConfig is null', () => {
@@ -288,7 +286,6 @@ describe('DataTypePropertyAnalyzer class', () => {
             let testItem = new DataTypePropertyAnalyzer();
             testItem.analyze(testValueHostConfig, setup.results, null, setup.helper);
             expect(setup.results.properties).toHaveLength(0);
-            expect(setup.helper.results.lookupKeysIssues).toHaveLength(0);
         });
     });    
 });
@@ -488,7 +485,6 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         checkPropertyCAResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
             'Not found', CAIssueSeverity.error);
-        checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
     });
     // pass in a parserLookupKey that is unknown, but not null
     test('parserLookupKey is custom but has a LookupKeyFallback that is registered results in a propertyIssue for that property', () => {
@@ -509,7 +505,6 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         checkPropertyCAResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
             'it will also try the Lookup Key "Number"', CAIssueSeverity.warning);
-        expect(setup.helper.results.lookupKeysIssues).toHaveLength(0);
 
     });
 

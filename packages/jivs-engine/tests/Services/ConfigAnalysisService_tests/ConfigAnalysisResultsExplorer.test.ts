@@ -2848,8 +2848,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             cultureIds: ['en'],
             valueHostNames: [],
             valueHostResults: [],
-            lookupKeyResults: [],
-            lookupKeysIssues: []
+            lookupKeyResults: []
         };
     }
 
@@ -3190,8 +3189,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 cultureIds: ['en'],
                 valueHostNames: [],
                 valueHostResults: [],
-                lookupKeyResults: [],
-                lookupKeysIssues: [],
+                lookupKeyResults: []
             };
             let explorer: Publicify_ConfigAnalysisResultsExplorer;
             expect(() => explorer = new Publicify_ConfigAnalysisResultsExplorer(

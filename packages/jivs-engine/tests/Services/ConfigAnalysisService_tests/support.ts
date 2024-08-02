@@ -1,7 +1,7 @@
 import {
     CAFeature,
     IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigCAResult, CAIssueSeverity,
-    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval
+    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
@@ -34,7 +34,6 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
         cultureIds: ['en'],
         valueHostNames: valueHostNames,
         lookupKeyResults: [],
-        lookupKeysIssues: [],
         conditionsInfo: [],
         valueHostResults: []
     };
@@ -180,15 +179,6 @@ export function checkPropertyCAResults(result: PropertyCAResult | undefined,
     else
         expect(result!.message).toContain(expectedPartialMessage);
     return result!;
-}        
-export function checkLookupKeyIssue(allResults: IConfigAnalysisResults,
-    index: number, expectedLookupKey: string, expectedPartialMessage: string): LookupKeyIssue {
-    let issue = allResults.lookupKeysIssues[index];
-    expect(issue).toBeDefined();
-    expect(issue.feature).toBe(CAFeature.lookupKey);
-    expect(issue.lookupKey).toBe(expectedLookupKey);
-    expect(issue.message).toContain(expectedPartialMessage);
-    return issue;
 }
 export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyCAResult>,
     expectedLookupKey: string): LookupKeyCAResult {
@@ -348,4 +338,5 @@ export function checkSyntaxError(propertyResult: PropertyCAResult,
     expect(propertyResult.propertyName).toBe(expectedPropertyName);
     expect(propertyResult.severity).toBe(CAIssueSeverity.error);
     expect(propertyResult.message).toContain('Syntax error');
-}    
+    }   
+    
