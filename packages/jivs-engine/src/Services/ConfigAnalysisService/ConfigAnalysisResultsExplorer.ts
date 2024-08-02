@@ -30,6 +30,7 @@ import {
     CAIssueSeverity,
     CAResultPath
 } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceName } from "../../Interfaces/ValidationServices";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { CodingError, assertNotNull } from "../../Utilities/ErrorHandling";
 import { deepClone } from "../../Utilities/Utilities";
@@ -76,6 +77,28 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     }   
     private _factory: ICAExplorerFactory;
 
+    /**
+     * Returns true if any ConfigResult objects with severity of 'error' are found
+     * in either the ConfigIssues array or the LookupKeyIssues array.
+     */
+    public hasErrors(): boolean
+    {
+        if (this.hasMatchInConfigResults({ severities: [CAIssueSeverity.error] }))
+            return true;
+        if (this.hasMatchInLookupKeyResults({ severities: [CAIssueSeverity.error] }))
+            return true;
+        return false;
+    }
+
+    /**
+     * Throws an error if any ConfigResult objects with severity of 'error' are found.
+     * The error class is CodingError.
+     */
+    public throwOnErrors(): void
+    {
+        if (this.hasErrors())
+            throw new CodingError('Errors found in configuration analysis');    
+    }
 
     /**
      * Return a count of the number of ConfigResult objects found in the ConfigIssues array
@@ -170,6 +193,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * Path strings are matched case insensitively.
      * @param foundResults 
      * @returns The first ConfigResult object that matches the path, or null if no match is found.
+     * It also is tagged with an 'index' property that is the index of the foundResults array.
      */
     public getByResultPath(path: CAResultPath, foundResults: Array<CAPathedResult<any>>): CAResultBase | null {
         /**
@@ -193,8 +217,6 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
                         if (foundKeyLC === keyLC)
                         {
                             foundValue = foundResult.path[foundKey];
-                            if (foundValue === undefined)
-                                return false;
                         }
                     }
                 }
@@ -215,9 +237,11 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
 
         // compare each path in the foundResults array to the path object.
         // Stop on the first found
-        for (let result of foundResults) {
-            if (pathMatches(result)) {
-                foundResult = result.result;
+        for (let i = 0; i < foundResults.length; i++) {
+            let thisResult = foundResults[i];
+            if (pathMatches(thisResult)) {
+                foundResult = thisResult.result;
+                (foundResult as any)['index'] = i;
                 break;
             }
         }
@@ -281,6 +305,7 @@ export class CASearcher implements ICASearcher {
             }
             return newCriteria as IConfigAnalysisSearchCriteria;
         }
+        // istanbul ignore next // currently preCriteria is only called when criteria is not null
         return null;
     }    
 
@@ -458,7 +483,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
      * Tt is possible to have duplicate feature entries, especially
      * when conditions have their own child conditions. In that case, the feature
      * is repeated with a number appended to it after the first. 
-     * For example, "Condition2", "Condition3".
+     * For example, "Condition#2", "Condition#3".
      * @returns 
      */
     protected addPathElement(path: CAResultPath): void {
@@ -468,7 +493,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
         let count = 1;
         while (path[feature] !== undefined) {
             count++;
-            feature = `${baseFeature}${count}`;
+            feature = `${baseFeature}#${count}`;
         }
         path[feature] = identifier;
     }
@@ -500,9 +525,9 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
             return false;
         if (fResult === undefined && sResult === undefined && wResult === undefined)
             return undefined;
-        if ((fResult ?? true) && (sResult ?? true) && (wResult ?? true))
-            return true;
-        return false;
+        // Because we return when false is found above,
+        // we only have true and undefined left. That means the result is true.
+        return true;
     }
 
     /**
@@ -663,8 +688,13 @@ export class ValidatorConfigCAResultExplorer extends CAExplorerBase<ValidatorCon
 }
 
 /**
- * For exploring ConditionConfigCAResult objects. Their identifier is the conditionType property
- * and their feature is CAFeature.Condition.
+ * For exploring ConditionConfigCAResult objects. 
+ * Their identifier is the conditionType property and their feature is CAFeature.Condition.
+ * NOTE: There may be multiple Conditions found in a single CAPathResult, because
+ * of result.childrenResults. All have the same feautre name, "feature", here.
+ * However, in the CAPathResult, expect to assign the name of duplicate features
+ * with "#" + number to differentiate.
+ * They contain several types of children: from properties, from childrenResults
  */
 export class ConditionConfigCAResultExplorer extends CAExplorerBase<ConditionConfigCAResult>
 {
@@ -681,13 +711,15 @@ export class ConditionConfigCAResultExplorer extends CAExplorerBase<ConditionCon
     }
 
     /**
-     * Children are from properties.
+     * Children are from properties and childrenResults.
      * @returns 
      */
     public children(): Array<CAResultBase> {
         let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
+        if (this.result.childrenResults)
+            children = children.concat(this.result.childrenResults);
         return children;
 
     }
@@ -722,6 +754,7 @@ export class LookupKeyCAResultExplorer extends CAExplorerBase<LookupKeyCAResult>
 /**
  * For exploring IdentifierServiceCAResult objects.
  * Their identifier is null and their feature is CAFeature.identifier.
+ * Supports criteria.serviceNames = ServiceName.identifier.
  */
 export class IdentifierServiceCAResultExplorer extends CAExplorerBase<IdentifierServiceCAResult>
 {
@@ -734,7 +767,7 @@ export class IdentifierServiceCAResultExplorer extends CAExplorerBase<Identifier
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.identifier);
     }
 
     public children(): Array<CAResultBase> {
@@ -745,6 +778,7 @@ export class IdentifierServiceCAResultExplorer extends CAExplorerBase<Identifier
 /**
  * For exploring ConverterServiceCAResult objects.
  * Their identifier is null and their feature is CAFeature.converter.
+ * Supports criteria.serviceNames = ServiceName.converter.
  */
 export class ConverterServiceCAResultExplorer extends CAExplorerBase<ConverterServiceCAResult>
 {
@@ -757,7 +791,7 @@ export class ConverterServiceCAResultExplorer extends CAExplorerBase<ConverterSe
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.converter);
     }
 
     public children(): Array<CAResultBase> {
@@ -769,6 +803,7 @@ export class ConverterServiceCAResultExplorer extends CAExplorerBase<ConverterSe
 /**
  * For exploring ComparerServiceCAResult objects.
  * Their identifier is null and their feature is CAFeature.comparer.
+ * Supports criteria.serviceNames = ServiceName.comparer.
  */
 export class ComparerServiceCAResultExplorer extends CAExplorerBase<ComparerServiceCAResult>
 {
@@ -781,7 +816,7 @@ export class ComparerServiceCAResultExplorer extends CAExplorerBase<ComparerServ
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.comparer);
     }
 
     public children(): Array<CAResultBase> {
@@ -792,6 +827,7 @@ export class ComparerServiceCAResultExplorer extends CAExplorerBase<ComparerServ
 /**
  * For exploring ParserClassRetrieval objects. Their identifier is null
  * and their feature is CAFeature.parser.
+ * Supports criteria.serviceNames = ServiceName.parser.
  */
 export class ParserServiceCAResultExplorer extends CAExplorerBase<ParserServiceCAResult>
 {
@@ -803,7 +839,7 @@ export class ParserServiceCAResultExplorer extends CAExplorerBase<ParserServiceC
         return null;
     }
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.parser);
     }
 
     public children(): Array<CAResultBase> {
@@ -814,7 +850,7 @@ export class ParserServiceCAResultExplorer extends CAExplorerBase<ParserServiceC
 /**
  * For exploring ParsersByCultureCAResult objects.
  * Their identifier is the cultureId property and their feature is CAFeature.parsersByCulture.
- * Supports criteria.cultureIds.
+ * Supports criteria.cultureIds and criteria.serviceNames = ServiceName.parser.
  */
 export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCultureCAResult> {
     public feature(): string {
@@ -826,7 +862,11 @@ export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCu
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return searcher.matchCultureId(this.result.cultureId);
+        let cultureIdMatch = searcher.matchCultureId(this.result.cultureId);
+        let serviceNameMatch = searcher.matchServiceName(ServiceName.parser);
+        if (cultureIdMatch === undefined && serviceNameMatch === undefined)
+            return undefined;
+        return (cultureIdMatch ?? true) && (serviceNameMatch ?? true);
     }
 
     public children(): Array<CAResultBase> {
@@ -836,7 +876,11 @@ export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCu
 
 /**
  * For exploring ParserFoundCAResult objects.
- * Their identifier is null and their feature is CAFeature.parserFound.
+ * Their identifier is the classFound and their feature is CAFeature.parserFound.
+ * NOTE: It is unusual to use classFound as the identifier. 
+ * In this case, we may have several parsers found, only differentiated by the class name.
+ * This class is never generated if it class was not found.
+ * Supports criteria.serviceNames = ServiceName.parser.
  */
 export class ParserFoundCAResultExplorer extends CAExplorerBase<ParserFoundCAResult> {
     public feature(): string {
@@ -844,11 +888,11 @@ export class ParserFoundCAResultExplorer extends CAExplorerBase<ParserFoundCARes
     }
 
     public identifier(): string | null {
-        return null;
+        return this.result.classFound!;
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.parser);
     }
 
     public children(): Array<CAResultBase> {
@@ -859,6 +903,7 @@ export class ParserFoundCAResultExplorer extends CAExplorerBase<ParserFoundCARes
 /**
  * For exploring FormatterServiceCAResult objects.
  * Their identifier is null and their feature is ServiceName.formatter.
+ * Supports criteria.serviceNames = ServiceName.formatter.
  */
 export class FormatterServiceCAResultExplorer extends CAExplorerBase<FormatterServiceCAResult>
 {
@@ -871,7 +916,7 @@ export class FormatterServiceCAResultExplorer extends CAExplorerBase<FormatterSe
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return undefined;
+        return searcher.matchServiceName(ServiceName.formatter);
     }
 
     public children(): Array<CAResultBase> {
@@ -882,6 +927,7 @@ export class FormatterServiceCAResultExplorer extends CAExplorerBase<FormatterSe
 /**
  * For exploring FormattersByCultureCAResult objects.
  * Their identifier is the requestedCultureId property and their feature is CAFeature.formattersByCulture.
+ * Supports criteria.cultureIds and criteria.serviceNames = ServiceName.formatter.
  */
 export class FormattersByCultureCAResultExplorer extends CAExplorerBase<FormattersByCultureCAResult> {
     public feature(): string {
@@ -893,7 +939,11 @@ export class FormattersByCultureCAResultExplorer extends CAExplorerBase<Formatte
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        return searcher.matchCultureId(this.result.requestedCultureId);
+        let cultureIdMatch = searcher.matchCultureId(this.result.requestedCultureId);
+        let serviceNameMatch = searcher.matchServiceName(ServiceName.formatter);
+        if (cultureIdMatch === undefined && serviceNameMatch === undefined)
+            return undefined;
+        return (cultureIdMatch ?? true) && (serviceNameMatch ?? true);
     }
 
     public children(): Array<CAResultBase> {
@@ -1019,7 +1069,10 @@ export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
      * @returns A new ConfigResultsExplorer object assigned to the configResult object.
      */
     public create(configResult: CAResultBase): ICAExplorerBase<CAResultBase> {
-        let fn = this._explorers.get(configResult.feature);
+        // feature may contain extra text after the feature name, such as "Condition#2".
+        // use the feature name only.
+        let feature = configResult.feature.split('#')[0];
+        let fn = this._explorers.get(feature);
         if (fn) {
             return fn(configResult);
         }

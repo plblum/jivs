@@ -6,7 +6,7 @@ import { ConditionCategory, SupportsDataTypeConverter } from './../../../src/Int
 import { DataTypeConverterLookupKeyAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import { LookupKey } from '../../../src/DataTypes/LookupKeys';
 import {
-    ConditionConfigCAResult, ConditionConfigWithChildrenResults, CAIssueSeverity,
+    ConditionConfigCAResult, CAIssueSeverity,
     CAFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
@@ -649,10 +649,10 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(1);
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition');
+
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(1);
+        expect(results.childrenResults![0].conditionType).toBe('testCondition');
 
     });
     test('analyze with conditionConfigs containing 3 ConditionConfigs has 3 entries in results.childrenResults', () => {
@@ -669,12 +669,11 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(3);
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition');
-        expect(chdConfigResults.childrenResults[1].conditionType).toBe('testCondition2');
-        expect(chdConfigResults.childrenResults[2].conditionType).toBe('testCondition3');
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(3);
+        expect(results.childrenResults![0].conditionType).toBe('testCondition');
+        expect(results.childrenResults![1].conditionType).toBe('testCondition2');
+        expect(results.childrenResults![2].conditionType).toBe('testCondition3');
 
     });
     test('analyze with conditionConfigs containing a single ConditionConfig that has an error creates an entry for that condition in results.childrenResults', () => {
@@ -689,11 +688,10 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(1);
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition2');
-        checkPropertyCAResultsFromArray(chdConfigResults.childrenResults[0].properties, 0,
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(1);
+        expect(results.childrenResults![0].conditionType).toBe('testCondition2');
+        checkPropertyCAResultsFromArray(results.childrenResults![0].properties, 0,
             'conditionType',
             'whitespace',
             CAIssueSeverity.error);
@@ -714,19 +712,18 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(3);
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition');
-        expect(chdConfigResults.childrenResults[1].conditionType).toBe('testCondition2');
-        expect(chdConfigResults.childrenResults[2].conditionType).toBe('testCondition3');
-        checkPropertyCAResultsFromArray(chdConfigResults.childrenResults[1].properties, 0,
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(3);
+        expect(results.childrenResults![0].conditionType).toBe('testCondition');
+        expect(results.childrenResults![1].conditionType).toBe('testCondition2');
+        expect(results.childrenResults![2].conditionType).toBe('testCondition3');
+        checkPropertyCAResultsFromArray(results.childrenResults![1].properties, 0,
             'conditionType',
             'whitespace',
             CAIssueSeverity.error);
 
-        expect(chdConfigResults.childrenResults[0].properties).toHaveLength(0);
-        expect(chdConfigResults.childrenResults[2].properties).toHaveLength(0);
+        expect(results.childrenResults![0].properties).toHaveLength(0);
+        expect(results.childrenResults![2].properties).toHaveLength(0);
 
     });
     // similar with 3 test cases, only the second has an error blocking further analysis
@@ -744,21 +741,21 @@ describe('ConditionWithChildrenPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(3);
-        let chdConfigResults1 = chdConfigResults.childrenResults[1] as ConditionConfigWithChildrenResults;
+
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(3);
+        let chdConfigResults1 = results.childrenResults![1];
         expect(chdConfigResults1.properties).toHaveLength(0);
         expect(chdConfigResults1.conditionType).toBe('notRegistered');
         expect(chdConfigResults1.childrenResults).toBeUndefined();
         expect(chdConfigResults1.message).toContain('ConditionType not registered');
         expect(chdConfigResults1.severity).toBe(CAIssueSeverity.error);
 
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition');
-        expect(chdConfigResults.childrenResults[2].conditionType).toBe('testCondition3');
+        expect(results.childrenResults![0].conditionType).toBe('testCondition');
+        expect(results.childrenResults![2].conditionType).toBe('testCondition3');
 
-        expect(chdConfigResults.childrenResults[0].properties).toHaveLength(0);
-        expect(chdConfigResults.childrenResults[2].properties).toHaveLength(0);
+        expect(results.childrenResults![0].properties).toHaveLength(0);
+        expect(results.childrenResults![2].properties).toHaveLength(0);
 
     });    
 });
@@ -834,11 +831,11 @@ describe('ConditionWithOneChildPropertyAnalyzer class', () => {
         };
         let results = createConditionResults(config);
         testItem.analyze(config, results, valueHostConfig, helper);
-        let chdConfigResults = results as ConditionConfigWithChildrenResults;
-        expect(chdConfigResults.childrenResults).toBeDefined();
-        expect(chdConfigResults.childrenResults).toHaveLength(1);
-        expect(chdConfigResults.childrenResults[0].conditionType).toBe('testCondition');
-        expect(chdConfigResults.childrenResults[0].properties).toHaveLength(0);
+
+        expect(results.childrenResults).toBeDefined();
+        expect(results.childrenResults).toHaveLength(1);
+        expect(results.childrenResults![0].conditionType).toBe('testCondition');
+        expect(results.childrenResults![0].properties).toHaveLength(0);
 
     });
 });

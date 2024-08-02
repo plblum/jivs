@@ -27,6 +27,8 @@ import {
 import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
 import { InputValueHostConfig } from '../../../src/Interfaces/InputValueHost';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
+import { ServiceName } from '../../../src/Interfaces/ValidationServices';
+import { CodingError } from '../../../src/Utilities/ErrorHandling';
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -492,6 +494,8 @@ describe('CAExplorerBase class', () => {
     interface GrandChildTestResult extends TestResultBase {
         // Identifier and for searcher.
         conditionType?: string;
+        // continue with more grandchildren
+        children?: Array<GrandChildTestResult>;
     }
 
     let factory = new ConfigAnalysisResultsExplorerFactory();
@@ -649,6 +653,159 @@ describe('CAExplorerBase class', () => {
                 };
                 let criteria: IConfigAnalysisSearchCriteria = { errorCodes: ['Child1'] };
                 executeMatchThis(vhcResult, criteria, undefined, 0, 0, 1);
+            });
+        });
+        describe('Combinations of criteria', () => {
+            test('returns true when feature and severity match', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    severity: CAIssueSeverity.error
+                };
+                let criteria: IConfigAnalysisSearchCriteria = { features: [parentFeatureName], severities: [CAIssueSeverity.error] };
+                executeMatchThis(vhcResult, criteria, true, 1, 0, 0);
+            });
+            test('returns false when feature matches but severity does not', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    severity: CAIssueSeverity.error
+                };
+                let criteria: IConfigAnalysisSearchCriteria = { features: [parentFeatureName], severities: [CAIssueSeverity.warning] };
+                executeMatchThis(vhcResult, criteria, false, 0, 1, 0);
+            });
+            test('returns false when feature does not match but severity does', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    severity: CAIssueSeverity.error
+                };
+                let criteria: IConfigAnalysisSearchCriteria = { features: ['Condition'], severities: [CAIssueSeverity.error] };
+                executeMatchThis(vhcResult, criteria, false, 0, 1, 0);
+            });
+            test('returns false when feature does not match and severity does not match', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    severity: CAIssueSeverity.error
+                };
+                let criteria: IConfigAnalysisSearchCriteria = { features: ['Condition'], severities: [CAIssueSeverity.warning] };
+                executeMatchThis(vhcResult, criteria, false, 0, 1, 0);
+            });
+            // undefined case where criteria has not be setup with feature or severity
+            test('returns undefined when feature does not match and severity does not match', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    severity: CAIssueSeverity.error
+                };
+                let criteria: IConfigAnalysisSearchCriteria = { errorCodes: ['Child1'] };
+                executeMatchThis(vhcResult, criteria, undefined, 0, 0, 1);
+            });
+        });
+        // similar except we'll use ParentTestExplorer to test the matchThisWorker
+        // method. It will use searcher.matchValueHostName to determine the match.
+        // Need combinations that result in true, false, and undefined.
+        // True requires matching have no falses and at least 1 true.
+        // Undefined requirse all 3 to have no criteria supplied.
+        // False is for the rest
+        describe('matchThisWorker', () => {
+            test('returns true when valueHostName matches', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST'
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({ valueHostNames: ['TEST'] });
+                expect(explorer.matchThis(searcher)).toBe(true);
+            });
+            test('returns false when valueHostName does not match', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST'
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({ valueHostNames: ['NOTTEST'] });
+                expect(explorer.matchThis(searcher)).toBe(false);
+            });
+            test('returns undefined when valueHostName does not match and criteria is not supplied', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST'
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({ conditionTypes: ['TEST'] });
+                expect(explorer.matchThis(searcher)).toBe(undefined);
+            });
+            // now all 3 have criteria supplied
+            test('returns true when valueHostName matches and all criteria are supplied', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST',
+                    severity: CAIssueSeverity.error
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({
+                    features: [parentFeatureName],
+                    valueHostNames: ['TEST'],
+                    severities: [CAIssueSeverity.error]
+                });
+                expect(explorer.matchThis(searcher)).toBe(true);
+            });
+            // all 3 have criteria supplied, but valueHostName does not match
+            test('returns false when valueHostName does not match and all criteria are supplied', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST',
+                    severity: CAIssueSeverity.error
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({
+                    features: [parentFeatureName],
+                    valueHostNames: ['NOTTEST'],
+                    severities: [CAIssueSeverity.error]
+                });
+                expect(explorer.matchThis(searcher)).toBe(false);
+            });
+            // all 3 have criteria supplied, but severity does not match
+            test('returns false when severity does not match and all criteria are supplied', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST',
+                    severity: CAIssueSeverity.error
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({
+                    features: [parentFeatureName],
+                    valueHostNames: ['TEST'],
+                    severities: [CAIssueSeverity.warning]
+                });
+                expect(explorer.matchThis(searcher)).toBe(false);
+            });
+            // all 3 have criteria supplied, but feature does not match
+            test('returns false when feature does not match and all criteria are supplied', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST',
+                    severity: CAIssueSeverity.error
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({
+                    features: ['Condition'],
+                    valueHostNames: ['TEST'],
+                    severities: [CAIssueSeverity.error]
+                });
+                expect(explorer.matchThis(searcher)).toBe(false);
+            });
+            // all 3 have criteria supplied, but none match
+            test('returns false when none of the criteria match', () => {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'TEST',
+                    severity: CAIssueSeverity.error
+                };
+                let explorer = new ParentTestExplorer(vhcResult);
+                let searcher = new CASearcher({
+                    features: ['Condition'],
+                    valueHostNames: ['NOTTEST'],
+                    severities: [CAIssueSeverity.warning]
+                });
+                expect(explorer.matchThis(searcher)).toBe(false);
             });
         });
 
@@ -1299,6 +1456,103 @@ describe('CAExplorerBase class', () => {
             });
 
         });
+        // Deeper! Testing the renaming of features when repeated in the path
+        describe('renaming of features when repeated in the path', () => {
+            // grandchild is repeated in the path
+            function createWithRepeatingGrandchild(): TestResultBase {
+                let vhcResult: ParentTestResult = {
+                    feature: parentFeatureName,
+                    valueHostName: 'Parent',
+                    children: [
+                        {
+                            feature: childFeatureName,
+                            errorCode: 'Child1',
+                            children: [
+                                {
+                                    feature: grandChildFeatureName,
+                                    conditionType: 'Child1A',
+                                    children: [
+                                        {
+                                            feature: grandChildFeatureName,
+                                            conditionType: 'Child1A1',
+                                            children: [
+                                                {
+                                                    feature: grandChildFeatureName,
+                                                    conditionType: 'Child1A1A'
+                                                },
+                                                {
+                                                    feature: grandChildFeatureName,
+                                                    conditionType: 'Child1A1B'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    feature: grandChildFeatureName,
+                                    conditionType: 'Child1B'
+                                }
+                            ]
+                        }
+                    ]
+                };
+                return vhcResult;
+            }
+            test('all match, review the feature names to see the count', () => {
+                let searcher = new CASearcher({ features: [parentFeatureName, childFeatureName, grandChildFeatureName] });
+                let vhcResult = createWithRepeatingGrandchild();
+                let matches = executeCollect(vhcResult, searcher, 7, 7, 0, 0);
+                testMatchResult(matches, 0,
+                    { [parentFeatureName]: 'Parent' },
+                    matches[0].result);
+                testMatchResult(matches, 1,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1'
+                    },
+                    matches[1].result);
+                testMatchResult(matches, 2,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1',
+                        [grandChildFeatureName]: 'Child1A'
+                    },
+                    matches[2].result);
+                testMatchResult(matches, 3,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1',
+                        [grandChildFeatureName]: 'Child1A',
+                        [grandChildFeatureName + '#2']: 'Child1A1'
+                    },
+                    matches[3].result);
+                testMatchResult(matches, 4,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1',
+                        [grandChildFeatureName]: 'Child1A',
+                        [grandChildFeatureName + '#2']: 'Child1A1',
+                        [grandChildFeatureName + '#3']: 'Child1A1A'
+                    },
+                    matches[4].result);                
+                testMatchResult(matches, 5,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1',
+                        [grandChildFeatureName]: 'Child1A',
+                        [grandChildFeatureName + '#2']: 'Child1A1',
+                        [grandChildFeatureName + '#3']: 'Child1A1B'
+                    },
+                    matches[5].result);
+                testMatchResult(matches, 6,
+                    {
+                        [parentFeatureName]: 'Parent',
+                        [childFeatureName]: 'Child1',
+                        [grandChildFeatureName]: 'Child1B'
+                    },
+                    matches[6].result);
+            });
+        });
 
     });
 
@@ -1846,7 +2100,7 @@ describe('LookupKeyCAResultExplorer class', () => {
 
 describe('IdentifierServiceCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has no children, an identifier of null, and no feature specific criteria.
+    // This class has no children, an identifier of null, and supports criteria.serviceNames.
     function createIdentifierServiceCAResult(): IdentifierServiceCAResult {
         return {
             feature: CAFeature.identifier
@@ -1862,6 +2116,28 @@ describe('IdentifierServiceCAResultExplorer class', () => {
             expect(explorer!.identifier()).toBeNull();
         });
     });
+    describe('matchThis', () => {
+        // base class has covered feature and severity. So we will not repeat them here.
+        test('returns true when ServiceName.identifier is found in criteria.serviceNames', () => {
+            let serviceResult = createIdentifierServiceCAResult();
+            let explorer = new IdentifierServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.identifier] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        
+        test('returns false when ServiceName.identifier is not found in criteria.serviceNames', () => {
+            let serviceResult = createIdentifierServiceCAResult();
+            let explorer = new IdentifierServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when criteria.serviceNames is undefined', () => {
+            let serviceResult = createIdentifierServiceCAResult();
+            let explorer = new IdentifierServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+    });
     describe('children', () => {
         test('returns empty array', () => {
             let serviceResult = createIdentifierServiceCAResult();
@@ -1873,7 +2149,7 @@ describe('IdentifierServiceCAResultExplorer class', () => {
 
 describe('ConverterServiceCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has no children, an identifier of null, and no feature specific criteria.
+    // This class has no children, an identifier of null, but supports criteria.serviceNames.
     function createConverterServiceCAResult(): ConverterServiceCAResult {
         return {
             feature: CAFeature.converter
@@ -1889,6 +2165,29 @@ describe('ConverterServiceCAResultExplorer class', () => {
             expect(explorer!.identifier()).toBeNull();
         });
     });
+    describe('matchThis', () => {
+        // base class has covered feature and severity.
+        // CASearch class has been tested for numerous cases. So, we will not repeat them here.
+        test('returns true when ServiceName.converter is found in criteria.serviceNames', () => {
+            let serviceResult = createConverterServiceCAResult();
+            let explorer = new ConverterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.converter] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        
+        test('returns false when ServiceName.converter is not found in criteria', () => {
+            let serviceResult = createConverterServiceCAResult();
+            let explorer = new ConverterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when criteria.serviceNames is undefined', () => {
+            let serviceResult = createConverterServiceCAResult();
+            let explorer = new ConverterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });   
+    });
     describe('children', () => {
         test('returns empty array', () => {
             let serviceResult = createConverterServiceCAResult();
@@ -1900,7 +2199,7 @@ describe('ConverterServiceCAResultExplorer class', () => {
 
 describe('ComparerServiceCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has no children, an identifier of null, and no feature specific criteria.
+    // This class has no children, an identifier of null, but supports criteria.serviceNames.
     function createComparerServiceCAResult(): ComparerServiceCAResult {
         return {
             feature: CAFeature.comparer
@@ -1916,6 +2215,28 @@ describe('ComparerServiceCAResultExplorer class', () => {
             expect(explorer!.identifier()).toBeNull();
         });
     });
+    describe('matchThis', () => {
+        // base class has covered feature and severity.
+        // CASearch class has been tested for numerous cases. So, we will not repeat them here.
+        test('returns true when ServiceName.comparer is found in criteria.serviceNames', () => {
+            let serviceResult = createComparerServiceCAResult();
+            let explorer = new ComparerServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when ServiceName.converter is not found in criteria.serviceNames', () => {
+            let serviceResult = createComparerServiceCAResult();
+            let explorer = new ComparerServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.converter] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when criteria.serviceNames is undefined', () => {
+            let serviceResult = createComparerServiceCAResult();
+            let explorer = new ComparerServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+    });
     describe('children', () => {
         test('returns empty array', () => {
             let serviceResult = createComparerServiceCAResult();
@@ -1927,7 +2248,7 @@ describe('ComparerServiceCAResultExplorer class', () => {
 
 describe('ParserServiceCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has an identifier of null, and no feature specific criteria.
+    // This class has an identifier of null, but supports criteria.serviceNames.
     // It has children in the ParserServiceCAResult.results property.
     function createParserServiceCAResult(): ParserServiceCAResult {
         return {
@@ -1943,6 +2264,28 @@ describe('ParserServiceCAResultExplorer class', () => {
             expect(explorer!.result).toBe(serviceResult);
             expect(explorer!.feature()).toBe(CAFeature.parser);
             expect(explorer!.identifier()).toBeNull();
+        });
+    });
+    describe('matchThis', () => {
+        // base class has covered feature and severity.
+        // CASearch class has been tested for numerous cases. So, we will not repeat them here.
+        test('returns true when ServiceName.parser is found in criteria.serviceNames', () => {
+            let serviceResult = createParserServiceCAResult();
+            let explorer = new ParserServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.parser] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when ServiceName.parser is not found in criteria.serviceNames', () => {
+            let serviceResult = createParserServiceCAResult();
+            let explorer = new ParserServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when criteria.serviceNames is undefined', () => {
+            let serviceResult = createParserServiceCAResult();
+            let explorer = new ParserServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
         });
     });
     describe('children', () => {
@@ -1968,7 +2311,8 @@ describe('ParserServiceCAResultExplorer class', () => {
 
 describe('ParsersByCultureCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has an identifier of cultureId, and matches to criteria.cultureIds.
+    // This class has an identifier of cultureId, and 
+    // matches to criteria.cultureIds and criteria.serviceNames = [ServiceName.parser].
     // It has children in the ParsersByCultureCAResult.parserResults property.
     function createParsersByCultureCAResult(cultureId: string = 'en'): ParsersByCultureCAResult {
         return {
@@ -2011,6 +2355,57 @@ describe('ParsersByCultureCAResultExplorer class', () => {
             let searcher = new CASearcher({ errorCodes: ['Error1'] });
             expect(explorer.matchThis(searcher)).toBe(undefined);
         });
+        // now just test the serviceNames
+        test('returns true when serviceNames = [ServiceName.parser]', () => {
+            let serviceResult = createParsersByCultureCAResult();
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.parser] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when serviceNames = [ServiceName.comparer]', () => {
+            let serviceResult = createParsersByCultureCAResult();
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when serviceNames is undefined', () => {
+            let serviceResult = createParsersByCultureCAResult();
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+        // put it all together
+        test('returns true when cultureId and serviceNames match', () => {
+            let serviceResult = createParsersByCultureCAResult('en');
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['en'], serviceNames: [ServiceName.parser] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when cultureId matches but serviceNames does not', () => {
+            let serviceResult = createParsersByCultureCAResult('en');
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['en'], serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns false when serviceNames matches but cultureId does not', () => {
+            let serviceResult = createParsersByCultureCAResult('en');
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['fr'], serviceNames: [ServiceName.parser] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns false when neither cultureId nor serviceNames match', () => {
+            let serviceResult = createParsersByCultureCAResult('en');
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['fr'], serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        // undefined when both criteria are undefined
+        test('returns undefined when both cultureIds and serviceNames are undefined', () => {
+            let serviceResult = createParsersByCultureCAResult('en');
+            let explorer = new ParsersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
 
     });
     describe('children', () => {
@@ -2036,25 +2431,49 @@ describe('ParsersByCultureCAResultExplorer class', () => {
 
 describe('ParserFoundCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has no children, an identifier of null, and no feature specific criteria.
-    function createParserFoundCAResult(): ParserFoundCAResult {
+    // This class has no children, an identifier of classFound, but supports criteria.serviceNames.
+    function createParserFoundCAResult(classFound: string): ParserFoundCAResult {
         return {
-            feature: CAFeature.parserFound
+            feature: CAFeature.parserFound,
+            classFound: classFound
         };
     }
     describe('constructor and initial properties', () => {
         test('constructor initializes properties', () => {
-            let serviceResult = createParserFoundCAResult();
+            let serviceResult = createParserFoundCAResult('Parser1');
             let explorer: ParserFoundCAResultExplorer;
             expect(() => explorer = new ParserFoundCAResultExplorer(serviceResult)).not.toThrow();
             expect(explorer!.result).toBe(serviceResult);
             expect(explorer!.feature()).toBe(CAFeature.parserFound);
-            expect(explorer!.identifier()).toBeNull();
+            expect(explorer!.identifier()).toBe('Parser1');
+        });
+    });
+    describe('matchThis', () => {
+        // base class has covered feature and severity.
+        // CASearch class has been tested for numerous cases. So, we will not repeat them here.
+        // these tests match serviceNames = [ServiceName.parser]
+        test('returns true when classFound is assigned and found in criteria', () => {
+            let serviceResult = createParserFoundCAResult('Parser1');
+            let explorer = new ParserFoundCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.parser] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when classFound is assigned and not found in criteria', () => {
+            let serviceResult = createParserFoundCAResult('Parser1');
+            let explorer = new ParserFoundCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when classFound is assigned and but criteria.serviceNames is undefined', () => {
+            let serviceResult = createParserFoundCAResult('Parser1');
+            let explorer = new ParserFoundCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
         });
     });
     describe('children', () => {
         test('returns empty array', () => {
-            let serviceResult = createParserFoundCAResult();
+            let serviceResult = createParserFoundCAResult('Parser1');
             let explorer = new ParserFoundCAResultExplorer(serviceResult);
             expect(explorer.children()).toHaveLength(0);
         });
@@ -2063,7 +2482,7 @@ describe('ParserFoundCAResultExplorer class', () => {
 
 describe('FormatterServiceCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has an identifier of null, and no feature specific criteria.
+    // This class has an identifier of null, but supports criteria.serviceNames.
     // It has children in the FormatterServiceCAResult.results property.
     function createFormatterServiceCAResult(): FormatterServiceCAResult {
         return {
@@ -2079,6 +2498,28 @@ describe('FormatterServiceCAResultExplorer class', () => {
             expect(explorer!.result).toBe(serviceResult);
             expect(explorer!.feature()).toBe(CAFeature.formatter);
             expect(explorer!.identifier()).toBeNull();
+        });
+    });
+    describe('matchThis', () => {
+        // base class has covered feature and severity.
+        // CASearch class has been tested for numerous cases. So, we will not repeat them here.
+        test('returns true when ServiceName.formatter is found in criteria.serviceNames', () => {
+            let serviceResult = createFormatterServiceCAResult();
+            let explorer = new FormatterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.formatter] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when ServiceName.formparer is not found in criteria.serviceNames', () => {
+            let serviceResult = createFormatterServiceCAResult();
+            let explorer = new FormatterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when criteria.serviceNames is undefined', () => {
+            let serviceResult = createFormatterServiceCAResult();
+            let explorer = new FormatterServiceCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
         });
     });
     describe('children', () => {
@@ -2104,7 +2545,8 @@ describe('FormatterServiceCAResultExplorer class', () => {
 
 describe('FormattersByCultureCAResultExplorer class', () => {
     // base class covers most of the tests.
-    // This class has an identifier of cultureId, and matches to criteria.cultureIds.
+    // This class has an identifier of cultureId, and 
+    // matches to criteria.cultureIds and criteria.serviceNames = [ServiceName.formatter].
     // It has no children.
     function createFormattersByCultureCAResult(cultureId: string = 'en'): FormattersByCultureCAResult {
         return {
@@ -2141,6 +2583,57 @@ describe('FormattersByCultureCAResultExplorer class', () => {
 
         });
         test('returns undefined when cultureId is assigned and but criteria.cultureIds is undefined', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ errorCodes: ['Error1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+        // next 3 tests are for serviceNames
+        test('returns true when serviceNames is [ServiceName.formatter]', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.formatter] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when serviceNames is [ServiceName.comparer]', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns undefined when serviceNames is undefined', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+        // next group combine the two criteria
+        test('returns true when cultureId and serviceNames match', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['en'], serviceNames: [ServiceName.formatter] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('returns false when cultureId matches but serviceNames does not', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['en'], serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns false when serviceNames matches but cultureId does not', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['fr'], serviceNames: [ServiceName.formatter] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        test('returns false when neither cultureId nor serviceNames match', () => {
+            let serviceResult = createFormattersByCultureCAResult('en');
+            let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
+            let searcher = new CASearcher({ cultureIds: ['fr'], serviceNames: [ServiceName.comparer] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        // neither cultureId nor serviceNames are setup in criteria
+        test('returns undefined when neither cultureId nor serviceNames are in criteria', () => {
             let serviceResult = createFormattersByCultureCAResult('en');
             let explorer = new FormattersByCultureCAResultExplorer(serviceResult);
             let searcher = new CASearcher({ errorCodes: ['Error1'] });
@@ -2318,6 +2811,16 @@ describe('ErrorCAResultExplorer class', () => {
             expect(explorer!.identifier()).toBeNull();
         });
     });
+    describe('matchThis', () => {
+        // The base class has covered feature and severity.
+        // This class offers nothing new, but needs to have matchThis run.
+        test('returns undefined when there are no criteria to match', () => {
+            let errorResult = createErrorCAResult();
+            let explorer = new ErrorCAResultExplorer(errorResult);
+            let searcher = new CASearcher({ conditionTypes: ['Field1'] });
+            expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+    });
     describe('children', () => {
         test('returns empty array', () => {
             let errorResult = createErrorCAResult();
@@ -2436,9 +2939,9 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // For LookupKey.Integer, there will be a formatter result with an error
         // It has a NumberIdentifier and a NumberConverter
         let formatterIntegerLK = createFormatterServiceCAResult();
-        let fbc3Result = createFormattersByCultureCAResult('en', 'IntegerFormatter');
-        let fbc4Result = createFormattersByCultureCAResult('fr', CAIssueSeverity.error);
-        formatterIntegerLK.results = [fbc3Result, fbc4Result];
+        let enCultureFormatterIntegerLK = createFormattersByCultureCAResult('en', 'IntegerFormatter');
+        let frCultureFormatterIntegerLK = createFormattersByCultureCAResult('fr', CAIssueSeverity.error);
+        formatterIntegerLK.results = [enCultureFormatterIntegerLK, frCultureFormatterIntegerLK];
         let identifierIntegerLK = createIdentifierServiceCAResult('NumberIdentifier');
         let converterIntegerLK = createConverterServiceCAResult('NumberConverter');
         integerLKResult.serviceResults = [formatterIntegerLK, identifierIntegerLK, converterIntegerLK];
@@ -2553,21 +3056,37 @@ describe('ConfigAnalysisResultExplorer class', () => {
     };
     const enCultureParserDateTimeLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
         [CAFeature.parsersByCulture]: 'en'
     };
-    const found_en_ParserDateTimeLKPath: CAResultPath = {
+    const dateParser_en_ParserDateTimeLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
         [CAFeature.parsersByCulture]: 'en',
-        [CAFeature.parserFound]: null
+        [CAFeature.parserFound]: 'DateParser'
     };
+    const dateTimeParser_en_ParserDateTimeLKPath: CAResultPath = {
+        [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
+        [CAFeature.parsersByCulture]: 'en',
+        [CAFeature.parserFound]: 'DateTimeParser'
+    };    
     const frCultureParserDateTimeLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
         [CAFeature.parsersByCulture]: 'fr'
     };    
-    const found2_en_ParserDateTimeLKResultPath: CAResultPath = {
+    const dateParser_fr_ParserDateTimeLKResultPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
         [CAFeature.parsersByCulture]: 'fr',
-        [CAFeature.parserFound]: null
+        [CAFeature.parserFound]: 'DateParser'
+    };
+    const dateTimeParser_fr_ParserDateTimeLKResultPath: CAResultPath = {
+        [CAFeature.lookupKey]: LookupKey.DateTime,
+        [CAFeature.parser]: null,
+        [CAFeature.parsersByCulture]: 'fr',
+        [CAFeature.parserFound]: 'DateTimeParser'
     };
     const enCultureFormatterDateTimeLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.DateTime,
@@ -2579,12 +3098,12 @@ describe('ConfigAnalysisResultExplorer class', () => {
         [CAFeature.formatter]: null,
         [CAFeature.formattersByCulture]: 'fr'
     };
-    const fbc3ResultPath: CAResultPath = {
+    const enCultureFormatterIntegerLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.Integer,
         [CAFeature.formatter]: null,
         [CAFeature.formattersByCulture]: 'en'
     };
-    const fbc4ResultPath: CAResultPath = {
+    const frCultureFormatterIntegerLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.Integer,
         [CAFeature.formatter]: null,
         [CAFeature.formattersByCulture]: 'fr'
@@ -2610,11 +3129,11 @@ describe('ConfigAnalysisResultExplorer class', () => {
         [CAFeature.lookupKey]: LookupKey.Minutes,
         [CAFeature.identifier]: null
     };
-    const numLKNumberIdentifierPath: CAResultPath = {
+    const identifierNumberLKPath: CAResultPath = {
         [CAFeature.lookupKey]: LookupKey.Number,
         [CAFeature.identifier]: null
     };
-    const customLKIdentifierPath: CAResultPath = {
+    const identifierCustomLKPath: CAResultPath = {
         [CAFeature.lookupKey]: 'CustomLookupKey',
         [CAFeature.identifier]: null
     };
@@ -2622,9 +3141,35 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
 
     const totalConfigResultCount = 14;
-    const totalLookupKeyResultCount = 20;
-    const totalResultCount = totalConfigResultCount + totalLookupKeyResultCount;
+    const totalLookupKeyResultCount = 26;
+    
+    // We'll inspect all results returned to ensure they are the expected results.
+    // The test is independent of the order of the results.
+    function testHasCorrectCAPathResults(explorer: ConfigAnalysisResultsExplorer<any>,
+        collected: Array<CAPathedResult<any>>,
+        expectedPaths: Array<CAResultPath>) {
+        
+        let remaining: Array<CAPathedResult<any>> = collected.slice(); // this is more for debugging
+        let notFound: Array<CAResultPath> = [];
 
+        for (let expected of expectedPaths) {
+            let result = explorer.getByResultPath(expected, remaining);
+            if (result)
+            { // result has a property called 'index' that is the index into collected...
+                let index = (result as any).index;
+                if (index >= 0)
+                {
+                    remaining.splice(index, 1);
+                }
+            }
+            else
+            {
+                notFound.push(expected);
+            }
+        }
+        expect(remaining).toHaveLength(0);
+        expect(notFound).toHaveLength(0);
+    }
     describe('Constructor and setup', () => {
         class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValueHostsServices> {
             constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValueHostsServices) {
@@ -2872,22 +3417,59 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let count = explorer.countConfigResults({ severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false });
             expect(count).toBe(expectedCount);
         });
+        test('returns count of 0 when no results match', () => {
+            let count = explorer.countConfigResults({
+                features: [CAFeature.parser]    // parser is not in the config results
+            });
+            expect(count).toBe(0);
+        });
+    });
+    describe('countLookupKeyResults', () => {
+        let results = createConfigAnalysisResults();
+        let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+        test('returns count of all results', () => {
+            const expectedCount = totalLookupKeyResultCount;   // this is the CURRENT count of all results. Expect changes to results to require changes here
+            let count = explorer.countLookupKeyResults(null);
+            expect(count).toBe(expectedCount);
+        });
+        test('returns count of all results with severity of error', () => {
+            const expectedCount = 2;   // this is the CURRENT count of all results with severity of error. Expect changes to results to require changes here
+            let count = explorer.countLookupKeyResults({ severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false });
+            expect(count).toBe(expectedCount);
+        });
+        test('returns count of 0 when no results match', () => {
+            let count = explorer.countLookupKeyResults({
+                features: [CAFeature.valueHost]    // valueHost is not in the config results
+            });
+            expect(count).toBe(0);
+        });
+    });
+    describe('hasMatchInConfigResults', () => {
+        let results = createConfigAnalysisResults();
+        let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+        test('returns true when there is a match', () => {
+            let hasMatch = explorer.hasMatchInConfigResults({ features: [CAFeature.valueHost] });
+            expect(hasMatch).toBe(true);
+        });
+        test('returns false when there is no match', () => {
+            let hasMatch = explorer.hasMatchInConfigResults({ features: [CAFeature.parser] });
+            expect(hasMatch).toBe(false);
+        });
+    });
+    describe('hasMatchInLookupKeyResults', () => {
+        let results = createConfigAnalysisResults();
+        let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+        test('returns true when there is a match', () => {
+            let hasMatch = explorer.hasMatchInLookupKeyResults({ severities: [CAIssueSeverity.error] });
+            expect(hasMatch).toBe(true);
+        });
+        test('returns false when there is no match', () => {
+            let hasMatch = explorer.hasMatchInLookupKeyResults({ features: [CAFeature.valueHost] });
+            expect(hasMatch).toBe(false);
+        });
     });
     describe('collectWithConfigs', () => {
-        // We'll inspect all results returned to ensure they are the expected results.
-        // The test is independent of the order of the results.
-        function testResults(explorer: ConfigAnalysisResultsExplorer<any>,
-            collected: Array<CAPathedResult<any>>,
-            expectedPaths: Array<CAResultPath>) {
-            let matches: Array<CAResultPath> = []; // this is more for debugging
 
-            for (let expected of expectedPaths) {
-                let result = explorer.getByResultPath(expected, collected);
-                expect(result).not.toBeNull();
-                matches.push(expected);
-            }
-            expect(collected).toHaveLength(expectedPaths.length);
-        }
         // DO NOT MODIFY THIS ARRAY WITHIN A TEST.
         // Clone it and use it as starting point for a test.
         const allConfigResultPaths: Array<CAResultPath> = [
@@ -2906,42 +3488,14 @@ describe('ConfigAnalysisResultExplorer class', () => {
             l10nErrorMessageRegExpValResultPath,
             expressionRegexpCondResultPath
         ];
-        // DO NOT MODIFY THIS ARRAY WITHIN A TEST.
-        // Clone it and use it as starting point for a test.
 
-        const allLookupKeyResultPaths: Array<CAResultPath> = [
-            dateTimeLKResultPath,
-            integerLKResultPath,
-            minutesLKResultPath,
-            numberLKResultPath,
-            customLKResultPath,
-            converterDateTimeLKPath,
-            formatterDateTimeLKPath,
-            identifierDateTimeLKPath,
-            parserDateTimeLKPath,
-            enCultureParserDateTimeLKPath,
-            found_en_ParserDateTimeLKPath,
-            frCultureParserDateTimeLKPath,
-            found2_en_ParserDateTimeLKResultPath,
-            enCultureFormatterDateTimeLKPath,
-            frCultureFormatterDateTimeLKPath,
-            fbc3ResultPath,
-            fbc4ResultPath,
-            formatterIntegerLKPath,
-            converterIntegerLKPath,
-            identifierIntegerLKPath,
-            converterMinutesLKPath,
-            identifierMinutesLKPath,
-            numLKNumberIdentifierPath,
-            customLKIdentifierPath
-        ];
         test('returns all results when no criteria is provided', () => {
             let results = createConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs(null);
             // match all paths for configs. We don't care about the order
             let expectedPaths: Array<CAResultPath> = allConfigResultPaths.slice();
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
 
         });
         test('returns all results when criteria is empty', () => {
@@ -2950,21 +3504,21 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let collected = explorer.collectWithConfigs({});
             // match all paths for configs. We don't care about the order
             let expectedPaths: Array<CAResultPath> = allConfigResultPaths.slice();
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All feature=ValueHost, which should be 2 items', () => {
             let results = createConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ features: [CAFeature.valueHost] });
             let expectedPaths: Array<CAResultPath> = [vh1ResultPath, vh2ResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All feature=Validator, which should be 4 items', () => {
             let results = createConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ features: [CAFeature.validator] });
             let expectedPaths: Array<CAResultPath> = [requiredTextValResultPath, dataTypeCheckValResultPath, regExpValResultPath, invalidValResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // same but only those with an error. Should only return invalidValResultPath
         test('All feature=Validator with severity=error, which should be 1 item', () => {
@@ -2972,7 +3526,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ features: [CAFeature.validator], severities: [CAIssueSeverity.error] });
             let expectedPaths: Array<CAResultPath> = [invalidValResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // now all with severity=info. Should return vh1ResultPath
         test('All with severity=info, which should be 1 item', () => {
@@ -2980,7 +3534,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ severities: [CAIssueSeverity.info] });
             let expectedPaths: Array<CAResultPath> = [vh1ResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // all with severity=error, warning. Should return invalidValResultPath, dataTypeVH1ResultPath, dataTypeVH2ResultPath
         test('All with severity=error, warning, which should be 6 items', () => {
@@ -2990,7 +3544,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let expectedPaths: Array<CAResultPath> = [invalidValResultPath, dataTypeVH1ResultPath, 
                 dataTypeVH2ResultPath, labell10nVH2ResultPath, l10nErrorMessageRegExpValResultPath, expressionRegexpCondResultPath];
             
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All that have no severity (severities=[null]), which should be all - 6 (error, warning) - 1 (info) items', () => {
             let results = createConfigAnalysisResults();
@@ -3012,7 +3566,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
  //               l10nErrorMessageRegExpValResultPath,
  //               expressionRegexpCondResultPath
             ];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // conditionType=RequiredText. Should return requiredTextCondResultPath
         test('All with conditionType=RequiredText, which should be 2 items', () => {
@@ -3020,7 +3574,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ conditionTypes: ['RequireText'] });
             let expectedPaths: Array<CAResultPath> = [requiredTextCondResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // conditionType=RequireText, errorCode=RequireText. Should return requiredTextCondResultPath and requiredTextValResultPath
         test('All with conditionType=RequireText, errorCode=Error1, which should be 2 items', () => {
@@ -3028,7 +3582,409 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let collected = explorer.collectWithConfigs({ conditionTypes: ['RequireText'], errorCodes: ['Error1'] });
             let expectedPaths: Array<CAResultPath> = [requiredTextCondResultPath, requiredTextValResultPath];
-            testResults(explorer, collected, expectedPaths);
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+        describe('Explorer handles features that are nested and the same name', () => {
+            // Simple case where there are two conditions, one a parent of another.
+            // The Explorer should change their names in the ResultPath so they are 
+            // Condition and Condition#2.
+            // Every ConditionConfigCAResult has a childrenResults property
+            // that is an array of ConditionConfigCAResult. Those children
+            // will generate the modified feature name in CAResultPath.
+            
+            const vhConfigResult = createValueHostCAResult('VHC');
+            
+            const parentResult: ConditionConfigCAResult = {
+                feature: CAFeature.condition,
+                conditionType: 'TEST',
+                config: { conditionType: 'TEST' },
+                properties: [],
+                childrenResults: []
+            };
+            vhConfigResult.enablerConditionResult = parentResult;
+
+            const childResult: ConditionConfigCAResult = {
+                feature: CAFeature.condition,
+                conditionType: 'TEST2',
+                config: { conditionType: 'TEST2' },
+                properties: [],
+                childrenResults: []
+            };
+            const grandChildResult: ConditionConfigCAResult = {
+                feature: CAFeature.condition,
+                conditionType: 'TEST3',
+                config: { conditionType: 'TEST3' },
+                properties: [],
+                childrenResults: []
+            };
+            parentResult.childrenResults!.push(childResult);
+            childResult.childrenResults!.push(grandChildResult);
+            const vhcResultPath: CAResultPath = {
+                [CAFeature.valueHost]: 'VHC'
+            };
+            const parentResultPath: CAResultPath = {
+                [CAFeature.valueHost]: 'VHC',
+                [CAFeature.condition]: 'TEST'
+            };
+            const childResultPath: CAResultPath = {
+                [CAFeature.valueHost]: 'VHC',
+                [CAFeature.condition]: 'TEST',
+                [CAFeature.condition + '#2']: 'TEST2'
+            };
+            const grandChildResultPath: CAResultPath = {
+                [CAFeature.valueHost]: 'VHC',
+                [CAFeature.condition]: 'TEST',
+                [CAFeature.condition + '#2']: 'TEST2',
+                [CAFeature.condition + '#3']: 'TEST3'
+            };
+
+            // test case using the complete results set
+            test('A ValueHost enabler condition has two levels deep of child conditions matches the path with #2, #3 appended to feature names', () => {
+                let results = createBasicConfigAnalysisResults();
+
+                results.valueHostResults.push(vhConfigResult);
+                let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+                let collected = explorer.collectWithConfigs({ });   // all
+                let expectedPaths: Array<CAResultPath> = [
+                    vhcResultPath,
+                    parentResultPath,
+                    childResultPath,
+                    grandChildResultPath];
+                testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+            });
+            // just the conditions. feature=condition
+            test('All with feature=condition, which should be 3 items', () => {
+                let results = createBasicConfigAnalysisResults();
+
+                results.valueHostResults.push(vhConfigResult);
+                let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+                let collected = explorer.collectWithConfigs({
+                    features: [CAFeature.condition],
+                    skipChildrenIfParentMismatch: false
+                });
+                let expectedPaths: Array<CAResultPath> = [
+                    parentResultPath,
+                    childResultPath,
+                    grandChildResultPath];
+                testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+            });
+
         });
     });
+    describe('collectWithLookupKeys()', () => {
+        // very similar to collectWithConfigs. We'll use similar test cases.
+        // but based around LookupKeys and their services
+        // DO NOT MODIFY THIS ARRAY WITHIN A TEST.
+        // Clone it and use it as starting point for a test.
+
+        const allLookupKeyResultPaths: Array<CAResultPath> = [
+            dateTimeLKResultPath,
+            integerLKResultPath,
+            minutesLKResultPath,
+            numberLKResultPath,
+            customLKResultPath,
+            converterDateTimeLKPath,
+            formatterDateTimeLKPath,
+            identifierDateTimeLKPath,
+            parserDateTimeLKPath,
+            enCultureParserDateTimeLKPath,
+            dateParser_en_ParserDateTimeLKPath,
+            dateTimeParser_en_ParserDateTimeLKPath,
+            frCultureParserDateTimeLKPath,
+            dateParser_fr_ParserDateTimeLKResultPath,
+            dateTimeParser_fr_ParserDateTimeLKResultPath,
+            enCultureFormatterDateTimeLKPath,
+            frCultureFormatterDateTimeLKPath,
+            enCultureFormatterIntegerLKPath,
+            frCultureFormatterIntegerLKPath,
+            formatterIntegerLKPath,
+            converterIntegerLKPath,
+            identifierIntegerLKPath,
+            converterMinutesLKPath,
+            identifierMinutesLKPath,
+            identifierNumberLKPath,
+            identifierCustomLKPath
+        ];
+
+        test('returns all results when no criteria is provided', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let collected = explorer.collectWithLookupKeys(null);
+            let expectedPaths: Array<CAResultPath> = allLookupKeyResultPaths.slice();
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+        test('returns all results when criteria is empty', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let collected = explorer.collectWithLookupKeys({});
+            let expectedPaths: Array<CAResultPath> = allLookupKeyResultPaths.slice();
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+        // all with LookupKey.DateTime. Should return dateTimeLKResultPath,
+        // converterDateTimeLKPath, formatterDateTimeLKPath, identifierDateTimeLKPath, parserDateTimeLKPath
+        // enCultureParserDateTimeLKPath, dateParser_en_ParserDateTimeLKPath, dateTimeParser_en_ParserDateTimeLKPath
+        // frCultureParserDateTimeLKPath, dateParser_fr_ParserDateTimeLKResultPath, dateTimeParser_fr_ParserDateTimeLKResultPath
+        // enCultureFormatterDateTimeLKPath, frCultureFormatterDateTimeLKPath
+        test('All with LookupKey.DateTime, which should be 13 items', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let collected = explorer.collectWithLookupKeys({
+                skipChildrenIfParentMismatch: true, // to omit services in other lookup keys
+                lookupKeys: [LookupKey.DateTime],   // dateTimeLKResultPath
+                serviceNames: [ServiceName.converter, ServiceName.formatter, ServiceName.identifier, ServiceName.parser], 
+            });
+            let expectedPaths: Array<CAResultPath> = [
+                dateTimeLKResultPath,
+                converterDateTimeLKPath,
+                formatterDateTimeLKPath,
+                identifierDateTimeLKPath,
+                parserDateTimeLKPath,
+                enCultureParserDateTimeLKPath,
+                dateParser_en_ParserDateTimeLKPath,
+                dateTimeParser_en_ParserDateTimeLKPath,
+                frCultureParserDateTimeLKPath,
+                dateParser_fr_ParserDateTimeLKResultPath,
+                dateTimeParser_fr_ParserDateTimeLKResultPath,
+                enCultureFormatterDateTimeLKPath,
+                frCultureFormatterDateTimeLKPath];
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+        // all with culture=en. Should return enCultureParserDateTimeLKPath,
+        // enCultureFormatterDateTimeLKPath,
+        // enCultureFormatterIntegerLKPath
+        test('All with culture=en, which should be 3 items', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let collected = explorer.collectWithLookupKeys({
+                cultureIds: ['en']
+            });
+            let expectedPaths: Array<CAResultPath> = [
+                enCultureParserDateTimeLKPath,
+                enCultureFormatterDateTimeLKPath,
+                enCultureFormatterIntegerLKPath
+            ];
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+        // all with serviceName=identifier. Should return identifierDateTimeLKPath, identifierMinutesLKPath
+        // numLKNumberIdentifierPath, customLKIdentifierPath, identifierIntegerLKPath
+        test('All with serviceName=identifier, which should be 5 items', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let collected = explorer.collectWithLookupKeys({
+                serviceNames: [ServiceName.identifier]
+            });
+            let expectedPaths: Array<CAResultPath> = [
+                identifierDateTimeLKPath,
+                identifierMinutesLKPath,
+                identifierNumberLKPath,
+                identifierIntegerLKPath,
+                identifierCustomLKPath
+            ];
+            testHasCorrectCAPathResults(explorer, collected, expectedPaths);
+        });
+
+    });
+    describe('hasErrors()', () => {
+        test('returns true when there are errors in a large results set', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(true);
+        });
+        test('using no results, returns false', () => {
+            let results = createBasicConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(false);
+        });
+        test('with one valueHost that has an error, return true', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result1, CAIssueSeverity.error);
+            results.valueHostResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(true);
+        });
+        // same as above but with severity of warning. Should return false
+        test('with one valueHost that has a warning, return false', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result1, CAIssueSeverity.warning);
+            results.valueHostResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(false);
+        });
+        // error in lookupKey, no data in ValueHostResults
+        test('with one lookupKey that has an error, return true', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+            result1.serviceResults = [identifier1];
+            results.lookupKeyResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(true);
+        });
+        // warning in lookupKey, no data in ValueHostResults
+        test('with one lookupKey that has a warning, return false', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.warning);
+            result1.serviceResults = [identifier1];
+            results.lookupKeyResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(false);
+        });
+        // warning in ValueHostResults, error in LookupKeyResults
+        test('with one lookupKey that has an error and one valueHost that has a warning, return true', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+            result1.serviceResults = [identifier1];
+            let result2 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result2, CAIssueSeverity.warning);
+            results.lookupKeyResults = [result1];
+            results.valueHostResults = [result2];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let hasErrors = explorer.hasErrors();
+            expect(hasErrors).toBe(true);
+        });
+    });
+    describe('throwOnErrors()', () => {
+        test('does not throw when there are no errors', () => {
+            let results = createBasicConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).not.toThrow();
+        });
+        test('throws when there is an error in a large results set', () => {
+            let results = createConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
+        });
+        test('using no results, does not throw', () => {
+            let results = createBasicConfigAnalysisResults();
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).not.toThrow();
+        });
+        test('with one valueHost that has an error, throws', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result1, CAIssueSeverity.error);
+            results.valueHostResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
+        });
+        // same as above but with severity of warning. Should not throw
+        test('with one valueHost that has a warning, does not throw', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result1, CAIssueSeverity.warning);
+            results.valueHostResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).not.toThrow();
+        });
+        // error in lookupKey, no data in ValueHostResults
+        test('with one lookupKey that has an error, throws', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+            result1.serviceResults = [identifier1];
+            results.lookupKeyResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
+        });
+        // warning in lookupKey, no data in ValueHostResults
+        test('with one lookupKey that has a warning, does not throw', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.warning);
+            result1.serviceResults = [identifier1];
+            results.lookupKeyResults = [result1];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).not.toThrow();
+        });
+        // warning in ValueHostResults, error in LookupKeyResults
+        test('with one lookupKey that has an error and one valueHost that has a warning, throws', () => {
+            let results = createBasicConfigAnalysisResults();
+            let result1 = createLookupKeyCAResult(LookupKey.Date);
+            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+            result1.serviceResults = [identifier1];
+            let result2 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                LookupKey.Date);
+            attachSeverity(result2, CAIssueSeverity.warning);
+            results.lookupKeyResults = [result1];
+            results.valueHostResults = [result2];
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
+        });
+    });
+
+});
+
+describe('ConfigAnalysisResultsExplorerFactory class', () => {
+    // Tests:
+    // constructor will not throw. Then call create for EVERY CAFeature and ensure the correct class is returned
+    // create will throw if the feature is not recognized
+    // register with a custom class, then create it and ensure it is returned
+
+    test('constructor does not throw', () => {
+        expect(() => new ConfigAnalysisResultsExplorerFactory()).not.toThrow();
+    });
+    test('create throws when feature is not recognized', () => {
+        let factory = new ConfigAnalysisResultsExplorerFactory();
+        expect(() => factory.create({ feature: 'Unknown'})).toThrow(CodingError);
+    });
+    test('create returns the correct class for every CAFeature', () => {
+        let factory = new ConfigAnalysisResultsExplorerFactory();
+        for (let feature of Object.values(CAFeature)) {
+            let result = factory.create({ feature: feature });
+            expect(result.feature()).toBe(feature);
+        }
+    });
+    test('register and create a custom class', () => {
+        const customFeatureName = 'CustomFeature';
+        class CustomCAExplorer extends CAExplorerBase<CAResultBase> {
+            constructor(result: CAResultBase) {
+                super(result);
+            }            
+            public feature(): string {
+                return customFeatureName;
+            }
+            public identifier(): string | null {
+                throw new Error('Method not implemented.');
+            }
+            protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
+                throw new Error('Method not implemented.');
+            }
+            public children(): CAResultBase[] {
+                throw new Error('Method not implemented.');
+            }
+
+        }
+        let factory = new ConfigAnalysisResultsExplorerFactory();
+        factory.register(customFeatureName, (result)=> new CustomCAExplorer(result));
+        let result = factory.create({ feature: customFeatureName });
+        expect(result).toBeInstanceOf(CustomCAExplorer);
+    });
+    // create with feature + '#' + number uses just feature. Condition#2 -> Condition.
+    test('create with feature + "#2" uses just feature', () => {
+        let factory = new ConfigAnalysisResultsExplorerFactory();
+        let result = factory.create({ feature: 'Condition#2' });
+        expect(result.feature()).toBe('Condition');
+    });
+
+    test('create with feature + "#1000" + number uses just feature', () => {
+        let factory = new ConfigAnalysisResultsExplorerFactory();
+        let result = factory.create({ feature: 'Condition#1000' });
+        expect(result.feature()).toBe('Condition');
+    });
+
 });

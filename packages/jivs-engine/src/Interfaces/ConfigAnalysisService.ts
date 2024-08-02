@@ -228,6 +228,18 @@ export interface IConfigAnalysisResultsExplorer {
      */
     getByResultPath(path: CAResultPath, foundResults: Array<CAPathedResult<any>>): CAResultBase | null;
 
+    /**
+     * Returns true if any ConfigResult objects with severity of 'error' are found
+     * in either the ConfigIssues array or the LookupKeyIssues array.
+     */
+    hasErrors(): boolean;
+
+    /**
+     * Throws an error if any ConfigResult objects with severity of 'error' are found.
+     * The error class is CodingError.
+     */
+    throwOnErrors(): void;
+
     // which data type service did you expect on a ConfigResult object when there was one found?
 
     // which ConfigResults objects indicate a missing data type service?
@@ -725,6 +737,87 @@ export enum CAIssueSeverity {
     warning = 'warning',
     error = 'error'
 }
+/**
+ * For interfaces that are the top level of results for a single config object.
+ * It includes the results of the analysis of the properties of the config object.
+ * It also includes the config object itself.
+ * If there are valiability errors, they are reported in its own message and severity properties.
+ * @typedef TConfig - The type of the configuration object:
+ */
+export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueForCAResultBase
+{
+    /**
+     * errors or warnings found amongst the properties of the TConfig object
+     * expect properties that hold Config objects themselves.
+     */    
+    properties: Array<PropertyCAResult|ErrorCAResult>;
+    /**
+     * The configuration object analyzed.
+     */
+    config: TConfig;
+}
+
+/**
+ * Represents the analysis results for a ValueHostConfig object.
+ * If it has validators, their results are in the validatorResults array.
+ * If it has an enablerCondition, its results are in the enablerConditionResult.
+ */
+export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<ValueHostConfig> { 
+    feature: CAFeature.valueHost;
+    /**
+     * From valueHostConfig.name.
+     * If config.name is unassigned, empty string or whitespace, expect a string like "[Missing]"
+     */
+    valueHostName: string;
+    /**
+     * If the valueHostType supports validatorConfigs, any 
+     * ValidatorsValueHostConfig has will generate its own results
+     * using the ValidatorConfigAnalyzer for each.
+     */
+    validatorResults?: Array<ValidatorConfigCAResult>;
+    /**
+     * If the condition.enablerConfig is setup, this is its analysis.
+     */
+    enablerConditionResult?: ConditionConfigCAResult;
+}
+
+/**
+ * Issues found around the validatorConfig, such as invalid error messages and problem
+ * with the condition.
+ */
+export interface ValidatorConfigCAResult extends ConfigObjectCAResultsBase<ValidatorConfig> {
+    feature: CAFeature.validator;
+    /**
+     * The errorCode of the validator, which is from either ValidatorConfig.errorCode
+     * or ValidatorConfig.conditionConfig.conditionType.
+     * If the errorCode could not be resolved, expect a string like "[Missing]".
+     */
+    errorCode: string;
+
+    /**
+     * If the conditionConfig property is specified, it will be analyzed
+     * and its results are here.
+     */
+    conditionResult?: ConditionConfigCAResult;
+}
+
+/**
+ * Issues found with the condition itself.
+ */
+export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<ConditionConfig>, ClassRetrieval {
+    feature: CAFeature.condition;
+    /**
+     * From conditionConfig.conditionType. If unassigned, empty string or whitespace, expect a string like "[Missing]".
+     */
+    conditionType: string;
+
+    /**
+     * For ConditionWithChildrenBase and ConditionWithOneChildBase
+     * to gather their child ConditionConfig results.
+     */
+    childrenResults?: Array<ConditionConfigCAResult>;
+}
+
 
 /**
  * Tracking additional issues on a specific LookupKey.
@@ -984,88 +1077,6 @@ export interface ErrorCAResult extends CAResultBase, IssueForCAResultBase {
     analyzerClassName: string;
 }
 
-/**
- * For interfaces that are the top level of results for a single config object.
- * It includes the results of the analysis of the properties of the config object.
- * It also includes the config object itself.
- * If there are valiability errors, they are reported in its own message and severity properties.
- * @typedef TConfig - The type of the configuration object:
- */
-export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueForCAResultBase
-{
-    /**
-     * errors or warnings found amongst the properties of the TConfig object
-     * expect properties that hold Config objects themselves.
-     */    
-    properties: Array<PropertyCAResult|ErrorCAResult>;
-    /**
-     * The configuration object analyzed.
-     */
-    config: TConfig;
-}
-
-/**
- * Represents the analysis results for a ValueHostConfig object.
- * If it has validators, their results are in the validatorResults array.
- * If it has an enablerCondition, its results are in the enablerConditionResult.
- */
-export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<ValueHostConfig> { 
-    feature: CAFeature.valueHost;
-    /**
-     * From valueHostConfig.name.
-     * If config.name is unassigned, empty string or whitespace, expect a string like "[Missing]"
-     */
-    valueHostName: string;
-    /**
-     * If the valueHostType supports validatorConfigs, any 
-     * ValidatorsValueHostConfig has will generate its own results
-     * using the ValidatorConfigAnalyzer for each.
-     */
-    validatorResults?: Array<ValidatorConfigCAResult>;
-    /**
-     * If the condition.enablerConfig is setup, this is its analysis.
-     */
-    enablerConditionResult?: ConditionConfigCAResult;
-}
-
-/**
- * Issues found around the validatorConfig, such as invalid error messages and problem
- * with the condition.
- */
-export interface ValidatorConfigCAResult extends ConfigObjectCAResultsBase<ValidatorConfig> {
-    feature: CAFeature.validator;
-    /**
-     * The errorCode of the validator, which is from either ValidatorConfig.errorCode
-     * or ValidatorConfig.conditionConfig.conditionType.
-     * If the errorCode could not be resolved, expect a string like "[Missing]".
-     */
-    errorCode: string;
-
-    /**
-     * If the conditionConfig property is specified, it will be analyzed
-     * and its results are here.
-     */
-    conditionResult?: ConditionConfigCAResult;
-}
-
-/**
- * Issues found with the condition itself.
- */
-export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<ConditionConfig>, ClassRetrieval {
-    feature: CAFeature.condition;
-    /**
-     * From conditionConfig.conditionType. If unassigned, empty string or whitespace, expect a string like "[Missing]".
-     */
-    conditionType: string;
-}
-
-/**
- * For ConditionWithChildrenBase and ConditionWithOneChildBase
- * to gather their child ConditionConfig results.
- */
-export interface ConditionConfigWithChildrenResults extends ConditionConfigCAResult {
-    childrenResults: Array<ConditionConfigCAResult>;
-}
 
 //#endregion description of results
 

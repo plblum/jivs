@@ -7,7 +7,7 @@ import { CompareToSecondValueHostConditionBaseConfig } from "../../Conditions/Co
 import { ConditionWithChildrenBaseConfig } from "../../Conditions/ConditionWithChildrenBase";
 import { ConditionWithOneChildBaseConfig } from "../../Conditions/ConditionWithOneChildBase";
 import { ConditionCategory, ConditionConfig, SupportsDataTypeConverter } from "../../Interfaces/Conditions";
-import { ConditionConfigCAResult, ConditionConfigWithChildrenResults, CAIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigCAResult, CAIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from "../../Utilities/Utilities";
@@ -136,7 +136,7 @@ export class ConditionCategoryPropertyAnalyzer extends ConditionConfigPropertyAn
 /**
  * conditionConfigs - if assigned, error if not an array. Go through all child Configs. 
  * Ensure child has been analyzed by ConditionConfigAnalyzer with their results
- * added to results.children (a ConditionConfigWithChildrenResults object).
+ * added to results.childrenResults.
  * Warning if the property is present but has no children.
  */
 export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
@@ -153,14 +153,13 @@ export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigProper
                 'conditionConfigs', CAIssueSeverity.error,
                 'Must be an array with at least one condition', results.properties);
         else {
-            let chdConfigResults = results as ConditionConfigWithChildrenResults;
-            if (!chdConfigResults.childrenResults)
-                chdConfigResults.childrenResults = [];
+            if (!results.childrenResults)
+                results.childrenResults = [];
             if (helper.analysisArgs.conditionConfigAnalyzer)
                 for (let childConfig of container.conditionConfigs) {
                     let childResults = helper.analysisArgs.conditionConfigAnalyzer.analyze(childConfig, valueHostConfig, []);
                     if (childResults)
-                        chdConfigResults.childrenResults.push(childResults);
+                        results.childrenResults.push(childResults);
                 }
         }
 
@@ -185,13 +184,12 @@ export class ConditionWithOneChildPropertyAnalyzer extends ConditionConfigProper
                 'Must be a condition object', results.properties)
         
         else {
-            let chdConfigResults = results as ConditionConfigWithChildrenResults;
-            if (!chdConfigResults.childrenResults)
-                chdConfigResults.childrenResults = [];
+            if (!results.childrenResults)
+                results.childrenResults = [];
             if (helper.analysisArgs.conditionConfigAnalyzer) {
                 let childResults = helper.analysisArgs.conditionConfigAnalyzer.analyze(container.childConditionConfig, valueHostConfig, []);
                 if (childResults)
-                    chdConfigResults.childrenResults.push(childResults);
+                    results.childrenResults.push(childResults);
             }
         }
 
