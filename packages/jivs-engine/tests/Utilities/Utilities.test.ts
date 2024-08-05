@@ -1,11 +1,11 @@
-import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { deepClone, deepEquals, groupsMatch, isValueOfStringEnum, isPlainObject, isSupportedAsValue, valueForLog, findCaseInsensitiveValueInStringEnum } from "../../src/Utilities/Utilities";
+import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { deepClone, deepEquals, groupsMatch, isValueOfStringEnum, isPlainObject, isSupportedAsValue, valueForLog, findCaseInsensitiveValueInStringEnum, deepCleanForJson } from '../../src/Utilities/Utilities';
 
 
 
 // function deepEquals(obj1: any, obj2: any): boolean
-describe("Utilities.deepEquals", () => {
-    test("Equal primitives", () => {
+describe('Utilities.deepEquals', () => {
+    test('Equal primitives', () => {
         expect(deepEquals(0, 0)).toBe(true);
         expect(deepEquals(0.1, 0.1)).toBe(true);
         expect(deepEquals(false, false)).toBe(true);
@@ -13,7 +13,7 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals('A', 'A')).toBe(true);
         expect(deepEquals(ConditionEvaluateResult.Match, ConditionEvaluateResult.Match)).toBe(true);
     });
-    test("Not equal primitives of same datatypes", () => {
+    test('Not equal primitives of same datatypes', () => {
         expect(deepEquals(0, 1)).toBe(false);
         expect(deepEquals(0.1, 0.2)).toBe(false);
         expect(deepEquals(false, true)).toBe(false);
@@ -21,7 +21,7 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals('A', 'a')).toBe(false);
         expect(deepEquals(ConditionEvaluateResult.Match, ConditionEvaluateResult.NoMatch)).toBe(false);
     });
-    test("Not equal primitives of different datatypes", () => {
+    test('Not equal primitives of different datatypes', () => {
         expect(deepEquals(0, '0')).toBe(false);
         expect(deepEquals(false, '0')).toBe(false);        
         expect(deepEquals('0', 0.0)).toBe(false);
@@ -30,7 +30,7 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals(0, {})).toBe(false);
         expect(deepEquals({}, 0)).toBe(false);
     });    
-    test("Equal objects", () => {
+    test('Equal objects', () => {
         expect(deepEquals({}, {})).toBe(true);
         expect(deepEquals({ a: 1 }, { a: 1 })).toBe(true);
         expect(deepEquals({ a: '1' }, { a: '1' })).toBe(true);
@@ -43,7 +43,7 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals({ a: 1, b: false, c: sharedObj2 }, { a: 1, b: false, c: sharedObj2 })).toBe(true);
     
     });    
-    test("Not equal objects with same properties, but different values always fail", () => {
+    test('Not equal objects with same properties, but different values always fail', () => {
         expect(deepEquals({ a: 1 }, { a: '1' })).toBe(false);
         expect(deepEquals({ a: 1 }, { a: 2 })).toBe(false);
         expect(deepEquals({ a: '2' }, { a: '1' })).toBe(false);
@@ -53,7 +53,7 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals({ a: 1, b: false }, { a: 2, b: false })).toBe(false);
         expect(deepEquals({ a: 1, b: false }, { a: 1, b: true })).toBe(false);
     });     
-    test("Not equal objects with different property lists always fail", () => {
+    test('Not equal objects with different property lists always fail', () => {
         expect(deepEquals({}, { a: 1 })).toBe(false);
         expect(deepEquals({ a: 1 }, {})).toBe(false);
         expect(deepEquals({ a: 1 }, { b: 1 })).toBe(false);
@@ -66,13 +66,13 @@ describe("Utilities.deepEquals", () => {
         expect(deepEquals({ a: 1 }, { a: 1, b: false })).toBe(false);
         expect(deepEquals({ b: false }, { a: 1, b: false })).toBe(false);
     });   
-    test("Contains child objects that are structurally the same, so they will match", () => {
+    test('Contains child objects that are structurally the same, so they will match', () => {
         expect(deepEquals({ a: 1, b: {} }, { a: 1, b: {} })).toBe(true);
         expect(deepEquals({ b: { d: false } }, { b: { d: false } })).toBe(true);
         expect(deepEquals({ b: [] }, { b: [] })).toBe(true);
         expect(deepEquals({ b: [1, 2] }, { b: [1, 2] })).toBe(true);
     });      
-    test("Contains child objects that are structurally the similar but not the same, so they don't match", () => {
+    test('Contains child objects that are structurally the similar but not the same, so they don\'t match', () => {
         expect(deepEquals({ a: 1, b: {} }, { a: 1, b: 0 })).toBe(false);
         expect(deepEquals({ a: 1, b: {} }, { a: 1, b: { c: 1 } })).toBe(false);
         expect(deepEquals({ b: { d: false } }, { b: { d: true } })).toBe(false);
@@ -87,7 +87,7 @@ describe('Utilities.deepClone', () => {
         expect(deepClone(0)).toBe(0);
         expect(deepClone(false)).toBe(false);
         expect(deepClone(null)).toBe(null);
-        expect(deepClone("text")).toBe("text");
+        expect(deepClone('text')).toBe('text');
     });
     test('Date object', () => {
         let d1 = new Date(Date.UTC(2000, 5, 1));
@@ -119,6 +119,86 @@ describe('Utilities.deepClone', () => {
         let expected = { a: 1, b: { c: 2, d: undefined } }
         testItem.b.d = testItem;
         expect(deepClone(testItem)).toEqual(expected);
+    });
+});
+describe('Utilities.deepCleanForJson', () => {
+    test('Handles undefined values', () => {
+        expect(deepCleanForJson(undefined)).toBeUndefined();
+    });
+
+    test('Handles function values', () => {
+        function testFunc() {}
+        expect(deepCleanForJson(testFunc)).toBe('[Function testFunc]');
+    });
+
+    test('Handles null values', () => {
+        expect(deepCleanForJson(null)).toBeNull();
+    });
+
+    test('Handles primitive values', () => {
+        expect(deepCleanForJson(123)).toBe(123);
+        expect(deepCleanForJson('test')).toBe('test');
+        expect(deepCleanForJson(true)).toBe(true);
+    });
+
+    test('Handles Date objects', () => {
+        const date = new Date();
+        expect(deepCleanForJson(date)).toBe(date.toISOString());
+    });
+
+    test('Handles RegExp objects', () => {
+        const regex = /test/i;
+        expect(deepCleanForJson(regex)).toBe('/test/i');
+    });
+
+    test('Handles circular references', () => {
+        const obj: any = {};
+        obj.self = obj;
+        expect(deepCleanForJson(obj)).toEqual({});
+    });
+
+    test('Handles unsupported objects', () => {
+        const map = new Map();
+        expect(deepCleanForJson(map)).toBeUndefined();
+        const set = new Set();
+        expect(deepCleanForJson(set)).toBeUndefined();
+        const weakMap = new WeakMap();
+        expect(deepCleanForJson(weakMap)).toBeUndefined();
+        const weakSet = new WeakSet();
+        expect(deepCleanForJson(weakSet)).toBeUndefined();
+        const error = new Error();
+        expect(deepCleanForJson(error)).toBeUndefined();
+    });
+
+    test('Cleans nested objects', () => {
+        let date = new Date();
+        const obj = {
+            a: 1,
+            b: {
+                c: 2,
+                d: undefined,
+                e: function() {}
+            },
+            f: date,
+            g: /test/i
+        };
+        const cleanedObj = deepCleanForJson(obj);
+        expect(cleanedObj).toEqual({
+            a: 1,
+            b: {
+                c: 2,
+                e: '[Function e]'
+            },
+            f: date.toISOString(),
+            g: '/test/i'
+        });
+    });
+
+    test('Cleans arrays', () => {
+        let date = new Date();
+        const arr = [1, undefined, function() {}, date, /test/i];
+        const cleanedArr = deepCleanForJson(arr);
+        expect(cleanedArr).toEqual([1, undefined, '[Function]', date.toISOString(), '/test/i']);
     });
 });
 
@@ -225,59 +305,59 @@ describe('isPlainObject', () => {
 
 describe('isValueOfStringEnum', () => {
     enum TestEnum {
-        FIRST = "First",
-        SECOND = "Second",
-        THIRD = "Third"
+        FIRST = 'First',
+        SECOND = 'Second',
+        THIRD = 'Third'
     }
 
     test('Key exists in enum', () => {
-        expect(isValueOfStringEnum("First", TestEnum)).toBe(true);
-        expect(isValueOfStringEnum("Second", TestEnum)).toBe(true);
+        expect(isValueOfStringEnum('First', TestEnum)).toBe(true);
+        expect(isValueOfStringEnum('Second', TestEnum)).toBe(true);
     });
 
     test('Key does not exist in enum', () => {
-        expect(isValueOfStringEnum("FOURTH", TestEnum)).toBe(false);
-        expect(isValueOfStringEnum("Fifth", TestEnum)).toBe(false);
+        expect(isValueOfStringEnum('FOURTH', TestEnum)).toBe(false);
+        expect(isValueOfStringEnum('Fifth', TestEnum)).toBe(false);
     });
 
     test('Empty string as key', () => {
-        expect(isValueOfStringEnum("", TestEnum)).toBe(false);
+        expect(isValueOfStringEnum('', TestEnum)).toBe(false);
     });
 
     test('Key case sensitivity', () => {
-        expect(isValueOfStringEnum("first", TestEnum)).toBe(false); // Assuming isKeyInEnum is case-sensitive
-        expect(isValueOfStringEnum("SECOND", TestEnum)).toBe(false);
+        expect(isValueOfStringEnum('first', TestEnum)).toBe(false); // Assuming isKeyInEnum is case-sensitive
+        expect(isValueOfStringEnum('SECOND', TestEnum)).toBe(false);
     });
 });
 
 describe('Utilities.findCaseInsensitiveValueInStringEnum', () => {
     enum TestEnum {
-        FirstValue = "Value1",
-        SecondValue = "Value2",
-        ThirdValue = "VALUE3"
+        FirstValue = 'Value1',
+        SecondValue = 'Value2',
+        ThirdValue = 'VALUE3'
     }
 
     test('Find existing value with exact case', () => {
-        expect(findCaseInsensitiveValueInStringEnum("Value1", TestEnum)).toBe("Value1");
+        expect(findCaseInsensitiveValueInStringEnum('Value1', TestEnum)).toBe('Value1');
     });
 
     test('Find existing value with different case', () => {
-        expect(findCaseInsensitiveValueInStringEnum("value1", TestEnum)).toBe("Value1");
-        expect(findCaseInsensitiveValueInStringEnum("VALUE2", TestEnum)).toBe("Value2");
-        expect(findCaseInsensitiveValueInStringEnum("value3", TestEnum)).toBe("VALUE3");
+        expect(findCaseInsensitiveValueInStringEnum('value1', TestEnum)).toBe('Value1');
+        expect(findCaseInsensitiveValueInStringEnum('VALUE2', TestEnum)).toBe('Value2');
+        expect(findCaseInsensitiveValueInStringEnum('value3', TestEnum)).toBe('VALUE3');
     });
 
     test('Return undefined for non-existing value', () => {
-        expect(findCaseInsensitiveValueInStringEnum("NonExistingValue", TestEnum)).toBeUndefined();
+        expect(findCaseInsensitiveValueInStringEnum('NonExistingValue', TestEnum)).toBeUndefined();
     });
 
     test('Return undefined for empty string', () => {
-        expect(findCaseInsensitiveValueInStringEnum("", TestEnum)).toBeUndefined();
+        expect(findCaseInsensitiveValueInStringEnum('', TestEnum)).toBeUndefined();
     });
 
     test('Case insensitive match for all enum values', () => {
-        expect(findCaseInsensitiveValueInStringEnum("value1", TestEnum)).toBe("Value1");
-        expect(findCaseInsensitiveValueInStringEnum("value2", TestEnum)).toBe("Value2");
-        expect(findCaseInsensitiveValueInStringEnum("value3", TestEnum)).toBe("VALUE3");
+        expect(findCaseInsensitiveValueInStringEnum('value1', TestEnum)).toBe('Value1');
+        expect(findCaseInsensitiveValueInStringEnum('value2', TestEnum)).toBe('Value2');
+        expect(findCaseInsensitiveValueInStringEnum('value3', TestEnum)).toBe('VALUE3');
     });
 });

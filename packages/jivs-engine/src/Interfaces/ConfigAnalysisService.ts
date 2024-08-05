@@ -198,14 +198,14 @@ export interface IConfigAnalysisResultsExplorer {
      * Only includes the children if this object matches the criteria.
      * @param criteria 
      */
-    collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: ICAExplorerFactory): Array<CAPathedResult<any>>;
+    queryValueHostResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>>;
 
     /**
      * Return a list of all LookupKeyCAResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
      * Only includes the children if this object matches the criteria.
      */
-    collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: ICAExplorerFactory): Array<CAPathedResult<any>>;
+    queryLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>>;
 
     /**
      * With the results of a collect function, return a specific ConfigResult object
@@ -230,21 +230,164 @@ export interface IConfigAnalysisResultsExplorer {
 
     /**
      * Throws an error if any ConfigResult objects with severity of 'error' are found.
-     * The error class is CodingError.
+     * The error class is CodingError. Its message will be JSON from the results found.
+     * If the ouputter is supplied, it will be used to send the results to the outputter
+     * in addition to creating the Error.
+     * @param includeAnalysisResults - When true, include the complete Explorer.results in the error message.
+     * @param outputter - The outputter to send the results to.
      */
-    throwOnErrors(): void;
+    throwOnErrors(includeAnalysisResults?: boolean, outputter?: IConfigAnalysisOutputter): void;
 
-    // which data type service did you expect on a ConfigResult object when there was one found?
+    /**
+     * Generates a JSON string from the query results built by
+     * applying the valueHostCriteria against valueHostResults and 
+     * lookupKeyCriteria against lookupKeyResults arrays.
+     * Expected output in JSON has this overall shape:
+     * ```ts
+     * {
+     *    "valueHostResults": [ ... ],
+     *    "lookupKeyResults": [ ... ]
+     * }
+     * ```
+     * Each element in those arrays is a CAPathedResult object which has this overall shape:
+     * ```ts
+     * {
+     *    "path": { [key: string]: value | null },
+     *    "result": { ... } // the actual ConfigCAResult object, such as ValueHostConfigCAResult, LookupKeyCAResult, etc.
+     * }
+     * ```
+     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
+     * calling queryValueHostResults(valueHostCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
+     * calling queryLookupKeyResults(lookupKeyCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param space - The number of spaces to use for indentation in the JSON string or null to omit whitespace formatting.
+     * Used by JSON.stringify() as the third parameter.
+     * @example
+     * ```ts
+     * let json = explorer.reportIntoJson({ features: [CAFeatures.valueHost] }, { features: [CAFeatures.lookupKey] });
+     * or
+     * let json = explorer.reportIntoJson(true, true);
+     * or
+     * let json = explorer.reportIntoJson(false, { serviceNames: [CAFeatures.parser, CAFeatures.converter] });
+     * ```
+     */
+    reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        space?: string | number | null): string;
 
-    // which ConfigResults objects indicate a missing data type service?
+    /**
+     * Generates a console output from the query results built by applying the valueHostCriteria against valueHostResults and
+     * lookupKeyCriteria against lookupKeyResults arrays.
+     * The console will receive the object format, not a string, so you can use the DevTools to drill down into the object.
+     * Expected output in JSON has this overall shape:
+     * ```ts
+     * {
+     *    valueHostResults: [ ... ],
+     *    lookupKeyResults: [ ... ]
+     * }
+     * ```
+     * Each element in those arrays is a CAPathedResult object which has this overall shape:
+     * ```ts
+     * {
+     *    path: { [key: string]: value | null },
+     *    result: { ... } // the actual ConfigCAResult object, such as ValueHostConfigCAResult, LookupKeyCAResult, etc.
+     * }
+     * ```
+     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
+     * calling queryValueHostResults(valueHostCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
+     * calling queryLookupKeyResults(lookupKeyCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param space - When a number or string, it is passed to JSON.stringify() as the third parameter for indentation.
+     * When null or undefined, it is sent to console in object form, allowing the browser to provide a drill down UI.
+     * @example
+     * ```ts
+     * explorer.reportToConsole({ features: [CAFeatures.valueHost] }, { features: [CAFeatures.lookupKey] });
+     * // expect a single console log output 
+     * or
+     * explorer.reportToConsole(true, true);
+     * or
+     * explorer.reportToConsole(false, { serviceNames: [CAFeatures.parser, CAFeatures.converter] });
+     * ```
+     */
+    reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        space?: string | number | null): void;
 
-    // reportWithConfigs takes results from Array<PathedConfigResults>, runs them
-    // through a formatter, and passes the result into an output service like the logger,
-    // localizationService, etc.
-    // reportWithConfigs(criteria: IConfigAnalysisSearchCriteria, formatter: IConfigAnalysisOutputFormatter, outputService: IConfigAnalysisOutputService): void;
-
-    // reportWithLookupKeys(criteria: IConfigAnalysisSearchCriteria, formatter: IConfigAnalysisOutputFormatter, outputService: IConfigAnalysisOutputService): void;
-
+    /**
+     * Generates a JSON string from the query results built by applying the valueHostCriteria against valueHostResults and
+     * lookupKeyCriteria against lookupKeyResults arrays.
+     * Stores the JSON string in localStorage under the key provided.
+     * The key allows an optional # character at the end to be replaced by a timestamp string in yyyy-MM-dd HH:mm:ss format.
+     * Expected output in JSON has this overall shape:
+     * ```ts
+     * {
+     *    valueHostResults: [ ... ],
+     *    lookupKeyResults: [ ... ]
+     * }
+     * ```
+     * Each element in those arrays is a CAPathedResult object which has this overall shape:
+     * ```ts
+     * {
+     *    path: { [key: string]: value | null },
+     *    result: { ... } // the actual ConfigCAResult object, such as ValueHostConfigCAResult, LookupKeyCAResult, etc.
+     * }
+     * ```
+     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
+     * calling queryValueHostResults(valueHostCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
+     * calling queryLookupKeyResults(lookupKeyCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param key - The key to store the JSON string in localStorage. It can have a # character at the end to be replaced by a timestamp
+     * in this format: yyyy-MM-dd HH:mm:ss
+     * @param space - The number of spaces to use for indentation in the JSON string or null to omit whitespace formatting.
+     * Used by JSON.stringify() as the third parameter.
+     * @example
+     * ```ts
+     * explorer.reportToLocalStorage({ features: [CAFeatures.valueHost] }, { features: [CAFeatures.lookupKey], 'myKey#' });
+     * or
+     * explorer.reportToLocalStorage(true, true, 'myKey#');
+     * or
+     * explorer.reportToLocalStorage(false, { serviceNames: [CAFeatures.parser, CAFeatures.converter], 'myKey#' });
+     * ```
+     */
+    reportToLocalStorage(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        key: string,
+        space?: string | number | null): void;
+    
+    /**
+     * Generates a report from the analysis results, using the criteria to filter the results into
+     * two lists of CAPathedResult objects, one for ValueHostResults and one for LookupKeyResults.
+     * It uses both to format and output the report.
+     * Returns the formatted results of that report, which may actually be objects or strings
+     * depending on the IConfigAnalysisOutputFormatter supplied to the outputter.
+     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
+     * calling queryValueHostResults(valueHostCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
+     * calling queryLookupKeyResults(lookupKeyCriteria).
+     * If you want to omit this, pass in false or null.
+     * If you want all results, pass in true or {}.
+     * @param outputter - The outputter to use to format and output the report. 
+     * For JSON, use JsonConfigAnalysisOutputter or call reportIntoJson() instead.
+     * For console output, use ConsoleConfigAnalysisOutputter or call reportToConsole() instead.
+     * For LocalStorage, use LocalStorageConfigAnalysisOutputter or call reportToLocalStorage() instead.
+     * For ILoggerService, use LoggerServiceConfigAnalysisOutputter.
+     * @returns The formatted results of the report.
+     */
+    report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        outputter: IConfigAnalysisOutputter): any;
+    
 }
 
 /**
@@ -438,9 +581,37 @@ export interface CAPathedResult<T extends CAResultBase> {
 
 export type CAResultPath = {[feature: string]: string | null};
 
-export interface IConfigAnalysisOutputFormatter {
+/**
+ * Classes that convert the results of the configuration analysis into a specific format
+ * and output them. Suggested implementations:
+ * - To console as the object itself
+ * - To console as a JSON string
+ * - To LocalStorage as a JSON string
+ * - To the ILoggerService as a JSON string
+ * These can build a well formatted string, such as a full HTML page to appear as a report.
+ */
+export interface IConfigAnalysisOutputter {
+    /**
+     * Entry point for the outputter. It builds the output from the results
+     * and sends it to the appropriate destination.
+     * It has available all the results of the configuration analysis.
+     * @param valueHostQueryResults - Results of queries against the ValueHostResults array or null if not used.
+     * @param lookupKeyQueryResults - Results of queries against the LookupKeyResults array or null if not used.
+     * @param explorer - Its results property has the results of the configuration analysis. 
+     * @returns The built output. The caller will return it.
+     */
+    send(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
+        explorer: IConfigAnalysisResultsExplorer): any;
 }
-export interface IConfigAnalysisOutputService {
+
+/**
+ * Consumed by the implementation of IConfigAnalysisOutputter, ConfigAnalysisOutputterBase,
+ * to format the output of the configuration analysis.
+ * Allows a dependency injection approach to the output format.
+ */
+export interface IConfigAnalysisOutputFormatter {
+    format(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
+        explorer: IConfigAnalysisResultsExplorer): any;
 }
 
 /**

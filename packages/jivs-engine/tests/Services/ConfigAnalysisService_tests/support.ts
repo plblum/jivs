@@ -1,10 +1,22 @@
+import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
     CAFeature,
     IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigCAResult, CAIssueSeverity,
-    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval
+    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval,
+    ComparerServiceCAResult,
+    ConditionConfigCAResult,
+    ConverterServiceCAResult,
+    FormatterServiceCAResult,
+    FormattersByCultureCAResult,
+    IdentifierServiceCAResult,
+    ParserFoundCAResult,
+    ParserServiceCAResult,
+    ValidatorConfigCAResult
 } from "../../../src/Interfaces/ConfigAnalysisService";
+import { InputValueHostConfig } from "../../../src/Interfaces/InputValueHost";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
+import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
 import { SampleValues } from "../../../src/Services/ConfigAnalysisService/SampleValues";
 import { CultureService } from "../../../src/Services/CultureService";
@@ -19,16 +31,15 @@ export function createServices(addCultures: Array<string> = ['en']): IValidation
     let services = createValidationServicesForTesting();
     let cultureService = new CultureService();
     services.cultureService = cultureService;
-    addCultures.forEach(culture => services.cultureService.register({cultureId: culture, fallbackCultureId: null}));
+    addCultures.forEach(culture => services.cultureService.register({ cultureId: culture, fallbackCultureId: null }));
     return services;
 }
 
-export function setupHelper(services: IValidationServices, options: ConfigAnalysisServiceOptions = {}): AnalysisResultsHelper<IValidationServices>
-{
-    let args = createAnalysisArgs(services, [], options);            
+export function setupHelper(services: IValidationServices, options: ConfigAnalysisServiceOptions = {}): AnalysisResultsHelper<IValidationServices> {
+    let args = createAnalysisArgs(services, [], options);
     let helper = new AnalysisResultsHelper<IValidationServices>(args);
     return helper;
-}   
+}
 export function createConfigAnalysisResults(valueHostNames: Array<string>): IConfigAnalysisResults {
     let results = <IConfigAnalysisResults>{
         cultureIds: ['en'],
@@ -70,7 +81,7 @@ export function createAnalysisArgs(services: IValidationServices,
         }
     };
     mockAnalysisArgs.validatorConfigAnalyzer = <IValidatorConfigAnalyzer>{
-        
+
         analyze: (validatorConfig, valueHostConfig, existingResults) => {
             return {
                 feature: CAFeature.validator,
@@ -94,7 +105,7 @@ export function createAnalysisArgs(services: IValidationServices,
     return mockAnalysisArgs;
 }
 
-export class MockAnalyzer implements ILookupKeyAnalyzer{
+export class MockAnalyzer implements ILookupKeyAnalyzer {
     constructor(feature: ServiceName | 'DataType',
         result: ServiceWithLookupKeyCAResultBase) {
         this._feature = feature;
@@ -113,7 +124,7 @@ export class MockAnalyzer implements ILookupKeyAnalyzer{
         return this._feature;
     }
     analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
-        return { ...this._result, counter : this._counter++ } as any;
+        return { ...this._result, counter: this._counter++ } as any;
     }
 }
 export class MockAnalyzerWithFallback extends MockAnalyzer {
@@ -130,10 +141,10 @@ export class MockAnalyzerWithFallback extends MockAnalyzer {
         if (key === this._rejectedLookupKey) {
             return { feature: this.feature, tryFallback: true, message: 'testFallback' } as any;
         }
-        
+
         return super.analyze(key, valueHostConfig);
     }
-}    
+}
 
 export function sampleValueByLookupKey(services: IValidationServices, key: string): any {
     let dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === key);
@@ -150,7 +161,7 @@ export function checkValueHostConfigResultsInArray(results: Array<ValueHostConfi
     return configIssue;
 }
 export function checkValueHostConfigResults(result: ValueHostConfigCAResult | undefined,
-    expectedValueHostName: string) : void {
+    expectedValueHostName: string): void {
     expect(result).toBeDefined();
     expect(result!.feature).toBe(CAFeature.valueHost);
     expect(result!.valueHostName).toBe(expectedValueHostName);
@@ -221,12 +232,12 @@ export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResu
     let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === serviceName) as MultiClassRetrieval;
 
     expect(serviceInfo).toBeDefined();
-    expect(serviceInfo!.feature).toBe(serviceName);   
+    expect(serviceInfo!.feature).toBe(serviceName);
     expect(serviceInfo!.results).toBeDefined();
     expect(serviceInfo!.results).toHaveLength(expectedRequestCount);
 
     return serviceInfo;
-}        
+}
 
 export function checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo: ServiceWithLookupKeyCAResultBase,
     indexIntoRequests: number,
@@ -295,7 +306,7 @@ export function checkLocalizedPropertyResult(pi: LocalizedPropertyCAResult,
             expect(ct.message).toContain('No text will be used');
         }
     }
-} 
+}
 
 
 export function checkCultureSpecificClassRetrievalFoundInService(
@@ -304,7 +315,7 @@ export function checkCultureSpecificClassRetrievalFoundInService(
     cultureId: string, actualCultureId: string,
     expectedClassName: string,
     expectedInstanceType: any,  // expected instance type to check actual with instanceof
-    ): void {
+): void {
     let request = serviceInfo!.results.find(r => (r as CultureSpecificClassRetrieval).requestedCultureId === cultureId) as CultureSpecificClassRetrieval;
     expect(request).toBeDefined();
     expect(request!.feature).toBe(expectedRequestFeature);
@@ -329,7 +340,7 @@ export function checkCultureSpecificClassRetrievalNotFoundInService(
     expect(request!.message).toContain('for LookupKey');
     expect(request!.classFound).toBeUndefined();
     expect(request!.instance).toBeUndefined();
-}   
+}
 
 export function checkSyntaxError(propertyResult: PropertyCAResult,
     expectedPropertyName: string): void {
@@ -338,5 +349,336 @@ export function checkSyntaxError(propertyResult: PropertyCAResult,
     expect(propertyResult.propertyName).toBe(expectedPropertyName);
     expect(propertyResult.severity).toBe(CAIssueSeverity.error);
     expect(propertyResult.message).toContain('Syntax error');
-    }   
-    
+}
+
+export function attachSeverity(result: IssueForCAResultBase, severity: CAIssueSeverity | undefined): boolean {
+    if (severity &&
+        [CAIssueSeverity.error, CAIssueSeverity.warning, CAIssueSeverity.info].includes(severity)) {
+        result.severity = severity;
+        result.message = 'message';
+        return true;
+    }
+    return false;
+}
+
+export function createValueHostCAResult(name: string | null | undefined = 'Field1',
+    valueHostType: string | null | undefined = ValueHostType.Static,
+    dataType: string | null | undefined = LookupKey.Number,
+    propertyNamesWithErrors: Array<string> = []): ValueHostConfigCAResult {
+    return {
+        feature: CAFeature.valueHost,
+        valueHostName: name ?? '[Missing]',
+        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
+        config: {
+            name: name ?? '[Missing]',
+            valueHostType: valueHostType ?? ValueHostType.Static,
+            dataType: dataType ?? LookupKey.Number
+        }
+    };
+};
+export function createPropertyCAResult(propertyName: string, severity?: CAIssueSeverity): PropertyCAResult {
+    let result: PropertyCAResult = {
+        feature: CAFeature.property,
+        propertyName: propertyName,
+    };
+    attachSeverity(result, severity);
+    return result;
+}
+
+export function createPropertiesWithErrorsResults(propertyNames: Array<string>): Array<PropertyCAResult> {
+    let results: Array<PropertyCAResult> = [];
+    propertyNames.forEach((name) => {
+        let result = createPropertyCAResult(name, CAIssueSeverity.error);
+        results.push(result);
+    });
+    return results;
+}
+
+export function createValidatorConfigResult(errorCode: string | undefined,
+    propertyNamesWithErrors: Array<string> = [],
+    condition?: string | ConditionConfigCAResult): ValidatorConfigCAResult {
+    let condResult: ConditionConfigCAResult | undefined;
+    if (condition === undefined) {
+        condResult = createConditionConfigResult('ConditionType');
+    }
+    else if (typeof condition === 'string') {
+        if (errorCode === '[Missing]' || condition === '[Missing]')
+            condResult = undefined;
+        else
+            condResult = createConditionConfigResult(condition);
+    }
+    else
+        condResult = condition;
+    if (!errorCode)
+        if (condResult && condResult.conditionType)
+            errorCode = condResult.conditionType;
+        else
+            errorCode = '[Missing]';
+    return {
+        feature: CAFeature.validator,
+        errorCode: errorCode,
+        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
+        conditionResult: condResult,
+        config: {
+            errorCode: errorCode,
+            conditionConfig: condResult ? condResult!.config : undefined!
+        }
+    };
+}
+export function createConditionConfigResult(conditionType: string,
+    propertyNamesWithErrors: Array<string> = []
+): ConditionConfigCAResult {
+    return {
+        feature: CAFeature.condition,
+        conditionType: conditionType,
+        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
+        config: {
+            conditionType: conditionType
+        }
+    };
+}
+export function createLookupKeyCAResult(lookupKey: string): LookupKeyCAResult {
+    return {
+        feature: CAFeature.lookupKey,
+        lookupKey: lookupKey,
+        serviceResults: [],
+        usedAsDataType: false
+    };
+}
+
+export function createIdentifierServiceCAResult(severity: CAIssueSeverity): IdentifierServiceCAResult;
+export function createIdentifierServiceCAResult(classFound: string): IdentifierServiceCAResult;
+export function createIdentifierServiceCAResult(notFound: boolean): IdentifierServiceCAResult;
+export function createIdentifierServiceCAResult(arg: CAIssueSeverity | string | boolean): IdentifierServiceCAResult {
+    let result: IdentifierServiceCAResult = {
+        feature: CAFeature.identifier
+    };
+    if (typeof arg === 'string') {
+        if (!attachSeverity(result, arg as any))
+            result.classFound = arg;
+    }
+    else if (typeof arg === 'boolean') {
+        result.notFound = arg;
+    }
+    else
+        attachSeverity(result, arg);
+    return result;
+}
+
+export function createComparerServiceCAResult(severity: CAIssueSeverity): ComparerServiceCAResult;
+export function createComparerServiceCAResult(classFound: string): ComparerServiceCAResult;
+export function createComparerServiceCAResult(notFound: boolean): ComparerServiceCAResult;
+export function createComparerServiceCAResult(arg: CAIssueSeverity | string | boolean): ComparerServiceCAResult {
+    let result: ComparerServiceCAResult = {
+        feature: CAFeature.comparer
+    };
+    if (typeof arg === 'string') {
+        if (!attachSeverity(result, arg as any))
+            result.classFound = arg;
+    }
+    else if (typeof arg === 'boolean') {
+        result.notFound = arg;
+    }
+    else {
+        attachSeverity(result, arg);
+    }
+    return result;
+}
+// same for ConverterServiceCAResult function
+export function createConverterServiceCAResult(severity: CAIssueSeverity): ConverterServiceCAResult;
+export function createConverterServiceCAResult(classFound: string): ConverterServiceCAResult;
+export function createConverterServiceCAResult(notFound: boolean): ConverterServiceCAResult;
+export function createConverterServiceCAResult(arg: CAIssueSeverity | string | boolean): ConverterServiceCAResult {
+    let result: ConverterServiceCAResult = {
+        feature: CAFeature.converter
+    };
+    if (typeof arg === 'string') {
+        if (!attachSeverity(result, arg as any))
+            result.classFound = arg;
+    }
+    else if (typeof arg === 'boolean') {
+        result.notFound = arg;
+    }
+    else {
+        attachSeverity(result, arg);
+    }
+    return result;
+}
+
+export function createFormatterServiceCAResult(severity?: CAIssueSeverity): FormatterServiceCAResult {
+    let result: FormatterServiceCAResult = {
+        feature: CAFeature.formatter,
+        results: []
+    };
+    attachSeverity(result, severity);
+    return result;
+}
+
+export function createFormattersByCultureCAResult(requestedCultureId: string, severity: CAIssueSeverity): FormattersByCultureCAResult;
+export function createFormattersByCultureCAResult(requestedCultureId: string, classFound: string): FormattersByCultureCAResult;
+export function createFormattersByCultureCAResult(requestedCultureId: string, notFound: boolean): FormattersByCultureCAResult;
+export function createFormattersByCultureCAResult(requestedCultureId: string, arg: CAIssueSeverity | string | boolean): FormattersByCultureCAResult {
+    let result: FormattersByCultureCAResult = {
+        feature: CAFeature.formattersByCulture,
+        requestedCultureId: requestedCultureId
+    };
+    if (typeof arg === 'string') {
+        if (!attachSeverity(result, arg as any))
+            result.classFound = arg;
+    }
+    else if (typeof arg === 'boolean') {
+        result.notFound = arg;
+    }
+    else {
+        attachSeverity(result, arg);
+    }
+    return result;
+}
+
+export function createParserServiceCAResult(severity?: CAIssueSeverity): ParserServiceCAResult {
+    let result: ParserServiceCAResult = {
+        feature: CAFeature.parser,
+        results: []
+    };
+    attachSeverity(result, severity);
+    return result;
+}
+
+export function createParsersByCultureCAResult(cultureId: string): ParsersByCultureCAResult;
+export function createParsersByCultureCAResult(cultureId: string, severity: CAIssueSeverity): ParsersByCultureCAResult;
+export function createParsersByCultureCAResult(cultureId: string, notFound: boolean): ParsersByCultureCAResult;
+export function createParsersByCultureCAResult(cultureId: string, arg?: CAIssueSeverity | boolean): ParsersByCultureCAResult {
+    let result: ParsersByCultureCAResult = {
+        feature: CAFeature.parsersByCulture,
+        cultureId: cultureId,
+        parserResults: []
+    };
+    if (arg !== undefined) {
+        if (typeof arg === 'boolean') {
+            result.notFound = arg;
+        }
+        else {
+            attachSeverity(result, arg);
+        }
+    }
+    return result;
+}
+
+export function createParserFoundCAResult(classFound: string): ParserFoundCAResult {
+    let result: ParserFoundCAResult = {
+        feature: CAFeature.parserFound,
+        classFound: classFound
+    };
+    return result;
+}
+
+export function createBasicConfigAnalysisResults(): IConfigAnalysisResults {
+    return {
+        cultureIds: ['en'],
+        valueHostNames: [],
+        valueHostResults: [],
+        lookupKeyResults: []
+    };
+}
+
+// Create a ConfigAnalysisResults object with 2 of every type of result.
+export function createExtensiveConfigAnalysisResults(): IConfigAnalysisResults {
+    let results: IConfigAnalysisResults = createBasicConfigAnalysisResults();
+    results.valueHostNames = ['ValueHost1', 'ValueHost2'];
+    results.cultureIds = ['en', 'fr'];
+
+    // 'ValueHost1' is a static value host with a datetime lookup key
+    // it has an info message
+    let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.DateTime);
+    attachSeverity(vh1Result, CAIssueSeverity.info);
+
+    let dataTypeVH1Result = createPropertyCAResult('dataType');
+    attachSeverity(dataTypeVH1Result, CAIssueSeverity.warning);
+    vh1Result.properties = [dataTypeVH1Result];
+
+    // 'ValueHost2' is an input value host with an integer lookup key
+    // It has 3 validators. One has an error message.
+    // It has a warning message for l10nProperty.
+    let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Input, LookupKey.Integer,
+        ['dataType', 'labell10n']);
+    let ivhc = vh2Result.config as InputValueHostConfig;
+    ivhc.parserLookupKey = LookupKey.Minutes;
+    ivhc.label = 'ValueHost2Label';
+    ivhc.labell10n = 'ValueHost2LabelL10n';
+
+    results.valueHostResults = [vh1Result, vh2Result];
+
+    // 4 validators for ValueHost2.
+    // Start with their 3 conditionResults, where the 3rd has a property with an error
+    // Then the 4th validator has an error at the validator level and does not have a conditionResult
+    let requiredTextCondResult = createConditionConfigResult('RequireText');
+    let dataTypeCheckCondResult = createConditionConfigResult('DataTypeCheck');
+    let regExpCondResult = createConditionConfigResult('RegExp', ['expression']);// pretend expression is missing
+
+    let requiredTextValResult = createValidatorConfigResult('Error1', [], requiredTextCondResult);
+    let dataTypeCheckValResult = createValidatorConfigResult(undefined, [], dataTypeCheckCondResult);
+    let regExpValResult = createValidatorConfigResult(undefined, ['l10nErrorMessage'], regExpCondResult);
+    // this one is an error at the validatorconfig level emulating an invalid conditionType
+    let invalidValResult = createValidatorConfigResult('[Missing]', [], 'INVALID');
+    attachSeverity(invalidValResult, CAIssueSeverity.error);
+    vh2Result.validatorResults = [requiredTextValResult, dataTypeCheckValResult, regExpValResult, invalidValResult];
+
+    // LookupKey results: LookupKey.DateTime, LookupKey.Integer, LookupKey.Minutes, LookupKey.Number
+    let dateTimeLKResult = createLookupKeyCAResult(LookupKey.DateTime);
+    let integerLKResult = createLookupKeyCAResult(LookupKey.Integer);
+    let minutesLKResult = createLookupKeyCAResult(LookupKey.Minutes);
+    let numberLKResult = createLookupKeyCAResult(LookupKey.Number);
+
+    // We'll add a custom lookup key that should have an Identifier, but does not.
+    let customLKResult = createLookupKeyCAResult('CustomLookupKey');
+    let customLKIdentifier = createIdentifierServiceCAResult(CAIssueSeverity.error);
+    customLKResult.serviceResults = [customLKIdentifier];
+
+    results.lookupKeyResults = [dateTimeLKResult, integerLKResult, minutesLKResult, numberLKResult, customLKResult];
+
+    // For LookupKey.DateTime, there are 2 parsers (DateParser and DateTimeParser), 
+    // 1 formatter(DateTimeFormatter)
+    // identifier (DateIdentifier), 1 converter (DateTimeToMinutesConverter)
+    // No errors to report
+
+    let parserDateTimeLK = createParserServiceCAResult();
+    let enCultureParserDateTimeLK = createParsersByCultureCAResult('en');
+    let frCultureParserDateTimeLK = createParsersByCultureCAResult('fr');
+    parserDateTimeLK.results = [enCultureParserDateTimeLK, frCultureParserDateTimeLK];
+    let found_en_ParserDateTimeLK = createParserFoundCAResult('DateParser');
+    let found2_en_ParserDateTimeLK = createParserFoundCAResult('DateTimeParser');
+    enCultureParserDateTimeLK.parserResults = [found_en_ParserDateTimeLK, found2_en_ParserDateTimeLK];
+    let found_fr_ParserDateTimeLK = createParserFoundCAResult('DateParser');
+    let found2_fr_ParserDateTimeLK = createParserFoundCAResult('DateTimeParser');
+    frCultureParserDateTimeLK.parserResults = [found_fr_ParserDateTimeLK, found2_fr_ParserDateTimeLK];
+
+    let formatterDateTimeLK = createFormatterServiceCAResult();
+    let enCultureFormatterDateTimeLK = createFormattersByCultureCAResult('en', 'DateTimeFormatter');
+    let frCultureFormatterDateTimeLK = createFormattersByCultureCAResult('fr', 'DateTimeFormatter');
+    formatterDateTimeLK.results = [enCultureFormatterDateTimeLK, frCultureFormatterDateTimeLK];
+
+    let converterDateTimeLK = createConverterServiceCAResult('DateTimeToMinutesConverter');
+    let identifierDateTimeLK = createIdentifierServiceCAResult('DateIdentifier');
+    dateTimeLKResult.serviceResults = [parserDateTimeLK, formatterDateTimeLK, converterDateTimeLK, identifierDateTimeLK];
+
+    // For LookupKey.Integer, there will be a formatter result with an error
+    // It has a NumberIdentifier and a NumberConverter
+    let formatterIntegerLK = createFormatterServiceCAResult();
+    let enCultureFormatterIntegerLK = createFormattersByCultureCAResult('en', 'IntegerFormatter');
+    let frCultureFormatterIntegerLK = createFormattersByCultureCAResult('fr', CAIssueSeverity.error);
+    formatterIntegerLK.results = [enCultureFormatterIntegerLK, frCultureFormatterIntegerLK];
+    let identifierIntegerLK = createIdentifierServiceCAResult('NumberIdentifier');
+    let converterIntegerLK = createConverterServiceCAResult('NumberConverter');
+    integerLKResult.serviceResults = [formatterIntegerLK, identifierIntegerLK, converterIntegerLK];
+
+    // For LookupKey.Minutes, no issues. Just a NumberIdentifier and a NumberConverter
+    let identifierMinutesLK = createIdentifierServiceCAResult('NumberIdentifier');
+    let converterMinutesLK = createConverterServiceCAResult('NumberConverter');
+    minutesLKResult.serviceResults = [identifierMinutesLK, converterMinutesLK];
+
+    // For LookupKey.Number, no issues. Just a NumberIdentifier
+    let numLKNumberIdentifier = createIdentifierServiceCAResult('NumberIdentifier');
+    numberLKResult.serviceResults = [numLKNumberIdentifier];
+
+    return results;
+}

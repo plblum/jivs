@@ -11,7 +11,8 @@ import {
     CAResultBase,
     IConfigAnalysisSearchCriteria,
     CAIssueSeverity, IssueForCAResultBase,
-    ICASearcher
+    ICASearcher,
+    IConfigAnalysisResultsExplorer
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import {
     CAExplorerBase, CASearcher, ComparerServiceCAResultExplorer,
@@ -29,6 +30,7 @@ import { InputValueHostConfig } from '../../../src/Interfaces/InputValueHost';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
 import { ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { CodingError } from '../../../src/Utilities/ErrorHandling';
+import { createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult, createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults, attachSeverity, createIdentifierServiceCAResult } from './support';
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -1559,231 +1561,6 @@ describe('CAExplorerBase class', () => {
 });
 
 // --------------------------------------------------------------------------------
-function attachSeverity(result: IssueForCAResultBase, severity: CAIssueSeverity | undefined) : boolean {
-    if (severity &&
-        [CAIssueSeverity.error, CAIssueSeverity.warning, CAIssueSeverity.info].includes(severity)) {
-        result.severity = severity;
-        result.message = 'message';
-        return true;
-    }
-    return false;
-}
-
-function createValueHostCAResult(name: string | null | undefined = 'Field1',
-    valueHostType: string | null | undefined = ValueHostType.Static,
-    dataType: string | null | undefined = LookupKey.Number,
-    propertyNamesWithErrors: Array<string> = []): ValueHostConfigCAResult {
-    return {
-        feature: CAFeature.valueHost,
-        valueHostName: name ?? '[Missing]',
-        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
-        config: {
-            name: name ?? '[Missing]',
-            valueHostType: valueHostType ?? ValueHostType.Static,
-            dataType: dataType ?? LookupKey.Number
-        }
-    };
-};
-function createPropertyCAResult(propertyName: string, severity?: CAIssueSeverity): PropertyCAResult {
-    let result: PropertyCAResult = {
-        feature: CAFeature.property,
-        propertyName: propertyName,
-    };
-    attachSeverity(result, severity);
-    return result;
-}
-
-function createPropertiesWithErrorsResults(propertyNames: Array<string>): Array<PropertyCAResult> {
-    let results: Array<PropertyCAResult> = [];
-    propertyNames.forEach((name) => {
-        let result = createPropertyCAResult(name, CAIssueSeverity.error);
-        results.push(result);
-    });
-    return results;
-}
-
-function createValidatorConfigResult(errorCode: string | undefined,
-    propertyNamesWithErrors: Array<string> = [],
-    condition?: string | ConditionConfigCAResult): ValidatorConfigCAResult {
-    let condResult: ConditionConfigCAResult | undefined;
-    if (condition === undefined)
-    {
-        condResult = createConditionConfigResult('ConditionType');   
-    }
-    else if (typeof condition === 'string') {
-        if (errorCode === '[Missing]' || condition === '[Missing]')
-            condResult = undefined;
-        else
-            condResult = createConditionConfigResult(condition);
-    }
-    else
-        condResult = condition;
-    if (!errorCode)
-        if (condResult && condResult.conditionType)
-            errorCode = condResult.conditionType;
-        else
-            errorCode = '[Missing]';
-    return {
-        feature: CAFeature.validator,
-        errorCode: errorCode,
-        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
-        conditionResult: condResult,
-        config: {
-            errorCode: errorCode,
-            conditionConfig: condResult ? condResult!.config : undefined!
-        }
-    };
-}
-function createConditionConfigResult(conditionType: string,
-    propertyNamesWithErrors: Array<string> = []
-): ConditionConfigCAResult {
-    return {
-        feature: CAFeature.condition,
-        conditionType: conditionType,
-        properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
-        config: {
-            conditionType: conditionType
-        }
-    };
-}
-function createLookupKeyCAResult(lookupKey: string): LookupKeyCAResult {
-    return {
-        feature: CAFeature.lookupKey,
-        lookupKey: lookupKey,
-        serviceResults: [],
-        usedAsDataType: false
-    };
-}
-
-function createIdentifierServiceCAResult(severity: CAIssueSeverity): IdentifierServiceCAResult;
-function createIdentifierServiceCAResult(classFound: string): IdentifierServiceCAResult;
-function createIdentifierServiceCAResult(notFound: boolean): IdentifierServiceCAResult;
-function createIdentifierServiceCAResult(arg: CAIssueSeverity | string | boolean): IdentifierServiceCAResult {
-    let result: IdentifierServiceCAResult = {
-        feature: CAFeature.identifier
-    };
-    if (typeof arg === 'string') {
-        if (!attachSeverity(result, arg as any))
-            result.classFound = arg;
-    }
-    else if (typeof arg === 'boolean') {
-        result.notFound = arg;
-    }
-    else
-        attachSeverity(result, arg);
-    return result;
-}
-
-function createComparerServiceCAResult(severity: CAIssueSeverity): ComparerServiceCAResult;
-function createComparerServiceCAResult(classFound: string): ComparerServiceCAResult;
-function createComparerServiceCAResult(notFound: boolean): ComparerServiceCAResult;
-function createComparerServiceCAResult(arg: CAIssueSeverity | string | boolean): ComparerServiceCAResult {
-    let result: ComparerServiceCAResult = {
-        feature: CAFeature.comparer
-    };
-    if (typeof arg === 'string') {
-        if (!attachSeverity(result, arg as any))
-            result.classFound = arg;
-    }
-    else if (typeof arg === 'boolean') {
-        result.notFound = arg;
-    }
-    else {
-        attachSeverity(result, arg);
-    }
-    return result;
-}
-// same for ConverterServiceCAResult function
-function createConverterServiceCAResult(severity: CAIssueSeverity): ConverterServiceCAResult;
-function createConverterServiceCAResult(classFound: string): ConverterServiceCAResult;
-function createConverterServiceCAResult(notFound: boolean): ConverterServiceCAResult;
-function createConverterServiceCAResult(arg: CAIssueSeverity | string | boolean): ConverterServiceCAResult {
-    let result: ConverterServiceCAResult = {
-        feature: CAFeature.converter
-    };
-    if (typeof arg === 'string') {
-        if (!attachSeverity(result, arg as any))
-            result.classFound = arg;
-    }
-    else if (typeof arg === 'boolean') {
-        result.notFound = arg;
-    }
-    else {
-        attachSeverity(result, arg);
-    }
-    return result;
-}
-
-function createFormatterServiceCAResult(severity?: CAIssueSeverity): FormatterServiceCAResult
-{
-    let result: FormatterServiceCAResult = {
-        feature: CAFeature.formatter,
-        results: []
-    };
-    attachSeverity(result, severity);
-    return result;
-}
-
-function createFormattersByCultureCAResult(requestedCultureId: string, severity: CAIssueSeverity): FormattersByCultureCAResult;
-function createFormattersByCultureCAResult(requestedCultureId: string, classFound: string): FormattersByCultureCAResult;
-function createFormattersByCultureCAResult(requestedCultureId: string, notFound: boolean): FormattersByCultureCAResult;
-function createFormattersByCultureCAResult(requestedCultureId: string, arg: CAIssueSeverity | string | boolean): FormattersByCultureCAResult {
-    let result: FormattersByCultureCAResult = {
-        feature: CAFeature.formattersByCulture,
-        requestedCultureId: requestedCultureId
-    };
-    if (typeof arg === 'string') {
-        if (!attachSeverity(result, arg as any))
-            result.classFound = arg;
-    }
-    else if (typeof arg === 'boolean') {
-        result.notFound = arg;
-    }
-    else {
-        attachSeverity(result, arg);
-    }
-    return result;
-}
-
-function createParserServiceCAResult(severity?: CAIssueSeverity): ParserServiceCAResult
-{
-    let result: ParserServiceCAResult = {
-        feature: CAFeature.parser,
-        results: []
-    };
-    attachSeverity(result, severity);
-    return result;
-}
-
-function createParsersByCultureCAResult(cultureId: string): ParsersByCultureCAResult;
-function createParsersByCultureCAResult(cultureId: string, severity: CAIssueSeverity): ParsersByCultureCAResult;
-function createParsersByCultureCAResult(cultureId: string, notFound: boolean): ParsersByCultureCAResult;
-function createParsersByCultureCAResult(cultureId: string, arg?: CAIssueSeverity | boolean): ParsersByCultureCAResult
-{
-    let result: ParsersByCultureCAResult = {
-        feature: CAFeature.parsersByCulture,
-        cultureId: cultureId,
-        parserResults: []
-    };
-    if (arg !== undefined) {
-        if (typeof arg === 'boolean') {
-            result.notFound = arg;
-        }
-        else {
-            attachSeverity(result, arg);
-        }
-    }
-    return result;
-}
-
-function createParserFoundCAResult(classFound: string): ParserFoundCAResult
-{
-    let result: ParserFoundCAResult = {
-        feature: CAFeature.parserFound,
-        classFound: classFound
-    };
-    return result;
-}
 
 describe('ValueHostConfigCAResultExplorer class', () => {
 
@@ -2838,125 +2615,13 @@ describe('ConfigAnalysisResultExplorer class', () => {
     // group for countLookupKeyResults function
     // group for hasMatchInConfigResults function
     // group for hasMatchInLookupKeyResults function
-    // group for collectWithConfigs function
-    // group for collectWithLookupKeys function
+    // group for queryValueHostResults function
+    // group for queryLookupKeyResults function
     let factory = new ConfigAnalysisResultsExplorerFactory();
     let services = new MockValidationServices(false, false);
 
-    function createBasicConfigAnalysisResults(): IConfigAnalysisResults {
-        return {
-            cultureIds: ['en'],
-            valueHostNames: [],
-            valueHostResults: [],
-            lookupKeyResults: []
-        };
-    }
-
-    // Need helper functions to create the objects
-    // I want 4 extensive objects with two of every type of result somewhere.
-
-    // Create a ConfigAnalysisResults object with 2 of every type of result.
-    function createConfigAnalysisResults(): IConfigAnalysisResults {
-        let results: IConfigAnalysisResults = createBasicConfigAnalysisResults();
-        results.valueHostNames = ['ValueHost1', 'ValueHost2'];
-        results.cultureIds = ['en', 'fr'];
-
-        // 'ValueHost1' is a static value host with a datetime lookup key
-        // it has an info message
-        let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.DateTime);
-        attachSeverity(vh1Result, CAIssueSeverity.info);
-
-        let dataTypeVH1Result = createPropertyCAResult('dataType'); 
-        attachSeverity(dataTypeVH1Result, CAIssueSeverity.warning);
-        vh1Result.properties = [dataTypeVH1Result];
-
-        // 'ValueHost2' is an input value host with an integer lookup key
-        // It has 3 validators. One has an error message.
-        // It has a warning message for l10nProperty.
-        let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Input, LookupKey.Integer,
-            ['dataType', 'labell10n']);
-        let ivhc = vh2Result.config as InputValueHostConfig;
-        ivhc.parserLookupKey = LookupKey.Minutes;
-        ivhc.label = 'ValueHost2Label';
-        ivhc.labell10n = 'ValueHost2LabelL10n';
-
-        results.valueHostResults = [vh1Result, vh2Result];
-
-        // 4 validators for ValueHost2.
-        // Start with their 3 conditionResults, where the 3rd has a property with an error
-        // Then the 4th validator has an error at the validator level and does not have a conditionResult
-        let requiredTextCondResult = createConditionConfigResult('RequireText');
-        let dataTypeCheckCondResult = createConditionConfigResult('DataTypeCheck');
-        let regExpCondResult = createConditionConfigResult('RegExp', ['expression']);// pretend expression is missing
-
-        let requiredTextValResult = createValidatorConfigResult('Error1', [], requiredTextCondResult);
-        let dataTypeCheckValResult = createValidatorConfigResult(undefined, [], dataTypeCheckCondResult);
-        let regExpValResult = createValidatorConfigResult(undefined, ['l10nErrorMessage'], regExpCondResult);
-        // this one is an error at the validatorconfig level emulating an invalid conditionType
-        let invalidValResult = createValidatorConfigResult('[Missing]', [], 'INVALID');
-        attachSeverity(invalidValResult, CAIssueSeverity.error);
-        vh2Result.validatorResults = [requiredTextValResult, dataTypeCheckValResult, regExpValResult, invalidValResult];
-        
-        // LookupKey results: LookupKey.DateTime, LookupKey.Integer, LookupKey.Minutes, LookupKey.Number
-        let dateTimeLKResult = createLookupKeyCAResult(LookupKey.DateTime);
-        let integerLKResult = createLookupKeyCAResult(LookupKey.Integer);
-        let minutesLKResult = createLookupKeyCAResult(LookupKey.Minutes);
-        let numberLKResult = createLookupKeyCAResult(LookupKey.Number);
-
-        // We'll add a custom lookup key that should have an Identifier, but does not.
-        let customLKResult = createLookupKeyCAResult('CustomLookupKey');
-        let customLKIdentifier = createIdentifierServiceCAResult(CAIssueSeverity.error);
-        customLKResult.serviceResults = [customLKIdentifier];
-
-        results.lookupKeyResults = [dateTimeLKResult, integerLKResult, minutesLKResult, numberLKResult, customLKResult];
-
-        // For LookupKey.DateTime, there are 2 parsers (DateParser and DateTimeParser), 
-        // 1 formatter(DateTimeFormatter)
-        // identifier (DateIdentifier), 1 converter (DateTimeToMinutesConverter)
-        // No errors to report
-
-        let parserDateTimeLK = createParserServiceCAResult();
-        let enCultureParserDateTimeLK = createParsersByCultureCAResult('en');
-        let frCultureParserDateTimeLK = createParsersByCultureCAResult('fr');
-        parserDateTimeLK.results = [enCultureParserDateTimeLK, frCultureParserDateTimeLK];
-        let found_en_ParserDateTimeLK = createParserFoundCAResult('DateParser');
-        let found2_en_ParserDateTimeLK = createParserFoundCAResult('DateTimeParser');
-        enCultureParserDateTimeLK.parserResults = [found_en_ParserDateTimeLK, found2_en_ParserDateTimeLK];
-        let found_fr_ParserDateTimeLK = createParserFoundCAResult('DateParser');
-        let found2_fr_ParserDateTimeLK = createParserFoundCAResult('DateTimeParser');
-        frCultureParserDateTimeLK.parserResults = [found_fr_ParserDateTimeLK, found2_fr_ParserDateTimeLK];
-
-        let formatterDateTimeLK = createFormatterServiceCAResult();
-        let enCultureFormatterDateTimeLK = createFormattersByCultureCAResult('en', 'DateTimeFormatter');
-        let frCultureFormatterDateTimeLK = createFormattersByCultureCAResult('fr', 'DateTimeFormatter');
-        formatterDateTimeLK.results = [enCultureFormatterDateTimeLK, frCultureFormatterDateTimeLK];
-
-        let converterDateTimeLK = createConverterServiceCAResult('DateTimeToMinutesConverter');
-        let identifierDateTimeLK = createIdentifierServiceCAResult('DateIdentifier');
-        dateTimeLKResult.serviceResults = [parserDateTimeLK, formatterDateTimeLK, converterDateTimeLK, identifierDateTimeLK];
-
-        // For LookupKey.Integer, there will be a formatter result with an error
-        // It has a NumberIdentifier and a NumberConverter
-        let formatterIntegerLK = createFormatterServiceCAResult();
-        let enCultureFormatterIntegerLK = createFormattersByCultureCAResult('en', 'IntegerFormatter');
-        let frCultureFormatterIntegerLK = createFormattersByCultureCAResult('fr', CAIssueSeverity.error);
-        formatterIntegerLK.results = [enCultureFormatterIntegerLK, frCultureFormatterIntegerLK];
-        let identifierIntegerLK = createIdentifierServiceCAResult('NumberIdentifier');
-        let converterIntegerLK = createConverterServiceCAResult('NumberConverter');
-        integerLKResult.serviceResults = [formatterIntegerLK, identifierIntegerLK, converterIntegerLK];
-
-        // For LookupKey.Minutes, no issues. Just a NumberIdentifier and a NumberConverter
-        let identifierMinutesLK = createIdentifierServiceCAResult('NumberIdentifier');
-        let converterMinutesLK = createConverterServiceCAResult('NumberConverter');
-        minutesLKResult.serviceResults = [identifierMinutesLK, converterMinutesLK];
-
-        // For LookupKey.Number, no issues. Just a NumberIdentifier
-        let numLKNumberIdentifier = createIdentifierServiceCAResult('NumberIdentifier');
-        numberLKResult.serviceResults = [numLKNumberIdentifier];
-
-        return results;
-    }
-    // these are the CAResultPaths for each case supplied above.
+    // these are the CAResultPaths for each case supplied in
+    // createExtensiveConfigAnalysisResults().
     const vh1ResultPath: CAResultPath = {
         [CAFeature.valueHost]: 'ValueHost1'
     };
@@ -3236,7 +2901,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         }
 
         test('empty path always returns null', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1'})]; 
@@ -3245,7 +2910,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBeNull();
         });
         test('empty foundResults always returns null', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults: Array<CAPathedResult<any>> = [];
@@ -3254,7 +2919,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBeNull();
         });
         test('path contains one entry. foundResults contains the same key and value. Match', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1'})];
@@ -3263,7 +2928,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBe(foundResults[0].result);
         });
         test('path contains one entry. foundResults contains 1 entry with a different key but the same value. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'key2': 'ValueHost1'})];
@@ -3272,7 +2937,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBeNull();
         });
         test('path contains one entry. foundResults contains 1 entry with the same key but a different value. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost2'})];
@@ -3281,7 +2946,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBeNull();
         });
         test('path contains 3 entries. foundResults contains 1 entry with the same keys and values. Match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'})];
@@ -3292,7 +2957,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
         // similar but foundResults contains 2 of the same keys. No match.
         test('path contains 3 entries. foundResults contains 1 entry with 2 of same keys and values. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1', 'key2': 'ValueHost2'})];
@@ -3302,7 +2967,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // similar but different keys in foundResults. No match.
         test('path contains 3 entries. foundResults contains 1 entry with 2 of same keys and values. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1', 'key3': 'ValueHost3'})];
@@ -3312,7 +2977,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // similar but 4 keys in foundResults, with 2 an exact match to path. No match.
         test('path contains 3 entries. foundResults contains 1 entry with 2 of same keys and values. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [createCAResultPath({'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3', 'key4': 'ValueHost4'})];
@@ -3322,7 +2987,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // case insensitive match cases
         test('path contains 1 entry. foundResults contains 1 entry with the case insensitive matchihng key and case sensitive matching value. Match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'KEY1': 'ValueHost1'})];
@@ -3331,7 +2996,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(found).toBe(foundResults[0].result);
         });
         test('path contains 1 entry. foundResults contains 1 entry with the case sensitive matching key and case insensitive matching value. Match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'key1': 'VALUEHOST1'})];
@@ -3341,7 +3006,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // same but no match on values
         test('path contains 1 entry. foundResults contains 1 entry with the case insensitive matching key and case insensitive non-matching value. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'KEY1': 'ValueHost2'})];
@@ -3351,7 +3016,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // same but identicle values except for whitespace. no match
         test('path contains 1 entry. foundResults contains 1 entry with the matching key and case insensitive non-matching value. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1'};
             let foundResults = [createCAResultPath({'key1': ' ValueHost1 '})];
@@ -3361,7 +3026,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // case insensitive with 3 keys and 3 foundResults. Several tests, for matches and non-matches
         test('path contains 3 entries. foundResults contains 3 entries with the case insensitive matching keys and case sensitive matching values. Match to 2nd result.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [
@@ -3374,7 +3039,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect((found as any).message).toBe('unique2');
         });
         test('path contains 3 entries. foundResults contains 3 entries with the case insensitive matching keys and case sensitive non-matching values. No match.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [
@@ -3388,7 +3053,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // similar except there are two matches. Ensure the first one is returned.
         test('path contains 3 entries. foundResults contains 3 entries with the case insensitive matching keys and case sensitive matching values. Match to 1st result.', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let path: CAResultPath = {'key1': 'ValueHost1', 'key2': 'ValueHost2', 'key3': 'ValueHost3'};
             let foundResults = [
@@ -3403,7 +3068,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
     });
     describe('countConfigResults', () => {
-        let results = createConfigAnalysisResults();
+        let results = createExtensiveConfigAnalysisResults();
         let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
         test('returns count of all results', () => {
             const expectedCount = totalConfigResultCount;   // this is the CURRENT count of all results. Expect changes to results to require changes here
@@ -3423,7 +3088,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
     });
     describe('countLookupKeyResults', () => {
-        let results = createConfigAnalysisResults();
+        let results = createExtensiveConfigAnalysisResults();
         let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
         test('returns count of all results', () => {
             const expectedCount = totalLookupKeyResultCount;   // this is the CURRENT count of all results. Expect changes to results to require changes here
@@ -3443,7 +3108,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
     });
     describe('hasMatchInConfigResults', () => {
-        let results = createConfigAnalysisResults();
+        let results = createExtensiveConfigAnalysisResults();
         let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
         test('returns true when there is a match', () => {
             let hasMatch = explorer.hasMatchInConfigResults({ features: [CAFeature.valueHost] });
@@ -3455,7 +3120,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
     });
     describe('hasMatchInLookupKeyResults', () => {
-        let results = createConfigAnalysisResults();
+        let results = createExtensiveConfigAnalysisResults();
         let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
         test('returns true when there is a match', () => {
             let hasMatch = explorer.hasMatchInLookupKeyResults({ severities: [CAIssueSeverity.error] });
@@ -3466,7 +3131,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(hasMatch).toBe(false);
         });
     });
-    describe('collectWithConfigs', () => {
+    describe('queryValueHostResults', () => {
 
         // DO NOT MODIFY THIS ARRAY WITHIN A TEST.
         // Clone it and use it as starting point for a test.
@@ -3488,66 +3153,66 @@ describe('ConfigAnalysisResultExplorer class', () => {
         ];
 
         test('returns all results when no criteria is provided', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs(null);
+            let collected = explorer.queryValueHostResults(null);
             // match all paths for configs. We don't care about the order
             let expectedPaths: Array<CAResultPath> = allConfigResultPaths.slice();
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
 
         });
         test('returns all results when criteria is empty', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({});
+            let collected = explorer.queryValueHostResults({});
             // match all paths for configs. We don't care about the order
             let expectedPaths: Array<CAResultPath> = allConfigResultPaths.slice();
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All feature=ValueHost, which should be 2 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ features: [CAFeature.valueHost] });
+            let collected = explorer.queryValueHostResults({ features: [CAFeature.valueHost] });
             let expectedPaths: Array<CAResultPath> = [vh1ResultPath, vh2ResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All feature=Validator, which should be 4 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ features: [CAFeature.validator] });
+            let collected = explorer.queryValueHostResults({ features: [CAFeature.validator] });
             let expectedPaths: Array<CAResultPath> = [requiredTextValResultPath, dataTypeCheckValResultPath, regExpValResultPath, invalidValResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // same but only those with an error. Should only return invalidValResultPath
         test('All feature=Validator with severity=error, which should be 1 item', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ features: [CAFeature.validator], severities: [CAIssueSeverity.error] });
+            let collected = explorer.queryValueHostResults({ features: [CAFeature.validator], severities: [CAIssueSeverity.error] });
             let expectedPaths: Array<CAResultPath> = [invalidValResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // now all with severity=info. Should return vh1ResultPath
         test('All with severity=info, which should be 1 item', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ severities: [CAIssueSeverity.info] });
+            let collected = explorer.queryValueHostResults({ severities: [CAIssueSeverity.info] });
             let expectedPaths: Array<CAResultPath> = [vh1ResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // all with severity=error, warning. Should return invalidValResultPath, dataTypeVH1ResultPath, dataTypeVH2ResultPath
         test('All with severity=error, warning, which should be 6 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ severities: [CAIssueSeverity.error, CAIssueSeverity.warning] });
+            let collected = explorer.queryValueHostResults({ severities: [CAIssueSeverity.error, CAIssueSeverity.warning] });
             let expectedPaths: Array<CAResultPath> = [invalidValResultPath, dataTypeVH1ResultPath, 
                 dataTypeVH2ResultPath, labell10nVH2ResultPath, l10nErrorMessageRegExpValResultPath, expressionRegexpCondResultPath];
             
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('All that have no severity (severities=[null]), which should be all - 6 (error, warning) - 1 (info) items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ severities: [null] });
+            let collected = explorer.queryValueHostResults({ severities: [null] });
             let expectedPaths: Array<CAResultPath> =  [
  //               vh1ResultPath, = info
                 vh2ResultPath,
@@ -3568,17 +3233,17 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // conditionType=RequiredText. Should return requiredTextCondResultPath
         test('All with conditionType=RequiredText, which should be 2 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ conditionTypes: ['RequireText'] });
+            let collected = explorer.queryValueHostResults({ conditionTypes: ['RequireText'] });
             let expectedPaths: Array<CAResultPath> = [requiredTextCondResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         // conditionType=RequireText, errorCode=RequireText. Should return requiredTextCondResultPath and requiredTextValResultPath
         test('All with conditionType=RequireText, errorCode=Error1, which should be 2 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithConfigs({ conditionTypes: ['RequireText'], errorCodes: ['Error1'] });
+            let collected = explorer.queryValueHostResults({ conditionTypes: ['RequireText'], errorCodes: ['Error1'] });
             let expectedPaths: Array<CAResultPath> = [requiredTextCondResultPath, requiredTextValResultPath];
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
@@ -3642,7 +3307,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
                 results.valueHostResults.push(vhConfigResult);
                 let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-                let collected = explorer.collectWithConfigs({ });   // all
+                let collected = explorer.queryValueHostResults({ });   // all
                 let expectedPaths: Array<CAResultPath> = [
                     vhcResultPath,
                     parentResultPath,
@@ -3656,7 +3321,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
                 results.valueHostResults.push(vhConfigResult);
                 let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-                let collected = explorer.collectWithConfigs({
+                let collected = explorer.queryValueHostResults({
                     features: [CAFeature.condition],
                     skipChildrenIfParentMismatch: false
                 });
@@ -3669,8 +3334,8 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
         });
     });
-    describe('collectWithLookupKeys()', () => {
-        // very similar to collectWithConfigs. We'll use similar test cases.
+    describe('queryLookupKeyResults()', () => {
+        // very similar to queryValueHostResults. We'll use similar test cases.
         // but based around LookupKeys and their services
         // DO NOT MODIFY THIS ARRAY WITHIN A TEST.
         // Clone it and use it as starting point for a test.
@@ -3705,16 +3370,16 @@ describe('ConfigAnalysisResultExplorer class', () => {
         ];
 
         test('returns all results when no criteria is provided', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithLookupKeys(null);
+            let collected = explorer.queryLookupKeyResults(null);
             let expectedPaths: Array<CAResultPath> = allLookupKeyResultPaths.slice();
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
         test('returns all results when criteria is empty', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithLookupKeys({});
+            let collected = explorer.queryLookupKeyResults({});
             let expectedPaths: Array<CAResultPath> = allLookupKeyResultPaths.slice();
             testHasCorrectCAPathResults(explorer, collected, expectedPaths);
         });
@@ -3724,9 +3389,9 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // frCultureParserDateTimeLKPath, dateParser_fr_ParserDateTimeLKResultPath, dateTimeParser_fr_ParserDateTimeLKResultPath
         // enCultureFormatterDateTimeLKPath, frCultureFormatterDateTimeLKPath
         test('All with LookupKey.DateTime, which should be 13 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithLookupKeys({
+            let collected = explorer.queryLookupKeyResults({
                 skipChildrenIfParentMismatch: true, // to omit services in other lookup keys
                 lookupKeys: [LookupKey.DateTime],   // dateTimeLKResultPath
                 serviceNames: [ServiceName.converter, ServiceName.formatter, ServiceName.identifier, ServiceName.parser], 
@@ -3751,9 +3416,9 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // enCultureFormatterDateTimeLKPath,
         // enCultureFormatterIntegerLKPath
         test('All with culture=en, which should be 3 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithLookupKeys({
+            let collected = explorer.queryLookupKeyResults({
                 cultureIds: ['en']
             });
             let expectedPaths: Array<CAResultPath> = [
@@ -3766,9 +3431,9 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // all with serviceName=identifier. Should return identifierDateTimeLKPath, identifierMinutesLKPath
         // numLKNumberIdentifierPath, customLKIdentifierPath, identifierIntegerLKPath
         test('All with serviceName=identifier, which should be 5 items', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let collected = explorer.collectWithLookupKeys({
+            let collected = explorer.queryLookupKeyResults({
                 serviceNames: [ServiceName.identifier]
             });
             let expectedPaths: Array<CAResultPath> = [
@@ -3784,7 +3449,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
     });
     describe('hasErrors()', () => {
         test('returns true when there are errors in a large results set', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             let hasErrors = explorer.hasErrors();
             expect(hasErrors).toBe(true);
@@ -3861,7 +3526,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(() => explorer.throwOnErrors()).not.toThrow();
         });
         test('throws when there is an error in a large results set', () => {
-            let results = createConfigAnalysisResults();
+            let results = createExtensiveConfigAnalysisResults();
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             expect(() => explorer.throwOnErrors()).toThrow(CodingError);
         });
@@ -3986,3 +3651,4 @@ describe('ConfigAnalysisResultsExplorerFactory class', () => {
     });
 
 });
+

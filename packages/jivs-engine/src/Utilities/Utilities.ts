@@ -113,6 +113,68 @@ export function deepClone(value: any, clones = new WeakMap()): any {
 
     return newObj;    
     
+}
+
+/**
+ * Designed to prepare the value for conversion to JSON.
+ * Handles deep nesting of objects and arrays.
+ * It makes changes to the value! So run it on a clone if you need the original.
+ * It will undefined properties.
+ * It will convert functions into a string of "[Function]" with the function name if available.
+ * It will convert Date objects to their ISO string.
+ * It will convert RegExp objects to a string that mimics its expression pattern.
+ * It will discard any circular references.
+ * It will discard most built-in objects like Map, Set, Error, etc.
+ * @param value 
+ * @param alreadyVisited 
+ * @returns When it returns undefined, it means the property containing the value can be removed.
+ */
+export function deepCleanForJson(value: any, alreadyVisited = new WeakMap()): any {
+    if (value === undefined) {
+        return undefined;   // to be discarded
+    }
+    if (typeof value === 'function') {
+        return '[Function' + (value.name ? ' ' + value.name : '') + ']';
+    }
+
+    if (typeof value !== 'object' || value == null) {   // null or undefined
+        return value;
+    }
+
+    // We should be left with only objects and arrays
+    // Handle circular references
+    if (alreadyVisited.has(value)) {
+        return undefined;   // to be discarded
+    }    
+    if (value instanceof Date)
+        return value.toISOString();
+    if (value instanceof RegExp)
+        return '/' + value.source + '/' + value.flags;
+    if (value instanceof Array) {
+        alreadyVisited.set(value, null);
+        return value.map((element) => deepCleanForJson(element, alreadyVisited));
+    }
+
+    if (!isSupportedAsValue(value)) // this is after RegExp because it declares a RegExp as unsupported.
+        return undefined;   // discard unsupported objects
+
+    alreadyVisited.set(value, null);
+
+    // cleans properties recursively
+    let propertiesToDelete = [];
+    for (let key in value) {
+        if (value.hasOwnProperty(key)) {
+            let result = deepCleanForJson(value[key], alreadyVisited);
+            if (result === undefined)
+                propertiesToDelete.push(key);
+            else
+                value[key] = result;
+        }
+    }
+    propertiesToDelete.forEach((key) => delete value[key]);
+
+    return value;
+   
   }
 
 export function objectKeysCount(value: object | null): number
