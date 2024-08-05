@@ -1696,23 +1696,51 @@ Add your own when you have a class representing some data. Check out an actual e
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
 <a name="datatypeconverter"></a>
 ### Converters
-Change the value supplied to Conditions with implementations of `IDataTypeConverter`.
+Change the value supplied to Conditions with implementations of `IDataTypeConverter` before comparing the value. The built-in <a href="#datatypecomparer">comparison objects</a> only work with numbers, strings, and booleans. Everything else either needs conversion to these types or a `IDataTypeComparer` object.
+
+In the case of Date objects, they are easy to convert to numbers. Jivs does that automatically prior to comparison. 
+
+You need to get involved in other cases. This is done by:
+1. Ensure that you have an appropriate DataTypeConverter object registered in the DataTypeConverterService.
+2. The ValueHost has its dataType property assigned to a value expected by your DataTypeConverter as the source Lookup Key.
+3. The validator's ConditionConfig needs a Lookup Key for the resulting data type in the appropriate property: conversionLookupKey or secondConversionLookupKey.
+
+Example: Numeric string to number
+The DataTypeConverter is predefined in your `createValidationServices()` function. It is NumericStringToNumberConverter.
+```ts
+dtcs.register(new NumericStringToNumberConverter());
+```
+```ts
+builder.input('Cycles', LookupKey.String) // dataType's Lookup Key
+   .lessThanValue(100, {
+        conversionLookupKey: LookupKey.Number // converts 'Cycles' from string to number  
+    });
+```
 
 Consider these *Use Cases*:
-- Provide case insensitive string matching by converting to lowercase. We've included a Converter for that, with "CaseInsensitive" as its Lookup Key. In this case, the Lookup Key should not be assigned to the ValueHost because its limited to the Condition. Many ConditionConfigs have conversionLookupKey and secondConversionLookupKey properties where you assign the Lookup Key. 
+- Change from one data type to another, which is the classic Use Case. We covered string-to-number above. Jivs also provides number-to-integer conversion with IntegerConverter, and several related to dates, described later.
+
+- Provide case insensitive string matching by converting to lowercase. Set the conversionLookupKey properties to "CaseInsensitive" (uses CaseInsensitiveStringConverter).
 
 	Here is the NotEqualToCondition configured with CaseInsensitive:
 	```ts
     builder.input('FirstName', LookupKey.String, { label: 'First name'})
        .notEqual('LastName', {
-            secondValueHostName: 'LastName',
-            conversionLookupKey: 'CaseInsensitive',
-            secondConversionLookupKey: 'CaseInsensitive'	   
+            conversionLookupKey: LookupKey.CaseInsensitive,
+            secondConversionLookupKey: LookupKey.CaseInsensitive	   
         });
 	```
-- Changing a Date object into something other than a Date+Time. You may be interested only in the date, the time, or even parts like Month or Hours. 
+- Using a Date object as something other than Date+Time. You may be interested only in the date, the time, or even parts like Month or Hours. 
 	
-	Jivs includes these converters: "Date" (UTC date only), "LocalDate" (local date only), "TimeOfDay" (omits seconds), "TimeOfDayHMS" (includes seconds). You can use their Lookup Key for the ValueHost data type instead of the Condition's conversionLookup Key to use all associated tooling.
+	Jivs includes these Lookup Keys built around date+time: 
+	* "Date" - UTC date only. UTCDateOnlyConverter
+	* "LocalDate" - local date only. LocalDateOnlyConverter
+	* "TimeOfDay" - time of day only, omitting seconds. TimeOfDayOnlyConverter
+	* "TimeOfDayHMS" - time of day including seconds. TimeOfDayHMSOnlyConverter
+	* "Minutes" - total minutes into the day
+	* "Seconds" - total seconds into the day
+	* "Milliseconds" - total milliseconds into the day
+	You can use their Lookup Key in the ValueHost dataType property instead of the Condition's conversionLookup Key to automatically get their converters.
 	```ts
     builder.input('MomentOfBirth', LookupKey.TimeOfDay, { label: 'Time of birth'});
 	```
@@ -1721,10 +1749,11 @@ Consider these *Use Cases*:
     builder.input('Expiry', 'MonthYear', { label: 'Expiration date'});
     builder.input('MarriageDate', 'Anniversary', { label: 'Marriage date'});
 	```
-
+  Jivs also includes the "Minutes" Lookup Key and its time-of-day to total minutes converter, TimeOfDayOnlyConverter. "Seconds" Lookup Key and its time-of-day to total seconds converter, TimeOfDayHMSOnlyConverter.
+  
 - Perhaps you want to compare the difference in days between two dates. For that you need to convert a Date object into a number – the number of days since some fixed point. 
 	
-  Jivs includes the "TotalDays" Lookup Key and converter.
+  Jivs includes the "TotalDays" Lookup Key and UTCDateOnlyConverter.
   
   See an example here: [jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts).
 	
