@@ -319,50 +319,8 @@ export interface IConfigAnalysisResultsExplorer {
     reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         space?: string | number | null): void;
 
-    /**
-     * Generates a JSON string from the query results built by applying the valueHostCriteria against valueHostResults and
-     * lookupKeyCriteria against lookupKeyResults arrays.
-     * Stores the JSON string in localStorage under the key provided.
-     * The key allows an optional # character at the end to be replaced by a timestamp string in yyyy-MM-dd HH:mm:ss format.
-     * Expected output in JSON has this overall shape:
-     * ```ts
-     * {
-     *    valueHostResults: [ ... ],
-     *    lookupKeyResults: [ ... ]
-     * }
-     * ```
-     * Each element in those arrays is a CAPathedResult object which has this overall shape:
-     * ```ts
-     * {
-     *    path: { [key: string]: value | null },
-     *    result: { ... } // the actual ConfigCAResult object, such as ValueHostConfigCAResult, LookupKeyCAResult, etc.
-     * }
-     * ```
-     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
-     * calling queryValueHostResults(valueHostCriteria).
-     * If you want to omit this, pass in false or null.
-     * If you want all results, pass in true or {}.
-     * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
-     * calling queryLookupKeyResults(lookupKeyCriteria).
-     * If you want to omit this, pass in false or null.
-     * If you want all results, pass in true or {}.
-     * @param key - The key to store the JSON string in localStorage. It can have a # character at the end to be replaced by a timestamp
-     * in this format: yyyy-MM-dd HH:mm:ss
-     * @param space - The number of spaces to use for indentation in the JSON string or null to omit whitespace formatting.
-     * Used by JSON.stringify() as the third parameter.
-     * @example
-     * ```ts
-     * explorer.reportToLocalStorage({ features: [CAFeatures.valueHost] }, { features: [CAFeatures.lookupKey], 'myKey#' });
-     * or
-     * explorer.reportToLocalStorage(true, true, 'myKey#');
-     * or
-     * explorer.reportToLocalStorage(false, { serviceNames: [CAFeatures.parser, CAFeatures.converter], 'myKey#' });
-     * ```
-     */
-    reportToLocalStorage(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-        lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-        key: string,
-        space?: string | number | null): void;
+    // NOTE: Wanted to include LocalStorage as a destination
+    // but it is not available in node.js environment, where tests generally run.
     
     /**
      * Generates a report from the analysis results, using the criteria to filter the results into
@@ -381,7 +339,6 @@ export interface IConfigAnalysisResultsExplorer {
      * @param outputter - The outputter to use to format and output the report. 
      * For JSON, use JsonConfigAnalysisOutputter or call reportIntoJson() instead.
      * For console output, use ConsoleConfigAnalysisOutputter or call reportToConsole() instead.
-     * For LocalStorage, use LocalStorageConfigAnalysisOutputter or call reportToLocalStorage() instead.
      * For ILoggerService, use LoggerServiceConfigAnalysisOutputter.
      * @returns The formatted results of the report.
      */
@@ -586,7 +543,6 @@ export type CAResultPath = {[feature: string]: string | null};
  * and output them. Suggested implementations:
  * - To console as the object itself
  * - To console as a JSON string
- * - To LocalStorage as a JSON string
  * - To the ILoggerService as a JSON string
  * These can build a well formatted string, such as a full HTML page to appear as a report.
  */

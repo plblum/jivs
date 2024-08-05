@@ -12,7 +12,6 @@ import { assertNotNull, CodingError } from "../../Utilities/ErrorHandling";
  * and output them. Suggested implementations:
  * - To console as the object itself
  * - To console as a JSON string
- * - To LocalStorage as a JSON string
  * - To the ILoggerService as a JSON string
  * These can build a well formatted string, such as a full HTML page to appear as a report.
  */
@@ -86,49 +85,6 @@ export class ConsoleConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
     protected output(content: any): void {
         console.log(content);
     }
-}
-
-/**
- * This class works with a string, delivering it to LocalStorage.
- * LocalStorage requires a key, which must be provided in the constructor.
- * The key may have a "#" at the end, intended to be replaced by a timestamp in this format: yyyy-MM-dd HH:mm:ss.
- * This class expects the formatting to come through the IConfigAnalysisOutputFormatter object.
- */
-export class LocalStorageConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
-{
-    constructor(formatter: IConfigAnalysisOutputFormatter, key: string) {
-        super(formatter);
-        assertNotNull(key, 'key');
-        if (globalThis.localStorage === undefined)
-            throw new CodingError('LocalStorageConfigAnalysisOutputter requires the globalThis.localStorage object to be defined.');
-        this._key = key;
-    }
-    /**
-     * The key used to store the content in LocalStorage.
-     * It may have a "#" at the end, intended to be replaced by a timestamp in this format: yyyy-MM-dd HH:mm:ss.
-     */
-    public get key(): string {
-        return this._key;
-    }
-    private _key: string;
-    /**
-     * Uses localStorage.setItem() to store the content.
-     * The key was provided in the constructor.
-     * If it has a "#" at the end, it is replaced by a timestamp in this format: yyyy-MM-dd HH:mm:ss.
-     * @param content 
-     */
-    protected output(content: any): void {
-        if (typeof content !== 'string')
-            throw new CodingError('LocalStorageConfigAnalysisOutputter requires content to be a string.');
-        let key = this.key;
-        if (key.endsWith('#'))
-        {
-            let now = new Date();
-            key = key.replace('#', now.toISOString());
-        }
-        localStorage.setItem(key, content);
-    }
-
 }
 
 /**

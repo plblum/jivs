@@ -37,7 +37,7 @@ import { ServiceName } from "../../Interfaces/ValidationServices";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { CodingError, assertNotNull } from "../../Utilities/ErrorHandling";
 import { deepCleanForJson, deepClone } from "../../Utilities/Utilities";
-import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter, LocalStorageConfigAnalysisOutputter } from "./ConfigAnalysisOutputterClasses";
+import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from "./ConfigAnalysisOutputterClasses";
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from "./ConfigAnalysisOutputFormatterClasses";
 
 /**
@@ -293,17 +293,6 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         else
             formatter = new JsonConfigAnalysisOutputFormatter(false, space);
         let outputter = new ConsoleConfigAnalysisOutputter(formatter);
-        this.report(valueHostCriteria, lookupKeyCriteria, outputter);
-    }
-
-    /**
-     * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisResultsExplorer.reportToLocalStorage
-     */
-    public reportToLocalStorage(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-        lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null, key: string, space?: string | number | null): void
-    {
-        let formatter = new JsonConfigAnalysisOutputFormatter(false, space ?? undefined);
-        let outputter = new LocalStorageConfigAnalysisOutputter(formatter, key);
         this.report(valueHostCriteria, lookupKeyCriteria, outputter);
     }
 

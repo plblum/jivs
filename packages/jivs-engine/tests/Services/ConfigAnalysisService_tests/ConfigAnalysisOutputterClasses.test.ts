@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { IConfigAnalysisResultsExplorer, CAPathedResult, IConfigAnalysisOutputFormatter } from "../../../src/Interfaces/ConfigAnalysisService";
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputFormatterClasses";
-import { ConfigAnalysisOutputterBase, ConsoleConfigAnalysisOutputter, LocalStorageConfigAnalysisOutputter, LoggerConfigAnalysisOutputter, NullConfigAnalysisOutputter } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputterClasses";
+import { ConfigAnalysisOutputterBase, ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter, NullConfigAnalysisOutputter } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputterClasses";
 import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisResultsExplorer";
 import { MockValidationServices } from "../../TestSupport/mocks";
 import { createBasicConfigAnalysisResults } from "./support";
@@ -102,94 +102,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
             logSpy.mockReset();
         });
     });
-    describe('LocalStorageConfigAnalysisOutputter', () => {
-        // Use real data and spy on localStorage.setItem
-        // NOTE: Node.js does not have localStorage, so we have to mock it
-        let realLocalStorage = globalThis.localStorage;
 
-        afterEach(() => {
-            globalThis.localStorage = realLocalStorage;
-        });
-        beforeEach(() => {
-            globalThis.localStorage = {
-                setItem: jest.fn()
-            } as any;
-        });
-
-        function executeSend(valueHostQueryResults: CAPathedResult<any>[] | null,
-            lookupKeyQueryResults: CAPathedResult<any>[] | null,
-            formatter: IConfigAnalysisOutputFormatter,
-            key: string) {
-
-            let analysisResults = createBasicConfigAnalysisResults();
-            let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
-
-            let outputter = new LocalStorageConfigAnalysisOutputter(formatter, key);
-            outputter.send(valueHostQueryResults, lookupKeyQueryResults, explorer);
-            expect(outputter.formatter).toBe(formatter);
-        }
-        test('constructor throws with null key', () => {
-            expect(() => new LocalStorageConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false), null!)).toThrow();
-        });
-        // constructor when globalThis.localStorage is not available
-        test('constructor throws when globalThis.localStorage is not available', () => {
-            // this is the case in Node.js, and should actually always be the
-            // case in this test, which runs in Node.js
-            let realLocalStorage = globalThis.localStorage;
-            globalThis.localStorage = undefined!;
-            try
-            {
-                expect(() => new LocalStorageConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false), 'test')).toThrow(/requires the globalThis.localStorage object/);
-            }
-            finally
-            {
-                globalThis.localStorage = realLocalStorage;
-            }   
-        });
-    
-        test('With key = "test", data supplied sent to localStorage.setItem with the correct key', () => {
-            let setItemSpy = jest.spyOn(globalThis.localStorage, 'setItem');
-            let formatter = new JsonConfigAnalysisOutputFormatter(false);
-            let valueHostQueryResults: Array<CAPathedResult<any>> = [];
-            let lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-            executeSend(valueHostQueryResults, lookupKeyQueryResults, formatter, 'test');
-            expect(setItemSpy).toHaveBeenCalledTimes(1);
-            expect(setItemSpy).toHaveBeenCalledWith('test', expect.any(String));
-            setItemSpy.mockReset();
-        });
-        // tests around having # in the name. If it is at the very end, it is replaced by current timestamp in ISO format
-        // otherwise, it is retained
-        test('With key = "test#", data supplied sent to localStorage.setItem with the key "test" followed by a timestamp', () => {
-            let setItemSpy = jest.spyOn(globalThis.localStorage, 'setItem');
-            let formatter = new JsonConfigAnalysisOutputFormatter(false);
-            let valueHostQueryResults: Array<CAPathedResult<any>> = [];
-            let lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-            executeSend(valueHostQueryResults, lookupKeyQueryResults, formatter, 'test#');
-            expect(setItemSpy).toHaveBeenCalledTimes(1);
-            expect(setItemSpy).toHaveBeenCalledWith(expect.stringMatching(/^test\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/), expect.any(String));
-            setItemSpy.mockReset();
-        });
-        test('With key = "test#suffix", data supplied sent to localStorage but the # is not replaced', () => {
-            let setItemSpy = jest.spyOn(globalThis.localStorage, 'setItem');
-            let formatter = new JsonConfigAnalysisOutputFormatter(false);
-            let valueHostQueryResults: Array<CAPathedResult<any>> = [];
-            let lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-            executeSend(valueHostQueryResults, lookupKeyQueryResults, formatter, 'test#suffix');
-            expect(setItemSpy).toHaveBeenCalledTimes(1);
-            expect(setItemSpy).toHaveBeenCalledWith('test#suffix', expect.any(String));
-            setItemSpy.mockReset();
-        });
-
-
-        // test with CleanedObjectConfigAnalysisOutputFormatter expect send to throw because not supported
-        test('With CleanedObjectConfigAnalysisOutputFormatter, send throws because not supported', () => {
-            let formatter = new CleanedObjectConfigAnalysisOutputFormatter(false);
-            let valueHostQueryResults: Array<CAPathedResult<any>> = [];
-            let lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-            expect(() => executeSend(valueHostQueryResults, lookupKeyQueryResults, formatter, 'test')).toThrow(/requires content to be a string/);
-        });
-
-    });
     describe('LoggerConfigAnalysisOutputter', () => {
         // We'll use the ConsoleLoggerService for this test
         // It internally directs to console.log with the LogDetails object (not a string)
