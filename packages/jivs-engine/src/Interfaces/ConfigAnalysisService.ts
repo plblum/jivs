@@ -765,24 +765,14 @@ export interface ConfigAnalysisServiceOptions {
      * not check its parser for errors.
      */
     inputValueHostSampleValues?: { [valueHostName: string]: unknown };
-
-    
-// options for Output    
-    /**
-     * When true or undefined, output each object registered in these services
-     * that was used in the configuration. Default is true.
-     */
-    registeredServicesUsed?: boolean;
-
-    // warning vs error
-
-    // how to report TextLocalizerService issues: only when missing any support, when wrong language is selected, when supported but falls back to "default text" passed in.
 }
 
 /**
  * Supplies a sample value for any lookup key supplied,
  * so long as it can be identified as a DataType with a value.
  * For example, make the "Integer" lookup key return "100" as a sample value.
+ * This class works together with properties found in ConfigAnalysisServiceOptions.
+ * The user sets the sample values in the options, and SampleValues implementation consumes them.
  */
 export interface ISampleValues {
     /**
@@ -1509,22 +1499,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      */
     checkNeedsTrimming(value: string, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
-    
-
 }
-
-// /**
-//  * Supports functions on AnalysisResultsHelper that take a single property value
-//  * and must determine if the value is valid or not. These rules
-//  * involve whether the property can be null or undefined, or if it is required.
-//  * The available rules are:
-//  * 'required' - value must be assigned, not null or undefined
-//  * 'notnullable' - value can be anything except null
-//  * 'nullable' - value can be anything except undefined
-//  * 'anything' - value can be anything including null and undefined
-//  */
-// export type BasicValueContentRules = 'required' | 'notnullable' | 'nullable' | 'anything';
-
 
 /**
  * Represents the base interface for a configuration analyzer.

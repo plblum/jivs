@@ -3515,73 +3515,101 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
     });
     describe('throwOnErrors()', () => {
-        test('does not throw when there are no errors', () => {
-            let results = createBasicConfigAnalysisResults();
+        function executeTestWithErrorsFound(results: IConfigAnalysisResults,
+            includeAnalysisResults: boolean, outputter?: IConfigAnalysisOutputter) {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).not.toThrow();
+            try {
+                explorer.throwOnErrors(includeAnalysisResults, outputter);
+            } catch (e) {
+                expect(e).toBeInstanceOf(CodingError);
+                let error = e as CodingError;
+                expect(error.message).toContain('Errors found in configuration analysis');
+                expect(error.message).toContain('"valueHostQueryResults":');
+                expect(error.message).toContain('"lookupKeyQueryResults":');
+                if (includeAnalysisResults)
+                    expect(error.message).toContain('"results":');
+                else
+                    expect(error.message).not.toContain('"results":');
+            }
+        }
+
+        describe('large results set with errors in both valueHostConfig and lookupKeyConfig', () => {
+            // also tests includeAnalysisResults=true/false and outputter
+            test('throws when there is an error in a large results set', () => {
+                let results = createExtensiveConfigAnalysisResults();
+                executeTestWithErrorsFound(results, false);
+            });
+            // with includeAnalysisResults=true, expect the results to be included in the error message
+            test('includeAnalysisResults=true, expect', () => {
+                let results = createExtensiveConfigAnalysisResults();
+                executeTestWithErrorsFound(results, true);
+            });
+            // with outputter, expect the outputter to be called with the results
+            test('outputter is called with results', () => {
+                let results = createExtensiveConfigAnalysisResults();
+                let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false));
+                let sendSpy = jest.spyOn(outputter, 'send');
+                executeTestWithErrorsFound(results, false, outputter);
+                expect(sendSpy).toHaveBeenCalledTimes(1);
+                sendSpy.mockRestore();
+            });
         });
-        test('throws when there is an error in a large results set', () => {
-            let results = createExtensiveConfigAnalysisResults();
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
-        });
-        test('using no results, does not throw', () => {
-            let results = createBasicConfigAnalysisResults();
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).not.toThrow();
-        });
-        test('with one valueHost that has an error, throws', () => {
-            let results = createBasicConfigAnalysisResults();
-            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
-                LookupKey.Date);
-            attachSeverity(result1, CAIssueSeverity.error);
-            results.valueHostResults = [result1];
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
-        });
-        // same as above but with severity of warning. Should not throw
-        test('with one valueHost that has a warning, does not throw', () => {
-            let results = createBasicConfigAnalysisResults();
-            let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
-                LookupKey.Date);
-            attachSeverity(result1, CAIssueSeverity.warning);
-            results.valueHostResults = [result1];
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).not.toThrow();
-        });
-        // error in lookupKey, no data in ValueHostResults
-        test('with one lookupKey that has an error, throws', () => {
-            let results = createBasicConfigAnalysisResults();
-            let result1 = createLookupKeyCAResult(LookupKey.Date);
-            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
-            result1.serviceResults = [identifier1];
-            results.lookupKeyResults = [result1];
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
-        });
-        // warning in lookupKey, no data in ValueHostResults
-        test('with one lookupKey that has a warning, does not throw', () => {
-            let results = createBasicConfigAnalysisResults();
-            let result1 = createLookupKeyCAResult(LookupKey.Date);
-            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.warning);
-            result1.serviceResults = [identifier1];
-            results.lookupKeyResults = [result1];
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).not.toThrow();
-        });
-        // warning in ValueHostResults, error in LookupKeyResults
-        test('with one lookupKey that has an error and one valueHost that has a warning, throws', () => {
-            let results = createBasicConfigAnalysisResults();
-            let result1 = createLookupKeyCAResult(LookupKey.Date);
-            let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
-            result1.serviceResults = [identifier1];
-            let result2 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
-                LookupKey.Date);
-            attachSeverity(result2, CAIssueSeverity.warning);
-            results.lookupKeyResults = [result1];
-            results.valueHostResults = [result2];
-            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            expect(() => explorer.throwOnErrors()).toThrow(CodingError);
+        describe('Minimum or no entries in results', () => {
+            test('using no results, does not throw', () => {
+                let results = createBasicConfigAnalysisResults();
+                let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+                expect(() => explorer.throwOnErrors()).not.toThrow();
+            });
+            test('with one valueHost that has an error, throws', () => {
+                let results = createBasicConfigAnalysisResults();
+                let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                    LookupKey.Date);
+                attachSeverity(result1, CAIssueSeverity.error);
+                results.valueHostResults = [result1];
+                executeTestWithErrorsFound(results, false);
+            });
+            // same as above but with severity of warning. Should not throw
+            test('with one valueHost that has a warning, does not throw', () => {
+                let results = createBasicConfigAnalysisResults();
+                let result1 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                    LookupKey.Date);
+                attachSeverity(result1, CAIssueSeverity.warning);
+                results.valueHostResults = [result1];
+                let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+                expect(() => explorer.throwOnErrors()).not.toThrow();
+            });
+            // error in lookupKey, no data in ValueHostResults
+            test('with one lookupKey that has an error, throws', () => {
+                let results = createBasicConfigAnalysisResults();
+                let result1 = createLookupKeyCAResult(LookupKey.Date);
+                let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+                result1.serviceResults = [identifier1];
+                results.lookupKeyResults = [result1];
+                executeTestWithErrorsFound(results, false);
+            });
+            // warning in lookupKey, no data in ValueHostResults
+            test('with one lookupKey that has a warning, does not throw', () => {
+                let results = createBasicConfigAnalysisResults();
+                let result1 = createLookupKeyCAResult(LookupKey.Date);
+                let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.warning);
+                result1.serviceResults = [identifier1];
+                results.lookupKeyResults = [result1];
+                let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+                expect(() => explorer.throwOnErrors()).not.toThrow();
+            });
+            // warning in ValueHostResults, error in LookupKeyResults
+            test('with one lookupKey that has an error and one valueHost that has a warning, throws', () => {
+                let results = createBasicConfigAnalysisResults();
+                let result1 = createLookupKeyCAResult(LookupKey.Date);
+                let identifier1 = createIdentifierServiceCAResult(CAIssueSeverity.error);
+                result1.serviceResults = [identifier1];
+                let result2 = createValueHostCAResult('ValueHost1', ValueHostType.Static,
+                    LookupKey.Date);
+                attachSeverity(result2, CAIssueSeverity.warning);
+                results.lookupKeyResults = [result1];
+                results.valueHostResults = [result2];
+                executeTestWithErrorsFound(results, false);
+            });
         });
     });
     describe('report()', () => {
@@ -3718,14 +3746,15 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // Tests confirm that the Json string is returned with the correct top-level 
         // parameters in its content.
         function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null) 
-        {
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            space: string | number | null) {
+        
             let results = createBasicConfigAnalysisResults();
             results.valueHostResults.push(createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date));
             results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
 
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let result = explorer.reportIntoJson(valueHostCriteria, lookupKeyCriteria);
+            let result = explorer.reportIntoJson(valueHostCriteria, lookupKeyCriteria, space);
             if (valueHostCriteria)
                 expect(result).toContain('"valueHostQueryResults":');
             else
@@ -3739,27 +3768,35 @@ describe('ConfigAnalysisResultExplorer class', () => {
         
 
         test('If supplied null criteria for both parameters, returns JSON without any properties', () => {
-            executeTest(null, null);
+            executeTest(null, null, null);
         });
         test('If supplied true for both parameters, returns JSON with all results', () => {
-            executeTest(true, true);
+            executeTest(true, true, null);
         });
         test('If supplied criteria for valueHostResults and null for lookupKeyResults, returns JSON with only valueHostQueryResults', () => {
-            executeTest({ features: [CAFeature.valueHost] }, null);
+            executeTest({ features: [CAFeature.valueHost] }, null, null);
         });
         test('If supplied null for valueHostResults and criteria for lookupKeyResults, returns JSON with only lookupKeyQueryResults', () => {
-            executeTest(null, { lookupKeys: [LookupKey.Date] });
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, null);
         });
         test('If supplied criteria for valueHostResults and lookupKeyResults, returns JSON with both results', () => {
-            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] });
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] }, null);
         });
         // true/supply lookupKey criteria
         test('If supplied true for valueHostResults and criteria for lookupKeyResults, returns JSON with both results', () => {
-            executeTest(true, { lookupKeys: [LookupKey.Date] });
+            executeTest(true, { lookupKeys: [LookupKey.Date] }, null);
         });
         // supply valueHost criteria/true
         test('If supplied criteria for valueHostResults and true for lookupKeyResults, returns JSON with both results', () => {
-            executeTest({ features: [CAFeature.valueHost] }, true);
+            executeTest({ features: [CAFeature.valueHost] }, true, null);
+        });
+        // with space = 4
+        test('If supplied true for valueHostResults and lookupKeyResults and space = 4, returns JSON with both results', () => {
+            executeTest(true, true, 4);
+        });
+        // with space = " " (one space)
+        test('If supplied true for valueHostResults and lookupKeyResults and space = " ", returns JSON with both results', () => {
+            executeTest(true, true, " ");
         });
 
     });

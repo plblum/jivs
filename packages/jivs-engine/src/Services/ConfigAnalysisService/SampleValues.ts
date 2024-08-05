@@ -14,7 +14,9 @@ import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
  * so long as it can be identified as a DataType with a value.
  * For example, make the "Integer" lookup key return "100" as a sample value.
  * 
- * Also allows the user to supply valueHost specific values.
+ * Also allows the user to supply valueHost specific values through the options parameter
+ * of ConfigAnalysisService.analyze(). See {@link Services/Types/ConfigAnalysisService!ConfigAnalysisServiceOptions}.
+
  * For example, make the "Last Name" ValueHost return "Smith" as a sample value.
  * 
  * It uses the DataTypeIdentifier services to get a default sample value
