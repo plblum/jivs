@@ -74,6 +74,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
 
             let outputter = new ConsoleConfigAnalysisOutputter(formatter);
             outputter.send(valueHostQueryResults, lookupKeyQueryResults, explorer);
+            expect(outputter.formatter).toBe(formatter);
         }
     
         test('Using JsonConfigAnalysisOutputFormatter results in JSON of the data supplied sent to console.log', () => {
@@ -125,6 +126,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
 
             let outputter = new LocalStorageConfigAnalysisOutputter(formatter, key);
             outputter.send(valueHostQueryResults, lookupKeyQueryResults, explorer);
+            expect(outputter.formatter).toBe(formatter);
         }
         test('constructor throws with null key', () => {
             expect(() => new LocalStorageConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false), null!)).toThrow();
@@ -233,6 +235,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
             expect(result.message).toContain('lookupKeyQueryResults');
             expect(result.message).not.toContain('results');
             expect(loggerService.minLevel).toBe(LoggingLevel.Error);    // ensure that the minLevel was restored
+            expect(outputter.formatter).toBe(formatter);
             logSpy.mockReset();
         });
         // when using CleanedObjectConfigAnalysisOutputFormatter, expect send to throw because not supported
@@ -259,6 +262,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
             let outputSpy = jest.spyOn(outputter as any, 'output');
             outputter.send([], [], new ConfigAnalysisResultsExplorer(createBasicConfigAnalysisResults(), factory, services));
             expect(outputSpy).toHaveBeenCalledTimes(1);
+            expect(outputter.formatter).toBe(formatter);
             outputSpy.mockReset();
         });
 

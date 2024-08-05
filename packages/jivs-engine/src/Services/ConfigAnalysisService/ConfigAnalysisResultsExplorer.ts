@@ -334,23 +334,24 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
             lookupKeyResults: Array<CAPathedResult<any>> | null
         }
     {
-        let data: { valueHostResults: Array<CAPathedResult<any>> | null, lookupKeyResults: Array<CAPathedResult<any>> | null } = { valueHostResults: null, lookupKeyResults: null };
+        let valueHostResults: Array<CAPathedResult<any>> | null = null;
+        let lookupKeyResults: Array<CAPathedResult<any>> | null = null;
 
-        if (typeof valueHostCriteria === 'boolean')
-        {
-            if (valueHostCriteria)
-                data.valueHostResults = this.queryValueHostResults(null);
-        }
-        else
-            data.valueHostResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
-        if (typeof lookupKeyCriteria === 'boolean')
-        {
-            if (lookupKeyCriteria)
-                data.lookupKeyResults = this.queryLookupKeyResults(null);
-        }   
-        else
-            data.lookupKeyResults = this.queryLookupKeyResults(lookupKeyCriteria as IConfigAnalysisSearchCriteria);
-        return data;
+        if (valueHostCriteria !== false && valueHostCriteria !== null)
+            if (valueHostCriteria === true)
+            {
+                valueHostResults = this.queryValueHostResults(null);
+            }
+            else
+                valueHostResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
+        if (lookupKeyCriteria !== false && lookupKeyCriteria !== null)
+            if (lookupKeyCriteria === true)
+            {
+                lookupKeyResults = this.queryLookupKeyResults(null);
+            }
+            else
+                lookupKeyResults = this.queryLookupKeyResults(lookupKeyCriteria as IConfigAnalysisSearchCriteria);
+        return { valueHostResults, lookupKeyResults };
     }
 
     /**

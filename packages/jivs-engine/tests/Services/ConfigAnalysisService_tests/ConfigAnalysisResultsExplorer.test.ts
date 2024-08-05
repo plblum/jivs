@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { MockValidationServices } from './../../TestSupport/mocks';
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
@@ -12,7 +13,8 @@ import {
     IConfigAnalysisSearchCriteria,
     CAIssueSeverity, IssueForCAResultBase,
     ICASearcher,
-    IConfigAnalysisResultsExplorer
+    IConfigAnalysisResultsExplorer,
+    IConfigAnalysisOutputter
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import {
     CAExplorerBase, CASearcher, ComparerServiceCAResultExplorer,
@@ -31,6 +33,8 @@ import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices'
 import { ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { CodingError } from '../../../src/Utilities/ErrorHandling';
 import { createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult, createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults, attachSeverity, createIdentifierServiceCAResult } from './support';
+import { NullConfigAnalysisOutputter } from '../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputterClasses';
+import { JsonConfigAnalysisOutputFormatter } from '../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputFormatterClasses';
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -2607,16 +2611,7 @@ describe('ErrorCAResultExplorer class', () => {
     });
 });
 describe('ConfigAnalysisResultExplorer class', () => {
-    // Tests include:
-    // group for "Constructor and setup"
-        // constructor setup correctly checking properties that are inited
-        // constructor throws for each parameter that is null
-    // group for countConfigResults function
-    // group for countLookupKeyResults function
-    // group for hasMatchInConfigResults function
-    // group for hasMatchInLookupKeyResults function
-    // group for queryValueHostResults function
-    // group for queryLookupKeyResults function
+
     let factory = new ConfigAnalysisResultsExplorerFactory();
     let services = new MockValidationServices(false, false);
 
@@ -3588,6 +3583,323 @@ describe('ConfigAnalysisResultExplorer class', () => {
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
             expect(() => explorer.throwOnErrors()).toThrow(CodingError);
         });
+    });
+    describe('report()', () => {
+        // One should expect the report to be a object with the following properties:
+        // - valueHostResults: Array of CAResultBase, only present if parameters.valueHostResults is an object or true
+        // - lookupKeyResults: Array of CAResultBase, only present if parameters.lookupKeyResults is an object or true
+        // That object will be sent through the outputter supplied, which may change the content.
+        // The IConfigAnalysisOutputter and IConfigAnalysisFormatter interfaces are tested in their own test suites.
+        // So we will spy on the calls to outputter.send.
+        // Since this function is called by several others that supply the outputter,
+        // we will test the outputter results in those tests.
+        function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            expectedResults: IConfigAnalysisResults,
+            expectedValueHostPathedResults: Array<CAPathedResult<any>> | null | undefined,
+            expectedLookupKeyPathedResults: Array<CAPathedResult<any>> | null | undefined) 
+        {
+            let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false));
+            let sendSpy = jest.spyOn(outputter, 'send');
+
+            let explorer = new ConfigAnalysisResultsExplorer(expectedResults, factory, services);
+            let result = explorer.report(valueHostCriteria, lookupKeyCriteria, outputter);
+            expect(result).toBeDefined();
+
+            expect(sendSpy).toHaveBeenCalledTimes(1);
+            expect(sendSpy).toHaveBeenCalledWith(expectedValueHostPathedResults, expectedLookupKeyPathedResults,
+                expect.any(ConfigAnalysisResultsExplorer));
+            sendSpy.mockRestore();
+        }
+        test('If supplied null criteria for both parameters, calls outputter.send with null for both results parameters', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+            executeTest(null, null, expectedResults, null, null);
+        });
+        test('If supplied true for both parameters, calls outputter.send with all results for both results parameters', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+            
+            let expectedValueHostPathedResults = [{
+                path: vh1ResultPath,
+                result: vh1Result
+            }];
+            let expectedLookupKeyPathedResults = [
+                {
+                    path: {
+                        [CAFeature.lookupKey]: LookupKey.Date
+                    },
+                    result: lk1Result
+                }
+            ];
+
+            executeTest(true, true, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        test('If supplied criteria for valueHostResults and null for lookupKeyResults, calls outputter.send with only those results', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = null;
+            executeTest({ features: [CAFeature.valueHost] }, null, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        test('If supplied null for valueHostResults and criteria for lookupKeyResults, calls outputter.send with only those results', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = null;
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        test('If supplied criteria for valueHostResults and lookupKeyResults, calls outputter.send with both results', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] },
+                expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        // true/supply lookupKey criteria
+        test('If supplied true for valueHostResults and criteria for lookupKeyResults, calls outputter.send with both results', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest(true, { lookupKeys: [LookupKey.Date] },
+                expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        // supply valueHost criteria/true
+        test('If supplied criteria for valueHostResults and true for lookupKeyResults, calls outputter.send with both results', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+
+            // add one entry to both valueHostResults and lookupKeyResults
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest({ features: [CAFeature.valueHost] }, true,
+                expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+
+    });
+    describe('reportIntoJson()', () => {
+        // This function is a wrapper around report. It supplies a NullOutputter
+        // and JsonConfigAnalysisOutputFormatter to the report function.
+        // Its job is to return the string from the formatter.
+        // Tests confirm that the Json string is returned with the correct top-level 
+        // parameters in its content.
+        function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null) 
+        {
+            let results = createBasicConfigAnalysisResults();
+            results.valueHostResults.push(createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date));
+            results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
+
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let result = explorer.reportIntoJson(valueHostCriteria, lookupKeyCriteria);
+            if (valueHostCriteria)
+                expect(result).toContain('"valueHostQueryResults":');
+            else
+                expect(result).not.toContain('"valueHostQueryResults":');
+            if (lookupKeyCriteria)
+                expect(result).toContain('"lookupKeyQueryResults":');
+            else
+                expect(result).not.toContain('"lookupKeyQueryResults":');
+            expect(result).not.toContain('"results":');
+        }
+        
+
+        test('If supplied null criteria for both parameters, returns JSON without any properties', () => {
+            executeTest(null, null);
+        });
+        test('If supplied true for both parameters, returns JSON with all results', () => {
+            executeTest(true, true);
+        });
+        test('If supplied criteria for valueHostResults and null for lookupKeyResults, returns JSON with only valueHostQueryResults', () => {
+            executeTest({ features: [CAFeature.valueHost] }, null);
+        });
+        test('If supplied null for valueHostResults and criteria for lookupKeyResults, returns JSON with only lookupKeyQueryResults', () => {
+            executeTest(null, { lookupKeys: [LookupKey.Date] });
+        });
+        test('If supplied criteria for valueHostResults and lookupKeyResults, returns JSON with both results', () => {
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] });
+        });
+        // true/supply lookupKey criteria
+        test('If supplied true for valueHostResults and criteria for lookupKeyResults, returns JSON with both results', () => {
+            executeTest(true, { lookupKeys: [LookupKey.Date] });
+        });
+        // supply valueHost criteria/true
+        test('If supplied criteria for valueHostResults and true for lookupKeyResults, returns JSON with both results', () => {
+            executeTest({ features: [CAFeature.valueHost] }, true);
+        });
+
+    });
+    describe('reportToConsole()', () => {
+        // This function is a wrapper around report. It supplies a ConsoleOutputter.
+        // Its formatter depends on the space parameter. If it is null, the user wants
+        // an object sent to the console. If it is a number, the user wants JSON.
+        // Its job is to write the output to the console.
+        // Tests confirm that the output is written to the console using spy on console.log.
+        function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null, space: string | number | null) {
+            let logSpy = jest.spyOn(console, 'log');
+            let results = createBasicConfigAnalysisResults();
+            results.valueHostResults.push(createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date));
+            results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
+
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let result = explorer.reportToConsole(valueHostCriteria, lookupKeyCriteria, space);
+            if (space === null) {
+                expect(logSpy).toHaveBeenCalledTimes(1);
+                const loggedValue = logSpy.mock.calls[0][0]; // Get the first argument of the first call
+                expect(typeof loggedValue === 'object').toBe(true);
+                // we want to check that the object has the properties we expect
+                if (valueHostCriteria)
+                    expect(loggedValue).toHaveProperty('valueHostQueryResults');
+                else
+                    expect(loggedValue).not.toHaveProperty('valueHostQueryResults');
+                if (lookupKeyCriteria)
+                    expect(loggedValue).toHaveProperty('lookupKeyQueryResults');
+                else
+                    expect(loggedValue).not.toHaveProperty('lookupKeyQueryResults');
+                expect(loggedValue).not.toHaveProperty('results');
+            }
+            else {
+                expect(logSpy).toHaveBeenCalledTimes(1);
+                const loggedValue = logSpy.mock.calls[0][0]; // Get the first argument of the first call
+                expect(typeof loggedValue === 'string').toBe(true);
+                // we want to check that the string is JSON
+                expect(() => JSON.parse(loggedValue)).not.toThrow();
+                if (valueHostCriteria)
+                    expect(loggedValue).toContain('"valueHostQueryResults":');
+                else
+                    expect(loggedValue).not.toContain('"valueHostQueryResults":');
+                if (lookupKeyCriteria)
+                    expect(loggedValue).toContain('"lookupKeyQueryResults":');
+                else
+                    expect(loggedValue).not.toContain('"lookupKeyQueryResults":');
+            }
+            logSpy.mockRestore();
+        }
+        test('If supplied null criteria for both parameters and space = null, writes object to console', () => {
+            executeTest(null, null, null);
+        });
+        test('If supplied true for both parameters and space = null, writes object to console', () => {
+            executeTest(true, true, null);
+        });
+        // space = 2
+        test('If supplied true for valueHostResults and lookupKeyResults and space = 2, writes JSON to console with both', () => {
+            executeTest(true, true, 2);
+        });
+        // space = 2 and valueHostCriteria only
+        test('If supplied criteria for valueHostResults and space = 2, writes JSON to console with only valueHostQueryResults', () => {
+            executeTest({ features: [CAFeature.valueHost] }, null, 2);
+        });
+        // space = 2 and lookupKeyCriteria only
+        test('If supplied criteria for lookupKeyResults and space = 2, writes JSON to console with only lookupKeyQueryResults', () => {
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, 2);
+        });
+        // space = " " (one space)
+        test('If supplied true for valueHostResults and lookupKeyResults and space = " ", writes JSON to console with both', () => {
+            executeTest(true, true, " ");
+        });
+    });
+    describe('reportToLocalStorage()', () => {
+        // This function is a wrapper around report. It supplies a LocalStorageOutputter.
+        // Its formatter is JsonConfigAnalysisOutputFormatter.
+        // Its job is to write the output to localStorage. Note that node.js
+        // running these tests doesn't have localStorage, so we mock it.
+        // Tests confirm that the output is written to our mocked localStorage using spy on localStorage.setItem.
+        function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null, key: string,
+            space: string | number | null) {
+            // mock localStorage.setItem
+            let savedLocalStorage = globalThis.localStorage;
+            let mockLocalStorage = {
+                setItem: jest.fn()
+            };
+            globalThis.localStorage = mockLocalStorage as any;
+            let setItemSpy = jest.spyOn(mockLocalStorage, 'setItem');
+            
+            
+            let results = createBasicConfigAnalysisResults();
+            results.valueHostResults.push(createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date));
+            results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
+
+            let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
+            let result = explorer.reportToLocalStorage(valueHostCriteria, lookupKeyCriteria, key, space);
+
+            // NOTE: space === null is internally treated as space = default (2)
+            // so we always output Json, not an object.
+
+            // we want to check that the object has the properties we expect
+            // First get the value from our spy...
+            expect(setItemSpy).toHaveBeenCalledTimes(1);
+            const loggedKey = setItemSpy.mock.calls[0][0]; // Get the first argument of the first call
+            const loggedValue = setItemSpy.mock.calls[0][1]; // Get the second argument of the first call
+            if (key.endsWith('#')) // replaced with timestamp in ISO format using this pattern: /^KEY\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+            {
+                let keyPattern = new RegExp(`^${key.substring(0, key.length - 1)}\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$`);
+                expect(loggedKey).toMatch(keyPattern);
+            }
+            else
+                expect(loggedKey).toBe(key);
+            expect(typeof loggedValue === 'string').toBe(true);
+            // we want to check that the string is JSON
+            expect(() => JSON.parse(loggedValue as string)).not.toThrow();
+            if (valueHostCriteria)
+                expect(loggedValue).toContain('"valueHostQueryResults":');
+            else
+                expect(loggedValue).not.toContain('"valueHostQueryResults":');
+            if (lookupKeyCriteria)
+                expect(loggedValue).toContain('"lookupKeyQueryResults":');
+            else
+                expect(loggedValue).not.toContain('"lookupKeyQueryResults":');
+            expect(loggedValue).not.toContain('"results":');
+
+            setItemSpy.mockRestore();
+            
+        }
+        test('If supplied null criteria for both parameters and space = null, writes object to LocalStorage', () => {
+            executeTest(null, null, 'KEY', null);
+        });
+        test('If supplied true for both parameters and space = null, writes object to LocalStorage', () => {
+            executeTest(true, true, 'KEY', null);
+        });
+        // Key ends with '#'
+        test('If supplied true for both parameters and space = 2, writes JSON to LocalStorage with both', () => {
+            executeTest(true, true, 'KEY#', 2);
+        });
+        
     });
 
 });

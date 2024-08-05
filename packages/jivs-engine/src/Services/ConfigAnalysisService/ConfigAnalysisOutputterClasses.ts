@@ -22,7 +22,14 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
         assertNotNull(formatter, 'formatter');
         this._formatter = formatter;
     }
-    protected get formatter(): IConfigAnalysisOutputFormatter {
+    /**
+     * The formatter that will be used to format the results of the 
+     * configuration analysis. Set through the constructor.
+     * NOTE: This is not in the IConfigAnalysisOutputter interface
+     * because we don't want to require the use of a formatter
+     * in any custom implementations of IConfigAnalysisOutputter.
+     */
+    public get formatter(): IConfigAnalysisOutputFormatter {
         return this._formatter;
     }
     private _formatter: IConfigAnalysisOutputFormatter;
