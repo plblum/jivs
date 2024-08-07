@@ -51,6 +51,7 @@ import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerCon
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { CAIssueSeverity } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 
 /* General steps:
  1. UI layer creates the ValidationServices object and Builder object.
@@ -101,6 +102,19 @@ export function configExample(): ValidationManager
     // Step 5: Attach callbacks to the Builder object
     // NOTE: Functions are declared in Config_example_common_code.ts
     builder.onValueChanged = onValueChangedUsingModifierAPI;
+  
+  // TESTING OPPORTUNITY: You can test the configuration that you have built so far.
+  // by using the ConfigAnalysisService.
+  // See: packages/jivs-examples/src/ConfigAnalysisService_example.ts
+  // However, here you might just want to throw an error if the configuration contains errors
+  // but only do so in a development environment.
+  // For example:
+  // if (process.env.NODE_ENV === 'development') {
+  //     let analysisResults = builder.analyze();
+  //     analysisResults.throwOnErrors(true); // writes info into Error object
+  //     or
+  //     analysisResults.throwOnErrors(true, new ConsoleConfigAnalysisOutputter()); // also writes to console
+  // }
 
     // Step 6: Create the ValidationManager, passing in the builder object.
     // The builder object is now merged with the existing configuration.

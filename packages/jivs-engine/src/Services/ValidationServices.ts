@@ -19,7 +19,7 @@ import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolver
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
-import { ValidationManagerConfigAnalysisService } from './ConfigAnalysisService/ConfigAnalysisService';
+import { ValidationManagerConfigAnalysisService } from './ConfigAnalysisService';
 import { IConfigAnalysisService } from '../Interfaces/ConfigAnalysisService';
 import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
 import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';

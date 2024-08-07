@@ -30,7 +30,7 @@ import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifi
 import { ValueHostsManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 import { ValueHostsManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { IConfigAnalysisService } from '../Interfaces/ConfigAnalysisService';
-import { ValueHostsManagerConfigAnalysisService } from './ConfigAnalysisService/ConfigAnalysisService';
+import { ValueHostsManagerConfigAnalysisService } from './ConfigAnalysisService';
 import { ValueHostConfigMergeService } from './ConfigMergeService';
 
 /**

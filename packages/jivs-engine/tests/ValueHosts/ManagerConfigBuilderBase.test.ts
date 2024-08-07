@@ -18,8 +18,8 @@ import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
-import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
-import { DataTypePropertyAnalyzer } from "../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
+import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService";
+import { DataTypePropertyAnalyzer } from "../../src/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
     FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
@@ -28,7 +28,7 @@ import {
     FluentPropertyParameters
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
-import { checkLookupKeyResultsForService } from "../Services/ConfigAnalysisService_tests/support";
+import { checkLookupKeyResultsForService } from "../ConfigAnalysis/support";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 

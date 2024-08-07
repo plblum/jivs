@@ -7,7 +7,7 @@ import { DataTypeParserService } from "../../src/Services/DataTypeParserService"
 import { ValidatorConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
-import { ValidationManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
+import { ValidationManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {

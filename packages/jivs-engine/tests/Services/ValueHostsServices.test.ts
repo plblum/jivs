@@ -15,7 +15,7 @@ import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackSe
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValueHostsManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ValidationManagerConfigModifierFactory, ValueHostsManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
-import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
+import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService";
 import { MockValidationServices } from "../TestSupport/mocks";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
