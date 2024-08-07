@@ -30,7 +30,8 @@ import {
     CAIssueSeverity,
     CAResultPath,
     IConfigAnalysisOutputter,
-    IConfigAnalysisOutputFormatter
+    IConfigAnalysisOutputFormatter,
+    ConfigAnalysisOutputReportData as ConfigAnalysisOutputReportData
 } from "../../Interfaces/ConfigAnalysisService";
 import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from "../../Interfaces/LoggerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
@@ -99,22 +100,25 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * The error class is CodingError. Its message will be JSON from the results found.
      * If the ouputter is supplied, it will be used to send the results to the outputter
      * in addition to creating the Error.
-     * @param includeAnalysisResults - When true, include the complete Explorer.results in the error message.
+     * @param includeCompleteResults - When true, include the complete Explorer.results in the error message.
      * @param outputter - The outputter to send the results to.
      */
-    public throwOnErrors(includeAnalysisResults: boolean = false, outputter?: IConfigAnalysisOutputter): void
+    public throwOnErrors(includeCompleteResults: boolean = false, outputter?: IConfigAnalysisOutputter): void
     {
-        let valueHostResults = this.queryValueHostResults({ severities: [CAIssueSeverity.error] });
-        let lookupKeyResults = this.queryLookupKeyResults({ severities: [CAIssueSeverity.error] });
-        if (valueHostResults.length > 0 || lookupKeyResults.length > 0) {
+        let reportData = this.createReportData(
+            { severities: [CAIssueSeverity.error] },
+            { severities: [CAIssueSeverity.error] },
+            includeCompleteResults);
+        if ((reportData.valueHostQueryResults && reportData.valueHostQueryResults.length > 0) ||
+            (reportData.lookupKeyQueryResults && reportData.lookupKeyQueryResults.length > 0)) {
             let content: any;
             if (outputter) {
-                content = outputter.send(valueHostResults, lookupKeyResults, this);
+                content = outputter.send(reportData);
             }
             if (typeof content !== 'string')
             {
-                let jsonOutputter = new JsonConfigAnalysisOutputFormatter(includeAnalysisResults);
-                content = jsonOutputter.format(valueHostResults, lookupKeyResults, this);
+                let jsonOutputter = new JsonConfigAnalysisOutputFormatter();
+                content = jsonOutputter.format(reportData);
             }
             throw new CodingError('Errors found in configuration analysis\n' + content);
         }
@@ -272,11 +276,12 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      */
     public reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean = false,
         space?: string | number | null): string
     {
-        let formatter = new JsonConfigAnalysisOutputFormatter(false, space ?? undefined);
+        let formatter = new JsonConfigAnalysisOutputFormatter(space ?? undefined);
         let outputter = new NullConfigAnalysisOutputter(formatter);
-        return this.report(valueHostCriteria, lookupKeyCriteria, outputter);
+        return this.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter);
     }
 
     /**
@@ -284,16 +289,16 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      */
     public reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean = false,
         space?: string | number | null): void
     {
-
         let formatter: IConfigAnalysisOutputFormatter;
         if (space == null)  // null or undefined
-            formatter = new CleanedObjectConfigAnalysisOutputFormatter(false);
+            formatter = new CleanedObjectConfigAnalysisOutputFormatter();
         else
-            formatter = new JsonConfigAnalysisOutputFormatter(false, space);
+            formatter = new JsonConfigAnalysisOutputFormatter(space);
         let outputter = new ConsoleConfigAnalysisOutputter(formatter);
-        this.report(valueHostCriteria, lookupKeyCriteria, outputter);
+        this.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter);
     }
 
     /**
@@ -308,39 +313,40 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * ```
      * 
      * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
-     * calling queryValueHostResults(valueHostCriteria).
+     * calling queryValueHostResults(valueHostCriteria). Creates the valueHostQueryResults property.
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or an empty object.
      * @param lookupKeyCriteria - The criteria to match against the LookupKeyResults array. Effectively the same as
-     * calling queryLookupKeyResults(lookupKeyCriteria).
+     * calling queryLookupKeyResults(lookupKeyCriteria). Creates the lookupKeyQueryResults property.
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or an empty object.
-     * @returns  An object with two arrays: valueHostResults and lookupKeyResults.
+     * @param includeCompleteResults - When true, include the explorer.results object 
+     * as the overallResults property.
+     * @returns  An object with up to 3 properties: valueHostResults, lookupKeyResults, and overallResults.
      */
-    protected prepForReport(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-        lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null): {
-            valueHostResults: Array<CAPathedResult<any>> | null,
-            lookupKeyResults: Array<CAPathedResult<any>> | null
-        }
+    protected createReportData(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean): ConfigAnalysisOutputReportData
     {
-        let valueHostResults: Array<CAPathedResult<any>> | null = null;
-        let lookupKeyResults: Array<CAPathedResult<any>> | null = null;
+        let reportData: ConfigAnalysisOutputReportData = {};
 
         if (valueHostCriteria !== false && valueHostCriteria !== null)
             if (valueHostCriteria === true)
             {
-                valueHostResults = this.queryValueHostResults(null);
+                reportData.valueHostQueryResults = this.queryValueHostResults(null);
             }
             else
-                valueHostResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
+            reportData.valueHostQueryResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
         if (lookupKeyCriteria !== false && lookupKeyCriteria !== null)
             if (lookupKeyCriteria === true)
             {
-                lookupKeyResults = this.queryLookupKeyResults(null);
+                reportData.lookupKeyQueryResults = this.queryLookupKeyResults(null);
             }
             else
-                lookupKeyResults = this.queryLookupKeyResults(lookupKeyCriteria as IConfigAnalysisSearchCriteria);
-        return { valueHostResults, lookupKeyResults };
+                reportData.lookupKeyQueryResults = this.queryLookupKeyResults(lookupKeyCriteria as IConfigAnalysisSearchCriteria);
+        if (includeCompleteResults)
+            reportData.completeResults = this.results;
+        return reportData;
     }
 
     /**
@@ -348,11 +354,12 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      */
     public report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean,
         outputter: IConfigAnalysisOutputter): any
     {
         assertNotNull(outputter, 'outputter');
-        let data = this.prepForReport(valueHostCriteria, lookupKeyCriteria);
-        return outputter.send(data.valueHostResults, data.lookupKeyResults, this);
+        let report = this.createReportData(valueHostCriteria, lookupKeyCriteria, includeCompleteResults);
+        return outputter.send(report);
     }
 }
 

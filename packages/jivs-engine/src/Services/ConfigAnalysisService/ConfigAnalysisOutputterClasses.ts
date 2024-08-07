@@ -1,9 +1,10 @@
+import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from './ConfigAnalysisOutputFormatterClasses';
 /**
  * 
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, CAPathedResult, IConfigAnalysisResultsExplorer } from "../../Interfaces/ConfigAnalysisService";
+import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, CAPathedResult, IConfigAnalysisResultsExplorer, ConfigAnalysisOutputReportData } from "../../Interfaces/ConfigAnalysisService";
 import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from "../../Interfaces/LoggerService";
 import { assertNotNull, CodingError } from "../../Utilities/ErrorHandling";
 
@@ -17,9 +18,13 @@ import { assertNotNull, CodingError } from "../../Utilities/ErrorHandling";
  */
 export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutputter
 {
-    constructor(formatter: IConfigAnalysisOutputFormatter) {
-        assertNotNull(formatter, 'formatter');
-        this._formatter = formatter;
+    /**
+     * 
+     * @param formatter - The formatter that will be used to format the results.
+     * When you don't provide a formatter, it will default to JsonConfigAnalysisOutputFormatter.
+     */
+    constructor(formatter?: IConfigAnalysisOutputFormatter | null) {
+        this._formatter = formatter ?? new JsonConfigAnalysisOutputFormatter();
     }
     /**
      * The formatter that will be used to format the results of the 
@@ -36,15 +41,12 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
      * Entry point for the outputter. It builds the output from the results
      * and sends it to the appropriate destination.
      * It has available all the results of the configuration analysis.
-     * @param valueHostQueryResults - Results of queries against the ValueHostResults array or null if not used.
-     * @param lookupKeyQueryResults - Results of queries against the LookupKeyResults array or null if not used.
-     * @param explorer - Its results property has the results of the configuration analysis. 
+     * @param reportData - The data to be output.
      * @returns The built output. The caller will return it.
      */
-    public send(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-        explorer: IConfigAnalysisResultsExplorer): any
+    public send(reportData: ConfigAnalysisOutputReportData): any
     {
-        let content = this.format(valueHostQueryResults, lookupKeyQueryResults, explorer);
+        let content = this.format(reportData);
         this.output(content);
         return content;
     }
@@ -55,13 +57,11 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
      * It can actually retain the original objects, or return new objects from the original.
      * Whatever it returns must be compatible with the output() function.
      * This class redirects the work to the IConfigAnalysisOutputFormatter object.
-     * @param valueHostQueryResults - Results of queries against the ValueHostResults array or null if not used.
-     * @param lookupKeyQueryResults - Results of queries against the LookupKeyResults array or null if not used.
-     * @param explorer - Its results property has the results of the configuration analysis. 
+     * @param reportData - The data to be formatted.
      */
-    protected format(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null, explorer: IConfigAnalysisResultsExplorer): any
+    protected format(reportData: ConfigAnalysisOutputReportData): any
     {
-        return this.formatter.format(valueHostQueryResults, lookupKeyQueryResults, explorer);
+        return this.formatter.format(reportData);
     }
 
     /**
@@ -79,6 +79,18 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
 export class ConsoleConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
 {
     /**
+     * 
+     * @param formatter - The formatter that will be used to format the results.
+     * We recommend either JsonConfigAnalysisOutputFormatter or 
+     * CleanedObjectConfigAnalysisOutputFormatter. JSON to console is nice
+     * but when you pass an object to console.log(), it provides a UI to drill down into the object.
+     * CleanedObjectConfigAnalysisOutputFormatter is a good choice for that.
+     * If you don't provide a formatter, it will default to CleanedObjectConfigAnalysisOutputFormatter.
+     */
+    constructor(formatter?: IConfigAnalysisOutputFormatter | null) {
+        super(formatter ?? new CleanedObjectConfigAnalysisOutputFormatter());
+    }
+    /**
      * To console.log()
      * @param content 
      */
@@ -95,7 +107,7 @@ export class ConsoleConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
  */
 export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
 {
-    constructor(formatter: IConfigAnalysisOutputFormatter, loggerService: ILoggerService) {
+    constructor(formatter: IConfigAnalysisOutputFormatter | null, loggerService: ILoggerService) {
         super(formatter);
         assertNotNull(loggerService, 'loggerService');
         this._loggerService = loggerService;
@@ -108,12 +120,10 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
     /**
      * The formatted string is wrapped in the LogDetails object
      * which is supported by the ILoggerService object.
-     * @param valueHostQueryResults 
-     * @param lookupKeyQueryResults 
-     * @param explorer 
+     * @param reportData - The data to be formatted.
      */
-    protected format(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null, explorer: IConfigAnalysisResultsExplorer) {
-        let content = super.format(valueHostQueryResults, lookupKeyQueryResults, explorer);
+    protected format(reportData: ConfigAnalysisOutputReportData) {
+        let content = super.format(reportData);
         if (typeof content !== 'string')
             throw new CodingError('LoggerConfigAnalysisOutputter requires content to be a string.');
         return <LogDetails>{
@@ -121,7 +131,7 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
             category: LoggingCategory.Configuration,
             message: content,
             type: 'ConfigAnalysisService',
-            data: { valueHostQueryResults, lookupKeyQueryResults, results: explorer.results }
+            data: reportData
 
         }
     }

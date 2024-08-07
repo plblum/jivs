@@ -1,8 +1,10 @@
-import { CAPathedResult, CAFeature, IConfigAnalysisResultsExplorer, IConfigAnalysisResults } from "../../../src/Interfaces/ConfigAnalysisService";
+import { LookupKey } from "../../../src/DataTypes/LookupKeys";
+import { CAPathedResult, CAFeature, IConfigAnalysisResultsExplorer, IConfigAnalysisResults, ConfigAnalysisOutputReportData } from "../../../src/Interfaces/ConfigAnalysisService";
+import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
 import { CleanedObjectConfigAnalysisOutputFormatter, ConfigAnalysisOutputFormatterBase, JsonConfigAnalysisOutputFormatter } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisOutputFormatterClasses";
 import { ConfigAnalysisResultsExplorerFactory, ConfigAnalysisResultsExplorer } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisResultsExplorer";
 import { MockValidationServices } from "../../TestSupport/mocks";
-import { createBasicConfigAnalysisResults } from "./support";
+import { createBasicConfigAnalysisResults, createLookupKeyCAResult, createValueHostCAResult } from "./support";
 
 describe('IConfigAnalysisOutputFormatter implementations', () => {
     let factory = new ConfigAnalysisResultsExplorerFactory();
@@ -24,104 +26,7 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
         path: { [CAFeature.lookupKey]: 'LookupKey2' },
         result: { feature: CAFeature.lookupKey }
     };
-    describe('ConfigAnalysisOutputFormatterBase class', () => {
-        // tests are based on this subclass implementation
-        // and include support for testing intoObject
-        class Publicify_ConfigAnalysisOutputFormatterBase extends ConfigAnalysisOutputFormatterBase {
-            public format(): string {
-                return 'TEST'
-            }
 
-            public publicify_intoObject(valueHostQueryResults: Array<CAPathedResult<any>> | null,
-                lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-                explorer: IConfigAnalysisResultsExplorer): {
-                    valueHostQueryResults?: Array<CAPathedResult<any>>,
-                    lookupKeyQueryResults?: Array<CAPathedResult<any>>,
-                    results?: IConfigAnalysisResults
-                } {
-                return this.intoObject(valueHostQueryResults, lookupKeyQueryResults, explorer);
-            }
-        }
-        describe('constructor', () => {
-            test('does not throw', () => {
-                expect(() => new Publicify_ConfigAnalysisOutputFormatterBase(true)).not.toThrow();
-            });
-            // sets the property to true
-            test('sets the property to true', () => {
-                let formatter = new Publicify_ConfigAnalysisOutputFormatterBase(true);
-                expect(formatter.includeAnalysisResults).toBe(true);
-            });
-            // sets the property to false
-            test('sets the property to false', () => {
-                let formatter = new Publicify_ConfigAnalysisOutputFormatterBase(false);
-                expect(formatter.includeAnalysisResults).toBe(false);
-            });
-        });
-
-        describe('intoObject', () => {
-            // tests need functions to create each array and the data in
-            // those arrays should be diverse enough to test the cloned results
-            // against originals.
-            function executeIntoObject(
-                valueHostQueryResults: Array<CAPathedResult<any>> | null,
-                lookupKeyQueryResults: Array<CAPathedResult<any>> | null
-            ) {
-                let formatter = new Publicify_ConfigAnalysisOutputFormatterBase(true);
-                let analysisResults = createBasicConfigAnalysisResults();
-                let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
-
-                let result = formatter.publicify_intoObject(valueHostQueryResults, lookupKeyQueryResults, explorer);
-                if (valueHostQueryResults === null) {
-                    expect(result.valueHostQueryResults).toBeUndefined();
-                } else {
-                    expect(result.valueHostQueryResults).toEqual(valueHostQueryResults);
-                    expect(result.valueHostQueryResults).not.toBe(valueHostQueryResults);
-                }
-                if (lookupKeyQueryResults === null) {
-                    expect(result.lookupKeyQueryResults).toBeUndefined();
-                } else {
-                    expect(result.lookupKeyQueryResults).toEqual(lookupKeyQueryResults);
-                    expect(result.lookupKeyQueryResults).not.toBe(lookupKeyQueryResults);
-                }
-                expect(result.results).not.toBeUndefined();
-                expect(result.results).not.toBe(analysisResults);
-                expect(result.results).toEqual(analysisResults);
-            }
-
-            // test with nulls for both arrays
-            test('with nulls for both arrays, expect both properties to be undefined and results is defined with a clone', () => {
-                executeIntoObject(null, null);
-            });
-            // test with empty arrays for both
-            test('with empty arrays for both, expect both properties to be empty arrays that are clones', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-                executeIntoObject(valueHostQueryResults, lookupKeyQueryResults);
-            });
-            // test with populated arrays for both
-            test('with populated arrays for both, expect both properties to be populated arrays that are clones', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [
-                    vh1Result
-                ];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
-                    lk1Result
-                ];
-                executeIntoObject(valueHostQueryResults, lookupKeyQueryResults);
-            });
-            test('with valueHostQueryResults populated and lookupKeyQueryResults null, expect valueHostQueryResults to be populated and lookupKeyQueryResults to be null', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [
-                    vh1Result
-                ];
-                executeIntoObject(valueHostQueryResults, null);
-            });
-            test('with valueHostQueryResults null and lookupKeyQueryResults populated, expect valueHostQueryResults to be null and lookupKeyQueryResults to be populated', () => {
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
-                    lk1Result
-                ];
-                executeIntoObject(null, lookupKeyQueryResults);
-            });
-        });
-    });
     describe('JsonConfigAnalysisOutputFormatter class', () => {
         // explore the JSON output including using the space parameter in various ways.
         // Ensure the JSON output has cleaned up dates (into strings), regexp (into strings), and
@@ -129,91 +34,87 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
 
         describe('constructor', () => {
             test('does not throw', () => {
-                expect(() => new JsonConfigAnalysisOutputFormatter(true)).not.toThrow();
+                expect(() => new JsonConfigAnalysisOutputFormatter()).not.toThrow();
             });
             // sets the property to true
-            test('sets the property to true', () => {
-                let formatter = new JsonConfigAnalysisOutputFormatter(true);
-                expect(formatter.includeAnalysisResults).toBe(true);
-            });
-            // sets the property to false
-            test('sets the property to false', () => {
-                let formatter = new JsonConfigAnalysisOutputFormatter(false);
-                expect(formatter.includeAnalysisResults).toBe(false);
-            });
             test('sets the space property to 2', () => {
-                let formatter = new JsonConfigAnalysisOutputFormatter(true, 2);
+                let formatter = new JsonConfigAnalysisOutputFormatter(2);
                 expect(formatter.space).toBe(2);
             });
             test('sets the space property to "X"', () => {
-                let formatter = new JsonConfigAnalysisOutputFormatter(true, 'X');
+                let formatter = new JsonConfigAnalysisOutputFormatter('X');
                 expect(formatter.space).toBe('X');
             });
         });
 
         describe('format', () => {
             // tests need functions to create each array and the data in
-            // those arrays should be diverse enough to test the cloned results
+            // those arrays should be diverse enough to test the cloned completeResults
             // against originals.
             function executeFormat(
-                valueHostQueryResults: Array<CAPathedResult<any>> | null,
-                lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-                includeAnalysisResults: boolean,
+                reportData: ConfigAnalysisOutputReportData,
                 space: number | string
             ): string {
-                let formatter = new JsonConfigAnalysisOutputFormatter(includeAnalysisResults, space);
-                let analysisResults = createBasicConfigAnalysisResults();
-                let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
+                let formatter = new JsonConfigAnalysisOutputFormatter(space);
 
-                let obj: any = {
-                    valueHostQueryResults: valueHostQueryResults,
-                    lookupKeyQueryResults: lookupKeyQueryResults,
-                    results: analysisResults
-                };
-                if (valueHostQueryResults === null)
-                    delete obj.valueHostQueryResults;
-                if (lookupKeyQueryResults === null)
-                    delete obj.lookupKeyQueryResults;
-                if (!includeAnalysisResults)
-                    delete obj.results;
-
-                let expectedResult = JSON.stringify(obj, null, space);
+                let expectedResult = JSON.stringify(reportData, null, space);
 
                 let result: string | undefined = undefined;
-                expect(() => result = formatter.format(valueHostQueryResults, lookupKeyQueryResults, explorer)).not.toThrow();
+                expect(() => result = formatter.format(reportData)).not.toThrow();
                 expect(result).not.toBeUndefined();
                 expect(result).toEqual(expectedResult);
                 return result!;
             }
 
-            // test with nulls for both arrays and includeAnalysisResults = true with 2 spaces
-            test('with nulls for both arrays and includeAnalysisResults = true, expect JSON output to be valid', () => {
-                executeFormat(null, null, true, 2);
+            // test with nulls for both arrays and inclueCompleteResults = true with 2 spaces
+            test('with valueHostQueryResults=undefined, lookupKeysQueryResults=undefined and completeResults=included, expect JSON output with only the completeResults', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+    
+                let reportData: ConfigAnalysisOutputReportData = {
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, 2);
             });
-            // test with empty arrays for both and includeAnalysisResults = true with 2 spaces
-            test('with empty arrays for both and includeAnalysisResults = true, expect JSON output to be valid', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, true, 2);
+
+            test('with valueHostQueryResults=[], lookupKeysQueryResults=[] and completeResults=included, expect JSON output with all 3 properties', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [],
+                    lookupKeyQueryResults: [],
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, 2);
             });
-            // test with populated arrays for both
-            test('with populated arrays for both and includeAnalysisResults = true, expect JSON output to be valid', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [
-                    vh1Result
-                ];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
-                    lk1Result
-                ];
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, true, 2);
+
+            test('with valueHostQueryResults=data, lookupKeysQueryResults=data and completeResults=included, expect JSON output with all 3 properties', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result],
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, 2);
             });
-            // test with nulls for both arrays and includeAnalysisResults = false with 2 spaces
-            test('with nulls for both arrays and includeAnalysisResults = false, expect JSON output to be valid', () => {
-                executeFormat(null, null, false, 2);
+
+            test('with valueHostQueryResults=undefined, lookupKeysQueryResults=undefined and completeResults=undefined, expect JSON output no properties', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+                };
+                executeFormat(reportData, 2);
             });
-            test('with populated arrays for both and includeAnalysisResults = false, expect JSON output to be valid', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, false, 2);
+
+            test('with valueHostQueryResults=[], lookupKeysQueryResults=[] and completeResults=undefined, expect JSON output with valueHostQueryResults and lookupKeysQueryResults properties', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [],
+                    lookupKeyQueryResults: []
+                };
+                executeFormat(reportData, 2);
+            });
+            test('with valueHostQueryResults=data, lookupKeysQueryResults=data and completeResults=undefined, expect JSON output with valueHostQueryResults and lookupKeysQueryResults properties', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result]
+                };
+                executeFormat(reportData, 2);
             });
             // we're going to add custom properties to the CAPathedResult objects
             // that represent values that are not supported in JSON.
@@ -259,7 +160,7 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
                 const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
                     lk1Result
                 ];
-                // we omit the Explorer.results to keep this simple
+                // we omit the Explorer.completeResults to keep this simple
 
                 // manually create the expected output with 2 space formatting
                 // to deal with formatting, use the character ^ to represent 2 spaces
@@ -292,11 +193,13 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
 ^^}
 ^]
 }`;
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: valueHostQueryResults,
+                    lookupKeyQueryResults: lookupKeyQueryResults
+                };
                 expected = expected.replace(/\^/g, '  ');
-                let formatter = new JsonConfigAnalysisOutputFormatter(false, 2);
-                let analysisResults = createBasicConfigAnalysisResults();
-                let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
-                let result = formatter.format(valueHostQueryResults, lookupKeyQueryResults, explorer);
+                let formatter = new JsonConfigAnalysisOutputFormatter(2);
+                let result = formatter.format(reportData);
 
                 expect(result).toEqual(expected);
             });
@@ -308,111 +211,92 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
         // regexp(into strings), and
         // removed both undefined and unsupported object properties.
 
-        describe('constructor', () => {
-            test('does not throw', () => {
-                expect(() => new CleanedObjectConfigAnalysisOutputFormatter(true)).not.toThrow();
-            });
-            // sets the property to true
-            test('sets the property to true', () => {
-                let formatter = new CleanedObjectConfigAnalysisOutputFormatter(true);
-                expect(formatter.includeAnalysisResults).toBe(true);
-            });
-            // sets the property to false
-            test('sets the property to false', () => {
-                let formatter = new CleanedObjectConfigAnalysisOutputFormatter(false);
-                expect(formatter.includeAnalysisResults).toBe(false);
-            });
-        });
-
         describe('format', () => {
             // tests need functions to create each array and the data in
-            // those arrays should be diverse enough to test the cloned results
+            // those arrays should be diverse enough to test the cloned completeResults
             // against originals.
             function executeFormat(
-                valueHostQueryResults: Array<CAPathedResult<any>> | null,
-                lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-                includeAnalysisResults: boolean,
+                reportData: ConfigAnalysisOutputReportData,
                 expectedResult: any
             ): any {
-                let formatter = new CleanedObjectConfigAnalysisOutputFormatter(includeAnalysisResults);
-                let analysisResults = createBasicConfigAnalysisResults();
-                let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
-
-                let obj: any = {
-                    valueHostQueryResults: valueHostQueryResults,
-                    lookupKeyQueryResults: lookupKeyQueryResults,
-                    results: analysisResults
-                };
-                if (valueHostQueryResults === null)
-                    delete obj.valueHostQueryResults;
-                if (lookupKeyQueryResults === null)
-                    delete obj.lookupKeyQueryResults;
-                if (!includeAnalysisResults)
-                    delete obj.results;
-
+                let formatter = new CleanedObjectConfigAnalysisOutputFormatter();
+ 
                 let result: any = undefined;
-                expect(() => result = formatter.format(valueHostQueryResults, lookupKeyQueryResults, explorer)).not.toThrow();
+                expect(() => result = formatter.format(reportData)).not.toThrow();
                 expect(result).not.toBeUndefined();
                 expect(result).toEqual(expectedResult);
                 return result;
             }
-            test('with nulls for both arrays and includeAnalysisResults = true, expected result has only a results property with empty content', () => {
+            test('with valueHostQueryResults=undefined, lookupKeysQueryResults=undefined and completeResults=included, expect object with only the completeResults property', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+                let reportData: ConfigAnalysisOutputReportData = {
+                    completeResults: completeResults
+                };
+                let expectedResult = {
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, expectedResult);
+            });
+            test('with valueHostQueryResults=[], lookupKeysQueryResults=[] and completeResults=included, expect object with all 3 properties', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [],
+                    lookupKeyQueryResults: [],
+                    completeResults: completeResults
+                };
+                let expectedResult = {
+                    valueHostQueryResults: [],
+                    lookupKeyQueryResults: [],
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, expectedResult);
+            });
+            test('with valueHostQueryResults=data, lookupKeysQueryResults=data and completeResults=included, expect object with all 3 properties', () => {
+                let completeResults = createBasicConfigAnalysisResults();
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result],
+                    completeResults: completeResults
+                };
+                let expectedResult = {
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result],
+                    completeResults: completeResults
+                };
+                executeFormat(reportData, expectedResult);
+            });
+            test('with valueHostQueryResults=undefined, lookupKeysQueryResults=undefined and completeResults=undefined, expect object with no properties', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+
+                };
                 let expectedResult = {
 
-                    results: createBasicConfigAnalysisResults()
                 };
-                executeFormat(null, null, true, expectedResult);
+                executeFormat(reportData, expectedResult);
             });
-            test('with empty arrays for both and includeAnalysisResults = true, expected result has all 3 properties with empty content', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
+            test('with valueHostQueryResults=[], lookupKeysQueryResults=[] and completeResults=undefined, expect object with only the two empty arrays', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [],
+                    lookupKeyQueryResults: []
+                };
                 let expectedResult = {
                     valueHostQueryResults: [],
-                    lookupKeyQueryResults: [],
-                    results: createBasicConfigAnalysisResults()
+                    lookupKeyQueryResults: []
                 };
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, true, expectedResult);
+                executeFormat(reportData, expectedResult);
             });
-            test('with populated arrays for both and includeAnalysisResults = true, expected result has all 3 properties with populated content', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [
-                    vh1Result
-                ];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
-                    lk1Result
-                ];
+            test('with valueHostQueryResults=data, lookupKeysQueryResults=data and completeResults=undefined, expect object with only the two populated arrays', () => {
+                let reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result]
+                };
                 let expectedResult = {
-                    valueHostQueryResults: [vh1Result],
-                    lookupKeyQueryResults: [lk1Result],
-                    results: createBasicConfigAnalysisResults()
+                    valueHostQueryResults: [vh1Result, vh2Result],
+                    lookupKeyQueryResults: [lk1Result, lk2Result]
                 };
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, true, expectedResult);
+                executeFormat(reportData, expectedResult);
             });
-            test('with nulls for both arrays and includeAnalysisResults = false, expected result is an empty object', () => {
-                let expectedResult = {};
-                executeFormat(null, null, false, expectedResult);
-            });
-            test('with empty arrays for both and includeAnalysisResults = false, expected result has the two empty arrays in properties', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [];
-                let expectedResult = {
-                    valueHostQueryResults: [],
-                    lookupKeyQueryResults: [],
-                };
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, false, expectedResult);
-            });
-            test('with populated arrays for both and includeAnalysisResults = false, expected result has the two populated arrays in properties', () => {
-                const valueHostQueryResults: Array<CAPathedResult<any>> = [
-                    vh1Result
-                ];
-                const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
-                    lk1Result
-                ];
-                let expectedResult = {
-                    valueHostQueryResults: [vh1Result],
-                    lookupKeyQueryResults: [lk1Result]
-                };
-                executeFormat(valueHostQueryResults, lookupKeyQueryResults, false, expectedResult);
-            });
+
             test('with custom properties in the CAPathedResult objects, expect properties of date, regexp and function to be replaced by strings and undefined+undesired properties to be removed', () => {
                 // Local instances to allow modifications
                 let vh1Result: CAPathedResult<any> = {
@@ -442,7 +326,11 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
                 const lookupKeyQueryResults: Array<CAPathedResult<any>> = [
                     lk1Result
                 ];
-                // we omit the Explorer.results to keep this simple
+                const reportData: ConfigAnalysisOutputReportData = {
+                    valueHostQueryResults: valueHostQueryResults,
+                    lookupKeyQueryResults: lookupKeyQueryResults
+                };
+                // we omit the Explorer.completeResults to keep this simple
                 const expectedResult = {
                     valueHostQueryResults: [
                         {
@@ -469,10 +357,9 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
                         }
                     ]
                 };
-                let formatter = new CleanedObjectConfigAnalysisOutputFormatter(false);
+                let formatter = new CleanedObjectConfigAnalysisOutputFormatter();
                 let analysisResults = createBasicConfigAnalysisResults();
-                let explorer = new ConfigAnalysisResultsExplorer(analysisResults, factory, services);
-                let result = formatter.format(valueHostQueryResults, lookupKeyQueryResults, explorer);
+                let result = formatter.format(reportData);
                 expect(result).toEqual(expectedResult);
             });
         });

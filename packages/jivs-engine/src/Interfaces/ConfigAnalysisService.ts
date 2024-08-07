@@ -264,6 +264,7 @@ export interface IConfigAnalysisResultsExplorer {
      * calling queryLookupKeyResults(lookupKeyCriteria).
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or {}.
+     * @param includeCompleteResults - When true, include the explorer.results object.
      * @param space - The number of spaces to use for indentation in the JSON string or null to omit whitespace formatting.
      * Used by JSON.stringify() as the third parameter.
      * @example
@@ -276,6 +277,7 @@ export interface IConfigAnalysisResultsExplorer {
      * ```
      */
     reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean,
         space?: string | number | null): string;
 
     /**
@@ -304,6 +306,7 @@ export interface IConfigAnalysisResultsExplorer {
      * calling queryLookupKeyResults(lookupKeyCriteria).
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or {}.
+     * @param includeCompleteResults - When true, include the explorer.results object.
      * @param space - When a number or string, it is passed to JSON.stringify() as the third parameter for indentation.
      * When null or undefined, it is sent to console in object form, allowing the browser to provide a drill down UI.
      * @example
@@ -317,6 +320,7 @@ export interface IConfigAnalysisResultsExplorer {
      * ```
      */
     reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean,
         space?: string | number | null): void;
 
     // NOTE: Wanted to include LocalStorage as a destination
@@ -336,6 +340,7 @@ export interface IConfigAnalysisResultsExplorer {
      * calling queryLookupKeyResults(lookupKeyCriteria).
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or {}.
+     * @param includeCompleteResults - When true, include the explorer.results object.
      * @param outputter - The outputter to use to format and output the report. 
      * For JSON, use JsonConfigAnalysisOutputter or call reportIntoJson() instead.
      * For console output, use ConsoleConfigAnalysisOutputter or call reportToConsole() instead.
@@ -343,6 +348,7 @@ export interface IConfigAnalysisResultsExplorer {
      * @returns The formatted results of the report.
      */
     report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+        includeCompleteResults: boolean,
         outputter: IConfigAnalysisOutputter): any;
     
 }
@@ -551,13 +557,12 @@ export interface IConfigAnalysisOutputter {
      * Entry point for the outputter. It builds the output from the results
      * and sends it to the appropriate destination.
      * It has available all the results of the configuration analysis.
-     * @param valueHostQueryResults - Results of queries against the ValueHostResults array or null if not used.
-     * @param lookupKeyQueryResults - Results of queries against the LookupKeyResults array or null if not used.
-     * @param explorer - Its results property has the results of the configuration analysis. 
+     * @param report - The results of the configuration analysis.
+     * The outputter should determine which of its properties to output
+     * based on their presence.
      * @returns The built output. The caller will return it.
      */
-    send(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-        explorer: IConfigAnalysisResultsExplorer): any;
+    send(report: ConfigAnalysisOutputReportData): any;
 }
 
 /**
@@ -566,8 +571,38 @@ export interface IConfigAnalysisOutputter {
  * Allows a dependency injection approach to the output format.
  */
 export interface IConfigAnalysisOutputFormatter {
-    format(valueHostQueryResults: Array<CAPathedResult<any>> | null, lookupKeyQueryResults: Array<CAPathedResult<any>> | null,
-        explorer: IConfigAnalysisResultsExplorer): any;
+    /**
+     * 
+     * @param report - The results of the configuration analysis.
+     * The formatter should determine which of its properties to output
+     * based on their presence.
+     */
+    format(report: ConfigAnalysisOutputReportData): any;
+}
+
+/**
+ * Packages the various results that will be output by the ConfigAnalysisOutputter.
+ */
+export interface ConfigAnalysisOutputReportData
+{
+    /**
+     * If supplied, the outputter will include the results of the ValueHostConfig analysis
+     * structured as CAPathedResult objects so that you can see a list instead of a tree.
+     * This data has already been filtered by the criteria supplied to the outputter.
+     * It came from completeResults.valueHostResults which has the data in a tree format.
+     */
+    valueHostQueryResults?: Array<CAPathedResult<any>>;
+    /**
+     * If supplied, the outputter will include the results of the LookupKey analysis
+     * structured as CAPathedResult objects so that you can see a list instead of a tree.
+     * This data has already been filtered by the criteria supplied to the outputter.
+     * It came from completeResults.lookupKeyResults which has the data in a tree format.
+     */
+    lookupKeyQueryResults?: Array<CAPathedResult<any>>;
+    /**
+     * If supplied, the results of the configuration analysis.
+     */
+    completeResults?: IConfigAnalysisResults;
 }
 
 /**

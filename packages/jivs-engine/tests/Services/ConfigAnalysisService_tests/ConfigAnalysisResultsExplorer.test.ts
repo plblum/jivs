@@ -14,7 +14,8 @@ import {
     CAIssueSeverity, IssueForCAResultBase,
     ICASearcher,
     IConfigAnalysisResultsExplorer,
-    IConfigAnalysisOutputter
+    IConfigAnalysisOutputter,
+    ConfigAnalysisOutputReportData
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import {
     CAExplorerBase, CASearcher, ComparerServiceCAResultExplorer,
@@ -3547,7 +3548,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             // with outputter, expect the outputter to be called with the results
             test('outputter is called with results', () => {
                 let results = createExtensiveConfigAnalysisResults();
-                let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false));
+                let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter());
                 let sendSpy = jest.spyOn(outputter, 'send');
                 executeTestWithErrorsFound(results, false, outputter);
                 expect(sendSpy).toHaveBeenCalledTimes(1);
@@ -3623,27 +3624,35 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // we will test the outputter results in those tests.
         function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
             lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            includeCompleteResults: boolean,
             expectedResults: IConfigAnalysisResults,
             expectedValueHostPathedResults: Array<CAPathedResult<any>> | null | undefined,
             expectedLookupKeyPathedResults: Array<CAPathedResult<any>> | null | undefined) 
         {
-            let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(false));
+            let outputter = new NullConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter());
             let sendSpy = jest.spyOn(outputter, 'send');
 
             let explorer = new ConfigAnalysisResultsExplorer(expectedResults, factory, services);
-            let result = explorer.report(valueHostCriteria, lookupKeyCriteria, outputter);
+            let result = explorer.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter);
+            let reportData = sendSpy.mock.calls[0][0] as ConfigAnalysisOutputReportData;  // send(reportData)
             expect(result).toBeDefined();
+            expect(reportData).toBeDefined();
 
             expect(sendSpy).toHaveBeenCalledTimes(1);
-            expect(sendSpy).toHaveBeenCalledWith(expectedValueHostPathedResults, expectedLookupKeyPathedResults,
-                expect.any(ConfigAnalysisResultsExplorer));
+            expect(reportData.valueHostQueryResults).toEqual(expectedValueHostPathedResults);
+            expect(reportData.lookupKeyQueryResults).toEqual(expectedLookupKeyPathedResults);
+            if (includeCompleteResults)
+                expect(reportData.completeResults).toEqual(expectedResults);
+            else
+                expect(reportData.completeResults).toBeUndefined();
+
             sendSpy.mockRestore();
         }
-        test('If supplied null criteria for both parameters, calls outputter.send with null for both results parameters', () => {
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=false, no reportData parameters are defined and outputs an empty object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
-            executeTest(null, null, expectedResults, null, null);
+            executeTest(null, null, false, expectedResults, undefined, undefined);
         });
-        test('If supplied true for both parameters, calls outputter.send with all results for both results parameters', () => {
+        test('If valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=false, reportData parameters are defined for valueHostQueryResults and lookupKeysQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3665,9 +3674,9 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 }
             ];
 
-            executeTest(true, true, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+            executeTest(true, true, false, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
-        test('If supplied criteria for valueHostResults and null for lookupKeyResults, calls outputter.send with only those results', () => {
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=null, includeCompleteResults=false, reportData parameters are defined for valueHostQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3677,10 +3686,10 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expectedResults.lookupKeyResults.push(lk1Result);
 
             let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
-            let expectedLookupKeyPathedResults = null;
-            executeTest({ features: [CAFeature.valueHost] }, null, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+            let expectedLookupKeyPathedResults = undefined;
+            executeTest({ features: [CAFeature.valueHost] }, null, false, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
-        test('If supplied null for valueHostResults and criteria for lookupKeyResults, calls outputter.send with only those results', () => {
+        test('If valueHostCriteria=null, lookupKeysCriteria=criteria, includeCompleteResults=false, reportData parameters are defined for lookupKeysQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3689,11 +3698,11 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expectedResults.valueHostResults.push(vh1Result);
             expectedResults.lookupKeyResults.push(lk1Result);
 
-            let expectedValueHostPathedResults = null;
+            let expectedValueHostPathedResults = undefined;
             let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
-            executeTest(null, { lookupKeys: [LookupKey.Date] }, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, false, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
-        test('If supplied criteria for valueHostResults and lookupKeyResults, calls outputter.send with both results', () => {
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=criteria, includeCompleteResults=false, reportData parameters are defined for valueHostQueryResults and lookupKeysQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3704,11 +3713,11 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
             let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
-            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] },
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] }, false,
                 expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
         // true/supply lookupKey criteria
-        test('If supplied true for valueHostResults and criteria for lookupKeyResults, calls outputter.send with both results', () => {
+        test('If valueHostCriteria=true, lookupKeysCriteria=criteria, includeCompleteResults=false, reportData parameters are defined for valueHostQueryResults and lookupKeysQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3719,11 +3728,11 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
             let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
-            executeTest(true, { lookupKeys: [LookupKey.Date] },
+            executeTest(true, { lookupKeys: [LookupKey.Date] }, false, 
                 expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
         // supply valueHost criteria/true
-        test('If supplied criteria for valueHostResults and true for lookupKeyResults, calls outputter.send with both results', () => {
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=true, includeCompleteResults=false, reportData parameters are defined for valueHostQueryResults and lookupKeysQueryResults and outputs that as an object', () => {
             let expectedResults = createBasicConfigAnalysisResults();
 
             // add one entry to both valueHostResults and lookupKeyResults
@@ -3734,7 +3743,41 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
             let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
-            executeTest({ features: [CAFeature.valueHost] }, true,
+            executeTest({ features: [CAFeature.valueHost] }, true, false,
+                expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        // now with includeCompleteResults=true on a few cases
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=true, reportData parameters are defined for completeResults and outputs that as an object', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            executeTest(null, null, true, expectedResults, undefined, undefined);
+        });
+        test('If valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=true, reportData parameters are defined for valueHostQueryResults, lookupKeysQueryResults, and completeResults and outputs that as an object', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest(true, true, true, expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
+        });
+        // now with criteria to both valueHost and lookupKey, and includeCompleteResults=true
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=criteria, includeCompleteResults=true, reportData parameters are defined for valueHostQueryResults, lookupKeysQueryResults, and completeResults and outputs that as an object', () => {
+            let expectedResults = createBasicConfigAnalysisResults();
+            let vh1Result = createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date);
+            let lk1Result = createLookupKeyCAResult(LookupKey.Date);
+            expectedResults.valueHostResults.push(vh1Result);
+            expectedResults.lookupKeyResults.push(lk1Result);
+
+            let expectedValueHostPathedResults = [{ path: vh1ResultPath, result: vh1Result }];
+            let expectedLookupKeyPathedResults = [{ path: { [CAFeature.lookupKey]: LookupKey.Date }, result: lk1Result }];
+            executeTest({ features: [CAFeature.valueHost] }, true, true,
                 expectedResults, expectedValueHostPathedResults, expectedLookupKeyPathedResults);
         });
 
@@ -3747,6 +3790,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // parameters in its content.
         function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
             lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            includeCompleteResults: boolean,
             space: string | number | null) {
         
             let results = createBasicConfigAnalysisResults();
@@ -3754,7 +3798,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
 
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let result = explorer.reportIntoJson(valueHostCriteria, lookupKeyCriteria, space);
+            let result = explorer.reportIntoJson(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, space);
             if (valueHostCriteria)
                 expect(result).toContain('"valueHostQueryResults":');
             else
@@ -3763,40 +3807,44 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 expect(result).toContain('"lookupKeyQueryResults":');
             else
                 expect(result).not.toContain('"lookupKeyQueryResults":');
-            expect(result).not.toContain('"results":');
+            if (includeCompleteResults)
+                expect(result).toContain('"completeResults":');
+            else
+                expect(result).not.toContain('"completeResults":');
         }
         
 
-        test('If supplied null criteria for both parameters, returns JSON without any properties', () => {
-            executeTest(null, null, null);
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=false, returns JSON without any properties', () => {
+            executeTest(null, null, false, null);
         });
-        test('If supplied true for both parameters, returns JSON with all results', () => {
-            executeTest(true, true, null);
+        test('valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=false, returns JSON with all results', () => {
+            executeTest(true, true, false, null);
         });
-        test('If supplied criteria for valueHostResults and null for lookupKeyResults, returns JSON with only valueHostQueryResults', () => {
-            executeTest({ features: [CAFeature.valueHost] }, null, null);
+        test('valueHostCriteria=criteria, lookupKeysCriteria=null, includeCompleteResults=false, returns JSON with only valueHostQueryResults', () => {
+            executeTest({ features: [CAFeature.valueHost] }, null, false, null);
         });
-        test('If supplied null for valueHostResults and criteria for lookupKeyResults, returns JSON with only lookupKeyQueryResults', () => {
-            executeTest(null, { lookupKeys: [LookupKey.Date] }, null);
+        test('valueHostCriteria=null, lookupKeysCriteria=criteria, includeCompleteResults=false, returns JSON with only lookupKeyQueryResults', () => {
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, false, null);
         });
-        test('If supplied criteria for valueHostResults and lookupKeyResults, returns JSON with both results', () => {
-            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] }, null);
+        test('valueHostCriteria=criteria, lookupKeysCriteria=criteria, includeCompleteResults=false, returns JSON with both results', () => {
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] }, false, null);
         });
-        // true/supply lookupKey criteria
-        test('If supplied true for valueHostResults and criteria for lookupKeyResults, returns JSON with both results', () => {
-            executeTest(true, { lookupKeys: [LookupKey.Date] }, null);
+        // includeCompleteResults=true
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=true, returns JSON just completeResults', () => {
+            executeTest(null, null, true, null);
         });
-        // supply valueHost criteria/true
-        test('If supplied criteria for valueHostResults and true for lookupKeyResults, returns JSON with both results', () => {
-            executeTest({ features: [CAFeature.valueHost] }, true, null);
+        // includeCompleteResults=true and true on both criteria
+        test('If valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=true, returns JSON with all results', () => {
+            executeTest(true, true, true, null);
         });
+
         // with space = 4
         test('If supplied true for valueHostResults and lookupKeyResults and space = 4, returns JSON with both results', () => {
-            executeTest(true, true, 4);
+            executeTest(true, true, false, 4);
         });
         // with space = " " (one space)
         test('If supplied true for valueHostResults and lookupKeyResults and space = " ", returns JSON with both results', () => {
-            executeTest(true, true, " ");
+            executeTest(true, true, false, " ");
         });
 
     });
@@ -3807,14 +3855,16 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // Its job is to write the output to the console.
         // Tests confirm that the output is written to the console using spy on console.log.
         function executeTest(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
-            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null, space: string | number | null) {
+            lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
+            includeCompleteResults: boolean,
+            space: string | number | null) {
             let logSpy = jest.spyOn(console, 'log');
             let results = createBasicConfigAnalysisResults();
             results.valueHostResults.push(createValueHostCAResult('ValueHost1', ValueHostType.Static, LookupKey.Date));
             results.lookupKeyResults.push(createLookupKeyCAResult(LookupKey.Date));
 
             let explorer = new ConfigAnalysisResultsExplorer(results, factory, services);
-            let result = explorer.reportToConsole(valueHostCriteria, lookupKeyCriteria, space);
+            let result = explorer.reportToConsole(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, space);
             if (space === null) {
                 expect(logSpy).toHaveBeenCalledTimes(1);
                 const loggedValue = logSpy.mock.calls[0][0]; // Get the first argument of the first call
@@ -3828,7 +3878,10 @@ describe('ConfigAnalysisResultExplorer class', () => {
                     expect(loggedValue).toHaveProperty('lookupKeyQueryResults');
                 else
                     expect(loggedValue).not.toHaveProperty('lookupKeyQueryResults');
-                expect(loggedValue).not.toHaveProperty('results');
+                if (includeCompleteResults)
+                    expect(loggedValue).toHaveProperty('completeResults');
+                else
+                    expect(loggedValue).not.toHaveProperty('completeResults');
             }
             else {
                 expect(logSpy).toHaveBeenCalledTimes(1);
@@ -3844,31 +3897,44 @@ describe('ConfigAnalysisResultExplorer class', () => {
                     expect(loggedValue).toContain('"lookupKeyQueryResults":');
                 else
                     expect(loggedValue).not.toContain('"lookupKeyQueryResults":');
+                if (includeCompleteResults)
+                    expect(loggedValue).toContain('"completeResults":');
+                else
+                    expect(loggedValue).not.toContain('"completeResults":');
             }
             logSpy.mockRestore();
         }
-        test('If supplied null criteria for both parameters and space = null, writes object to console', () => {
-            executeTest(null, null, null);
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=false, writes object to console', () => {
+            executeTest(null, null, false, null);
         });
-        test('If supplied true for both parameters and space = null, writes object to console', () => {
-            executeTest(true, true, null);
+        test('If valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=false, writes object to console', () => {
+            executeTest(true, true, false, null);
         });
-        // space = 2
-        test('If supplied true for valueHostResults and lookupKeyResults and space = 2, writes JSON to console with both', () => {
-            executeTest(true, true, 2);
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=null, includeCompleteResults=false, writes object to console', () => {
+            executeTest({ features: [CAFeature.valueHost] }, null, false, null);
         });
-        // space = 2 and valueHostCriteria only
-        test('If supplied criteria for valueHostResults and space = 2, writes JSON to console with only valueHostQueryResults', () => {
-            executeTest({ features: [CAFeature.valueHost] }, null, 2);
+        test('If valueHostCriteria=null, lookupKeysCriteria=criteria, includeCompleteResults=false, writes object to console', () => {
+            executeTest(null, { lookupKeys: [LookupKey.Date] }, false, null);
         });
-        // space = 2 and lookupKeyCriteria only
-        test('If supplied criteria for lookupKeyResults and space = 2, writes JSON to console with only lookupKeyQueryResults', () => {
-            executeTest(null, { lookupKeys: [LookupKey.Date] }, 2);
+        test('If valueHostCriteria=criteria, lookupKeysCriteria=criteria, includeCompleteResults=false, writes object to console', () => {
+            executeTest({ features: [CAFeature.valueHost] }, { lookupKeys: [LookupKey.Date] }, false, null);
+        });
+        // includeCompleteResults=true
+        test('If valueHostCriteria=null, lookupKeysCriteria=null, includeCompleteResults=true, writes object to console', () => {
+            executeTest(null, null, true, null);
+        });
+        test('If valueHostCriteria=true, lookupKeysCriteria=true, includeCompleteResults=true, writes object to console', () => {
+            executeTest(true, true, true, null);
+        });
+        // space = 4
+        test('If supplied true for valueHostResults and lookupKeyResults and space = 4, writes JSON to console with both', () => {
+            executeTest(true, true, false, 4);
         });
         // space = " " (one space)
         test('If supplied true for valueHostResults and lookupKeyResults and space = " ", writes JSON to console with both', () => {
-            executeTest(true, true, " ");
+            executeTest(true, true, false, " ");
         });
+
     });
 
 });
