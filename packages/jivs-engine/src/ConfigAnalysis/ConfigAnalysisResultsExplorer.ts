@@ -33,11 +33,10 @@ import {
     IConfigAnalysisOutputFormatter,
     ConfigAnalysisOutputReportData as ConfigAnalysisOutputReportData
 } from "../Interfaces/ConfigAnalysisService";
-import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { ServiceName } from "../Interfaces/ValidationServices";
 import { IValueHostsServices } from "../Interfaces/ValueHostsServices";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { deepCleanForJson, deepClone } from "../Utilities/Utilities";
+import { deepClone } from "../Utilities/Utilities";
 import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from "./ConfigAnalysisOutputterClasses";
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from "./ConfigAnalysisOutputFormatterClasses";
 

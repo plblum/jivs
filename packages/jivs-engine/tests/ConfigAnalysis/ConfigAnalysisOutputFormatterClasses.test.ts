@@ -119,7 +119,6 @@ describe('IConfigAnalysisOutputFormatter implementations', () => {
             // They should be cleaned up following the rules of deepCleanForJson()
             // Those rules are:
             // Handles deep nesting of objects and arrays.
-            // It makes changes to the value! So run it on a clone if you need the original.
             // It will undefined properties.
             // It will convert functions into a string of "[Function]" with the function name if available.
             // It will convert Date objects to their ISO string.

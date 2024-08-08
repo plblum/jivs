@@ -29,9 +29,15 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { ServiceName } from '../../src/Interfaces/ValidationServices';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
-import { createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult, createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults, attachSeverity, createIdentifierServiceCAResult } from './support';
+import { createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult, createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults, attachSeverity, createIdentifierServiceCAResult, createServices } from './support';
 import { NullConfigAnalysisOutputter } from '../../src/ConfigAnalysis/ConfigAnalysisOutputterClasses';
 import { JsonConfigAnalysisOutputFormatter } from '../../src/ConfigAnalysis/ConfigAnalysisOutputFormatterClasses';
+import { createValidationServicesForTesting, registerConfigAnalyzers } from '../TestSupport/createValidationServices';
+import { ValidationServices } from '../../src/Services/ValidationServices';
+import { ValidationManagerConfigBuilderFactory } from '../../src/Services/ManagerConfigBuilderFactory';
+import { ValidationManagerConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
+import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
+import { DataTypeParserService } from '../../src/Services/DataTypeParserService';
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -2610,7 +2616,7 @@ describe('ErrorCAResultExplorer class', () => {
 describe('ConfigAnalysisResultExplorer class', () => {
 
     let factory = new ConfigAnalysisResultsExplorerFactory();
-    let services = new MockValidationServices(false, false);
+    let services = createValidationServicesForTesting();
 
     // these are the CAResultPaths for each case supplied in
     // createExtensiveConfigAnalysisResults().
@@ -3931,6 +3937,27 @@ describe('ConfigAnalysisResultExplorer class', () => {
             executeTest(true, true, false, " ");
         });
 
+    });
+    describe('other tests', () => {
+        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
+            let services = new ValidationServices();
+            services.dataTypeIdentifierService = new DataTypeIdentifierService();
+            services.dataTypeParserService = new DataTypeParserService();
+            services.cultureService.register({ cultureId: 'en' });
+            
+            registerConfigAnalyzers(services.configAnalysisService);
+
+            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+
+            builder.input('NewField', LookupKey.Date, 
+                {
+                    parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
+                }
+            )
+            let explorer = builder.analyze();
+//            explorer.reportToConsole(true, true, true, 2);
+            expect(explorer.hasErrors()).toBe(true);
+        });
     });
 
 });

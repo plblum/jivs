@@ -4,7 +4,7 @@
  */
 
 import { IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData } from "../Interfaces/ConfigAnalysisService";
-import { deepCleanForJson, deepClone } from "../Utilities/Utilities";
+import { cleanForLogging, deepCleanForJson, deepClone } from "../Utilities/Utilities";
 
 /**
  * Builds an object that contains up to all 3 result objects, each a property declared
@@ -22,6 +22,17 @@ export abstract class ConfigAnalysisOutputFormatterBase implements IConfigAnalys
      * @param reportData - The results of the configuration analysis.
      */
     public abstract format(reportData: ConfigAnalysisOutputReportData): any;
+
+    protected deepCleanForJson(reportData: ConfigAnalysisOutputReportData): any {
+        return deepCleanForJson(reportData, (key: string, value: any, parent: any) => {
+            switch (key)
+            {
+                case 'instance':    // complex object that is not always serializable
+                    return undefined;
+            }
+            return cleanForLogging(key, value, parent);
+        });
+    }
 }
 
 
@@ -52,7 +63,7 @@ export class JsonConfigAnalysisOutputFormatter extends ConfigAnalysisOutputForma
      */
     public format(reportData: ConfigAnalysisOutputReportData): any
     {
-        let cleaned = deepCleanForJson(deepClone(reportData));
+        let cleaned = this.deepCleanForJson(reportData);
         return JSON.stringify(cleaned, null, this.space);
     }
 }
@@ -70,6 +81,6 @@ export class CleanedObjectConfigAnalysisOutputFormatter extends ConfigAnalysisOu
      */
     public format(reportData: ConfigAnalysisOutputReportData): any
     {
-        return deepCleanForJson(deepClone(reportData)); 
+        return this.deepCleanForJson(reportData); 
     }
 }

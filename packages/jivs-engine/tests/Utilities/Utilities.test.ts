@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
-import { deepClone, deepEquals, groupsMatch, isValueOfStringEnum, isPlainObject, isSupportedAsValue, valueForLog, findCaseInsensitiveValueInStringEnum, deepCleanForJson } from '../../src/Utilities/Utilities';
+import { deepClone, deepEquals, groupsMatch, isValueOfStringEnum, isPlainObject, isSupportedAsValue, valueForLog, findCaseInsensitiveValueInStringEnum, deepCleanForJson, hasLetters, onlyTheseCharacters, hasMultipleOccurances, cleanString, objectKeysCount } from '../../src/Utilities/Utilities';
 
 
 
@@ -127,28 +127,48 @@ describe('Utilities.deepCleanForJson', () => {
     });
 
     test('Handles function values', () => {
-        function testFunc() {}
-        expect(deepCleanForJson(testFunc)).toBe('[Function testFunc]');
+        function testFunc() { }
+        let source = { key: testFunc };
+        expect(deepCleanForJson(source)).toEqual({ key: '[Function testFunc]' });
+        let sourceAnon = { key: function () { } };
+        expect(deepCleanForJson(sourceAnon)).toEqual({ key: '[Function key]' });
+        let sourceLambda = { key: () => { } };
+        expect(deepCleanForJson(sourceLambda)).toEqual({ key: '[Function key]' });
     });
 
     test('Handles null values', () => {
-        expect(deepCleanForJson(null)).toBeNull();
+        let source = { key: null };
+        expect(deepCleanForJson(source)).toEqual({ key: null });
     });
 
     test('Handles primitive values', () => {
-        expect(deepCleanForJson(123)).toBe(123);
-        expect(deepCleanForJson('test')).toBe('test');
-        expect(deepCleanForJson(true)).toBe(true);
+        let sourceNumber = { key: 123 };
+        expect(deepCleanForJson(sourceNumber)).toEqual({ key: 123 });
+        let sourceString = { key: 'test' };
+        expect(deepCleanForJson(sourceString)).toEqual({ key: 'test' });
+        let sourceBoolean = { key: true };
+        expect(deepCleanForJson(sourceBoolean)).toEqual({ key: true });
     });
 
     test('Handles Date objects', () => {
         const date = new Date();
-        expect(deepCleanForJson(date)).toBe(date.toISOString());
+        let source = { key: date };
+        expect(deepCleanForJson(source)).toEqual({ key: date.toISOString() });
     });
 
     test('Handles RegExp objects', () => {
         const regex = /test/i;
-        expect(deepCleanForJson(regex)).toBe('/test/i');
+        let source = { key: regex };
+        expect(deepCleanForJson(source)).toEqual({ key: '/test/i' });
+    });
+    test('Class instances retained as a clone', () => {
+        class X { }
+        let source = { key: new X() };
+        let result = deepCleanForJson(source);
+        expect(result).toBeDefined();
+        expect(result.key).toBeDefined();
+        expect(result.key).not.toBe(source.key);
+        expect(result.key).toEqual(source.key);
     });
 
     test('Handles circular references', () => {
@@ -158,16 +178,16 @@ describe('Utilities.deepCleanForJson', () => {
     });
 
     test('Handles unsupported objects', () => {
-        const map = new Map();
-        expect(deepCleanForJson(map)).toBeUndefined();
-        const set = new Set();
-        expect(deepCleanForJson(set)).toBeUndefined();
-        const weakMap = new WeakMap();
-        expect(deepCleanForJson(weakMap)).toBeUndefined();
-        const weakSet = new WeakSet();
-        expect(deepCleanForJson(weakSet)).toBeUndefined();
-        const error = new Error();
-        expect(deepCleanForJson(error)).toBeUndefined();
+        let sourceMap = { key: new Map() };
+        expect(deepCleanForJson(sourceMap)).toEqual({});        
+        let sourceSet = { key: new Set() };
+        expect(deepCleanForJson(sourceSet)).toEqual({});
+        let sourceWeakMap = { key: new WeakMap() };
+        expect(deepCleanForJson(sourceWeakMap)).toEqual({});
+        let sourceWeakSet = { key: new WeakSet() };
+        expect(deepCleanForJson(sourceWeakSet)).toEqual({});
+        let sourceError = { key: new Error() };
+        expect(deepCleanForJson(sourceError)).toEqual({});
     });
 
     test('Cleans nested objects', () => {
@@ -180,7 +200,8 @@ describe('Utilities.deepCleanForJson', () => {
                 e: function() {}
             },
             f: date,
-            g: /test/i
+            g: /test/i,
+            h: [1, { i: true, j: undefined }, function() {}, date, /test/i]
         };
         const cleanedObj = deepCleanForJson(obj);
         expect(cleanedObj).toEqual({
@@ -190,7 +211,8 @@ describe('Utilities.deepCleanForJson', () => {
                 e: '[Function e]'
             },
             f: date.toISOString(),
-            g: '/test/i'
+            g: '/test/i',
+            h: [1, {i: true}, '[Function]', date.toISOString(), '/test/i']
         });
     });
 
@@ -200,6 +222,11 @@ describe('Utilities.deepCleanForJson', () => {
         const cleanedArr = deepCleanForJson(arr);
         expect(cleanedArr).toEqual([1, undefined, '[Function]', date.toISOString(), '/test/i']);
     });
+    test('Nested arrays', () => {
+        let date = new Date();
+        let source = { key: [1, undefined, function () { }, date, /test/i] };
+        expect(deepCleanForJson(source)).toEqual({ key: [1, undefined, '[Function]', date.toISOString(), '/test/i'] });
+    });    
 });
 
 // function GroupsMatch(group1: string | Array<string> | undefined | null,
@@ -359,5 +386,109 @@ describe('Utilities.findCaseInsensitiveValueInStringEnum', () => {
         expect(findCaseInsensitiveValueInStringEnum('value1', TestEnum)).toBe('Value1');
         expect(findCaseInsensitiveValueInStringEnum('value2', TestEnum)).toBe('Value2');
         expect(findCaseInsensitiveValueInStringEnum('value3', TestEnum)).toBe('VALUE3');
+    });
+    // return undefined if the enum value contains numbers
+    type TestEnumWithNumbers ={
+        FirstValue: 4,
+        SecondValue: 5
+    }
+    test('Return undefined for enum values containing numbers', () => {
+        // NOTE: TypeScript generated enums have a reverse mapping from the string to the number
+        // like this: TestEnumWithNumbers['FirstValue'] = 4, TestEnumWithNumbers[4] = 'FirstValue'
+        const fakeEnum = {
+            FirstValue: 4,
+            SecondValue: 5,
+            ThirdValue: 'Value3'
+        }
+        expect(findCaseInsensitiveValueInStringEnum('FirstValue', fakeEnum)).toBeUndefined();
+        expect(findCaseInsensitiveValueInStringEnum('SecondValue', fakeEnum)).toBeUndefined();
+        expect(findCaseInsensitiveValueInStringEnum('ThirdValue', fakeEnum)).toBeUndefined();
+    });
+
+
+});
+describe('hasLetters', () => {
+    test('Results as expected', () => {
+        expect(hasLetters('')).toBe(false);
+        expect(hasLetters('123')).toBe(false);
+        expect(hasLetters('abc')).toBe(true);
+        expect(hasLetters('1a2b3c')).toBe(true);
+        expect(hasLetters('!@#$%^&*()')).toBe(false);
+    });
+});
+describe('onlyTheseCharacters', () => {
+    test('Results as expected', () => {
+        expect(onlyTheseCharacters('', '', '')).toBe(true);
+        expect(onlyTheseCharacters('123', '123', '')).toBe(true);
+        expect(onlyTheseCharacters('abc', 'abc', '')).toBe(true);
+        expect(onlyTheseCharacters('abc', '123', '')).toBe(false);
+        // get non alphanumeric characters involved
+        expect(onlyTheseCharacters('!@#$%^&*()', '!@#$%^&*()', '')).toBe(true);
+        expect(onlyTheseCharacters('!@#$%^&*()', '!@#$%^&*', '')).toBe(false);
+        // get RegExp symbols involved. In particular, \d, \s, \w, etc
+        expect(onlyTheseCharacters('123', '', '\\d')).toBe(true);
+        expect(onlyTheseCharacters('abc', '', '\\d')).toBe(false);
+        expect(onlyTheseCharacters('abc', '', '\\w')).toBe(true);
+        expect(onlyTheseCharacters('_', 'abc', '\\w')).toBe(true);
+        expect(onlyTheseCharacters(' ', 'abc', '\\w')).toBe(false);
+        expect(onlyTheseCharacters('*', 'abc', '\\w')).toBe(false);
+        expect(onlyTheseCharacters(' ', '', '\\s')).toBe(true);
+        expect(onlyTheseCharacters('a', 'abc', '\\w')).toBe(true);
+        expect(onlyTheseCharacters('D', 'abc', '\\w')).toBe(true);  // because D is covered by \w
+
+    });
+});
+describe('hasMultipleOccurances', () => {
+    test('Results as expected', () => {
+
+        expect(hasMultipleOccurances('', '')).toBe(false);
+        expect(hasMultipleOccurances('123', '')).toBe(false);
+        expect(hasMultipleOccurances('abc', '')).toBe(false);
+        expect(hasMultipleOccurances('abc', 'a')).toBe(false);
+        expect(hasMultipleOccurances('abc', 'b')).toBe(false);
+        expect(hasMultipleOccurances('aabc', 'a')).toBe(true);
+        expect(hasMultipleOccurances('abbc', 'b')).toBe(true);
+        // strings containing several of the same character, amongst others, not always sequential
+        expect(hasMultipleOccurances('aabbccaa', 'a')).toBe(true);
+        expect(hasMultipleOccurances('abccaab', 'b')).toBe(true);
+        // non-alpha 
+        expect(hasMultipleOccurances('!@#$%^&*()', '!')).toBe(false);
+        expect(hasMultipleOccurances('!!@#$%^&*()', '!')).toBe(true);
+        expect(hasMultipleOccurances('!@#$%^&*()!', '!')).toBe(true);
+        // numbers
+        expect(hasMultipleOccurances('1234567890', '1')).toBe(false);
+        expect(hasMultipleOccurances('11234567890', '1')).toBe(true);
+        expect(hasMultipleOccurances('12345678901', '1')).toBe(true);
+
+    });
+});
+describe('cleanString', () => {
+    test('Results as expected', () => {
+        expect(cleanString('')).toBe(null);
+        expect(cleanString(' ')).toBe(null);
+        expect(cleanString('  ')).toBe(null);
+        expect(cleanString('abc')).toBe('abc');
+        expect(cleanString(' abc')).toBe('abc');
+        expect(cleanString('abc ')).toBe('abc');
+        expect(cleanString(' abc ')).toBe('abc');
+        expect(cleanString('123')).toBe('123');
+        expect(cleanString(' 123 ')).toBe('123');
+
+        expect(cleanString('!@#$%^&*()')).toBe('!@#$%^&*()');
+        expect(cleanString(' !@#$%^&*() ')).toBe('!@#$%^&*()');
+
+        expect(cleanString(null)).toBe(null);
+        expect(cleanString(undefined)).toBe(null);
+
+    });
+});
+describe('objectKeysCount', () => {
+    // function objectKeysCount(value: object | null): number
+    test('Results as expected', () => {
+        expect(objectKeysCount(null)).toBe(0);
+        expect(objectKeysCount({})).toBe(0);
+        expect(objectKeysCount({ a: 1 })).toBe(1);
+        expect(objectKeysCount({ a: 1, b: 2 })).toBe(2);
+        expect(objectKeysCount({ a: 1, b: 2, c: 3 })).toBe(3);
     });
 });

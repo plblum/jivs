@@ -215,19 +215,19 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
      * @param gatherFn 
      */
     public logError(error: Error, gatherFn: logGatheringErrorHandler): void {
-    let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
-    if(logDetails.type && typeof logDetails.type !== 'string')
-    logDetails.type = valueForLog(logDetails.type); // convert to string
+        let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
+        if (logDetails.type && typeof logDetails.type !== 'string')
+            logDetails.type = valueForLog(logDetails.type); // convert to string
 
-    logDetails.message = error.message;
-    logDetails.category = LoggingCategory.Exception;
-    if(this.showStack && error.stack)
+        logDetails.message = error.message;
+        logDetails.category = LoggingCategory.Exception;
+        if (this.showStack && error.stack)
             (logDetails as LogErrorDetails).stack = error.stack.split('\n');
 
-this.writeLog(LoggingLevel.Error, logDetails);
+        this.writeLog(LoggingLevel.Error, logDetails);
 
-if (this._chainedLogger)
-    this._chainedLogger.logError(error, gatherFn);
+        if (this._chainedLogger)
+            this._chainedLogger.logError(error, gatherFn);
     }
 }
 
@@ -288,5 +288,5 @@ export interface OverrideMinLevelWhenRule {
      * The values must be exact matches.
      * When assigned, hasData is ignored as the data property must be assigned.
      */
-    data?: { [key: string]: any};
+    data?: { [key: string]: any };
 }
