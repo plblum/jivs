@@ -13,6 +13,22 @@ import { ConsoleLoggerService } from "@plblum/jivs-engine/build/Services/Console
 import { MessageTokenResolverService } from "@plblum/jivs-engine/build/Services/MessageTokenResolverService";
 import { DataTypeCheckCondition, DataTypeCheckConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
+import { IConfigAnalysisService } from '@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService';
+import {
+    ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer,
+    DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
+    CalcFnPropertyAnalyzer
+ } from '@plblum/jivs-engine/build/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses';
+import {
+    ConditionCreatorConfigPropertyAnalyzer, AllMessagePropertiesConfigPropertyAnalyzer
+    
+} from '@plblum/jivs-engine/build/ConfigAnalysis/ValidatorConfigPropertyAnalyzerClasses';
+import {
+    ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer,
+    ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer,
+    ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer,
+    ConditionWithValueHostNamePropertyAnalyzer
+} from '@plblum/jivs-engine/build/ConfigAnalysis/ConditionConfigPropertyAnalyzerClasses';
 
 export function createMinimalValidationServices(activeCultureId: string): ValidationServices {
     let vs = new ValidationServices();
@@ -60,4 +76,34 @@ export function createMinimalValidationServices(activeCultureId: string): Valida
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
 
     return vs;
+}
+
+/**
+ * Provides the built-in analyzers for the ConfigAnalysisService.
+ * @param cas 
+ */
+export function registerConfigAnalyzers(cas: IConfigAnalysisService): void 
+{
+    cas.registerValueHostConfigPropertyAnalyzers(() => [
+        new ValueHostTypePropertyAnalyzer(),
+        new ValueHostNamePropertyAnalyzer(),
+        new DataTypePropertyAnalyzer(),
+        new LabelPropertiesAnalyzer(),
+        new ParserLookupKeyPropertyAnalyzer(),
+        new CalcFnPropertyAnalyzer()
+    ]);
+    cas.registerValidatorConfigPropertyAnalyzers(() => [
+        new AllMessagePropertiesConfigPropertyAnalyzer(),
+        new ConditionCreatorConfigPropertyAnalyzer()
+    ]);
+    cas.registerConditionConfigPropertyAnalyzers(() => [
+        new ConditionTypeConfigPropertyAnalyzer(),
+        new ConditionWithConversionLookupKeyPropertyAnalyzer(),
+        new ConditionCategoryPropertyAnalyzer(),
+        new ConditionWithChildrenPropertyAnalyzer(),
+        new ConditionWithOneChildPropertyAnalyzer(),
+        new ConditionWithValueHostNamePropertyAnalyzer(),
+        new ConditionWithSecondValueHostNamePropertyAnalyzer(),
+        new ConditionWithSecondValuePropertyAnalyzer()
+    ]);
 }

@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { IConfigAnalysisResultsExplorer, CAPathedResult, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData } from "../../src/Interfaces/ConfigAnalysisService";
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from "../../src/ConfigAnalysis/ConfigAnalysisOutputFormatterClasses";
-import { ConfigAnalysisOutputterBase, ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter, NullConfigAnalysisOutputter } from "../../src/ConfigAnalysis/ConfigAnalysisOutputterClasses";
+import { ConfigAnalysisOutputterBase, ConsoleConfigAnalysisOutputter, JsonConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter, NullConfigAnalysisOutputter } from "../../src/ConfigAnalysis/ConfigAnalysisOutputterClasses";
 import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from "../../src/ConfigAnalysis/ConfigAnalysisResultsExplorer";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { createBasicConfigAnalysisResults } from "./support";
@@ -108,6 +108,35 @@ describe('IConfigAnalysisOutputter implementations', () => {
                 valueHostQueryResults: expect.any(Array),
                 lookupKeyQueryResults: expect.any(Array)
             }));
+        });
+        test('Using JsonConsoleConfigAnalysisOutputter results in JSON of the data supplied sent to console.log', () => {
+            let reportData: ConfigAnalysisOutputReportData = {
+                valueHostQueryResults: [],
+                lookupKeyQueryResults: []
+            };
+            let logSpy = jest.spyOn(console, 'log');
+            let outputter = new JsonConsoleConfigAnalysisOutputter();
+            expect(outputter.formatter).toBeInstanceOf(JsonConfigAnalysisOutputFormatter);
+            expect((outputter.formatter as JsonConfigAnalysisOutputFormatter).space).toBe(4);
+            outputter.send(reportData);
+            expect(logSpy).toHaveBeenCalledTimes(1);
+            expect(logSpy).toHaveBeenCalledWith(expect.any(String));
+            logSpy.mockReset();
+        });
+        // same using space=2
+        test('Using JsonConsoleConfigAnalysisOutputter with space=2 results in JSON of the data supplied sent to console.log', () => {
+            let reportData: ConfigAnalysisOutputReportData = {
+                valueHostQueryResults: [],
+                lookupKeyQueryResults: []
+            };
+            let logSpy = jest.spyOn(console, 'log');
+            let outputter = new JsonConsoleConfigAnalysisOutputter(2);
+            expect(outputter.formatter).toBeInstanceOf(JsonConfigAnalysisOutputFormatter);
+            expect((outputter.formatter as JsonConfigAnalysisOutputFormatter).space).toBe(2);
+            outputter.send(reportData);
+            expect(logSpy).toHaveBeenCalledTimes(1);
+            expect(logSpy).toHaveBeenCalledWith(expect.any(String));
+            logSpy.mockReset();
         });
     });
 

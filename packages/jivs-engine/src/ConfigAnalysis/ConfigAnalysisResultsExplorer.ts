@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
@@ -41,7 +41,7 @@ import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from "./C
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from "./ConfigAnalysisOutputFormatterClasses";
 
 /**
- * Tool to explore the results of the configuration analysis. 
+ * Tool to explore the results of the configuration analysis.
  * This is the result of the IConfigAnalysisService's analyze method.
  * It provides methods to count, collect, and report the results,
  * all based on the criteria supplied.
@@ -79,7 +79,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     protected get factory(): ICAExplorerFactory
     {
         return this._factory;
-    }   
+    }
     private _factory: ICAExplorerFactory;
 
     /**
@@ -88,9 +88,9 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      */
     public hasErrors(): boolean
     {
-        if (this.hasMatchInConfigResults({ severities: [CAIssueSeverity.error] }))
+        if (this.hasMatchInConfigResults({ severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false }))
             return true;
-        if (this.hasMatchInLookupKeyResults({ severities: [CAIssueSeverity.error] }))
+        if (this.hasMatchInLookupKeyResults({ severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false }))
             return true;
         return false;
     }
@@ -105,8 +105,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     public throwOnErrors(includeCompleteResults: boolean = false, outputter?: IConfigAnalysisOutputter): void
     {
         let reportData = this.createReportData(
-            { severities: [CAIssueSeverity.error] },
-            { severities: [CAIssueSeverity.error] },
+            { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false },
+            { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false },
             includeCompleteResults);
         if ((reportData.valueHostQueryResults && reportData.valueHostQueryResults.length > 0) ||
             (reportData.lookupKeyQueryResults && reportData.lookupKeyQueryResults.length > 0)) {
@@ -134,7 +134,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     /**
      * Return a count of the number of LookupKeyCAResult objects and all children
      * found in the lookupKeyResults array matching the criteria.
-     * @param criteria 
+     * @param criteria
      */
     public countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number {
         return this.queryLookupKeyResults(criteria).length;
@@ -144,7 +144,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * Returns true if it finds one ConfigResults object that matches the criteria.
      * This is effectively the same idea as countConfigResults(criteria) but doesn't
      * waste time counting them all.
-     * @param criteria 
+     * @param criteria
      */
     public hasMatchInConfigResults(criteria: IConfigAnalysisSearchCriteria): boolean
     {
@@ -159,7 +159,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * Returns true if it finds one LookupKeyCAResult object that matches the criteria.
      * This is effectively the same idea as countLookupKeyResults(criteria) but doesn't
      * waste time counting them all.
-     * @param criteria 
+     * @param criteria
      */
     public hasMatchInLookupKeyResults(criteria: IConfigAnalysisSearchCriteria): boolean
     {
@@ -175,7 +175,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * When a CAResultBases object is found, it is added to the list
      * and its children are evaluated.
      * When not found, children are not evaluated.
-     * @param criteria 
+     * @param criteria
      */
     public queryValueHostResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
@@ -191,7 +191,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * wrapped in a CAPathedResult object.
      * When a CAResultBases object is found, it is added to the list
      * and its children are evaluated.
-     * When not found, children are not evaluated. 
+     * When not found, children are not evaluated.
      */
     public queryLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
@@ -209,20 +209,20 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * @remarks
      * This function was designed for testing purposes.
      * It lets your testing code review the results of the collect functions.
-     * @param path 
+     * @param path
      * The CAResultPath object, where the key is the feature and the value is the identifier,
      * although the feature may have a number appended to it if there are multiple children with the same feature:
      * "Condition", "Condition2", "Condition3", etc.
      * Path strings are matched case insensitively.
-     * @param foundResults 
+     * @param foundResults
      * @returns The first ConfigResult object that matches the path, or null if no match is found.
      * It also is tagged with an 'index' property that is the index of the foundResults array.
      */
     public getByResultPath(path: CAResultPath, foundResults: Array<CAPathedResult<any>>): CAResultBase | null {
         /**
          * Case insensitive matching on both key and value.
-         * @param foundResult 
-         * @returns 
+         * @param foundResult
+         * @returns
          */
         function pathMatches(foundResult: CAPathedResult<any>): boolean {
             if (pathLength !== Object.keys(foundResult.path).length)
@@ -310,8 +310,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      *    lookupKeyResults: [ ... ]  // or null
      * }
      * ```
-     * 
-     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as 
+     *
+     * @param valueHostCriteria - The criteria to match against the ValueHostResults array. Effectively the same as
      * calling queryValueHostResults(valueHostCriteria). Creates the valueHostQueryResults property.
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or an empty object.
@@ -319,7 +319,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
      * calling queryLookupKeyResults(lookupKeyCriteria). Creates the lookupKeyQueryResults property.
      * If you want to omit this, pass in false or null.
      * If you want all results, pass in true or an empty object.
-     * @param includeCompleteResults - When true, include the explorer.results object 
+     * @param includeCompleteResults - When true, include the explorer.results object
      * as the overallResults property.
      * @returns  An object with up to 3 properties: valueHostResults, lookupKeyResults, and overallResults.
      */
@@ -335,7 +335,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
                 reportData.valueHostQueryResults = this.queryValueHostResults(null);
             }
             else
-            reportData.valueHostQueryResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
+                reportData.valueHostQueryResults = this.queryValueHostResults(valueHostCriteria as IConfigAnalysisSearchCriteria);
         if (lookupKeyCriteria !== false && lookupKeyCriteria !== null)
             if (lookupKeyCriteria === true)
             {
@@ -372,7 +372,7 @@ export class CASearcher implements ICASearcher {
         this._allMatch = criteria === null || Object.keys(criteria).length === 0;
         this._criteria = this._allMatch ? {} : this.prepCriteria(criteria)!;
     }
-    
+
     protected get criteria(): IConfigAnalysisSearchCriteria {
         return this._criteria;
     }
@@ -394,10 +394,10 @@ export class CASearcher implements ICASearcher {
     }
     /**
      * Return a clone of the criteria object with all string values converted to lowercase.
-     * This is to prepare for case-insensitive matching without having 
+     * This is to prepare for case-insensitive matching without having
      * each Explorer class do the conversion.
-     * @param criteria 
-     * @returns 
+     * @param criteria
+     * @returns
      */
     protected prepCriteria(criteria: IConfigAnalysisSearchCriteria | null): IConfigAnalysisSearchCriteria | null {
         if (criteria !== null) {
@@ -420,7 +420,7 @@ export class CASearcher implements ICASearcher {
         }
         // istanbul ignore next // currently preCriteria is only called when criteria is not null
         return null;
-    }    
+    }
 
     /**
      * Determines if the given feature matches the search criteria.
@@ -446,7 +446,7 @@ export class CASearcher implements ICASearcher {
         if (this.allMatch)
             return true;
         if (!this.criteria.severities || this.criteria.severities.length === 0)
-            return undefined;        
+            return undefined;
         if (severity === undefined)
             severity = null;
         // severity of null will match if the criteria includes null in the array.
@@ -532,7 +532,7 @@ export class CASearcher implements ICASearcher {
     }
 
     /**
-     * 
+     *
      * @param valuesToMatch - From a single property of Criteria. Expects all strings to be lowercase.
      * @param valueFromResult - To compare to valuesToMatch case insensitively.
      * @returns When valuesToMatch is null or empty, return undefined
@@ -546,11 +546,11 @@ export class CASearcher implements ICASearcher {
         if (!valueFromResult)
             return false;
         return valuesToMatch.includes(valueFromResult.toLowerCase());
-    }    
+    }
 }
 
 /**
- * For building an object that can handle a specific type of configuration object based 
+ * For building an object that can handle a specific type of configuration object based
  * on the feature property. These classes are registered with the ConfigAnalysisResultsExplorer
  * and are created in a factory approach based on the config result object.
  */
@@ -572,7 +572,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     {
         return this._result;
     }
-    
+
     /**
      * A fixed value representing the only feature string that is supported by this class.
      * Each CAResultBase object has a feature property that is matched to this one.
@@ -586,7 +586,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
      * It is null when the feature lacks some useful identifer.
      * This value, together with feature(), are used to build a path to the
      * associated CAResultBase object. It is used in the path even if null.
-     */    
+     */
     public abstract identifier(): string | null;
 
     /**
@@ -595,9 +595,9 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
      * Note that Identifier can be null.
      * Tt is possible to have duplicate feature entries, especially
      * when conditions have their own child conditions. In that case, the feature
-     * is repeated with a number appended to it after the first. 
+     * is repeated with a number appended to it after the first.
      * For example, "Condition#2", "Condition#3".
-     * @returns 
+     * @returns
      */
     protected addPathElement(path: CAResultPath): void {
         let baseFeature = this.feature();
@@ -614,23 +614,23 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     /**
      * Determines if the result matches the criteria.
      * It does not evaluate any children of the result.
-     * 
+     *
      * To match, all assigned criteria must match SO LONG AS
      * it is applicable to the object being evaluated.
      * For example, when the feature is 'LookupKey', the lookupKeys criteria is used.
-     * 
+     *
      * @param searcher - A search tool with criteria to match against.
-     * @returns True if the result matches the all applicable criteria, 
+     * @returns True if the result matches the all applicable criteria,
      * false if it does not match at least one of the applicible criteria,
      * and undefined if the criteria is not applicable to the object.
      */
     public matchThis(searcher: ICASearcher): boolean | undefined {
         if (!searcher || searcher.allMatch)
             return true;
-        let fResult = searcher.matchFeature(this.feature());
+        let fResult = this.matchFeature(searcher);
         if (fResult === false)
             return false;
-        let sResult = searcher.matchSeverity((this.result as any).severity);
+        let sResult = this.matchSeverity(searcher);
         if (sResult === false)
             return false;
         let wResult = this.matchThisWorker(searcher);
@@ -643,12 +643,22 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
         return true;
     }
 
+    protected matchFeature(searcher: ICASearcher): boolean | undefined
+    {
+        return searcher.matchFeature(this.feature());
+    }
+    protected matchSeverity(searcher: ICASearcher): boolean | undefined
+    {
+        return searcher.matchSeverity((this.result as any).severity);
+    }
+
+
     /**
      * Provides a way for subclasses to extend the match method to include their own criteria.
      * Note that the matchThis() method has already handled criteria = null
      * and these criteria members: features, severities.
      * @param searcher - A search tool with criteria to match against.
-     * @returns True if the result matches the all applicable criteria, 
+     * @returns True if the result matches the all applicable criteria,
      * false if it does not match at least one of the applicible criteria,
      * and undefined if the criteria is not applicable to the object.
      */
@@ -672,8 +682,8 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     /**
      * Returns the first ConfigResults object that matches the criteria
      * amongst itself and all of its children.
-     * @param searcher 
-     * @param factory 
+     * @param searcher
+     * @param factory
      * @path Collects feature/identifier pairs to form the path to this object.
      * @returns The first ConfigResults object that matches the criteria,
      * or null if no match is found.
@@ -687,7 +697,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
         let match = this.matchThis(searcher);
         if (match)
             return { path: newPath, result: this.result };
-        
+
         if (match !== false || !searcher.skipChildrenIfParentMismatch)
             for (let child of this.children()) {
                 let childExplorer = factory.create(child);
@@ -719,7 +729,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
         let match = this.matchThis(searcher);
         if (match === true) {
             matches.push({ path: newPath, result: this.result });
-        }   
+        }
         if (match !== false || !searcher.skipChildrenIfParentMismatch)
             this.children().forEach((child) => {
                 let childExplorer = factory.create(child);
@@ -755,7 +765,7 @@ export class ValueHostConfigCAResultExplorer extends CAExplorerBase<ValueHostCon
 
     /**
      * Several sources: properties, validatorResults, enablerConditionResult.
-     * @returns 
+     * @returns
      */
     public children(): Array<CAResultBase> {
         let children: Array<CAResultBase> = [];
@@ -801,7 +811,7 @@ export class ValidatorConfigCAResultExplorer extends CAExplorerBase<ValidatorCon
 }
 
 /**
- * For exploring ConditionConfigCAResult objects. 
+ * For exploring ConditionConfigCAResult objects.
  * Their identifier is the conditionType property and their feature is CAFeature.Condition.
  * NOTE: There may be multiple Conditions found in a single CAPathResult, because
  * of result.childrenResults. All have the same feautre name, "feature", here.
@@ -825,7 +835,7 @@ export class ConditionConfigCAResultExplorer extends CAExplorerBase<ConditionCon
 
     /**
      * Children are from properties and childrenResults.
-     * @returns 
+     * @returns
      */
     public children(): Array<CAResultBase> {
         let children: Array<CAResultBase> = [];
@@ -910,7 +920,7 @@ export class ConverterServiceCAResultExplorer extends CAExplorerBase<ConverterSe
     public children(): Array<CAResultBase> {
         return [];
     }
-}  
+}
 
 
 /**
@@ -990,7 +1000,7 @@ export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCu
 /**
  * For exploring ParserFoundCAResult objects.
  * Their identifier is the classFound and their feature is CAFeature.parserFound.
- * NOTE: It is unusual to use classFound as the identifier. 
+ * NOTE: It is unusual to use classFound as the identifier.
  * In this case, we may have several parsers found, only differentiated by the class name.
  * This class is never generated if it class was not found.
  * Supports criteria.serviceNames = ServiceName.parser.
@@ -1035,7 +1045,7 @@ export class FormatterServiceCAResultExplorer extends CAExplorerBase<FormatterSe
     public children(): Array<CAResultBase> {
         return this.result.results ?? [];
     }
-}   
+}
 
 /**
  * For exploring FormattersByCultureCAResult objects.
@@ -1063,7 +1073,7 @@ export class FormattersByCultureCAResultExplorer extends CAExplorerBase<Formatte
         return [];
     }
 }
-//#endregion 
+//#endregion
 
 
 /**
@@ -1102,16 +1112,35 @@ export class LocalizedPropertyCAResultExplorer extends CAExplorerBase<LocalizedP
     public identifier(): string | null {
         return this.result.l10nPropertyName;
     }
+    protected matchSeverity(searcher: ICASearcher): boolean | undefined
+    {
+        // if there a cultureText severity matches
+        // the criteria's severity, return true.
+        // This is a special case because cultureText.severity
+        // is always set, and we just want to know if one of them matches.
+        let ct = this.result.cultureText;
+        if (ct)
+            for (let key in ct)
+            {
+                let info = ct[key];
+                if (info)
+                    if (searcher.matchSeverity(info.severity) === true)
+                        return true;
+            }
 
+        return searcher.matchSeverity((this.result as any).severity);
+    }
     /**
      * Matches both the propertyName and l10nPropertyName properties against criteria.propertyNames.
-     * In this case, either match is sufficient to return true.
-     * @returns 
+     * In this case, either match is sufficient to return true, unless there is
+     * cultureText with an error, which will cause a false return.
+     * @returns
      */
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
         // if either is true, return true
         let pResult = searcher.matchPropertyName(this.result.propertyName);
         let lpResult = searcher.matchPropertyName(this.result.l10nPropertyName);
+
         if (pResult || lpResult)
             return true;
         // we are left with only false and undefined
@@ -1147,7 +1176,7 @@ export class ErrorCAResultExplorer extends CAExplorerBase<ErrorCAResult>
 }
 
 /**
- * A factory for creating the appropriate ConfigResultsExplorer object 
+ * A factory for creating the appropriate ConfigResultsExplorer object
  * for the ConfigResults object based its the feature property.
  */
 export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
@@ -1176,9 +1205,9 @@ export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
     }
     /**
      * Create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.
-     * It is a factory method that creates the object from the functions registered with 
+     * It is a factory method that creates the object from the functions registered with
      * registerConfigResultsExplorer().
-     * @param configResult 
+     * @param configResult
      * @returns A new ConfigResultsExplorer object assigned to the configResult object.
      */
     public create(configResult: CAResultBase): ICAExplorerBase<CAResultBase> {

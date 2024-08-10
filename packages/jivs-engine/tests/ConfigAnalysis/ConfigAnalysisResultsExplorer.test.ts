@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { MockValidationServices } from './../TestSupport/mocks';
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import {
     CAPathedResult, CAResultPath, ComparerServiceCAResult,
@@ -29,15 +28,26 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { ServiceName } from '../../src/Interfaces/ValidationServices';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
-import { createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult, createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults, attachSeverity, createIdentifierServiceCAResult, createServices } from './support';
-import { NullConfigAnalysisOutputter } from '../../src/ConfigAnalysis/ConfigAnalysisOutputterClasses';
+import {
+    createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult,
+    createConditionConfigResult, createLookupKeyCAResult,
+    createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults,
+    attachSeverity, createIdentifierServiceCAResult
+} from './support';
+import { JsonConsoleConfigAnalysisOutputter, NullConfigAnalysisOutputter } from '../../src/ConfigAnalysis/ConfigAnalysisOutputterClasses';
 import { JsonConfigAnalysisOutputFormatter } from '../../src/ConfigAnalysis/ConfigAnalysisOutputFormatterClasses';
 import { createValidationServicesForTesting, registerConfigAnalyzers } from '../TestSupport/createValidationServices';
 import { ValidationServices } from '../../src/Services/ValidationServices';
-import { ValidationManagerConfigBuilderFactory } from '../../src/Services/ManagerConfigBuilderFactory';
 import { ValidationManagerConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
 import { DataTypeParserService } from '../../src/Services/DataTypeParserService';
+import { RequireTextConditionConfig, RequireTextCondition, LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { ConditionType } from '../../src/Conditions/ConditionTypes';
+import { ConditionFactory } from '../../src/Conditions/ConditionFactory';
+import { DataTypeConverterService } from '../../src/Services/DataTypeConverterService';
+import { DataTypeComparerService } from '../../src/Services/DataTypeComparerService';
+import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
+import { ShortDatePatternParser } from '../../src/DataTypes/DataTypeParsers';
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -2491,6 +2501,7 @@ describe('LocalizedPropertyCAResultExplorer class', () => {
     // base class covers most of the tests.
     // This class has no children, an identifier of l10nPropertyName, and matches to criteria.propertyNames
     // against both propertyName and l10nPropertyName.
+    // It has a cultureText property which also has a severity property to match against.
     function createLocalizedPropertyCAResult(l10nPropertyName: string | undefined,
         propertyName: string | undefined): LocalizedPropertyCAResult {
         return {
@@ -2564,6 +2575,64 @@ describe('LocalizedPropertyCAResultExplorer class', () => {
             let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
             let searcher = new CASearcher({ errorCodes: ['Error1'] });
             expect(explorer.matchThis(searcher)).toBe(undefined);
+        });
+        // now test the cultureText property. Its format is
+        // { cultureId: { text: string, severity: CAIssueFound, message ?: string } }
+        // It should only influence the results when the search criteria has a severity.
+        test('returns true when cultureText.severity matches the criteria', () => {
+            let propertyResult = createLocalizedPropertyCAResult('l10nProperty1', 'Property1');
+            propertyResult.cultureText = {
+                'en': { text: 'result', severity: CAIssueSeverity.error }
+            };
+            
+            let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
+            let searcher = new CASearcher({ severities: [CAIssueSeverity.error, null] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        test('when cultureText.severity does not match the criteria, use the result.severity against criteria. In this case, match to warning which is false', () => {
+            let propertyResult = createLocalizedPropertyCAResult('l10nProperty1', 'Property1');
+            propertyResult.cultureText = {
+                'en': { text: 'result', severity: CAIssueSeverity.error }
+            };
+            
+            let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
+            let searcher = new CASearcher({ severities: [CAIssueSeverity.warning] });
+            expect(explorer.matchThis(searcher)).toBe(false);
+        });
+        // same but cultureText.severity=warning. Returns true
+        test('returns true when cultureText.severity matches the criteria of warning', () => {
+            let propertyResult = createLocalizedPropertyCAResult('l10nProperty1', 'Property1');
+            propertyResult.cultureText = {
+                'en': { text: 'result', severity: CAIssueSeverity.warning }
+            };
+            
+            let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
+            let searcher = new CASearcher({ severities: [CAIssueSeverity.warning] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+        // same but cultureText.severity=info. With 2 cultureTexts, and one with info.
+        // return true
+        test('returns true when cultureText.severity matches the criteria of info', () => {
+            let propertyResult = createLocalizedPropertyCAResult('l10nProperty1', 'Property1');
+            propertyResult.cultureText = {
+                'en': { text: 'result', severity: CAIssueSeverity.info },
+                'fr': { text: 'result', severity: CAIssueSeverity.error }
+            };
+            
+            let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
+            let searcher = new CASearcher({ severities: [CAIssueSeverity.info] });
+            expect(explorer.matchThis(searcher)).toBe(true);
+        });
+
+        test('returns undefined when cultureText.severity is assigned but criteria.severities is undefined', () => {
+            let propertyResult = createLocalizedPropertyCAResult('l10nProperty1', 'Property1');
+            propertyResult.cultureText = {
+                'en': { text: 'result', severity: CAIssueSeverity.error }
+            };
+            
+            let explorer = new LocalizedPropertyCAResultExplorer(propertyResult);
+            let searcher = new CASearcher({ errorCodes: ['Error1'] });
+            expect(explorer.matchThis(searcher)).toBeUndefined();
         });
     });
     describe('children', () => {
@@ -3956,8 +4025,117 @@ describe('ConfigAnalysisResultExplorer class', () => {
             )
             let explorer = builder.analyze();
 //            explorer.reportToConsole(true, true, true, 2);
-            expect(explorer.hasErrors()).toBe(true);
+            //            expect(explorer.hasErrors()).toBe(true);
+            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
+
         });
+        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
+            let services = new ValidationServices();
+            services.cultureService.register({ cultureId: 'en' });
+            services.dataTypeIdentifierService = new DataTypeIdentifierService();
+            services.dataTypeParserService = new DataTypeParserService();
+            services.dataTypeParserService.register(new ShortDatePatternParser(LookupKey.Date,
+                ['fr'], // not a matching culture
+                {
+                    order: 'mdy',
+                    shortDateSeparator: '/',
+                    twoDigitYearBreak: 29
+                }));            
+            
+            registerConfigAnalyzers(services.configAnalysisService);
+
+            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+
+            builder.input('NewField', LookupKey.Date,
+                {
+                    parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
+                }
+            );
+            let explorer = builder.analyze();
+//            explorer.reportToConsole(true, true, true, 2);
+            //            expect(explorer.hasErrors()).toBe(true);
+            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
+
+        });        
+        // InputValueHost with a RequireTextValidator, using TextLocalizerService to get
+        // errorMessagel10n value for 'en' and 'es', but only 'en' is registered.
+        // Should report error for 'es' not found.
+        test('Build an InputValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
+            let services = new ValidationServices();
+            services.dataTypeIdentifierService = new DataTypeIdentifierService();
+            services.dataTypeParserService = new DataTypeParserService();
+            services.cultureService.register({ cultureId: 'en' });
+            services.cultureService.register({ cultureId: 'es' });
+            services.conditionFactory = new ConditionFactory();
+            services.conditionFactory.register<RequireTextConditionConfig>(
+                ConditionType.RequireText, (config)=> new RequireTextCondition(config));
+            
+            services.textLocalizerService.register('RequireEM', {
+                'en': 'This is required'
+            });
+            
+            registerConfigAnalyzers(services.configAnalysisService);
+
+            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+
+            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            let explorer = builder.analyze();
+            explorer.reportToConsole({ severities: [CAIssueSeverity.error, null], features: [CAFeature.l10nProperty], skipChildrenIfParentMismatch: false }, false, true, 2);
+            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
+        });
+        // same but both 'en' and 'es' are entries in TextLocalizerService.
+        // Should not throw
+        test('Build an InputValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
+            let services = new ValidationServices();
+            services.dataTypeIdentifierService = new DataTypeIdentifierService();
+            services.dataTypeParserService = new DataTypeParserService();
+            services.cultureService.register({ cultureId: 'en' });
+            services.cultureService.register({ cultureId: 'es' });
+            services.conditionFactory = new ConditionFactory();
+            services.conditionFactory.register<RequireTextConditionConfig>(
+                ConditionType.RequireText, (config)=> new RequireTextCondition(config));
+            
+            services.textLocalizerService.register('RequireEM', {
+                'en': 'This is required',
+                'es': 'Esto es necesario'
+            });
+            
+            registerConfigAnalyzers(services.configAnalysisService);
+
+            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+
+            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            let explorer = builder.analyze();
+            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).not.toThrow();
+        });
+        test('Report shows Converter for LessThanEqualValue in LookupKeyResults', () => {
+            let services = new ValidationServices();
+            services.dataTypeIdentifierService = new DataTypeIdentifierService();
+            services.dataTypeConverterService = new DataTypeConverterService();
+            services.dataTypeConverterService.register(new UTCDateOnlyConverter());
+            services.dataTypeComparerService = new DataTypeComparerService();
+            services.conditionFactory = new ConditionFactory();
+            services.conditionFactory.register<LessThanOrEqualValueConditionConfig>(
+                ConditionType.LessThanOrEqualValue,
+                (config) => new LessThanOrEqualValueCondition(config));
+            
+            registerConfigAnalyzers(services.configAnalysisService);
+
+            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            builder.input('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
+                conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
+            });
+            let explorer = builder.analyze();
+            
+            const includeValueHostResults = false;
+            const includeLookupKeyResults = true;
+            const includeCompleteResults = true;
+            explorer.reportToConsole(
+                includeValueHostResults,
+                includeLookupKeyResults,
+                includeCompleteResults, 2);
+
+        });        
     });
 
 });

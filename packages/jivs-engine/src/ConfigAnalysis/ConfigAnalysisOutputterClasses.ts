@@ -100,6 +100,16 @@ export class ConsoleConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
 }
 
 /**
+ * ConsoleConfigAnalysisOutputter that uses JsonConfigAnalysisOutputFormatter.
+ */
+export class JsonConsoleConfigAnalysisOutputter extends ConsoleConfigAnalysisOutputter
+{
+    constructor(space?: string | number) {
+        super(new JsonConfigAnalysisOutputFormatter(space));
+    }
+}
+
+/**
  * This class works with a string, delivering it to the ILoggerService object 
  * supplied in the constructor.
  * It allows for rich delivery of the content through whatever implementation

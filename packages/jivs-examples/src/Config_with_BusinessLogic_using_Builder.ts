@@ -51,7 +51,6 @@ import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerCon
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { CAIssueSeverity } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 
 /* General steps:
  1. UI layer creates the ValidationServices object and Builder object.
