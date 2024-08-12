@@ -12,7 +12,8 @@ import {
     IAnalysisResultsHelper,
     ErrorCAResult,
     ClassNotFound,
-    CAFeature
+    CAFeature,
+    ServiceWithLookupKeyCAResultBase
 } from "../Interfaces/ConfigAnalysisService";
 import { ServiceName } from "../Interfaces/ValidationServices";
 import { ValidatorConfig, IValidator } from "../Interfaces/Validator";
@@ -73,27 +74,61 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @returns if undefined, there was no sample value found.
      * Otherwise the value (including null) is a sample value.
      */
-    public getSampleValue(lookupKey: string, valueHostConfig: ValueHostConfig): any
+    public getSampleValue(lookupKey: string | null, valueHostConfig: ValueHostConfig | null): any
     {
         return this.analysisArgs.sampleValues.getSampleValue(lookupKey, valueHostConfig);
     }
+
     /**
-     * Tries to add a lookup key and adds the associated service as a LookupKeyCAResult object
-     * into results.lookupKeyResults.
-     * Validates the lookup key string.
+     * Registers a lookup key as a LookupKeyCAResult object into results.lookupKeyResults.
+     * If a service is supplied, it attempts to analyze it and attach it to the 
+     * LookupKeyCAResult.serviceResults array.
      * Uses LookupKeyAnalyzers to analyze service specific lookup keys against
      * their factories, services, and business rules.
+     * 
+     * The Lookup Key is cleaned up using checkForRealLookupKeyName and that value
+     * is used as the lookup key in the LookupKeyCAResult object.
+     * Its the value the caller should also use for further analysis.
      * 
      * @param lookupKey - The lookup key to add.
      * @param serviceName - The name of the service associated with the lookup key.
      * If null, it means registering just the dataType, which uses ServiceName.identifier.
      * @param valueHostConfig - The configuration for the value host.
+     * NOTE: Services often use its dataType property as the LookupKey fallback.
+     * It is often undefined, where the DataTypeIdentifier service resolves it at runtime.
+     * In this case, ConfigAnalysisService has emulated the DataTypeIdentifier service
+     * using the SampleValues system together with the DataTypeIdentifier in hopes
+     * that the dataType is now assigned. Yet, expect that the dataType is still undefined.
      * @returns The lookup key added to the LookupKeyCAResult object.
      * This value may have been updated from the original lookupKey, if the original
      * needed trimming or a case sensitive match.
      */
-    public registerLookupKey(lookupKey: string | null | undefined,
+    public registerServiceLookupKey(lookupKey: string | null | undefined,
         serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): string | null {
+        let lk = this.registerLookupKey(lookupKey, !serviceName || serviceName === ServiceName.identifier);
+        if (!lk)
+            return null;
+        let resolvedLookupKey = lk.lookupKey;
+        if (serviceName) {
+            this.registerServiceWithLookupKey(serviceName, lk, resolvedLookupKey, valueHostConfig!);
+        }
+        return resolvedLookupKey;
+    }
+
+    /**
+     * Validates a lookup key and registers it in the LookupKeyCAResult object.
+     * If that object already exists, it will be retained.
+     * 
+     * The lookup key anticipates being a mismatched case or whitespace error.
+     * It will try to find the correct lookup key name, and use it if found.
+     * Always check result's lookupKey property for the correct lookup key name.
+     * @param lookupKey - The lookup key to validate.
+     * @param usedAsDataType - If true, the lookup key is used as a data type.
+     * Generally this is set to true when registering the ValueHostConfig.dataType property.
+     * @returns The LookupKeyCAResult object that contains the lookup key or null
+     * if the lookup key is null or an empty string.
+     */
+    public registerLookupKey(lookupKey: string | null | undefined, usedAsDataType: boolean): LookupKeyCAResult | null {
         if (!lookupKey) return null;
         // we accept whitespace errors here and will report them at their source
         if (lookupKey.trim().length === 0) return null;  // ignore empty strings
@@ -109,7 +144,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 lk = <LookupKeyCAResult>{
                     feature: CAFeature.lookupKey,
                     lookupKey: lookupKey,
-                    usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
+                    usedAsDataType: usedAsDataType,
                     serviceResults: []
                 };
                 if (realInfo.severity !== undefined)
@@ -119,29 +154,49 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 this.results.lookupKeyResults.push(lk);
             }
         };
-        if (serviceName) {
-            let si = lk.serviceResults.find(si => si.feature === serviceName);
-            if (!si) {
-                let analyzer = this.lookupKeyAnalyzers.get(serviceName);
-                if (analyzer) {
-                    si = analyzer.analyze(lookupKey, valueHostConfig);
-                    lk.serviceResults.push(si);
+        return lk;
+    }
 
-                    if (si.tryFallback) {
-                        let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
-                        if (fallbackLookupKey) {
-                            this.registerLookupKey(fallbackLookupKey, serviceName, valueHostConfig); // RECURSION
-                        }
+    /**
+     * Attach a service to a lookup key. If the service is not found, it will be added.
+     * 
+     * The lookup key is analyzed by the service's LookupKeyAnalyzer, which takes
+     * the value in analyzeThisLookupKey or the lookupKey from lookupKeyResult.
+     * @param serviceName - The name of the service to add to the lookup key.
+     * @param lookupKeyResult - The LookupKeyCAResult object to add the service to.
+     * @param analyzeThisLookupKey
+     * This is the lookup key to be analyzed by the service's LookupKeyAnalyzer.
+     * Since the analyzer often is passed lookupKeyResult.lookupKey, this is a convenience parameter
+     * and can be left null to use lookupKeyResult.lookupKey.
+     * It is assumed that this value has already been cleaned up of whitespace and case errors
+     * by calling checkForRealLookupKeyName or registerLookupKey.
+     * @param valueHostConfig - The ValueHostConfig that contains the analyzeThisLookupKey
+     * within itself or its children.
+     * @returns The ServiceWithLookupKeyCAResultBase object specific to that service.
+     */
+    public registerServiceWithLookupKey(serviceName: ServiceName, lookupKeyResult: LookupKeyCAResult, 
+        analyzeThisLookupKey: string | null, valueHostConfig: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
+        let lookupKey = analyzeThisLookupKey ?? lookupKeyResult.lookupKey;
+        let si = lookupKeyResult.serviceResults.find(si => si.feature === serviceName);
+        if (!si) {
+            let analyzer = this.lookupKeyAnalyzers.get(serviceName);
+            if (analyzer) {
+                si = analyzer.analyze(lookupKey, valueHostConfig);
+                lookupKeyResult.serviceResults.push(si);
+
+                if (si.tryFallback) {
+                    let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+                    if (fallbackLookupKey) {
+                        this.registerServiceLookupKey(fallbackLookupKey, serviceName, valueHostConfig); // RECURSION
                     }
                 }
-                else
-                    throw new CodingError(`No analyzer found for service "${serviceName}"`);
             }
-
+            else
+                throw new CodingError(`No analyzer found for service "${serviceName}"`);
         }
-        if (serviceName === ServiceName.identifier)
-            lk.usedAsDataType = true; 
-        return lookupKey;
+        if (serviceName === ServiceName.identifier) 
+            lookupKeyResult.usedAsDataType = true;
+        return si;
     }
     /**
      * We want to discover the actual lookup key name, even if it is a case insensitive match.
@@ -182,7 +237,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     }
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
+ * It also uses registerServiceLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking
@@ -211,7 +266,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         properties: Array<PropertyCAResult | ErrorCAResult>,
         className?: string, servicePropertyName?: string): void {
         let originalLK = lookupKey;
-        let revisedLK = this.registerLookupKey(lookupKey, serviceName, containingValueHostConfig);
+        let revisedLK = this.registerServiceLookupKey(lookupKey, serviceName, containingValueHostConfig);
         if (!revisedLK) return;
         
         lookupKey = revisedLK; // register has trimmed it and possibly changed the case
@@ -236,10 +291,10 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             return;
         }
         let notFound = false;
-        // expect this find() to always return a match due to the earlier call to registerLookupKey
+        // expect this find() to always return a match due to the earlier call to registerServiceLookupKey
         let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey)!;
         if (serviceName) {
-        // expect this find() to always return a match due to the earlier call to registerLookupKey
+        // expect this find() to always return a match due to the earlier call to registerServiceLookupKey
             let serviceInfo = lk.serviceResults.find(si => si.feature === serviceName)!;
             if (serviceInfo.tryFallback) {
                 let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
@@ -340,7 +395,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 let parts = match.split(':');
                 if (parts.length > 1) {
                     let formatterKey = parts[1].substring(0, parts[1].length - 1);  // remove the closing }
-                    this.registerLookupKey(formatterKey, ServiceName.formatter, vhc);  // uses DataTypeFormatterLookupKeyAnalyzer
+                    this.registerServiceLookupKey(formatterKey, ServiceName.formatter, vhc);  // uses DataTypeFormatterLookupKeyAnalyzer
                 }
             }
             else {

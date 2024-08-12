@@ -31,6 +31,7 @@ import { ValueHostConfigAnalyzer } from '../ConfigAnalysis/ValueHostConfigAnalyz
 import { DataTypeComparerAnalyzer } from '../ConfigAnalysis/DataTypeComparerAnalyzer';
 import { IAnalysisResultsHelper } from '../Interfaces/ConfigAnalysisService';
 import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from "../ConfigAnalysis/ConfigAnalysisResultsExplorer";
+import { ValueHostConfig } from "../Interfaces/ValueHost";
 
 /**
  * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisService:interface
@@ -74,8 +75,13 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
         
         // Analyze the config and populate the results object
         config.valueHostConfigs.forEach(vhConfig => {
+            let dtFixed = this.tryFixDataTypeLookupKey(vhConfig, helper);
+
             let result = analysisArgs.valueHostConfigAnalyzer!.analyze(vhConfig, null, results.valueHostResults);
             results.valueHostResults.push(result);
+            
+            if (dtFixed)
+                vhConfig.dataType = undefined; 
         });
 
         this.gatherDataTypeIdentifierLookupKeys(helper);
@@ -146,6 +152,30 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
     }
 
     /**
+     * We allow ValueHostConfig.dataType to be unassigned, and expect
+     * a DataTypeIdentifier to identify the Lookup Key based on the actual data.
+     * Since services often depend on ValueHostConfig.dataType, we want them to 
+     * handle the case where it is not assigned. This function will try to fix
+     * the ValueHostConfig.dataType by identifying the data type of the sample value
+     * supplied in options.valueHostsSampleValues.
+     * If fixed, it returns true.
+     */
+    protected tryFixDataTypeLookupKey(valueHostConfig: ValueHostConfig,
+        helper: IAnalysisResultsHelper<TServices>): boolean {
+
+        if (!valueHostConfig.dataType) {
+            let sampleValue = helper.getSampleValue(null, valueHostConfig);
+            if (sampleValue) {
+                let dtlk = this.services.dataTypeIdentifierService.identify(sampleValue);
+                if (dtlk) {
+                    valueHostConfig.dataType = dtlk;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
      * Handles IDataTypeIdentifier objects through the DataTypeIdentifierService.
      * There are no lookupKeys that select a DataTypeIdentifier. 
      * Instead, the data value supplied to its supportsValue() function 
@@ -169,7 +199,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
         for (let idt of this.services.dataTypeIdentifierService.getAll()) {
             if (!builtInIdentifiers.includes(idt.dataTypeLookupKey) ||
                 helper.results.lookupKeyResults.find(lk => lk.lookupKey === idt.dataTypeLookupKey))
-                helper.registerLookupKey(idt.dataTypeLookupKey, ServiceName.identifier, null);   // uses DataTypeIdentifierLookupKeyAnalyzer
+                helper.registerServiceLookupKey(idt.dataTypeLookupKey, ServiceName.identifier, null);   // uses DataTypeIdentifierLookupKeyAnalyzer
         }
     }    
     /**

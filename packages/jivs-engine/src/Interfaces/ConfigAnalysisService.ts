@@ -778,7 +778,7 @@ export interface ISampleValues {
       * Otherwise the value (including null) is a sample value.
       */
    
-     getSampleValue(lookupKey: string, valueHostConfig: ValueHostConfig): any;
+     getSampleValue(lookupKey: string | null, valueHostConfig: ValueHostConfig | null): any;
      /**
       * Registers a sample value for the lookup key.
       * If the lookup key is already registered, it will replace the sample value.
@@ -1256,7 +1256,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @returns if undefined, there was no sample value found.
      * Otherwise the value (including null) is a sample value.
      */
-    getSampleValue(lookupKey: string, valueHostConfig: ValueHostConfig): any;
+    getSampleValue(lookupKey: string | null, valueHostConfig: ValueHostConfig | null): any;
 
     /**
      * Tries to add a lookup key and adds the associated service as a LookupKeyCAResult object
@@ -1273,11 +1273,11 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * needed trimming or a case sensitive match.
      * If there was no lookup key, returns null.
      */
-    registerLookupKey(lookupKey: string | null | undefined, serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): string | null;
+    registerServiceLookupKey(lookupKey: string | null | undefined, serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): string | null;
 
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
+ * It also uses registerServiceLookupKey to add the lookup key to the LookupKeyCAResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking

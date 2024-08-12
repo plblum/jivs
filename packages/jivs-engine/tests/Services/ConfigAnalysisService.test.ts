@@ -242,7 +242,7 @@ describe('ConfigAnalysisServiceBase class', () => {
         test('LookupKey.Number as a converter means there is also an entry for ServiceName.identifier', () => {
             let setup = setupForTheseTests([null, null]);
 
-            setup.helper.registerLookupKey(LookupKey.Number, ServiceName.converter, { name: 'testValueHost' });
+            setup.helper.registerServiceLookupKey(LookupKey.Number, ServiceName.converter, { name: 'testValueHost' });
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
             expect(setup.results.lookupKeyResults).toEqual([
                 {

@@ -117,7 +117,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         let lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey);
         if (!lookupKeyResult)
         {
-            lookupKey = this.helper.registerLookupKey(lookupKey, null, valueHostConfig);
+            lookupKey = this.helper.registerServiceLookupKey(lookupKey, null, valueHostConfig);
             // istanbul ignore next // defensive. We should always find the lookup key.
             if (!lookupKey)
                 return null;

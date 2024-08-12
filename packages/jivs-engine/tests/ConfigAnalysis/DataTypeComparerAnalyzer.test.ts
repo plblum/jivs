@@ -88,7 +88,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 services.dataTypeIdentifierService.register(new NumberHosterIdentifier());
             services.dataTypeComparerService.register(new NumberHosterComparer());
             let helper = setupHelper(services);
-            let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
+            let actualLookupKey = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
             if (existingServiceInfo)// prior line created LKI without the service
             { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                 let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
@@ -360,7 +360,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 let helper = setupHelper(services);
                 if (sampleValue !== undefined)
                     helper.analysisArgs.sampleValues.registerSampleValue(expectedLookupKey, sampleValue);
-                let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
+                let actualLookupKey = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
                 if (existingService)// prior line created LKI without the service
                 { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                     let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);

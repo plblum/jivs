@@ -66,11 +66,15 @@ export class SampleValues<TServices extends IValueHostsServices> implements ISam
      * @returns if undefined, there was no sample value found.
      * Otherwise the value (including null) is a sample value.
      */
-    public getSampleValue(lookupKey: string , valueHostConfig: ValueHostConfig): any {
+    public getSampleValue(lookupKey: string | null, valueHostConfig: ValueHostConfig | null): any {
         // value host overrides everything
-        let value = this.valueHostsSampleValues[valueHostConfig.name];
-        if (value !== undefined)
-            return value;
+        if (valueHostConfig && valueHostConfig.name) {
+            let value = this.valueHostsSampleValues[valueHostConfig.name];
+            if (value !== undefined)
+                return value;
+        }
+        if (lookupKey === null)
+            return null;
         return this.getSampleValueFromLookupKey(lookupKey, valueHostConfig);
     }
     /**

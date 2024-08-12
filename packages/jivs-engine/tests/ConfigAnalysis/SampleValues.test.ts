@@ -175,6 +175,15 @@ describe('SampleValues', () => {
             expect(sampleValue).toBe('sampleValue1');
             expect(testItem.Publicify_sampleValuesCache.size).toBe(0);
         });
+        // same but with first parameter null
+        it('With option.valueHostsSampleValues matching to the ValueHost name and lookupKey=null, should return sample value from the option when the LookupKey would also work', () => {
+            const services = createValidationServicesForTesting();
+            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
+            const sampleValue = testItem.getSampleValue(null, valueHostConfig);
+            expect(sampleValue).toBe('sampleValue1');
+            expect(testItem.Publicify_sampleValuesCache.size).toBe(0);
+        });
         it('With option.valueHostsSampleValues matching to the ValueHost name, should return sample value from the option when the LookupKey would not work', () => {
             const services = createValidationServicesForTesting();
             let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
@@ -201,6 +210,14 @@ describe('SampleValues', () => {
             let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue('lookupKey1', valueHostConfig);
+            expect(sampleValue).toBe('sampleValue1');
+            expect(testItem.Publicify_sampleValuesCache.size).toBe(0);
+        });
+        // same but with second parameter null
+        it('With option.lookupKeysSampleValues matching to the lookupKey and valueHostConfig=null, should return sample value from the option but nothing added to the cache', () => {
+            const services = createValidationServicesForTesting();
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            const sampleValue = testItem.getSampleValue('lookupKey1', null);
             expect(sampleValue).toBe('sampleValue1');
             expect(testItem.Publicify_sampleValuesCache.size).toBe(0);
         });
@@ -317,6 +334,5 @@ describe('SampleValues', () => {
             expect(testItem.Publicify_sampleValuesCache.get(LookupKey.Date)).toEqual(expectedDateValue);
 
         });
-
     });
 });

@@ -108,12 +108,18 @@ describe('AnalysisResultsHelper', () => {
             let testItem = new Publicify_AnalysisResultsHelper(mockArgs);            
             expect(testItem.publicify_results).toEqual(mockArgs.results);
         });
+        // test hasLookupKeyAnalyzer
+        test('hasLookupKeyAnalyzer should return true for a registered service', () => {
+            let testItem = setupForTheseTests();
+            expect(testItem.hasLookupKeyAnalyzer(ServiceName.formatter)).toBe(true);
+            expect(testItem.hasLookupKeyAnalyzer(ServiceName.comparer)).toBe(false);
+        });
 
     });
     function getLookupKeyNotKnownMessage(lookupKey: string): string {
         return `Lookup key "${lookupKey}" not already known. It may be fine, or may have typo. If valid, register it in LookupKeyFallbackService or IdentifierService`;
     }
-    describe('registerLookupKey with test Analyzers for formatter and converter', () => {
+    describe('registerServiceLookupKey with test Analyzers for formatter and converter', () => {
         function createExpectedResult(lookupKey: string,
             serviceResults: Array<ServiceWithLookupKeyCAResultBase> = []): LookupKeyCAResult {
             return {
@@ -139,7 +145,7 @@ describe('AnalysisResultsHelper', () => {
             test('should add a custom lookup key to results.lookupKeyResults', () => {
                 const expectedResult = createExpectedResultWithWarning('testKey');
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', null, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', null, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -147,7 +153,7 @@ describe('AnalysisResultsHelper', () => {
             test('should add the LookupKey.Number to results.lookupKeyResults', () => {
                 const expectedResult = createExpectedResult(LookupKey.Number);
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey(LookupKey.Number, null, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey(LookupKey.Number, null, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -156,7 +162,7 @@ describe('AnalysisResultsHelper', () => {
                 const expectedResult = createExpectedResult('testKey');
                 let testItem = setupForTheseTests();
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
-                testItem.registerLookupKey('testKey', null, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', null, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });            
@@ -169,7 +175,7 @@ describe('AnalysisResultsHelper', () => {
                     [{ feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any]
                 );
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
 
@@ -177,15 +183,15 @@ describe('AnalysisResultsHelper', () => {
 
             test('should not add a lookup key if the key is null or undefined', () => {
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey(null, ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey(undefined, ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey(null, ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey(undefined, ServiceName.formatter, { name: 'testValueHost' });
                 expect(testItem.publicify_results.lookupKeyResults).toHaveLength(0);
             });
 
             test('should not add a lookup key if the key is an empty string', () => {
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey('  ', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('  ', ServiceName.formatter, { name: 'testValueHost' });
                 expect(testItem.publicify_results.lookupKeyResults).toHaveLength(0);
             });
 
@@ -193,7 +199,7 @@ describe('AnalysisResultsHelper', () => {
             // no matching service name throws CodingError
             test('should throw error when the service name is not registered', () => {
                 let testItem = setupForTheseTests();
-                expect(() => testItem.registerLookupKey('testKey', ServiceName.logger, { name: 'testValueHost' })).toThrow('No analyzer found');
+                expect(() => testItem.registerServiceLookupKey('testKey', ServiceName.logger, { name: 'testValueHost' })).toThrow('No analyzer found');
             });
             // add both formatter and converter with the same lookup key creates two entries
             test('should add two services to the same lookup key into LookupKeyCAResult.services array', () => {
@@ -204,8 +210,8 @@ describe('AnalysisResultsHelper', () => {
                     ]
                 );
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey('testKey', ServiceName.converter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.converter, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -217,8 +223,8 @@ describe('AnalysisResultsHelper', () => {
                 ]);
 
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey('TESTKEY', ServiceName.converter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('TESTKEY', ServiceName.converter, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -229,8 +235,8 @@ describe('AnalysisResultsHelper', () => {
                     { feature: CAFeature.converter, message: 'testConverter', counter: 0 } as any
                 ]);
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey(' testKey ', ServiceName.converter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey(' testKey ', ServiceName.converter, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -240,8 +246,8 @@ describe('AnalysisResultsHelper', () => {
                     { feature: CAFeature.formatter, message: 'testFormatter', counter: 0 } as any,
                 ]);
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -260,7 +266,7 @@ describe('AnalysisResultsHelper', () => {
                         message: 'testFallback',
                     } as ServiceWithLookupKeyCAResultBase));
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
-                testItem.registerLookupKey('testKey', ServiceName.parser, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.parser, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult, expectedResult2]);
             });
@@ -272,7 +278,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 expectedResult.usedAsDataType = true;    // CAFeature.identifier
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -286,8 +292,8 @@ describe('AnalysisResultsHelper', () => {
                 expectedResult.usedAsDataType = true;    // CAFeature.identifier
 
                 let testItem = setupForTheseTests();
-                testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
-                testItem.registerLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
+                testItem.registerServiceLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
 
                 expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
@@ -540,7 +546,7 @@ describe('AnalysisResultsHelper', () => {
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.formatter);
             });
 
-            // lookupKey is Number and has been registered through registerLookupKey as just a DataType lookupKey.
+            // lookupKey is Number and has been registered through registerServiceLookupKey as just a DataType lookupKey.
             // It has no other services. We call checkLookupKeyProperty with 
             // with the Formatter service and get the same not found error.
             test('should add a PropertyCAResult when lookupKey is known but not registered to the service', () => {
@@ -600,7 +606,7 @@ describe('AnalysisResultsHelper', () => {
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.converter);
             });
 
-            // lookupKey is Number and has been registered through registerLookupKey as just a DataType lookupKey.
+            // lookupKey is Number and has been registered through registerServiceLookupKey as just a DataType lookupKey.
             // It has no other services. We call checkLookupKeyProperty with 
             // with the Converter service and get the same not found error.
             test('should add a PropertyCAResult when lookupKey is known but not registered to the service', () => {
