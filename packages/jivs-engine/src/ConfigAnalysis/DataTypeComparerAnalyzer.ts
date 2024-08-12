@@ -117,10 +117,11 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         let lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey);
         if (!lookupKeyResult)
         {
-            lookupKey = this.helper.registerServiceLookupKey(lookupKey, null, valueHostConfig);
+            let srkResult = this.helper.registerServiceLookupKey(lookupKey, null, valueHostConfig);
             // istanbul ignore next // defensive. We should always find the lookup key.
-            if (!lookupKey)
+            if (!srkResult)
                 return null;
+            lookupKey = srkResult.lookupKeyResult.lookupKey;
             lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey)!;
         }
         let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceCAResult;

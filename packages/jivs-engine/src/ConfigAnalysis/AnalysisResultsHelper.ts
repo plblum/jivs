@@ -99,20 +99,28 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * In this case, ConfigAnalysisService has emulated the DataTypeIdentifier service
      * using the SampleValues system together with the DataTypeIdentifier in hopes
      * that the dataType is now assigned. Yet, expect that the dataType is still undefined.
-     * @returns The lookup key added to the LookupKeyCAResult object.
-     * This value may have been updated from the original lookupKey, if the original
-     * needed trimming or a case sensitive match.
+     * @returns The objects that were created or found. lookupKeyResult.lookupKey is 
+     * the corrected lookup key name.
      */
     public registerServiceLookupKey(lookupKey: string | null | undefined,
-        serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): string | null {
+        serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): {
+            lookupKeyResult: LookupKeyCAResult,
+            serviceResult: ServiceWithLookupKeyCAResultBase | null
+        } | null {
+
         let lk = this.registerLookupKey(lookupKey, !serviceName || serviceName === ServiceName.identifier);
         if (!lk)
             return null;
+
+        let result: { lookupKeyResult: LookupKeyCAResult, serviceResult: ServiceWithLookupKeyCAResultBase | null } = {
+            lookupKeyResult: lk,
+            serviceResult: null
+        };
         let resolvedLookupKey = lk.lookupKey;
         if (serviceName) {
-            this.registerServiceWithLookupKey(serviceName, lk, resolvedLookupKey, valueHostConfig!);
+            result.serviceResult = this.registerServiceWithLookupKey(serviceName, lk, resolvedLookupKey, valueHostConfig!);
         }
-        return resolvedLookupKey;
+        return result;
     }
 
     /**
@@ -266,10 +274,10 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         properties: Array<PropertyCAResult | ErrorCAResult>,
         className?: string, servicePropertyName?: string): void {
         let originalLK = lookupKey;
-        let revisedLK = this.registerServiceLookupKey(lookupKey, serviceName, containingValueHostConfig);
-        if (!revisedLK) return;
+        let slkResult = this.registerServiceLookupKey(lookupKey, serviceName, containingValueHostConfig);
+        if (!slkResult) return;
         
-        lookupKey = revisedLK; // register has trimmed it and possibly changed the case
+        lookupKey = slkResult.lookupKeyResult?.lookupKey; // register has trimmed it and possibly changed the case
 
         let knownLK = false;
         let inLookupKeyEnum = findCaseInsensitiveValueInStringEnum(lookupKey, LookupKey) ?? null;  // case insensitive match finds the actual match
@@ -291,12 +299,9 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             return;
         }
         let notFound = false;
-        // expect this find() to always return a match due to the earlier call to registerServiceLookupKey
-        let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey)!;
-        if (serviceName) {
-        // expect this find() to always return a match due to the earlier call to registerServiceLookupKey
-            let serviceInfo = lk.serviceResults.find(si => si.feature === serviceName)!;
-            if (serviceInfo.tryFallback) {
+
+        if (slkResult.serviceResult) {
+            if (slkResult.serviceResult.tryFallback) {
                 let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                 if (fallbackLookupKey)
                     this.addPropertyCAResult(propertyName, CAIssueSeverity.warning,
@@ -304,7 +309,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 else
                     notFound = true;
             }
-            else if ((serviceInfo as ClassNotFound).notFound)
+            else if ((slkResult.serviceResult as ClassNotFound).notFound)
                 notFound = true;
         }
         else {

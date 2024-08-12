@@ -2,7 +2,7 @@ import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
 import { IDataTypeComparer } from "../../src/Interfaces/DataTypeComparers";
 import { createValidationServicesForTesting, registerAllConditions } from "../TestSupport/createValidationServices";
 import { ComparersResult } from "../../src/Interfaces/DataTypeComparerService";
-import { IValidationServices, ServiceName } from '../../src/Interfaces/ValidationServices';
+import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CAFeature, CAIssueSeverity, ComparerServiceCAResult } from '../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
@@ -88,10 +88,11 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 services.dataTypeIdentifierService.register(new NumberHosterIdentifier());
             services.dataTypeComparerService.register(new NumberHosterComparer());
             let helper = setupHelper(services);
-            let actualLookupKey = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
+            let rskResult = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
+            let lkResult = rskResult!.lookupKeyResult;
+            let actualLookupKey = lkResult.lookupKey;
             if (existingServiceInfo)// prior line created LKI without the service
             { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
-                let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                 lkResult!.serviceResults.push(existingServiceInfo);
             }
             let analyzer = new DataTypeComparerAnalyzer(helper);
@@ -360,10 +361,11 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 let helper = setupHelper(services);
                 if (sampleValue !== undefined)
                     helper.analysisArgs.sampleValues.registerSampleValue(expectedLookupKey, sampleValue);
-                let actualLookupKey = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
+                let rskResult = helper.registerServiceLookupKey(expectedLookupKey, null, valueHostConfig);
+                let lkResult = rskResult!.lookupKeyResult;
+                let actualLookupKey = lkResult.lookupKey;
                 if (existingService)// prior line created LKI without the service
                 { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
-                    let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                     let serviceInfo: ComparerServiceCAResult = {
                         feature: CAFeature.comparer,
                     };

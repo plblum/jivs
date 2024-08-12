@@ -486,7 +486,78 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(testItem.publicify_getServices()).toBe(services);
             expect(testItem.publicify_options).toEqual({});
         });
+        // when ValueHostConfig.dataType = undefined, it should not be in the results
+        // However, when valueHostsSampleValues has a value for the same ValueHostConfig,
+        // it should resolve to the dataType and cause the lookup key info entry to be created.
+        test('ValueHostConfig.dataType = undefined should not have a lookup Key entry, and dataType property has an info message', () => {
+            let services = createServices();
+            let builder = new ValueHostsManagerConfigBuilder(services);
+            builder.static('testValueHost1');
+            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            testItem.services = services;
+            testItem.registerValueHostConfigPropertyAnalyzers(() => [
+                new DataTypePropertyAnalyzer()
+            ]);
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
+            expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
+            expect(analysisOutput).toBeDefined();
+            expect(analysisOutput!.results).toBeDefined();
+            let results = analysisOutput!.results!;
+            expect(results.cultureIds).toEqual(['en']);
+            expect(results.valueHostNames).toEqual(['testValueHost1']);
+            expect(results.lookupKeyResults).toHaveLength(0);
+            expect(results.valueHostResults).toHaveLength(1);
+            // expect properties [0] to contain a PropertyCAResult with a message about the missing dataType
+            let vhcResults = results.valueHostResults[0] as ValueHostConfigCAResult;
+            expect(vhcResults).toBeDefined();
+            expect(vhcResults.properties).toHaveLength(1);
+            let propertyResults = vhcResults.properties[0] as PropertyCAResult;
+            expect(propertyResults).toBeDefined();
+            expect(propertyResults.feature).toBe(CAFeature.property);
+            expect(propertyResults.message).toContain('No dataType assigned');
+            expect(propertyResults.severity).toBe(CAIssueSeverity.info);
+        });
+        // same setup except that we add a valueHostsSampleValues entry for the same ValueHostConfig
+        // This should cause the lookup key info entry to be created and no info message about the missing dataType.
+        test('ValueHostConfig.dataType = undefined but SampleValues has a Number value for the ValueHostConfig. LookupKey has an entry for Number and dataType property result is empty. Meanwhile, the valueHostConfig.dataType property still appears unassigned', () => {
+            let services = createServices();
+            let builder = new ValueHostsManagerConfigBuilder(services);
+            builder.static('testValueHost1');
+            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            testItem.services = services;
+            testItem.registerValueHostConfigPropertyAnalyzers(() => [
+                new DataTypePropertyAnalyzer()
+            ]);
+            let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
+            expect(() => analysisOutput = testItem.analyze(builder, {
+                valueHostsSampleValues: { 'testValueHost1': 123 }
+            })).not.toThrow();
+            expect(analysisOutput).toBeDefined();
+            expect(analysisOutput!.results).toBeDefined();
+            let results = analysisOutput!.results!;
+            expect(results.cultureIds).toEqual(['en']);
+            expect(results.valueHostNames).toEqual(['testValueHost1']);
+            expect(results.lookupKeyResults).toEqual([
+                {
+                    feature: CAFeature.lookupKey,
+                    lookupKey: LookupKey.Number,
+                    usedAsDataType: true,
+                    serviceResults: [
+                        { feature: CAFeature.identifier, message: 'testIdentifier', counter: 0 } as any,
+                    ]
+                }
+            ]);
+            expect(results.valueHostResults[0]).toEqual({
+                feature: CAFeature.valueHost,
+                valueHostName: 'testValueHost1',
+                properties: [],
+                config: {
+                    name: 'testValueHost1',
+                    valueHostType: ValueHostType.Static
+                }
+            });
 
+        });
     });
 });
 describe('ValueHostsManagerConfigAnalysisService', () => {

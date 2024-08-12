@@ -1273,7 +1273,10 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * needed trimming or a case sensitive match.
      * If there was no lookup key, returns null.
      */
-    registerServiceLookupKey(lookupKey: string | null | undefined, serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): string | null;
+    registerServiceLookupKey(lookupKey: string | null | undefined, serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): {
+        lookupKeyResult: LookupKeyCAResult,
+        serviceResult: ServiceWithLookupKeyCAResultBase | null
+    } | null;
 
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
