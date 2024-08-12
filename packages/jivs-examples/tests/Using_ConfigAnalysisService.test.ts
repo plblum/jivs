@@ -283,6 +283,171 @@ describe('Demonstrate the results from various use cases', () => {
                 includeValueHostResults,
                 includeLookupKeyResults,
                 includeCompleteResults, 2);
+            
+// ->
+// {
+//     "lookupKeyQueryResults": [
+//       {
+//         "path": {
+//           "LookupKey": "Date"
+//         },
+//         "result": {
+//           "feature": "LookupKey",
+//           "lookupKey": "Date",
+//           "usedAsDataType": true,
+//           "serviceResults": [
+//             {
+//               "feature": "Parser",
+//               "results": [
+//                 {
+//                   "feature": "ParsersByCulture",
+//                   "cultureId": "en",
+//                   "parserResults": [
+//                     {
+//                       "classFound": "ShortDatePatternParser",
+//                       "feature": "ParserFound"
+//                     }
+//                   ]
+//                 }
+//               ],
+//               "tryFallback": false
+//             },
+//             {
+//               "feature": "Identifier",
+//               "classFound": "DateDataTypeIdentifier"
+//             }
+//           ]
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Date",
+//           "Parser": null
+//         },
+//         "result": {
+//           "feature": "Parser",
+//           "results": [
+//             {
+//               "feature": "ParsersByCulture",
+//               "cultureId": "en",
+//               "parserResults": [
+//                 {
+//                   "classFound": "ShortDatePatternParser",
+//                   "feature": "ParserFound"
+//                 }
+//               ]
+//             }
+//           ],
+//           "tryFallback": false
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Date",
+//           "Parser": null,
+//           "ParsersByCulture": "en"
+//         },
+//         "result": {
+//           "feature": "ParsersByCulture",
+//           "cultureId": "en",
+//           "parserResults": [
+//             {
+//               "classFound": "ShortDatePatternParser",
+//               "feature": "ParserFound"
+//             }
+//           ]
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Date",
+//           "Parser": null,
+//           "ParsersByCulture": "en",
+//           "ParserFound": "ShortDatePatternParser"
+//         },
+//         "result": {
+//           "classFound": "ShortDatePatternParser",
+//           "feature": "ParserFound"
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Date",
+//           "Identifier": null
+//         },
+//         "result": {
+//           "feature": "Identifier",
+//           "classFound": "DateDataTypeIdentifier"
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Number"
+//         },
+//         "result": {
+//           "feature": "LookupKey",
+//           "lookupKey": "Number",
+//           "usedAsDataType": true,
+//           "serviceResults": [
+//             {
+//               "feature": "Converter",
+//               "dataExamples": [
+//                 "2000-02-15T05:00:00.000Z"
+//               ],
+//               "classFound": "UTCDateOnlyConverter"
+//             },
+//             {
+//               "feature": "Comparer",
+//               "classFound": "defaultComparer",
+//               "dataExamples": [
+//                 1
+//               ]
+//             },
+//             {
+//               "feature": "Identifier",
+//               "classFound": "NumberDataTypeIdentifier"
+//             }
+//           ]
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Number",
+//           "Converter": null
+//         },
+//         "result": {
+//           "feature": "Converter",
+//           "dataExamples": [
+//             "2000-02-15T05:00:00.000Z"
+//           ],
+//           "classFound": "UTCDateOnlyConverter"
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Number",
+//           "Comparer": null
+//         },
+//         "result": {
+//           "feature": "Comparer",
+//           "classFound": "defaultComparer",
+//           "dataExamples": [
+//             1
+//           ]
+//         }
+//       },
+//       {
+//         "path": {
+//           "LookupKey": "Number",
+//           "Identifier": null
+//         },
+//         "result": {
+//           "feature": "Identifier",
+//           "classFound": "NumberDataTypeIdentifier"
+//         }
+//       }
+//     ]
+//   }            
         });
         test('Report with any warnings and info messages', () => {
             let services = createBasicServices();    // start with no populated services. That should create errors
@@ -556,6 +721,36 @@ describe('Demonstrate the results from various use cases', () => {
         // this will throw an error because 'es' is not registered in the TextLocalizerService
         // explorer.reportToConsole({ features: [CAFeature.l10nProperty] }, false, false, 2);
         expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow();
+
+// ->
+// {
+//     "valueHostQueryResults": [
+//         {
+//             "path": {
+//                 "ValueHost": "Field1",
+//                 "Validator": "RequireText",
+//                 "l10nProperty": "errorMessagel10n"
+//             },
+//             "result": {
+//                 "feature": "l10nProperty",
+//                 "propertyName": "errorMessage",
+//                 "l10nPropertyName": "errorMessagel10n",
+//                 "l10nKey": "RequiredEM",
+//                 "cultureText": {
+//                     "en": {
+//                         "text": "This field is required.",
+//                         "severity": "info"
+//                     },
+//                     "es": {
+//                         "message": "errorMessage localization not declared in TextLocalizerService for culture \"es\". No text will be used because the errorMessage property is unassigned.",
+//                         "severity": "error"
+//                     }
+//                 }
+//             }
+//         }
+//     ],
+//     "lookupKeyQueryResults": []
+// }        
     });
 });
 
