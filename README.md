@@ -6,33 +6,41 @@ avoids the hassle of breaking changes later. --- Peter Blum*
 
 *For the full API, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
 
-Back in the day (2002-2013), I created a successful suite of Web
-Controls for ASP.NET WebForms which featured a complete replacement to
-its built-in input validation. I really learned a lot about what website
-developers wanted on-screen. In the 10+ years that followed, I've
-learned much more in terms of OOP patterns programming, plus TypeScript
-came out and JavaScript introduced Classes. Wonderful stuff that I now
-use here, in **Jivs**.
+<details open>
+<summary>
+<h2>What is Jivs?</h2>
+</summary>
+Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with data validation in the UI and/or on the Model?
 
-Jivs is a suite of libraries, built around its core, **Jivs-engine** and is just the tooling to evaluate values and return a list of issues found. 
-> That is the essence of validation! 
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for teams that want to separate validation logic from UI concerns, ensuring each layer of the application stays focused on its core responsibilities.
 
-Even something sounding that simple can involve a lot of features and behaviors.
-That's where Jivs starts to differentiate itself.
+The UI form knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
+"Valid", "Invalid", or even "Undetermined", and any issues found. An
+issue found includes error messages, an id to the field associated with
+the validation rule, and its severity.
 
-Jivs-engine is a "service",
-doing that job well, and not trying to provide the actual UI. For that,
-add or build companion libraries to match your environment,
-such as working in the browser's DOM or React's components. Being a
-UI-independent service, you can build your own UI around it, and it can
-run both in the browser and Node.js.
+The UI uses that information to change the visuals: show those errors in
+some way and perhaps change the appearance of the input and its
+surroundings.
 
-As of today, only Jivs-engine is available, and you can extend it as needed. I plan to introduce UI support libraries, and possibly libraries that incorporate third party
-libraries of many types, including other schema validation services and internationalization.
+- **Business logic can dictate validation rules**: Validation rules are often defined in the business logic. Jivs allows the business logic team to deliver those rules, ensuring that validation logic is directly aligned with the business requirements and evolves alongside the application’s core functionality.
 
-> *Peter Blum, .net and web coder since 2002*
+- **Empowering UI Developers with Flexibility**: Jivs gives UI developers the flexibility to tailor the user experience while maintaining the integrity of the validation rules. They can customize error messages, apply localization, and disable unnecessary validators, ensuring that they can achieve their goals. They can also incorporate UI-specific validators, such as for a string parsing error. For UI-only forms, they can define their own validation rules with Jivs, ensuring a consistent approach across the application. In fact, Jivs works just fine in apps that don't have business logic dictating validation rules. The benefit is the separation of validation rules from the UI.
 
-## Why Use Jivs?
+- **Service-Oriented Architecture**: At the heart of Jivs is *Jivs-Engine*, with a service-oriented architecture built in TypeScript, so it works within browsers and Node.js. Jivs-Engine is designed to have an ecosystem of libraries that tackle UI frameworks, support models, and use various third-party libraries.
+
+- **Built with Modern OOP Patterns**: Jivs is built on solid object-oriented programming (OOP) principles, such as Single Responsibility Objects, Services, Factories, and Interfaces. Many components within Jivs are replaceable, allowing you to use your preferred third-party libraries for tasks like formatting, localization, and logging. These patterns have also helped us build out our own unit tests, achieving almost 100% code coverage with meaningful tests.
+
+- **Built from Experience**: Jivs is the result of over 20 years of experience in building input validation software, addressing many nuances not found in most validation software but that solve real-world issues faced by developers. This depth of experience is embedded throughout the toolset. Take a look at the features to see how Jivs goes beyond the basics, offering a comprehensive solution to real-world validation challenges.
+
+- **Open source and MIT License**
+</details>
+
+<details>
+<summary>
+<h2>Why Use Jivs</h2>
+</summary>
+
 ### Prerequisites:
 -	Your app uses JavaScript or TypeScript
 -	Your app targets the browser and/or Node.js
@@ -103,6 +111,40 @@ libraries of many types, including other schema validation services and internat
 	- Consider switching to your preferred logging, localization, and value-to-string formatting libraries. 
 	- Introduce new classes by registering them with factories.
 	- Services and factories injected into Jivs classes are replaceable too.
+</details>
+
+
+<details>
+<summary>
+<h2>What inspired Jivs</h2>
+</summary>
+I am Peter Blum, originator of Jivs. Back in the day (2002-2013), I created a successful suite of Web
+Controls for ASP.NET WebForms which featured a complete replacement to
+its built-in input validation. I really learned a lot about what website
+developers wanted on-screen. In the 10+ years that followed, I've
+learned much more in terms of OOP patterns programming, plus TypeScript
+came out and JavaScript introduced Classes. Wonderful stuff that I now
+use here, in **Jivs**.
+
+Jivs is a suite of libraries, built around its core, **Jivs-engine** and is just the tooling to evaluate values and return a list of issues found. 
+> That is the essence of validation! 
+
+Even something sounding that simple can involve a lot of features and behaviors.
+That's where Jivs starts to differentiate itself.
+
+Jivs-engine is a "service",
+doing that job well, and not trying to provide the actual UI. For that,
+add or build companion libraries to match your environment,
+such as working in the browser's DOM or React's components. Being a
+UI-independent service, you can build your own UI around it, and it can
+run both in the browser and Node.js.
+
+As of today, only Jivs-engine is available, and you can extend it as needed. I plan to introduce UI support libraries, and possibly libraries that incorporate third party
+libraries of many types, including other schema validation services and internationalization.
+
+> *Peter Blum, .net and web coder since 2002*
+</details>
+
 
 # Learning Jivs
 [Jivs source code](https://github.com/plblum/jivs) is heavily and meaningfully commented, and it is all available in TypeDoc format at [jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc). Use this section for an orientation.

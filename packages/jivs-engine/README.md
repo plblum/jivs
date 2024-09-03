@@ -8,25 +8,29 @@ avoids the hassle of breaking changes later.*
 *Please visit [Jivs Github Discussions board](https://github.com/plblum/jivs/discussions) to participate.*
 
 Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with data validation in the UI and/or on the Model?
-**Jivs-engine** -- this library -- is its core, with a powerful set of tools to adapt to
-UIs and models.
 
-Jivs' philosophy involves strong separation of concerns.
--   UI is strongly separated from the validation work
--   Business logic code is where your validation rules generally are
-    found, not in the UI input forms.
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for teams that want to separate validation logic from UI concerns, ensuring each layer of the application stays focused on its core responsibilities.
 
-The result is that the UI knows almost nothing about what needs to be
-validated. The UI just posts its current values into Jivs-engine and asks: what
-are the result of validation? It gets back a Validation Result, such as
+The UI form knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
 "Valid", "Invalid", or even "Undetermined", and any issues found. An
 issue found includes error messages, an id to the field associated with
 the validation rule, and its severity.
 
 The UI uses that information to change the visuals: show those errors in
 some way and perhaps change the appearance of the input and its
-surroundings. Jivs-engine knows nothing about that stuff, although its
-supporting libraries (pending) are well-informed on those matters.
+surroundings.
+
+- **Business logic can dictate validation rules**: Validation rules are often defined in the business logic. Jivs allows the business logic team to deliver those rules, ensuring that validation logic is directly aligned with the business requirements and evolves alongside the application’s core functionality.
+
+- **Empowering UI Developers with Flexibility**: Jivs gives UI developers the flexibility to tailor the user experience while maintaining the integrity of the validation rules. They can customize error messages, apply localization, and disable unnecessary validators, ensuring that they can achieve their goals. They can also incorporate UI-specific validators, such as for a string parsing error. For UI-only forms, they can define their own validation rules with Jivs, ensuring a consistent approach across the application. In fact, Jivs works just fine in apps that don't have business logic dictating validation rules. The benefit is the separation of validation rules from the UI.
+
+- **Service-Oriented Architecture**: At the heart of Jivs is *Jivs-Engine*, with a service-oriented architecture built in TypeScript, so it works within browsers and Node.js. Jivs-Engine is designed to have an ecosystem of libraries that tackle UI frameworks, support models, and use various third-party libraries.
+
+- **Built with Modern OOP Patterns**: Jivs is built on solid object-oriented programming (OOP) principles, such as Single Responsibility Objects, Services, Factories, and Interfaces. Many components within Jivs are replaceable, allowing you to use your preferred third-party libraries for tasks like formatting, localization, and logging. These patterns have also helped us build out our own unit tests, achieving almost 100% code coverage with meaningful tests.
+
+- **Built from Experience**: Jivs is the result of over 20 years of experience in building input validation software, addressing many nuances not found in most validation software but that solve real-world issues faced by developers. This depth of experience is embedded throughout the toolset. Take a look at the features to see how Jivs goes beyond the basics, offering a comprehensive solution to real-world validation challenges.
+
+- **Open source and MIT License**
 
 Start here to better understand this library and determine if its right for you:
 [Jivs Documentation](https://github.com/plblum/jivs/blob/main/README.md)

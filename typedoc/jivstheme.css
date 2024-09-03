@@ -167,6 +167,12 @@ body{
     margin: 3rem 0 0 0;
     padding: 5px 0 0 0;
 }
+.tsd-panel details>summary>h2
+{
+    border-block-start: none;
+    display: inline-block;
+    margin: 1rem 0 0.25rem 0;
+}
 .tsd-typography.tsd-panel h1+p+a+h2,
 .tsd-typography.tsd-panel h2+p+a+h3,
 .tsd-typography.tsd-panel h3+p+a+h4,
