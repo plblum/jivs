@@ -1,5 +1,5 @@
 /**
- * Interface for the configuration analysis service
+ * Interfaces and basic types for the Configuration Analysis Service.
  * @module Services/Types/ConfigAnalysisService
  */
 

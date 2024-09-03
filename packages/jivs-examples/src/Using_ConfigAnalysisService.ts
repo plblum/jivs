@@ -89,7 +89,7 @@ import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria, CAFeatur
 /**
  * Instructions for using ConfigAnalysisService:
  * 1. Ideally make sure your Configuration is created in a stand-alone function.
- *    That way, you can use it both in your application and in unit tests
+ *    That way, you can use it both in your application and in unit tests.
  * 2. If your configuration is built with the Builder object, you can call the analyze function.
  *    It will return an Explorer object that you can use to query the results.
  *    If it is build with the ValidationManagerConfig object, you can call the analyze function

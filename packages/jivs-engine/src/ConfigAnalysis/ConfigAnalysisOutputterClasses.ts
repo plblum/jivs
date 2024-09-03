@@ -1,9 +1,9 @@
-import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from './ConfigAnalysisOutputFormatterClasses';
 /**
  * 
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
+import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from './ConfigAnalysisOutputFormatterClasses';
 import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, CAPathedResult, IConfigAnalysisResultsExplorer, ConfigAnalysisOutputReportData } from "../Interfaces/ConfigAnalysisService";
 import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";

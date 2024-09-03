@@ -170,14 +170,20 @@ export function cleanForLogging(key: string, value: any, parent: any): any {
  * It will discard any circular references.
  * It will discard most built-in objects like Map, Set, Error, etc.
  * It will discard class instances.
- * @param value 
- * @param alreadyVisited 
+ * @param value - Any data that will be turned into JSON after this function completes.
+ * @param filter - When supplied, it provides an alternative to the default rules for cleaning (which uses cleanForLogging).
  * @returns When it returns undefined, it means the property containing the value can be removed.
  */
 export function deepCleanForJson(value: any, filter?: deepCloneFilter): any {
     return deepClone(value, undefined, filter ?? cleanForLogging);
 }
 
+/**
+ * Returns the number of keys in the given object.
+ * 
+ * @param value - The object to count the keys of.
+ * @returns The number of keys in the object. If the object is null or undefined, returns 0.
+ */
 export function objectKeysCount(value: object | null): number
 {
     return value ? Object.keys(value).length : 0;
@@ -193,6 +199,14 @@ export function objectKeysCount(value: object | null): number
 export function isValueOfStringEnum<T extends object>(value: string, enumType: T): boolean {
     return Object.values(enumType).includes(value as unknown as T[keyof T]);
 }
+/**
+ * Finds a case-insensitive value in a string enum.
+ * 
+ * @template T - The type of the enum.
+ * @param {string} value - The value to search for.
+ * @param {T} enumType - The enum to search in.
+ * @returns {string | undefined} - The matching value, or undefined if not found.
+ */
 export function findCaseInsensitiveValueInStringEnum<T extends object>(value: string, enumType: T): string | undefined {
     return Object.values(enumType).find((enumValue) => {
         if (typeof enumValue === 'string')

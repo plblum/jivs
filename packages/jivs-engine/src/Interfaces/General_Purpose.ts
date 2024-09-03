@@ -1,3 +1,10 @@
+/**
+ * @module Utilities
+*/
+
+/**
+ * For classes that hold resources that need to be disposed if the class is disposed.
+ */
 export interface IDisposable
 {
     /**
