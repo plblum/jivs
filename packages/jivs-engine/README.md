@@ -7,9 +7,9 @@ avoids the hassle of breaking changes later.*
 
 *Please visit [Jivs Github Discussions board](https://github.com/plblum/jivs/discussions) to participate.*
 
-Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
+Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
 
-**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the validation rules are considered the domain of the business logic.
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the <dfn title="A single condition that evaluates the incoming data and determines if it is valid or not.">validation rules</dfn> are considered the domain of the business logic.
 
 An input form in the UI knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
 "Valid", "Invalid", or even "Undetermined", and any issues found.

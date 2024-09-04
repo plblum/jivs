@@ -270,3 +270,14 @@ ul#tsd-filter-options {
 {
     white-space: nowrap;
 }
+
+dfn::after
+{
+    content: "\1F4D6"; /* Dictionary icon */
+    margin-left: 0.2em; 
+    font-style: normal;
+}
+a[target="_blank"]::after {
+    content: "\2197"; /* Upper Right Arrow */
+    margin-left: 0.2em;
+  }
