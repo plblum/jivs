@@ -10,18 +10,14 @@ avoids the hassle of breaking changes later. --- Peter Blum*
 <summary>
 <h2>What is Jivs?</h2>
 </summary>
-Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with data validation in the UI and/or on the Model?
+Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
 
-**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for teams that want to separate validation logic from UI concerns, ensuring each layer of the application stays focused on its core responsibilities.
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the validation rules are considered the domain of the business logic.
 
-The UI form knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
-"Valid", "Invalid", or even "Undetermined", and any issues found. An
-issue found includes error messages, an id to the field associated with
-the validation rule, and its severity.
+An input form in the UI knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
+"Valid", "Invalid", or even "Undetermined", and any issues found.
 
-The UI uses that information to change the visuals: show those errors in
-some way and perhaps change the appearance of the input and its
-surroundings.
+The UI uses that information to change the visuals, like showing the error messages, and blocking data submission if necessary.
 
 - **Business logic can dictate validation rules**: Validation rules are often defined in the business logic. Jivs allows the business logic team to deliver those rules, ensuring that validation logic is directly aligned with the business requirements and evolves alongside the application’s core functionality.
 
@@ -44,7 +40,7 @@ surroundings.
 ### Prerequisites:
 -	Your app uses JavaScript or TypeScript
 -	Your app targets the browser and/or Node.js
--	Your app needs to validate values, whether for user input or Model properties.
+-	Your app needs to validate values, whether from user input or Model properties.
 
 ### Setting Expectations
 
