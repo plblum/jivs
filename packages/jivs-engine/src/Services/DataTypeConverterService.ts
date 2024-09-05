@@ -322,7 +322,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @param result - The conversion result to log.
      */
     protected logSuccess(result: ConversionResult): void {
-        this.log(LoggingLevel.Info, (options) => {
+        this.logger.log(LoggingLevel.Info, (options) => {
             let logDetails = <LogDetails>{
                 message: result.value === null ? 'Converted to null' :
                     `Converted to type "${result.resultLookupKey}"`,
@@ -342,7 +342,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @param result - The conversion result containing information about the failed conversion.
      */
     protected logInvalidValue(result: ConversionResult): void {
-        this.log(LoggingLevel.Warn, (options) => {
+        this.logger.log(LoggingLevel.Warn, (options) => {
             let converterName = result.converter;
             let current = result.earlierResult;
             while (current?.earlierResult != null)  // null or undefined
@@ -392,7 +392,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     * @param sourceValue - The source value that needs to be converted.
     */
     protected logNoConverter(result: ConversionResult, sourceValue: any): void {
-        this.log(LoggingLevel.Warn, (options) => {
+        this.logger.log(LoggingLevel.Warn, (options) => {
             let sourceLookupKeyMsg = '';
             let sourceLookupKey = result.sourceLookupKey;
             if (!sourceLookupKey)
@@ -417,7 +417,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @param result - The ConversionResult object.
      */
     protected logValueNull(result: ConversionResult): void {
-        this.log(LoggingLevel.Info, (options) => {
+        this.logger.log(LoggingLevel.Info, (options) => {
             let logDetails = <LogDetails>{
                 message: `Nothing to convert. The value is null or undefined.`,
                 category: LoggingCategory.Result
@@ -438,7 +438,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     protected logErrorResult(result: ConversionResult): void {
         if (!result.error)  // istanbul ignore next // defensive programming
             throw new CodingError('logWithError called without an error');
-        this.logError(result.error, (options) => {
+        this.logger.error(result.error, (options) => {
             let logDetails = <LogDetails>{
             }
             if (options?.includeData) {
@@ -449,7 +449,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     }
 
     protected logConverterFound(instance: any, sourceLookupKey: string | null, resultLookupKey: string): void {
-        this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(instance)} to convert from "${sourceLookupKey ?? 'unassigned'}" to "${resultLookupKey}".`);
+        this.logger.message(LoggingLevel.Debug, () => `Using ${valueForLog(instance)} to convert from "${sourceLookupKey ?? 'unassigned'}" to "${resultLookupKey}".`);
     }
 
 }

@@ -33,6 +33,8 @@ import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
 import { resolveErrorCode } from '../Utilities/Validation';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -119,8 +121,24 @@ export class Validator implements IValidator {
         toIDisposable(this._config)?.dispose(); // handle anything introduced by alternative implementations if they add dispose()
         (this._config as any) = undefined;
         (this._valueHost as any) = undefined;
+        (this._logger as any) = undefined!;        
     }    
 
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     * @param services 
+     * @returns 
+     */
+    protected get logger(): LoggerFacade
+    {
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.services.loggerService,
+                'Validator', this,
+                [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)],
+            false);
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;    
     /**
      * Provides the error code associated with this instance.
      * It uses ValidatorConfig.errorCode when assigned
@@ -157,7 +175,7 @@ export class Validator implements IValidator {
             }
             catch (e) {
                 let err = ensureError(e);
-                this.logError(err);
+                this.logger.error(err);
                 throw err;
             }
             if (this._condition instanceof WhenCondition)
@@ -196,7 +214,7 @@ export class Validator implements IValidator {
                  // istanbul ignore next
                 let err = ensureError(e);
                  // istanbul ignore next
-                this.logError(err);
+                this.logger.error(err);
                  // istanbul ignore next
                 throw err;
             }
@@ -262,7 +280,7 @@ export class Validator implements IValidator {
         }
         if (msg == null) {
             msg = Validator.errorMessageMissing;
-            this.log(LoggingLevel.Error, () => {
+            this.logger.log(LoggingLevel.Error, () => {
                 return {
                     message: `Error message missing for Validator ${this.errorCode}`,
                     category: LoggingCategory.Configuration
@@ -311,7 +329,7 @@ export class Validator implements IValidator {
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
         let self = this;
-        this.logQuick(LoggingLevel.Debug, () => `Starting Validation for error code ${this.errorCode}`);
+        this.logger.message(LoggingLevel.Debug, () => `Starting Validation for error code ${this.errorCode}`);
 
         let resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
@@ -348,7 +366,7 @@ export class Validator implements IValidator {
                 if (ivh) {
                     let text = ivh.getInputValue();
                     if (typeof text === 'string') {
-                        this.logQuick(LoggingLevel.Debug, () => 'Using DuringEdit validation');
+                        this.logger.message(LoggingLevel.Debug, () => 'Using DuringEdit validation');
 
                         return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
                             text, ivh, this.services));
@@ -372,7 +390,7 @@ export class Validator implements IValidator {
         catch (e) {
             let err = ensureError(e);            
 
-            this.logError(err);
+            this.logger.error(err);
             if (err instanceof SevereErrorBase)
                 throw err;
             
@@ -383,7 +401,7 @@ export class Validator implements IValidator {
         }
         finally {
             if (resultState.issueFound)
-                this.log(LoggingLevel.Info, (options?: LogOptions) => {
+                this.logger.log(LoggingLevel.Info, (options?: LogOptions) => {
                     let details: LogDetails = {
                         message: `Validation errorcode "${this.errorCode}" found this issue: ${JSON.stringify(resultState.issueFound)}`,
                         category: LoggingCategory.Result,
@@ -399,7 +417,7 @@ export class Validator implements IValidator {
 
         }
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
-            self.log(LoggingLevel.Info, (options? : LogOptions) => {
+            self.logger.log(LoggingLevel.Info, (options? : LogOptions) => {
                 let details: LogDetails = {
                     message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`,
                     category: LoggingCategory.Result
@@ -429,7 +447,7 @@ export class Validator implements IValidator {
                         resolve(resolveCER(resultingCER));
                     },
                     (reason) => {
-                        self.logError(new Error(reason));
+                        self.logger.error(new Error(reason));
                         reject(reason);
                     });
             });
@@ -440,7 +458,7 @@ export class Validator implements IValidator {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 issueFound: null
             };
-            self.logQuick(LoggingLevel.Info, () => errorMessage);
+            self.logger.message(LoggingLevel.Info, () => errorMessage);
             resultState.skipped = true;
             return resultState;
         }
@@ -606,51 +624,7 @@ export class Validator implements IValidator {
             tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
         return tlv;
     }
-    /**
-     * Log a message. The message gets assigned the details of feature, type, and identity
-     * here.
-     */
-    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        let logger = this.services.loggerService;
-        logger.log(level, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'Validator';
-            details.type = this;
-            details.identity = [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)];
-            return details;
-        });
-    }
-    /**
-     * When the log only needs the message and nothing else.
-     * @param level 
-     * @param messageFn
-     */
-    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
-        this.log(level, () => {
-            return {
-                message: messageFn()
-            };
-        });
-    }    
-    /**
-     * Log an exception. The GatherFn should only be used to gather additional data
-     * as the Error object supplies message, category (Exception), and this function
-     * resolves feature, type, and identity.
-     * @param error 
-     * @param gatherFn 
-     */
-    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
-    {
-        let logger = this.services.loggerService;
-        logger.logError(error, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'Validator';
-            details.type = this;
-            details.identity = [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)];
-            return details;
-        });
-    
-    }
+
 }
 
 

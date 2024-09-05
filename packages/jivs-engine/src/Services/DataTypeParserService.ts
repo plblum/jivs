@@ -75,10 +75,10 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
 
             if (parser) {
                 // log info level the parser selected
-                this.logQuick(LoggingLevel.Debug, () => `Parser selected: ${valueForLog(parser)}`);
+                this.logger.message(LoggingLevel.Debug, () => `Parser selected: ${valueForLog(parser)}`);
                 let result = parser!.parse(text, lookupKey!, cultureId);
                 if (result.value)
-                    this.log(LoggingLevel.Info, () => {
+                    this.logger.log(LoggingLevel.Info, () => {
                         return {
                             message: `Parsed "${lookupKey}" with culture "${cultureId}"`,
                             category: LoggingCategory.Result
@@ -89,14 +89,14 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
 
             let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
-                this.logQuick(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
+                this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.parseRecursive(text, fallbackLookupKey, cultureId, alreadyChecked);
             }
             throw new CodingError(`No DataTypeParser for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
         catch (e) {
             let err = ensureError(e);
-            this.logError(err); // will throw if SevereErrorBase
+            this.logger.error(err); // will throw if SevereErrorBase
             return { errorMessage: err.message };
         }
 

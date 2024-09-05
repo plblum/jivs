@@ -89,7 +89,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     *    A Data Type parser will also setup the conversionErrorTokenValue if it reports an error.
     */
     public setInputValue(value: any, options?: SetInputValueOptions): void {  
-        this.logQuick(LoggingLevel.Debug, () => `setInputValue(${valueForLog(value)})`);        
+        this.logger.message(LoggingLevel.Debug, () => `setInputValue(${valueForLog(value)})`);        
 
         if (!options)
             options = {};
@@ -136,7 +136,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
             let nativeValue = resolution.value; // may be undefined which indicates a parser error
             if (resolution.errorMessage)
                 options.conversionErrorTokenValue = resolution.errorMessage;
-            self.log(LoggingLevel.Debug, (options) => {
+            self.logger.log(LoggingLevel.Debug, (options) => {
                 if (resolution.errorMessage)
                     return {
                         message: `Parser reported error and assigned the native value to undefined: ${resolution.errorMessage}`,
@@ -158,19 +158,19 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         try {
             if (typeof inputValue === 'string') {
                 if (options.disableParser === true) {
-                    this.logQuick(LoggingLevel.Debug, () => 'option.disableParser=true');
+                    this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
                     return false;
                 }
                 let dtps = this.services.dataTypeParserService;
                 if (dtps.isActive()) {
-                    this.logQuick(LoggingLevel.Debug, () => 'Attempt to parse into native value');
+                    this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
                          
                     let lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
                     let cultureId = this.services.cultureService.activeCultureId;
                     let parser = this.config.parserCreator?.(this);
                     if (parser && parser.supports(lookupKey!, cultureId, inputValue)) { // in this case, we have to let the parser function deal with
                         // any fallback behavior and we'll supply a null lookupKey.
-                        this.logQuick(LoggingLevel.Info, () => 'Parsing');
+                        this.logger.message(LoggingLevel.Info, () => 'Parsing');
                         let result = parser.parse(inputValue, lookupKey!, cultureId);
                         sendResultAlong(result);
                         return true;
@@ -184,14 +184,14 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
                         return true;
                     }
                     let error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
-                    this.logError(error);
+                    this.logger.error(error);
                     throw error;
                 }
             }
         }
         catch (e) {
             let err = ensureError(e);            
-            this.logError(err);
+            this.logger.error(err);
             throw err;
         }            
         return false;
@@ -218,7 +218,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     * appear in the Category=Require validator within the {ConversionError} token.
      */
     public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {    
-        this.logQuick(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(inputValue)})`);        
+        this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(inputValue)})`);        
         options = options ?? {};
         if (!this.canChangeValueCheck(options))
             return;        
@@ -297,7 +297,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
                         severity: ValidationSeverity.Severe
                     };
                     validators.push(this.services.validatorFactory.create(this, config));
-                    this.log(LoggingLevel.Info, (options) => {
+                    this.logger.log(LoggingLevel.Info, (options) => {
                         return {
                             message: `Added ${condition.conditionType} Condition for Data Type Check`,
                             category: LoggingCategory.Result

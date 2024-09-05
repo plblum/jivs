@@ -19,15 +19,15 @@ class Publicify_ServiceWithAccessorBase extends ServiceWithAccessorBase {
     }
 
     public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        super.log(level, gatherFn);
+        super.logger.log(level, gatherFn);
     }
 
     public publicify_logQuick(level: LoggingLevel, messageFn: () => string): void {
-        super.logQuick(level, messageFn);
+        super.logger.message(level, messageFn);
 
     }
     public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
-        super.logError(error, gatherFn);
+        super.logger.error(error, gatherFn);
     }
 
     public publicify_hasServices(): boolean {
@@ -70,8 +70,7 @@ describe('logError', () => {
             message: 'Test error',
             category: LoggingCategory.Exception,
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });
     });
     test('Gather function is called and additional data is logged', () => {
@@ -91,8 +90,7 @@ describe('logError', () => {
             category: LoggingCategory.Exception,
             data: { additionalData: 'Extra info' },
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });
     });
     test('Error logged without gather function still captures basic error information', () => {
@@ -105,8 +103,7 @@ describe('logError', () => {
             message: 'Basic error information',
             category: LoggingCategory.Exception,
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });
     });
 });

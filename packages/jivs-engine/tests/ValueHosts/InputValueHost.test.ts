@@ -322,6 +322,7 @@ describe('setInputValue with getInputValue to check result', () => {
         options: SetInputValueOptions| null | undefined): void
     {
         let setup = setupInputValueHost();
+//        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         setup.services.dataTypeParserService.enabled = false;
 
         expect(() => setup.valueHost.setInputValue(inputValue, options!)).not.toThrow();

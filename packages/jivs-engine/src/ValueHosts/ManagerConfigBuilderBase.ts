@@ -26,6 +26,7 @@ import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErro
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValueHostsManager } from './ValueHostsManager';
 import { ConfigAnalysisServiceOptions, IConfigAnalysisResultsExplorer } from '../Interfaces/ConfigAnalysisService';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 
 /**
@@ -172,11 +173,29 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     public dispose(): void {
         this._overriddedValueHostConfigs = undefined!;
         this._baseConfig = undefined!;
+        (this._logger as any) = undefined!;
     }
 
     protected get services(): IValueHostsServices {
         return this.baseConfig.services;
     }
+    
+    //#region logging
+
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     * @param services 
+     * @returns 
+     */
+    protected get logger(): LoggerFacade
+    {
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.services.loggerService,
+                'ConfigBuilder', this, null, false)
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;
+    //#endregion logging
 
     /**
      * The initial setup from the constructor and assigned ValueHostConfigs
@@ -490,20 +509,20 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 return vhToClone;
             }
             let error = new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
-            self.logError(error);
+            self.logger.error(error);
             throw error;
         }
         function attachEnablerCondition(vhConfig: ValueHostConfig, enabler: ConditionConfig): void {
             let replace = vhConfig.enablerConfig != null;   // null or undefined
             vhConfig.enablerConfig = enabler;
-            self.logQuick(LoggingLevel.Info, () => (replace ? 'Replacing enabler on' : 'Adding enabler to') + ` ValueHost "${valueHostName}"`);
+            self.logger.message(LoggingLevel.Info, () => (replace ? 'Replacing enabler on' : 'Adding enabler to') + ` ValueHost "${valueHostName}"`);
 
         }   
         let self = this;
         this.assertNotDisposed();
         assertNotNull(valueHostName, 'valueHostName');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');
-        this.logQuick(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
+        this.logger.message(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
         
         if (typeof sourceOfConditionConfig === 'function') {
             let vhConfig = getValueHostConfig();
@@ -519,7 +538,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         else
         {
             let error = new CodingError('Invalid parameters');
-            this.logError(error);
+            this.logger.error(error);
             throw error;
         }
         return this;
@@ -635,14 +654,14 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             return;
         }
         let error = new CodingError('Invalid parameters.');
-        this.logError(error);
+        this.logger.error(error);
         throw error;
     }
 
     protected confirmConfigWasAdded(configs: Array<ConditionConfig>): boolean
     {
         if (configs.length === 0) {
-            this.logQuick(LoggingLevel.Warn, ()=> `Builder function did not create a conditionConfig`);
+            this.logger.message(LoggingLevel.Warn, ()=> `Builder function did not create a conditionConfig`);
             return false;
         }
         return true;
@@ -686,7 +705,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         else {
             let error = new CodingError('Invalid parameters');
-            this.logError(error);
+            this.logger.error(error);
             throw error;
         }
 
@@ -730,56 +749,12 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             `ValueHost name "${valueHostName}" is not defined.`;
 
         let error = new CodingError(msg);
-        this.logError(error);
+        this.logger.error(error);
         throw error;
     }
 
     //#endregion utilities for ValidationManager-based subclasses
-    //#region logging
-    /**
-     * Log a message. The message gets assigned the details of feature, type, and identity
-     * here.
-     */
-    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        let logger = this.services.loggerService;
-        logger.log(level, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'ConfigBuilder';
-            details.type = this;
-            return details;
-        });
-    }
-    /**
-     * When the log only needs the message and nothing else.
-     * @param level 
-     * @param messageFn
-     */
-    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
-        this.log(level, () => {
-            return {
-                message: messageFn()
-            };
-        });
-    }    
-    /**
-     * Log an exception. The GatherFn should only be used to gather additional data
-     * as the Error object supplies message, category (Exception), and this function
-     * resolves feature, type, and identity.
-     * @param error 
-     * @param gatherFn 
-     */
-    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
-    {
-        let logger = this.services.loggerService;
-        logger.logError(error, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'ConfigBuilder';
-            details.type = this;
-            return details;
-        });
-    
-    }
-    //#endregion logging
+
 }
 
 

@@ -46,7 +46,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     protected formatRecursive(value: any, lookupKey: string | null | undefined, alreadyChecked: Set<string>): DataTypeResolution<string> {
         try {
             if (!lookupKey) {
-                this.logQuick(LoggingLevel.Debug, ()=> 'Identify LookupKey from value');
+                this.logger.message(LoggingLevel.Debug, ()=> 'Identify LookupKey from value');
                 lookupKey = this.services.dataTypeIdentifierService.identify(value);
             }
             if (lookupKey === null)
@@ -61,13 +61,13 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
                 /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
                 if (!cc)
                     throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-                this.logQuick(LoggingLevel.Debug, () => `Trying cultureId: ${cultureId}`);
+                this.logger.message(LoggingLevel.Debug, () => `Trying cultureId: ${cultureId}`);
                 let dtlf = this.find(lookupKey, cultureId);
                 if (dtlf) {
-                    this.logQuick(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`);
+                    this.logger.message(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`);
                     let result = dtlf.format(value, lookupKey, cultureId);
                     if (result.value)
-                        this.log(LoggingLevel.Info, () => {
+                        this.logger.log(LoggingLevel.Info, () => {
                             return {
                                 message: `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`,
                                 category: LoggingCategory.Result
@@ -80,7 +80,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             }
             let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
-                this.logQuick(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
+                this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.formatRecursive(value, fallbackLookupKey, alreadyChecked);
             }
             
@@ -88,7 +88,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
         }
         catch (e) {
             let err = ensureError(e);
-            this.logError(err); // will throw if SevereErrorBase
+            this.logger.error(err); // will throw if SevereErrorBase
             return {
                 errorMessage: err.message,
                 value: undefined

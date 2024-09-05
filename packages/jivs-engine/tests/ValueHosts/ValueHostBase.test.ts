@@ -48,15 +48,15 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
         return this.instanceState;
     }
     public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        super.log(level, gatherFn);
+        super.logger.log(level, gatherFn);
     }
 
-    public publicify_logQuick(level: LoggingLevel, messageFn: () => string): void {
-        super.logQuick(level, messageFn);
+    public publicify_logMessage(level: LoggingLevel, messageFn: () => string): void {
+        super.logger.message(level, messageFn);
 
     }
     public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
-        super.logError(error, gatherFn);
+        super.logger.error(error, gatherFn);
     }
 
 }
@@ -1106,7 +1106,7 @@ describe('logging functions', () => {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
-            testItem.publicify_logQuick(LoggingLevel.Info, () => 'Quick log message');
+            testItem.publicify_logMessage(LoggingLevel.Info, () => 'Quick log message');
             expect(setup.logger.lastLogDetails).toEqual({
                 message: 'Quick log message',
                 feature: 'ValueHost',

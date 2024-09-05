@@ -82,7 +82,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
         try {
             result = handleNullsAndUndefined(value1, value2);
             if (result != null) {
-                this.logQuick(LoggingLevel.Debug, () => 'Has nulls');
+                this.logger.message(LoggingLevel.Debug, () => 'Has nulls');
                 this.logResult('Nulls', result, lookupKey1!, lookupKey2!);
                 return result;
             }
@@ -119,13 +119,13 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             lookupKey1 = this.resolveLookupKey(cleanedUpValue1, null, 'Left');
             lookupKey2 = this.resolveLookupKey(cleanedUpValue2, null, 'Right');
 
-            this.logQuick(LoggingLevel.Debug, () => `Using defaultComparer with ${lookupKey1} and ${lookupKey2}`);
+            this.logger.message(LoggingLevel.Debug, () => `Using defaultComparer with ${lookupKey1} and ${lookupKey2}`);
             result = defaultComparer(cleanedUpValue1, cleanedUpValue2);
             this.logResult('DefaultComparer', result, lookupKey1, lookupKey2);
             return result;
         }
         catch (e) {
-            this.logError(ensureError(e)); // will throw if SevereErrorBase
+            this.logger.error(ensureError(e)); // will throw if SevereErrorBase
             result = ComparersResult.Undetermined;
             this.logResult(undefined, result, lookupKey1!, lookupKey2!);
             return result;
@@ -133,7 +133,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
     }
 
     protected logResult(comparer: any, result: ComparersResult, lookupKey1: string, lookupKey2: string): void {
-        this.log(LoggingLevel.Info, (options) => {
+        this.logger.log(LoggingLevel.Info, (options) => {
             let logDetails = <LogDetails>{
                 message: `Comparison result: ${ComparersResult[result!]}`,
                 category: LoggingCategory.Result

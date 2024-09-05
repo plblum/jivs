@@ -73,7 +73,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * appear in the Category=Require validator within the {ConversionError} token.
     */
     public setValue(value: any, options?: SetValueOptions): void {
-        this.logQuick(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
+        this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!options)
             options = {};
         if (!this.canChangeValueCheck(options))
@@ -82,7 +82,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         {
             options.duringEdit = false;
 
-            this.logQuick(LoggingLevel.Warn, () => 'setValue does not support duringEdit option');
+            this.logger.message(LoggingLevel.Warn, () => 'setValue does not support duringEdit option');
         }
         let oldValue: any = this.instanceState.value;
         let changed = !deepEquals(value, oldValue);
@@ -340,7 +340,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (error) {
             if (!this.isEnabled())
             {
-                this.logQuick(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);
+                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);
             }
     
             // check for existing with the same errorcode and replace
@@ -443,7 +443,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public getIssueFound(errorCode: string): IssueFound | null {
         if (!this.isEnabled())
         {
-            this.logQuick(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);
+            this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);
             return null;
         }
     
@@ -474,7 +474,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public getIssuesFound(group?: string): Array<IssueFound> | null {
         if (!this.isEnabled())
         {
-            this.logQuick(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
+            this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
             return null;
         }        
         let list: Array<IssueFound> = [];
@@ -555,7 +555,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (errorMsg)
         {
             let error = new CodingError(errorMsg);
-            this.logError(error);
+            this.logger.error(error);
             throw error;            
         }
 

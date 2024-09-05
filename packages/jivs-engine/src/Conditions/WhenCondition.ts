@@ -83,7 +83,7 @@ export class WhenCondition extends ConditionWithOneChildBase<WhenConditionConfig
             return result;
         }
 
-        this.logQuick(valueHostsManager.services, LoggingLevel.Info,
+        this.logger(valueHostsManager.services).message(LoggingLevel.Info,
             () => `WhenCondition enabler condition did not match. Child condition not evaluated.`);
         return ConditionEvaluateResult.Undetermined;
     }

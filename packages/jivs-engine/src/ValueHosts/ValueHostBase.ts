@@ -12,6 +12,7 @@ import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel, LoggingCategory, logGatheringHandler, LogOptions, LogDetails, logGatheringErrorHandler } from '../Interfaces/LoggerService';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 /**
  * Standard implementation of IValueHost
@@ -60,7 +61,23 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         (this._config as any) = undefined;
         this._instanceState = undefined!;
         (this._valueHostsManager as any) = undefined!;
+        (this._logger as any) = undefined!;
     }
+
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     * @param services 
+     * @returns 
+     */
+    protected get logger(): LoggerFacade
+    {
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.services.loggerService,
+                'ValueHost', this, this.getName(), false);
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;    
+
 
     //#region IValueHost
     /**
@@ -111,7 +128,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * OnValueChanged property.
     */
     public setValue(value: any, options?: SetValueOptions): void {
-        this.logQuick(LoggingLevel.Debug, () => `setValue(${value})`);
+        this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!options)
             options = {};
         if (!this.canChangeValueCheck(options))
@@ -134,11 +151,11 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      */
     protected canChangeValueCheck(options: SetValueOptions): boolean {
         if (!options.overrideDisabled && !this.isEnabled()) {
-            this.logQuick(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
+            this.logger.message(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
             return false;
         }
         if (options.overrideDisabled && !this.isEnabled()) {
-            this.logQuick(LoggingLevel.Info, () =>`overrideDisabled option on ValueHost "${this.getName()}". Value changed`);
+            this.logger.message(LoggingLevel.Info, () =>`overrideDisabled option on ValueHost "${this.getName()}". Value changed`);
         }
         return true;
     }
@@ -239,7 +256,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             }
             catch (e) {
                 let err = ensureError(e);                
-                this.logError(err);
+                this.logger.error(err);
                 throw err;
             }
         }
@@ -266,7 +283,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
                 }
                 catch (e) {
                     let err = ensureError(e);                    
-                    this.logError(err);
+                    this.logger.error(err);
                     throw err;
                 }
             }
@@ -289,7 +306,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * @param enabled 
      */
     public setEnabled(enabled: boolean): void {
-        this.logQuick(LoggingLevel.Debug, () => `setEnabled(${enabled})`);        
+        this.logger.message(LoggingLevel.Debug, () => `setEnabled(${enabled})`);        
         this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.enabled = enabled;
             return stateToUpdate;
@@ -363,54 +380,6 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     public getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
         return this.instanceState.items ? this.instanceState.items[key] : undefined;
     }
-
-
-    /**
-     * Log a message. The message gets assigned the details of feature, type, and identity
-     * here.
-     */
-    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        let logger = this.services.loggerService;
-        logger.log(level, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'ValueHost';
-            details.type = this;
-            details.identity = this.getName();
-            return details;
-        });
-    }
-    /**
-     * When the log only needs the message and nothing else.
-     * @param level 
-     * @param messageFn
-     */
-    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
-        this.log(level, () => {
-            return {
-                message: messageFn()
-            };
-        });
-    }    
-    /**
-     * Log an exception. The GatherFn should only be used to gather additional data
-     * as the Error object supplies message, category (Exception), and this function
-     * resolves feature, type, and identity.
-     * @param error 
-     * @param gatherFn 
-     */
-    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
-    {
-        let logger = this.services.loggerService;
-        logger.logError(error, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'ValueHost';
-            details.type = this;
-            details.identity = this.getName();
-            return details;
-        });
-    
-    }
-
 }
 
 
