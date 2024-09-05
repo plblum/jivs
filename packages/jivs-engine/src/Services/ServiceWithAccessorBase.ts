@@ -62,8 +62,6 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
  
     /**
      * Provides an API for logging, sending entries to the loggerService.
-     * @param services 
-     * @returns 
      */
     protected get logger(): LoggerFacade
     {

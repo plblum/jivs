@@ -401,7 +401,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Use to change the disabled state of the submit button based on validity.
      */
     public get onValidationStateChanged(): ValidationStateChangedHandler | null {
-        return this.config.onValidationStateChanged ?? null;
+        return this.resolveCallback<ValidationStateChangedHandler>(this.config.onValidationStateChanged, 'onValidationStateChanged');
     }
 
     /**
@@ -415,7 +415,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Here, it aggregates all ValueHost notifications.
      */
     public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
-        return this.config.onValueHostValidationStateChanged ?? null;
+        return this.resolveCallback<ValueHostValidationStateChangedHandler>(this.config.onValueHostValidationStateChanged, 'onValueHostValidationStateChanged');
     }
 
     //#endregion IValidationManagerCallbacks
