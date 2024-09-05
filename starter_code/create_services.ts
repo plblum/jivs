@@ -115,6 +115,11 @@ export function createValidationServices(activeCultureId: string,
     usage: 'client' | 'server' | 'all' = 'client'): ValidationServices {
     let vs = new ValidationServices();
 
+    // --- Logger Service -----------------------------------    
+    // If you want both the ConsoleLoggerService and another, create the other
+    // and pass it as the second parameter of ConsoleLoggerService.
+    vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
+    
     // --- CultureServices ----------------------------
     vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
     registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
@@ -179,11 +184,6 @@ export function createValidationServices(activeCultureId: string,
     // The built-in class, TextLocalizerService, doesn't use a third party localization
     // library. If you prefer one, create a class that implements ITextLocalizerService
     vs.textLocalizerService = createTextLocalizerService(usage);
-
-    // --- Logger Service -----------------------------------    
-    // If you want both the ConsoleLoggerService and another, create the other
-    // and pass it as the second parameter of ConsoleLoggerService.
-    vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
 
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
