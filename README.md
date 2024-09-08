@@ -24,9 +24,9 @@ The UI uses that information to change the visuals, like showing the error messa
 
 - **UI developers can make the adjustments they need**: Jivs gives UI developers the flexibility to tailor the user experience while maintaining the integrity of the validation rules. They can customize error messages, apply localization, and disable unnecessary validators, ensuring that they can achieve their goals. They can also incorporate UI-specific validators, such as for a string parsing error. 
 
-	For UI-only forms, they can define their own validation rules with Jivs, ensuring a consistent approach across the application. 
-	
-	In fact, Jivs works just fine in apps that don't have business logic dictating validation rules. The benefit is that validation rules are not woven into the form itself.
+  For UI-only forms, they can define their own validation rules with Jivs, ensuring a consistent approach across the application. 
+  
+  In fact, Jivs works just fine in apps that don't have business logic dictating validation rules. The benefit is that validation rules are not woven into the form itself.
 
 - **Service-oriented architecture**: At the heart of Jivs is *Jivs-Engine*, with a service-oriented architecture built in TypeScript, so it works within browsers and Node.js. Jivs-Engine is designed to have an ecosystem of libraries that tackle UI frameworks, support models, and use various third-party libraries.
 
@@ -66,33 +66,34 @@ A validation rule is a single condition that evaluates the incoming data and det
 -	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
 -	The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
 -	Provides "Condition" objects to define the validation rules.
-	- Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](http://jivs.peterblum.com/typedoc/enums/Conditions_Types.ConditionType.html)
-	- Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate. <a href="#conditions">Learn more.</a>
+  - Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](http://jivs.peterblum.com/typedoc/enums/Conditions_Types.ConditionType.html)
+  - Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate. <a href="#conditions">Learn more.</a>
 
 -	Most validation rules come from business logic. The UI's inputs are often textboxes, where a string representing the native value is entered. So the UI is responsible for adding validation for when the parser fails. Jivs automatically injects the "Data Type Check" validation rule to handle this.
 -	Sometimes the UI must selectively enable a rule from business logic. It can wrap the validation rule in a "WhenCondition" to handle this.
 
 -	Taking a single responsibility pattern approach, comparison Conditions (equals, greater than, range, etc) offload data type-specific operations to other classes. That means you don't have to write another comparison validator when introducing a new data type. Instead, you write a few objects that support your data type and register them with the appropriate factories. The existing Conditions will continue to work.
-	
+  
 - Validation rules often use values that are not from the input, nor part of the rule's configuration. Jivs can handle these too as its handles several ways data is sourced:
-	+ "Input value host" handles your inputs from the UI.
-	+ "Property value host" handles a property on the model.
-	- "Static value host" holds static value, like Today's date, or the current culture identifier.
-	- "Calc value host" runs a calculation function whose result is its value.
-	
-	Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
+  + "Input value host" handles your inputs from the UI.
+  + "Property value host" handles a property on the model.
+  - "Static value host" holds static value, like Today's date, or the current culture identifier.
+  - "Calc value host" runs a calculation function whose result is its value.
+  
+  Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
 - A fluent syntax is used to configure your validation rules.
-	```ts
-	let builder = build(createValidationServices('en-US'));
-	// create the start Date Value Host and its validators
-	builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
-	  .require()
-	  .lessThan('EndDate')
-	  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' });
-	// create the end Date Value Host
-	builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).require();
-	```
-	
+  ```ts
+  let builder = build(createValidationServices('en-US'));
+  // create the start Date Value Host and its validators
+  builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
+    .require()
+    .lessThan('EndDate')
+    .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' });
+  // create the end Date Value Host
+  builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).require();
+  builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
+  ```
+  
 ### Error message features
 The error message guides the user into understanding what is invalid and often suggests how to correct it. For example "Enter a date in the form MM/DD/YYYY". A poorly written error message will not be helpful. So Jivs has a lot of depth in its error message support.
 
@@ -101,22 +102,22 @@ The error message guides the user into understanding what is invalid and often s
 
     `The {Label} must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}. You entered {Value:AbbrevDate}.`
 
-	- Tokens can show the configuration of the validation rule. Here is gets the field's name in {Label} and being a Range validation rule, its minimum and maximum.
-	- The {Value} token will show the current input value.
-	- Values may not already be strings. A formatter is used to convert a native value (like a Date object) into a localized string. If written as {Minimum}, it would use a default formatter (short date pattern). But here the user wants the abbreviated date pattern, so the token allows for {tokenName:formatter}.
+  - Tokens can show the configuration of the validation rule. Here is gets the field's name in {Label} and being a Range validation rule, its minimum and maximum.
+  - The {Value} token will show the current input value.
+  - Values may not already be strings. A formatter is used to convert a native value (like a Date object) into a localized string. If written as {Minimum}, it would use a default formatter (short date pattern). But here the user wants the abbreviated date pattern, so the token allows for {tokenName:formatter}.
 
-	Resulting in:
-	
+  Resulting in:
+  
     `The Event Date must be between Jan 1, 2025 and Mar 30, 2025. You entered Jun 6, 2025.`
-	
+  
 - Validators have two error messages. The first message, designed for proximity to the UI widget, is succinct, focusing on the issue without field context.  
 
-	`Requires a value.`
+  `Requires a value.`
 
-	The second, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity. 
-	
-	`First name requires a value.`
-	
+  The second, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity. 
+  
+  `First name requires a value.`
+  
 - You can setup default error message templates, localized of course. This is particularly useful for Data Type Check validations, where distinct data types require specific guidance. For instance, use "Enter a date in the form MM/DD/YYYY" for dates, and "Enter a number using only digits" for numbers.
 
 
@@ -124,17 +125,17 @@ The error message guides the user into understanding what is invalid and often s
 - Jivs can provide every error on an input, not just the first one found, to the UI ensuring thorough feedback and guidance.
 - When an error has been corrected, Jivs notifies the UI, which may show a checkmark to indicate the fix was accepted.
 - When you ask Jivs to validate, there are times that some validators should get skipped for better user experience.
-	+ Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
-	+ Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
-	+ Validators can be wrapped in the WhenCondition to disable themselves based on a rule. For example, unless a checkbox is marked, an associated text box will not report errors. Also the containing field can be configured to disable all of its validators based on a rule.
-	+ If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
+  + Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
+  + Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
+  + Validators can be wrapped in the WhenCondition to disable themselves based on a rule. For example, unless a checkbox is marked, an associated text box will not report errors. Also the containing field can be configured to disable all of its validators based on a rule.
+  + If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
 
 ### Submitting data features
 Data submission has 3 phases to ensure nothing illegal gets through:
 - Start by having Jivs validate the entire form. It must report back that the form is valid before allowing submission.
 - Upon receiving the form's data, the server again must validate that data. This is key to protect against hackers attempts to bypass the client-side validation. If your server is using Node.js, Jivs can handle this using the same configuration you created for the client-side.
 
-	The server's business logic may run additional validation rules that may fail or the act of saving itself fails.
+  The server's business logic may run additional validation rules that may fail or the act of saving itself fails.
 - If the server finds any issues preventing saving, it can package up the errors to send back to the client, where Jivs will update the form accordingly. Jivs is able to replace server's error messages with those developed for the UI and even assign them to the appropriate inputs. Check out an actual example here: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts).
 
 ### Deep support for data types
@@ -153,7 +154,7 @@ Jivs provides built-in support for common data types — number, string, Boolean
 - Parsers: Transform the strings from your inputs into their native types.
 - Identifiers: Integrate custom objects to be treated as standard data types, enabling complex comparisons. For example, an object denoting "tomorrow" or "next month" can be converted to a Date object for comparison purposes.
 - Comparers: Supports Conditions that compare two values so they can handler your non-standard data types. 
-		
+    
 ### Customization
 In the previous section, you learned about a number of customization points: formatters, converters, etc.
 You may prefer to entirely replace the built-in versions. For example, Jivs formatters use the <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl">Intl class built into JavaScript</a>. You can replace it with your preferred localization library.
@@ -163,7 +164,7 @@ Almost all objects in Jivs are based upon interfaces, allowing you to replace th
 - Consider switching to your preferred libraries.
 - Introduce new classes by registering them with factories.
 - Even Jivs own services and factories are replaceable.
-	
+  
 ### Logging and diagnostics
 - Jivs includes a logging object to help you diagnose issues. Like everything else, logging has an interface, so you can replace the built-in Console logging with anything you like.
 - Logging only works well if the code base uses it - and avoids overusing it causing inefficiencies. We've used it quite a bit for debugging/diagnostics level cases, but all logging is "lazy", only requesting the logging data when the logging level permits.
@@ -221,7 +222,7 @@ Here are a few terms used.
 - **Business Logic** – The code dedicated to describing and maintaining your Model. It provides the validation rules for individual properties and to run before saving. It should be separate from the UI, and Jivs favors that approach.
 - **Validator** – Combines a validation rule with the error message(s) it may return when an issue is found. Some Validators are specific to an Input or Property; those are the domain of Jivs. Business logic may have Validators that work with the entire Model.
 - **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. InputValueHost and PropertyValueHost represent two types that support validation of their values. However, not all values need actual validation. Some hold data like global values and fields from the Model that won't be edited.
-	> In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
+  > In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
 
 - **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
 - **ValidationManager** – A Jivs object; it is the main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
@@ -243,9 +244,9 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 <a name="focusleavesinput"></a>
 ### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
-	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-	* Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.input('name').setInputValue(inputValue, { validate: true });`
-	* If you want to handle parsing elsewhere, use: `validationManager.vh.input('name').setValues(nativeValue, inputValue, { validate: true });`
+  * You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
+  * Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.input('name').setInputValue(inputValue, { validate: true });`
+  * If you want to handle parsing elsewhere, use: `validationManager.vh.input('name').setValues(nativeValue, inputValue, { validate: true });`
 * The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -415,25 +416,25 @@ The HTML form data starts as strings. Convert each form element into its native 
   * Ensure you have setup appropriate DataTypeParser objects in the services. See <a href="#validationservices">Setup services</a>.
   * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned. dataType will serve to lookup the DataTypeParser. However, if the parser uses a different Lookup Key, set it on the InputValueHostConfig.parserLookupKey property.
   * Pass the string value from the form data into the InputValueHost: 
-	  ```ts
-	  vm.vh.input('FirstName').setInputValue(formValue);
-	  ```
+    ```ts
+    vm.vh.input('FirstName').setInputValue(formValue);
+    ```
 - Using your own parsing:
   * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned.
   * Parse - for you to implement. Just need to get back either the native value or an error message.
-	```ts
-	let { nativeValue, errorMessage } = myParser(text); 
-	```
+  ```ts
+  let { nativeValue, errorMessage } = myParser(text); 
+  ```
 
   * If there are no errors, pass both the input value and native value into the InputValueHost:
-	```ts
-	vm.vh.input('FirstName').setValues(nativeValue, inputValue);
-	```
+  ```ts
+  vm.vh.input('FirstName').setValues(nativeValue, inputValue);
+  ```
   * If there are errors, pass *undefined* for the native value, the input value, and the error message into the InputValueHost: 
-	```ts
-	vm.vh.input('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
-	```
-	
+  ```ts
+  vm.vh.input('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
+  ```
+  
 Continue below <a href="#nodejsvalidate">"Validation and either save or handle errors"</a>.
 #### Data is in JSON
 Upon converting a JSON string into an object, you can pass along each property to the associated ValueHost.
@@ -566,12 +567,12 @@ There are a couple of approaches to configuration, based on whether you want to 
 ### When starting with business logic
 1. UI creates the <a href="#validationservices">`Services object`</a> and passes it along to the business logic's code.
 2. Business logic provides its configuration.
-	+ using a code generator to translate your business logic into Jivs data.
-	+ using the <a href="#builder_and_vmconfig">`Builder object`</a>.
+  + using a code generator to translate your business logic into Jivs data.
+  + using the <a href="#builder_and_vmconfig">`Builder object`</a>.
 3. UI uses the `Builder object` to 
-	+ replace error messages and labels.
-	+ add additional ValueHosts and Validators. 
-	+ attach callbacks.
+  + replace error messages and labels.
+  + add additional ValueHosts and Validators. 
+  + attach callbacks.
 4. UI creates the `ValidationManager object` passing in the `Builder object`.
 
 #### Business logic using a code generator
@@ -595,14 +596,15 @@ builder.startUILayerConfig();
 // apply label to Start Date ValueHost
 // update the lessThan validator created by business logic
 // add the lessThenOrEqual validator for comparing the number of days between the dates
-builder.input('StartDate', null, { label: 'Start date'}).lessThan(
-  null, null, null, {
-  severity: ValidationSeverity.Severe
-}).lessThanOrEqual(
-  null, null, 'The two dates must be less than {CompareTo} days apart.', {
-  errorCode: 'NumOfDays',
-  summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
-});
+builder.input('StartDate', null, { label: 'Start date'})
+  .lessThan(null, null, null, {
+    severity: ValidationSeverity.Severe
+  })
+  .lessThanOrEqual(
+    null, null, 'The two dates must be less than {CompareTo} days apart.', {
+    errorCode: 'NumOfDays',
+    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+  });
 
 // apply label to end Date
 builder.input('EndDate', null, { label: 'End date'});
@@ -632,6 +634,7 @@ builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
   });
 // create the end Date Value Host
 builder.input('EndDate', LookupKey.Date, { label: 'End date'} );
+builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
 
 // attach any callbacks
 builder.onValidationStateChanged = myValidationStateChangedFn;
@@ -642,6 +645,21 @@ let vm = new ValidationManager(builder);
 For more extensive examples, see this code file:
 
 [jivs-examples/src/Config_entirely_in_UI_Layer.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Config_entirely_in_UI_Layer.ts)
+<a name="best_practice"></a>
+### Best Practice
+The ultimate goal is to have code that does all of the configuration work for ValidationManager in its own container. That way, both the form and tests operate from the same configuration. We propose creating a Factory object where you register configurations and it creates a ValidationManager fully configured. Something like this:
+```ts
+class ValidationManagerFactory
+{
+   public register(
+       formId: string, 
+       builder: ValidationManagerConfigBuilder | ()=> ValidationManagerConfigBuilder): void {   }
+   
+   public create(formId: string): ValidationManager {   }
+}
+```
+Use your class from within the app and your tests. <a href="#testing">Learn more about testing.</a>
+
 <a name="usingmodifierapi"></a>
 ### Changing the configuration after creating ValidationManager with the Modifier object
 Sometimes its necessary to change the configuration, perhaps just a property on a Validator or even add a ValueHost or Validator.
@@ -685,13 +703,13 @@ let vm = new ValidationManager(builder);
 
 let modifier = vm.startModifying();
 modifier.combineWithRule('Key', ConditionType.RegExp, CombiningUsingCondition.All,
-	(combiningBuilder)=> combiningBuilder.stringLength(10));
+  (combiningBuilder)=> combiningBuilder.stringLength(10));
 modifier.apply();
 ```
 The result would be the same as if business logic had initially done this:
 ```ts
 builder.input('Key', LookupKey.String, { label: 'Start date'} ).all(
-	(childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
+  (childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
 ```
 # Jivs Classes: the API
 <a name="apioverview"></a>
@@ -702,17 +720,17 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
-	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	+ `PropertyValueHost class` – For properties of a Model, a ValueHost with the power of validation. 
-	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
-	
-	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
-	code your app is using, and let the validation internally select the right
-	expression by retrieving the country code first.
-	
-	> If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
-		
-	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
+  + `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
+  + `PropertyValueHost class` – For properties of a Model, a ValueHost with the power of validation. 
+  + `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
+  
+  >For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
+  code your app is using, and let the validation internally select the right
+  expression by retrieving the country code first.
+  
+  > If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+    
+  + `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 
 -   <a href="#validationmanager">`ValidationManager class`</a> – The "face" of this API. Your validation-related UI elements will need access to it to do their work. It's where you
     configure the `ValueHosts`, get access to a `ValueHost`, validate, and get the validation results. It is supported by these types:
@@ -730,13 +748,13 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   <a href="#validators">`Validator class`</a> – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
 - <a href="#validationservices">`ValidationServices class` </a> – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
-	- `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
-	- `IDataTypeConverter` – For these use cases:
-		+ Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
-		+ Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
-	- `IDataTypeParser` – For converting the input value into a native value, ready for validation. A parser can detect an error and report it for a validator to show. Parsers are localizable.
-	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
-	- `ConditionFactory` – Creates the Condition objects used by business rules.
+  - `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
+  - `IDataTypeConverter` – For these use cases:
+    + Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
+    + Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
+  - `IDataTypeParser` – For converting the input value into a native value, ready for validation. A parser can detect an error and report it for a validator to show. Parsers are localizable.
+  - There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
+  - `ConditionFactory` – Creates the Condition objects used by business rules.
 
 <img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
@@ -751,6 +769,8 @@ Topics:
 - <a href="#localization">Localization</a>
 - <a href="#validationdeepdive">Validation Deep Dive</a>
 - <a href="#handlingvalues">Setting and Getting Values</a>
+- <a href="#logging">Logging</a>
+- <a href="#testing">Testing your work</a>
 
 <a name="conditions"></a>
 ## Conditions - the validation rules
@@ -844,20 +864,20 @@ modifier.input('field').conditionName(required parameters, { condition propertie
 ```
 - The *condition properties* argument is an object with any properties offered by the Condition's configuration that are not elsewher. It is omitted if the rest of the function parameters cover those properties. Each function below shows its condition properties object.
 - The *validator properties* argument that takes this object:
-	```ts
-	{
-	    errorCode?: string;
-	    
-	    // note: 'null' is used to remove the value from an earlier version of the config
-	    errorMessage?: null | string | ((host) => string);
-	    errorMessagel10n?: null | string;
-	    summaryMessage?: null | string | ((host) => string);
-	    summaryMessagel10n?: null | string;
-	    
-	    severity?: ValidationSeverity | ((host) => ValidationSeverity);
-	    enabled?: boolean | ((host) => boolean);
-	}
-	```
+  ```ts
+  {
+      errorCode?: string;
+      
+      // note: 'null' is used to remove the value from an earlier version of the config
+      errorMessage?: null | string | ((host) => string);
+      errorMessagel10n?: null | string;
+      summaryMessage?: null | string | ((host) => string);
+      summaryMessagel10n?: null | string;
+      
+      severity?: ValidationSeverity | ((host) => ValidationSeverity);
+      enabled?: boolean | ((host) => boolean);
+  }
+  ```
   For details, see <a href="#configuringvalidators">Configuring Validators</a>.
 
 Here are the Condition-building functions of the Builder API:
@@ -882,7 +902,7 @@ Here are the Condition-building functions of the Builder API:
   ```ts
   builder.input('fieldname').notNull();
   ```
-	
+  
 - regExp(expression, ignoreCase?, {*condition properties*}?, errorMessage?, {*validator properties*}?)
   ```ts
   builder.input('fieldname').regExp(/^\w*$/i);
@@ -928,8 +948,8 @@ Here are the Condition-building functions of the Builder API:
   ```
   For more, see <a href="#notcondition">Using the NotCondition</a>.
 - equalToValue(secondValue, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-	- same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`
-	- also can use these aliases: `ltValue`, `lteValue`, `gtValue`, `gteValue`
+  - same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`
+  - also can use these aliases: `ltValue`, `lteValue`, `gtValue`, `gteValue`
   ```ts
   builder.input('fieldname').equalToValue(10);
   builder.input('fieldname').lessThanValue(10);
@@ -944,8 +964,8 @@ Here are the Condition-building functions of the Builder API:
   }
   ```
 - equalTo(secondValueHostName, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-	- same for `notEqualTo`, `lessThan`, `lessThanOrEqual`, `greaterThan`, `greaterThanOrEqual`
-	- also can use these aliases: `lt`, `lte`, `gt`, `gte`
+  - same for `notEqualTo`, `lessThan`, `lessThanOrEqual`, `greaterThan`, `greaterThanOrEqual`
+  - also can use these aliases: `lt`, `lte`, `gt`, `gte`
   ```ts
   builder.input('fieldname').equalTo('fieldname2');
   builder.input('fieldname').lessThan('fieldname2');
@@ -1338,7 +1358,7 @@ builder.calc('TimesTen', LookupKey.Integer,
    (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => {
       let count = findValueHosts.getValueHost('Count') as number;
       if (!isNaN(count))
-      	  return count * 10;
+          return count * 10;
       return undefined;
    });
 ```
@@ -1425,20 +1445,20 @@ interface ValidatorConfig {
 
 Let’s go through each property.
 - `errorCode` – Each validator must have a unique error code within a ValueHost to identify it. By default, it uses the value from `conditionConfig.conditionType` or the condition created by `conditionCreator` (below). 
-	+ It is used by these features:
-		+ Lookup the localized error message with the <a href="#textlocalizerservice">`TextLocalizerService`</a>.
-		+ It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it. IssueFound is passed to your UI in these ValidationManager callbacks: `onValidationStateChanged` and `onValueHostValidationStateChanged`.
-		+ When the Builder or Modifier object has to merge validators using the `ValidatorConfigMergeService`.
-		+ When business logic provides errors, if its own error code matches this property, this validator reports an error, making it easy to ensure error messages are consistent and UI friendly.
-	+ Set it directly in these cases:
-		+ The same condition type is used more than once.
-		+ To clarify the purpose of the error.
-		+ To associate it with a business logic error code.
-		+ To provide multiple localized error messages for the same condition type.
-	
+  + It is used by these features:
+    + Lookup the localized error message with the <a href="#textlocalizerservice">`TextLocalizerService`</a>.
+    + It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it. IssueFound is passed to your UI in these ValidationManager callbacks: `onValidationStateChanged` and `onValueHostValidationStateChanged`.
+    + When the Builder or Modifier object has to merge validators using the `ValidatorConfigMergeService`.
+    + When business logic provides errors, if its own error code matches this property, this validator reports an error, making it easy to ensure error messages are consistent and UI friendly.
+  + Set it directly in these cases:
+    + The same condition type is used more than once.
+    + To clarify the purpose of the error.
+    + To associate it with a business logic error code.
+    + To provide multiple localized error messages for the same condition type.
+  
 - `conditionConfig` – Describes the condition itself. When using the <a href="#builder_and_vmconfig">Builder API</a>, you don't set this property directly. See <a href="#configuringconditions">"Configuring Conditions"</a>. 
 
-	It is not the only way to setup a Condition…
+  It is not the only way to setup a Condition…
 -	<a href="#customconditions">`conditionCreator`</a> – Create a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an `evaluate() function` easier than using a bunch of Conditions.
     
     Its function has this format:
@@ -1451,9 +1471,9 @@ Let’s go through each property.
 - `summaryMessage` – Same idea as errorMessage except to be shown in a Validation Summary. It's normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
 - `summaryMessagel10n` – Localization key for the summary message, used with the <a href="#textlocalizerservice">TextLocalizerService</a>.
 - `severity` – Controls some validation behaviors with these three values.
-	- `Error` – Error but continue evaluating the remaining validation rules. The default when `severity` is omitted.
-	- `Severe` – Error and do not evaluate any more validation rules for this ValueHost until the error is fixed.
-	- `Warning` – Want to give the user some direction, but not prevent saving the data.
+  - `Error` – Error but continue evaluating the remaining validation rules. The default when `severity` is omitted.
+  - `Severe` – Error and do not evaluate any more validation rules for this ValueHost until the error is fixed.
+  - `Warning` – Want to give the user some direction, but not prevent saving the data.
 - `enabled` – A way to quickly disable the Validator. Alternatively use the WhenCondition to control the enabled state based on a condition. See <a href="#whencondition">Using the WhenCondition</a>.
 
 #### Example with inline error messages
@@ -1558,7 +1578,7 @@ Now the same using the `Builder object`.
 ```ts
 let builder = build(createValidationServices('en-US'));
 builder.input('FirstName', LookupKey.String, { label: 'First name'})
-	.requireText(null, 'Requires a value');
+  .requireText(null, 'Requires a value');
 let vm = new ValidationManager(builder);
 ```
 #### ValidationManagerConfig and Builder object
@@ -1635,9 +1655,9 @@ Let’s go through these types.
 - `calc()` adds or modifies a <a href="#valuehosts">CalcValueHost</a> configuration. See <a href="#valuehostbuilderapi">Configuring ValueHosts with Builder API</a>.
 
 - `startUILayerConfig(options)` is used when business logic first configures the ValueHosts and their validators.
-	Once done, its time for the UI to make extensions and modifications. First call startUILayerConfig(). It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
-	+ favorUIMessages - When true or undefined, remove all error messages supplied by the business logic so long as there is an error message for the same error code registered in the TextLocalizerService. This ensures that TextLocalizerService messages are used, as any error message directly assigned to a validator overrides the TextLocalizerService.
-	+ convertPropertyToInput - When true or undefined, PropertyValueHosts that were created by business logic are upgraded to InputValueHosts. Business logic can use PropertyValueHosts for validating models in Jivs. This option allows the same configuration to work with both model and UI validation.
+  Once done, its time for the UI to make extensions and modifications. First call startUILayerConfig(). It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
+  + favorUIMessages - When true or undefined, remove all error messages supplied by the business logic so long as there is an error message for the same error code registered in the TextLocalizerService. This ensures that TextLocalizerService messages are used, as any error message directly assigned to a validator overrides the TextLocalizerService.
+  + convertPropertyToInput - When true or undefined, PropertyValueHosts that were created by business logic are upgraded to InputValueHosts. Business logic can use PropertyValueHosts for validating models in Jivs. This option allows the same configuration to work with both model and UI validation.
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
 - `enabler()` attaches a Condition to the ValueHost that determines if it is enabled or not. See <a href="#disablevaluehost">Disabling a ValueHost</a>.
@@ -1689,7 +1709,7 @@ Let's go through these members:
 - `calc()` adds or modifies a <a href="#valuehosts">CalcValueHost</a> configuration. See <a href="#valuehostbuilderapi">Configuring ValueHosts with Builder API</a>.
 - `updateValidator()` is a simplified way to modify properties on a validator, including error message. For the *validator properties* argument, see <a href="#configuringvalidators">Configuring Validators</a>.
 
-	`updateValidator('fieldname', ConditionType.RegExp, { errorMessage: 'new message' })` is effectively the same as writing: `input('fieldname').regExp(null, null, 'new message')`.
+  `updateValidator('fieldname', ConditionType.RegExp, { errorMessage: 'new message' })` is effectively the same as writing: `input('fieldname').regExp(null, null, 'new message')`.
 - `addValidatorsTo()` is a simplified way to add a validator without first figuring out the valueHost type. Use it like this: `addValidatorsTo('fieldname').regExp(parameters)`
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
@@ -1827,41 +1847,41 @@ Consider these *Use Cases*:
 
 - Provide case insensitive string matching by converting to lowercase. Set the conversionLookupKey properties to "CaseInsensitive" (uses CaseInsensitiveStringConverter).
 
-	Here is the NotEqualToCondition configured with CaseInsensitive:
-	```ts
+  Here is the NotEqualToCondition configured with CaseInsensitive:
+  ```ts
     builder.input('FirstName', LookupKey.String, { label: 'First name'})
        .notEqual('LastName', {
             conversionLookupKey: LookupKey.CaseInsensitive,
             secondConversionLookupKey: LookupKey.CaseInsensitive	   
         });
-	```
+  ```
 - Using a Date object as something other than Date+Time. You may be interested only in the date, the time, or even parts like Month or Hours. 
-	
-	Jivs includes these Lookup Keys built around date+time: 
-	* "Date" - UTC date only. UTCDateOnlyConverter
-	* "LocalDate" - local date only. LocalDateOnlyConverter
-	* "TimeOfDay" - time of day only, omitting seconds. TimeOfDayOnlyConverter
-	* "TimeOfDayHMS" - time of day including seconds. TimeOfDayHMSOnlyConverter
-	* "Minutes" - total minutes into the day
-	* "Seconds" - total seconds into the day
-	* "Milliseconds" - total milliseconds into the day
-	You can use their Lookup Key in the ValueHost dataType property instead of the Condition's conversionLookup Key to automatically get their converters.
-	```ts
+  
+  Jivs includes these Lookup Keys built around date+time: 
+  * "Date" - UTC date only. UTCDateOnlyConverter
+  * "LocalDate" - local date only. LocalDateOnlyConverter
+  * "TimeOfDay" - time of day only, omitting seconds. TimeOfDayOnlyConverter
+  * "TimeOfDayHMS" - time of day including seconds. TimeOfDayHMSOnlyConverter
+  * "Minutes" - total minutes into the day
+  * "Seconds" - total seconds into the day
+  * "Milliseconds" - total milliseconds into the day
+  You can use their Lookup Key in the ValueHost dataType property instead of the Condition's conversionLookup Key to automatically get their converters.
+  ```ts
     builder.input('MomentOfBirth', LookupKey.TimeOfDay, { label: 'Time of birth'});
-	```
-	We also have examples that introduce Month/Year [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts) and Month/Day [jivs-examples/src/AnniversaryConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts).
-	```ts
+  ```
+  We also have examples that introduce Month/Year [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts) and Month/Day [jivs-examples/src/AnniversaryConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts).
+  ```ts
     builder.input('Expiry', 'MonthYear', { label: 'Expiration date'});
     builder.input('MarriageDate', 'Anniversary', { label: 'Marriage date'});
-	```
+  ```
   Jivs also includes the "Minutes" Lookup Key and its time-of-day to total minutes converter, TimeOfDayOnlyConverter. "Seconds" Lookup Key and its time-of-day to total seconds converter, TimeOfDayHMSOnlyConverter.
   
 - Perhaps you want to compare the difference in days between two dates. For that you need to convert a Date object into a number – the number of days since some fixed point. 
-	
+  
   Jivs includes the "TotalDays" Lookup Key and UTCDateOnlyConverter.
   
   See an example here: [jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts).
-	
+  
 - Changing your own class (already setup with an Identifier) into something as simple as a string, number, or Date also requires a Converter. You will see how in the RelativeDate class example [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) and a TimeSpan class example [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts).
 - Additional converters already supplied with these Lookup Keys: "Integer" (uses Math.trunc), "Uppercase", "Lowercase".
 - Suppose that you have a class "FullName" with properties of FirstName and LastName. Create a converter to return a string that is both concatenated.
@@ -1879,7 +1899,7 @@ Formatters initially use the Lookup Key from the ValueHost.dataType. So if you a
 `"The value must be between 12/31/1999 and 12/31/2005."`
 
 To override it, such as using the abbreviated date format, include the Lookup Key within the token like this:
-	
+  
 `"The value must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}."`
 
 `"The value must be between Dec 31, 1999 and Dec 31, 2005."`
@@ -1899,8 +1919,8 @@ Convert from the input value into the native value with implementations of `IDat
 
 Parsers are used:
 * only on InputValueHosts, when calling `InputValueHost.setInputValue()`. 
-	* In the client-side in response to the onchange event of a form \<input>.
-	* In the node.js server that uses Jivs to validate. See <a href="#nodejsserver">Validation in Node.Js</a>.
+  * In the client-side in response to the onchange event of a form \<input>.
+  * In the node.js server that uses Jivs to validate. See <a href="#nodejsserver">Validation in Node.Js</a>.
 * when the input value is a string (even if the native value is also a string).
 * automatically, so long as a `IDataTypeParser` is setup for the lookup key assigned to InputValueHostConfig.dataType or InputValueHostConfig.parserLookupKey. Alternatively, pass a function to create the parser in InputValueHostConfig.parserCreator.
 
@@ -1938,9 +1958,9 @@ Staying with the "single responsibility pattern", Jivs recommends that you use i
 In Jivs, "Data Type Check" means a Condition that can determine if the data supplied is fully compatible with what the model property intended. 
 
 Jivs provides the DataTypeCheckCondition, and it handles many cases simply by checking if the Input value (from the UI editor) was successfully converted to the native value. For example, converting a date string "31-May-2030" into a Date object. As a rule, when that conversion fails, Jivs expects you to call `ValueHost.setValueToUndefined()`. DataTypeCheckCondition reports an error only when Input value is assigned and native value is undefined.
-	
+  
 DataTypeCheckCondition doesn't apply when no conversion is required. Strings are a great example of a native value that doesn't require conversion. Strings represent all kinds of data. For example, an email address or a phone number. For these cases, create a Lookup Key ("EmailAddress", "PhoneNumber") and implement a `IDataTypeCheckGenerator `that supplies a regular expression to validate the string.
-	
+  
 Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
 
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
@@ -1949,21 +1969,21 @@ Take a look at [this example for Email Address](https://github.com/plblum/jivs/b
 The LookupKey enumerated type doesn't cover everything.
 Here are some use cases for creating your own Lookup Key:
 - Enumerated types, where the user sees text but the value is stored as a number. Check out [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts) to get supporting code and see how to use it.
-	+ Parsing, from string to number
-	+ Formatting, from number to string in an error message
+  + Parsing, from string to number
+  + Formatting, from number to string in an error message
 - String values that have a strong pattern, like a phone number.
-	+ Parsing, to clean up the user's input into the text that you want to store
-	+ Formatting, to format the text you have stored
-	+ Validating, using a Regular Expression. 
-	+ Auto generating data type check validators
+  + Parsing, to clean up the user's input into the text that you want to store
+  + Formatting, to format the text you have stored
+  + Validating, using a Regular Expression. 
+  + Auto generating data type check validators
 - Extracting some data from the native value, like the day of week from a Date object.
-	+ Converting, to get the Date.day property.
+  + Converting, to get the Date.day property.
 - A class that you store as a single entity, like class NumberWithUnits { value: number, units: string }
-	+ Identifing, to recognize your class
-	+ Converting, to get a value you can use in comparing, such as the NumberWithUnits.value.
-	+ Comparing, to compare two instances of the same class
-	+ Formatting, to show the current value in an error message
-	+ Parsing, to convert user input into your class.
+  + Identifing, to recognize your class
+  + Converting, to get a value you can use in comparing, such as the NumberWithUnits.value.
+  + Comparing, to compare two instances of the same class
+  + Formatting, to show the current value in an error message
+  + Parsing, to convert user input into your class.
 
 <a name="createconditions"></a>
 ## Creating your own Conditions
@@ -1986,8 +2006,8 @@ Once created, go to the `registerConditions() function` that is [part of the sta
 export function registerConditions(cf: ConditionFactory): void
 {
    ... existing conditions...
-	cf.register<myConditionConfig>(
-   		'MyConditionType', (config) => new MyCondition(config));
+  cf.register<myConditionConfig>(
+       'MyConditionType', (config) => new MyCondition(config));
 }
 
 ```
@@ -1995,39 +2015,39 @@ You can also extend the Builder API to support it.
 
 Here are two ways to start:
 - Subclass from an existing `Condition class`. Choose when you want to make a minor modification or want to preconfigure [the existing class](https://github.com/plblum/jivs/blob/main/packages/jivs-engine/src/Conditions/ConcreteConditions.ts).
-	```ts
-	export class MyCondition extends RegExpCondition 
-	{
-	   constructor(config: IRegExpConditionConfig)
-	   {
-	      super({ 
-	         ...config, 
-	         ...{ expressionAsString: '^\\d\\d\\d\\-\\d\\d\\d\\d$'} 
-	      });
-	   }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```
+  ```ts
+  export class MyCondition extends RegExpCondition 
+  {
+     constructor(config: IRegExpConditionConfig)
+     {
+        super({ 
+           ...config, 
+           ...{ expressionAsString: '^\\d\\d\\d\\-\\d\\d\\d\\d$'} 
+        });
+     }
+     public get conditionType(): string { return 'MyConditionType'; }
+  }
+  ```
 See this sample code for more: [jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts)
 - Subclass from an [abstract `Condition class`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Conditions) designed for the type of `Condition` you need. The abstract classes provide some useful methods to take advantage of. They also require a `ConditionConfig interface`, which means you can get additional values from the user passed in.
-	```ts
-	export interface MyConditionConfig extends RegExConditionBaseConfig
-	{
-	   allowTwo?: boolean; // true means pattern is repeated with a comma separator
-	}
-	
-	export class MyCondition extends RegExpConditionBase<MyConditionConfig>
-	{
-	   protected getRegExp(valueHostResolver: IValueHostResolver): RegExp
-	   {
-	      const base = @'\d\d\d\-\d\d\d\d';
-	      if (this.config.allowTwo)
-	         return new RegExp('^' + base + '(\,\s?' + base + ')?$');
-	      return new RegExp('^' + base + '$');
-	   }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```
+  ```ts
+  export interface MyConditionConfig extends RegExConditionBaseConfig
+  {
+     allowTwo?: boolean; // true means pattern is repeated with a comma separator
+  }
+  
+  export class MyCondition extends RegExpConditionBase<MyConditionConfig>
+  {
+     protected getRegExp(valueHostResolver: IValueHostResolver): RegExp
+     {
+        const base = @'\d\d\d\-\d\d\d\d';
+        if (this.config.allowTwo)
+           return new RegExp('^' + base + '(\,\s?' + base + ')?$');
+        return new RegExp('^' + base + '$');
+     }
+     public get conditionType(): string { return 'MyConditionType'; }
+  }
+  ```
 See this sample code for more: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
 <a name="customconditions"></a>
 ### One-off conditions
@@ -2041,28 +2061,28 @@ builder.input('fieldname')
         { ...optional additional parameters });
 ```
 - Create a plain JavaScript object that matches the `ICondition interface` contract. This is often used for one-off logic.
-	```ts
-	let myCondition = <ICondition>{
-	   evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> =>
-	   {
-	   // evaluate the value(s) and return a ConditionEvaluateResult
-	   },
-	   category: 'Content';
-	   conditionType: 'MyConditionType';
-	}
-	```
+  ```ts
+  let myCondition = <ICondition>{
+     evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> =>
+     {
+     // evaluate the value(s) and return a ConditionEvaluateResult
+     },
+     category: 'Content';
+     conditionType: 'MyConditionType';
+  }
+  ```
 - Implement directly from `ICondition` as a class
-	```ts
-	export class MyCondition implements ICondition 
-	{
-	   public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
-	   {
-	   // evaluate the value(s) and return a ConditionEvaluateResult
-	   },
-	   public get category(): string { return 'Content'; }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```	
+  ```ts
+  export class MyCondition implements ICondition 
+  {
+     public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+     {
+     // evaluate the value(s) and return a ConditionEvaluateResult
+     },
+     public get category(): string { return 'Content'; }
+     public get conditionType(): string { return 'MyConditionType'; }
+  }
+  ```	
 
 ### Additional considerations
 - Look here for source code to the concrete conditions we’ve supplied:
@@ -2097,23 +2117,23 @@ To replace it with a third party text localization tool, implement `ITextLocaliz
 Let's suppose that you have a label "First Name" which you want in several languages.
 1. Create a unique Localization Key for it. We'll use "FirstName".
 2. Assign both label and labell10n properties during configuration, shown here using the <a href="#builder_and_vmconfig">`Builder object`</a>:
-	```ts
-	builder.input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' });
-	```
+  ```ts
+  builder.input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' });
+  ```
 3. Add an entry to the `createTextLocalizerService() function` like this:
-	```ts
-	export function createTextLocalizerService(): ITextLocalizerService
-	{
-	    let service = new TextLocalizerService();
-	    ...
-	    service.register('labell10n', {
-	        '*': 'First Name', // fallback
-	        'en': 'First Name',
-	        'es': 'nombre de pila',
-	        'fr': 'prénom'
-	    });
-	}
-	```
+  ```ts
+  export function createTextLocalizerService(): ITextLocalizerService
+  {
+      let service = new TextLocalizerService();
+      ...
+      service.register('labell10n', {
+          '*': 'First Name', // fallback
+          'en': 'First Name',
+          'es': 'nombre de pila',
+          'fr': 'prénom'
+      });
+  }
+  ```
 
 #### Setup for ValidatorConfig.errorMessage and summaryMessage properties
 Jivs generates specific Localization Keys based on the ConditionType.
@@ -2145,23 +2165,23 @@ So review and edit the `createTextLocalizerService() function`.
 #### Setup for ValueHostConfig.dataType
 The {DataType} token is useful in making the error message for a Data Type Check validator cover multiple data types. Instead of "Enter a date." and "Enter a number.", one error message can say "Enter a {DataType}.".
 1. Assign the dataType property during configuration shown here using the <a href="#builder_and_vmconfig">`Builder object`</a>:
-	```ts
-	builder.input('Age', LookupKey.Integer);
-	```
+  ```ts
+  builder.input('Age', LookupKey.Integer);
+  ```
 2. Add an entry to the `createTextLocalizerService() function` like this:
-	```ts
-	export function createTextLocalizerService(): ITextLocalizerService
-	{
-	    let service = new TextLocalizerService();
-	    ...
-	    service.registerDataTypeLabel(LookupKey.Integer, {
-	        '*': 'an integer number', // fallback
-	        'en': 'an integer number',
-	        'es': 'un número entero',
-	        'fr': 'un nombre entier'
-	    });
-	}
-	```
+  ```ts
+  export function createTextLocalizerService(): ITextLocalizerService
+  {
+      let service = new TextLocalizerService();
+      ...
+      service.registerDataTypeLabel(LookupKey.Integer, {
+          '*': 'an integer number', // fallback
+          'en': 'an integer number',
+          'es': 'un número entero',
+          'fr': 'un nombre entier'
+      });
+  }
+  ```
 
 ### Localizing error message "value" tokens
 Error messages use tokens to insert values at runtime. {Value}, {SecondValue}, {Minimum}, {Maximum}, and {CompareTo} are all examples.
@@ -2190,7 +2210,7 @@ export class MyLongDateFormatter extends DataTypeFormatterBase
     if (value instanceof Date)
     {
     // do the work
-    	  let formatted: string = ... code to handle the localized formatted date...
+        let formatted: string = ... code to handle the localized formatted date...
       return { value: formatted };
     }
     return { errorMessage: 'Not a date' };
@@ -2269,27 +2289,27 @@ These properties are all related to validation:
 - validate - When true, invoke validation but only if the value changed.
 - reset - When true, change the state of the ValueHost to unchanged and validation has not been attempted. 
 - conversionErrorTokenValue - Provide an error message related to parsing from the Input Value into native value. This message can be shown when using DataTypeCheckCondition, by using the {ConversionError} token in its error message:
-	```ts
-	let firstNameFld = document.getElementById('FirstName');
-	firstNameFld.attachEventListener('onchange', (evt)=>{
-	  let inputValue = evt.target.value;
-	  let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
-	  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
-	});	
-	
-	// set up the DataTypeCheckCondition's error message (local to this form)
-	let original = vm.services.textLocalizerService as TextLocalizerService;
-	let tls = new TextLocalizerService();
+  ```ts
+  let firstNameFld = document.getElementById('FirstName');
+  firstNameFld.attachEventListener('onchange', (evt)=>{
+    let inputValue = evt.target.value;
+    let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
+    vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
+  });	
+  
+  // set up the DataTypeCheckCondition's error message (local to this form)
+  let original = vm.services.textLocalizerService as TextLocalizerService;
+  let tls = new TextLocalizerService();
     tls.fallbackService = original.textLocalizerService;
     vm.services.textLocalizerService = tls;
-	
-	tls.service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
+  
+  tls.service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
       '*': 'Input error: {ConversionError}.' 
     });
     tls.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
       '*': '{Label} has this error: {ConversionError}.'
     });    
-	```
+  ```
 
 #### ValidationManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on ValidationManager.
@@ -2312,11 +2332,11 @@ interface ValidateOptions {
 These properties are all related to ValidationManager validation:
 - group - Group validation is a tool to group validatable ValueHosts with a specific submit command when validating. If used, it needs a name assigned here and on ValueHosts that it targets. See their ValueHostConfig.group property. The name matching is case insensitive.
 
-	Use when there is more than one group of validatable ValueHosts to be validated together.
-	
-	For example, the ValidationManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
-	pass in the same group name.
-	
+  Use when there is more than one group of validatable ValueHosts to be validated together.
+  
+  For example, the ValidationManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
+  pass in the same group name.
+  
 - preliminary - Set to true when running a validation prior to a submit activity.
 Typically used just after loading the form to report any errors already present.
 When set, the RequireTextCondition is not checked as the user doesn't need
@@ -2386,13 +2406,13 @@ function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidat
 
 Let's go through `ValueHostValidationState` properties:
 - status - Each ValueHost has status codes related to validation. Several reflect the state before validation is even attempted.
-	+ NotAttempted - So far, the value has not been changed and validation has not occurred.
-	+ NeedsValidation - The value has been changed and needs validation.
-	+ Undetermined - Validation occurred but the Condition could not make a determination of Match or NoMatch. 
-	
-	> Neither `isValid` nor `doNotSave` deal with a status of Undetermined. Undetermined indicates that the validators are incorrectly setup, such as you have a validator that expects a date, but are supplying a number. So this status should be addressed while in development.
-	+ Invalid - Validation occurred and the Condition reported NoMatch. Thus the value is invalid.
-	+ Valid - Validation occurred and the Condition reported Match. Thus the value is valid.
+  + NotAttempted - So far, the value has not been changed and validation has not occurred.
+  + NeedsValidation - The value has been changed and needs validation.
+  + Undetermined - Validation occurred but the Condition could not make a determination of Match or NoMatch. 
+  
+  > Neither `isValid` nor `doNotSave` deal with a status of Undetermined. Undetermined indicates that the validators are incorrectly setup, such as you have a validator that expects a date, but are supplying a number. So this status should be addressed while in development.
+  + Invalid - Validation occurred and the Condition reported NoMatch. Thus the value is invalid.
+  + Valid - Validation occurred and the Condition reported Match. Thus the value is valid.
 - isValid - When true, the data appears to be valid. However, `isValid` is only false when there was an explicit `status` of *Invalid*. Statuses like *Undetermined* and *NotAttempted* are true as far as `isValid` is concerned. As a result, it's better to check `doNotSave` to know if you can submit the data.
 - doNotSave - Determines if a validator doesn't consider the ValueHost's value ready to save. It is true when `status` is *Invalid* or *NeedsValidation*. It is also true when `asyncProcessing` is true.
 - issuesFound - An array of all issues found or null when there are no issues found. See below for more on the `IssueFound type`.
@@ -2589,12 +2609,13 @@ let inputValue = lastNameVH.getInputValue();
 let  inputValue = vm.vh.any("LastName").getInputValue();
 ```
 
+<a name="#logging"></a>
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 
 The logger is configured within the ValidationServices object, as it is a service.
 1. It is setup in the <a href="#configuringvalidationservices">`createValidationServices() function`</a>.
-	```ts
+    ```ts
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
     // and pass it as the second parameter of ConsoleLoggerService.
@@ -2602,10 +2623,13 @@ The logger is configured within the ValidationServices object, as it is a servic
     ```
 2. You can modify it as needed just by getting the services object and using its `loggerService property`.
 
-	```ts
-	services.loggerService.minLevel = LoggingLevel.Debug;
-	```
-There are several actions you might want to take when using logging.
+  ```ts
+  services.loggerService.minLevel = LoggingLevel.Debug;
+  ```
+There are several actions you might want to take when using logging described in upcoming sections.
+- Set the minimum logging level
+- Varying the minLevel based on what is being logged
+- Change to another LoggerService object
  
 ### Set the minimum logging level
 Jivs has logging levels of Debug, Info, Warn, and Error. The logging object has a `minLevel property` which defaults to Error, which means omit the rest. You can set and change the minLevel as shown above.
@@ -2614,127 +2638,127 @@ The LoggingLevel enum:
 ```ts
 export enum LoggingLevel
 {
-    Debug = 0,
-    Info = 2,
-    Warn = 3,
-    Error = 4
+  Debug = 0,
+  Info = 2,
+  Warn = 3,
+  Error = 4
 }
 ```
 #### Logging content example using Debug level
 This jest unit test shows the logging for just calling ValueHost.setValues("", "", {validate:true}) with Debug level. 
 ```ts
 test('setValue with validate=true, onValueHostValidationStateChanged called', () => {
-    let onValidateResult: ValueHostValidationState | null = null;
-    let config: ValidationManagerConfig = {
-        services: createValidationServices(),
-        valueHostConfigs: [],
-        onValueHostValidationStateChanged: (vh, vr) => {
-            onValidateResult = vr;
-        }        
-    };
-    config.services.loggingService = new ConsoleLoggingService(LoggingLevel.Debug);
-    let builder = new ValidationManagerConfigBuilder(config);    
-    let builder = createBuilder({
-        onValueHostValidationStateChanged: (vh, vr) => {
-            onValidateResult = vr;
-        }
-    });
-    builder.input('Field1').requireText(null, 'error');
-    let vm = new ValidationManager(builder);
-    let vh = vm.vh.input('Field1');
-    vh.setValues('', '', { validate: true });   // empty is invalid
+  let onValidateResult: ValueHostValidationState | null = null;
+  let config: ValidationManagerConfig = {
+    services: createValidationServices(),
+    valueHostConfigs: [],
+    onValueHostValidationStateChanged: (vh, vr) => {
+        onValidateResult = vr;
+    }        
+  };
+  config.services.loggingService = new ConsoleLoggingService(LoggingLevel.Debug);
+  let builder = new ValidationManagerConfigBuilder(config);    
+  let builder = createBuilder({
+    onValueHostValidationStateChanged: (vh, vr) => {
+        onValidateResult = vr;
+    }
+  });
+  builder.input('Field1').requireText(null, 'error');
+  let vm = new ValidationManager(builder);
+  let vh = vm.vh.input('Field1');
+  vh.setValues('', '', { validate: true });   // empty is invalid
 
-    expect(onValidateResult).toEqual(<ValueHostValidationState>{
-        isValid: false,
-        issuesFound: [{
-            errorCode: ConditionType.RequireText,
-            valueHostName: 'Field1',
-            severity: ValidationSeverity.Severe,
-            errorMessage: 'error',
-            summaryMessage: 'error'
-        } ],
-        doNotSave: true,
-        asyncProcessing: false,
-        status: ValidationStatus.Invalid,
-        corrected: false
-    });
+  expect(onValidateResult).toEqual(<ValueHostValidationState>{
+    isValid: false,
+    issuesFound: [{
+        errorCode: ConditionType.RequireText,
+        valueHostName: 'Field1',
+        severity: ValidationSeverity.Severe,
+        errorMessage: 'error',
+        summaryMessage: 'error'
+    } ],
+    doNotSave: true,
+    asyncProcessing: false,
+    status: ValidationStatus.Invalid,
+    corrected: false
+  });
 });        
 ```
 You are looking at the output in VSCode's Terminal. Jivs has called the console class's functions with the logged object. Each entry starts with the console's function, which in this case is either debug or log  (which is used for Info level). If there were warnings, you would see them as console.warn and errors as console.error.
 ```text
 console.debug
   {
-	message: 'addValueHost(Field1)',
-	feature: 'Manager',
-	type: 'ValidationManager'
+  message: 'addValueHost(Field1)',
+  feature: 'Manager',
+  type: 'ValidationManager'
   }
 console.debug
   {
-	message: 'setValues("", "")',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'setValues("", "")',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 console.debug
   {
-	message: 'Validating ValueHost "Field1"',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'Validating ValueHost "Field1"',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 console.debug
   {
-	message: 'Starting Validation for error code RequireText',
-	feature: 'Validator',
-	type: 'Validator',
-	identity: [ 'Field1', 'RequireText' ]
+  message: 'Starting Validation for errorcode "RequireText"',
+  feature: 'Validator',
+  type: 'Validator',
+  identity: [ 'Field1', 'RequireText' ]
   }
 console.log
   {
-	message: 'Condition RequireText evaluated as NoMatch',
-	category: 'Result',
-	feature: 'Validator',
-	type: 'Validator',
-	identity: [ 'Field1', 'RequireText' ]
+  message: 'Condition RequireText evaluated as NoMatch',
+  category: 'Result',
+  feature: 'Validator',
+  type: 'Validator',
+  identity: [ 'Field1', 'RequireText' ]
   }
 console.log
   {
-	message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
-	category: 'Result',
-	feature: 'Validator',
-	type: 'Validator',
-	identity: [ 'Field1', 'RequireText' ]
+  message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
+  category: 'Result',
+  feature: 'Validator',
+  type: 'Validator',
+  identity: [ 'Field1', 'RequireText' ]
   }
 console.log
   {
-	message: 'onValueHostValidationStateChanged',
-	feature: 'Manager',
-	type: 'ValidationManager'
+  message: 'onValueHostValidationStateChanged',
+  feature: 'Manager',
+  type: 'ValidationManager'
   }
 console.log
   {
-	message: 'onValueHostValidationStateChanged',
-	feature: 'Manager',
-	type: 'ValidationManager'
+  message: 'onValueHostValidationStateChanged',
+  feature: 'Manager',
+  type: 'ValidationManager'
   }
 console.log
   {
-	message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
-	category: 'Result',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
+  category: 'Result',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 console.debug
   {
-	message: 'notifyOtherValueHostsOfValueChange on Field1',
-	feature: 'Manager',
-	type: 'ValidationManager'
+  message: 'notifyOtherValueHostsOfValueChange on Field1',
+  feature: 'Manager',
+  type: 'ValidationManager'
   }
 ```
 
 ### Varying the minLevel based on what is being logged
-If you want to use the Debug or Info levels, expect to get a lot of content. See an example in the next section. Often you are trying to diagnose a problem through the logs. Jivs lets you selectively log everything that meets a specific criteria, even though its below the minLevel.
+If you want to use the Debug or Info levels, expect to get a lot of content (example below). Often you are trying to diagnose a problem through the logs. Jivs lets you selectively log everything that meets a specific criteria, even though its below the minLevel.
 
 > If you use a custom logger, it must have been subclassed from LoggerServiceBase to get this feature.
 
@@ -2763,56 +2787,56 @@ category: 'Result'
 This jest unit test shows the logging for just calling ValueHost.setValues("", "", {validate:true}) with Debug level. 
 ```ts
 ...
-    let logger = new ConsoleLoggingService(LoggingLevel.Error);	// was Debug
-    config.services.loggingService = logger;
-    logger.overrideMinLevelWhen({
-        feature: 'ValueHost',
-        identity: 'Field1'
-    });
-    logger.overrideMinLevelWhen({
-        category: LoggingCategory.Result,
-    });
+  let logger = new ConsoleLoggingService(LoggingLevel.Error);	// was Debug
+  config.services.loggingService = logger;
+  logger.overrideMinLevelWhen({
+    feature: 'ValueHost',
+    identity: 'Field1'
+  });
+  logger.overrideMinLevelWhen({
+    category: LoggingCategory.Result,
+  });
 ... 
 ```
 Again, you are looking at the output in VSCode's Terminal. Compare the output to the earlier example:
 ```text
 console.debug
   {
-	message: 'setValues("", "")',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'setValues("", "")',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 console.debug
   {
-	message: 'Validating ValueHost "Field1"',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'Validating ValueHost "Field1"',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 console.log
   {
-	message: 'Condition RequireText evaluated as NoMatch',
-	category: 'Result',
-	feature: 'Validator',
-	type: 'Validator',
-	identity: [ 'Field1', 'RequireText' ]
+  message: 'Condition RequireText evaluated as NoMatch',
+  category: 'Result',
+  feature: 'Validator',
+  type: 'Validator',
+  identity: [ 'Field1', 'RequireText' ]
   }
 console.log
   {
-	message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
-	category: 'Result',
-	feature: 'Validator',
-	type: 'Validator',
-	identity: [ 'Field1', 'RequireText' ]
+  message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
+  category: 'Result',
+  feature: 'Validator',
+  type: 'Validator',
+  identity: [ 'Field1', 'RequireText' ]
   }
 console.log
   {
-	message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
-	category: 'Result',
-	feature: 'ValueHost',
-	type: 'InputValueHost',
-	identity: 'Field1'
+  message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
+  category: 'Result',
+  feature: 'ValueHost',
+  type: 'InputValueHost',
+  identity: 'Field1'
   }
 
 ```
@@ -2822,9 +2846,147 @@ You can replace the ConsoleLoggerService with your preferred logging library, ei
 - [ILoggerService documentation](http://jivs.peterblum.com/typedoc/interfaces/Services_Types_ILoggerService.ILoggerService.html)
 - [LoggerServiceBase documentation](http://jivs.peterblum.com/typedoc/classes/Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html)
 
-You can also chain loggers, so several receive the log content. Do that in its constructor:
+You can also chain loggers, so several can receive the log content. Do that in its constructor:
 ```ts
 let chainedLogger = new ConsoleLoggerService(LoggingLevel.Error)
 vs.loggerService = new MyLoggerService(LoggingLevel.Error, chainedLogger);
 ```
 > Note that a chained logger will act as if it has LoggingLevel.Debug, knowing that the top-level logging service will only call it if its own minLevel is met.
+
+<a name="testing"></a>
+## Testing your work
+Because it is a service without needing a UI, it is easier to test that your validation is working correctly. Jivs also has its own services contained in the `ValidationServices object`, where you might replace one of its services with a mock, as its services all start as interfaces.
+
+There are two possible places to test:
+1. Against the fully configured `ValidationManager object`, which is what your app will use.
+2. Against just the configuration that will be used by the ValidationManager. This lets you both catch configuration errors and get a report that details how Dependency Injection should resolve objects.
+
+You can use any testing framework you like. Jivs itself uses [Jest](https://www.npmjs.com/package/jest). So examples here will use Jest as well.
+
+### Test validation requests
+The basic test will generally do this:
+1. Create the `ValidationServices object`, which may be identical to what you use in your app.
+2. Build the configuration to be use by the ValidationManager.
+3. Create the ValidationManager.
+4. Set the values that will impact a validation test.
+5. Invoke either form-wide or ValueHost specific validation, and capture the results.
+6. Evaluate the results against expectations.
+
+As we recommend in <a href="#best_practice">Best Practice</a>, steps 1 - 3 should be encapsulated in a function or factory. In these test examples, we'll have this function available to deliver a fully-built ValidationManager:
+```ts
+function createValidationManager(): ValidationManager
+{
+  // These tests assume the TextLocalizerService has been setup with error messages.
+  // As a result, not builder does not supply them.
+  let services = createValidationServices('culture identifier');
+  let builder = build();
+  
+  builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
+    .require()
+    .lessThan('EndDate')
+    .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' });
+  builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).require();
+  builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
+  
+  return new ValidationManager(builder);
+ }
+```
+
+#### Form-wide using ValidationManager.validate()
+```ts
+test('Start and End date are supplied empty strings and report isValid=false', ()=>
+{
+  // Arrange
+  let vm = createValidationManager();
+  
+  vm.input('StartDate').setValues('', '');	// we'll test the require validator. Empty strings will be invalid
+  vm.input('EndDate').setValues('', '');
+  
+  // Act
+  let validationState = vm.validate();
+  
+  // Assert
+  expect(validationState.isValid).toBe(false);
+  expect(validationState.doNotSave).toBe(true);
+  expect(validationState.asyncProcessing).toBe(false);	// only needed if this form has async conditions.
+  expect(validationState.issuesFound).toHaveLength(2);
+  
+  let startDateResult = validationState.issuesFound[0];
+  expect(startDateResult.valueHostName).toBe('StartDate');
+  expect(startDateResult.errorCode).toBe(ConditionType.RequireText);
+  expect(startDateResult.severity).toBe(ValidationSeverity.Severe);	// typical of required
+  expect(startDateResult.errorMessage).toBe('the expected error message'); // or .toContain('part of error message')
+  expect(startDateResult.summaryMessage).toBe('the expected summary message');
+  
+  let endDateResult = validationState.issuesFound[1];
+  expect(endDateResult.valueHostName).toBe('EndDate');
+  expect(endDateResult.errorCode).toBe(ConditionType.RequireText);
+  expect(endDateResult.severity).toBe(ValidationSeverity.Severe);
+  expect(endDateResult.errorMessage).toBe('the expected error message');
+  expect(startDateResult.summaryMessage).toBe('the expected summary message');
+  
+});
+```
+The result of `ValidationManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
+```ts
+interface ValidationState {
+  isValid: boolean;
+  doNotSave: boolean;
+  issuesFound: null | IssueFound[];
+  asyncProcessing: boolean;
+}
+```
+Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single ValueHost).
+```ts
+interface IssueFound {
+  valueHostName: string;
+  errorCode: string;
+  severity: ValidationSeverity;
+  errorMessage: string;
+  summaryMessage?: string;
+}
+```
+
+#### Individual ValueHosts using valueHost.validate()
+If we want, we can test individual ValueHosts for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValueHostValidateResult.html) or null for no issue.
+```ts
+interface ValueHostValidateResult {
+  status: ValidationStatus;
+  issuesFound: null | IssueFound[];
+  corrected?: boolean;
+  pending?: null | Promise<ValidatorValidateResult>[];
+}
+```
+It too has an IssueFound object for each validator. 
+
+Let's redo the previous test to check the StartDate ValueHost.
+```ts
+test('StartDate is supplied empty strings and report status=Invalid', ()=>
+{
+  // Arrange  
+  let vm = createValidationManager();
+  
+  // even though we are only testing StartDate, it has validators
+  // that need data from EndDate. So set both up.
+  vm.input('StartDate').setValues('', '');	
+  vm.input('EndDate').setValues('', '');
+  
+  // Act
+  let validationResult = vm.input('StartDate').validate();
+  
+  // Assert
+  expect(validationResult.status).toBe(ValidationStatus.Invalid);
+  expect(validationResult.doNotSave).toBe(true);
+  expect(validationResult.asyncProcessing).toBeNull();	// only needed if this input has async conditions.
+  expect(validationResult.issuesFound).toHaveLength(1);
+  
+  let requiredResult = validationResult.issuesFound[0];
+  expect(requiredResult.valueHostName).toBe('StartDate');
+  expect(requiredResult.errorCode).toBe(ConditionType.RequireText);
+  expect(requiredResult.severity).toBe(ValidationSeverity.Severe);	// typical of required
+  expect(requiredResult.errorMessage).toBe('the expected error message'); // or .toContain('part of error message')
+  expect(requiredResult.summaryMessage).toBe('the expected summary message');
+});
+```
+<a name="configanalysisservice"></a>
+### Testing the configuration: ConfigAnalysisService
