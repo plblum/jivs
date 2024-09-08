@@ -1113,7 +1113,7 @@ describe('Validator.validate', () => {
         setup.valueHost1.setValue('valid');
 
         setup.validator.validate({});
-        expect(logger.findMessage('Starting Validation for error code', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Starting Validation for errorcode', LoggingLevel.Debug)).toBeTruthy();
     });    
 });
 describe('Validator.gatherValueHostNames', () => {
