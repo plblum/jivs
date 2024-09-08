@@ -327,7 +327,7 @@ export class Validator implements IValidator {
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
         let self = this;
-        this.logger.message(LoggingLevel.Debug, () => `Starting Validation for error code ${this.errorCode}`);
+        this.logger.message(LoggingLevel.Debug, () => `Starting Validation for errorcode "${this.errorCode}"`);
 
         let resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,

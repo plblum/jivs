@@ -9,7 +9,8 @@ import { ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter } from '@
 import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria, CAFeature } from '@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService';
 /**
- * ConfigAnalysisService is a tool to ensure that your configuration is as expected.
+ * ConfigAnalysisService is a tool to ensure that your configuration is as expected
+ * even before you create a ValidationManager from it.
  * Due to the dependency injection model, its not immediately apparent if the object
  * that you want is the one you get. In particular, the Lookup Keys are used to identify
  * data types, parsers, formatters, converters, and more. Each of those objects gets
@@ -50,7 +51,7 @@ import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria, CAFeatur
  * ```
  * - When using the ValidationManagerConfig object, call it from the ValidationServices.configAnalysisService object.
  * ```ts
- * let explorer = services.configAnalysisService.analyze();    // same optional parameter
+ * let explorer = services.configAnalysisService.analyze(config);    // same optional parameter
  * ```
  * It outputs the Explorer object (ConfigAnalysisResultsExplorer), which has the tools to query the results
  * and get the information you need.
