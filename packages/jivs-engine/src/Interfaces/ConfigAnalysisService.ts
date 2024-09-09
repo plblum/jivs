@@ -369,7 +369,7 @@ export interface IConfigAnalysisSearchCriteria {
      * Match to any feature listed or all features if undefined.
      * Case insensitive match.
      */
-    features?: Array<string>;
+    features?: Array<CAFeature | string>;
 
     /**
      * Match to any severity listed or all severities if undefined.
@@ -838,6 +838,9 @@ export interface IDataTypeComparerAnalyzer {
 
 //#region description of results
 
+/**
+ * Values supported by CAResultBase.feature and 
+ */
 export enum CAFeature{
     valueHost = 'ValueHost',
     validator = 'Validator',
@@ -860,7 +863,10 @@ export enum CAFeature{
  * Represents the base structure for a configuration analysis result.
  */
 export interface CAResultBase {
-    feature: string;
+    /**
+     * Identifies the feature of the configuration analysis result.
+     */
+    feature: CAFeature | string;
 }
 
 
