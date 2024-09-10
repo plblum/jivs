@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-05-07T13:21:12.795Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" etag="insbQ2-aZxPci6h7lbRe" version="24.3.1" type="google">
+<mxfile host="app.diagrams.net" modified="2024-09-10T15:09:00.816Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" etag="acGE3IpgWJj-3wFA6yq3" version="24.3.1" type="google">
   <diagram name="Page-1" id="_Ht9gOuzyUZ0okVe30qT">
     <mxGraphModel grid="0" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -26,18 +26,18 @@
           <mxGeometry x="161.5" y="107" width="153" height="62" as="geometry" />
         </mxCell>
         <mxCell id="TeC2zb-W1rzmLHfq34ra-12" value="&lt;font face=&quot;Verdana&quot; color=&quot;#5e4e4e&quot;&gt;InputValueHostConfig with 2 validators&lt;/font&gt;" style="swimlane;whiteSpace=wrap;html=1;strokeColor=#97D077;fontColor=#006600;collapsible=0;opacity=70;swimlaneFillColor=#E6FFCC;" vertex="1" parent="1">
-          <mxGeometry x="107" y="200" width="313" height="551" as="geometry" />
+          <mxGeometry x="107" y="200" width="313" height="591.0799999999999" as="geometry" />
         </mxCell>
         <mxCell id="TeC2zb-W1rzmLHfq34ra-44" value="&lt;font face=&quot;Verdana&quot;&gt;ValidatorConfig&lt;/font&gt;" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;rotation=90;strokeColor=#CCCCFF;fontColor=#5E4E4E;collapsible=0;container=0;noLabel=0;swimlaneFillColor=#DAE8FC;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-12">
-          <mxGeometry x="56.82" y="302.62" width="194.12" height="288.46" as="geometry" />
+          <mxGeometry x="43.82" y="311.62" width="221" height="288.46" as="geometry" />
         </mxCell>
-        <mxCell id="TeC2zb-W1rzmLHfq34ra-45" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;font face=&quot;Verdana&quot;&gt;conditionConfig: ... &lt;i&gt;below &lt;/i&gt;...&lt;br&gt;errorMessage: &quot;...the error message...&quot;&lt;br&gt;severity: ValidationSeverity.Error&lt;/font&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;rotation=0;fillColor=none;strokeColor=none;container=0;spacing=4;expand=1;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-44">
-          <mxGeometry x="-30" y="78" width="251" height="48.5" as="geometry" />
+        <mxCell id="TeC2zb-W1rzmLHfq34ra-45" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;font face=&quot;Verdana&quot;&gt;conditionConfig: ... &lt;i&gt;below &lt;/i&gt;...&lt;br&gt;&lt;/font&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;errorCode: &quot;NumOfDays&quot;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;errorMessage: &quot;...the error message...&quot;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;severity: ValidationSeverity.Error&lt;/span&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;rotation=0;fillColor=none;strokeColor=none;container=0;spacing=4;expand=1;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-44">
+          <mxGeometry x="-22" y="65" width="251" height="75" as="geometry" />
         </mxCell>
         <mxCell id="W1VKmx6ErLQKGYP9Bs0h-2" value="&lt;font face=&quot;Verdana&quot;&gt;ValidatorConfig&lt;/font&gt;" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;rotation=90;strokeColor=#CCCCFF;fontColor=#5E4E4E;collapsible=0;container=0;noLabel=0;swimlaneFillColor=#DAE8FC;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-12">
           <mxGeometry x="53.54" y="95.34" width="200.68" height="286" as="geometry" />
         </mxCell>
-        <mxCell id="W1VKmx6ErLQKGYP9Bs0h-4" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;font face=&quot;Verdana&quot;&gt;conditionConfig: ... &lt;i&gt;below &lt;/i&gt;...&lt;br&gt;errorMessage: &quot;...the error message...&quot;&lt;br&gt;severity: ValidationSeverity.Error&lt;/font&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;rotation=0;fillColor=none;strokeColor=none;container=0;spacing=4;expand=1;" vertex="1" parent="W1VKmx6ErLQKGYP9Bs0h-2">
+        <mxCell id="W1VKmx6ErLQKGYP9Bs0h-4" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;font face=&quot;Verdana&quot;&gt;conditionConfig: ... &lt;i&gt;below &lt;/i&gt;...&lt;br&gt;errorMessage: &quot;...the error message...&quot;&lt;br&gt;severity: ValidationSeverity.Severe&lt;/font&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;rotation=0;fillColor=none;strokeColor=none;container=0;spacing=4;expand=1;" vertex="1" parent="W1VKmx6ErLQKGYP9Bs0h-2">
           <mxGeometry x="-31.93500000000003" y="76.86999999999999" width="260.93" height="48.5" as="geometry" />
         </mxCell>
         <mxCell id="W1VKmx6ErLQKGYP9Bs0h-5" value="&lt;font face=&quot;Verdana&quot;&gt;ConditionConfig&lt;/font&gt;" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;rotation=90;strokeColor=#CCCCFF;collapsible=0;fontColor=#5E4E4E;container=0;swimlaneFillColor=#FAD7AC;swimlaneLine=1;shadow=0;" vertex="1" parent="W1VKmx6ErLQKGYP9Bs0h-2">
@@ -66,13 +66,13 @@
             <mxRectangle x="587" y="30" width="150" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="TeC2zb-W1rzmLHfq34ra-20" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;valueHostType&lt;/span&gt;&lt;font face=&quot;Verdana&quot;&gt;: &quot;Static&quot;&lt;br&gt;name: &quot;&lt;font color=&quot;#cc00cc&quot;&gt;TimeZone&lt;/font&gt;&quot;&lt;br&gt;dataType: &quot;String&quot;&lt;/font&gt;&lt;/p&gt;" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;fillColor=none;strokeColor=none;spacing=4;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-19">
+        <mxCell id="TeC2zb-W1rzmLHfq34ra-20" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;valueHostType&lt;/span&gt;&lt;font face=&quot;Verdana&quot;&gt;: &quot;Static&quot;&lt;br&gt;name: &quot;&lt;font color=&quot;#cc00cc&quot;&gt;NumOfDays&lt;/font&gt;&quot;&lt;br&gt;dataType: &quot;Number&quot;&lt;/font&gt;&lt;/p&gt;" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=left;fillColor=none;strokeColor=none;spacing=4;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-19">
           <mxGeometry x="4" y="23" width="178" height="70" as="geometry" />
         </mxCell>
         <mxCell id="TeC2zb-W1rzmLHfq34ra-46" value="&lt;font face=&quot;Verdana&quot;&gt;ConditionConfig&lt;/font&gt;" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;rotation=90;strokeColor=#CCCCFF;collapsible=0;fontColor=#5E4E4E;container=0;swimlaneFillColor=#FAD7AC;" vertex="1" parent="1">
-          <mxGeometry x="216.5" y="560" width="86" height="264.69" as="geometry" />
+          <mxGeometry x="216.5" y="571" width="86" height="264.69" as="geometry" />
         </mxCell>
-        <mxCell id="TeC2zb-W1rzmLHfq34ra-48" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;conditionType&lt;/span&gt;: &quot;LessThanOrEqual&quot;&lt;br&gt;valueHostName: &quot;DiffInDays&quot;&lt;br&gt;secondValue: 10&lt;/p&gt;" style="whiteSpace=wrap;html=1;rotation=0;fillColor=none;strokeColor=none;rounded=0;container=0;spacing=4;align=left;fontFamily=Verdana;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-46">
+        <mxCell id="TeC2zb-W1rzmLHfq34ra-48" value="&lt;p style=&quot;line-height: 140%;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;conditionType&lt;/span&gt;: &quot;LessThanOrEqual&quot;&lt;br&gt;valueHostName: &quot;DiffInDays&quot;&lt;br&gt;secondValueHostName: &quot;NumOfDays&quot;&lt;/p&gt;" style="whiteSpace=wrap;html=1;rotation=0;fillColor=none;strokeColor=none;rounded=0;container=0;spacing=4;align=left;fontFamily=Verdana;" vertex="1" parent="TeC2zb-W1rzmLHfq34ra-46">
           <mxGeometry x="-78.02" y="113.43" width="240.8" height="62.5" as="geometry" />
         </mxCell>
       </root>
