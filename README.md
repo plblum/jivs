@@ -13,9 +13,9 @@ avoids the hassle of breaking changes later. --- Peter Blum*
 </summary>
 Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
 
-**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the <dfn title="A single condition that evaluates the incoming data and determines if it is valid or not.">validation rules</dfn> are considered the domain of the business logic.
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the <dfn title="A single condition that evaluates the incoming data and determines if it is valid or not.">validation rules</dfn> are considered the domain of the business logic, and for projects that use strong OOP patterns like separation of concerns and dependency injection.
 
-An input form in the UI knows almost nothing about what needs to be validated. It just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
+With Jivs, the UI knows almost nothing about what needs to be validated. A form just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
 "Valid", "Invalid", or even "Undetermined", and any issues found.
 
 The UI uses that information to change the visuals, like showing the error messages, and blocking data submission if necessary.
@@ -24,9 +24,7 @@ The UI uses that information to change the visuals, like showing the error messa
 
 - **UI developers can make the adjustments they need**: Jivs gives UI developers the flexibility to tailor the user experience while maintaining the integrity of the validation rules. They can customize error messages, apply localization, and disable unnecessary validators, ensuring that they can achieve their goals. They can also incorporate UI-specific validators, such as for a string parsing error. 
 
-  For UI-only forms, they can define their own validation rules with Jivs, ensuring a consistent approach across the application. 
-  
-  In fact, Jivs works just fine in apps that don't have business logic dictating validation rules. The benefit is that validation rules are not woven into the form itself.
+- **For forms that are not business logic-driven**: Whether or not business logic drives validation, Jivs keeps validation rules separate from the form. It provides flexibility for apps without business logic-driven validation and for forms that don’t require it, ensuring consistency and maintainability.
 
 - **Service-oriented architecture**: At the heart of Jivs is *Jivs-Engine*, with a service-oriented architecture built in TypeScript, so it works within browsers and Node.js. Jivs-Engine is designed to have an ecosystem of libraries that tackle UI frameworks, support models, and use various third-party libraries.
 
@@ -235,7 +233,7 @@ Here are a few terms used.
 - **Form** – A group of Inputs that is gathering data from the user. It often has buttons to submit the work when completed (but first, it should use validation!). When using the HTML \<form>, your client side does not intend to gather that data into a Model; instead it posts the form contents to the server for Model formation and validation.
 - **Input** - Refers to the editor, widget, component where the user edits the data. In HTML, \<input>, \<select>, and \<textarea> tags are examples. Validation is often applied to Inputs.
 - **Business Logic** – The code dedicated to describing and maintaining your Model. It provides the validation rules for individual properties and to run before saving. It should be separate from the UI, and Jivs favors that approach.
-- **Validator** – Combines a validation rule with the error message(s) it may return when an issue is found. Some Validators are specific to an Input or Property; those are the domain of Jivs. Business logic may have Validators that work with the entire Model.
+- **Validator** – Combines a validation rule with the error message(s) it may return when an issue is found. Some Validators are specific to an Input or Property; those are the domain of Jivs. Business logic may also have Validators that work with the entire Model.
 - **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. InputValueHost and PropertyValueHost represent two types that support validation of their values. However, not all values need actual validation. Some hold data like global values and fields from the Model that won't be edited.
   > In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
 
@@ -251,8 +249,6 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 - **Parser** - Code that converts of the Input Value from a string into its Native Value.
 - **Formatter** - Code that converts the Native Value into a localized, user friendly string for display within an error message.
 - **Converter** - Code that converts a Native Value into another value, such as converting a date into the day offset from the start of the year, or making a string all lowercase characters.
-
-<img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
 <a name="wheretousevalidation"></a>
 ## Where you want to use validation
@@ -574,10 +570,38 @@ Here are the key objects associated with configuring ValidationManager:
 * <a href="#builder_and_vmconfig">ValidationManagerConfigModifier class</a>, also known as **Modifier object** - used to change the configuration of the ValidationManager after its been created.
 * <a href="#builder_and_vmconfig">ValidationManagerConfig</a> - the underlying object created by the Builder API. If you write a code generator to translate your business logic into Jivs data, you often create and work with it directly. Each ValueHost has its own underlying configuration object, like InputValueHostConfig and StaticValueHostConfig. Each Validator has its own underlying object too, ValidatorConfig. Same for Conditions, ConditionConfig.
 
-Here's what the Config data looks like once setup. 
-<img src="http://jivs.peterblum.com/images/Config_example.svg"></img>
+### Example configuration
+Let's configure a form with 2 inputs, which results into ValueHosts for "StartDate" and "EndDate". The validators on the StartDate input need a calculation and a static value, which results in two more ValueHosts, "DiffDays" and "NumOfDays".
 
-There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules, which is best practice.
+We'll using the Builder API to configure our form.
+```ts
+// create the start date ValueHost and its validators
+builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
+  .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
+  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' }, 
+     'The two dates must be less than {CompareTo} days apart.', 
+  { 
+    errorCode: 'NumOfDays',
+    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+  });
+// create the end date ValueHost
+builder.input('EndDate', LookupKey.Date, { label: 'End date'} );
+// provide a calculation ValueHost for StartDate <= NumOfDays
+builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
+// provide a ValueHost to hold a constant which we'll assign after the ValidationManager is created
+builder.static('NumOfDays', LookupKey.Number);
+```
+Here's what the Config data looks like once setup:
+
+<div style="display: flex; flex-direction:column;"><img style="align-self:center;" src="http://jivs.peterblum.com/images/Config_example.svg"></img></div>
+
+Upon creating the ValidationManager, here are the resulting objects:
+
+<div style="display: flex; flex-direction:column;"><img style="align-self:center;" src="http://jivs.peterblum.com/images/Class_overview.svg"></img></div>
+
+There are several of approaches to configuration, based on whether you want to let your business layer define the input and validator rules, which is best practice.
+- When starting with business logic
+- When UI creates everything
 
 ### When starting with business logic
 1. UI creates the <a href="#validationservices">`Services object`</a> and passes it along to the business logic's code.
@@ -639,15 +663,16 @@ let vm = new ValidationManager(builder);
 
 ```ts
 let builder = build(createValidationServices('en-US'));
-// create the start Date Value Host and its validators
+// create the start Date ValueHost and its validators
 builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
   .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
-  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' }, 'The two dates must be less than {CompareTo} days apart.', 
+  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' }, 
+      'The two dates must be less than {CompareTo} days apart.', 
   { 
     errorCode: 'NumOfDays',
     summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
   });
-// create the end Date Value Host
+// create the end Date ValueHost
 builder.input('EndDate', LookupKey.Date, { label: 'End date'} );
 builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
 
