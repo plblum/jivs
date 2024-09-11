@@ -87,7 +87,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param valueHostConfig - The configuration for the value host.
      * NOTE: Services often use its dataType property as the LookupKey fallback.
      * It is often undefined, where the DataTypeIdentifier service resolves it at runtime.
-     * In this case, ConfigAnalysisService has emulated the DataTypeIdentifier service
+     * In this case, ConfigAnalysis has emulated the DataTypeIdentifier service
      * using the SampleValues system together with the DataTypeIdentifier in hopes
      * that the dataType is now assigned. Yet, expect that the dataType is still undefined.
      * @returns The objects that were created or found. lookupKeyResult.lookupKey is 

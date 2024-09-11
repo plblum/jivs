@@ -14,7 +14,7 @@ import { IConfigAnalysisResults, CAIssueSeverity, CAPathedResult, CAResultPath, 
 
 /**
  * Tool to explore the results of the configuration analysis.
- * This is the result of the IConfigAnalysisService's analyze method.
+ * This is the result of the IConfigAnalysis's analyze method.
  * It provides methods to count, collect, and report the results,
  * all based on the criteria supplied.
  * Intended for your testing code and to write the results to something that can store them,
@@ -243,7 +243,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisResultsExplorer.reportIntoJson
+     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.reportIntoJson
      */
     public reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -256,7 +256,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisResultsExplorer.reportToConsole
+     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.reportToConsole
      */
     public reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -321,7 +321,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysisService!IConfigAnalysisResultsExplorer.report
+     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.report
      */
     public report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,

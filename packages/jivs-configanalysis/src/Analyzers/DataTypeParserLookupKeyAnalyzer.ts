@@ -6,9 +6,9 @@ import { IDataTypeParser } from "@plblum/jivs-engine/build/Interfaces/DataTypePa
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { AnalysisArgs } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, ParserFoundCAResult } from "../Types/Results";
+import { AnalysisArgs } from "../Types/ConfigAnalysis";
 
 /**
  * Handles IDataTypeParser objects through the DataTypeParserService.

@@ -157,19 +157,19 @@ describe('IConfigAnalysisOutputter implementations', () => {
             // result should be LogDetails object like this:
             /*
             {
-                feature: 'ConfigAnalysisService',
+                feature: 'ConfigAnalysis',
                 category: LoggingCategory.Configuration,
                 message: content,
-                type: 'ConfigAnalysisService',
+                type: 'ConfigAnalysis',
                 data: { valueHostQueryResults, lookupKeyQueryResults, results: explorer.results }
             }
             */
             // The content should be a string that contains the property names of both arrays
             expect(result).toBeDefined();
             expect(typeof result === 'object').toBeTruthy();
-            expect(result.feature).toBe('ConfigAnalysisService');
+            expect(result.feature).toBe('ConfigAnalysis');
             expect(result.category).toBe(LoggingCategory.Configuration);
-            expect(result.type).toBe('ConfigAnalysisService');
+            expect(result.type).toBe('ConfigAnalysis');
             expect(result.data).toBeDefined();
             expect(result.data).toHaveProperty('valueHostQueryResults');
             expect(result.data).toHaveProperty('lookupKeyQueryResults');

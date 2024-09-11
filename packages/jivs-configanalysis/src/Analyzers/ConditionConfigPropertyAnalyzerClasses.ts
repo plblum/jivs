@@ -20,7 +20,7 @@ import { IAnalysisResultsHelper } from "../Types/Analyzers";
  * Instances created for each property or group of properties in a ConditionConfig object
  * or subclass. They are registered with ConditionConfigAnalyzer.register(). Built-in
  * classes are registered automatically. Custom classes are defined in the 
- * conditionConfigPropertyAnalyzers property of the ConfigAnalysisServiceOptions object.
+ * conditionConfigPropertyAnalyzers property of the ConfigAnalysisOptions object.
  * 
  * The task is to update results.properties array with the results of the analysis if needed.
  * Create a ConditionPropertyResult object if you have found an error or warning.

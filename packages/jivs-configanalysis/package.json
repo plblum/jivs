@@ -21,6 +21,6 @@
     }
   },
   "dependencies": {
-    "@plblum/jivs-engine": "file:../jivs-engine"
+    "@plblum/jivs-engine": "^0.18.1"
   }
 }

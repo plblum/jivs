@@ -8,7 +8,7 @@ import { CultureService } from "@plblum/jivs-engine/build/Services/CultureServic
 import { SampleValues } from "../../src/SampleValues";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
 import { createValidationServicesForTesting } from "./createValidationServices";
-import { AnalysisArgs, ConfigAnalysisServiceOptions } from "../../src/Types/ConfigAnalysis";
+import { AnalysisArgs, ConfigAnalysisOptions } from "../../src/Types/ConfigAnalysis";
 import {
     IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer,
     ILookupKeyAnalyzer
@@ -36,7 +36,7 @@ export function createServices(addCultures: Array<string> = ['en']): IValidation
     return services;
 }
 
-export function setupHelper(services: IValidationServices, options: ConfigAnalysisServiceOptions = {}): AnalysisResultsHelper<IValidationServices> {
+export function setupHelper(services: IValidationServices, options: ConfigAnalysisOptions = {}): AnalysisResultsHelper<IValidationServices> {
     let args = createAnalysisArgs(services, [], options);
     let helper = new AnalysisResultsHelper<IValidationServices>(args);
     return helper;
@@ -55,7 +55,7 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
 
 export function createAnalysisArgs(services: IValidationServices,
     valueHostConfigs: Array<ValueHostConfig>,
-    options?: ConfigAnalysisServiceOptions
+    options?: ConfigAnalysisOptions
 ): AnalysisArgs<IValidationServices> {
 
     if (!options)

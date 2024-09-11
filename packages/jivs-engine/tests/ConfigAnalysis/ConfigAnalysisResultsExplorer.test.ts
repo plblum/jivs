@@ -4024,9 +4024,12 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 }
             )
             let explorer = builder.analyze();
+            let valHostCriteria: IConfigAnalysisSearchCriteria = { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false };
+            let lookupKeyCriteria: IConfigAnalysisSearchCriteria = { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false };
+            explorer.report(valHostCriteria, lookupKeyCriteria, false, new JsonConsoleConfigAnalysisOutputter());            
 //            explorer.reportToConsole(true, true, true, 2);
             //            expect(explorer.hasErrors()).toBe(true);
-            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
+//            expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });
         test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {

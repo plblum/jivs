@@ -3,7 +3,7 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 
-import { ConfigAnalysisServiceOptions } from '../src/Types/ConfigAnalysis';
+import { ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
 import { SampleValues } from './../src/SampleValues';
 import { createValidationServicesForTesting } from './TestSupport/createValidationServices';
 
@@ -13,7 +13,7 @@ describe('SampleValues', () => {
         {
             return super.sampleValuesCache;
         }
-        public get Publicify_options(): ConfigAnalysisServiceOptions {
+        public get Publicify_options(): ConfigAnalysisOptions {
             return super.options;
         }
 
@@ -36,7 +36,7 @@ describe('SampleValues', () => {
 
     test('constructor with no options creates its own objects and inits all other properties', () => {
         const services = createValidationServicesForTesting();
-        const sampleValues = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const sampleValues = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         expect(sampleValues.Publicify_sampleValuesCache).toBeInstanceOf(Map);
         expect(sampleValues.Publicify_sampleValuesCache.size).toBe(0);        
         expect(sampleValues.Publicify_options).toEqual({});
@@ -50,7 +50,7 @@ describe('SampleValues', () => {
         const valueHostsSampleValues = { 'valueHost1': 'Test' };
 
         const sampleValues = new Publicify_SampleValues(services,
-            { lookupKeysSampleValues: lookupKeySampleValues, valueHostsSampleValues: valueHostsSampleValues } as ConfigAnalysisServiceOptions);
+            { lookupKeysSampleValues: lookupKeySampleValues, valueHostsSampleValues: valueHostsSampleValues } as ConfigAnalysisOptions);
         expect(sampleValues.Publicify_sampleValuesCache).toBeInstanceOf(Map);
         expect(sampleValues.Publicify_sampleValuesCache.size).toBe(0);
         expect(sampleValues.Publicify_options).toEqual({ lookupKeysSampleValues: lookupKeySampleValues, valueHostsSampleValues: valueHostsSampleValues });
@@ -67,14 +67,14 @@ describe('SampleValues', () => {
         expect(dti).toBeDefined();
         const expectedSampleValue = dti!.sampleValue();
 
-        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         const lookupKey = LookupKey.Number;
         const sampleValue = testItem.tryToIdentifyLookupKey(lookupKey, services);
         expect(sampleValue).toBe(expectedSampleValue);
     });
     test('tryToIdentifyLookupKey should return undefined when the lookupKey is not in DataTypeIdentifierService', () => {
         const services = createValidationServicesForTesting();
-        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         const lookupKey = 'Unknown';
         const sampleValue = testItem.tryToIdentifyLookupKey(lookupKey, services);
         expect(sampleValue).toBeUndefined();
@@ -86,7 +86,7 @@ describe('SampleValues', () => {
         const expectedSampleValue = dti!.sampleValue();
         services.lookupKeyFallbackService.register('X', LookupKey.Number);
 
-        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         const lookupKey = 'X';
         const sampleValue = testItem.tryToIdentifyLookupKey(lookupKey, services);
         expect(sampleValue).toBe(expectedSampleValue);
@@ -95,7 +95,7 @@ describe('SampleValues', () => {
         const services = createValidationServicesForTesting();
         services.lookupKeyFallbackService.register('X', 'Unknown');
 
-        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         const lookupKey = 'X';
         const sampleValue = testItem.tryToIdentifyLookupKey(lookupKey, services);
         expect(sampleValue).toBeUndefined();
@@ -103,7 +103,7 @@ describe('SampleValues', () => {
 
     test('registerSampleValue should register a sample value for a lookup key', () => {
         const services = createValidationServicesForTesting();
-        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+        const testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
         const lookupKey = 'lookupKey1';
         const sampleValue = 'sampleValue1';
         testItem.registerSampleValue(lookupKey, sampleValue);
@@ -122,7 +122,7 @@ describe('SampleValues', () => {
             // one ValueHost with dataType LookupKey.Number, which has a matching DataTypeIdentifier
             // no options
             // expect the DataType and value to become registered
-            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1', dataType: LookupKey.Number };
 
             const sampleValue = testItem.getSampleValue('Unknown', valueHostConfig);
@@ -135,7 +135,7 @@ describe('SampleValues', () => {
             let dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === LookupKey.Number);
             expect(dti).toBeDefined();
             const expectedSampleValue = dti!.sampleValue();
-            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
 
             const sampleValue = testItem.getSampleValue(LookupKey.Number, valueHostConfig);
@@ -145,7 +145,7 @@ describe('SampleValues', () => {
         });
         it('should return undefined when unknown lookupKey and unknown but assigned dataType on ValueHostConfig.', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1', dataType: 'Unknown1' };
 
             const sampleValue = testItem.getSampleValue('Unknown2', valueHostConfig);
@@ -160,7 +160,7 @@ describe('SampleValues', () => {
             const expectedSampleValue = dti!.sampleValue();
             services.lookupKeyFallbackService.register('X', LookupKey.Number);
 
-            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
 
             const sampleValue = testItem.getSampleValue('X', valueHostConfig);
@@ -171,7 +171,7 @@ describe('SampleValues', () => {
 
         it('With option.valueHostsSampleValues matching to the ValueHost name, should return sample value from the option when the LookupKey would also work', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);  
+            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisOptions);  
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue(LookupKey.Number, valueHostConfig);
             expect(sampleValue).toBe('sampleValue1');
@@ -180,7 +180,7 @@ describe('SampleValues', () => {
         // same but with first parameter null
         it('With option.valueHostsSampleValues matching to the ValueHost name and lookupKey=null, should return sample value from the option when the LookupKey would also work', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue(null, valueHostConfig);
             expect(sampleValue).toBe('sampleValue1');
@@ -188,7 +188,7 @@ describe('SampleValues', () => {
         });
         it('With option.valueHostsSampleValues matching to the ValueHost name, should return sample value from the option when the LookupKey would not work', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue('Unknown', valueHostConfig);
             expect(sampleValue).toBe('sampleValue1');
@@ -196,7 +196,7 @@ describe('SampleValues', () => {
         });
         it('With 2 option.valueHostsSampleValues matching 2 ValueHost names, each should return sample value from the option', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1', 'valueHost2': 'sampleValue2' } } as ConfigAnalysisServiceOptions);    
+            let testItem = new Publicify_SampleValues(services, { valueHostsSampleValues: { 'valueHost1': 'sampleValue1', 'valueHost2': 'sampleValue2' } } as ConfigAnalysisOptions);    
             let valueHostConfig1: ValueHostConfig = { name: 'valueHost1' };
             let valueHostConfig2: ValueHostConfig = { name: 'valueHost2' };
             const sampleValue1 = testItem.getSampleValue('Unknown', valueHostConfig1);
@@ -209,7 +209,7 @@ describe('SampleValues', () => {
 
         it('With option.lookupKeysSampleValues matching to the lookupKey, should return sample value from the option but nothing added to the cache', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue('lookupKey1', valueHostConfig);
             expect(sampleValue).toBe('sampleValue1');
@@ -218,7 +218,7 @@ describe('SampleValues', () => {
         // same but with second parameter null
         it('With option.lookupKeysSampleValues matching to the lookupKey and valueHostConfig=null, should return sample value from the option but nothing added to the cache', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisOptions);
             const sampleValue = testItem.getSampleValue('lookupKey1', null);
             expect(sampleValue).toBe('sampleValue1');
             expect(testItem.Publicify_sampleValuesCache.size).toBe(0);
@@ -229,7 +229,7 @@ describe('SampleValues', () => {
             expect(dti).toBeDefined();
             const expectedSampleValue = dti!.sampleValue();
 
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue(LookupKey.Number, valueHostConfig);
             expect(sampleValue).toBe(expectedSampleValue);
@@ -238,7 +238,7 @@ describe('SampleValues', () => {
         });
         it('With option.lookupKeysSampleValues setup but not matching the lookupKey which is unknown, return undefined', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue('Unknown', valueHostConfig);
             expect(sampleValue).toBeUndefined();
@@ -247,7 +247,7 @@ describe('SampleValues', () => {
         // tests with both options setup, valueHostsSampleValues will take precedence when there isa  matching ValueHost name
         it('With both options setup, valueHostsSampleValues will take precedence when there is a matching ValueHost name', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' }, valueHostsSampleValues: { 'valueHost1': 'sampleValue2' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' }, valueHostsSampleValues: { 'valueHost1': 'sampleValue2' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost1' };
             const sampleValue = testItem.getSampleValue('lookupKey1', valueHostConfig);
             expect(sampleValue).toBe('sampleValue2');
@@ -255,7 +255,7 @@ describe('SampleValues', () => {
         });
         test('With both options setup, no matching ValueHost name uses the lookup key sample value. Nothing added to cache', () => {
             const services = createValidationServicesForTesting();
-            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' }, valueHostsSampleValues: { 'valueHost1': 'sampleValue2' } } as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, { lookupKeysSampleValues: { 'lookupKey1': 'sampleValue1' }, valueHostsSampleValues: { 'valueHost1': 'sampleValue2' } } as ConfigAnalysisOptions);
             let valueHostConfig: ValueHostConfig = { name: 'valueHost2' };
             const sampleValue = testItem.getSampleValue('lookupKey1', valueHostConfig);
             expect(sampleValue).toBe('sampleValue1');
@@ -278,7 +278,7 @@ describe('SampleValues', () => {
                     'valueHost2C': 'sampleValue2C'
                     
                 }
-            } as ConfigAnalysisServiceOptions);
+            } as ConfigAnalysisOptions);
             let valueHostConfig1A: ValueHostConfig = { name: 'valueHost1A' };
             let valueHostConfig1B: ValueHostConfig = { name: 'valueHost1B' };
             let valueHostConfig1C: ValueHostConfig = { name: 'valueHost1C' };
@@ -316,7 +316,7 @@ describe('SampleValues', () => {
             expect(dti).toBeDefined();
             const expectedDateValue = dti!.sampleValue();
 
-            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisServiceOptions);
+            let testItem = new Publicify_SampleValues(services, {} as ConfigAnalysisOptions);
             let valueHostConfig1: ValueHostConfig = { name: 'valueHost1', dataType: LookupKey.Number };
             let valueHostConfig2: ValueHostConfig = { name: 'valueHost2', dataType: LookupKey.String };
             let valueHostConfig3: ValueHostConfig = { name: 'valueHost3', dataType: LookupKey.Boolean };

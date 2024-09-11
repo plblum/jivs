@@ -36,20 +36,20 @@ import { IConfigAnalysisResults } from "./Results";
  * let vm = new ValidationManager(builder);
  * ```
  */
-export interface IConfigAnalysisService {
+export interface IConfigAnalysis {
 
     /**
      * Analyze the configuration
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
+    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder or Modifier object
      * @param builder 
      * @param options 
      */
-    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;    
+    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;    
 
     /**
      * Lazyloads all ValueHostConfigPropertyAnalyzers.
@@ -85,14 +85,14 @@ export interface IConfigAnalysisService {
  * Each call to analysis packages up data for the other classes to use in this.
  */
 /**
- * Represents the arguments for analysis in the ConfigAnalysisService.
+ * Represents the arguments for analysis in the ConfigAnalysis.
  * @template TServices - The type of services provided by IValueHostsServices.
  */
 export interface AnalysisArgs<TServices extends IValueHostsServices> {
     valueHostConfigs: Array<ValueHostConfig>;
     results: IConfigAnalysisResults;
     services: TServices;
-    options: ConfigAnalysisServiceOptions;
+    options: ConfigAnalysisOptions;
     sampleValues: ISampleValues;
 
     /**
@@ -126,7 +126,7 @@ export interface AnalysisArgs<TServices extends IValueHostsServices> {
 /**
  * Options for the configuration analysis service.
  */
-export interface ConfigAnalysisServiceOptions {
+export interface ConfigAnalysisOptions {
     /**
      * Allows the user to help the service find the data values
      * it uses in analysis of a data type by associating a data value
@@ -171,7 +171,7 @@ export interface ConfigAnalysisServiceOptions {
  * Supplies a sample value for any lookup key supplied,
  * so long as it can be identified as a DataType with a value.
  * For example, make the "Integer" lookup key return "100" as a sample value.
- * This class works together with properties found in ConfigAnalysisServiceOptions.
+ * This class works together with properties found in ConfigAnalysisOptions.
  * The user sets the sample values in the options, and SampleValues implementation consumes them.
  */
 export interface ISampleValues {

@@ -24,7 +24,7 @@ import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from "../Types/Re
  * Our task is to take all LookupKeys registered in Results.lookupKeyResults
  * and report on the viability of comparison.
  * 
- * All of that happens in the ConfigAnalysisService.checkForComparers function.
+ * All of that happens in the ConfigAnalysis.checkForComparers function.
  * 
  * Comparison is done by specific Conditions. We don't even bother if after evaluating
  * all ValueHostConfigs, we've found no evidence needing a comparer.

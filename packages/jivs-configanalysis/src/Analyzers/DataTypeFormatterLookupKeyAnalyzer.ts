@@ -6,9 +6,9 @@ import { IDataTypeFormatter } from "@plblum/jivs-engine/build/Interfaces/DataTyp
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ensureError, CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { AnalysisArgs } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, FormatterServiceCAResult, CAFeature, FormattersByCultureCAResult } from "../Types/Results";
+import { AnalysisArgs } from "../Types/ConfigAnalysis";
 
 /**
  * Handles IDataTypeFormatter objects through the DataTypeFormatterService.

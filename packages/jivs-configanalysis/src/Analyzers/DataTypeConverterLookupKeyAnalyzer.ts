@@ -5,9 +5,9 @@
 import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { AnalysisArgs } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult, CAFeature } from "../Types/Results";
+import { AnalysisArgs } from "../Types/ConfigAnalysis";
 
 /**
  * Handles IDataTypeConverter objects through the DataTypeConverterService.

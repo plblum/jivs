@@ -385,7 +385,7 @@ export interface IConditionConfigAnalyzer<TServices extends IValueHostsServices>
 
 /**
  * Create instances for each property or group of properties in a TConfig object.
- * Register those instances when setting up the ConfigAnalysisService.
+ * Register those instances when setting up the ConfigAnalysis.
  * 
  * The task is to update TResults.properties array with the results of the analysis if needed.
  * Create a ConditionPropertyResult object if you have found an error or warning.
@@ -409,7 +409,7 @@ export interface IConfigPropertyAnalyzer<TConfig, TResults extends ConfigObjectC
 
 /**
  * Instances created for each property or group of properties in a ValueHostConfig object
- * or subclass. They are registered with ConfigAnalysisService.registerValueHostConfigPropertyAnalyzer()
+ * or subclass. They are registered with ConfigAnalysis.registerValueHostConfigPropertyAnalyzer()
  * from where you create the service itself.
  * 
  * The task is to update results.properties array with the results of the analysis if needed.
@@ -427,7 +427,7 @@ export interface IValueHostConfigPropertyAnalyzer
 
 /**
  * Instances created for each property or group of properties in a ValidatorConfig object
- * or subclass. They are registered with ConfigAnalysisService.registerValidatorConfigPropertyAnalyzer()
+ * or subclass. They are registered with ConfigAnalysis.registerValidatorConfigPropertyAnalyzer()
  * from where you create the service itself.
  * 
  * The task is to update results.properties array with the results of the analysis if needed.
@@ -445,7 +445,7 @@ export interface IValidatorConfigPropertyAnalyzer
 
 /**
  * Instances created for each property or group of properties in a ConditionConfig object
- * or subclass. They are registered with ConfigAnalysisService.registerConditionConfigPropertyAnalyzer()
+ * or subclass. They are registered with ConfigAnalysis.registerConditionConfigPropertyAnalyzer()
  * from where you create the service itself.
  * 
  * The task is to update results.properties array with the results of the analysis if needed.

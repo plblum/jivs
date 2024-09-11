@@ -10,7 +10,7 @@ import {
 
 /**
  * Tool to explore the results of the configuration analysis. 
- * This is the result of the IConfigAnalysisService's analyze method.
+ * This is the result of the IConfigAnalysis's analyze method.
  * It provides methods to count, collect, and report the results,
  * all based on the criteria supplied.
  * Intended for your testing code and to write the results to something that can store them,

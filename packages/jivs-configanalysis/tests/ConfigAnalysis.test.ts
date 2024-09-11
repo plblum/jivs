@@ -19,11 +19,11 @@ import {
 } from "./TestSupport/support";
 import { registerAllConditions } from './TestSupport/createValidationServices';
 
-import { ConfigAnalysisServiceBase, ValidationManagerConfigAnalysisService, ValueHostsManagerConfigAnalysisService } from '../src/ConfigAnalysis';
+import { ConfigAnalysisBase, ValidationManagerConfigAnalysis, ValueHostsManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { AnalysisResultsHelper } from '../src/Analyzers/AnalysisResultsHelper';
 import { SampleValues } from '../src/SampleValues';
 import { IValueHostConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IConditionConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../src/Types/Analyzers';
-import { AnalysisArgs, ConfigAnalysisServiceOptions } from '../src/Types/ConfigAnalysis';
+import { AnalysisArgs, ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
 import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
 import {
     ServiceWithLookupKeyCAResultBase, IConfigAnalysisResults, CAFeature, ValueHostConfigCAResult,
@@ -37,8 +37,8 @@ import {
 } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
 import { registerConfigAnalyzers } from '../src/Runner';
 
-describe('ConfigAnalysisServiceBase class', () => {
-    class Publicify_ConfigAnalysisServiceBase extends ConfigAnalysisServiceBase<ValueHostsManagerConfig, IValueHostsServices> {
+describe('ConfigAnalysisBase class', () => {
+    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
         protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
             let helper = new AnalysisResultsHelper(args);
             this._helper = helper;
@@ -55,10 +55,10 @@ describe('ConfigAnalysisServiceBase class', () => {
         }
         private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
 
-        public get publicify_options(): ConfigAnalysisServiceOptions | null | undefined {
+        public get publicify_options(): ConfigAnalysisOptions | null | undefined {
             return this._options;
         }
-        private _options: ConfigAnalysisServiceOptions | null | undefined = undefined;
+        private _options: ConfigAnalysisOptions | null | undefined = undefined;
 
         public publicify_getValueHostNames(config: ValueHostsManagerConfig): string[] {
             return this.getValueHostNames(config);
@@ -79,7 +79,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             return this.createConfigAnalysisResults(config);
         }
         public publicify_createAnalysisArgs(config: ValueHostsManagerConfig,
-            results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<IValueHostsServices> {
+            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
             return this.createAnalysisArgs(config, results, options);
         }
         public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValueHostsServices>, helper: AnalysisResultsHelper<IValueHostsServices>): void {
@@ -90,7 +90,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             return this.createHelper(args);
         }
         // just to expose options
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
             this._options = options;
             return super.createAnalysisArgs(config, results, options);
 
@@ -113,7 +113,7 @@ describe('ConfigAnalysisServiceBase class', () => {
         });
     }
     function setupForTheseTests(expectedDataTypes: Array<string | null>, addCultures: Array<string> = ['en']): {
-        testItem: Publicify_ConfigAnalysisServiceBase,
+        testItem: Publicify_ConfigAnalysisBase,
         services: IValueHostsServices,
         helper: AnalysisResultsHelper<IValueHostsServices>,
         analysisArgs: AnalysisArgs<IValueHostsServices>,
@@ -124,10 +124,10 @@ describe('ConfigAnalysisServiceBase class', () => {
             services: services,
             valueHostConfigs: createValueHostConfigs(expectedDataTypes)
         };
-        let testItem = new Publicify_ConfigAnalysisServiceBase();
+        let testItem = new Publicify_ConfigAnalysisBase();
 
         let results = testItem.publicify_createConfigAnalysisResults(valueHostManagerConfig);
-        let options: ConfigAnalysisServiceOptions = {};
+        let options: ConfigAnalysisOptions = {};
         let analysisArgs = testItem.publicify_createAnalysisArgs(valueHostManagerConfig, results, options);
         let helper = testItem.publicify_createHelper(analysisArgs);
 
@@ -141,7 +141,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
 
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let results = testItem.publicify_createConfigAnalysisResults(valueHostManagerConfig);
             expect(results).toEqual(<IConfigAnalysisResults>{
@@ -159,7 +159,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostConfigs: []
             };
 
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let results = testItem.publicify_createConfigAnalysisResults(valueHostManagerConfig);
             expect(results).toEqual(<IConfigAnalysisResults>{
@@ -178,10 +178,10 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
 
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let results = testItem.publicify_createConfigAnalysisResults(valueHostManagerConfig);
-            let options: ConfigAnalysisServiceOptions = {};
+            let options: ConfigAnalysisOptions = {};
             let analysisArgs = testItem.publicify_createAnalysisArgs(valueHostManagerConfig, results, options);
             expect(analysisArgs).toBeDefined();
             expect(analysisArgs.valueHostConfigs).toEqual(valueHostManagerConfig.valueHostConfigs);
@@ -204,10 +204,10 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
 
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let results = testItem.publicify_createConfigAnalysisResults(valueHostManagerConfig);
-            let options: ConfigAnalysisServiceOptions = {};
+            let options: ConfigAnalysisOptions = {};
             let analysisArgs = testItem.publicify_createAnalysisArgs(valueHostManagerConfig, results, options);
             testItem.publicify_resolveConfigAnalyzers(analysisArgs, testItem.publicify_helper!);
             // Base class only registers for ValueHostConfig.
@@ -225,7 +225,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let names = testItem.publicify_getValueHostNames(valueHostManagerConfig);
             expect(names).toEqual(['testValueHost1', 'testValueHost2']);
@@ -369,7 +369,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 services: services,
                 valueHostConfigs: []
             };
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
             expect(() => analysisOutput = testItem.analyze(valueHostManagerConfig, {})).not.toThrow();
@@ -390,7 +390,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([LookupKey.Number])
             };
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
@@ -435,7 +435,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([LookupKey.Number])
             };
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
@@ -451,7 +451,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let services = createServices();
             let builder = new ValueHostsManagerConfigBuilder(services);
             builder.static('testValueHost1', LookupKey.Number);
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
@@ -494,7 +494,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let services = createServices();
             let builder = new ValueHostsManagerConfigBuilder(services);
             builder.static('testValueHost1');
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
@@ -524,7 +524,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let services = createServices();
             let builder = new ValueHostsManagerConfigBuilder(services);
             builder.static('testValueHost1');
-            let testItem = new Publicify_ConfigAnalysisServiceBase();
+            let testItem = new Publicify_ConfigAnalysisBase();
 
             testItem.registerValueHostConfigPropertyAnalyzers(() => [
                 new DataTypePropertyAnalyzer()
@@ -561,8 +561,8 @@ describe('ConfigAnalysisServiceBase class', () => {
         });
     });
 });
-describe('ValueHostsManagerConfigAnalysisService', () => {
-    class Publicify_ValueHostsManagerConfigAnalysisService extends ValueHostsManagerConfigAnalysisService {
+describe('ValueHostsManagerConfigAnalysis', () => {
+    class Publicify_ValueHostsManagerConfigAnalysis extends ValueHostsManagerConfigAnalysis {
         protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
@@ -573,7 +573,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         }
         private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
@@ -594,7 +594,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         let services = createServices();
         let builder = new ValueHostsManagerConfigBuilder(services);
         builder.static('testValueHost1');
-        let testItem = new Publicify_ValueHostsManagerConfigAnalysisService();
+        let testItem = new Publicify_ValueHostsManagerConfigAnalysis();
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
@@ -632,7 +632,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         let builder = new ValueHostsManagerConfigBuilder(services);
         builder.static('testValueHost1', LookupKey.Number);
         builder.static('testValueHost2', LookupKey.String);
-        let testItem = new ValueHostsManagerConfigAnalysisService();
+        let testItem = new ValueHostsManagerConfigAnalysis();
 
         testItem.registerValueHostConfigPropertyAnalyzers(() => [
             new ValueHostTypePropertyAnalyzer(),
@@ -676,8 +676,8 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
     });
 
 });
-describe('ValidationManagerConfigAnalysisService', () => {
-    class Publicify_ValidationManagerConfigAnalysisService extends ValidationManagerConfigAnalysisService {
+describe('ValidationManagerConfigAnalysis', () => {
+    class Publicify_ValidationManagerConfigAnalysis extends ValidationManagerConfigAnalysis {
         protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
@@ -688,7 +688,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
         }
         private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<IValidationServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
@@ -710,7 +710,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
         let services = createServices();
         let builder = new ValidationManagerConfigBuilder(services);
         builder.static('testValueHost1');
-        let testItem = new Publicify_ValidationManagerConfigAnalysisService();
+        let testItem = new Publicify_ValidationManagerConfigAnalysis();
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
@@ -769,25 +769,8 @@ describe('ValidationManagerConfigAnalysisService', () => {
         });
         builder.input('testValueHost2', LookupKey.String).regExp(/^\d+$/);
 
-        let testItem = new ValidationManagerConfigAnalysisService();    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
+        let testItem = new ValidationManagerConfigAnalysis();    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
         registerConfigAnalyzers(testItem);
-        // testItem.registerValueHostConfigPropertyAnalyzers(() => [
-        //     new ValueHostTypePropertyAnalyzer(),
-        //     new ValueHostNamePropertyAnalyzer(),
-        //     new DataTypePropertyAnalyzer(),
-        //     new ParserLookupKeyPropertyAnalyzer()
-        // ]);
-        // testItem.registerValidatorConfigPropertyAnalyzers(() => [
-        //     new AllMessagePropertiesConfigPropertyAnalyzer(),
-        //     new ConditionCreatorConfigPropertyAnalyzer(),
-        // ]);
-        // testItem.registerConditionConfigPropertyAnalyzers(() => [
-        //     new ConditionCategoryPropertyAnalyzer(),
-        //     new ConditionTypeConfigPropertyAnalyzer(),
-        //     new ConditionWithConversionLookupKeyPropertyAnalyzer(),
-        //     new ConditionWithValueHostNamePropertyAnalyzer(),
-        //     new ConditionWithSecondValueHostNamePropertyAnalyzer()
-        // ]);
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();

@@ -15,7 +15,7 @@ import {
     IAnalysisResultsHelper, IValueHostConfigPropertyAnalyzer,
     IValidatorConfigPropertyAnalyzer, IConditionConfigPropertyAnalyzer
 } from "./Types/Analyzers";
-import { IConfigAnalysisService, ConfigAnalysisServiceOptions, AnalysisArgs } from "./Types/ConfigAnalysis";
+import { IConfigAnalysis, ConfigAnalysisOptions, AnalysisArgs } from "./Types/ConfigAnalysis";
 import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
 import { IConfigAnalysisResults } from "./Types/Results";
 import { AnalysisResultsHelper } from "./Analyzers/AnalysisResultsHelper";
@@ -31,24 +31,24 @@ import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } f
 import { SampleValues } from "./SampleValues";
 
 /**
- * @inheritdoc Types!IConfigAnalysisService:interface
+ * @inheritdoc Types!IConfigAnalysis:interface
  */
-export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManagerConfig, TServices extends IValueHostsServices>
-    implements IConfigAnalysisService {
+export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IValueHostsServices>
+    implements IConfigAnalysis {
 
     /**
      * Analyze the configuration
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    public analyze(config: TConfig, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
+    public analyze(config: TConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder or Modifier object
      * @param builder 
      * @param options 
      */
-    public analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
-    public analyze(arg1: TConfig | ManagerConfigBuilderBase<any>, options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer {
+    public analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
+    public analyze(arg1: TConfig | ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer {
         let config: TConfig;
         if (arg1 instanceof ManagerConfigBuilderBase)
             config = arg1.snapshot();
@@ -104,7 +104,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
      * @param options - The options for the analysis service.
      * @returns The analysis arguments.
      */
-    protected createAnalysisArgs(config: TConfig, results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<TServices> {
+    protected createAnalysisArgs(config: TConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<TServices> {
         let analysisArgs: AnalysisArgs<TServices> = {
             valueHostConfigs: config.valueHostConfigs,
             results,
@@ -287,7 +287,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
 /**
  * ValueHostsManagerConfig analysis service.
  */
-export class ValueHostsManagerConfigAnalysisService extends ConfigAnalysisServiceBase<ValueHostsManagerConfig, IValueHostsServices> {
+export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
     protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
         let helper = new AnalysisResultsHelper<IValueHostsServices>(args);
 
@@ -300,7 +300,7 @@ export class ValueHostsManagerConfigAnalysisService extends ConfigAnalysisServic
 /**
  * ValidationManagerConfig analysis service.
  */
-export class ValidationManagerConfigAnalysisService extends ConfigAnalysisServiceBase<ValidationManagerConfig, IValidationServices> {
+export class ValidationManagerConfigAnalysis extends ConfigAnalysisBase<ValidationManagerConfig, IValidationServices> {
     protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
         let helper = new AnalysisResultsHelper<IValidationServices>(args);
         helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));

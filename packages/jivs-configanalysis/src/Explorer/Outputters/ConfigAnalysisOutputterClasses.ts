@@ -138,10 +138,10 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
         if (typeof content !== 'string')
             throw new CodingError('LoggerConfigAnalysisOutputter requires content to be a string.');
         return <LogDetails>{
-            feature: 'ConfigAnalysisService',
+            feature: 'ConfigAnalysis',
             category: LoggingCategory.Configuration,
             message: content,
-            type: 'ConfigAnalysisService',
+            type: 'ConfigAnalysis',
             data: reportData
 
         }

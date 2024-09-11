@@ -8,7 +8,7 @@ import { ConfigObjectCAResultsBase } from "../Types/Results";
 
 /**
  * Create instances for each property or group of properties in a TConfig object.
- * Register those instances when setting up the ConfigAnalysisService.
+ * Register those instances when setting up the ConfigAnalysis.
  * 
  * The task is to update TResults.properties array with the results of the analysis if needed.
  * Create a ConditionPropertyResult object if you have found an error or warning.

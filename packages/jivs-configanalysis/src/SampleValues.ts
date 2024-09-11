@@ -1,13 +1,13 @@
 /**
- * Provides data type and valueHost specific values for the ConfigAnalysisService 
+ * Provides data type and valueHost specific values for the ConfigAnalysis 
  * to use in its analysis.
- * @module Services/ConcreteClasses/ConfigAnalysisService
+ * @module Services/ConcreteClasses/ConfigAnalysis
  */
 
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { ConfigAnalysisServiceOptions, ISampleValues } from "./Types/ConfigAnalysis";
+import { ConfigAnalysisOptions, ISampleValues } from "./Types/ConfigAnalysis";
 
 /**
  * Supplies a sample value for any lookup key supplied,
@@ -15,28 +15,28 @@ import { ConfigAnalysisServiceOptions, ISampleValues } from "./Types/ConfigAnaly
  * For example, make the "Integer" lookup key return "100" as a sample value.
  * 
  * Also allows the user to supply valueHost specific values through the options parameter
- * of ConfigAnalysisService.analyze(). See {@link Services/Types/ConfigAnalysisService!ConfigAnalysisServiceOptions}.
+ * of ConfigAnalysis.analyze(). See {@link Services/Types/ConfigAnalysis!ConfigAnalysisOptions}.
 
  * For example, make the "Last Name" ValueHost return "Smith" as a sample value.
  * 
  * It uses the DataTypeIdentifier services to get a default sample value
  * for each lookup key that has registered DataTypeIdentifiers.
- * Otherwise, you should add values into the options parameter of ConfigAnalysisService.constructor.
+ * Otherwise, you should add values into the options parameter of ConfigAnalysis.constructor.
  * Use options.lookupKeysSampleValues for data type lookup keys
  * and options.valueHostsSampleValues for valueHost specific values.
  */
 export class SampleValues<TServices extends IValueHostsServices> implements ISampleValues {
     constructor(services: TServices,
-        options: ConfigAnalysisServiceOptions) {
+        options: ConfigAnalysisOptions) {
         this._sampleValuesCache = new Map();
         this._services = services;
         this._options = options;
     }
 
-    protected get options(): ConfigAnalysisServiceOptions {
+    protected get options(): ConfigAnalysisOptions {
         return this._options;
     }
-    private _options: ConfigAnalysisServiceOptions;
+    private _options: ConfigAnalysisOptions;
 
     protected get services(): TServices {
         return this._services;

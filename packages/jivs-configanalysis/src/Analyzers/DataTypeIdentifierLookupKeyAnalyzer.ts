@@ -5,9 +5,9 @@
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { AnalysisArgs } from "@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService";
 import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, CAFeature } from "../Types/Results";
+import { AnalysisArgs } from "../Types/ConfigAnalysis";
 
 /**
  * Handles IDataTypeIdentifier objects through the DataTypeIdentifierService.
@@ -16,7 +16,7 @@ import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, CAFeature 
  * will determine if it can SUPPLY a lookup key.
  * Our task is to take all registered DataTypeIdentifiers and add them
  * to the LookupKeyCAResult.services specific to their data type.
- * All of that happens in the ConfigAnalysisService.gatherDataTypeIdentifierLookupKeys function.
+ * All of that happens in the ConfigAnalysis.gatherDataTypeIdentifierLookupKeys function.
  * When that calls tryAdd, it will use this to create the LookupKeyServiceInfo.
  * As a result, this will never be called for a missing lookupKey and need
  * to report an error. It has been coded to support the error case anyway.

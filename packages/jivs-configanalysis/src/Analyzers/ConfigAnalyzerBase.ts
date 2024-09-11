@@ -26,7 +26,7 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
 
     /**
      * Config properties need to implement IConfigPropertyAnalyzer
-     * to add analysis. Supplied by the same-named property in ConfigAnalysisService.
+     * to add analysis. Supplied by the same-named property in ConfigAnalysis.
      */
     protected get propertyAnalyzers(): Array<IConfigPropertyAnalyzer<TConfig, TResults>> {
         return this._propertyAnalyzers;
