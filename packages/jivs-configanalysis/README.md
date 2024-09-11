@@ -25,7 +25,7 @@ npm install --save @plblum/jivs-configanalysis
 [Source code](https://github.com/plblum/jivs/packages/jivs-configanalysis) is open source on GitHub.
 
 ## Using Jivs-ConfigAnalysis
-Run Jivs-ConfigAnalysis on either the `Builder object` or `ValidationManagerConfig object`, once fully configured, but prior to creating ValidationManager. In both cases, just call the analyze() function found in the Runner module.
+Run Jivs-ConfigAnalysis on either the `Builder object` or `ValidationManagerConfig object`, once fully configured, but prior to creating ValidationManager. In both cases, just call the `analyze() function` found in the Runner module.
 
 With `Builder object`:
 ```ts
@@ -38,7 +38,6 @@ let explorer = analyze(builder);
 let vm = new ValidationManager(builder);
 ```
 With `ValidationManagerConfig object`:
-With `Builder object`:
 ```ts
 import { analyze } from "@plblum/jivs-configanalysis/build/runner";
 
@@ -52,7 +51,7 @@ let explorer = analyze(config);
 let vm = new ValidationManager(config);
 ```
 ### explorer: ConfigAnalysisResultsExplorer
-*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so its not easy to navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions.
+*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions.
 
 ```ts
 interface IConfigAnalysisResultsExplorer {
@@ -90,7 +89,7 @@ interface IConfigAnalysisResultsExplorer {
 	  lookupKeyResults: LookupKeyCAResult[];
 	}
 	```
-  This data is optionally included in the 3 report functions, when includeCompleteResults is true. Use the *x*ConfigResults(criteria) and *x*LookupKeyResults(critera) functions to query the valueHostResults and lookupKeyResults.
+  This data is optionally included in the 3 report functions, when includeCompleteResults is true. Use the reports and query functions to search valueHostResults and lookupKeyResults.
 - hasErrors - When true, at least one error was found. While there may also be warnings and info level data, they are ignored here.
 	```ts
 	if (explorer.hasErrors())
@@ -114,8 +113,8 @@ interface IConfigAnalysisResultsExplorer {
 - countLookupKeyResults - Returns a count of matches to your query within results.lookupKeyResults. See "Supplying criteria" below.
 - queryLookupKeyResults - Returns an array of matches or null if none. The array is a flattened version of results.lookupKeyResults. See "Supplying criteria" below.
 - reportIntoJson - Outputs data in JSON format. Parameters are:
-	+ valueHostCriteria - To include all valueHostResults, supply true. To omit valueHostResults, supply false or null. See "Supplying criteria" below.
-	+ lookupKeyCriteria - To include all lookupKeyResults, supply true. To omit lookupKeyResults, supply false or null. See "Supplying criteria" below.
+	+ valueHostCriteria - To include all valueHostResults, supply true. To omit valueHostResults, supply false or null. To supply a query, see "Supplying criteria" below.
+	+ lookupKeyCriteria - To include all lookupKeyResults, supply true. To omit lookupKeyResults, supply false or null. To supply a query, see "Supplying criteria" below.
 	+ includeCompleteResults - When true, include the complete explorer.results object.
 	
 - reportToConsole - Outputs data to console. See reportIntoJson() for parameters. In addition:
