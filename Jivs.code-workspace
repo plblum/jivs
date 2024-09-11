@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "packages/jivs-examples"
+		},
+		{
+			"path": "packages/jivs-configanalysis"
 		}
 	],
 	"settings": {
