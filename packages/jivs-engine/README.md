@@ -1,4 +1,4 @@
-## @plblum/jivs-engine: Core library for Jivs
+# @plblum/jivs-engine: Core library for Jivs
 
 *Jivs is a work-in-progress. This is a preview to get feedback from the community.
 I'm looking for an assessment of the architecture. I've been tweaking and refactoring

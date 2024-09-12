@@ -1,4 +1,4 @@
-# Examples of classes that extend Jivs
+# Examples of using and extending Jivs
 The following examples are found here, with separate files for source code and unit tests.
 ## Configuration
 - Config_with_BusinessLogic_using_Builder - Using the Builder API to create a ValidationManager configuration from business logic.
