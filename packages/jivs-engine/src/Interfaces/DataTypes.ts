@@ -24,6 +24,11 @@ export interface IDataTypeService<T> extends IServiceWithAccessor
       * @param item
       */
     register(item: T): void;    
+  
+    /**
+     * Returns the full collection.
+     */
+    getAll() : Array<T>  
 }
 
 /**

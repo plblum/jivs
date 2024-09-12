@@ -92,7 +92,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
     /**
      * Returns the full collection.
      */
-    protected getAll() : Array<T>
+    public getAll() : Array<T>
     {
         return this._registeredClasses;
     }
@@ -140,6 +140,6 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      */
     protected logUsingInstance(instance: any, purpose?: string | null): void
     {
-        this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(instance)} ${purpose ?? '.'}`);
+        this.logger.message(LoggingLevel.Debug, () => `Using ${valueForLog(instance)} ${purpose ?? '.'}`);
     }
 }

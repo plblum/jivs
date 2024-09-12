@@ -45,6 +45,10 @@ class TestDataTypeAsNumberIdentifier implements IDataTypeIdentifier {
     supportsValue(value: any): boolean {
         return value instanceof TestDataTypeAsNumber;
     }
+    sampleValue() {
+        return 100;
+    
+    }
 }
 const testStringLookupKey = 'TestString';
 class TestDataTypeAsString {
@@ -78,6 +82,9 @@ class TestDataTypeAsStringIdentifier implements IDataTypeIdentifier {
     dataTypeLookupKey: string = testStringLookupKey;
     supportsValue(value: any): boolean {
         return value instanceof TestDataTypeAsString;
+    }
+    sampleValue() {
+        return 'ABC';
     }
 }
 const testDateLookupKey = 'TestDate';
@@ -114,6 +121,10 @@ class TestDataTypeAsDateIdentifier implements IDataTypeIdentifier {
     dataTypeLookupKey: string = testDateLookupKey;
     supportsValue(value: any): boolean {
         return value instanceof TestDataTypeAsDate;
+    }
+    sampleValue() {
+        return new Date(2000, 0, 1);
+    
     }
 }
 
@@ -940,15 +951,22 @@ describe('convertUntilResult', () => {
 
             }
             class Level2Identifier implements IDataTypeIdentifier {
+
                 dataTypeLookupKey: string = level2LookupKey;
                 supportsValue(value: any): boolean {
                     return value instanceof Level2;
                 }
+                sampleValue() {
+                    return new Level2();
+                }                
             }
             class Level1Identifier implements IDataTypeIdentifier {
                 dataTypeLookupKey: string = level1LookupKey;
                 supportsValue(value: any): boolean {
                     return value instanceof Level1;
+                }
+                sampleValue() {
+                    return new Level1();
                 }
             }
 
@@ -1141,6 +1159,9 @@ describe('convertUntilResult', () => {
             dataTypeLookupKey: string = '';
             supportsValue(value: any): boolean {
                 return typeof value === 'string' && value === this.dataTypeLookupKey;
+            }
+            sampleValue() {
+                return 'X';
             }
         }
 

@@ -3,12 +3,11 @@
 // that compares two values, one is the difference in days between StartDate and EndDate,
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
-import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ICalcValueHost, CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
@@ -20,7 +19,6 @@ import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/Data
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 
 // Here's our target function to use with a CalcValueHost. 

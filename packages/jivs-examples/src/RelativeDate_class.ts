@@ -88,6 +88,9 @@ export class RelativeDateIdentifier implements IDataTypeIdentifier
     public supportsValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
+    public sampleValue() {
+        return new RelativeDate(1, 0);
+    }
 }
 
 export class RelativeDateConverter extends DataTypeConverterBase

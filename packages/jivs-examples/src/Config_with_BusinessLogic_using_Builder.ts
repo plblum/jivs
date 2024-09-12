@@ -101,6 +101,19 @@ export function configExample(): ValidationManager
     // Step 5: Attach callbacks to the Builder object
     // NOTE: Functions are declared in Config_example_common_code.ts
     builder.onValueChanged = onValueChangedUsingModifierAPI;
+  
+  // TESTING OPPORTUNITY: You can test the configuration that you have built so far.
+  // by using Jivs-ConfigAnalysis.
+  // See: packages/jivs-configanalysis/examples/Using_ConfigAnalysis.ts
+  // However, here you might just want to throw an error if the configuration contains errors
+  // but only do so in a development environment.
+  // For example:
+  // if (process.env.NODE_ENV === 'development') {
+  //     let analysisResults = builder.analyze();
+  //     analysisResults.throwOnErrors(true); // writes info into Error object
+  //     or
+  //     analysisResults.throwOnErrors(true, new ConsoleConfigAnalysisOutputter()); // also writes to console
+  // }
 
     // Step 6: Create the ValidationManager, passing in the builder object.
     // The builder object is now merged with the existing configuration.

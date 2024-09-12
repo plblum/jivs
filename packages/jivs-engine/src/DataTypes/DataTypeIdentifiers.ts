@@ -21,6 +21,10 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
     public supportsValue(value: any): boolean {
         return typeof value === 'string';
     }
+
+    public sampleValue() {
+        return "sample";
+    }
     
 }
 /**
@@ -37,6 +41,9 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
         return typeof value === 'number';
     }
     
+    public sampleValue() {
+        return 1;
+    }
 }
 
 /**
@@ -51,6 +58,10 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
     }
     public supportsValue(value: any): boolean {
         return typeof value === 'boolean';
+    }
+
+    public sampleValue() {
+        return true;
     }
     
 }
@@ -70,6 +81,10 @@ export class DateDataTypeIdentifier implements IDataTypeIdentifier
     }
     public supportsValue(value: any): boolean {
         return value instanceof Date;
+    }
+
+    public sampleValue() {
+        return new Date(2000, 1, 15, 0, 0, 0, 0); // Feb 15, 2000 isn't particularly meaningful
     }
     
 }

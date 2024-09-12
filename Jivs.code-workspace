@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "packages/jivs-examples"
+		},
+		{
+			"path": "packages/jivs-configanalysis"
 		}
 	],
 	"settings": {
@@ -44,7 +47,10 @@
 			  "--experimental-vm-modules"
 			]
 		},		
-
+		"jest.runMode": {
+			"type": "on-demand",
+			"coverage": true			
+		},
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
 		],
@@ -67,6 +73,14 @@
 			"markupPreview": true,
 			"codeSource": true,
 			"codeOutput": true
-		}
+		},
+		"javascript.preferences.importModuleSpecifier": "relative",
+		"typescript.preferences.importModuleSpecifier": "relative",
+		"eslint.enable": true,
+		"coverage-gutters.customizable.status-bar-toggler-watchCoverageAndVisibleEditors-enabled": true,
+		"coverage-gutters.showLineCoverage": false,
+		"coverage-gutters.showRulerCoverage": true,
+		"coverage-gutters.showGutterCoverage": false,
+
 	}
 }

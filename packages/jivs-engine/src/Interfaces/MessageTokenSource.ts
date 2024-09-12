@@ -46,8 +46,9 @@ export interface TokenLabelAndValue {
      */
     tokenLabel: string;
     /**
-     * The value to be used as a replacement. When the value isn't a string,
-     * it is converted to a string through 
+     * The value to be used as a replacement. It will be run through a formatter
+     * based on either the specified formatterKey or the data type of this value,
+     * by using DataTypeIdentifierService.
      * {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} classes.
      */
     associatedValue: any;

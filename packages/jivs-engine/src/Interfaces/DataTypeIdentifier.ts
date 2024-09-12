@@ -20,4 +20,11 @@ export interface IDataTypeIdentifier
  * @param value 
  */
     supportsValue(value: any): boolean;
+
+    /**
+     * Returns a sample value that is representative of the DataTypeLookupKey.
+     * Used by ConfigAnalysis to get a value that can be passed into services
+     * that take a live value, such as converters, parsers and formatters.
+     */
+    sampleValue(): any;
 }

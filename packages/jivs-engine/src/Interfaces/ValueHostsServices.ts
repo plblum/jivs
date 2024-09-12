@@ -3,7 +3,7 @@
  * @module Services/Types/IValueHostsServices
  */
 
-import { IValueHostFactory } from './ValueHost';
+import { IValueHostFactory } from './ValueHostFactory';
 import { IServices } from './Services';
 import { ILoggerService } from './LoggerService';
 import { ICultureService } from './CultureService';

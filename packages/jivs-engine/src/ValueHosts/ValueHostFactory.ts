@@ -55,6 +55,16 @@ export class ValueHostFactory implements IValueHostFactory {
     }
 
     /**
+     * Confirms that the ValueHostConfig matches to a registered
+     * ValueHostGenerator. Throws if not found.
+     * @param config 
+     */
+    public ensureRegistered(config: ValueHostConfig): void
+    {
+        this.resolveConfig(config); // throws if not found
+    }
+
+    /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
      * be obsolete and can be discarded.

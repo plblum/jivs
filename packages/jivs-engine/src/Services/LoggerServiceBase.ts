@@ -122,9 +122,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
       * @returns true if a match is found, false if no match is found.
       */
     protected matchToOverrides(logLevel: LoggingLevel, logDetails: LogDetails): boolean {
-        function toRegExp(param: RegExp | string | Function | object | null | undefined): RegExp | null {
-            if (param == null)  // supports both null and undefined
-                return null;
+        function toRegExp(param: RegExp | string | Function | object): RegExp | null {
             if (param instanceof RegExp)
                 return param;
             if (typeof param === 'string')
@@ -133,8 +131,8 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
             if (typeof param === 'function')
                 return new RegExp('^' + (param.name ? param.name : param.constructor.name) + '$');
 
-            if (param.constructor !== undefined && param.constructor.name !== undefined)
-                return new RegExp('^' + param.constructor.name + '$');
+            // if (param.constructor !== undefined && param.constructor.name !== undefined)
+            //     return new RegExp('^' + param.constructor.name + '$');
 
             return null;
         }
@@ -144,7 +142,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
                     return false;
 
                 let re = toRegExp(overrideWhenValue);
-                if (!re!.test(logDetailsValue))
+                if (!re || !re.test(logDetailsValue))
                     return false;
             }
             return true;
@@ -217,19 +215,19 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
      * @param gatherFn 
      */
     public logError(error: Error, gatherFn: logGatheringErrorHandler): void {
-    let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
-    if(logDetails.type && typeof logDetails.type !== 'string')
-    logDetails.type = valueForLog(logDetails.type); // convert to string
+        let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
+        if (logDetails.type && typeof logDetails.type !== 'string')
+            logDetails.type = valueForLog(logDetails.type); // convert to string
 
-    logDetails.message = error.message;
-    logDetails.category = LoggingCategory.Exception;
-    if(this.showStack && error.stack)
+        logDetails.message = error.message;
+        logDetails.category = LoggingCategory.Exception;
+        if (this.showStack && error.stack)
             (logDetails as LogErrorDetails).stack = error.stack.split('\n');
 
-this.writeLog(LoggingLevel.Error, logDetails);
+        this.writeLog(LoggingLevel.Error, logDetails);
 
-if (this._chainedLogger)
-    this._chainedLogger.logError(error, gatherFn);
+        if (this._chainedLogger)
+            this._chainedLogger.logError(error, gatherFn);
     }
 }
 
@@ -290,5 +288,5 @@ export interface OverrideMinLevelWhenRule {
      * The values must be exact matches.
      * When assigned, hasData is ignored as the data property must be assigned.
      */
-    data?: { [key: string]: any};
+    data?: { [key: string]: any };
 }

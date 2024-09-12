@@ -1,6 +1,5 @@
 import { RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";

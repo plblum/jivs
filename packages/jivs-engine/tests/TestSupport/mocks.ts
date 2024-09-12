@@ -3,7 +3,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostConfig, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
@@ -60,9 +60,10 @@ import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHos
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
 import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -303,8 +304,8 @@ export class MockValidationServices implements IValidationServices
         this.messageTokenResolverService = new MessageTokenResolverService();
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
-        this.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
-        this.managerConfigModifierFactory = new ManagerConfigModifierFactory();
+        this.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
+        this.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;

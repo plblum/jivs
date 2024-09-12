@@ -99,6 +99,35 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
         return this._registered!.get(lookupKey) ?? null;
     }
   /**
+   * If lookupKey is registered, this follows the chain of fallbacks until
+   * it finds the deepest match. If not found, returns null.
+   * @param lookupKey 
+   * @returns the deepest match or null if not found.
+   */
+    public fallbackToDeepestMatch(lookupKey: string): string | null
+    {
+        this.ensureBuiltIn();
+        let fallback = this.find(lookupKey);
+        if (!fallback)
+            return null;
+
+        let alreadyCheckedLookupKeys = new Set<string>();
+        let currentLK: string | null = fallback;
+        alreadyCheckedLookupKeys.add(currentLK);
+        while (currentLK)
+        {
+            fallback = this.find(currentLK);
+            if (fallback)
+            {
+                currentLK = fallback;
+                LookupKeyFallbackService.ensureRecursionSafe(currentLK, alreadyCheckedLookupKeys);
+            }
+            else
+                return currentLK;
+        }
+        return null
+    }
+  /**
    * Determine if the initialLookupKey can fallback to the targetLookupKey.
    * @param initialLookupKey 
    * @param targetLookupKey 

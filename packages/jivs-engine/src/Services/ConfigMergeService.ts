@@ -166,10 +166,10 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         for (let propertyName in source) {
             if (destination[propertyName] === undefined) {
                 if (noChangeNames.includes(propertyName))
-                    this.logQuick(LoggingLevel.Info, ()=> `${logLabel(identity, propertyName)}. Rule prevents changes.`);
+                    this.logger.message(LoggingLevel.Info, ()=> `${logLabel(identity, propertyName)}. Rule prevents changes.`);
                 else {
                     destination[propertyName] = source[propertyName];
-                    this.logQuick(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} assigned`);
+                    this.logger.message(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} assigned`);
                 }
                 continue;
             }
@@ -191,7 +191,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         switch (rule) {
             case 'nochange':
             case 'locked':
-                this.logQuick(LoggingLevel.Debug, () => `${logLabel(identity, propertyName)}. Rule prevents changes.`);
+                this.logger.message(LoggingLevel.Debug, () => `${logLabel(identity, propertyName)}. Rule prevents changes.`);
                 break;  // no change for all of these
             case 'replace':
             case 'replaceExceptNull':
@@ -204,12 +204,12 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 if (deepEquals(sourceVal, destVal))
                     break;
                 (destination as any)[propertyName] = sourceVal;
-                this.logQuick(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} replaced`);
+                this.logger.message(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} replaced`);
                 break;
             case 'delete':
                 if ((destination as any)[propertyName] !== undefined) {
                     delete (destination as any)[propertyName];
-                    this.logQuick(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} deleted`);
+                    this.logger.message(LoggingLevel.Info, () => `${logLabel(identity, propertyName)} deleted`);
                 }
                 break;
             case 'replaceOrDelete':
@@ -222,7 +222,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                     let result = rule.call(this, source, destination, propertyName, identity);
                     if (result.useValue) {
                         (destination as any)[propertyName] = result.useValue;
-                        this.logQuick(LoggingLevel.Debug, () => `${logLabel(identity, propertyName)} replaced`);
+                        this.logger.message(LoggingLevel.Debug, () => `${logLabel(identity, propertyName)} replaced`);
                     }
                     else if (result.useAction)
                         this.mergeProperty(propertyName, result.useAction, source, destination, identity); // recursion
@@ -287,7 +287,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
         if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
             return { useValue: ValueHostType.Input };
         if (source.valueHostType !== destination.valueHostType)
-            this.logQuick(LoggingLevel.Warn, () => `Will not change ValueHostType from ${destination.valueHostType} to ${source.valueHostType}.`);
+            this.logger.message(LoggingLevel.Warn, () => `Will not change ValueHostType from ${destination.valueHostType} to ${source.valueHostType}.`);
         return { useAction: 'nochange' };
     }
 
@@ -406,7 +406,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
                 if (validatorSrc.conditionConfig && validatorDest.conditionConfig)
                     if (validatorSrc.conditionConfig.conditionType !==
                         validatorDest.conditionConfig.conditionType)
-                        this.logQuick(LoggingLevel.Warn, () => `ConditionType mismatch for ${identity.errorCode}`);
+                        this.logger.message(LoggingLevel.Warn, () => `ConditionType mismatch for ${identity.errorCode}`);
                 let keepErrorCode = hasConditionBeenReplaced(validatorSrc) && validatorSrc.errorCode
                 this.mergeConfigs(validatorSrc, validatorDest, identity);
                 if (keepErrorCode)
@@ -414,7 +414,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
             }
             else {
                 destination.validatorConfigs.push(validatorSrc);
-                this.logQuick(LoggingLevel.Debug, () => `Validator ${identity.errorCode} added to ${logLabel({ valueHostName: destination.name, containingProperty: 'validatorConfigs' }, null)}`);
+                this.logger.message(LoggingLevel.Debug, () => `Validator ${identity.errorCode} added to ${logLabel({ valueHostName: destination.name, containingProperty: 'validatorConfigs' }, null)}`);
             }
         }
     }

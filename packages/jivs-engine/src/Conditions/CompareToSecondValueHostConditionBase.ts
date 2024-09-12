@@ -6,7 +6,6 @@
 
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { LoggingLevel, LoggingCategory, LogOptions, LogDetails } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';

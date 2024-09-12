@@ -8,6 +8,7 @@ import { IValidationServices } from "../Interfaces/ValidationServices";
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../Interfaces/LoggerService";
 import { ServiceBase } from "./ServiceBase";
 import { IServicesAccessor } from "../Interfaces/Services";
+import { LoggerFacade } from "../Utilities/LoggerFacade";
 
 /**
  * Abstract base class for building a service with a reference back to the IServices object.
@@ -56,57 +57,18 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     public dispose(): void
     {
         this._services = undefined!;
+        (this._logger as any) = undefined!;        
     }    
  
     /**
-     * Log a message. The message gets assigned the details of feature, type, and identity
-     * here.
+     * Provides an API for logging, sending entries to the loggerService.
      */
-    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        if (this.hasServices()) {
-            let logger = this.services.loggerService;
-            logger.log(level, (options?: LogOptions) => {
-                let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-                details.feature = 'service';
-                details.type = this;
-                return details;
-            });
-        }
-    }
-    /**
-     * When the log only needs the message and nothing else.
-     * @param level 
-     * @param messageFn
-     */
-    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
-        this.log(level, () => {
-            return {
-                message: messageFn()
-            };
-        });
-        
-    }
-    /**
-     * Log an exception. The GatherFn should only be used to gather additional data
-     * as the Error object supplies message, category (Exception), and this function
-     * resolves feature, type, and identity.
-     * If the error class extends SevereErrorBase, the same Error object will be thrown after logging.
-     * @param error 
-     * @param gatherFn 
-     */
-    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
+    protected get logger(): LoggerFacade
     {
-        if (this.hasServices()) {
-            let logger = this.services.loggerService;
-            logger.logError(error, (options?: LogOptions) => {
-                let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-                details.feature = 'service';
-                details.type = this;
-                details.identity = this.serviceName;
-                return details;
-            });
-        }
-        if (error instanceof SevereErrorBase)
-            throw error;
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.hasServices() ? this.services.loggerService : null,
+                'service', this, null, true);
+        return this._logger;
     }
+    private _logger: LoggerFacade | null = null;    
 }

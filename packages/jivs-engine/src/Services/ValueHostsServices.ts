@@ -8,7 +8,7 @@
 
 import type { ILoggerService } from '../Interfaces/LoggerService';
 import { ServiceName } from '../Interfaces/ValidationServices';
-import { IValueHostFactory } from '../Interfaces/ValueHost';
+import { IValueHostFactory } from '../Interfaces/ValueHostFactory';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
@@ -27,8 +27,9 @@ import { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
 import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
 import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
-import { ManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
-import { ManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
+import { ValueHostsManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
+import { ValueHostsManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
+import { ValueHostConfigMergeService } from './ConfigMergeService';
 
 /**
  * Supplies services and factories to be used as dependency injection
@@ -162,13 +163,17 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     public get valueHostConfigMergeService(): IValueHostConfigMergeService {
         let service = this.getService<IValueHostConfigMergeService>(ServiceName.valueHostConfigMerge);
         if (!service)
-            throw new CodingError('Must assign ValidationServices.valueHostConfigMergeService.');
+        {
+            service = new ValueHostConfigMergeService();
+            this.setService(ServiceName.valueHostConfigMerge, service);
+        }
 
         return service;
     }
     public set valueHostConfigMergeService(service: IValueHostConfigMergeService) {
         this.setService(ServiceName.valueHostConfigMerge, service);
     }    
+    
     /**
      * Service to text localization specific, effectively mapping
      * a text key to a language specific version of that text.
@@ -218,7 +223,7 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     public get managerConfigBuilderFactory(): IManagerConfigBuilderFactory {
         let service = this.getService<IManagerConfigBuilderFactory>(ServiceName.managerConfigBuilder);
         if (!service) {
-            let factory = service = new ManagerConfigBuilderFactory();
+            let factory = service = this.defaultManagerConfigBuilderFactory();
             this.setService(ServiceName.managerConfigBuilder, factory);
         }
         return service;
@@ -227,6 +232,10 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
         this.setService(ServiceName.managerConfigBuilder, factory);
     }
 
+    protected defaultManagerConfigBuilderFactory(): IManagerConfigBuilderFactory {
+        return new ValueHostsManagerConfigBuilderFactory();
+    }   
+
     /**
      * Creates the ManagerConfigModifier instances.
      * Defaults to using ManagerConfigModifierFactory.
@@ -234,7 +243,7 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     public get managerConfigModifierFactory(): IManagerConfigModifierFactory {
         let service = this.getService<IManagerConfigModifierFactory>(ServiceName.managerConfigModifier);
         if (!service) {
-            let factory = service = new ManagerConfigModifierFactory();
+            let factory = service = this.defaultManagerConfigModifierFactory();
             this.setService(ServiceName.managerConfigModifier, factory);
         }
         return service;
@@ -243,7 +252,8 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
         this.setService(ServiceName.managerConfigModifier, factory);
     }
 
-  
-
+    protected defaultManagerConfigModifierFactory(): IManagerConfigModifierFactory {
+        return new ValueHostsManagerConfigModifierFactory();
+    }
 }
 

@@ -61,6 +61,16 @@ export interface IDataTypeParser<TDataType> {
      * @returns Use its parser() method when true. Do not use parser() when false.
      */
     supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean;
+
+    /**
+     * Since there can be several parsers for a single lookupKey and cultureID
+     * that are selected based on the text, this function is used 
+     * when you want all possible candidates. It is effectively supports() without the text.
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     */
+    isCompatible(dataTypeLookupKey: string, cultureId: string): boolean;
+    
     /**
      * Parse the text supplied, attempting to create another value from it that will be returned.
      * The new value may be a different data type, 

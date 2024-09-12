@@ -72,7 +72,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                         else
                             if (replacement.errorMessage)
                             {
-                                this.log(LoggingLevel.Error,
+                                this.logger.log(LoggingLevel.Error,
                                     () => {
                                         return {
                                             message: `${capturedToken.full}: ${replacement.errorMessage}`,
@@ -86,7 +86,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                     {
                         let err = ensureError(e);
 
-                        this.logError(err, (options?: LogOptions) => {
+                        this.logger.error(err, (options?: LogOptions) => {
                             let details: LogErrorDetails = {
                                 data: { token: capturedToken.full },
                             };
@@ -100,7 +100,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
             if (!resolved)
             {
                 //Log token was not replaced
-                this.logQuick(LoggingLevel.Warn, ()=>`{${capturedToken.full}}: Token not replaced.`); 
+                this.logger.message(LoggingLevel.Warn, ()=>`{${capturedToken.full}}: Token not replaced.`); 
             }
         });
         return revised;

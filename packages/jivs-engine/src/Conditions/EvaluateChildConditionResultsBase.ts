@@ -10,7 +10,6 @@
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { CodingError } from '../Utilities/ErrorHandling';
 import { ConditionWithChildrenBase, ConditionWithChildrenBaseConfig } from './ConditionWithChildrenBase';
 
 /**

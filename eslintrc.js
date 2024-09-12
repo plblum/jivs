@@ -3,7 +3,7 @@ module.exports = {
     //    "eslint:recommended"
   ],
   // ignore patterns are in separate eslintignore file
-  parser: "@typescript-eslint/parser",
+  parser: require.resolve('@typescript-eslint/parser'),
   parserOptions: {
     ecmaVersion: 2016,
     project: ["./tsconfig.json"],
@@ -12,7 +12,7 @@ module.exports = {
   env: {
     es2016: true,
     browser: true,
-    jest: true,
+    jest: true
   },
   rules: {
     "@typescript-eslint/no-explicit-any": "off",

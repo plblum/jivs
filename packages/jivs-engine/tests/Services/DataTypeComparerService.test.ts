@@ -64,6 +64,9 @@ class TestIdentifier implements IDataTypeIdentifier {
     supportsValue(value: any): boolean {
         return value instanceof TestDataType;
     }
+    sampleValue(): any {
+        return new TestDataType('A', 'B');
+    }
     
 }
 class TestComparer implements IDataTypeComparer {
@@ -328,6 +331,9 @@ describe('DataTypeComparerService.compare', () => {
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
+            sampleValue() {
+                return new TestDataType(0);
+            }
         }
         class TestConverter implements IDataTypeConverter
         {
@@ -473,6 +479,38 @@ describe('DataTypeComparerService.compare', () => {
         expect(testItem.compare(false, true, null, LookupKey.Boolean)).toBe(ComparersResult.NotEqual);
         expect(testItem.compare(true, false, LookupKey.Boolean, null)).toBe(ComparersResult.NotEqual);
     });       
+    // boolean value with "Custom" as Lookup Key will only use the BooleanDataTypeComparer
+    // if there is a LookupKeyFallbackService entry from Custom to Boolean.
+    test('Boolean value with custom Lookup Keys will only use the BooleanDataTypeComparer if there is a LookupKeyFallbackService entry from Custom to Boolean', () => {
+        // we'll use Custom1 and Custom2, where Custom1 has a fallback to boolean
+        let setup = setupServicesWithExtraLogging();
+        setup.services.lookupKeyFallbackService.register('Custom1', LookupKey.Boolean);
+        let testItem = setup.testItem;
+        let logger = setup.services.loggerService as CapturingLogger;
+
+        let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
+        dtis.register(new BooleanDataTypeIdentifier());
+        testItem.register(new BooleanDataTypeComparer());
+
+        expect(testItem.compare(true, true, 'Custom1', 'Custom1')).toBe(ComparersResult.Equal);
+        expect(logger.findMessage('Using BooleanDataTypeComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Comparison result: Equal', LoggingLevel.Info)).toBeTruthy();
+
+        logger.clearAll();
+        expect(testItem.compare(true, true, LookupKey.Boolean, 'Custom1')).toBe(ComparersResult.Equal);
+        expect(logger.findMessage('Using BooleanDataTypeComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Comparison result: Equal', LoggingLevel.Info)).toBeTruthy();
+
+        logger.clearAll();
+        expect(testItem.compare(true, true, 'Custom1', LookupKey.Boolean)).toBe(ComparersResult.Equal);
+        expect(logger.findMessage('Using BooleanDataTypeComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Comparison result: Equal', LoggingLevel.Info)).toBeTruthy();
+        // now using Custom2, get not found errors
+        logger.clearAll();
+        expect(()=> testItem.compare(true, true, 'Custom2', 'Custom2')).toThrow(InvalidTypeError)
+        expect(logger.findMessage('Compare failed.', LoggingLevel.Error)).toBeTruthy();
+
+    });
 
     test('Passing booleans uses BooleanDataTypeComparer', () => {
 
@@ -558,6 +596,10 @@ describe('DataTypeComparerService.compare', () => {
             dataTypeLookupKey: string = testLookupKey;
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
+            }
+            sampleValue() {
+                return new TestDataType(new Date(2000, 1, 1));
+            
             }
         }
         class TestConverter implements IDataTypeConverter
@@ -681,6 +723,9 @@ describe('DataTypeComparerService.compare', () => {
             dataTypeLookupKey = holdsDateLookupKey;
             supportsValue(value: any): boolean {
                 return value instanceof HoldsDate;
+            }
+            sampleValue() {
+                return new HoldsDate(2000, 1, 1);
             }
         }
 

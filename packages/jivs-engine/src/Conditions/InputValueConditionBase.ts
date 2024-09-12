@@ -6,7 +6,6 @@
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
@@ -38,7 +37,7 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         if (!toIInputValueHost(valueHost)) {
             let error = new CodingError('Invalid ValueHost used. Must be an InputValueHost');
-            this.logError(valueHostsManager.services, error);
+            this.logger(valueHostsManager.services).error(error);
         }
         let iValueHost = valueHost as unknown as IInputValueHost;
         let value = iValueHost.getInputValue();

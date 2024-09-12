@@ -5,6 +5,7 @@ import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
+
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
@@ -23,6 +24,7 @@ import {
     FluentPropertyParameters
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
+
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 

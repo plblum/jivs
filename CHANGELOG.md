@@ -1,3 +1,10 @@
+## 0.19.0
+- Introduce a new library, jivs-configanalysis, that is part of the overall source code [here](https://github.com/plblum/jivs). It focuses on testing that your configuration is going to deliver as expected when you create a ValidationManager from it.
+- jivs-engine contains numerous minor changes to support jivs-configanalysis.
+- Introduce logger property on many base classes that provides standard ways to log. Its a facade around LoggerService. 
+- The ValidationManager now has more logging.
+- DataTypeComparerService uses fallbackLookupKeyService instead of converters to resolve values being compared using the Default Comparer.
+
 ## 0.18.1
 - ValueHosts now has an enable property that lets you disable them, blocking their validation and ability to set their value (although there is an override in the options).
   - Use ValueHost.setEnabled() for on demand disabling

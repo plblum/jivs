@@ -304,5 +304,14 @@ export interface IConditionFactory {
      * @param fn - Expected to create an instance of a Condition.
      */
     register<TConfig extends ConditionConfig>(conditionType: string,
-        fn: (config: TConfig) => IConditionCore<TConfig>): void
+        fn: (config: TConfig) => IConditionCore<TConfig>): void;
+    
+    /**
+     * Helper to see if the conditionType value is registered even
+     * when its case is different or it has whitespace that needs trimming.
+     * @param conditionType 
+     * @returns The real name of the conditionType or null if not found.
+     */
+    findRealName(conditionType: string): string | null;
+    
 }
