@@ -2,7 +2,6 @@
  * Interfaces and types for ConfigAnalysis class.
  * @module ConfigAnalysis/Types
  */
-import { IService, IServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
 import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
@@ -17,24 +16,27 @@ import { IConfigAnalysisResultsExplorer } from "./Explorer";
 import { IConfigAnalysisResults } from "./Results";
 
 /**
- * A service to analyze a complete ValueHostsManagerConfig and ValidationManagerConfig
- * to locate any issues that may cause the configuration to fail.
- * Also to provide a report of the configuration against the services, where many
- * optional features must be installed. For example, if you use the AllMatchCondition object,
- * it must be registered in services.conditionFactory first.
+ * A tool to ensure that your configuration is as expected,
+ * even before you create a ValidationManager object from it.
  * 
- * Generally call its analyze() function using the Builder object, Modifier object,
- * or the Config object itself, but prior to applying them to the ValueHostsManager or ValidationManager.
+ * ConfigAnalysis does the following:
+ * - Validates the properties throughout your ValueHostConfig objects, including:
+ *   - Requested Lookup Keys have an associated class registered with the factories, taking cultures into account. (Lookup Keys are used to identify	data types, parsers, formatters, converters, and more.)
+ * 	> When using dependency injection, it is not immediately apparent if the object
+ * 	that you want is the one you get, especially because Jivs provides fallbacks for cultures and Lookup Keys.
+ *   - Requested Condition Types are registered in the ConditionFactory.
+ *   - Issues with tokens within error messages.
+ *   - Required properties have values.
+ *   
+ * - Identifies each Lookup Key in use, along with the services that are needed by your ValueHostConfigs.
+ * - For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
+ *   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
  * 
- * ```ts
- * let services = createValidationServices();
- * services.conditionFactory.register<AllMatchConditionConfig>((config) => new AllMatchCondition(config));
+ * Jivs-ConfigAnalysis is a separate library, available within npm.
  * 
- * let builder = build(services);
- * builder.input('FieldName').all((childrenBuilder) => ... add conditions to childrenBuilder ...);
- * services.configAnalysisService.analyze(builder, { options }).toLogger(); // toConsole() etc.
- * let vm = new ValidationManager(builder);
- * ```
+ * Go to [Jivs-ConfigAnalysis documentation](https://github.com/plblum/jivs/main/packages/jivs-configanalysis/).
+ * 
+ * Go to [Jivs-ConfigAnalysis npm page](https://www.npmjs.com/package/@plblum/jivs-configanalysis).
  */
 export interface IConfigAnalysis {
 

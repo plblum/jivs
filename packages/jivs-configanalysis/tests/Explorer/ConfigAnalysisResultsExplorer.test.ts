@@ -5,9 +5,6 @@ import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
 import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-
-import { JsonConfigAnalysisOutputFormatter } from '@plblum/jivs-engine/build/ConfigAnalysis/ConfigAnalysisOutputFormatterClasses';
-
 import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
 import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
@@ -41,6 +38,7 @@ import {
     ComparerServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormattersByCultureCAResult,
     PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult, IConfigAnalysisResults, ConditionConfigCAResult
 } from '../../src/Types/Results';
+import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
 import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
 import {
     createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult,

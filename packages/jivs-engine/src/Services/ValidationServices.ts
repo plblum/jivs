@@ -19,8 +19,6 @@ import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolver
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
-import { ValidationManagerConfigAnalysisService } from './ConfigAnalysisService';
-import { IConfigAnalysisService } from '../Interfaces/ConfigAnalysisService';
 import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
 import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
 import { ValidationManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
@@ -133,9 +131,6 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
     }
 
     //#endregion ValidatorFactory     
-    protected defaultConfigAnalysisService(): IConfigAnalysisService {
-        return new ValidationManagerConfigAnalysisService();
-    }    
 
     protected defaultManagerConfigBuilderFactory(): IManagerConfigBuilderFactory {
         return new ValidationManagerConfigBuilderFactory();

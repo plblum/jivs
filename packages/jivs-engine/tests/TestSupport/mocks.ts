@@ -64,7 +64,6 @@ import { ValidationManagerConfigBuilderFactory } from "../../src/Services/Manage
 import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
-import { IConfigAnalysisService } from "../../src/Interfaces/ConfigAnalysisService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -532,15 +531,6 @@ export class MockValidationServices implements IValidationServices
         factory.services = this;
     }
     private _managerConfigModifierFactory!: IManagerConfigModifierFactory;
-    public get configAnalysisService(): IConfigAnalysisService
-    {
-        return this._configAnalysisService;
-    }
-    public set configAnalysisService(service: IConfigAnalysisService)
-    {
-        this._configAnalysisService = service;
-    }
-    private _configAnalysisService!: IConfigAnalysisService;    
 }
 
 /**

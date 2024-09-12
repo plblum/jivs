@@ -65,8 +65,6 @@ import {
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
-import { IConfigAnalysisService } from '@plblum/jivs-engine/build/Interfaces/ConfigAnalysisService';
-//import { ValueHostConfigAnalyzer } from '@plblum/jivs-engine/build/Services/ConfigAnalysisService/ValueHostConfigAnalyzer';
 import {
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer,
     DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
@@ -196,9 +194,6 @@ export function createValidationServices(activeCultureId: string,
     // Modify this only when you introduce new lookup keys for data types
     // whose underlying data type is the same as an already known lookup key.
     vs.lookupKeyFallbackService = createLookupKeyFallbackService();
-
-    // --- ConfigAnalyzerService ----------------------------
-    registerConfigAnalyzers(vs.configAnalysisService);
 
     return vs;
 }
@@ -890,49 +885,4 @@ export function createConfigMergeServices(vs: ValidationServices): void {
     //     // Otherwise, call our default handler:
     //     return vs.validatorConfigMergeService.identifyValidatorConflict(validatorSrc, validatorsInDest, identity);
     // };
-}
-
-/**
- * The ConfigAnalyzerService is used to analyze the ValidationManagerConfig object
- * after it is populated to see if there are any errors. 
- * They are available on the builder and modifier objects,
- * and worth calling prior to creating the ValidationManager.
- * ```ts
- * let services = createValidationServices();
- * let builder = services.managerConfigBuilderFactory.create();
- * ... populate the builder ...
- * let outputDetails = services.configAnalysisService.analyze(builder, [supporting parameters]);
- * if (outputDetails.hasErrors) ...
- * ```
- * Like everything in Jivs, it is extensible. Each ValueHostConfig, ValidatorConfig
- * and ConditionConfig class has a primary analyzer that uses property-specific analyzers
- * to check for errors.
- * Those that are built in are already in this function.
- * As you introduce new features to the config objects, add your own.
- * @param cas 
- */
-export function registerConfigAnalyzers(cas: IConfigAnalysisService): void 
-{
-    cas.registerValueHostConfigPropertyAnalyzers(() => [
-        new ValueHostTypePropertyAnalyzer(),
-        new ValueHostNamePropertyAnalyzer(),
-        new DataTypePropertyAnalyzer(),
-        new LabelPropertiesAnalyzer(),
-        new ParserLookupKeyPropertyAnalyzer(),
-        new CalcFnPropertyAnalyzer()
-    ]);
-    cas.registerValidatorConfigPropertyAnalyzers(() => [
-        new AllMessagePropertiesConfigPropertyAnalyzer(),
-        new ConditionCreatorConfigPropertyAnalyzer()
-    ]);
-    cas.registerConditionConfigPropertyAnalyzers(() => [
-        new ConditionTypeConfigPropertyAnalyzer(),
-        new ConditionWithConversionLookupKeyPropertyAnalyzer(),
-        new ConditionCategoryPropertyAnalyzer(),
-        new ConditionWithChildrenPropertyAnalyzer(),
-        new ConditionWithOneChildPropertyAnalyzer(),
-        new ConditionWithValueHostNamePropertyAnalyzer(),
-        new ConditionWithSecondValueHostNamePropertyAnalyzer(),
-        new ConditionWithSecondValuePropertyAnalyzer()
-    ]);
 }

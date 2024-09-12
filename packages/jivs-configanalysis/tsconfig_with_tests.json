@@ -9,6 +9,6 @@
       "@plblum/jivs-engine": ["../jivs-engine"]
     }      
   },
-  "include": [ "src", "types", "tests" ], 
+  "include": [ "src", "types", "tests", "examples" ], 
   "exclude": [ "./*.js", "./*.mjs", "coverage", "docs", "build", "temp"]
 }

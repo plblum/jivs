@@ -113,7 +113,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     /**
      * Localizes the given text with additional details.
      * See localize() for more information.
-     * This targets the ConfigAnalysisService.
+     * This targets the ConfigAnalysis.
      * @param cultureIdToMatch - The culture ID to match for localization.
      * @param l10nKey - The localization key.
      * @param fallback - The fallback text to use if localization fails.

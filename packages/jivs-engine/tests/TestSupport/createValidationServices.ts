@@ -62,30 +62,6 @@ import { ValidationManagerConfigBuilderFactory } from "../../src/Services/Manage
 import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IConfigAnalysisService } from '../../src/Interfaces/ConfigAnalysisService';
-import {
-    CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer,
-    ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer,
-    ValueHostTypePropertyAnalyzer
-} from '../../src/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses';
-import {
-    ConditionCategoryPropertyAnalyzer,
-    ConditionTypeConfigPropertyAnalyzer,
-    ConditionWithChildrenPropertyAnalyzer,
-    ConditionWithConversionLookupKeyPropertyAnalyzer,
-    ConditionWithOneChildPropertyAnalyzer,
-    ConditionWithSecondValueHostNamePropertyAnalyzer,
-    ConditionWithSecondValuePropertyAnalyzer,
-    ConditionWithValueHostNamePropertyAnalyzer
-    
-} from '../../src/ConfigAnalysis/ConditionConfigPropertyAnalyzerClasses';
-import {
-    AllMessagePropertiesConfigPropertyAnalyzer, 
-    ConditionCreatorConfigPropertyAnalyzer
-    
-} from '../../src/ConfigAnalysis/ValidatorConfigPropertyAnalyzerClasses';
-
-
 
 export function createValidationServicesForTesting(): ValidationServices {
     let vs = new ValidationServices();
@@ -127,8 +103,6 @@ export function createValidationServicesForTesting(): ValidationServices {
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
     vs.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
     vs.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
-
-    registerConfigAnalyzers(vs.configAnalysisService);
 
     return vs;
 }
@@ -353,29 +327,4 @@ export function createTextLocalizerService(): ITextLocalizerService
 
     return service;
     
-}
-export function registerConfigAnalyzers(cas: IConfigAnalysisService): void 
-{
-    cas.registerValueHostConfigPropertyAnalyzers(() => [
-        new ValueHostTypePropertyAnalyzer(),
-        new ValueHostNamePropertyAnalyzer(),
-        new DataTypePropertyAnalyzer(),
-        new LabelPropertiesAnalyzer(),
-        new ParserLookupKeyPropertyAnalyzer(),
-        new CalcFnPropertyAnalyzer()
-    ]);
-    cas.registerValidatorConfigPropertyAnalyzers(() => [
-        new AllMessagePropertiesConfigPropertyAnalyzer(),
-        new ConditionCreatorConfigPropertyAnalyzer()
-    ]);
-    cas.registerConditionConfigPropertyAnalyzers(() => [
-        new ConditionTypeConfigPropertyAnalyzer(),
-        new ConditionWithConversionLookupKeyPropertyAnalyzer(),
-        new ConditionCategoryPropertyAnalyzer(),
-        new ConditionWithChildrenPropertyAnalyzer(),
-        new ConditionWithOneChildPropertyAnalyzer(),
-        new ConditionWithValueHostNamePropertyAnalyzer(),
-        new ConditionWithSecondValueHostNamePropertyAnalyzer(),
-        new ConditionWithSecondValuePropertyAnalyzer()
-    ]);
 }

@@ -23,7 +23,7 @@ export interface IDataTypeIdentifier
 
     /**
      * Returns a sample value that is representative of the DataTypeLookupKey.
-     * Used by ConfigAnalysisService to get a value that can be passed into services
+     * Used by ConfigAnalysis to get a value that can be passed into services
      * that take a live value, such as converters, parsers and formatters.
      */
     sampleValue(): any;

@@ -146,11 +146,6 @@ export enum ServiceName {
     /**
      * IValuesToModelFactory - in jivs-ssot
      */
-    valuesToModelFactory = 'ValuesToModelFactory',
-
-    /**
-     * IConfigAnalysisService
-     */
-    configAnalysis = 'configAnalysis',
+    valuesToModelFactory = 'ValuesToModelFactory'
 
 }

@@ -1,25 +1,21 @@
-import { RequireTextConditionConfig, RegExpConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, EqualToValueConditionConfig, EqualToValueCondition } from "../../src/Conditions/ConcreteConditions";
+import { RequireTextConditionConfig, RegExpConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { ComparerServiceCAResult, ConfigAnalysisServiceOptions, CAIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
+
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
-import { ServiceName } from "../../src/Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
-import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService";
-import { DataTypePropertyAnalyzer } from "../../src/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
     FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
@@ -28,7 +24,7 @@ import {
     FluentPropertyParameters
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
-import { checkLookupKeyResultsForService } from "../ConfigAnalysis/support";
+
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 
@@ -389,61 +385,6 @@ describe('snapshot', () => {
         }]);
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });       
-});
-describe('analyze()', () => {
-    test('Using ValueHostsManager, Demonstrate that the method operates the ConfigAnalysisService.analyze function just like calling analyze itself.', () => {
-        let services = new MockValidationServices(false, false);
-        services.conditionFactory.register<EqualToValueConditionConfig>(
-            ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
-        
-        services.configAnalysisService = new ValueHostsManagerConfigAnalysisService();
-        services.configAnalysisService.services = services;
-        services.configAnalysisService.registerValueHostConfigPropertyAnalyzers(() => [
-            new DataTypePropertyAnalyzer(),
-        ]);        
-        let testItem = new TestValueHostManagerConfigBuilderBase(services);
-        testItem.static('Field1', LookupKey.Number);
-        // this gives us the ability to use the comparer service, which needs a sample value
-        // for Field1. That will let use demonstrate using the options parameter.
-        testItem.enabler('Field1', (enablerBuilder: FluentConditionBuilder) => 
-            enablerBuilder.equalToValue(10));
-        let options: ConfigAnalysisServiceOptions = { valueHostsSampleValues: { 'Field1': 10 } };
-        let result = testItem.analyze(options);
-        expect(result).toBeDefined();
-        expect(result.results).toBeDefined();
-        let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
-            LookupKey.Number, ServiceName.comparer) as ComparerServiceCAResult;
-        expect(si).toBeDefined();
-        expect(si.severity).toBeUndefined();    // because we resolved the comparer
-    });
-    // for comparison, same but where there is no sample value for Field1, field 1 is a custom key
-    // expect si.severity=warning
-    test('Show analyze reporting an issue. In this case, a Custom lookup key does not setup the comparer needed for the toEqualValue() enabler.', () => {
-        let services = new MockValidationServices(false, false);
-        services.conditionFactory.register<EqualToValueConditionConfig>(
-            ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
-
-        services.configAnalysisService = new ValueHostsManagerConfigAnalysisService();
-        services.configAnalysisService.services = services;
-        services.configAnalysisService.registerValueHostConfigPropertyAnalyzers(() => [
-            new DataTypePropertyAnalyzer(),
-        ]);
-        let testItem = new TestValueHostManagerConfigBuilderBase(services);
-        testItem.static('Field1', 'CustomKey');
-        // this gives us the ability to use the comparer service, which needs a sample value
-        // for Field1. That will let use demonstrate using the options parameter.
-        testItem.enabler('Field1', (enablerBuilder: FluentConditionBuilder) => 
-            enablerBuilder.equalToValue(10));
-
-        let options: ConfigAnalysisServiceOptions = {  };
-        let result = testItem.analyze(options);
-        expect(result).toBeDefined();
-        expect(result.results).toBeDefined();
-        let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
-            'CustomKey', ServiceName.comparer) as ComparerServiceCAResult;
-        expect(si).toBeDefined();
-        expect(si.severity).toBe(CAIssueSeverity.warning); 
-    });
 });
 
 describe('build(vmConfig).static()', () => {

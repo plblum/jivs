@@ -35,7 +35,7 @@ import {
     DataTypePropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase,
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
 } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { registerConfigAnalyzers } from '../src/Runner';
+import { registerConfigAnalyzers } from "../src/Runner";
 
 describe('ConfigAnalysisBase class', () => {
     class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {

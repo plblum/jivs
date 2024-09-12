@@ -103,8 +103,8 @@ export function configExample(): ValidationManager
     builder.onValueChanged = onValueChangedUsingModifierAPI;
   
   // TESTING OPPORTUNITY: You can test the configuration that you have built so far.
-  // by using the ConfigAnalysisService.
-  // See: packages/jivs-examples/src/ConfigAnalysisService_example.ts
+  // by using Jivs-ConfigAnalysis.
+  // See: packages/jivs-configanalysis/examples/Using_ConfigAnalysis.ts
   // However, here you might just want to throw an error if the configuration contains errors
   // but only do so in a development environment.
   // For example:

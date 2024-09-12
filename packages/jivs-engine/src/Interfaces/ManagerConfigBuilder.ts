@@ -4,9 +4,8 @@
  */
 
 
-import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
+import { FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
@@ -14,7 +13,7 @@ import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ConfigAnalysisServiceOptions, IConfigAnalysisResultsExplorer } from "./ConfigAnalysisService";
+
 
 /**
  * Base interface for a ValueHostsManagerConfigBuilder and Modifier.
@@ -30,35 +29,6 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
      * @returns 
      */
     complete(): T;
-
-    /**
-     * A key tool to writing tests around Jivs configurations.
-     * 
-     * Prior to calling complete(), use this to review the current state of the configuration,
-     * taking both the services and ValueHost configurations into account.
-     * The resulting object provides you with tools for looking for errors and other issues,
-     * plus reporting on the configuration.
-     * 
-     * For example, you can learn about all Lookup Keys in use, with their associated
-     * converters, parsers, formatters, etc. You can identify those that are missing a supporting
-     * object that you need to add to the services.
-     * You can identify all errors and issues amongst the ValueHosts and their validators.
-     * This happens prior to even creating a ValidationManager or ValueHostsManager, so you know going in
-     * that the configuration is correct.
-     * 
-     * @remarks
-     * The underlying code is actually the ConfigAnalysisService, which is defined in the 
-     * ValidationServices or ValueHostsServices. This method is a convenience wrapper around that service.
-     * You could also call it directly from the services object like this:
-     * ```ts
-     * const analysis = services.configAnalysisService.analyze();
-     * ```
-     * @param options 
-     * @returns Tools to look for issues and report on the configuration. Its methods are used
-     * with your testing code.
-     */
-    analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisResultsExplorer;
-
 }
 
 /**
