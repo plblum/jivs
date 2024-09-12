@@ -31,9 +31,7 @@ The UI uses that information to change the visuals, like showing the error messa
 - **Open source and MIT License**: <a href="https://github.com/plblum/jivs" target="_blank">https://github.com/plblum/jivs</a>
 
 Start here to better understand this library and determine if its right for you:
-[Jivs Documentation](https://github.com/plblum/jivs/blob/main/README.md)
-
-For the open source project: [https://github.com/plblum/jivs](https://github.com/plblum/jivs)
+[Jivs Documentation](http://jivs.peterblum.com/typedoc)
 
 ### Selecting the right starting point
 Jivs includes multiple libraries. This one -- **jivs-engine** -- handles the actual work of validation. It provides no user interface and is unaware of the shape of any Model. Its written with a strong sense of modern OOP patterns, where you build something with a strong separation of concerns: the UI is a separate world from evaluating data and returning a result.
