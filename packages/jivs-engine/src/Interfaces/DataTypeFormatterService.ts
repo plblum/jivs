@@ -41,26 +41,3 @@ export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFor
     find(lookupKey: string, cultureId: string): IDataTypeFormatter | null;
 
 }
-
-/**
- * Identifies a CultureID ('en', 'en-US', 'en-GB', etc) that you are supporting.
- * Supplies a fallback CultureID if the culture requested did not have any support.
- * Used by {@link Services/ConcreteClasses/DataTypeFormatterService!DataTypeFormatterService | DataTypeFormatterService}. 
- * Pass an array of these into the DataTypeFormatterService constructor.
- */
-export interface CultureIdFallback {
-    /**
-     * The ISO culture name pattern in use:
-     * languagecode
-     * languagecode-countrycode or regioncode
-     * "en", "en-GB", "en-US"
-     * If this needs to change, it is OK if you set it and the Adaptor reconfigure,
-     * or to create a new instance and use it.
-     */
-    cultureId: string;
-
-    /**
-     * Identifies another culture to check if a lookup key cannot be resolved.
-     */
-    fallbackCultureId?: string | null;
-}

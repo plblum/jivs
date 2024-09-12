@@ -39,7 +39,7 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
         }
 
         protected publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-            super.log(level, gatherFn);
+            super.logger.log(level, gatherFn);
         }
 
         public publicify_mergeConfigs(source: object, destination: object, identity: MergeIdentity): void {

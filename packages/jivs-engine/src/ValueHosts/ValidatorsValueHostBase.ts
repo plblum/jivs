@@ -78,13 +78,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (!this.isEnabled())
         {
             this.clearValidation();
-            this.logQuick(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);            
+            this.logger.message(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);            
             return null;
         }
         let self = this;
         if (!options)
             options = {};
-        this.logQuick(LoggingLevel.Debug, ()=> `Validating ValueHost "${this.getName()}"`);
+        this.logger.message(LoggingLevel.Debug, ()=> `Validating ValueHost "${this.getName()}"`);
         
         // NOTE: This object instance is important for async validation.
         // Its properties collect all validator results, including those delayed by async.
@@ -168,7 +168,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         finally {
-            this.log(LoggingLevel.Info, (options) => {
+            this.logger.log(LoggingLevel.Info, (options) => {
                 return {
                     message: `Validation result: ${ValidationStatus[result.status]} Issues found:` +
                         (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none'),
@@ -259,12 +259,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         function bailout(errorMessage: string): null {
-            self.logQuick(LoggingLevel.Info, () => errorMessage);
+            self.logger.message(LoggingLevel.Info, () => errorMessage);
             return null;
         }
 
         function logError(message: string): void {
-            self.log(LoggingLevel.Error, (options) => {
+            self.logger.log(LoggingLevel.Error, (options) => {
                 return {
                     message: message ??
                         /* istanbul ignore next */  // defensive             
@@ -336,7 +336,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (error) {
             if (!this.isEnabled())
             {
-                this.logQuick(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);                
+                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);                
             }
         
             // see if the error code matches an existing validator.

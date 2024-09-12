@@ -74,47 +74,116 @@ export function deepEquals(obj1: any, obj2: any): boolean
     
 }
 
-export function deepClone(value: any, clones = new WeakMap()): any {
+export function deepClone(value: any, alreadyChecked?: Array<any>,
+    filter?: deepCloneFilter): any {
     if (typeof value !== 'object' || value === null) {
       return value;
     }
     // Handle circular references
-    if (clones.has(value)) {
+    if (alreadyChecked?.includes(value))
         return undefined;
-    }    
+
     if (value instanceof Date)
         return new Date(value.getTime());
     if (value instanceof RegExp)
         return new RegExp(value.source, value.flags);
 
+    let newObject: any;
     if (value.constructor && value.constructor !== Object) {
-        const newInstance = new value.constructor();
-        clones.set(value, newInstance);
-
-        // Clone properties recursively
-        for (let key in value) {
-            if (value.hasOwnProperty(key)) {
-                newInstance[key] = deepClone(value[key], clones);
-            }
-        }
-
-        return newInstance;
+        // handles classes
+        newObject = new value.constructor();
     }
-
-    // Handle plain objects
-    const newObj: { [key: string | number | symbol]: unknown } = {};
-    clones.set(value, newObj);
+    else {
+        // Handle plain objects
+        newObject = {};
+    }
+    if (alreadyChecked === undefined)
+        alreadyChecked = [];
 
     for (let key in value) {
         if (value.hasOwnProperty(key)) {
-            newObj[key] = deepClone(value[key], clones);
+            let valueToClone = value[key];
+            if (filter) {
+                valueToClone = filter(key, valueToClone, value);
+                if (valueToClone === undefined) // discard this property
+                    continue;
+            }            
+            // clone alreadyChecked and add the current value to it
+            let newAlreadyChecked = alreadyChecked.slice();
+            newAlreadyChecked.push(value);
+                
+            newObject[key] = deepClone(valueToClone, newAlreadyChecked, filter);
         }
     }
 
-    return newObj;    
+    return newObject;    
     
-  }
+}
+/**
+ * Used by deepClone to modify and remove properties.
+ */
+export type deepCloneFilter = (key: string, value: any, parent: any) => any;
 
+/**
+ * Implementation of deepCloneFilter with these features:
+ * Remove undefined properties.
+ * Convert functions into a string of "[Function]" with the function name if available.
+ * Convert Date objects to their ISO string.
+ * Convert RegExp objects to a string that mimics its expression pattern.
+ * Discard any circular references.
+ * Discard most built-in objects like Map, Set, Error, etc.
+ * @param key 
+ * @param value 
+ * @param parent 
+ * @returns 
+ */
+export function cleanForLogging(key: string, value: any, parent: any): any {
+
+    if (value === undefined) {
+        return undefined;   // to be discarded
+    }
+    if (typeof value === 'function')
+        return '[Function' + (value.name ? ' ' + value.name : '') + ']';
+
+    if (typeof value !== 'object' || value == null)   // null or undefined
+        return value;
+  
+    if (value instanceof Date)
+        return value.toISOString();
+    if (value instanceof RegExp)
+        return '/' + value.source + '/' + value.flags;
+    if (value instanceof Array) // because isSupportedAsValue rejects arrays
+        return value;
+    
+    if (!isSupportedAsValue(value)) // this is after RegExp because it declares a RegExp as unsupported.
+        return undefined;   // discard unsupported objects    
+    return value;
+}
+
+/**
+ * Designed to prepare the value for conversion to JSON.
+ * Creates a near-deep clone. All new objects, but some properties have changed.
+ * It will remove undefined properties.
+ * It will convert functions into a string of "[Function]" with the function name if available.
+ * It will convert Date objects to their ISO string.
+ * It will convert RegExp objects to a string that mimics its expression pattern.
+ * It will discard any circular references.
+ * It will discard most built-in objects like Map, Set, Error, etc.
+ * It will discard class instances.
+ * @param value - Any data that will be turned into JSON after this function completes.
+ * @param filter - When supplied, it provides an alternative to the default rules for cleaning (which uses cleanForLogging).
+ * @returns When it returns undefined, it means the property containing the value can be removed.
+ */
+export function deepCleanForJson(value: any, filter?: deepCloneFilter): any {
+    return deepClone(value, undefined, filter ?? cleanForLogging);
+}
+
+/**
+ * Returns the number of keys in the given object.
+ * 
+ * @param value - The object to count the keys of.
+ * @returns The number of keys in the object. If the object is null or undefined, returns 0.
+ */
 export function objectKeysCount(value: object | null): number
 {
     return value ? Object.keys(value).length : 0;
@@ -130,8 +199,20 @@ export function objectKeysCount(value: object | null): number
 export function isValueOfStringEnum<T extends object>(value: string, enumType: T): boolean {
     return Object.values(enumType).includes(value as unknown as T[keyof T]);
 }
+/**
+ * Finds a case-insensitive value in a string enum.
+ * 
+ * @template T - The type of the enum.
+ * @param {string} value - The value to search for.
+ * @param {T} enumType - The enum to search in.
+ * @returns {string | undefined} - The matching value, or undefined if not found.
+ */
 export function findCaseInsensitiveValueInStringEnum<T extends object>(value: string, enumType: T): string | undefined {
-    return Object.values(enumType).find((enumValue) => enumValue.toLowerCase() === value.toLowerCase());
+    return Object.values(enumType).find((enumValue) => {
+        if (typeof enumValue === 'string')
+            return (enumValue.toLowerCase() === value.toLowerCase());
+        return false;
+    });
 }
   
 /**

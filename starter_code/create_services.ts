@@ -33,7 +33,8 @@ import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/Condition
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import {
     CaseInsensitiveStringConverter, DateTimeConverter, LocalDateOnlyConverter, IntegerConverter,
-    TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter, UTCDateOnlyConverter
+    TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter, UTCDateOnlyConverter,
+    NumericStringToNumberConverter
 } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import {
     StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, CapitalizeStringFormatter,
@@ -64,9 +65,21 @@ import {
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
-import { } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import { NumericStringToNumberConverter } from '@plblum/jivs-engine/src/DataTypes/DataTypeConverters';
-
+import {
+    ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer,
+    DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
+    CalcFnPropertyAnalyzer
+ } from '@plblum/jivs-engine/build/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses';
+import {
+    ConditionCreatorConfigPropertyAnalyzer, AllMessagePropertiesConfigPropertyAnalyzer
+    
+} from '@plblum/jivs-engine/build/ConfigAnalysis/ValidatorConfigPropertyAnalyzerClasses';
+import {
+    ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer,
+    ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer,
+    ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer,
+    ConditionWithValueHostNamePropertyAnalyzer
+} from '@plblum/jivs-engine/build/ConfigAnalysis/ConditionConfigPropertyAnalyzerClasses';
 
 /**
  * You must create a ValidationServices object prior to your ValidationManager.
@@ -100,6 +113,11 @@ export function createValidationServices(activeCultureId: string,
     usage: 'client' | 'server' | 'all' = 'client'): ValidationServices {
     let vs = new ValidationServices();
 
+    // --- Logger Service -----------------------------------    
+    // If you want both the ConsoleLoggerService and another, create the other
+    // and pass it as the second parameter of ConsoleLoggerService.
+    vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
+    
     // --- CultureServices ----------------------------
     vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
     registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
@@ -164,11 +182,6 @@ export function createValidationServices(activeCultureId: string,
     // The built-in class, TextLocalizerService, doesn't use a third party localization
     // library. If you prefer one, create a class that implements ITextLocalizerService
     vs.textLocalizerService = createTextLocalizerService(usage);
-
-    // --- Logger Service -----------------------------------    
-    // If you want both the ConsoleLoggerService and another, create the other
-    // and pass it as the second parameter of ConsoleLoggerService.
-    vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
 
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.

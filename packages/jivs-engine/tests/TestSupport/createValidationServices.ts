@@ -50,20 +50,18 @@ import { MessageTokenResolverService } from "../../src/Services/MessageTokenReso
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { DataTypeCheckConditionConfig, RequireTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
-import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
-import { ICultureService } from "../../src/Interfaces/CultureService";
-import { CultureService } from "../../src/Services/CultureService";
+import { CultureIdFallback, ICultureService } from "../../src/Interfaces/CultureService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { CleanUpStringParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
 import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
-
+import { IConditionFactory } from "../../src/Interfaces/Conditions";
 
 export function createValidationServicesForTesting(): ValidationServices {
     let vs = new ValidationServices();
@@ -103,8 +101,8 @@ export function createValidationServicesForTesting(): ValidationServices {
     vs.messageTokenResolverService = new MessageTokenResolverService();
     vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
-    vs.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
-    vs.managerConfigModifierFactory = new ManagerConfigModifierFactory();
+    vs.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
+    vs.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
 
     return vs;
 }
@@ -161,7 +159,7 @@ export function registerConditions(cf: ConditionFactory): void
 
 */    
 }
-export function registerAllConditions(cf: ConditionFactory): void
+export function registerAllConditions(cf: IConditionFactory): void
 {
     cf.register<DataTypeCheckConditionConfig>(
         ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));

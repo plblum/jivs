@@ -1,7 +1,7 @@
 /**
  * @module Services/ConcreteClasses/TextLocalizerService
  */
-import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
+import { CultureToText, ITextLocalizerService, LocalizedDetailsResult } from '../Interfaces/TextLocalizerService';
 import { cultureLanguageCode } from '../Services/CultureService';
 import { ServiceBase } from './ServiceBase';
 import { assertValidFallbacks } from '../Interfaces/Services';
@@ -84,6 +84,9 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null
     {
+        // right now this function and localizeWithDetails are
+        // parallel implementations. If you change one, change the other.
+        // This is to keep this version as fast as possible.
         if (!l10nKey)   // including '', null and undefined
             return fallback;
 
@@ -105,6 +108,59 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         if (this.fallbackService !== null)
             return this.fallbackService.localize(cultureIdToMatch, l10nKey, fallback);
         return fallback;
+    }
+
+    /**
+     * Localizes the given text with additional details.
+     * See localize() for more information.
+     * This targets the ConfigAnalysis.
+     * @param cultureIdToMatch - The culture ID to match for localization.
+     * @param l10nKey - The localization key.
+     * @param fallback - The fallback text to use if localization fails.
+     * @returns An object containing the localized text, localization result, requested culture ID, and actual culture ID.
+     */
+    public localizeWithDetails(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null):
+        LocalizedDetailsResult
+    {
+        // right now this function and localize() are
+        // parallel implementations. If you change one, change the other.
+        // This is to keep the localize() version as fast as possible.
+        
+        let r: LocalizedDetailsResult = {
+            result: (fallback != null) ? 'fallback' : 'notFound',
+            requestedCultureId: cultureIdToMatch,
+            text: fallback != null ? fallback : undefined
+        };
+        if (!l10nKey)   // including '', null and undefined
+            return r;
+
+        let mapped = this._l10nKeyMap.get(l10nKey);
+        if (mapped)
+        {
+            let languageCode = cultureLanguageCode(cultureIdToMatch);
+            let text = mapped[languageCode];
+            if (text !== undefined) {
+                r.text = text;
+                r.actualCultureId = languageCode;
+                r.result = 'localized';
+                return r;
+            }
+            text = mapped['*'];
+            if (text !== undefined) {
+                r.text = text;
+                r.actualCultureId = '*';
+                r.result = 'localized';
+                return r;
+            }
+        }
+        else if (this.ensureLazyLoaded())
+        {
+            // try again now that we've lazy loaded
+            return this.localizeWithDetails(cultureIdToMatch, l10nKey, fallback);  //! recursion
+        }
+        if (this.fallbackService !== null)
+            return this.fallbackService.localizeWithDetails(cultureIdToMatch, l10nKey, fallback);
+        return r;
     }
 
     /**

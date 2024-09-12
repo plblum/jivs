@@ -1,5 +1,4 @@
-import { ICultureService } from "../../src/Interfaces/CultureService";
-import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
+import { CultureIdFallback, ICultureService } from "../../src/Interfaces/CultureService";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";

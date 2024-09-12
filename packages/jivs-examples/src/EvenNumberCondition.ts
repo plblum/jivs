@@ -24,6 +24,7 @@ import {
     finishFluentConditionBuilder, finishFluentValidatorBuilder
 } from "@plblum/jivs-engine/build/ValueHosts/Fluent";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
+
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
 
 export interface EvenNumberConditionConfig extends OneValueConditionBaseConfig

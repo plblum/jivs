@@ -15,6 +15,7 @@ import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase'
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ConditionType } from './ConditionTypes';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 /**
  * Base implementation of ICondition.
@@ -29,6 +30,20 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         assertNotNull(config, 'config');
         this._config = config;
     }
+
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     * @param services 
+     * @returns 
+     */
+    protected logger(services: IValueHostsServices): LoggerFacade
+    {
+        if (!this._logger)
+            this._logger = new LoggerFacade(services.loggerService, 'Condition', this, this.conditionType);
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;
+    
     /**
      * A unique identifier for the specific implementation, like "RequireText" or "Range".
      * Its value appears in the IssueFound that comes from Validation, and in 
@@ -54,7 +69,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     {
         toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
+        (this._logger as any) = undefined!;        
     }
+    
     /**
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.
@@ -135,7 +152,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         catch (e)
         {
             let err = ensureError(e);
-            this.logError(services, err);
+            this.logger(services).error(err);
 
             return new ErrorResponseCondition();
         }
@@ -169,7 +186,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
                 value, valueLookupKey ?? null, conversionLookupKey);
             if (!result.resolvedValue) {
 
-                this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+                this.logger(services).log(LoggingLevel.Warn, (options?: LogOptions) => {
                     let details: LogDetails = {
                         message: `Value cannot be converted to "${conversionLookupKey}".`,
                         category: LoggingCategory.TypeMismatch,
@@ -205,7 +222,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      */
     protected logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel: LoggingLevel = LoggingLevel.Warn): void {
         
-        this.log(services, logLevel,
+        this.logger(services).log(logLevel,
             (options?: LogOptions) => {
             let details: LogDetails = {
                 message: propertyName + ': ' + errorMessage,
@@ -237,7 +254,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param propertyValue2 
      */
     protected logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
-        this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+        this.logger(services).log(LoggingLevel.Warn, (options?: LogOptions) => {
             let details: LogDetails = {
                 message: `Type mismatch. ${propertyName} cannot be compared to ${propertyName2}`,
                 category: LoggingCategory.TypeMismatch,
@@ -259,52 +276,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         const msg = 'lacks value to evaluate';
         this.logInvalidPropertyData(propertyName, msg, services);
     }
-    /**
-     * Log a message. The message gets assigned the details of feature, type, and identity
-     * here.
-     */
-    protected log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        let logger = services.loggerService;
-        logger.log(level, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'Condition';
-            details.type = this;
-            details.identity = this.conditionType;
-            return details;
-        });
-    }
-    /**
-     * When the log only needs the message and nothing else.
-     * @param level 
-     * @param messageFn
-     */
-    protected logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: ()=> string): void {
-        this.log(services, level, () => {
-            return {
-                message: messageFn()
-            };
-        });
-    }    
-    /**
-     * Log an exception. The GatherFn should only be used to gather additional data
-     * as the Error object supplies message, category (Exception), and this function
-     * resolves feature, type, and identity.
-     * @param error 
-     * @param gatherFn 
-     */
-    protected logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void
-    {
-        let logger = services.loggerService;
-        logger.logError(error, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
-            details.feature = 'Condition';
-            details.type = this;
-            details.identity = this.conditionType;
-            return details;
-        });
-        if (error instanceof SevereErrorBase)
-            throw error;
-    }
+
 }
 
 /** 

@@ -32,6 +32,13 @@ export interface IValueHostFactory {
      * @param config 
      */
     createInstanceState(config: ValueHostConfig): ValueHostInstanceState;
+
+    /**
+     * Confirms that the ValueHostConfig matches to a registered
+     * ValueHostGenerator. Throws if not found.
+     * @param config 
+     */
+    ensureRegistered(config: ValueHostConfig): void;
 }
 
 /**

@@ -4,9 +4,8 @@
  */
 
 
-import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
+import { FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
@@ -14,6 +13,7 @@ import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
+
 
 /**
  * Base interface for a ValueHostsManagerConfigBuilder and Modifier.
@@ -29,7 +29,6 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
      * @returns 
      */
     complete(): T;
-
 }
 
 /**

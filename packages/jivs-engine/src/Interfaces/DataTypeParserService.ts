@@ -49,4 +49,11 @@ export interface IDataTypeParserService extends IDataTypeService<IDataTypeParser
  * @param text
  */
     find(lookupKey: string, cultureId: string, text: string): IDataTypeParser<any> | null;
+
+/**
+ * A list of all matching DataTypeParsers. Null when none are found.
+ * @param lookupKey 
+ * @param cultureId 
+ */    
+    compatible(lookupKey: string, cultureId: string): Array<IDataTypeParser<any>> | null;
 }

@@ -21,16 +21,21 @@ class TestParser<TDataType> implements IDataTypeParser<TDataType> {
         this._supportedCultureIds = supportedCultureIds ?? ['en'];
         this._returnThis = returnThis;
     }
-    supports(dataTypeLookupKey: string, cultureId: string): boolean {
-        return dataTypeLookupKey === this._supportedLookupKey &&
-            (!this._supportedCultureIds || this._supportedCultureIds.includes(cultureId));
+    supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+       return this.isCompatible(dataTypeLookupKey, cultureId);
     }
     parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType | null> {
         return this._returnThis;
     }
+
     private _supportedLookupKey: string;
     private _supportedCultureIds: Array<string> | null;
     private _returnThis: DataTypeResolution<TDataType | null>;
+
+    isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
+        return dataTypeLookupKey === this._supportedLookupKey &&
+            (!this._supportedCultureIds || this._supportedCultureIds.includes(cultureId));
+    }    
 }
 
 describe('DataTypeParserServices constructor and properties', () => {
@@ -92,7 +97,10 @@ describe('DataTypeParserService.parse', () => {
     test('Parser throws Error. results in errorMessage with exception message', () => {
         class ParserThrowsError implements IDataTypeParser<string>
         {
-            supports(dataTypeLookupKey: string, cultureId: string): boolean {
+            supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+                return this.isCompatible(dataTypeLookupKey, cultureId);
+            }
+            isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
                 return dataTypeLookupKey === 'TEST';
             }
             parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string | null> {
@@ -114,11 +122,14 @@ describe('DataTypeParserService.parse', () => {
     test('Parser throws string. results throwing exception using the string as the error message', () => {
         class ParserThrowsString implements IDataTypeParser<string>
         {
-            supports(dataTypeLookupKey: string, cultureId: string): boolean {
+            supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+                return this.isCompatible(dataTypeLookupKey, cultureId);
+            }
+            isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
                 return dataTypeLookupKey === 'TEST';
             }
-            parse(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-                throw "ERROR";
+            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string | null> {
+                throw 'ERROR';
             }
         }
         let services = new MockValidationServices(false, true);
@@ -280,6 +291,9 @@ describe('lazyLoad', () => {
         parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<any> {
             throw new Error("Method not implemented.");
         }
+        isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
+            return dataTypeLookupKey === 'Normal';
+        };
     }
     class LazyLoadParser implements IDataTypeParser<any>
     {
@@ -289,6 +303,9 @@ describe('lazyLoad', () => {
         parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<any> {
             throw new Error("Method not implemented.");
         }
+        isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
+            return dataTypeLookupKey === 'LazyLoad';
+        };
     }    
     test('Call to register does not lazy load', () => {
         let tls = new DataTypeParserService();

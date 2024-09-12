@@ -39,6 +39,8 @@ export class CultureService extends ServiceBase implements ICultureService {
     }
     public set activeCultureId(cultureID: string) {
         this._activeCultureId = cultureID;
+        if (this.cultureIdFallback.length === 0)
+            this.cultureIdFallback.push({ cultureId: cultureID });
     }
     private _activeCultureId: string | null = null;
 

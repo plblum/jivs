@@ -51,6 +51,16 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
                 return ComparersResult.Undetermined;
             return null;    // not handled. Continue processing
         }
+        function tryToFindAndCompare(v1: any, v2: any, lk1: string, lk2: string): ComparersResult | null {
+            let comparer = self.find(v1, v2, lk1, lk2);
+            if (comparer) {
+                self.logUsingInstance(comparer);
+                let result = comparer.compare(value1, value2, lk1, lk2);
+                self.logResult(comparer, result, lk1, lk2);
+                return result;
+            }
+            return null;
+        }
         function prepForDefaultComparer(value: any, sourceLookupKey: string): string | number {
             if (typeof value !== 'string' && typeof value !== 'number') {
                 let dtcs = self.services.dataTypeConverterService;
@@ -72,7 +82,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
         try {
             result = handleNullsAndUndefined(value1, value2);
             if (result != null) {
-                this.logQuick(LoggingLevel.Debug, () => 'Has nulls');
+                this.logger.message(LoggingLevel.Debug, () => 'Has nulls');
                 this.logResult('Nulls', result, lookupKey1!, lookupKey2!);
                 return result;
             }
@@ -80,12 +90,24 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             lookupKey1 = this.resolveLookupKey(value1, lookupKey1, 'Left')!;
             lookupKey2 = this.resolveLookupKey(value2, lookupKey2, 'Right')!;
 
-            let comparer = this.find(value1, value2, lookupKey1, lookupKey2);
-            if (comparer) {
-                this.logUsingInstance(comparer);
-                result = comparer.compare(value1, value2, lookupKey1, lookupKey2);
-                this.logResult(comparer, result, lookupKey1, lookupKey2);
-                return result;
+            let comparersResult = tryToFindAndCompare(value1, value2, lookupKey1, lookupKey2);
+            if (comparersResult != null)
+                return comparersResult;
+
+            // see if the fallbackservice can supply lookup keys that find
+            // the comparer wtih the same values. 
+            // For example, BooleanDataTypeComparer with boolean values passed
+            // but a data type of "Custom" will not be accepted, but
+            // if the LookupKeyFallbackService has "Custom"=>LookupKey.Boolean
+            // then the BooleanDataTypeComparer will be found.
+            let lkfs = this.services.lookupKeyFallbackService;
+            let lookupKey1Fallback = lkfs.fallbackToDeepestMatch(lookupKey1) ?? lookupKey1;
+            let lookupKey2Fallback = lkfs.fallbackToDeepestMatch(lookupKey2) ?? lookupKey2;
+            if (lookupKey1Fallback !== lookupKey1 ||
+                lookupKey2Fallback !== lookupKey2) {
+                comparersResult = tryToFindAndCompare(value1, value2, lookupKey1Fallback, lookupKey2Fallback);
+                if (comparersResult != null)
+                    return comparersResult;
             }
                 
             // No converter was found. Use the defaultComparer which takes primitive values.
@@ -94,23 +116,24 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             let cleanedUpValue1 = prepForDefaultComparer(value1, lookupKey1);
             let cleanedUpValue2 = prepForDefaultComparer(value2, lookupKey2);
 
-            let cleanedUpLookupKey1 = this.resolveLookupKey(cleanedUpValue1, null, 'Left');
-            let cleanedUpLookupKey2 = this.resolveLookupKey(cleanedUpValue2, null, 'Right');
+            lookupKey1 = this.resolveLookupKey(cleanedUpValue1, null, 'Left');
+            lookupKey2 = this.resolveLookupKey(cleanedUpValue2, null, 'Right');
 
-            this.logQuick(LoggingLevel.Debug, () => `Using defaultComparer with ${cleanedUpLookupKey1} and ${cleanedUpLookupKey2}`);
+            this.logger.message(LoggingLevel.Debug, () => `Using defaultComparer with ${lookupKey1} and ${lookupKey2}`);
             result = defaultComparer(cleanedUpValue1, cleanedUpValue2);
-            this.logResult('DefaultComparer', result, cleanedUpLookupKey1, cleanedUpLookupKey2);
+            this.logResult('DefaultComparer', result, lookupKey1, lookupKey2);
             return result;
         }
         catch (e) {
-            this.logError(ensureError(e)); // will throw if SevereErrorBase
+            this.logger.error(ensureError(e)); // will throw if SevereErrorBase
             result = ComparersResult.Undetermined;
+            this.logResult(undefined, result, lookupKey1!, lookupKey2!);
             return result;
         }
     }
 
     protected logResult(comparer: any, result: ComparersResult, lookupKey1: string, lookupKey2: string): void {
-        this.log(LoggingLevel.Info, (options) => {
+        this.logger.log(LoggingLevel.Info, (options) => {
             let logDetails = <LogDetails>{
                 message: `Comparison result: ${ComparersResult[result!]}`,
                 category: LoggingCategory.Result

@@ -2,9 +2,7 @@
  * Base Condition for evaluating the results from a list of Conditions, where a rule determines what to
  * do with their results. 
  * 
- * In this Condition, the value of the current input field/element passed into 
- * evaluate(vh) is passed along to child Conditions that do not specify a ValueHost.
- * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
+ * @module Conditions/AbstractClasses/ConditionWithChildrenBase
  */
 
 import { toIDisposable } from '../Interfaces/General_Purpose';

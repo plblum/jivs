@@ -35,6 +35,17 @@ export interface ITextLocalizerService extends IServiceWithFallback<ITextLocaliz
     localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
 
     /**
+     * Localizes the given text with additional details.
+     * See localize() for more information.
+     * @param cultureIdToMatch - The culture ID to match for localization.
+     * @param l10nKey - The localization key.
+     * @param fallback - The fallback text to use if localization fails.
+     * @returns An object containing the localized text, localization result, requested culture ID, and actual culture ID.
+     */
+    localizeWithDetails(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null):
+        LocalizedDetailsResult;
+
+    /**
      * Attempts to get the localized error message for the ErrorCode and optional DataTypeLookupKey
      * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
      * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
@@ -116,3 +127,41 @@ export type CultureToText =
 {
     [cultureId: string]: string;
 }
+
+/**
+ * Represents the result of the localizeWithDetails function.
+ */
+export interface LocalizedDetailsResult {
+    /**
+     * The localized text. Undefined if the text was not found
+     * and there is no fallback.
+     */
+    text?: string;
+
+    /**
+     * The result of the localization operation.
+     * Possible values are:
+     * - 'localized': The text was successfully localized.
+     * - 'fallback': The text returned is the fallback text.
+     * - 'notFound': The text was not found in any culture and there is no fallback.
+     */
+    result: 'localized' | 'fallback' | 'notFound';
+
+    /**
+     * The ID of the culture that was requested for localization.
+     */
+    requestedCultureId: string;
+
+    /**
+     * The ID of the actual culture used for localization.
+     * This property is optional and may not be present in all cases.
+     */
+    actualCultureId?: string;
+}
+export interface LocalizedDetailsResult
+{
+    text?: string,
+    result: 'localized' | 'fallback' | 'notFound';
+    requestedCultureId: string,
+    actualCultureId?: string
+};

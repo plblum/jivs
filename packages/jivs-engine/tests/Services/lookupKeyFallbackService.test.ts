@@ -104,3 +104,41 @@ describe('canFallbackTo', () => {
     });
 
 });
+describe('fallbackToDeepestMatch', () => {
+    // Test cases:
+    // 1. No custom lookupkeys registered and request value returns null
+    // 2. Register several custom lookupkeys but none match the input
+    // 3. Register custom lookupkey that has a single fallback, return that fallback.
+    // 4. Register custom lookupkey that has multiple fallbacks, return the deepest match.
+    test('No custom lookupkeys registered and request value returns null', () => {
+        let testItem = new LookupKeyFallbackService();
+        expect(testItem.fallbackToDeepestMatch('custom')).toBeNull();
+    });
+    test('Register several custom lookupkeys but none match the input', () => {
+        let testItem = new LookupKeyFallbackService();
+        testItem.register('A1', 'A');
+        testItem.register('B1', 'B');
+        testItem.register('B2', 'B1'); 
+        expect(testItem.fallbackToDeepestMatch('custom')).toBeNull();
+    });
+    test('Register custom lookupkey that has a single fallback, return that fallback.', () => {
+        let testItem = new LookupKeyFallbackService();
+        testItem.register('A1', 'A');
+        testItem.register('B1', 'B');
+        testItem.register('C1', 'C'); 
+        expect(testItem.fallbackToDeepestMatch('A1')).toBe('A');
+        expect(testItem.fallbackToDeepestMatch('B1')).toBe('B');
+        expect(testItem.fallbackToDeepestMatch('C1')).toBe('C');
+    });
+    test('Register custom lookupkey that has multiple fallbacks, return the deepest match.', () => {
+        let testItem = new LookupKeyFallbackService();
+        testItem.register('B1', 'B2');
+        testItem.register('B2', 'B3'); 
+        testItem.register('B3', 'B4'); 
+
+        expect(testItem.fallbackToDeepestMatch('B1')).toBe('B4');
+        expect(testItem.fallbackToDeepestMatch('B2')).toBe('B4');
+        expect(testItem.fallbackToDeepestMatch('B3')).toBe('B4');
+        expect(testItem.fallbackToDeepestMatch('B4')).toBeNull();
+    });
+});

@@ -1,0 +1,27 @@
+{
+  "name": "@plblum/jivs-configanalysis",
+  "type": "module",
+  "version": "0.19.0",
+  "description": "Tools for analyzing and validating Jivs configuration objects to find setup issues early on.",
+  "displayName": "Jivs Configuration Analysis",
+  "license": "MIT",
+  "main": "build/ConfigAnalysis.js",
+  "types": "build/ConfigAnalysis.d.ts",
+  "scripts": {
+    "compile": "tsc",
+    "test": "jest --silent",
+    "consoletest": "jest --silent --no-console --noStackTrace",
+    "clean": "gulp clean"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    }
+  },
+  "dependencies": {
+    "@plblum/jivs-engine": "^0.19.0"
+  },
+  "gitHead": "14a1e8e3245c01937f747dd3859194b3769bdb52"
+}

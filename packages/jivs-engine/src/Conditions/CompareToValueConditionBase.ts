@@ -8,7 +8,6 @@
 import { IValueHostsManager } from './../Interfaces/ValueHostsManager';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { LoggingLevel, LoggingCategory, LogOptions, LogDetails } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';

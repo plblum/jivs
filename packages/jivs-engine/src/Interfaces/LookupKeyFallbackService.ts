@@ -51,5 +51,13 @@ export interface ILookupKeyFallbackService extends IService {
    */
   canFallbackTo(initialLookupKey: string, targetLookupKey: string): boolean;
 
+  /**
+   * If lookupKey is registered, this follows the chain of fallbacks until
+   * it finds the deepest match. If not found, returns null.
+   * @param lookupKey 
+   * @returns the deepest match or null if not found.
+   */
+  fallbackToDeepestMatch(lookupKey: string): string | null;
+
 }
 

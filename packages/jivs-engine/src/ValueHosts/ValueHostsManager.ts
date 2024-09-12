@@ -28,6 +28,8 @@ import { ValueHostsManagerConfigModifier } from './ValueHostsManagerConfigModifi
 import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder';
 import { ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingLevel } from '../Interfaces/LoggerService';
 
 
 /**
@@ -142,7 +144,21 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
 
         this._vh?.dispose();
         this._vh = undefined;
+        (this._logger as any) = undefined!;
     }    
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     */
+    protected get logger(): LoggerFacade
+    {
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.services.loggerService,
+                'Manager', this, null, false);
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;    
+
+
     protected get config(): ValueHostsManagerConfig
     {
         return this._config;
@@ -247,6 +263,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public addValueHost(config: ValueHostConfig,
         initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
+        this.logger.message(LoggingLevel.Debug, ()=> `addValueHost(${config.name})`);
 
         if (!this.valueHostConfigs.has(config.name)) {
             if (initialState) // need to lock in the initial state for a later update
@@ -273,9 +290,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
 
-        if (this.valueHostConfigs.has(config.name))
+        if (this.valueHostConfigs.has(config.name)) {
+            this.logger.message(LoggingLevel.Debug, ()=> `addOrUpdateValueHost(${config.name})`);
             return this.applyConfig(config, initialState);
-
+        }
         return this.addValueHost(config, initialState);
     }
     /**
@@ -459,6 +477,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * This goes through those ValueHosts and notifies them.
      */
     public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
+        this.logger.message(LoggingLevel.Debug, ()=> `notifyOtherValueHostsOfValueChange on ${valueHostIdThatChanged}`);        
         for (let ivh of this.validatableValueHost())
             if (ivh.getName() !== valueHostIdThatChanged)
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
@@ -484,7 +503,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     }
 
     //#region IValueHostsManagerCallbacks
-
+    protected resolveCallback<T>(callback: T | null | undefined, name: string): T | null {
+        if (callback) {
+            this.logger.message(LoggingLevel.Info, ()=> name);            
+            return callback;
+        }
+        return null;
+    }
     /**
      * Use this when caching the configuration for a later creation of ValueHostsManager.
      * 
@@ -495,7 +520,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * The supplied object is a clone so modifications will not impact the ValueHostsManager.
      */    
     public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
-        return this.config.onConfigChanged ?? null;
+
+        return this.resolveCallback<ValueHostsManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
     }
 
     /**
@@ -504,7 +530,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * and needs to know when to call its setState function with the stateToRetain
      */
     public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
-        return this.config.onInstanceStateChanged ?? null;
+        return this.resolveCallback<ValueHostsManagerInstanceStateChangedHandler>(this.config.onInstanceStateChanged, 'onInstanceStateChanged');
     }
 
     /**
@@ -515,7 +541,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Here, it aggregates all ValueHost notifications.
      */
     public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
-        return this.config.onValueHostInstanceStateChanged ?? null;
+        return this.resolveCallback<ValueHostInstanceStateChangedHandler>(this.config.onValueHostInstanceStateChanged, 'onValueHostInstanceStateChanged');
     }
 
     /**
@@ -526,7 +552,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Here, it aggregates all ValueHost notifications.
      */
     public get onValueChanged(): ValueChangedHandler | null {
-        return this.config.onValueChanged ?? null;
+        return this.resolveCallback<ValueChangedHandler>(this.config.onValueChanged, 'onValueChanged');
     }
     /**
      * Called when the InputValueHost's InputValue property has changed.
@@ -536,7 +562,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Here, it aggregates all InputValueHost notifications.
      */
     public get onInputValueChanged(): InputValueChangedHandler | null {
-        return this.config.onInputValueChanged ?? null;
+        return this.resolveCallback<InputValueChangedHandler>(this.config.onInputValueChanged, 'onInputValueChanged');
     }
     //#endregion IValueHostsManagerCallbacks
 }

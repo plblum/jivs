@@ -1,3 +1,4 @@
+import { LocalizedDetailsResult } from '../../src/Interfaces/TextLocalizerService';
 import { TextLocalizerService } from './../../src/Services/TextLocalizerService';
 // localize(cultureIdToMatch: string, sourceText: string): string
 describe('TextLocalizerService.localize', () => {
@@ -90,6 +91,223 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('sp', 'yo', 'fallback')).toBe('fallback');        
     });    
 });
+// tests for localizeWithDetails are almost identical to localize but need to handle its specialized result
+describe('TextLocalizerService.localizeWithDetails', () => {
+    test('No matching registrations, return the fallback text.', () => {
+        let testItem = new TextLocalizerService();
+        let result = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en'
+        });
+    });
+    test('No matching registrations, no key supplied returns fallback text', () => {
+        let testItem = new TextLocalizerService();
+        let result1 = testItem.localizeWithDetails('en', '', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en'
+        });
+        let result2 = testItem.localizeWithDetails('en', null, 'fallback');
+        expect(result2).toEqual<LocalizedDetailsResult>({
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en'
+        });        
+    });
+
+    test('en registered only. Stored value on en, fallback on anything else', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en': 'en-Hello'
+        });
+        let result1 = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'en-Hello',
+            result: 'localized',
+            requestedCultureId: 'en',
+            actualCultureId: 'en'
+        });        
+        let result2 = testItem.localizeWithDetails('en-GB', 'hello', 'GB-fallback');
+        expect(result2).toEqual(<LocalizedDetailsResult>{
+            text: 'en-Hello',
+            result: 'localized',
+            requestedCultureId: 'en-GB',
+            actualCultureId: 'en'
+        });
+        // not supported culture
+        let result3 = testItem.localizeWithDetails('fr', 'hello', 'frFallback');
+        expect(result3).toEqual(<LocalizedDetailsResult>{
+            text: 'frFallback',
+            result: 'fallback',
+            requestedCultureId: 'fr',
+        });
+        // valid key, but not registered.
+        let result4 = testItem.localizeWithDetails('en', 'goodbye', 'fallback');
+        expect(result4).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en'
+        });
+        let result5 = testItem.localizeWithDetails('en-GB', 'goodbye', 'GBfallback');
+        expect(result5).toEqual(<LocalizedDetailsResult>{
+            text: 'GBfallback',
+            result: 'fallback',
+            requestedCultureId: 'en-GB'
+        });
+    });
+    test('en and es registered only. Stored value on en or es, fallback on anything else', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en': 'en-Hello',
+            'es': 'es-Hello'
+        });
+
+        let result1 = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'en-Hello',
+            result: 'localized',
+            requestedCultureId: 'en',
+            actualCultureId: 'en'
+        });                
+        let result2 = testItem.localizeWithDetails('es', 'hello', 'es-fallback');
+        expect(result2).toEqual(<LocalizedDetailsResult>{
+            text: 'es-Hello',
+            result: 'localized',
+            requestedCultureId: 'es',
+            actualCultureId: 'es'
+        });
+        let result3 = testItem.localizeWithDetails('es-SP', 'hello', 'es-fallback');
+        expect(result3).toEqual(<LocalizedDetailsResult>{
+            text: 'es-Hello',
+            result: 'localized',
+            requestedCultureId: 'es-SP',
+            actualCultureId: 'es'
+        });
+        // not supported culture
+        let result4 = testItem.localizeWithDetails('fr', 'hello', 'frFallback');
+        expect(result4).toEqual(<LocalizedDetailsResult>{
+            text: 'frFallback',
+            result: 'fallback',
+            requestedCultureId: 'fr',
+        });
+        // valid key, but not registered.
+        let result5 = testItem.localizeWithDetails('en', 'goodbye', 'fallback');
+        expect(result5).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en'
+        });
+        let result6 = testItem.localizeWithDetails('es', 'goodbye', 'esfallback');
+        expect(result6).toEqual(<LocalizedDetailsResult>{
+            text: 'esfallback',
+            result: 'fallback',
+            requestedCultureId: 'es'
+        });
+
+    });
+    test('Fallback uses * culture when supplied', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'fr': 'fr-Hello',
+            '*': '*-Hello'
+        });
+
+        let result1 = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: '*-Hello',
+            result: 'localized',
+            requestedCultureId: 'en',
+            actualCultureId: '*'
+        });                
+        let result2 = testItem.localizeWithDetails('es', 'hello', 'fallback');
+        expect(result2).toEqual(<LocalizedDetailsResult>{
+            text: '*-Hello',
+            result: 'localized',
+            requestedCultureId: 'es',
+            actualCultureId: '*'
+        });
+        let result3 = testItem.localizeWithDetails('fr', 'hello', 'fallback');
+        expect(result3).toEqual(<LocalizedDetailsResult>{
+            text: 'fr-Hello',
+            result: 'localized',
+            requestedCultureId: 'fr',
+            actualCultureId: 'fr'
+        });
+    });
+    test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en': 'en-Hello'
+        });
+        let fallbackService = new TextLocalizerService();
+        testItem.fallbackService = fallbackService;
+        fallbackService.register('hello', {
+            'en': 'en-Hello-fallback'
+        });
+
+        let result1 = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'en-Hello',
+            result: 'localized',
+            requestedCultureId: 'en',
+            actualCultureId: 'en'
+        });                
+    });
+    test('With fallbackService setup, request a value that is not on the top level but in the fallbackService, and the value from fallbackService is returned.', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('yo', {
+            'en': 'en-Hello'
+        });
+        let fallbackService = new TextLocalizerService();
+        testItem.fallbackService = fallbackService;
+        testItem.register('hello', {
+            'en': 'en-Hello-fallbackService'
+        });
+
+        let result1 = testItem.localizeWithDetails('en', 'hello', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'en-Hello-fallbackService',
+            result: 'localized',
+            requestedCultureId: 'en',
+            actualCultureId: 'en'
+        });                
+    });
+    test('With fallbackService setup, request a value that is in neither service, and the value from the fallback parameter is returned.', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('yo', {
+            'en': 'en-Hello'
+        });
+        let fallbackService = new TextLocalizerService();
+        testItem.fallbackService = fallbackService;
+        testItem.register('hello', {
+            'en': 'en-Hello-fallback'
+        });
+
+        let result1 = testItem.localizeWithDetails('en', 'X', 'fallback');
+        expect(result1).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'en',
+        });                
+        let result2 = testItem.localizeWithDetails('sp', 'hello', 'fallback');
+        expect(result2).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'sp',
+        });
+        // not matching language
+        let result3 = testItem.localizeWithDetails('sp', 'yo', 'fallback');
+        expect(result3).toEqual(<LocalizedDetailsResult>{
+            text: 'fallback',
+            result: 'fallback',
+            requestedCultureId: 'sp',
+        });
+    });
+});
+
 describe('getErrorMessage', () => {
     function createTextLocalizerService(): TextLocalizerService
     {

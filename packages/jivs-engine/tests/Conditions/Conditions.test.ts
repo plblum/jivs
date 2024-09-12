@@ -143,13 +143,13 @@ describe('ConditionBase class', () => {
         }
 
         public publicify_log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
-            super.log(services, level, gatherFn);
+            super.logger(services).log(level, gatherFn);
         }
         public publicify_logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: () => string): void {
-            super.logQuick(services, level, messageFn);
+            super.logger(services).message(level, messageFn);
         }
         public publicify_logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
-            super.logError(services, error, gatherFn);
+            super.logger(services).error(error, gatherFn);
         }
     }
     // create all unit tests
@@ -5549,6 +5549,10 @@ describe('NumberConditionBase', () => {
             dataTypeLookupKey: string = 'test';
             supportsValue(value: any): boolean {
                 return value instanceof NumberHolder;
+            }
+            sampleValue() {
+                return new NumberHolder(0);
+            
             }
         }
         class NumberHolderConverter implements IDataTypeConverter

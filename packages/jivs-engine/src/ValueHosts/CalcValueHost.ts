@@ -77,7 +77,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
             if (this.config.calcFn)
                 return this.config.calcFn(this, this.valueHostsManager);
 
-            this.log(LoggingLevel.Warn, (options) => {
+            this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
                     message: 'calcFn property not configured',
                     category: LoggingCategory.Configuration,
@@ -104,7 +104,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public setValue(value: any, options?: SetValueOptions | undefined): void {
         // does nothing
-        this.logQuick(LoggingLevel.Warn, () => 'setValue does nothing');        
+        this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }
 }
 

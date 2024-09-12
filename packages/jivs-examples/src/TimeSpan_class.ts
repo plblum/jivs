@@ -77,6 +77,9 @@ export class TimeSpanIdentifier implements IDataTypeIdentifier
     public supportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
+    public sampleValue() {
+        return new TimeSpan(1, 30);
+    }
 }
 // handles the value without any source lookup key or for the specific key "TimeSpan"
 // Converts both to hours and seconds based on the resultLookupKey
