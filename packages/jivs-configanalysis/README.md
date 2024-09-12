@@ -1,4 +1,4 @@
-# Testing the configuration: Jivs-ConfigAnalysis
+# @plblum/jivs-configanalysis: Testing your configurations
 Jivs-ConfigAnalysis is a tool to ensure that your configuration is as expected,
 even before you create a ValidationManager object from it.
 
