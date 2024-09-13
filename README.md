@@ -34,13 +34,16 @@ The UI uses that information to change the visuals, like showing the error messa
 
 ## When to use Jivs?
 <details>
+
 -	Your app uses JavaScript or TypeScript
 -	Your app targets the browser and/or Node.js
 -	Your app needs to validate values, whether from user input or Model properties.
+
 </details>
 
 ## What features does Jivs offer?
 <details>
+
 Start with reading [What is Jivs](#what-is-jivs) to learn about:
 - Input validation rules kept separate from UI
 - Service-oriented architecture and strong use of modern OOP patterns
@@ -200,6 +203,7 @@ For more, see [ValidationServices](#validationservices).
 
 ## What inspired Jivs?
 <details>
+
 I am Peter Blum, originator of Jivs. Back in the day (2002-2013), I created a successful suite of Web
 Controls for ASP.NET WebForms which featured a complete replacement to
 its built-in input validation. I really learned a lot about what website
