@@ -4,6 +4,7 @@ import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/In
 import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { AlwaysMatchesCondition } from '@plblum/jivs-engine/build/Support/conditionsForTesting';
 import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper';
 import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnalyzer';
 import { ConditionTypeConfigPropertyAnalyzer, ConditionCategoryPropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
@@ -11,7 +12,6 @@ import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAn
 import { IConditionConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../../src/Types/Analyzers';
 import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
 import { createServices, setupHelper, MockAnalyzer, checkPropertyCAResultsFromArray } from '../TestSupport/support';
-import { AlwaysMatchesCondition } from '../TestSupport/conditionsForTesting';
 
 
 class TestConditionConfigPropertyAnalyzer implements IConditionConfigPropertyAnalyzer {

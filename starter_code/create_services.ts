@@ -5,7 +5,7 @@ import {
     RequireTextConditionConfig, RequireTextCondition,
     RegExpConditionConfig, RegExpCondition,
     RangeConditionConfig, RangeCondition,
-    
+
     EqualToCondition, EqualToConditionConfig,
     NotEqualToCondition, NotEqualToConditionConfig,
     GreaterThanCondition, GreaterThanConditionConfig,
@@ -26,9 +26,9 @@ import {
     PositiveCondition, PositiveConditionConfig,
     IntegerCondition, IntegerConditionConfig,
     MaxDecimalsCondition, MaxDecimalsConditionConfig
-}  from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { NotCondition, NotConditionConfig }  from "@plblum/jivs-engine/build/Conditions/NotCondition";
-import { WhenCondition, WhenConditionConfig }  from "@plblum/jivs-engine/build/Conditions/WhenCondition";
+} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import { NotCondition, NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
+import { WhenCondition, WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import {
@@ -65,39 +65,30 @@ import {
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
-import {
-    ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer,
-    DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
-    CalcFnPropertyAnalyzer
- } from '@plblum/jivs-engine/build/ConfigAnalysis/ValueHostConfigPropertyAnalyzerClasses';
-import {
-    ConditionCreatorConfigPropertyAnalyzer, AllMessagePropertiesConfigPropertyAnalyzer
-    
-} from '@plblum/jivs-engine/build/ConfigAnalysis/ValidatorConfigPropertyAnalyzerClasses';
-import {
-    ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer,
-    ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer,
-    ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer,
-    ConditionWithValueHostNamePropertyAnalyzer
-} from '@plblum/jivs-engine/build/ConfigAnalysis/ConditionConfigPropertyAnalyzerClasses';
 
 /**
- * You must create a ValidationServices object prior to your ValidationManager.
- * It has extensive configuration options. Many have defaults.
- * However, when it comes to these, we prefer to let you choose the classes
- * you will use instead of having all available prepopulated.
+ * Add this entire file to your app.
  * 
- * 1. Add this code to your app.
- * 2. Call createValidationServices() to return a prepared ValidationServices object.
- * 3. Create the ValidationManager. It contains a configuration object with a property called 'services',
- *    where you attach you services object.
- * 4. Initially all available classes are registered for things like conditions,
- *    formatting, converting, and more. If you prefer, review and modify to 
- *    comment out those classes you won't be using.
+ * It creates and configures the ValidationServices object.
+ * It has extensive configuration options. Many have defaults.
+ * 
+ * Jivs is designed to be flexible and extensible, and much of that is done within the ValidationServices object. 
+ * You may add your own classes or replace existing ones that are registered with factory services.
+ * 
+ * Some configuration is always your responsibility:
+ * - Cultures: You must register the cultures you will support and their fallbacks.
+ * - TextLocalizerService: You must provide text for error messages. This supplies both default and localized text.
+ * 
+ * The most common customizations are:
+ * - Conditions: You may add your own conditions, which are used as validation rules.
+ * - New data types take a lookup key and objects that may implement IDataTypeIdentifier, IDataTypeFormatter,
+ *   IDataTypeConverter, IDataTypeComparer, and IDataTypeParser.
+ *   See the [jivs-examples folder](..\packages\jivs-examples) for numerous examples of custom data types.
+ * - LoggerService: Like any good service, Jivs outputs to logs. It defaults to using the Console, only showing errors. 
  */
 
 /**
- * 
+ * Creates and configures the ValidationServices object for your app.
  * @param usage Sets up for the type of usage. 
  * 'client' is used by any UI oriented code. It uses InputValueHosts 
  * (but not PropertyValueHosts).
@@ -106,7 +97,7 @@ import {
  * When 'all', you get everything.
  * @param activeCultureId - The CultureId (like 'en' and 'en-US') which is used for localization.
  * You can change it without creating a new service like this:
- * services.activeCultureId = 'new cultureid';
+ * `services.activeCultureId = 'new cultureid';`
  * @returns 
  */
 export function createValidationServices(activeCultureId: string,
@@ -122,24 +113,13 @@ export function createValidationServices(activeCultureId: string,
     vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
     registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
 
+    // --- Text localization service
+    // The built-in class, TextLocalizerService, doesn't use a third party localization
+    // library. If you prefer one, create a class that implements ITextLocalizerService
+    vs.textLocalizerService = createTextLocalizerService(usage);
+    
     // --- ConditionFactory ---------------------------
     vs.conditionFactory = createConditionFactory();
-
-    // --- ValueHostFactory ---------------------------
-    switch (usage)
-    {
-        case 'client':
-            vs.valueHostFactory = new InputValueHostFactory();
-            break;
-        case 'server':
-            vs.valueHostFactory = new PropertyValueHostFactory();
-            break;
-        default:
-            let vhf = new ValueHostFactory();
-            registerStandardValueHostGenerators(vhf);
-            vs.valueHostFactory = vhf;
-            break;
-    }
 
     // --- DataTypeIdentifierService -------------------------------------
     // Plenty to configure here. See function below.
@@ -178,10 +158,6 @@ export function createValidationServices(activeCultureId: string,
     vs.autoGenerateDataTypeCheckService = ag;
     registerDataTypeCheckGenerators(ag);    
 
-    // --- Text localization service
-    // The built-in class, TextLocalizerService, doesn't use a third party localization
-    // library. If you prefer one, create a class that implements ITextLocalizerService
-    vs.textLocalizerService = createTextLocalizerService(usage);
 
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
@@ -195,7 +171,198 @@ export function createValidationServices(activeCultureId: string,
     // whose underlying data type is the same as an already known lookup key.
     vs.lookupKeyFallbackService = createLookupKeyFallbackService();
 
+
+    // --- ValueHostFactory ---------------------------
+    switch (usage)
+    {
+        case 'client':
+            vs.valueHostFactory = new InputValueHostFactory();
+            break;
+        case 'server':
+            vs.valueHostFactory = new PropertyValueHostFactory();
+            break;
+        default:
+            let vhf = new ValueHostFactory();
+            registerStandardValueHostGenerators(vhf);
+            vs.valueHostFactory = vhf;
+            break;
+    }    
     return vs;
+}
+
+/**
+ * Cultures that you want to localize. 
+ * -> Create an array of CultureIdFallback objects in configureCultures()
+ */
+export function registerCultures(cs: ICultureService): void
+{
+   let cultures: Array<CultureIdFallback> = [
+        //!!! This is sample data. Please rework as you need it.
+            {
+                cultureId: 'en',
+                fallbackCultureId: null    // when this is the default culture,
+            },
+            {
+                cultureId: 'en-US',
+                fallbackCultureId: 'en'
+            },
+            {
+                cultureId: 'es',
+                fallbackCultureId: 'en'
+            },
+            {
+                cultureId: 'es-MX',
+                fallbackCultureId: 'es'
+            }
+    ];
+    cultures.forEach((culture) => cs.register(culture));
+}
+
+export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 'client'): ITextLocalizerService
+{
+    let service = new TextLocalizerService();
+    service.lazyLoad = (tls) => {
+    
+        // Validator error messages can use these instead of having to be setup on individual ValidatorConfigs.
+        // So long as you don't supply a value to the ValidatorConfig.errorMessage property, it will
+        // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
+        // EM-ErrorCode-DataTypeLookupKey
+        // and a fallback:
+        // EM-ErrorCode
+        // Similar for summaryMessage, only with SEM- prefix:
+        // SEM-ErrorCode-DataTypeLookupKey
+        // SEM-ErrorCode
+        // The term "ErrorCode" is usually the ConditionType on the Condition, but can be overridden 
+        // on ValidatorConfig.errorCode. 
+        // 
+        // This becomes important for auto-generating the "Data type check" validators, a step that the UI developer
+        // would normally have to inject into the list of validators from business logic.
+        // Guidance: Remember that error messages need to be easily understood and help the user fix the input.
+        // 
+        //!!!ALERT: This is a partial list of ConditionTypes and possible DataTypeLookupKeys
+        service.registerErrorMessage(ConditionType.RequireText, null, {
+            '*': 'Requires a value.'
+        });
+        service.registerSummaryMessage(ConditionType.RequireText, null, {
+            '*': '{Label} requires a value.'
+        });
+        service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
+            '*': 'Invalid value. Expects {DataType}.'   // this is a fallback for when all datatypelookup keys have failed. Its very unhelpful for dates and other culture specific strong patterns. That's why we need data type specific versions.
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
+            '*': '{Label} has an invalid value. Expects {DataType}.'
+        });
+        /* If you use the setValueOption.conversionErrorTokenValue in setValue, these are better than the last two    
+            service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
+                '*': 'Invalid value. Expects {DataType}. {ConversionError}.' 
+            });
+            service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
+                '*': '{Label} has an invalid value. Expects {DataType}. {ConversionError}.'
+            });    
+        */
+
+        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+            '*': 'Invalid value. Enter a date.',
+            'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+            'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+            '*': '{Label} has an invalid value. Enter a date.',
+            'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+        });
+        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
+            '*': 'Invalid value. Enter a number.',
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
+            '*': '{Label} has an invalid value. Enter a number.',
+        });
+        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
+            '*': 'Invalid value. Enter an integer.',
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
+            '*': '{Label} has an invalid value. Enter an integer.',
+        });
+        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+            '*': 'Invalid value. Enter a date.',
+            'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+            'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+            '*': '{Label} has an invalid value. Enter a date.',
+            'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+        });
+        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
+            '*': 'Invalid value. Enter a date.',
+            'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
+            'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
+        });
+        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
+            '*': '{Label} has an invalid value. Enter a date.',
+            'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
+            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
+        });
+
+        // --- for the {DataType} token in error messages
+        // Currently formatted so it works in "Enter {DataType}", by including a leading word, like "a date", "an integer", etc.
+        service.registerDataTypeLabel(LookupKey.String, {
+            '*': 'text',
+            'en': 'text',
+            'es': 'uno texto'
+        });
+        service.registerDataTypeLabel(LookupKey.Date, {
+            '*': 'a date',
+            'en': 'a date',
+            'es': 'una fecha'
+        });
+        service.registerDataTypeLabel(LookupKey.DateTime, {
+            '*': 'a date and time',
+            'en': 'a date and time',
+            'es': 'una fecha y una hora'
+        });
+        service.registerDataTypeLabel(LookupKey.Number, {
+            '*': 'a number',
+            'en': 'a number',
+            'es': 'un número'
+        });
+        service.registerDataTypeLabel(LookupKey.Integer, {
+            '*': 'an integer number',
+            'en': 'an integer number',
+            'es': 'un número entero'
+        });
+
+        // the following is specific to TextLocalizerService class
+        // and simply an example of working with it.
+        // Feel free to replace this code in supporting your own
+        // ITextLocalizerService implementation.
+        // Here we provide localized text for "true", "false", "yes", and "no",
+        // all used by the BooleanFormatter.
+        service.register('TRUE', {
+            '*': 'true',
+            'en': 'true',
+            'es': 'verdadero'
+        });
+        service.register('FALSE', {
+            '*': 'false',
+            'en': 'false',
+            'es': 'falso'
+        });
+        service.register('YES', {
+            '*': 'yes',
+            'en': 'yes',
+            'es': 'sí'
+        });
+        service.register('NO', {
+            '*': 'no',
+            'en': 'no',
+            'es': 'no'
+        });
+
+    }
+
+    return service;
+    
 }
 
 export function createConditionFactory(): ConditionFactory
@@ -276,34 +443,6 @@ export function registerConditions(cf: ConditionFactory): void
     }
 }
 
-
-/**
- * Cultures that you want to localize. 
- * -> Create an array of CultureIdFallback objects in configureCultures()
- */
-export function registerCultures(cs: ICultureService): void
-{
-   let cultures: Array<CultureIdFallback> = [
-        //!!! This is sample data. Please rework as you need it.
-            {
-                cultureId: 'en',
-                fallbackCultureId: null    // when this is the default culture,
-            },
-            {
-                cultureId: 'en-US',
-                fallbackCultureId: 'en'
-            },
-            {
-                cultureId: 'es',
-                fallbackCultureId: 'en'
-            },
-            {
-                cultureId: 'es-MX',
-                fallbackCultureId: 'es'
-            }
-    ];
-    cultures.forEach((culture) => cs.register(culture));
-}
 
 /**
  *  Give native types their Lookup Keys. 
@@ -640,154 +779,6 @@ export function registerDataTypeCheckGenerators(ag: AutoGenerateDataTypeCheckSer
 
         ag.register(new IntegerDataTypeCheckGenerator());
     }
-}
-
-
-export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 'client'): ITextLocalizerService
-{
-    let service = new TextLocalizerService();
-    service.lazyLoad = (tls) => {
-    
-        // Validator error messages can use these instead of having to be setup on individual ValidatorConfigs.
-        // So long as you don't supply a value to the ValidatorConfig.errorMessage property, it will
-        // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
-        // EM-ErrorCode-DataTypeLookupKey
-        // and a fallback:
-        // EM-ErrorCode
-        // Similar for summaryMessage, only with SEM- prefix:
-        // SEM-ErrorCode-DataTypeLookupKey
-        // SEM-ErrorCode
-        // The term "ErrorCode" is usually the ConditionType on the Condition, but can be overridden 
-        // on ValidatorConfig.errorCode. 
-        // 
-        // This becomes important for auto-generating the "Data type check" validators, a step that the UI developer
-        // would normally have to inject into the list of validators from business logic.
-        // Guidance: Remember that error messages need to be easily understood and help the user fix the input.
-        // 
-        //!!!ALERT: This is a partial list of ConditionTypes and possible DataTypeLookupKeys
-        service.registerErrorMessage(ConditionType.RequireText, null, {
-            '*': 'Requires a value.'
-        });
-        service.registerSummaryMessage(ConditionType.RequireText, null, {
-            '*': '{Label} requires a value.'
-        });
-        service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-            '*': 'Invalid value. Expects {DataType}.'   // this is a fallback for when all datatypelookup keys have failed. Its very unhelpful for dates and other culture specific strong patterns. That's why we need data type specific versions.
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-            '*': '{Label} has an invalid value. Expects {DataType}.'
-        });
-        /* If you use the setValueOption.conversionErrorTokenValue in setValue, these are better than the last two    
-            service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-                '*': 'Invalid value. Expects {DataType}. {ConversionError}.' 
-            });
-            service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-                '*': '{Label} has an invalid value. Expects {DataType}. {ConversionError}.'
-            });    
-        */
-
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': 'Invalid value. Enter a date.',
-            'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': '{Label} has an invalid value. Enter a date.',
-            'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
-            '*': 'Invalid value. Enter a number.',
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
-            '*': '{Label} has an invalid value. Enter a number.',
-        });
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
-            '*': 'Invalid value. Enter an integer.',
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
-            '*': '{Label} has an invalid value. Enter an integer.',
-        });
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': 'Invalid value. Enter a date.',
-            'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': '{Label} has an invalid value. Enter a date.',
-            'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
-            '*': 'Invalid value. Enter a date.',
-            'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
-            'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
-            '*': '{Label} has an invalid value. Enter a date.',
-            'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
-            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
-        });
-
-        // --- for the {DataType} token in error messages
-        // Currently formatted so it works in "Enter {DataType}", by including a leading word, like "a date", "an integer", etc.
-        service.registerDataTypeLabel(LookupKey.String, {
-            '*': 'text',
-            'en': 'text',
-            'es': 'uno texto'
-        });
-        service.registerDataTypeLabel(LookupKey.Date, {
-            '*': 'a date',
-            'en': 'a date',
-            'es': 'una fecha'
-        });
-        service.registerDataTypeLabel(LookupKey.DateTime, {
-            '*': 'a date and time',
-            'en': 'a date and time',
-            'es': 'una fecha y una hora'
-        });
-        service.registerDataTypeLabel(LookupKey.Number, {
-            '*': 'a number',
-            'en': 'a number',
-            'es': 'un número'
-        });
-        service.registerDataTypeLabel(LookupKey.Integer, {
-            '*': 'an integer number',
-            'en': 'an integer number',
-            'es': 'un número entero'
-        });
-
-        // the following is specific to TextLocalizerService class
-        // and simply an example of working with it.
-        // Feel free to replace this code in supporting your own
-        // ITextLocalizerService implementation.
-        // Here we provide localized text for "true", "false", "yes", and "no",
-        // all used by the BooleanFormatter.
-        service.register('TRUE', {
-            '*': 'true',
-            'en': 'true',
-            'es': 'verdadero'
-        });
-        service.register('FALSE', {
-            '*': 'false',
-            'en': 'false',
-            'es': 'falso'
-        });
-        service.register('YES', {
-            '*': 'yes',
-            'en': 'yes',
-            'es': 'sí'
-        });
-        service.register('NO', {
-            '*': 'no',
-            'en': 'no',
-            'es': 'no'
-        });
-
-    }
-
-    return service;
-    
 }
 
 /**

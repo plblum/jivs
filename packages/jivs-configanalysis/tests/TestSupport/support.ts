@@ -4,10 +4,10 @@ import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Inte
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { CultureService } from "@plblum/jivs-engine/build/Services/CultureService";
+import { createValidationServicesForTesting, CvstOptions } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 
 import { SampleValues } from "../../src/SampleValues";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
-import { createValidationServicesForTesting } from "./createValidationServices";
 import { AnalysisArgs, ConfigAnalysisOptions } from "../../src/Types/ConfigAnalysis";
 import {
     IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer,
@@ -25,15 +25,16 @@ import {
 
 /**
  * 
- * @param addCultures - When [], it starts without cultures, expecting the caller to add them
+ * @param options - When cultures = undefined, it adds 'en'.
+ *  When cultures=[], it starts without cultures, expecting the caller to add them
  * @returns 
  */
-export function createServices(addCultures: Array<string> = ['en']): IValidationServices {
-    let services = createValidationServicesForTesting();
-    let cultureService = new CultureService();
-    services.cultureService = cultureService;
-    addCultures.forEach(culture => services.cultureService.register({ cultureId: culture, fallbackCultureId: null }));
-    return services;
+export function createServices(options?: CvstOptions): IValidationServices {
+    if (!options)
+        options = {};
+    if (!options.cultures)
+        options.cultures = [{ cultureId: 'en', fallbackCultureId: null }];
+    return createValidationServicesForTesting(options);
 }
 
 export function setupHelper(services: IValidationServices, options: ConfigAnalysisOptions = {}): AnalysisResultsHelper<IValidationServices> {

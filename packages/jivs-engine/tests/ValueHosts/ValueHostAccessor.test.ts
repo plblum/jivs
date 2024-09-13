@@ -1,7 +1,7 @@
 import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";

@@ -14,7 +14,7 @@ import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationM
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
 import { FluentConditionBuilder, FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ensureFluentTestConditions } from "../ValueHosts/ManagerConfigBuilderBase.test";

@@ -9,7 +9,7 @@ import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Con
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { BooleanDataTypeComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
 import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
-import { createValidationServicesForTesting, registerAllConditions } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { setupHelper } from '../TestSupport/support';
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';
 
@@ -50,7 +50,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
     }
 
     function setupServices() : IValidationServices {
-        let services = createValidationServicesForTesting();
+        let services = createValidationServicesForTesting({ registerConditions: 'all'});
         services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
         services.dataTypeComparerService.register(new NumberHosterComparer());
         services.dataTypeIdentifierService.register(new NumberHosterIdentifier());
@@ -81,7 +81,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             supportCustomComparer: boolean = true,
             supportCustomIdentifier: boolean = true): ComparerServiceCAResult | null {
             let services = setupServices();
-            registerAllConditions(services.conditionFactory);
+
             if (supportCustomComparer)
                 services.dataTypeComparerService.register(new NumberHosterComparer());
             if (supportCustomIdentifier)
@@ -350,7 +350,6 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 fallbackLookupKey?: string
             ): ComparerServiceCAResult | null {
                 let services = setupServices();
-                registerAllConditions(services.conditionFactory);
                 if (supportCustomComparer)
                     services.dataTypeComparerService.register(new NumberHosterComparer());
                 if (supportCustomIdentifier)
@@ -544,7 +543,6 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
     describe('conditionUsesComparer()', () => {
         function executeFunction(conditionConfig: ConditionConfig): boolean {
             let services = setupServices();
-            registerAllConditions(services.conditionFactory);
             let helper = setupHelper(services);
             let analyzer = new DataTypeComparerAnalyzer(helper);
             let result = analyzer.conditionUsesComparer(conditionConfig);

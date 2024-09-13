@@ -39,7 +39,8 @@ import {
     PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult, IConfigAnalysisResults, ConditionConfigCAResult
 } from '../../src/Types/Results';
 import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+
 import {
     createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult,
     createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults,

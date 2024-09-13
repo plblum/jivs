@@ -1,11 +1,11 @@
 import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 
 import { ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
 import { SampleValues } from './../src/SampleValues';
-import { createValidationServicesForTesting } from './TestSupport/createValidationServices';
+
 
 describe('SampleValues', () => {
     class Publicify_SampleValues extends SampleValues<IValueHostsServices> {

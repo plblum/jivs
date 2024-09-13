@@ -5,7 +5,7 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeConverterLookupKeyAnalyzer';
 import { ConverterServiceCAResult, CAIssueSeverity } from '../../src/Types/Results';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { createAnalysisArgs, sampleValueByLookupKey } from '../TestSupport/support';
 
 
@@ -71,7 +71,7 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
         }
     }    
     function setupServices() : IValidationServices {
-        let services = createValidationServicesForTesting();
+        let services = createValidationServicesForTesting({ registerDataTypeConverters: false });
         services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
         services.dataTypeIdentifierService.register(new TestToNumberIdentifier());
         services.dataTypeConverterService.register(new TestToNumberConverter());

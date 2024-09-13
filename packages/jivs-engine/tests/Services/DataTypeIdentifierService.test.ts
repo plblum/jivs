@@ -3,7 +3,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 
 class TestDataType { }

@@ -3,11 +3,11 @@ import { CalcValueHostConfig, CalcValueHostInstanceState, ICalcValueHost } from 
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";

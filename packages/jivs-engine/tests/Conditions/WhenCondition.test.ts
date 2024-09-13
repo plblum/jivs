@@ -5,12 +5,12 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import {
     registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, EvaluatesAsPromiseConditionType,
     resultTypeToConditionType, makeDisposable,
     DisposableConditionType
-} from "../TestSupport/conditionsForTesting";
+} from "../../src/Support/conditionsForTesting";
 import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { CodingError } from "../../src/Utilities/ErrorHandling";

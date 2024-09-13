@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { ILoggerService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { LoggerServiceBase } from '../../src/Services/LoggerServiceBase';
 
 class TestLoggerServiceBase extends LoggerServiceBase {

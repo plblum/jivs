@@ -2,7 +2,7 @@ import { CultureIdFallback, ICultureService } from "../../src/Interfaces/Culture
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { registerDataTypeIdentifiers, registerDataTypeFormatters } from "./createValidationServices";
+import { registerDataTypeFormatters } from "../../src/Support/createValidationServicesForTesting";
 
 
 export function populateServicesWithManyCultures(services: IValidationServices, activeCultureId: string, registerFormatters: boolean = false): void {
@@ -12,7 +12,7 @@ export function populateServicesWithManyCultures(services: IValidationServices, 
     let dtis = new DataTypeIdentifierService();
     services.dataTypeIdentifierService = dtis;
 
-    registerDataTypeIdentifiers(dtis);   // always
+//    registerDataTypeIdentifiers(dtis);   // always
     if (registerFormatters) {
         let dtfs = new DataTypeFormatterService();
         services.dataTypeFormatterService = dtfs;

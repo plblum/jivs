@@ -5,7 +5,8 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { NumberDataTypeIdentifier } from '@plblum/jivs-engine/build/DataTypes/DataTypeIdentifiers';
 import { DataTypeIdentifierLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeIdentifierLookupKeyAnalyzer';
 import { IdentifierServiceCAResult } from '../../src/Types/Results';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+
 import { createAnalysisArgs } from '../TestSupport/support';
 
 describe('DataTypeIdentifierLookupKeyAnalyzer', () => {

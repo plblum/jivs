@@ -24,7 +24,7 @@ import {
     IConfigAnalysisResults, PropertyCAResult, ServiceWithLookupKeyCAResultBase, LookupKeyCAResult,
     CAFeature, CAIssueSeverity, ErrorCAResult, FormatterServiceCAResult
 } from '../../src/Types/Results';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import {
     createServices, createAnalysisArgs, MockAnalyzer, MockAnalyzerWithFallback, checkPropertyCAResultsFromArray,
     checkLookupKeyResultsForService, checkLookupKeyResultsForNoService, checkLocalizedPropertyResultFromArray,
