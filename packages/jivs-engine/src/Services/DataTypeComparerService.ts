@@ -65,7 +65,8 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             if (typeof value !== 'string' && typeof value !== 'number') {
                 let dtcs = self.services.dataTypeConverterService;
                 let convResult = dtcs.convertUntilResult(value, sourceLookupKey, LookupKey.Number);
-                if (!convResult.resolvedValue) {
+            // if value === undefined but resolvedValue, we keep searching for a string 
+                if (!convResult.resolvedValue || convResult.value === undefined) {
                     convResult = dtcs.convertUntilResult(value, sourceLookupKey, LookupKey.String);
                     if (!convResult.resolvedValue)
                         throw new InvalidTypeError(`Compare failed. Could not convert from "${sourceLookupKey}" to a String or Number. Register a DataTypeConverter to cover this case.`);
