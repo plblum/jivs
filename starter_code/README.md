@@ -1,5 +1,5 @@
 # Creating ValidationServices
-Add the code of the **create_services.ts file** to your app. It provides the `createValidationServices() function` that you will need in order to create a ValidationManager. See [Configuring Jivs](../README.md#configuring-jivs).
+Add the code of the **create_services.ts file** to your app. It provides the `createValidationServices() function` that you will need in order to create a ValidationManager. See [Configuring ValidationServices](../README.md#configuring-validationservices).
 
 
 `createValidationServices()` creates and configures the `ValidationServices object`, which has extensive configuration options. Many have defaults.
