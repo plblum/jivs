@@ -37,7 +37,6 @@ import {
     MaxDecimalsCondition,
     MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
-import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondition";
 import { LogDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 
 import {
@@ -48,10 +47,13 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, registerTestingOnlyConditions, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../TestSupport/conditionsForTesting";
+import {
+    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable,
+    DisposableConditionType
+} from "../../src/Support/conditionsForTesting";
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Conditions/RegExpConditionBase";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { NumberConditionBaseConfig, NumberConditionBase } from "../../src/Conditions/NumberConditionBase";
@@ -59,8 +61,6 @@ import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
-import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
-import { ConditionFactory } from '../../src/Conditions/ConditionFactory';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';

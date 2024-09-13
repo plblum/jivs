@@ -25,9 +25,9 @@ import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType } from "../TestSupport/conditionsForTesting";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType } from "../../src/Support/conditionsForTesting";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
@@ -2839,7 +2839,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
     // field3 will always validate as NoMatch
     function setupWithThreeValueHosts(): {
         vm: IValidationManager,
-        services: ValidationServices,
+        services: IValidationServices,
         field1: IValidatorsValueHostBase,
         field2: IValidatorsValueHostBase,
         field3: IValidatorsValueHostBase

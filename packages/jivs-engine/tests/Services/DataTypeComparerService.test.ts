@@ -13,7 +13,7 @@ import { DataTypeComparerService } from "../../src/Services/DataTypeComparerServ
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { InvalidTypeError } from "../../src/Utilities/ErrorHandling";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 
 function setupServicesWithExtraLogging(): {
@@ -248,8 +248,6 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
     test('Custom comparer for custom type that works with another of type LookupKey.Uppercase when a converter is present', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
-
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
         dtis.register(new TestIdentifier());
         expect(() => testItem.register(new TestComparer())).not.toThrow();

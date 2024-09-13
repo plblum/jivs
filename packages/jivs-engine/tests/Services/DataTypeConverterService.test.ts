@@ -1,4 +1,4 @@
-import { CapturingLogger } from './../TestSupport/CapturingLogger';
+import { CapturingLogger } from './../../src/Support/CapturingLogger';
 import { DataTypeIdentifierService } from './../../src/Services/DataTypeIdentifierService';
 import { DateTimeConverter, LocalDateOnlyConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";

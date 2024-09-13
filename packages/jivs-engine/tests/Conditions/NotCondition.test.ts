@@ -7,8 +7,8 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../TestSupport/conditionsForTesting";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../../src/Support/conditionsForTesting";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('NotCondition', () => {

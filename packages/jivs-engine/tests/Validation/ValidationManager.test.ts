@@ -14,13 +14,13 @@ import {
 } from '../../src/Interfaces/ValidationManager';
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { IValidatableValueHostBase, ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
     UserSuppliedResultCondition, UserSuppliedResultConditionType
-} from "../TestSupport/conditionsForTesting";
+} from "../../src/Support/conditionsForTesting";
 import { IValueHostsManager, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";

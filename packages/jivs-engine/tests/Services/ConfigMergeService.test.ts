@@ -1,22 +1,20 @@
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
-import { ConditionConflictIdentifierHandler, ConditionConfigMergeServiceHandler, IConfigMergeServiceBase, PropertyConfigMergeServiceHandlerResult } from '../../src/Interfaces/ConfigMergeService';
+import { ConditionConflictIdentifierHandler, PropertyConfigMergeServiceHandlerResult } from '../../src/Interfaces/ConfigMergeService';
 import { MergeIdentity, PropertyConflictRule } from '../../src/Interfaces/ConfigMergeService';
-import { ILoggerService, LoggingCategory, LoggingLevel, logGatheringHandler } from '../../src/Interfaces/LoggerService';
+import { LoggingLevel, logGatheringHandler } from '../../src/Interfaces/LoggerService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { ConfigMergeServiceBase, ValidatorConfigMergeService, ValueHostConfigMergeService } from '../../src/Services/ConfigMergeService';
-import { CapturingLogger } from '../TestSupport/CapturingLogger';
+import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
-import { AllMatchConditionConfig, LessThanValueConditionConfig, RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
-import { MockValidationServices } from '../TestSupport/mocks';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 
 function createServices(): { logger: CapturingLogger, services: IValidationServices }
 {

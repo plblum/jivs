@@ -5,7 +5,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import { CapturedLogDetails, CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
 
 
 // resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string

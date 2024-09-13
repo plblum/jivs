@@ -6,7 +6,7 @@ import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTyp
 import { CultureService } from '@plblum/jivs-engine/build/Services/CultureService';
 import { DataTypeParserLookupKeyAnalyzer } from './../../src/Analyzers/DataTypeParserLookupKeyAnalyzer';
 import { ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, CAIssueSeverity, ParserFoundCAResult, IssueForCAResultBase } from "../../src/Types/Results";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { createAnalysisArgs } from "../TestSupport/support";
 
 const toNumberParserLookupKey = 'toNumber';

@@ -4,7 +4,7 @@
 */
 
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturedLogDetails, CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
 
 class TestCapturingLogger extends CapturingLogger {
     public getCapturedLogs(): Array<any> {

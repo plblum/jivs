@@ -9,7 +9,7 @@ import { DataTypeComparerService } from "../../src/Services/DataTypeComparerServ
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/Services";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";

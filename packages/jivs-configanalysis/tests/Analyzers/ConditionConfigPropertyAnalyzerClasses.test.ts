@@ -6,11 +6,12 @@ import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Inte
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { IntegerConverter, NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
-import { AlwaysMatchesCondition } from '../TestSupport/conditionsForTesting';
+import { AlwaysMatchesCondition } from '@plblum/jivs-engine/build/Support/conditionsForTesting';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { ConditionWithOneChildBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithOneChildBase';
 import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper';
 import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnalyzer';
@@ -19,8 +20,10 @@ import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataType
 import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
 import { createServices, setupHelper, checkPropertyCAResultsFromArray } from '../TestSupport/support';
 
-function createServicesForTheseTests(addCultures: Array<string> = ['en']): IValidationServices {
-    let services = createServices(addCultures);
+function createServicesForTheseTests(options?: CvstOptions): IValidationServices {
+    if (!options) options = {};
+    if (!options.registerDataTypeConverters) options.registerDataTypeConverters = false;
+    let services = createServices(options);
 
     let conditionFactory = new ConditionFactory();
     services.conditionFactory = conditionFactory;

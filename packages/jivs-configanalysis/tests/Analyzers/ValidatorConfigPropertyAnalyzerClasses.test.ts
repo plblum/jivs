@@ -1,3 +1,4 @@
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
@@ -11,8 +12,8 @@ import { ValidatorConfigCAResult, CAFeature, IConfigAnalysisResults, PropertyCAR
 import { createServices, setupHelper, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkSyntaxError, checkLocalizedPropertyResultFromArray, checkPropertyCAResultsFromArray } from "../TestSupport/support";
 
 
-function createServicesForTheseTests(addCultures: Array<string> = ['en']): IValidationServices {
-    let services = createServices(addCultures);
+function createServicesForTheseTests(serviceOptions?: CvstOptions): IValidationServices {
+    let services = createServices(serviceOptions);
     let dtfs = new DataTypeFormatterService();
     services.dataTypeFormatterService = dtfs;
     dtfs.services = services;

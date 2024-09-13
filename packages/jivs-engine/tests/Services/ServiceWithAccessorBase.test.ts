@@ -1,6 +1,6 @@
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../../src/Interfaces/LoggerService';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { ServiceWithAccessorBase } from '../../src/Services/ServiceWithAccessorBase';
 import { TestLogCallsLoggingService } from '../TestSupport/TestLogCallsLoggingService';
 

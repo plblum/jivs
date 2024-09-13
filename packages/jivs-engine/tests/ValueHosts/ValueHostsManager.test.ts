@@ -7,7 +7,7 @@ import { deepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { StaticValueHost, StaticValueHostGenerator } from '../../src/ValueHosts/StaticValueHost';
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerConfig, IValueHostsManagerCallbacks, toIValueHostsManagerCallbacks } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
@@ -17,12 +17,8 @@ import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
-import { build } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
-import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
-import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { AlwaysMatchesCondition, AlwaysMatchesConditionType } from "../TestSupport/conditionsForTesting";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 // Subclass of what we want to test to expose internals to tests

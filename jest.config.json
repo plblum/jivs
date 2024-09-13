@@ -40,6 +40,7 @@
         "/packages/jivs-examples/",
         "/starter_code",
         "TestSupport",
-        "/packages/jivs-configanalysis/examples/"
+        "/packages/jivs-configanalysis/examples/",
+        "/packages/jivs-engine/src/Support"
     ]
 }

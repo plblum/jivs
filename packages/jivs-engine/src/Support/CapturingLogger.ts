@@ -1,30 +1,24 @@
 /**
- * CapturingLogger is part of the testing side of the JIVS engine. 
- * It is used to capture logs and then search through them to verify 
- * that the correct logs were generated.
- * The CapturingLogger class has a findMessage method that takes in a FindMoreCapturedLogDetails 
- * object and returns a CapturedLogDetails object.
- * The FindMoreCapturedLogDetails object has optional properties that can be used to filter 
- * the logs that are returned by the findMessage method.
- * The properties that can be used to filter the logs are type, feature, and identity.
- * The type property can be a regular expression or a string, 
- * the feature property can be a regular expression or a string, and the identity property 
- * can be a regular expression or a string.
- * If a property is not provided, then it is not used to filter the logs.
- * The findMessage method iterates through the captured logs and 
- * returns the first log that matches all of the filter criteria.If no log matches the filter criteria, 
- * then null is returned.
+ * @inheritdoc {@link Support/CapturingLogger!CapturingLogger }
+ * @module Support/CapturingLogger
  */
 
+import { LoggingLevel, LogDetails, LogOptions } from "../Interfaces/LoggerService";
+import { LoggerServiceBase } from "../Services/LoggerServiceBase";
+import { valueForLog } from "../Utilities/Utilities";
 
-import { LogDetails, LogOptions, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { LoggerServiceBase } from "../../src/Services/LoggerServiceBase";
-import { valueForLog } from "../../src/Utilities/Utilities";
 
 /**
- * Captures all logged info that qualifies with minLevel
- * for unit tests to evaluate through findMessage().
- * Also writes to the console
+ * CapturingLogger targets testing jivs. 
+ * It captures all qualifying logged objects and makes them available for unit tests to evaluate.
+ * 
+ * Use either its containsLog() or findMessage() methods to search for a log that matches the criteria.
+ * 
+ * It respects the minLevel set in the constructor and supports
+ * the overrideMinLevelWhen() overrides.
+ * 
+ * It is often used together with ConsoleLoggerService to capture logs.
+ * Just pass the ConsoleLoggerService into the constructor.
  */
 
 export class CapturingLogger extends LoggerServiceBase
@@ -32,6 +26,11 @@ export class CapturingLogger extends LoggerServiceBase
     
     public captured: Array<CapturedLogDetails> = [];
 
+    /**
+     * Clears all captured logs.
+     * Generally used if several tests are run in the same testing function,
+     * so that you don't find information previously checked.
+     */
     public clearAll(): void
     {
         this.captured = [];
@@ -50,6 +49,9 @@ export class CapturingLogger extends LoggerServiceBase
         this.addCaptured(capture);
     }
 
+    /**
+     * Count of log entries captured.
+     */
     public get entryCount(): Number
     {
         return this.captured.length;
@@ -58,14 +60,32 @@ export class CapturingLogger extends LoggerServiceBase
     protected getLogOptions(): LogOptions | undefined {
         return { includeData: true };
     }
+
+    /**
+     * Looks for a log that contains any of the criteria in the parameters.
+     * All criteria must match for a log to be found.
+     * @param messageSegment - a string or RegExp to match against the message. When null, it is not used.
+     * When string, it is a partial case insensitivie match.
+     * @param logLevel - the log level to match. When null/undefined, it is not used.
+     * @param category - the category to match. When null/undefined, it is not used.
+     * @param more - additional filters to apply: type, feature, identity, hasData, data.
+     * @returns true when a matching log is found, false otherwise.
+     */
+    public containsLog(messageSegment: RegExp | string | null, logLevel?: LoggingLevel | null,
+        category?: string | null, more?: FindMoreCapturedLogDetails): boolean
+    {
+        return this.findMessage(messageSegment, logLevel, category, more) != null;
+    }
+
     /**
      * Looks through all captures in order found. If any contain all matching values, it is returned.
      * messageSegment and sourceSegment allow a partial match (case insensitive).
      * Null parameters are not used for searching.
      * @param messageSegment - a string or RegExp to match against the message. When null, it is not used.
      * When string, it is a partial case insensitivie match.
-     * @param logLevel - the log level to match. When null, it is not used.
-     * @param category - the category to match. When null, it is not used.
+     * @param logLevel - the log level to match. When null/undefined, it is not used.
+     * @param category - the category to match. When null/undefined, it is not used.
+     * @param more - additional filters to apply: type, feature, identity, hasData, data.
      * @returns the first matching capture or null if none found.
      */
     public findMessage(messageSegment: RegExp | string | null, logLevel?: LoggingLevel | null,
