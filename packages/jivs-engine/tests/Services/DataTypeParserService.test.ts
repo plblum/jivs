@@ -7,7 +7,7 @@ import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerServic
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
 import { MockValidationServices } from "../TestSupport/mocks";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";

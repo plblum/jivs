@@ -1,4 +1,4 @@
-Files in **assets folder **are used to create content.
+Files in **assets folder** are used to create content.
 
 Results that can be displayed in markdown, such as in \<img> tags, are in the **images folder**.
 

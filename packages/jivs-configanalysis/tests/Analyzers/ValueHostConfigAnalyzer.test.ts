@@ -429,7 +429,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 parserLookupKey: LookupKey.Number,  // need NumberParser to be setup in DataTypeParserService
                 validatorConfigs: []
             };
-            let services = createServices(['en']);
+            let services = createServices({ cultures: [{ cultureId: 'en'}] });
             let dtps = new DataTypeParserService();
             
             services.dataTypeParserService = dtps;
@@ -468,7 +468,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 validatorConfigs: [],    // not worried about this because it does not have a property analyzer
                 calcFn: 'Not a function'    // CalcFnPropertyAnalyzer syntax error
             };
-            let services = createServices(['en']);
+            let services = createServices({ cultures: [{ cultureId: 'en'}] });
             let dtps = new DataTypeParserService();
             
             services.dataTypeParserService = dtps;

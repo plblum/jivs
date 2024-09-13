@@ -295,7 +295,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices(['en']);
+        let services = createServices({ cultures: [{ cultureId: 'en' }] });
 
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new LabelPropertiesAnalyzer();
@@ -315,7 +315,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices(['en', 'es', 'fr']);
+        let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'es' }, { cultureId: 'fr'}] });
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
@@ -336,7 +336,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices(['en', 'es', 'fr']);
+        let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'es' }, { cultureId: 'fr'}] });
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
@@ -357,7 +357,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices(['en', 'es', 'fr']);
+        let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'es' }, { cultureId: 'fr'}] });
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
@@ -378,7 +378,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices(['en', 'es', 'fr']);
+        let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'es' }, { cultureId: 'fr'}] });
         services.textLocalizerService.register('testLabelL10n',
             {
                 'en': 'testLabelL10n-en',
@@ -405,7 +405,7 @@ describe('LabelPropertiesAnalyzer class', () => {
             labell10n: 'testLabelL10n',
         };
 
-        let services = createServices([]);
+        let services = createServices({ cultures: []});
         services.textLocalizerService.register('testLabelL10n',
             {
                 'en': 'testLabelL10n-en',

@@ -25,7 +25,7 @@ import {
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 
 function createVMConfig(): ValidationManagerConfig {

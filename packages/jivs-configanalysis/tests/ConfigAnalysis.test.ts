@@ -1,3 +1,4 @@
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
@@ -17,7 +18,6 @@ import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
     checkLookupKeyResultsForService, createServices
 } from "./TestSupport/support";
-import { registerAllConditions } from './TestSupport/createValidationServices';
 
 import { ConfigAnalysisBase, ValidationManagerConfigAnalysis, ValueHostsManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { AnalysisResultsHelper } from '../src/Analyzers/AnalysisResultsHelper';
@@ -112,14 +112,14 @@ describe('ConfigAnalysisBase class', () => {
             };
         });
     }
-    function setupForTheseTests(expectedDataTypes: Array<string | null>, addCultures: Array<string> = ['en']): {
+    function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
         testItem: Publicify_ConfigAnalysisBase,
         services: IValueHostsServices,
         helper: AnalysisResultsHelper<IValueHostsServices>,
         analysisArgs: AnalysisArgs<IValueHostsServices>,
         results: IConfigAnalysisResults,
     } {
-        let services = createServices(addCultures);
+        let services = createServices(serviceOptions);
         let valueHostManagerConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: createValueHostConfigs(expectedDataTypes)
@@ -135,7 +135,7 @@ describe('ConfigAnalysisBase class', () => {
     }
     describe('createConfigAnalysisResults()', () => {
         test('Creates a new results object with the config and feature set', () => {
-            let services = createServices(['en', 'fr']);
+            let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
@@ -153,7 +153,7 @@ describe('ConfigAnalysisBase class', () => {
         });
         // same with 0 valueHostConfigs
         test('Creates a new results object with the config and feature set with 0 valueHostConfigs', () => {
-            let services = createServices(['en', 'fr']);
+            let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
                 valueHostConfigs: []
@@ -172,7 +172,7 @@ describe('ConfigAnalysisBase class', () => {
     });
     describe('createAnalysisArgs()', () => {
         test('Creates a new AnalysisArgs object with the config, results, and options set', () => {
-            let services = createServices(['en', 'fr']);
+            let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
@@ -198,7 +198,7 @@ describe('ConfigAnalysisBase class', () => {
     });
     describe('resolveConfigAnalyzers()', () => {
         test('Resolves the config analyzers for each ValueHostConfig', () => {
-            let services = createServices(['en', 'fr']);
+            let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
@@ -220,7 +220,7 @@ describe('ConfigAnalysisBase class', () => {
     });
     describe('getValueHostNames()', () => {
         test('Returns the names of all ValueHostConfigs', () => {
-            let services = createServices(['en', 'fr']);
+            let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
@@ -628,7 +628,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
 
     test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {
         let services = createServices();
-        registerAllConditions(services.conditionFactory);
+
         let builder = new ValueHostsManagerConfigBuilder(services);
         builder.static('testValueHost1', LookupKey.Number);
         builder.static('testValueHost2', LookupKey.String);
@@ -753,8 +753,9 @@ describe('ValidationManagerConfigAnalysis', () => {
     // Our helper must have registered the DataTypeParserLookupKeyAnalyzer added.
     // Write that test.
     test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {
-        let services = createServices();
-        registerAllConditions(services.conditionFactory);
+        let services = createServices({
+            registerConditions: 'all'
+        });
         services.dataTypeParserService.register(new NumberParser(['en'], {
             decimalSeparator: '.',
             negativeSymbol: '-',

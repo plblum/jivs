@@ -18,9 +18,9 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
-import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 

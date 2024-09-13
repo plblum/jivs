@@ -46,7 +46,7 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
 
 
     function setupServices() : IValidationServices {
-        let services = createServices(['en']);
+        let services = createServices({ cultures: [{ cultureId: 'en'}] , registerFormatters: false});
         services.dataTypeIdentifierService.register(new TestToNumberIdentifier());
         services.dataTypeFormatterService.register(new TestToNumberFormatter());
         return services;
