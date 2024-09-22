@@ -77,6 +77,13 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
     asyncProcessing: boolean;
 
     /**
+     * Exposes the current validation state for the ValueHost.
+     * It combines other properties and issuesFound.
+     * The same value is delivered to the onValueHostValidationStateChanged callback.
+     */
+    currentValidationState: ValueHostValidationState;
+
+    /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
