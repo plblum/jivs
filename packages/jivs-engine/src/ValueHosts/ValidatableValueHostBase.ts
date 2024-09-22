@@ -8,7 +8,7 @@ import { ValueHostConfig, type SetValueOptions } from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from '../Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -414,15 +414,23 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         // the call to notify to be queued inside of debounce by the time onValueHostValidationStateChanged is invoked,
         // so we can leverage the onValueHostValidationStateChanged to advance the mock timer. (Ugh)
         toIValidationManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this,
-            {
-                issuesFound: this.getIssuesFound(),
-                isValid: this.isValid,
-                doNotSave: this.doNotSave,
-                asyncProcessing: this.asyncProcessing,
-                status: this.validationStatus,
-                corrected: this.corrected
-            });
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this, this.currentValidationState);
+    }
+
+    /**
+     * Exposes the current validation state for the ValueHost.
+     * It combines other properties and issuesFound.
+     * The same value is delivered to the onValueHostValidationStateChanged callback.
+     */
+    public get currentValidationState(): ValueHostValidationState {
+        return {
+            issuesFound: this.getIssuesFound(),
+            isValid: this.isValid,
+            doNotSave: this.doNotSave,
+            asyncProcessing: this.asyncProcessing,
+            status: this.validationStatus,
+            corrected: this.corrected
+        }
     }
     
     /**
