@@ -1,0 +1,204 @@
+* Change of valuehost.enabled or enabler condition result must fire the onvalueHostValidationState callback, except if the current validationstate is notattempted. The UI needs to update validator related features as that state changes.
+
+* Possibly introduce callback that notifies a specific input that it needs to show itself and set focus. ValidationSummary calls ValidationManager.setFocusTo(valueHostName) and it fires this callback. All inputs can listen to that callback and take appropriate actions if they are the same valueHostName. This will allow clicks on error messages to set focus to the relevant input.
+
+
+* documentation section on overriding business logic config, including startUIConfig, combineWithRule, replaceRule, and how merging works
+
+* Docs introduces the concept of validationManagerFactory as best practice. Should we provide that as a class? It would complement the work for Angular.
+
+
+* Strong unit testing story
+- Enclose the configuration code in a function that returns ValidationManagerConfig, which can be tested.
+- Expand logging to capture info for easier testing. Include path, so the user can find "ValueHostName"/"ErrorCode", and how the logs played out:
+  - never happened
+  - happened and got a result
+  - error
+  - happened but was not setup to get a result (disabled features)
+- A Logger designed to easily get those answers without knowing about the logged data.
+- Use LoggingCategory to identify LoggingCategory.Result
+
+* Separate project for TestingSupport. Includes much of the jivs-engine/tests/TestSupport folder. May need to be a folder in jivs-engine/src because it needs access to jivs-engine and jivs-engine needs access to it.
+
+
+
+* Jivs-SSOT extensions to introduce direct interaction with Model.
+- InputValueHost subclass that handles conversion between Input value and Native value
+- IDataTypeParser to convert from string to type stored in model
+- ValidationServices.dataTypeParsers
+- Interface to extract values from the model and set them in ValueHosts, and vice versa. Concrete implementation built around a native Javascript object.
+
+
+* IModelValueHost interface
+- Provides model as the data type for a field. The DataType property holds the model name. Needs DataTypeIdentifier which should be auto generated.
+- ValidationManager implements IModelValueHost so it can be nested and become responsible for a model level.
+- Path oriented. IModelValueHost.getPath is the top down path to and including this vlaueHost. Its assembled from ValueHost.name above and itself. ValidationManager's getPath() == "".
+- getValue and setValue deal with models. Could write them as "setModel" and "getModel", but we won't.
+- setValue needs a supporting "fromModelToValueHosts" class to know how to distribute it. It can optionally add any valuehost for fields not already registered, to make it into SSOT. Factory support for it.
+- getValue needs a supporting "fromValueHostsToModel" class to know how to update the model. It returns a plain old javascript object whose properties are supposed to match those on the actual model. The user still needs to copy that data into an actual module.
+- copyIntoModel takes the result of getValue and updates the model
+- updateModel combines getValue and copyIntoModel.
+
+- Make {ConversionError} token work with any validator.
+- Rename conversionerror to {ParserError} and setValueOptions.parserError
+- Make setValueOptions.conversionErrorTokenValue have a companion l10nkey.	
+- DataTypeResolution<T> should include l10nkey for the error message.
+- InputValueHostConfig.parserLookupKey and associated state, plus ability to apply it on setInputValue when duringEdit=false.
+- Create the IErrorMessageResolverService to control how validator gets its error message and summary message. It will have access to the validator's config and state to know what's available and the default implementation will be much of the getErrorMessageTemplate and getSummaryMessageTemplate functions. It will handle switching the DataTypeCheckCondition's error message to us the data of {ConversionError} and we can abandon {ConversionError}.
+- We'll need a {DataType} token to use in error messages: "Expecting a {DataType}". The string of DataType must be localizable.
+- TextLocalizationService should handle default and localized versions of lookup keys, so we can support {DataType}.
+- Parser error messages should include a separate field for "expected pattern", so the parser can provide "MM/DD/YYYY" and an associated l10nkey. We'll have a {ValidPattern} token that shows it.
+- ErrorMessageResolverService will not fill in {DataType} or {ValidPattern}. Those are handled by IMessageTokenResolverService.
+- ErrorMessageResolverService may assemble an error message based on the presence or absence of "expected pattern" and conversionErrorTokenValue.
+
+* Add example for caching config + state
+
+
+* Switch to client mode in builder changes notNull to requireText conditions 
+
+* When loglevel=debug, convert the valueHostConfigs to JSON and write it to the log. Done both on ValueHostManager constructor and modifications after constructor (vm.build, vm.addValueHost, etc).
+
+* Log ValueHostsManager addValueHost, update/merge, discard.
+
+* Add logging to ValueHostConfigBuilder/Modifier.
+
+* Support modifier.apply() after conditions:  vm.startModifying().input('Field1').requiredText().apply() by passing Modifier class into a new subclass of FluentConditionCollector.
+
+* Documentation: Section just listing all of the solutions/use cases built in, based on Code work section. 
+
+
+* Allow passing an object that is the same idea as conversionErrorTokenValue, but has much more info. When you setup a new service, IErrorMessageGenerator, it can use the new object to create the error message instead of the normal code.
+- Usually created by parsers.
+- Provides a complete replacement for a validators error message. So the user does not have to setup error messages for each data type.
+- Object: IErrorReport
+  - error code. Mostly used by IErrorMessageGenerator
+  - data type name, to replace a new token {DataType}. This may be handled as a separate service, and always use the datatype from the valuehost
+  - usagePattern. A string that will be inserted in the {UsagePattern} token. It is often a pattern like 'MM/DD/YYYY' or 'May 31, 1965' so the user has guidance on the expected value.
+  - usagePatternl10key
+- There can also be an error message, but its not used in output. Its probably just logged. The error code is the right way to map from an error to an error message.
+  
+
+
+
+* Document setting activeCultureID each time you create a validation manager, especially on postback where we need to know the clientside value for cultureID
+* Document usage scenarios: 
+- Posting back with a form should retain the active CultureId and set it on the server
+- Posting back with and without our parsers connected to InputValueHost.
+- Setting up InputValueHostConfig with parser lookup key.
+
+* Document LookupKeyFallback in the Lookup Key section
+
+
+
+* BusinessLogic error message feedback loop
+- Users should be able to supply native values for any tokens you might support, like {Value} will include:
+<BusinessLogicError>{
+	errorMessage: string;
+	tokenSupport: [ { tokenName: "Value", nativeValue: 10 } ]
+}
+The setBusinessLogicError will:	
+
+- Run the tokenSupport values against the tokens of errorMessage and summaryErrorMessage
+- Run the MessageTokenResolverService against the remaining tokens
+- Retain the finalized errormessages
+
+
+* Shorthand fluent functions "eq" and "neq"
+
+
+Introduce FieldValueHost into fivase-model to handle validation on models
+
+build().requireText(nullValueResult?) parameter
+build().requireTextAndNotNull
+build().requireTextOrNull
+
+Product name: Fivase
+Field Validation Service - FiVaSe Fivase "Fee-Vah-Seh"
+
+
+
+* New ValueHost that is for a child model: ChildModelValueHost
+- inherit from InputValueHostBase since it needs to support validation
+- DataType = actual class name of the model
+- Property List of ValueHostDescriptors
+- Property to identify the primary key property of the model,
+used to handle collections which need unique paths per each item in the collection.
+- Internally contains a ValidationManager, and configures it with
+-- same services
+-- List of ValueHostDescriptors
+-- Event handlers
+-- Need ID system to build paths
+--- GetValueHost
+--- Events return path, not ID, of the value host
+--- Or add property to getPath() which returns the ID within the larger path
+
+* New ValueHost that is a collection of ValueHosts. Allows defining a collection property, where each item is any ValueHost: noninput, input, or ChildModelValueHost.
+- Has its own list of InputValidatorDescriptors that work with all but is not used when the individual child has its own validators.
+
+
+* Deep dive doc into all things error messages
+
+* Document using conditions to find invalid matches, so there can be specific errors that tell the user exactly what to fix.
+
+* Should setBusinessLogicError be able to override a disabled validator when its error code matches? Suppose we let the user create validators on the UI just to show for business logic responses. They can be enabled=false full time, but when setBusinessLogicError matches to it, it acts like its enabled.
+
+
+* IValueHost implementations:
+- HTMLValueHost - for getting data directly from HTML elements.
+Uses an HTML selector to find the exact element. Provides functions to learn about their current states, and when called, the values are stored in HTMLValueHostState for comparison in a later call. States include: IsVisible, IsEnabled, IsReadOnly (inputs), HasClassName, HasAttribute, HasAttributeValue.
+
+LIFTED FROM Jivs-Engine where it didn't belong.
+ * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
+ *   by a queryselector.
+ *   Conditions are expected to use its data in a read-only fashion. 
+ *   Example info from HTML elements are:
+ *   visible, enabled, readonly, classname, attribute name (exists), and attribute value.
+ *   These are mostly used by a validator's Enabler condition
+ *   to determine if something in the UI might block validation, like
+ *   a disabled field.
+
+
+
+
+
+* ListOfStringsCondition for a list of strings that are allowed with optional case insensitive matching. Its an implementation of RegExpConditionBase. Could be called EnumTypeCondition or InThisStringListCondition
+
+* Conditions that apply the same child condition rule to a list of ValueHosts. They work together with AndConditions/OrConditions, generating the Conditions for those classes.
+- EveryValueHostIsRequiredCondition/AllAreRequiredCondition
+{ Type: "Every ValueHost is Required",
+  ValueHostIds: ["id1", "id2"]
+}
+creates
+{
+  Type: "Every",
+  ConditionDescriptors:[
+	{
+		Type: "Required",
+		ValueHostId: "id1"
+	},
+	{
+		Type: "Required",
+		ValueHostId: "id2"	
+	}
+  ]
+}
+
+
+* Should we introduce IInputValueHostDescriptor.ConversionErrorTokenText to allow a default? This is a standard pattern, like "MM/DD/YYYY" whereas the value set by SetValue is an error specific to the parser.
+
+* Consider making ConditionType case insensitive in matching to registered values and mapping into IssuesFound
+
+* !!!To support clicks from summary error messages to set focus to the widget,
+* this class uses library/framework specific code to set the attribute
+* "validationID" on the DOM Element where focus is expected.
+* The value of validationID will be "VAL_" + Path. Hyperlinks just need to use
+* $('VAL_' + id).focus();
+
+* Ensure input components have an attribute that contains their ValueHost.id, like name or id.
+* Validation Summary clicks to go to a specific message will $([attribute=valuehostid]).trigger('ShowElement'). Its up to the input to respond to onShowElement, doing the focus, scroll into view, making itself visible (including showing the containing tab), and animating to call itself out as the location where focus resides now. So most of the work is in the hands of the user.
+
+* How to deliver same error messages from Descriptor to the <input> tag's validation attributes? Don't. Turn off input validatoin on tags.
+
+* User can install a token formatter to convert "message {token}" with a value of { value: 'text', purpose: 'value' } into "message <span class='value'>text</span>"
+
+

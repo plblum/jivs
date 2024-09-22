@@ -1,0 +1,272 @@
+# Angular Validation Service Integration Project
+
+## Overview
+
+This project is part of our ongoing collaboration to integrate the Jivs validation service with Angular. Jivs, a TypeScript-based validation library without any UI components, can be found at [https://www.github.com/plblum/jivs](https://www.github.com/plblum/jivs). Our goal is to build a TypeScript-based NPM library that connects Jivs to Angular, providing UI-specific validation capabilities while leveraging Jivs' flexible validation logic.
+
+We'll refer to this library as jivs-angular.
+
+## Key Objectives
+
+- Integrate the Jivs validation library with Angular to deliver a seamless validation solution for forms and inputs.
+- Build reusable Angular directives that observe and respond to validation states managed by Jivs.
+- Directives should work with a variety of targets: different HTML tags and different components, but have no actual knowledge of them,
+  requiring something more from the user to connect directive to tag or component.
+- Develop services for Angular applications that allow developers to configure Jivs both globally and on a form-by-form basis, ensuring flexible setup options.
+- Ensure the solution is modular and maintainable, with the potential for expansion to other UI frameworks in the future.
+- Create a TypeScript-based NPM library that extends Jivs specifically for Angular, providing a reusable validation service that can scale with complex applications.
+- Develop the library with a strong emphasis on Object-Oriented Programming (OOP) principles, incorporating patterns such as:
+  - Single Responsibility objects to ensure each class has a clear, focused purpose.
+  - Dependency Injection (DI) for easy configuration, testing, and modularity.
+  - Services and Factories to abstract logic and create reusable components.
+  - Interfaces for DI and comprehensive testing support, ensuring flexibility and maintainability.
+- Define a user-friendly API, ensuring that:
+  - Class and interface names are intuitive and continue to work well as the system evolves over time.
+  - Consumers of the library can easily understand and work with the resulting directives, custom attributes, and services.
+  - The API remains clear and approachable, even as the library grows in complexity, enabling developers to integrate the validation service without confusion or awkward naming conventions.
+- The project will be coded entirely in TypeScript and will make heavy use of **TSDoc** comments to ensure clear and thorough documentation for developers, aiding both usage and future maintenance of the codebase.
+
+# Notes for ChatGPT
+
+## **Guidelines for Future Interactions**
+
+1. Code Development Topics: When starting a new code topic, focus on discussing the vision or concept first with minimal or no code. Present short snippets only after confirming the approach. Avoid jumping directly into full implementations.
+
+2. Code Changes: Provide a targeted snippet of the change without restating the "before" case. Keep the snippet minimal, focusing on one change at a time. You don’t need to include full code unless explicitly requested.
+
+3. Full Code Output: Only provide the full code when explicitly requested after changes have been discussed. Focus on incremental changes rather than whole implementations. I often return this to "complete code".
+
+4. When providing complete code that was based on earlier work, ensure that all comments in the previous content are included, including type-level or class-level, inline, and function-level. Unless our work already changed a comment, I expect the original comment.
+
+5. Change Explanation: Keep explanations to a minimum unless the change is complex or unrelated to the discussion. If further clarification is needed, I will ask for more details. Provide "explanation on request" for why changes were made.
+
+6. Step-by-step Collaboration: Focus on one concept, change, or snippet at a time, pausing for feedback before moving on to the next step. This ensures alignment at each stage of the process.
+
+7. User Documentation: We will approach it one block at a time. Each block will be reviewed iteratively, with me providing feedback on changes or additions. Once a block is finalized and I am happy with it, we will move on to the next section. No new content or sections should be introduced until the current block is approved. Provide minimal content in each segment, and avoid full output until prompted. Omit summaries and conclusions unless necessary.
+
+8. Review Questions: Respond directly to review questions without detailed explanations unless they are requested. If you have concerns about the feedback, follow up with clarifications or questions.
+
+9. Feedback and Questions: Always answer the question first when feedback and a question are combined, before proceeding with further work or modifications.
+
+10. Snippet vs. Complete Code: Clearly indicate whether a response contains a full implementation (complete code) or a focused example (snippet). When changes are discussed in snippets, those changes will be explicitly merged into the latest source code at a later step, with confirmation from the user.
+
+11. When we are just editing existing comments, just output the comment area related to the change. I'm focused on reading the comment itself and want to avoid the noise or delays associated with adding nearby code.
+
+12. Comments should focus on the purpose of the code, not teaching how to program. This applies to both abstract and non-abstract cases. Example of a bad comment, which teaches: "Abstract method to be implemented by subclasses for their specific setup.". Example of a good comment, "Sets up the directive based on the resolved valueHostName."
+
+
+## Project names
+"Jivs" and "Fivase" are both names for this project. "Jivs" is the current name. "Fivase" is the future name. So while we talk, I'll refer to Jivs, but in actual code, I want that final name "Fivase".
+
+## When I request Markdown Output
+I will be asking for you to output your work in markdown. When asked for markdown containing multiple types of content, use this to work around a bug in the Chat UI of the browser.
+
+When generating markdown output that includes HTML, CSS, or TypeScript code, replace the traditional code block tags (```html, ```css, ```ts) with custom tags [BEGIN]html, [BEGIN]css, [BEGIN]ts. Replace their ending code block markdown of ``` with [END]. This allows me to easily search and replace those custom tags later. Here’s an example:
+[BEGIN]html
+<div class="field-status">
+  <span class="required" [showWhenRequired]>*</span>
+  <span class="completed" [showWhenCompleted]>✔</span>
+</div>
+[END]
+
+
+# Notes list for me to work out
+1. Provide ARIA attributes that are configurable, and localizable.
+   This may take adding settings in FivaseServicesHost.
+   
+3. FivaseServicesHost:
+   - Support a settings service pattern, where each Directive can get:
+     - global configuration
+	 - css classes, invalidCssClass and validCssClass
+	 - aria attribute values
+	 - Settings changed event to be called after localization has changed the strings so directives can refresh arias and other localization settings
+6. Work on ValidationSummary. It will use PresentationDirectiveActions but needs to show the summaryMessage. It will monitor validation callbacks.
+7. Add a directive on a submit button to disable it or handle validation.
+8. Developing components
+   - Provide several prototypes of components that show an error message, required indicator, corrected indicator, validation summary, and a complete field input enclosed in a box.
+   - Document how to configure any component to support Jivs. Sending input data in. Getting issues out.
+   - Develop examples of custom components and custom HTML elements. Use the model of a quantity tool on a shopping site with minus and plus commands and the current count. There will be different ways to supply events, including DOM events and Angular listeners. The plan includes using DOM Shadow API and actual Angular components. DirectiveActions will be used to reach into them to get the current value or attach a listener. Custom DOM events will deliver the target element, QuantityHtmlElement, with a Value property that is a number.
+9. Error message wrapping tags should identify severity to allow css to change based on that.
+11. Often creating an ErrorMessage component has [showWhenInvalid]="valuehostname" on its outer container
+    and [validationErrors] inside. This is a good case for validationErrors inheriting valueHostName from showWhenInvalid.
+
+
+
+# Some key types from Jivs that will be consumed by jivs-angular 
+```ts
+/**
+ * ValidationManager is the central object for using this system.
+ * It is where you describe the shape of your inputs and their validation
+ * through the Config classes.
+ * Once setup, it has a list of ValueHost objects, one for each
+ * config that was supplied. Those that are ValidatorsValueHostBases
+ * contain validators.
+ * 
+ * ValidationManager's job is:
+ * - Create and retain all ValueHosts.
+ * - Provide access to all ValueHosts with its getValueHost() function.
+ * - Retain InstanceState objects that reflects the states of all ValueHost instances.
+ *   This system can operate in a stateless way, so long as you keep
+ *   these objects and pass them back via the Configuration object.
+ *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
+ *   provide the latest InstanceState objects to you.
+ * - Execute validation on demand to the consuming system, going
+ *   through all eligible ValidatorsValueHostBases.
+ * - Report a list of Issues Found for an individual UI element.
+ * - Report a list of Issues Found for the entire system for a UI 
+ *   element often known as "Validation Summary".
+ * 
+ * @module ValidationManager/Types
+ */
+interface IValidationManager {
+    services: IValidationServices;
+    isValid: boolean;
+    doNotSave: boolean;
+    asyncProcessing?: boolean;
+    vh: IValueHostAccessor;
+    dispose(): void;
+
+    validate(options?): ValidationState;
+    clearValidation(options?): boolean;
+    setBusinessLogicErrors(errors, options?): boolean;
+    getIssuesForInput(valueHostName): null | IssueFound[];
+    getIssuesFound(group?): null | IssueFound[];
+    setIssuesFound(issuesFound, behavior): boolean;
+}
+```
+
+```ts
+/**
+Supplies services and tools to be used as dependency injection into the classes of this system. There are many configuration choices involved. Its best to have a function that creates a ValidationService with its configuration together. Copy the /starter_code/create_services.ts file into your app. It contains such a function, createValidationServices(). Edit that file to adjust your configuration.
+*/
+
+interface IValidationServices {
+// Placeholder for specific service methods used internally
+    getService<T>(serviceName): null | T;
+    setService(serviceName, service): void;
+}
+```
+
+```ts
+/**
+Exposes values from the consuming system to the validation engine. Each instance represents a single value from the consuming system. Each also has an name, used to lookup the ValueHost, and a Label, which is a UI friendly way to tell the user the source of a validation error. There are several types of ValueHosts:
+
+- InputValueHost - reflects values from user input. These have validation capability.
+- PropertyValueHost - reflects values from a Model. These have validation capability.
+- StaticValueHost - reflects values that are needed by validation but are not editable by the user. Often these are properties from the same Model being edited.
+- CalcValueHost - Its value is calculated when its getValue() method is called. You supply a function callback in its CalcValueHostConfig to set it up.
+
+Base class Validators:
+
+- ValidatableValueHostBase - introduces the framework for validation but does not get the Validators objects involved.
+- ValidatorsValueHostBase - introduces Validators and completes the overall validation feature. InputValueHosts inherit from this
+
+*/
+interface IValueHost {
+    getName(): string;
+    getType(): string;
+    setValue(value: any, options?: SetValueOptions): void;
+    validate(options?): ValidationState;
+    getInstanceState(): ValueHostInstanceState;
+}
+export interface SetValueOptions {
+    forceValidation?: boolean;
+    asyncProcessing?: boolean;
+}
+export interface IValidatableValueHostBase extends IValueHost {
+    isValid: boolean;
+    asyncProcessing?: boolean;
+    corrected?: boolean;
+}
+export interface IInputValueHost extends IValueHost {
+    setInputValue(nativeValue: any, inputValue: string, options?: SetValueOptions): void;
+	requiresInput: boolean;
+}
+export interface IStaticValueHost extends IValueHost {
+    // Static value-specific behavior
+}
+export interface ICalcValueHost extends IValueHost {
+    // Calculated value-specific behavior
+}
+
+```
+
+```ts
+/**
+Provides the configuration for the ValidationManager constructor.
+This is where validation rules are placed, making validation rules
+independent of any layer.
+*/
+interface ValidationManagerConfig {
+    services: IValidationServices;
+	
+	// valuehost configurations
+    valueHostConfigs: ValueHostConfig[];
+
+	// current state
+    savedInstanceState?: null | ValidationManagerInstanceState;
+    savedValueHostInstanceStates?: null | ValueHostInstanceState[];
+	
+	// callbacks
+    onInputValueChanged?: null | InputValueChangedHandler;
+    onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
+    onValidationStateChanged?: null | ValidationStateChangedHandler;
+    onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
+    onValueChanged?: null | ValueChangedHandler;
+    onInstanceStateChanged?: null | ValueHostsManagerInstanceStateChangedHandler;
+    onConfigChanged?: null | ValueHostsManagerConfigChangedHandler;
+}
+
+
+type ValueHostValidationStateChangedHandler: ((valueHost, validationState: ValueHostValidationState) => void)
+interface ValueHostValidationState {
+    status: ValidationStatus;
+    corrected: boolean;
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+type ValidationStateChangedHandler: ((validationManager, validationState: ValidationState) => void)
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+
+type ValueHostsManagerInstanceStateChangedHandler: ((ValidationManager, stateToRetain: ValidationManagerInstanceState) => void)
+interface ValidationManagerInstanceState {
+    stateChangeCounter?: number;
+}
+
+type ValueHostInstanceStateChangedHandler: ((valueHost, stateToRetain: ValueHostInstanceState) => void)
+interface ValueHostInstanceState {
+    name: string;
+    // more
+}
+
+```
+
+```ts
+/**
+Packages key values of the state of validation to be returned by validate() and in the onValidationStateChanged callback. The same values are also available directly on ValidationManager.
+*/
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+/**
+Snapshot of the results of validate() when there are errors/warnings ("Issues")
+*/
+interface IssueFound {
+    valueHostName: string;
+    errorCode: string;
+    severity: ValidationSeverity;
+    errorMessage: string;
+    summaryMessage?: string;
+}
+```
+

@@ -23,9 +23,17 @@
     "starter_code/*"
   ],
   "dependencies": {
-    "@plblum/jivs-engine": "^0.16.1"
+    "@angular/forms": "^18.2.5",
+    "@angular/router": "^18.2.5",
+    "@plblum/jivs-engine": "^0.19.0"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "^18.2.4",
+    "@angular/animations": "^18.2.5",
+    "@angular/compiler": "^18.2.5",
+    "@angular/compiler-cli": "^18.2.5",
+    "@angular/platform-browser": "^18.2.5",
+    "@angular/platform-browser-dynamic": "^18.2.5",
     "@types/jest": "^29.5.12",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "del": "^7.1.0",
@@ -34,7 +42,10 @@
     "gulp": "^4.0.2",
     "gulp-jest": "^4.0.4",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-preset-angular": "^14.2.4",
     "lerna": "^8.1.2",
+    "ng-packagr": "^18.2.1",
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.1.2",
@@ -43,6 +54,10 @@
     "typedoc-plugin-merge-modules": "^5.1.0",
     "typescript": "^5.4.3",
     "typescript-eslint": "^7.3.1"
+  },
+  "peerDependencies": {
+    "@angular/common": "^18.2.5",
+    "@angular/core": "^18.2.5"
   },
   "scripts": {
     "pretypedoc": "npm --prefix ./packages/jivs-engine run compile",

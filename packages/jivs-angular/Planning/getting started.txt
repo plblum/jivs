@@ -1,0 +1,388 @@
+# Getting Started with *jivs-angular*: Quick Guide
+
+This guide will help you set up *jivs-angular* validation in your Angular app using Jivs as the backend validation engine. The focus is on registering validation configurations and connecting them to your form.
+
+## 1. Establishing Fivase's services in NgModule
+
+In your `AppModule`, add FivaseServicesHost as a provider. This class supports:
+- Establishing ValidationManager configurations by form
+- Factories for extending Fivase's directives related to event handling and rendering
+
+Both will be discussed in the upcoming steps.
+
+```ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { UserFormComponent } from './user-form/user-form.component';
+import { FivaseServicesHost, InMemoryFivaseStateStore } from 'your-library-path';
+
+
+@NgModule({
+  declarations: [AppComponent, UserFormComponent],
+  imports: [BrowserModule],
+  providers: [
+    {
+      provide: FivaseServicesHost,
+      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {
+}
+```
+
+## 2. Registering Validation Configurations
+
+One of the most important steps in *jivs-angular* is registering your form’s validation configuration. This process links your form fields to specific validation rules, which are managed by Jivs. To keep your Angular module cleaner and more readable, we use a companion function to handle the registration logic.
+
+### Step 1: Create a Function to isolate setup
+
+The function and registers the form configurations with `FivaseConfigHost`.
+
+```ts
+import { FivaseConfigHost, InMemoryFivaseStateStore } from 'your-library-path';
+import { build, LookupKey, createValidationServices } from 'your-jivs-library-path';
+
+/**
+ * Function to create and populate the FivaseConfigHost.
+ * This function registers validation configurations for different forms.
+ */
+export function addFivaseFormConfigurations(configHost : FivaseConfigHost): void {
+
+  // Register a dynamic config generator for the 'userFormId'
+  configHost.register('userFormId', (formId: string) => {
+    let builder = build(createValidationServices());
+
+    // Define validation for the username field
+    builder.input('username', LookupKey.String)
+      .requireText() // Requires the field to be non-empty
+      .regExp(/^[\w\.\-]*$/, null, { errorMessage: 'Invalid format for username' });
+
+    // Define validation for the email field
+    builder.input('email', 'EmailAddress')
+      .requireText(); // Requires non-empty text for email
+
+    // Complete the configuration and return it
+    return builder.complete();
+  });
+}
+```
+
+### Step 2: Call the function from NgModule's constructor
+
+In your `AppModule` constructor, get FivaseServicesHost through Dependency Injection
+and call your addFivaseFormConfigurations.
+
+```ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { UserFormComponent } from './user-form/user-form.component';
+import { FivaseServicesHost } from 'your-library-path';
+
+import { addFivaseFormConfigurations } from './fivase-config-factory';  // Import the companion function
+
+@NgModule({
+  declarations: [AppComponent, UserFormComponent],
+  imports: [BrowserModule],
+  providers: [
+    {
+      provide: FivaseServicesHost,
+      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {
+	constructor(private fivaseServicesHost: FivaseServicesHost)
+	{
+		addFivaseFormConfigurations(fivaseServicesHost.configHost);
+	}
+}
+```
+
+## 3. Set Up the Form in Your Template
+
+You can now set up your form using the `validate`, `validationErrors`, and `containsInvalid` directives to bind your form fields to the validation system:
+
+```html
+<form>
+  <!-- Form container to group validatable elements -->
+  <div containsInvalid class="fieldContainer" >
+    <!-- Username input field with validation -->
+    <label for="username">Username:</label>
+    <input id="username" validate="username" />
+
+    <!-- Error display for the username field -->
+    <div validationErrors="username"></div>
+  </div>
+
+  <div containsInvalid class="fieldContainer" >
+    <!-- Email input field with validation -->
+    <label for="email">Email:</label>
+    <input id="email" validate="email" />
+
+    <!-- Error display for the email field -->
+    <div validationErrors="email"></div>
+  </div>
+
+  <!-- Submit button (trigger validation) -->
+  <button type="submit" (click)="submitForm()">Submit</button>
+</form>
+```
+
+### Connecting the Directives:
+
+The directives like `[validate]` and `[validationErrors]` use the `FivaseValidationManager` supplied by the form through Angular’s dependency injection (DI). This allows *jivs-angular* to connect its validation functionality to your components without needing to modify the components themselves. Here are the available directives:
+
+- **`[validate]`**: Binds the input field to the validation system.
+- **`[validationErrors]`**: Displays validation errors for the corresponding field.
+- **`[containsInvalid]`**: Changes the style of a tag containing input fields so it appears different when a child contains an issue found.
+- **`[showWhenIssuesFound]`**: Shows the tag only when the valueHost has issues to report.
+- **`[showWhenCorrected]`**: Shows the tag only when the user just fixed a validation error.
+- **`[showWhenRequired]`**: Shows the tag only when the ValueHost has a validator that is ValidationCategory=Require.
+- **`[valueHostName]`**: Provides a container around other directives to identify the valueHostName used by those directives,
+  so you assign it at the top level of the component, and other directives just inherit it.
+
+
+## 4. Connect the Form to the Validation Manager
+
+Once the form fields are set up, you need to inject the `FivaseValidationManager` into your component and trigger validation when the form is submitted.
+
+```ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FivaseValidationManager } from 'your-library-path';
+
+@Component({
+  selector: 'app-user-form',
+  templateUrl: './user-form.component.html',
+  providers: [
+    {
+      provide: FivaseValidationManager,
+      useFactory: (fivaseServicesHost: FivaseServicesHost, formId: string) => {
+	    let config = fivaseServicesHost.configHost.getConfig(formId);
+        return new FivaseValidationManager(config);
+      },
+      deps: [FivaseConfigHost, FORM_ID]
+    },
+    { provide: FORM_ID, useValue: 'userFormId' } // Example form ID, can be dynamic
+  ]
+})
+export class UserFormComponent implements OnInit, OnDestroy {
+  constructor(private fivaseValidationManager: FivaseValidationManager) {}
+
+  ngOnInit(): void {
+    // Initialization logic if needed
+  }
+
+  ngOnDestroy(): void {
+    this.fivaseValidationManager.destroy(); // Ensure cleanup
+  }
+
+  submitForm(): void {
+    const validationResults = this.fivaseValidationManager.validate();
+
+    if (validationResults === null) {
+      // Proceed with form submission logic
+      console.log('Form is valid, proceed with submission');
+    } else {
+      // Handle validation errors
+      console.log('Form is invalid, handle errors', validationResults);
+    }
+  }
+}
+
+```
+
+The `FivaseValidationManager` is injected into your form via DI, which means the directives (`validate`, `validationErrors`, `containsInvalid`) automatically access it.
+
+## 5. Customizing the Directives
+
+### **The Problem: Flexibility in Inputs and Error Presentations**
+
+When building forms, there are many scenarios beyond the typical `<input>` elements. You may need to handle different types of inputs—like custom components or special widgets—that don't behave the same way as standard HTML form elements. Similarly, how errors are presented to the user can vary widely, from inline text to more complex UI elements like tooltips or modal popups.
+
+To accommodate these differences, *jivs-angular* gives you the flexibility to define how events are handled and how content is rendered by implementing two key interfaces: `IDirectiveEventHandler` and `IDirectiveRenderer`.
+
+### **`IDirectiveEventHandler`: Handling Input Events**
+
+The `IDirectiveEventHandler` interface ensures that your custom components or non-standard HTML elements send their values to the ValidationManager as they change. Whether it's a dropdown, a custom date picker, or a file input, this interface allows you to specify how to capture user input and pass it to the validation system.
+
+Here is a simplified implementation of how *jivs-angular* handles change and input events in standard HTML elements like `<input>` or `<textarea>`:
+
+```ts
+// NOTE: Jivs provides StandardHtmlTagDirectiveEventHandler, which is far richer than this.
+export class InputHtmlTagDirectiveEventHandler extends DirectiveActionBase implements IDirectiveEventHandler {
+  setupEventHandlers(
+    element: HTMLElement,
+	renderer: Renderer2,
+    valueHostName: string,
+    fivaseValidationManager: FivaseValidationManager
+  ): void {
+
+    if (element) {
+		renderer.listen(element, 'change', (event: Event) => {
+		  const inputValue = (event.target as HTMLInputElement).value;
+		  fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true });
+		});
+		renderer.listen(element, 'input', (event: Event) => {
+		  const inputValue = (event.target as HTMLInputElement).value;
+		  fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true, 	
+			duringEdit: true });
+		});		
+    }
+  }
+}
+```
+
+### **`IDirectiveRenderer`: Changing the UI**
+
+The `IDirectiveRenderer` interface allows you to customize how Directives render. For showing error messages for example, you might want to show simple text-based errors, tooltips, or even a list of issues in a modal or alert.
+
+Here is simplified implementation of how *jivs-angular* renders the error messages from the list of IssueFound objects:
+
+```ts
+export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
+  constructor(
+    invalidCssClass?: string,
+    validCssClass?: string
+  ) {
+    super(invalidCssClass, validCssClass);
+  }
+
+  public renderForFivaseDirective(
+    element: HTMLElement,
+    renderer: Renderer2,
+    valueHostName: string,
+    validationState: ValueHostValidationState,
+    fivaseValidationManager: FivaseValidationManager,
+    options?: IDirectiveRendererOptions
+  ): void {
+
+      // Clear existing content inside the element
+      renderer.setProperty(element, 'innerHTML', '');
+
+      // Apply the values of invalidCssClass and validCssClass in the base class
+      super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseValidationManager, options);
+	  
+	  let issuesFound = validationState.issuesFound;
+      if (issuesFound && issuesFound.length > 0) {
+        
+        // Create a <ul> element to display the errors
+        const ul = renderer.createElement('ul');
+
+        // Loop through issues and create <li> for each error message, using the HTML from errorMessage
+        issuesFound.forEach(issue => {
+          const li = renderer.createElement('li');
+          this.addErrorMessageToElement(li, renderer, issue);
+          renderer.appendChild(ul, li);
+        });
+
+        // Append the <ul> to the component's element
+        renderer.appendChild(element, ul);
+      }
+  }
+}
+
+```
+
+
+### **Registering your class with a Factory**
+
+Suppose you have already created a custom `IDirectiveRenderer` for the `[validationErrors]` directive called `"ErrorTable"`. Now, we need to register this class in the appropriate factory to ensure it is used by the application.
+
+Each Directive has its own factory, found in the FivaseServicesHost. In this example, we'll use
+FivaseServicesHost.errorMessagesDirectiveRendererFactory, and add your class during the constructor of the NgModule.
+
+#### Registering `"MyErrorPresentation"` with the `ErrorPresentationDirectiveActionFactory`
+
+Here’s how to register `"MyErrorPresentation"`:
+
+```ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { UserFormComponent } from './user-form/user-form.component';
+import { FivaseServicesHost } from 'your-library-path';
+
+import { addFivaseFormConfigurations } from './fivase-config-factory';  // Import the companion function
+import { ErrorTable } from './fivase-extensions/errorTable';
+
+@NgModule({
+  declarations: [AppComponent, UserFormComponent],
+  imports: [BrowserModule],
+  providers: [
+    {
+      provide: FivaseServicesHost,
+      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+    }
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {
+	constructor(private fivaseServicesHost: FivaseServicesHost)
+	{
+		addFivaseFormConfigurations(fivaseServicesHost.configHost);
+		
+	// Use one of these two approaches:
+	// 1. Make it the default:
+		fivaseServicesHost.errorMessagesDirectiveRendererFactory.defaultFallback = new ErrorTable();
+	
+	// 2. Make it work with the [fivase-renderer] attribute:
+		fivaseServicesHost.errorMessagesDirectiveRendererFactory.register('ErrorTable', new ErrorTable()); // <tag [directive] fivase-renderer='ErrorTable' >
+	}
+}
+```
+
+### When your class is specific to a component
+
+Components often need special ways to handle their events or render. So you may either create these classes for your component or even implement the interfaces directly on the component class.
+
+Now we need to wire it up to your component class.
+
+```ts
+@Component(
+	selector: 'app-mycomponent'
+)
+export class MyComponent implments OnInit, OnDestroy
+{
+	constructor(private fivaseServicesHost: FivaseServicesHost,
+	  private el: ElementRef)
+	{
+	}
+	
+	ngOnInit(): void
+	{
+		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement, new MyClass());
+	}
+	ngOnDestroy(): void
+	{
+		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement);
+	}
+}
+```
+Here's when you implement the interface on the component class.
+
+```ts
+@Component(
+	selector: 'app-mycomponent'
+)
+export class MyComponent implments OnInit, OnDestroy, IDirectiveEventHandler
+{
+	constructor(private fivaseServicesHost: FivaseServicesHost,
+	  private el: ElementRef)
+	{
+	}
+	
+	ngOnInit(): void
+	{
+		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement, this);
+	}
+	ngOnDestroy(): void
+	{
+		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement);
+	}
+}
+```

@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig_common.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build/",
+    "rootDir": "./src/",
+    "declaration": true,
+    "declarationDir": "./build/",   
+    "paths": {
+      "@plblum/jivs-engine": ["../jivs-engine"]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,    
+  },
+  "include": [ "src", "types", "tests/setup-jest.ts" ], 
+  /* omitting the tests from the main compile to avoid them generating d.ts files.
+    The Jest run knows to include tests. */
+  "exclude": [ "tests", "./*.js", "./*.mjs", "coverage", "docs", "build"],
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true,
+    "annotateForClosureCompiler": true,
+    "skipTemplateCodegen": true,
+    "strictMetadataEmit": true,
+    "fullTemplateTypeCheck": true  
+  }
+}

@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "packages/jivs-configanalysis"
+		},
+		{
+			"path": "packages/jivs-angular"
 		}
 	],
 	"settings": {
