@@ -16,6 +16,7 @@ import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -352,6 +353,10 @@ describe('toIPropertyValueHost function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        get currentValidationState(): ValueHostValidationState {
+            throw new Error("Method not implemented.");
+        }
+
         setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
         }

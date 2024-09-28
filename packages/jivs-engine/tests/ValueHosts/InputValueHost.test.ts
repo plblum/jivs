@@ -1362,6 +1362,11 @@ describe('toIInputValueHost function', () => {
         get doNotSave(): boolean {
             throw new Error("Method not implemented.");
         }
+
+        get currentValidationState(): ValueHostValidationState {
+            throw new Error("Method not implemented.");
+        }
+
         getIssueFound(errorCode: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }

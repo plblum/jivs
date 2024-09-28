@@ -27,7 +27,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createValidationServicesForTesting";
-import { ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
@@ -205,7 +205,10 @@ export class MockInputValueHost extends MockValueHost
     }
 
     validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
-    
+    get currentValidationState(): ValueHostValidationState {
+        throw new Error("Method not implemented.");
+    }
+
     setBusinessLogicError(error: BusinessLogicError): boolean {
         throw new Error("Method not implemented.");
     }
