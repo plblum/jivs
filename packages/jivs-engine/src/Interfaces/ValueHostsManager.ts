@@ -27,7 +27,7 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
     /**
      * Typecast from IServices
      */
-    services: IValueHostsServices;
+    readonly services: IValueHostsServices;
 
     /**
      * Adds a ValueHostConfig for a ValueHost not previously added. 
@@ -262,7 +262,7 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
  */
 export interface IValueHostsManagerAccessor
 {
-    valueHostsManager: IValueHostsManager;
+    readonly valueHostsManager: IValueHostsManager;
 }
 
 /**
