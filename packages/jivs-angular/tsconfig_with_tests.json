@@ -2,20 +2,17 @@
   "extends": "../../tsconfig_common.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./build/",
-    "rootDir": "./src/",
-    "declaration": true,
-    "declarationDir": "./build/",   
+    "outDir": "./temp/",  //NOT build folder because we are writing both src and test folders under this, and dont want either to appear in build.
+    "rootDir": "./",
+    "declaration": false,
     "paths": {
       "@plblum/jivs-engine": ["../jivs-engine"]
     },
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,    
+    "emitDecoratorMetadata": true,        
   },
-  "include": [ "src", "types" ], 
-  /* omitting the tests from the main compile to avoid them generating d.ts files.
-    The Jest run knows to include tests. */
-  "exclude": [ "tests", "./*.js", "./*.mjs", "coverage", "docs", "build"],
+  "include": [ "src", "types", "tests", "examples" ], 
+  "exclude": [ "./*.js", "./*.mjs", "coverage", "docs", "build", "temp"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
@@ -25,5 +22,5 @@
     "skipTemplateCodegen": true,
     "strictMetadataEmit": true,
     "fullTemplateTypeCheck": true  
-  }
+  }  
 }

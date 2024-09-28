@@ -17,7 +17,7 @@ import { ValidationManager } from '@plblum/jivs-engine/build/Validation/Validati
  * of that appearance through classes that implement this interface. 
  * 
  * Each Directive class that uses IDirectiveRenderer has its own Factory, based on
- * DirectiveActionFactoryBase which is a property of the FivaseServicesHost class.
+ * DirectiveActionFactoryBase which is a property of the FivaseServices class.
  * That factory provides a default instance, which can be overridden by the [fivase-render] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
@@ -42,7 +42,7 @@ export interface IDirectiveRenderer {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseValidationManager - The validation manager responsible for managing the validation
+     * @param fivaseForm - The validation manager responsible for managing the validation
      * logic, errors, and state.
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
@@ -51,7 +51,7 @@ export interface IDirectiveRenderer {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions
     ): void;
 }
@@ -63,10 +63,10 @@ export interface IDirectiveRendererOptions {
 
 /**
  * Interface for setting up event handlers needed by a Fivase Directive
- * to handle changes in the value of the inputs, and supply it to FivaseValidationManager.
+ * to handle changes in the value of the inputs, and supply it to FivaseForm.
  * 
  * Each Directive class that uses IDirectiveEventHandler has its own Factory, based on
- * DirectiveActionFactoryBase which is a property of the FivaseServicesHost class.
+ * DirectiveActionFactoryBase which is a property of the FivaseServices class.
  * That factory provides a default instance, which can be overridden by the [fivase-eventHandler] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
@@ -86,14 +86,14 @@ export interface IDirectiveEventHandler {
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
-     * @param fivaseValidationManager - The validation manager responsible for handling validation,
-     * which will be invoked when events occur.
+     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
+     * Fivase's ValidationManager object, fully configured and ready to use. 
      */
     setupEventHandlers(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: IFivaseForm
     ): void;
 
     /**
@@ -162,14 +162,15 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
      * The appropriate event handlers are installed using a switch statement based on the tag name.
      * 
      * @param element - The target HTMLElement to apply the render to.
-     * @param fivaseValidationManager - The validation manager responsible for handling validation logic and errors.
+     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
+     * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param valueHostName - The name of the value host associated with this element, used to identify the validation target.
      */
     public setupEventHandlers(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: IFivaseForm
     ): void {
         let self = this;
         const tagName = element.tagName.toLowerCase();
@@ -210,7 +211,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
             // Handle checkbox validation
             renderer.listen(element, 'change', (event: Event) => {
                 const isChecked = (event.target as HTMLInputElement).checked;
-                fivaseValidationManager.setValue(valueHostName, isChecked, { validate: true });
+                fivaseForm.setValue(valueHostName, isChecked, { validate: true });
             });
         }
 
@@ -227,7 +228,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
                         }))
                     )
                     : ''; // Send empty string if no files are selected
-                fivaseValidationManager.setValue(valueHostName, fileData, { validate: true });
+                fivaseForm.setValue(valueHostName, fileData, { validate: true });
             });
         }
 
@@ -235,7 +236,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
             // Handle select element validation (only listen for 'change' event)
             renderer.listen(element, 'change', (event: Event) => {
                 const selectValue = (event.target as HTMLSelectElement).value;
-                fivaseValidationManager.setInputValue(valueHostName, selectValue, { validate: true });
+                fivaseForm.setInputValue(valueHostName, selectValue, { validate: true });
             });
         }
 
@@ -243,13 +244,13 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
             if (self.inputEventEnabled) {
                 //   renderer.listen(element, 'input', (event: Event) => {
                 //     const inputValue = (event.target as HTMLInputElement).value;
-                //     fivaseValidationManager.setInputValue(valueHostName,  inputValue, { validate: true, duringEdis: true });
+                //     fivaseForm.setInputValue(valueHostName,  inputValue, { validate: true, duringEdis: true });
                 //   });
                 fromEvent(element, 'input')
                     .pipe(debounceTime(self.inputEventDebounceTime))  // Wait before handling the event
                     .subscribe((event: Event) => {
                         const inputValue = (event.target as HTMLInputElement).value;
-                        fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true, duringEdit: true });
+                        fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit: true });
                     });
             }
         }
@@ -258,7 +259,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
             // Handle change event
             renderer.listen(element, 'change', (event: Event) => {
                 const inputValue = (event.target as HTMLInputElement).value;
-                fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true });
+                fivaseForm.setInputValue(valueHostName, inputValue, { validate: true });
             });
         }
     }
@@ -353,8 +354,8 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseValidationManager - The validation manager responsible for managing the validation
-     * logic, errors, and state.
+     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
+     * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
     public renderForFivaseDirective(
@@ -362,12 +363,12 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions
     ): void {
-        let twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseValidationManager, options);
+        let twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseForm, options);
         if (twoStates !== null) {
-            this.twoStateRender(twoStates, element, renderer, valueHostName, validationState, fivaseValidationManager, options);
+            this.twoStateRender(twoStates, element, renderer, valueHostName, validationState, fivaseForm, options);
             this.twoStateHideElement(twoStates, element, renderer);
         }
     }
@@ -380,7 +381,8 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
      * @param renderer 
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseValidationManager 
+     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
+     * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param options 
      */
     protected twoStateRender(
@@ -389,7 +391,7 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions
     )
     {
@@ -432,7 +434,7 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
     protected abstract resolveTwoStates(
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null;
 
     /**
@@ -480,7 +482,7 @@ export class IssuesFoundDirectiveRenderer extends DirectiveRendererBase {
     
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -499,7 +501,7 @@ export class ShowWhenIssuesFoundDirectiveRenderer extends DirectiveRendererBase 
     }
 
     protected resolveTwoStates(valueHostName: string, validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -518,7 +520,7 @@ export class ShowWhenCorrectedDirectiveRenderer extends DirectiveRendererBase {
     }
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null {
         return validationState.corrected;
     }
@@ -538,9 +540,9 @@ export class ShowWhenRequiredDirectiveRenderer extends DirectiveRendererBase {
     }
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null {
-        let vh = fivaseValidationManager.validationManager.getInputValueHost(valueHostName);
+        let vh = fivaseForm.validationManager.getInputValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
@@ -629,7 +631,7 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions
     ): void {
         // Clear existing content inside the element
@@ -663,21 +665,22 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
         }
 
         // Apply the CSS class logic from the base class
-        super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseValidationManager, options);
+        super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseForm, options);
     }
 
     /**
      * Enables when validationState.issuesFound is not empty.
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseValidationManager 
+     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
+     * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param options 
      * @returns true if issuesFound is not empty.
      */
     protected resolveTwoStates(
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: IFivaseForm,
         options?: IDirectiveRendererOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -688,8 +691,8 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
  * `IDirectiveRenderer` instances needed by Fivase Directives. 
  * 
  * Each Directive may declare its own Factories and make them properties of the 
- * FivaseServicesHost class.
- * The Directive will get the FivaseServicesHost through DI in the constructor,
+ * FivaseServices class.
+ * The Directive will get the FivaseServices through DI in the constructor,
  * and will use the factory's resolve method to get the appropriate instance.
  * There are several sources for the instance: 
  * - A default instance, which is normally used. It is created by the factory and
@@ -968,8 +971,8 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
     constructor(
         protected el: ElementRef,
         protected renderer: Renderer2,
-        protected fivaseServicesHost: FivaseServicesHost,
-        protected fivaseValidationManager: FivaseValidationManager,
+        protected fivaseServices: FivaseServices,
+        protected fivaseForm: IFivaseForm,
         @Optional() @SkipSelf() private valueHostNameDirective: ValueHostNameDirective,
     ) {
     }
@@ -1029,8 +1032,8 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         // not required but good form
         (this.el as any) = undefined;
-        (this.fivaseServicesHost as any) = undefined;        
-        (this.fivaseValidationManager as any) = undefined;
+        (this.fivaseServices as any) = undefined;        
+        (this.fivaseForm as any) = undefined;
         (this.valueHostNameDirective as any) = undefined;
     }
 
@@ -1042,7 +1045,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
  * update the user interface based on the state.
  * 
  * Key functionality includes:
- * - Subscribing to validation state changes via the `FivaseValidationManager`.
+ * - Subscribing to validation state changes via the `FivaseForm`.
  * - Applying a render through an object that supports `IDirectiveRenderer`, which
  *   comes from a factory property on FivasServicesHost.
  * 
@@ -1081,11 +1084,11 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
     constructor(
         el: ElementRef,
         renderer: Renderer2,
-        fivaseServicesHost: FivaseServicesHost,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseServices: FivaseServices,
+        fivaseForm: IFivaseForm,
         @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
     ) {
-        super(el, renderer, fivaseServicesHost, fivaseValidationManager, valueHostNameDirective);
+        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
     }
 
     /**
@@ -1102,17 +1105,17 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
     }
 
     /** 
-     * Gets the factory from fivaseServicesHost used to create the IDirectiveRenderer implementation.
+     * Gets the factory from fivaseServices used to create the IDirectiveRenderer implementation.
     */
     protected abstract get resolveRendererFactory(): DirectiveRendererFactoryBase;
 
     /**
-     * Uses the FivaseValidationManager to subscribe to validation state changes for the ValueHost.
+     * Uses the FivaseForm to subscribe to validation state changes for the ValueHost.
      * Passes the validation state to the IDirectiveRenderer implementation.
      * @param valueHostName 
      */
     private setupSubscription(valueHostName: string): void {
-        this.subscription = this.fivaseValidationManager.subscribeToValueHostValidationState(valueHostName, (validationState) => {
+        this.subscription = this.fivaseForm.subscribeToValueHostValidationState(valueHostName, (validationState) => {
             this.onValueHostValidationStateChanged(this.getTargetElement(), validationState);
         });
     }
@@ -1121,7 +1124,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
      * Ensures the UI conforms with the current validation state
      */
     protected setupInitialRender(valueHostName: string): void {
-        let vh = this.fivaseValidationManager.validationManager.getValidatorsValueHost(valueHostName)!;
+        let vh = this.fivaseForm.validationManager.getValidatorsValueHost(valueHostName)!;
         if (!vh)
             throw new Error(`Unknown valueHostName "${valueHostName}"`);
         this.onValueHostValidationStateChanged(this.getTargetElement(), vh.currentValidationState);
@@ -1141,7 +1144,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
             this.renderer,
             this.valueHostName!,
             validationState,
-            this.fivaseValidationManager,
+            this.fivaseForm,
             this.getRenderOptions()
         );
     }
@@ -1179,7 +1182,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
      */
     public ngOnDestroy(): void {
         if (this.subscription) {
-            this.fivaseValidationManager.unsubscribeFromValueHostValidationState(this.subscription);
+            this.fivaseForm.unsubscribeFromValueHostValidationState(this.subscription);
             (this.subscription as any) = undefined;
         }
         // not required but good form
@@ -1218,8 +1221,8 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the StandardHtmlTagEventDirectiveAction.
  * 
- * Uses the fivaseServicesHost.validationInputDirectiveRendererFactory
- * and fivaseServicesHost.validationInputDirectiveEventHandlerFactory to resolve the implementations.
+ * Uses the fivaseServices.validationInputDirectiveRendererFactory
+ * and fivaseServices.validationInputDirectiveEventHandlerFactory to resolve the implementations.
  */
 @Directive({
     selector: '[validate]'
@@ -1227,7 +1230,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
 export class ValidateInputDirective extends RenderDirectiveBase {
 
     protected get resolveRendererFactory(): DirectiveRendererFactoryBase {
-        return this.fivaseServicesHost.validationInputDirectiveRendererFactory;
+        return this.fivaseServices.validationInputDirectiveRendererFactory;
     }
 
     /**
@@ -1262,11 +1265,11 @@ export class ValidateInputDirective extends RenderDirectiveBase {
     constructor(
         el: ElementRef,
         renderer: Renderer2,
-        fivaseServicesHost: FivaseServicesHost,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseServices: FivaseServices,
+        fivaseForm: IFivaseForm,
         valueHostNameDirective: ValueHostNameDirective
     ) {
-        super(el, renderer, fivaseServicesHost, fivaseValidationManager, valueHostNameDirective);
+        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
     }
 
     /**
@@ -1275,7 +1278,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
      * @param valueHostName 
      */
     protected setupDirective(valueHostName: string): void {
-        let eventHandler = this.fivaseServicesHost.validationInputDirectiveEventHandlerFactory.resolve(
+        let eventHandler = this.fivaseServices.validationInputDirectiveEventHandlerFactory.resolve(
             this.el.nativeElement, this.eventHandlerName);
 
         if (!eventHandler)
@@ -1285,7 +1288,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
             this.getTargetElement(),
             this.renderer,
             valueHostName,
-            this.fivaseValidationManager
+            this.fivaseForm
         );
     }
 
@@ -1325,7 +1328,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
         };
     }
     public ngOnDestroy(): void {
-        this.fivaseServicesHost.validationInputDirectiveEventHandlerFactory
+        this.fivaseServices.validationInputDirectiveEventHandlerFactory
             .unavailable(this.el.nativeElement);
         super.ngOnDestroy();
     }
@@ -1377,7 +1380,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
 })
 export class ValidationErrorsDirective extends RenderDirectiveBase {
     protected get resolveRendererFactory(): DirectiveRendererFactoryBase {
-        return this.fivaseServicesHost.validationErrorDirectiveRendererFactory;
+        return this.fivaseServices.validationErrorDirectiveRendererFactory;
     }
 
     /**
@@ -1443,7 +1446,7 @@ export class ValidationErrorsDirective extends RenderDirectiveBase {
 })
 export class ShowWhenCorrectedDirective extends RenderDirectiveBase {
     protected get resolveRendererFactory(): DirectiveRendererFactoryBase {
-        return this.fivaseServicesHost.correctedDirectiveRendererFactory;
+        return this.fivaseServices.correctedDirectiveRendererFactory;
     }
 
     /**
@@ -1485,7 +1488,7 @@ export class ShowWhenCorrectedDirective extends RenderDirectiveBase {
 })
 export class ShowWhenRequiredDirective extends RenderDirectiveBase {
     protected get resolveRendererFactory(): DirectiveRendererFactoryBase {
-        return this.fivaseServicesHost.requiredDirectiveRendererFactory;
+        return this.fivaseServices.requiredDirectiveRendererFactory;
     }
 
     /**
@@ -1527,7 +1530,7 @@ export class ShowWhenRequiredDirective extends RenderDirectiveBase {
 })
 export class ShowWhenIssuesFounddDirective extends RenderDirectiveBase {
     protected get resolveRendererFactory(): DirectiveRendererFactoryBase {
-        return this.fivaseServicesHost.showWhenIssuesFoundDirectiveRendererFactory;
+        return this.fivaseServices.showWhenIssuesFoundDirectiveRendererFactory;
     }
 
     /**
@@ -1584,11 +1587,11 @@ export class ContainsInvalidChildrenDirective {
     constructor(
         private el: ElementRef,
         private renderer: Renderer2,
-        private fivaseValidationManager: FivaseValidationManager
+        private fivaseForm: IFivaseForm
     ) { }
 
     public ngOnInit(): void {
-        this.subscription = this.fivaseValidationManager.subscribeToValidationState(() => {
+        this.subscription = this.fivaseForm.subscribeToValidationState(() => {
             this.checkChildValidation();
         });
     }
@@ -1668,7 +1671,7 @@ export class ValueHostNameDirective {
  *
  * Used by directives and components to trigger validation, retrieve validation state, and manage input values.
  */
-export interface IFivaseValidationManager {
+export interface IFivaseForm {
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
     setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void;
@@ -1694,7 +1697,7 @@ export interface IFivaseValidationManager {
  *
  * Used by directives to trigger validation, manage input values, and handle state subscriptions for forms.
  */
-export class FivaseValidationManager implements IFivaseValidationManager {
+export class FivaseForm implements IFivaseForm {
     private _validationManager: IValidationManager;
     /**
      * ValidationManager level validation state changes
@@ -1859,8 +1862,78 @@ export class FivaseConfigHost implements IFivaseConfigHost {
     }
 }
 
-export class FivaseServicesHost {
-    constructor(private stateStore: IFivaseStateStore) { 
+/**
+ * Interface representing the services provided by Fivase.
+ * - Use configHost to register configurations for forms and create FivaseForm objects
+ *   that consume them.
+ * - Use each Factory to provide customizations for each Directive supplied.
+ */
+export interface IFivaseServices {
+    /**
+     * The FivaseConfigHost service, which manages the configurations for forms and their states.
+     * Use this service to register configurations for forms and retrieve them when needed.
+     * For example, when creating a new form, register the configuration for that form like this:
+     * ```ts
+     * fivaseServices.configHost.register('myFormId', (formId: string) => {
+     * let builder = build(createValidationServices());
+     * ... use the Jivs Builder to create the configuration ...
+     *    return builder.complete();
+     * });
+     * ```
+     * Retrieve the configuration for that form using the getConfig method.
+     * ```ts
+     * const config = fivaseServices.configHost.getConfig('myFormId');
+     * ```
+     */
+    configHost: IFivaseConfigHost;
+
+    /**
+     * Factory for creating instances of IDirectiveRenderer for ValidationInputDirective.
+     */
+    validationInputDirectiveRendererFactory: ValidationInputDirectiveRendererFactory;
+
+    /**
+     * Factory for creating instances of IDirectiveEventHandler for ValidationInputDirective.
+     */
+    validationInputDirectiveEventHandlerFactory: ValidationInputDirectiveEventHandlerFactory;
+
+    /**
+     * Factory for creating instances of IDirectiveRenderer for ValidationErrorsDirective.
+     */
+    validationErrorDirectiveRendererFactory: ValidationErrorDirectiveRendererFactory;
+}
+
+/**
+ * Services provided by Fivase. This must be registered as a provider in an NgModule,
+ * and configured there too.
+ * ```ts
+ * @NgModule({
+ *   declarations: [AppComponent, MyFormComponent],
+ *   imports: [BrowserModule],
+ *   providers: [
+ *     {
+ *       provide: FivaseServices,
+ *       useFactory: ()=> new FivaseServices(new InMemoryFivaseStateStore())
+ *     }
+ *   ],
+ *   bootstrap: [AppComponent]
+ * })
+ * export class AppModule {
+ * 	constructor(private fivaseServices: FivaseServices)
+ * 	{
+ * 		// populate fivaseServices.configHost
+ *      // populate various Factories in fivaseServices
+ * 	}
+ * }
+ * ```
+ * - Use configHost to register configurations for forms and create FivaseForm objects
+ *   that consume them.
+ * - Use each Factory to provide customizations for each Directive supplied.
+ * - Supply an implementation of IFivaseStateStore into the constructor to retain stateful
+ *   information between form rebuilds.
+ */
+export class FivaseServices implements IFivaseServices {
+    constructor(stateStore: IFivaseStateStore) { 
         this._configHost = new FivaseConfigHost(stateStore);
     }
 
@@ -1869,7 +1942,7 @@ export class FivaseServicesHost {
      * Use this service to register configurations for forms and retrieve them when needed.
      * For example, when creating a new form, register the configuration for that form like this:
      * ```ts
-     * fivaseServicesHost.configHost.register('myFormId', (formId: string) => {
+     * fivaseServices.configHost.register('myFormId', (formId: string) => {
      * let builder = build(createValidationServices());
      * ... use the Jivs Builder to create the configuration ...
      *    return builder.complete();
@@ -1877,7 +1950,7 @@ export class FivaseServicesHost {
      * ```
      * Retrieve the configuration for that form using the getConfig method.
      * ```ts
-     * const config = fivaseServicesHost.configHost.getConfig('myFormId');
+     * const config = fivaseServices.configHost.getConfig('myFormId');
      * ```
      */
     public get configHost(): IFivaseConfigHost
