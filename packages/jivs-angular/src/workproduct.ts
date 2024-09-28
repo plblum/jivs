@@ -1669,7 +1669,8 @@ export class ValueHostNameDirective {
  * Used by directives and components to trigger validation, retrieve validation state, and manage input values.
  */
 export interface IFivaseForm {
-    services: IFivaseServices;
+    readonly validationManager: IValidationManager;
+    readonly services: IFivaseServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
     setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void;
@@ -1682,7 +1683,6 @@ export interface IFivaseForm {
 
     destroy(): void;
 
-    readonly validationManager: IValidationManager;
 }
 
 
@@ -1817,7 +1817,7 @@ export class FivaseForm implements IFivaseForm {
             asyncProcessing: false
         }
     });
-    
+
     /**
      * Unsubscribes from the validation state by calling the unsubscribe method on the provided subscription.
      *
