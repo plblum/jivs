@@ -3065,6 +3065,10 @@ describe('toIValidatorsValueHostBase function', () => {
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         corrected: boolean = false;
+        get currentValidationState(): ValueHostValidationState {
+            throw new Error("Method not implemented.");
+        }
+
         setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
