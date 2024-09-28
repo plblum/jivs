@@ -42,7 +42,7 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * Provides access to ValidationServices (override IServices).
      */
-    services: IValidationServices; 
+    readonly services: IValidationServices; 
 
     startModifying(): ValidationManagerConfigModifier;
     /**
