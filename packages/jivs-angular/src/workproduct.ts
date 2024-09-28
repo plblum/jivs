@@ -861,9 +861,6 @@ export class ValidationInputDirectiveEventHandlerFactory extends DirectiveEventH
     protected get customPropertyName(): string {
         return 'validationInputEventHandler';
     }
-    protected isValidInstance(instance: IDirectiveEventHandler): boolean {
-        return instance && typeof instance.setupEventHandlers === 'function';
-    }
 }
 
 /**
@@ -1672,6 +1669,7 @@ export class ValueHostNameDirective {
  * Used by directives and components to trigger validation, retrieve validation state, and manage input values.
  */
 export interface IFivaseForm {
+    services: IFivaseServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
     setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void;
@@ -1698,7 +1696,81 @@ export interface IFivaseForm {
  * Used by directives to trigger validation, manage input values, and handle state subscriptions for forms.
  */
 export class FivaseForm implements IFivaseForm {
+
+    constructor(config: ValidationManagerConfig, services: IFivaseServices) {
+        this._services = services;
+        this._validationManager = new ValidationManager(config);
+
+        config.onValidationStateChanged = (validationManager: IValidationManager, validationState: ValidationState) => {
+            this._validationStateSubject.next(validationState);
+        };
+        config.onValueHostValidationStateChanged = (valueHost: IValueHost, validationState: ValueHostValidationState) => {
+            this._valueHostValidationStateSubject.next({ valueHostName: valueHost.getName(), validationState });
+        };
+    }
+
+    /**
+     * Access to the FivaseServices instance
+     */
+    public get services(): IFivaseServices
+    {
+        return this._services;
+    }
+    private _services: IFivaseServices;
+
+
+    /**
+     * Central object in Fivase that represents all of the ValueHosts.
+     * Some of its most prominent members have been exposed on FivaseForm,
+     * but use this to access the rest.
+     */
+    public get validationManager(): IValidationManager {
+        return this._validationManager;
+    }
     private _validationManager: IValidationManager;
+
+    /**
+     * Execute validation across all ValueHosts. Same as calling `validationManager.validate(options)`.
+     * See Fivase documentation for details.
+     * @param options 
+     * @returns 
+     */
+    public validate(options?: any): ValidationState {
+        return this.validationManager.validate(options);
+    }
+
+    /**
+     * Call when a value supported within the ValueHosts has changed. 
+     * Consider using setInputValue instead for InputValueHosts.
+     * Same as calling `validationManager.setValue(valueHostName, value, options)`.
+     * See Fivase documentation for details.
+     * @param valueHostName 
+     * @param value 
+     * @param options 
+     */
+    public setValue(valueHostName: string, value: any, options?: SetValueOptions): void {
+        this.validationManager.vh.input(valueHostName).setValue(value, options);
+    }
+/**
+ * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setInputValue(inputValue,options)`.
+ * See Fivase documentation for details.
+ * @param valueHostName 
+ * @param inputValue 
+ * @param options 
+ */
+    public setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void {
+        this.validationManager.vh.input(valueHostName).setInputValue(inputValue, options);
+    }
+
+    /**
+     * Subscribes to the validation state changes. Some jivs-angular Directives subscribe to it automatically.
+     *
+     * @param callback - A function to be called whenever the validation state changes.
+     * @returns A Subscription object that can be used to unsubscribe from the validation state updates.
+     */
+    public subscribeToValidationState(callback: (state: ValidationState) => void): Subscription {
+        return this._validationStateSubject.subscribe(callback);
+    }
     /**
      * ValidationManager level validation state changes
      */
@@ -1708,6 +1780,29 @@ export class FivaseForm implements IFivaseForm {
         issuesFound: null,
         asyncProcessing: false
     });
+
+    /**
+     * Unsubscribes from the validation state by calling the unsubscribe method on the provided subscription.
+     *
+     * @param subscription - The subscription to unsubscribe from.
+     */
+    public unsubscribeFromValidationState(subscription: Subscription): void {
+        subscription.unsubscribe();
+    }
+
+    /**
+     * Subscribes to the validation state of a specified value host. Some jivs-angular Directives subscribe to it automatically.
+     *
+     * @param valueHostName - The name of the value host to subscribe to.
+     * @param callback - A callback function that will be invoked with the validation state of the value host.
+     * @returns A Subscription object that can be used to unsubscribe from the validation state updates.
+     */
+    public subscribeToValueHostValidationState(valueHostName: string, callback: (state: ValueHostValidationState) => void): Subscription {
+        return this._valueHostValidationStateSubject
+            .pipe(filter(forCallback => forCallback.valueHostName === valueHostName))
+            .subscribe(event => callback(event.validationState));
+    }
+
     /**
      * Individual ValueHost level validation state changes
      */
@@ -1722,54 +1817,20 @@ export class FivaseForm implements IFivaseForm {
             asyncProcessing: false
         }
     });
-
-    constructor(config: ValidationManagerConfig) {
-        this._validationManager = new ValidationManager(config);
-
-        config.onValidationStateChanged = (validationManager: IValidationManager, validationState: ValidationState) => {
-            this._validationStateSubject.next(validationState);
-        };
-        config.onValueHostValidationStateChanged = (valueHost: IValueHost, validationState: ValueHostValidationState) => {
-            this._valueHostValidationStateSubject.next({ valueHostName: valueHost.getName(), validationState });
-        };
-    }
-
-    public get validationManager(): IValidationManager {
-        return this._validationManager;
-    }
-
-    public validate(options?: any): ValidationState {
-        return this._validationManager.validate(options);
-    }
-
-    public setValue(valueHostName: string, value: any, options?: SetValueOptions): void {
-        this._validationManager.vh.input(valueHostName).setValue(value, options);
-    }
-
-    public setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void {
-        this._validationManager.vh.input(valueHostName).setInputValue(inputValue, options);
-    }
-
-    public subscribeToValidationState(callback: (state: ValidationState) => void): Subscription {
-        return this._validationStateSubject.subscribe(callback);
-    }
-
-    public unsubscribeFromValidationState(subscription: Subscription): void {
-        subscription.unsubscribe();
-    }
-
-    public subscribeToValueHostValidationState(valueHostName: string, callback: (state: ValueHostValidationState) => void): Subscription {
-        return this._valueHostValidationStateSubject
-            .pipe(filter(forCallback => forCallback.valueHostName === valueHostName))
-            .subscribe(event => callback(event.validationState));
-    }
-
+    
+    /**
+     * Unsubscribes from the validation state by calling the unsubscribe method on the provided subscription.
+     *
+     * @param subscription - The subscription to unsubscribe from.
+     */
     public unsubscribeFromValueHostValidationState(subscription: Subscription): void {
         subscription.unsubscribe();
     }
 
     public destroy(): void {
-        this._validationManager.dispose();
+        this._validationManager?.dispose();
+        (this._validationManager as any) = undefined;
+        (this._services as any) = undefined;
         this._validationStateSubject.complete();
         this._valueHostValidationStateSubject.complete();
     }
@@ -1813,7 +1874,21 @@ export class FivaseConfigHost implements IFivaseConfigHost {
 
     constructor(private stateStore: IFivaseStateStore) { }
 
-    // Retrieve the configuration for a specific formId
+    
+    /**
+     * Retrieves the configuration for a given form ID, including any saved state and callbacks.
+     * 
+     * @param formId - The unique identifier for the form.
+     * @returns The configuration object for the specified form ID.
+     * @throws Will throw an error if no configuration is found for the given form ID.
+     * 
+     * The returned configuration will have these assigned, but will still call your original
+     * callback if it was supplied:
+     * `savedInstanceState`, 
+     * `savedValueHostInstanceStates`, 
+     * `onInstanceStateChanged`, 
+     * `onValueHostInstanceStateChanged`
+     */
     public getConfig(formId: string): ValidationManagerConfig {
         const configOrFactory = this.configs.get(formId);
 
@@ -1851,12 +1926,36 @@ export class FivaseConfigHost implements IFivaseConfigHost {
         };
     }
 
-    // Register a configuration for a formId
+    /**
+     * Register a configuration for a formId
+     * ```ts
+     * configHost.register('userFormId', (formId: string) => {
+     *   let builder = build(createValidationServices());
+     *   
+     *   // Define validation for the username field
+     *   builder.input('username', LookupKey.String)
+     *     .requireText() // Requires the field to be non-empty
+     *     .regExp(/^[\w\.\-]*$/, null, { errorMessage: 'Invalid format for username' });
+     *   
+     *   // Define validation for the email field
+     *   builder.input('email', 'EmailAddress')
+     *     .requireText(); // Requires non-empty text for email
+     *   
+     *   // Complete the configuration and return it
+     *   return builder.complete();
+     * });
+     * ```
+     * @param formId 
+     * @param config - Supply either an instance or a function. When it is a function,
+     * it creates the config. The function provides a lazy loading pattern.
+     */
     public register(formId: string, config: ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)): void {
         this.configs.set(formId, config);
     }
 
-    // Save the state of the form validation (used for persisting state)
+    /**
+     * Save the state of the form validation (used for persisting state)
+     */
     protected saveState(formId: string, state: any): void {
         this.stateStore.saveState(formId, state);
     }
@@ -1869,6 +1968,15 @@ export class FivaseConfigHost implements IFivaseConfigHost {
  * - Use each Factory to provide customizations for each Directive supplied.
  */
 export interface IFivaseServices {
+
+    /**
+     * Creates a FivaseForm with the configuration specific to formId.
+     * Throws error if the formId is not registered.
+     * @param formId 
+     * @returns The instance created.
+     */
+    createFivaseForm(formId: string): IFivaseForm;
+
     /**
      * The FivaseConfigHost service, which manages the configurations for forms and their states.
      * Use this service to register configurations for forms and retrieve them when needed.
@@ -1936,7 +2044,17 @@ export class FivaseServices implements IFivaseServices {
     constructor(stateStore: IFivaseStateStore) { 
         this._configHost = new FivaseConfigHost(stateStore);
     }
-
+    /**
+     * Creates a FivaseForm with the configuration specific to formId.
+     * Throws error if the formId is not registered.
+     * @param formId 
+     * @returns The instance created.
+     */
+    public createFivaseForm(formId: string): IFivaseForm
+    {
+        let config = this.configHost.getConfig(formId);
+        return new FivaseForm(config, this);
+    }
     /**
      * The FivaseConfigHost service, which manages the configurations for forms and their states.
      * Use this service to register configurations for forms and retrieve them when needed.
