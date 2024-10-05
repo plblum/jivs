@@ -114,14 +114,14 @@ export class CustomEventsDirectiveAction implements IEventsDirectiveAction {
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: FivaseForm
 		)
 	{
     // Custom event handling logic
     el.renderer.listen(element, 'change', (event: Event)=> {
       // Handle event, e.g., update validationManager with the new value
 	  const inputValue = (event.target as HTMLInputElement).value;
-	  fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true, 	
+	  fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, 	
 		duringEdit: true });	  
     });
   }
@@ -300,12 +300,12 @@ Supposing we already have an instance of QuantitySelector in this.component, her
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: FivaseForm
     ): void {
     // Subscribe to quantityChange EventEmitter
     this.subscription = this.component.quantityChange.subscribe(({ oldValue, newValue }) => {
       // Trigger validation when the quantity changes
-      fivaseValidationManager.setValue(valueHostName, newValue, { validate: true });
+      fivaseForm.setValue(valueHostName, newValue, { validate: true });
     });
   }
 ```
@@ -314,7 +314,7 @@ Here is the full implementation of the **QuantitySelectorEventHandler**.
 
 ```ts
 import { DirectiveActionBase } from 'your-library-path';
-import { IEventsDirectiveAction, FivaseValidationManager } from 'your-library-path';
+import { IEventsDirectiveAction, FivaseForm } from 'your-library-path';
 import { ElementRef, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { QuantitySelector } from './quantityselector';
@@ -330,12 +330,12 @@ export class QuantitySelectorEventHandler extends DirectiveActionBase implements
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: FivaseForm
 	): void {
     // Subscribe to quantityChange EventEmitter
     this.subscription = this.component.quantityChange.subscribe(({ oldValue, newValue }) => {
       // Trigger validation when the quantity changes
-      fivaseValidationManager.setValue(valueHostName, newValue, { validate: true });
+      fivaseForm.setValue(valueHostName, newValue, { validate: true });
     });
   }
 
@@ -367,7 +367,7 @@ export class QuantitySelectorValidationPresentation extends DirectiveActionBase 
   applyValidationPresentation(
     el: ElementRef,
     issuesFound: IssueFound[] | null,
-    fivaseValidationManager: any,
+    fivaseForm: any,
     valueHostName: string,
     options?: { selector?: string } //NOTE: we ignore the selector here because this class knows exactly which element to update
   ): void {
@@ -492,7 +492,7 @@ The component will now implement the `IEventsDirectiveAction` and `IPresentation
 
 ```ts
 import { Component, ElementRef, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { IEventsDirectiveAction, IPresentationDirectiveAction, FivaseValidationManager, IssueFound } from 'jivs-angular';
+import { IEventsDirectiveAction, IPresentationDirectiveAction, FivaseForm, IssueFound } from 'jivs-angular';
 
 @Component({
   selector: 'app-quantityselector',
@@ -540,12 +540,12 @@ export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveActi
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseValidationManager: FivaseValidationManager
+        fivaseForm: FivaseForm
   ): void {
     // Subscribe to quantityChange EventEmitter
     this.quantityChange.subscribe(({ oldValue, newValue }) => {
       // Trigger validation when the quantity changes
-      fivaseValidationManager.setValue(valueHostName, newValue, { validate: true });
+      fivaseForm.setValue(valueHostName, newValue, { validate: true });
     });
   }
 
@@ -555,7 +555,7 @@ export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveActi
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseValidationManager: FivaseValidationManager,
+        fivaseForm: FivaseForm,
         options?: { invalidCssClass?: string; validCssClass?: string }
   ): void {
     let issuesFound = validationState.issuesFound;

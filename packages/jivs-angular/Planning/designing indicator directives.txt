@@ -1,0 +1,300 @@
+# **Designing some new directives**
+
+This guide covers the validation-related directives and options that can be customized by users. These directives help control the visibility and display of various UI components such as error messages, required indicators, and completion icons.
+
+## **Directives Overview**
+
+### **`[valueHostName]` Directive**
+The `[valueHostName]` directive allows for the inheritance of the `valueHostName` across nested elements. When this directive is applied to an enclosing tag, any validation-related directive within that tag will automatically inherit the `valueHostName`. This applies to the following directives: `[showWhenInvalid]`, `[showWhenRequired]`, `[showWhenCompleted]`, `[validate]`, and `[validationErrors]`.
+
+If `[valueHostName]` is not present, each directive must be assigned a `valueHostName` explicitly.
+
+**Usage Example:**
+```html
+<div [valueHostName]="FirstName">
+  <input type="text" [validate] /> <!-- Inherits FirstName -->
+  <div [showWhenInvalid]></div> <!-- Inherits FirstName -->
+  <div [validationErrors]></div> <!-- Inherits FirstName -->
+</div>
+```
+
+---
+
+### **`[showWhenRequired]` Directive**
+This directive shows or hides a tag based on whether the associated input requires user input (i.e., whether the `requiresInput` property of the `IInputValueHost` is `true`).
+
+- **Class and Member**: The relevant class is `IInputValueHost`, with the member `requiresInput`. The `valueHostName` is required to locate the input being validated and determine if the input is required (`requiresInput = true`). Without the `valueHostName`, the system cannot access the necessary state to evaluate this condition.
+
+**Usage Example:**
+```html
+<div class="required-indicator" [showWhenRequired]>This field is required</div>
+```
+
+---
+
+### **`[showWhenCompleted]` Directive**
+This directive handles showing or hiding a tag based on whether an input's validation state changes from invalid to valid, meaning the error has been corrected.
+
+- **Class and Member**: The relevant class is `ValueHostValidationState`, and the member is `corrected`. The directive uses the `valueHostName` to connect to the correct input and evaluate whether an error has been corrected. Without the `valueHostName`, the validation system cannot identify or track the state changes needed to trigger this behavior.
+
+**Usage Example:**
+```html
+<div class="completed-indicator" [showWhenCompleted]>✔</div>
+```
+
+---
+
+### **`[validate]` Directive**
+This directive binds an input field to the validation logic, allowing it to participate in the validation system.
+
+**Usage Example:**
+```html
+<input type="text" [validate]="FirstName" />
+```
+With `[valueHostName]`:
+```html
+<div [valueHostName]="FirstName">
+  <input type="text" [validate] /> <!-- Inherits FirstName -->
+</div>
+```
+
+---
+
+### **`[validationErrors]` Directive**
+This directive is responsible for displaying validation errors for the associated input.
+
+**Usage Example:**
+```html
+<div [validationErrors]="FirstName"></div>
+```
+With `[valueHostName]`:
+```html
+<div [valueHostName]="FirstName">
+  <div [validationErrors]></div> <!-- Inherits FirstName -->
+</div>
+```
+---
+
+## **Customization Options**
+
+Each directive allows users to specify custom CSS classes to override the defaults, providing flexibility to match specific UI requirements. **Global defaults** are provided for each directive to ensure a smooth out-of-the-box experience, but users can easily override these defaults where necessary.
+
+### **Custom CSS Classes:**
+
+- **`[val-invalid-class]`**: Customizes the CSS class applied when validation fails. By default, the system applies a global class (e.g., `'invalid'`), but users can override it with their own class.
+```html
+  <input validate="email" [val-invalid-class]="'my-invalid-class'">
+```
+
+- [val-valid-class]: Customizes the CSS class applied when validation succeeds. A global default class is provided, but users can specify their own.
+```html
+<input validate="email" [val-valid-class]="'my-valid-class'">
+```
+---
+
+## **Callbacks for State Changes**
+
+Each directive can trigger callbacks when validation states change, allowing custom logic to be executed. This works both for components (where the template specifies a function of the component instance) and generic cases (where a default function is triggered).
+
+This feature allows for seamless integration of UI behaviors like fading out completion indicators or handling custom validation displays.
+
+---
+
+## **Preconfigured Templates & Best Practices**
+
+To help users get started quickly, here are several template examples for common validation scenarios, along with suggested CSS. These templates can be easily customized by overriding the provided CSS classes or adding your own.
+
+### **1. Error Messages with Hover Pop-Up**
+
+Display an error icon that reveals detailed error messages on hover.
+
+**Template:**
+```html
+<div class="error-icon" [showWhenInvalid]>
+  <span>⚠</span>
+  <div class="error-messages" [validationErrors]></div>
+</div>
+```
+
+**CSS:**
+```css
+.error-icon {
+  position: relative;
+}
+
+.error-messages {
+  display: none;
+  position: absolute;
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.error-icon:hover .error-messages {
+  display: block;
+}
+
+```
+---
+
+### **2. Required Field Indicator with Custom Image**
+
+Show an image when the field is required.
+
+**Template:**
+```html
+<div class="required-indicator" [showWhenRequired]>
+  <img src="required-icon.png" alt="Required">
+</div>
+```
+
+**CSS:**
+```css
+.required-indicator img {
+  width: 16px;
+  height: 16px;
+}
+
+```
+
+---
+
+### **3. Completed Indicator with Fade-Out Effect**
+
+Show a checkmark when validation is completed, which fades out after a short delay.
+
+**Template:**
+```html
+<div class="completed-indicator" [showWhenCompleted]>✔</div>
+```
+
+**CSS:**
+```css
+.completed-indicator {
+  opacity: 1;
+  transition: opacity 2s ease-out;
+}
+
+.completed-indicator.fade {
+  opacity: 0;
+}
+
+```
+
+---
+
+### **4. Combined Required and Completed Indicators**
+
+This setup shows both required and completed indicators, where the completed checkmark overlays the required icon.
+
+**Template:**
+```html
+<div class="field-status">
+  <span class="required" [showWhenRequired]>*</span>
+  <span class="completed" [showWhenCompleted]>✔</span>
+</div>
+```
+
+**CSS:**
+```css
+.field-status {
+  position: relative;
+}
+
+.required {
+  color: red;
+  margin-right: 10px;
+}
+
+.completed {
+  position: absolute;
+  left: 5px;
+  color: green;
+}
+
+```
+
+
+---
+
+### **5. Severity-Based Error Icons**
+
+This template shows an icon that represents the highest severity level from the `IssuesFound` array, automatically set by the directive. The `data-severity` attribute is generated and set to "severe" or "warning," but omitted when the severity is "error" (the default case).
+
+**Template:**
+```html
+<div class="severity-icon" [showWhenInvalid]>
+  <span class="icon">⚠</span>
+</div>
+```
+
+**CSS:**
+```css
+.severity-icon[data-severity="warning"] .icon {
+  color: yellow;
+}
+
+.severity-icon[data-severity="severe"] .icon {
+  color: red;
+}
+
+/* No additional style for error, as it's the default */
+```
+The data-severity attribute allows users to style the icon or the component based on the highest severity found. If the validation severity is "error," the attribute will not be emitted, allowing for a cleaner default styling approach.
+
+---
+
+### **6. Full Field Component with All Parts**
+
+A more complex template that combines all aspects: label, input, required indicator, error messages, and completion indicator.
+
+**Template:**
+```html
+<div class="field-wrapper" [valueHostName]="fieldName">
+  <label for="email">Email</label>
+  <input id="email" validate [val-invalid-class]="'input-error'" [val-valid-class]="'input-valid'">
+  
+  <div class="required-indicator" [showWhenRequired]>*</div>
+  <div class="completed-indicator" [showWhenCompleted]>✔</div>
+  
+  <div class="error-container" [showWhenInvalid] [validationErrors]></div>
+</div>
+```
+
+**CSS:**
+```css
+.field-wrapper {
+  margin-bottom: 20px;
+}
+
+.input-error {
+  border-color: red;
+}
+
+.input-valid {
+  border-color: green;
+}
+
+.required-indicator {
+  color: red;
+}
+
+.completed-indicator {
+  color: green;
+  margin-left: 10px;
+}
+
+.error-container {
+  color: red;
+  font-size: 12px;
+}
+
+```
+---
+
+## **Visibility Control for UI Elements**
+
+To ensure that elements are hidden or shown correctly, the directives manage the `display` property without directly overriding it. Instead of setting `display:none` followed by `display:block`, the system ensures the original `display` value is respected and uses techniques like removing the inline `display` property or setting it to `inherit`. Additionally, the HTML5 `hidden` attribute is considered for controlling visibility.
+
+---

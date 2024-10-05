@@ -72,21 +72,23 @@ When generating markdown output that includes HTML, CSS, or TypeScript code, rep
 
 # Notes list for me to work out
 1. Provide ARIA attributes that are configurable, and localizable.
-   This may take adding settings in FivaseServicesHost.
-   
-3. FivaseServicesHost:
+   This may take adding settings in FivaseServices.
+2. Provide localizable tooltip strings available for various directives. Will be used by Required, Corrected, and IssueFound Directives so the user knows their purpose.
+3. FivaseServices:
    - Support a settings service pattern, where each Directive can get:
      - global configuration
 	 - css classes, invalidCssClass and validCssClass
 	 - aria attribute values
 	 - Settings changed event to be called after localization has changed the strings so directives can refresh arias and other localization settings
+4. We may introduce new DirectiveAction types to allow users to inject appropriate handlers for gainedFocus and lostFocus messages (FivaseForm.sendMessage). This will give users more flexibility in how they manage focus-based interactions.
+
 6. Work on ValidationSummary. It will use PresentationDirectiveActions but needs to show the summaryMessage. It will monitor validation callbacks.
 7. Add a directive on a submit button to disable it or handle validation.
 8. Developing components
    - Provide several prototypes of components that show an error message, required indicator, corrected indicator, validation summary, and a complete field input enclosed in a box.
    - Document how to configure any component to support Jivs. Sending input data in. Getting issues out.
    - Develop examples of custom components and custom HTML elements. Use the model of a quantity tool on a shopping site with minus and plus commands and the current count. There will be different ways to supply events, including DOM events and Angular listeners. The plan includes using DOM Shadow API and actual Angular components. DirectiveActions will be used to reach into them to get the current value or attach a listener. Custom DOM events will deliver the target element, QuantityHtmlElement, with a Value property that is a number.
-9. Error message wrapping tags should identify severity to allow css to change based on that.
+9. Error message wrapping tags should identify severity to allow css to change based on that. This belongs in a separate project for Jivs-HTML.
 11. Often creating an ErrorMessage component has [showWhenInvalid]="valuehostname" on its outer container
     and [validationErrors] inside. This is a good case for validationErrors inheriting valueHostName from showWhenInvalid.
 
@@ -144,6 +146,59 @@ interface IValidationServices {
 // Placeholder for specific service methods used internally
     getService<T>(serviceName): null | T;
     setService(serviceName, service): void;
+	
+	textLocalizerService: ITextLocalizerService;
+	cultureSerivce: ICultureService;
+	// NOTE: There are MANY more properties that I've omitted.
+}
+```
+
+```ts
+/**
+ * A service to offer text alternatives to the default text
+ * based on cultureId.
+ */
+export interface ITextLocalizerService extends IServiceWithFallback<ITextLocalizerService>
+{
+    /**
+     * Returns the localized version of the text for the given culture.
+     * If nothing is matched, it returns the fallback text.
+     * @param cultureIdToMatch - The cultureID.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested. If null or '', no localization is requested.
+     * @param fallback - Used when there was no match for the culture.
+     * Only supply '' if you are sure that registered data will always supply a value.
+     * @returns The localized text or the fallback text.
+     */
+    localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
+
+    /**
+     * Registers a lookup key with the culture specific text.
+     * Replaces an already registered entry with the same l10nKey.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested.
+     * @param cultureToText - keys are language codes from cultureId, like 'en'.
+     * values are the actual text to output.
+     */
+    register(l10nKey: string, cultureToText: CultureToText): void;
+   
+}
+
+```
+
+```ts
+/**
+ * Service for identifying cultures that you will use in the app,
+ * by their CultureID  ('en', 'en-US', 'en-GB', etc), and provides
+ * fallbacks for when a requested CultureID is not found.
+ */
+export interface ICultureService extends IService {
+  /**
+   * The culture shown to the user in the app. Its the ISO language-region format.
+     This value is the starting point to search through localizations.
+   */
+  activeCultureId: string;
+
 }
 ```
 
@@ -177,8 +232,9 @@ export interface IValidatableValueHostBase extends IValueHost {
     isValid: boolean;
     asyncProcessing?: boolean;
     corrected?: boolean;
+	currentValidationState: ValueHostValidationState;
 }
-export interface IInputValueHost extends IValueHost {
+export interface IInputValueHost extends IValidatableValueHostBase {
     setInputValue(nativeValue: any, inputValue: string, options?: SetValueOptions): void;
 	requiresInput: boolean;
 }

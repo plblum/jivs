@@ -1,0 +1,335 @@
+# ARIA Attribute Support for Validation Directives
+
+**Goal**: Automatically apply ARIA attributes (`aria-invalid`, `aria-required`, `aria-errormessage`, `aria-roledescription`, `aria-hidden`, `aria-live`) to form inputs, error messages, and other validation elements to improve accessibility and ensure compatibility with screen readers.
+
+> A number of aria attributes may make sense based on the UI implementation, like `aria-haspopup` and `aria-pressed`. Those attributes are for the developer of the UI to implement.
+
+## Attribute Behavior
+
+### aria-invalid
+- **Values**: `"true"`, `"false"`.
+- **Purpose**: Identifies whether the input is valid.
+  - `"true"`: Input is invalid.
+  - `"false"`: Input is valid or no validation has occurred.
+- **Rules**:
+  - Added to inputs that have failed validation (`valueHost.currentValidationState.isValid === false`).
+  - Removed or set to `"false"` when the input is valid.
+- **Configuration**:
+  - **Automatic**: Applied by the directive based on the input's validation state.
+
+### aria-required
+- **Values**: `"true"`.
+- **Purpose**: Identifies that the input is required.
+- **Rules**:
+  - Added to inputs where `valueHost.requiresInput` is `true`.
+  - Removed when the input is not required.
+- **Configuration**:
+  - **Automatic**: Applied by the directive based on the `requiresInput` property.
+
+### aria-errormessage
+- **Values**: The ID of the associated error message element.
+- **Purpose**: Links the input to the element containing the validation error message.
+- **Pattern**: The input element’s `ID` + `"_errorMessages"`.
+  - Example: If the input has `id="username"`, the value of `aria-errormessage` will be `"username_errorMessages"`.
+- **Rules**:
+  - Added only if the input element has an `ID`. If no `ID` is set, `aria-errormessage` is **omitted**.
+  - The referenced error message element must have an `ID` that matches this pattern.
+- **Configuration**:
+  - **Automatic**: Applied by the directive if the input has an `ID`.
+
+### aria-roledescription
+- **Values**: A localized string describing the element’s role (e.g., `"Error message"`).
+- **Purpose**: Provides a human-readable description of the element’s role for screen readers.
+- **Rules**:
+  - Localized using `TextLocalizerService`, with the default text and `l10nKey` configured globally for each directive.
+  - The role description should align with the element’s specific function (e.g., "Error message" for error containers).
+  - If no localization is available, it will fall back to a globally configured default value.
+- **Configuration**:
+  - **User-configurable**: 
+    - Two global properties are needed: default text and `l10nKey`.
+    - These can be omitted from the global configuration, allowing users to remove the attribute.
+    - **Default Values**:
+      - `ValidationErrorDirective`: Defaults to `"Error message"`.
+      - **l10nKey**: `"errormessageroledescription"`.
+
+### aria-hidden
+- **Values**: `"true"`, `"false"`.
+- **Purpose**: Indicates whether an element is hidden from screen readers.
+- **Rules**:
+  - Added to hide elements from screen readers when they are not relevant (e.g., when no errors are present).
+  - Set to `"false"` when the element should be read by the screen reader (e.g., when errors are present).
+- **Configuration**:
+  - **Automatic**: Managed by the directive based on visibility.
+
+### aria-live
+- **Values**: `"assertive"`, `"polite"`.
+- **Purpose**: Controls how urgently screen readers announce updates to an element.
+  - `"assertive"`: Announces immediately.
+  - `"polite"`: Announces updates when the user finishes their current interaction.
+- **Rules**:
+  - Used on elements containing dynamic error messages to ensure that errors are announced as they appear.
+  - The severity of the error may determine whether to use `"assertive"` or `"polite"`. This can be configured globally.
+  - Applied to the error message container, not the input itself.
+- **Configuration**:
+  - **User-configurable**:
+    - A global setting determines which value to use (`"assertive"`, `"polite"`, or `"assertive_when_severe"`).
+    - The `"assertive_when_severe"` setting will switch based on whether the error list contains severe issues.
+    - This attribute can be omitted in global configuration, and users can remove it.
+
+## Directive-Specific ARIA Attribute Support
+
+### ValidationInputDirective
+- **ARIA Attributes**: `aria-invalid`, `aria-required`, `aria-errormessage`.
+- **Specifics**:
+  - `aria-errormessage` will use the pattern `inputID_errorMessages`.
+
+### ValidationErrorDirective
+- **ARIA Attributes**: `aria-roledescription`, `aria-live`, `aria-hidden`.
+- **Specifics**:
+  - `aria-roledescription` will be a localized string (e.g., `"Error message"`) resolved through `TextLocalizerService`.
+  - Default values:
+    - **Default Text**: `"Error message"`.
+    - **l10nKey**: `"errormessageroledescription"`.
+  - `aria-live` is used to control the urgency of announcing error messages.
+  - `aria-hidden` is used to hide or show the error message container to screen readers.
+
+### ShowWhenRequiredDirective
+- **ARIA Attributes**: None. `aria-roledescription` makes some sense. We'll let the user establish it explicitly in global setup if they want it.
+
+
+### ShowWhenCorrectedDirective
+- **ARIA Attributes**: None. `aria-roledescription` makes some sense. We'll let the user establish it explicitly in global setup if they want it.
+
+### ShowWhenIssuesFoundDirective
+- **ARIA Attributes**: None. `aria-roledescription` makes some sense. We'll let the user establish it explicitly in global setup if they want it.
+
+### ContainsInvalidChildrenDirective
+- **ARIA Attributes**: None.
+
+### ValueHostNameDirective
+- **ARIA Attributes**: None.
+
+---
+
+## Global Configuration for Localization
+
+- **Purpose**: Localize ARIA attributes, such as `aria-roledescription`, using globally configured default text and `l10nKey` values for each directive.
+
+- **Configuration Location**: 
+  - Each directive that uses localized ARIA attributes (e.g., `ValidationErrorDirective`) will have a corresponding global configuration object where the default text and `l10nKey` are defined.
+  
+- **TextLocalizerService**: 
+  - **Role**: This service resolves the appropriate localized string based on the current culture. It fetches the correct localized text from the global configuration.
+  - **Example**:
+    ```typescript
+    const roleDescription = this.services.textLocalizerService.localize(cultureId, 'errorRoleDescription', 'Error message');
+    ```
+
+
+---
+
+# Predictable ID Pattern for ARIA Descriptions
+
+## Overview:
+- **Goal**: Ensure that input elements have a predictable, unique ID pattern to support `aria-errormessage` for linking inputs to error messages.
+
+## Requirements for IDs:
+- **Input Elements**:
+  - Every input element must have a unique `ID` to allow `aria-errormessage` to be applied.
+  - The ID must be predictable so that the associated error message element can follow the pattern `inputID_errorMessages`.
+
+- **Error Message Elements**:
+  - Error message elements must have an `ID` that follows the pattern of the input’s `ID` + `"_errorMessages"`.
+  - If the input’s ID is `"username"`, the error message ID must be `"username_errorMessages"`.
+
+## Considerations:
+- **No ID on Input**: If no `ID` is set on the input, `aria-errormessage` will not be added.
+- **Dynamic Forms**: Developers must ensure that each instance of an input has a unique `ID` in dynamic or repeated forms to prevent conflicts between inputs and their associated error messages.
+
+---
+
+# Support for Dynamic Error Message Display (Popup/Notification)
+
+## Overview
+- **Premise**: This section applies only when error messages are not visible inline on the screen (e.g., displayed directly below or next to the input field). Instead, it addresses situations where error messages need to be shown in some other way, such as via a popup, status message, or notification view. If your error messages are always visible on-screen, this section is not relevant.
+- **Goal**: Ensure that error messages are visible to screen readers when `aria-errormessage` is used. Screen readers will not announce error messages in containers that are fully hidden (e.g., `display: none`). As a result, the user must decide whether to show the error message container in a way that can be accessed by the screen reader or continue using a UI where their own popup mechanism displays the errors, and forego using `aria-errormessage`.
+
+## How Users Experience This Feature
+- **Error Message Visibility**: When an input field is focused (i.e., when a user clicks or taps into it), any associated error messages should automatically become visible to the user and to screen readers. Once the user moves away from the input (loses focus), the error message can be hidden again.
+  - **For screen readers**: Error messages will be announced as soon as they are made visible, but only if they are not fully hidden via `display: none`. If the error message remains hidden, screen readers will not announce it.
+  - **User Interaction**: This dynamic behavior ensures that users get immediate feedback when they interact with form inputs, making the experience more responsive and accessible.
+
+## Implementation
+
+- **ValidationInputDirective**: This directive will set up event handlers (e.g., `focus` and `blur` events) to trigger focus-related commands using `FivaseForm.sendMessage`. These commands notify other directives about input focus changes.
+- **Handling Commands**: The following commands will manage error message visibility:
+  - **`gainedFocus`**: Sent when the input gains focus, causing the associated error message to become visible.
+  - **`lostFocus`**: Sent when the input loses focus, allowing the associated error message to be hidden, as long as the screen reader can still access the message when needed.
+
+## DirectiveAction Types for Focus and Blur Events
+
+In the implementation of `ValidationInputDirective`, we will need two new `DirectiveAction` interfaces to handle focus and blur events. These interfaces will be used to set up event handlers for the input element and manage the interaction between the input field and the validation system.
+
+### Required Types
+
+1. **IDirectiveFocusEventsHandler**
+   - **Purpose**: Sets up the event handlers for `focus` and `blur` events on the input field. This action ensures that when an input gains or loses focus, the corresponding commands (`gainedFocus`, `lostFocus`) are sent to the validation system.
+   - **Factory**: `DirectiveFocusEventsHandlerFactory`.
+   - **Default Class Implementation**: `StandardHtmlFocusEventsHandler`, which handles traditional DOM focus and blur events. Users can replace this for custom components that have their own messaging for these activities.
+
+2. **IDirectiveMessageVisibility** (extends `IDirectiveRenderer`)
+   - **Purpose**: Listens for the `gainedFocus` and `lostFocus` commands, updating the UI elements associated with the input field based on its focus state (e.g., showing or hiding error messages). `IDirectiveMessageVisibility` extends `IDirectiveRenderer`, as both are interconnected. The popup capability is introduced in `IDirectiveRenderer.renderForFivaseDirective`, and `IDirectiveMessageVisibility` invokes the same code.
+   - **No Factory or Default Class Implementation Needed**: `ValidationErrorsDirective` will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IDirectiveRenderer` instance. This mechanism allows enabling or disabling the functionality smoothly.
+
+## Impact on Existing Code
+
+1. **FivaseServices**:
+   - The factory `DirectiveFocusEventsHandlerFactory` will be supported within `FivaseServices`.
+
+2. **ValidationInputDirective**:
+   - This directive will always wire up the supplied `IDirectiveFocusEventsHandler`, even if the error presentation does not explicitly require it. This ensures that focus and blur events are handled consistently across the system.
+
+3. **ValidationErrorsDirective**:
+   - This directive will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IDirectiveRenderer` instance. If the implementation is present, it will invoke the necessary functionality to show or hide the error message content appropriately.
+
+
+# Screen Reader Compatibility with Hidden Error Messages
+
+**Goal**: Ensure that error messages that are visually hidden (e.g., via display: none) can still be announced by screen readers when an input with errors is focused.
+
+## Solution:
+Use `aria-hidden` and `aria-live` to make error messages available to screen readers.
+## Snippet:
+Updating Error Message ARIA on Focus:
+```ts
+this.el.nativeElement.addEventListener('focus', () => {
+  this.errorElement.setAttribute('aria-hidden', 'false');
+  this.errorElement.setAttribute('aria-live', 'assertive');
+});
+```
+
+## Considerations:
+`aria-live="assertive"`: The error message will be announced immediately when it becomes available.
+`aria-hidden="true"`: Keeps the error message hidden from screen readers when the input is valid or not focused.
+
+# User-Configurable aria-live Severity Levels
+
+**Goal**: Provide users with the ability to dynamically adjust the severity of how quickly screen readers announce error messages using `aria-live`. This could depend on whether the issue is critical (severe), just an error, or a warning.
+
+## Snippet:
+Example Usage:
+```html
+<div id="username_validationerrors" aria-live="assertive">
+  Username is required.
+</div>
+```
+JavaScript Handling:
+
+```ts
+if (validationState.severity === 'severe') {
+  this.renderer.setAttribute(this.errorElement, 'aria-live', 'assertive');
+} else if (validationState.severity === 'warning') {
+  this.renderer.setAttribute(this.errorElement, 'aria-live', 'polite');
+}
+```
+## Considerations:
+Allow user customization via global settings.
+
+# Flexible Error Message Handling in UI Designs
+
+**Goal**: Support different UI designs for error messages:
+- Some UIs may completely hide error messages visually.
+- Others may always keep error messages visible for screen reader compatibility.
+- Detect screen reader usage (if feasible) and adapt error display accordingly.
+## Snippet:
+Example for Always Visible Error Messages:
+```html
+<div id="username_validationerrors">Username is required.</div>
+```
+## Considerations:
+Screen Reader Detection: Native detection isn’t feasible, but you can provide conditional logic for accessibility settings based on UI needs.
+
+# aria-roledescription for Better Role Descriptions (with Localization)
+
+**Goal**: Localize and customize the descriptions for various elements (e.g., error messages) using `aria-roledescription`. Leverage TextLocalizerService for providing localized strings.
+## Snippet:
+Example:
+```ts
+<div id="username_validationerrors" aria-roledescription="Error message">Username is required.</div>
+```
+```ts
+const roleDescription = this.services.textLocalizerService.localize(cultureId, 'errorRoleDescription', 'Error message');
+this.renderer.setAttribute(this.el.nativeElement, 'aria-roledescription', roleDescription);
+```
+## Considerations:
+Global configuration should allow users to customize both the default text and the localization keys.
+
+# Flexible ARIA Attribute Configuration
+
+**Goal**: Provide users with the flexibility to configure and extend ARIA attributes for validation-related directives, such as adding custom ARIA roles or attributes (like aria-completed).
+
+## Snippet:
+Example Usage:
+```html
+<input aria-completed="true">
+```
+## Considerations:
+Users should be able to define any ARIA attribute they need, and configure values for their specific validation scenarios.
+
+# Global Configuration in FivaseServices
+
+**Goal**: Add a global configuration object in `FivaseServices` that manages ARIA attribute settings, localization keys, default messages, etc., making it easier for users to customize behavior across all directives.
+## Snippet:
+Global Config Example:
+```ts
+const config = {
+  ariaSettings: {
+    liveSeverity: 'assertive',
+    defaultRoleDescription: 'Error message',
+    localizedTexts: {
+      required: 'This field is required',
+      invalid: 'Invalid value'
+    }
+  }
+};
+```
+## Considerations:
+This configuration should be passed to the directives through FivaseServices for centralized control over behavior and accessibility settings.
+
+# Directive-Specific Attribute Handling with Base Class
+
+**Goal**: Create a base class for handling common ARIA logic across all validation-related directives. Subclasses can override or extend behavior for their specific needs.
+## Snippet:
+Base Class Example:
+```ts
+class BaseValidationDirective {
+  protected addAriaAttributes(element: HTMLElement, validationState: ValidationState): void {
+    // Set up ARIA attributes
+  }
+}
+```
+Subclass Example:
+```ts
+class ValidationInputDirective extends BaseValidationDirective {
+  // Customize ARIA behavior specific to this directive
+}
+```
+## Considerations:
+Singleton instances of these directives will be available via FivaseServices to avoid multiple instances.
+
+# User-Provided Localizable Text and Keys in TextLocalizerService
+
+**Goal**: Allow users to provide custom localized text or l10nKey values through TextLocalizerService. These values should be configurable for all localizable text elements in the validation system.
+
+## Snippet:
+Example:
+```ts
+const customTexts = {
+  required: 'This field is mandatory',
+  invalid: 'Please provide a valid value'
+};
+
+this.services.textLocalizerService.register('required', customTexts);
+```
+## Considerations:
+TextLocalizerService should allow registration of custom localization keys and default text, with global configuration access via FivaseServices.

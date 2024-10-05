@@ -4,7 +4,7 @@ This guide will help you set up *jivs-angular* validation in your Angular app us
 
 ## 1. Establishing Fivase's services in NgModule
 
-In your `AppModule`, add FivaseServicesHost as a provider. This class supports:
+In your `AppModule`, add FivaseServices as a provider. This class supports:
 - Establishing ValidationManager configurations by form
 - Factories for extending Fivase's directives related to event handling and rendering
 
@@ -15,7 +15,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { UserFormComponent } from './user-form/user-form.component';
-import { FivaseServicesHost, InMemoryFivaseStateStore } from 'your-library-path';
+import { FivaseServices, InMemoryFivaseStateStore } from 'your-library-path';
 
 
 @NgModule({
@@ -23,8 +23,8 @@ import { FivaseServicesHost, InMemoryFivaseStateStore } from 'your-library-path'
   imports: [BrowserModule],
   providers: [
     {
-      provide: FivaseServicesHost,
-      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+      provide: FivaseServices,
+      useFactory: ()=> new FivaseServices(new InMemoryFivaseStateStore())
     }
   ],
   bootstrap: [AppComponent]
@@ -72,7 +72,7 @@ export function addFivaseFormConfigurations(configHost : FivaseConfigHost): void
 
 ### Step 2: Call the function from NgModule's constructor
 
-In your `AppModule` constructor, get FivaseServicesHost through Dependency Injection
+In your `AppModule` constructor, get FivaseServices through Dependency Injection
 and call your addFivaseFormConfigurations.
 
 ```ts
@@ -80,7 +80,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { UserFormComponent } from './user-form/user-form.component';
-import { FivaseServicesHost } from 'your-library-path';
+import { FivaseServices } from 'your-library-path';
 
 import { addFivaseFormConfigurations } from './fivase-config-factory';  // Import the companion function
 
@@ -89,17 +89,17 @@ import { addFivaseFormConfigurations } from './fivase-config-factory';  // Impor
   imports: [BrowserModule],
   providers: [
     {
-      provide: FivaseServicesHost,
-      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+      provide: FivaseServices,
+      useFactory: ()=> new FivaseServices(new InMemoryFivaseStateStore())
     }
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
-	constructor(private fivaseServicesHost: FivaseServicesHost)
-	{
-		addFivaseFormConfigurations(fivaseServicesHost.configHost);
-	}
+  constructor(private fivaseServices: FivaseServices)
+  {
+    addFivaseFormConfigurations(fivaseServices.configHost);
+  }
 }
 ```
 
@@ -135,7 +135,7 @@ You can now set up your form using the `validate`, `validationErrors`, and `cont
 
 ### Connecting the Directives:
 
-The directives like `[validate]` and `[validationErrors]` use the `FivaseValidationManager` supplied by the form through Angular’s dependency injection (DI). This allows *jivs-angular* to connect its validation functionality to your components without needing to modify the components themselves. Here are the available directives:
+The directives like `[validate]` and `[validationErrors]` use the `FivaseForm` supplied by the form through Angular’s dependency injection (DI). This allows *jivs-angular* to connect its validation functionality to your components without needing to modify the components themselves. Here are the available directives:
 
 - **`[validate]`**: Binds the input field to the validation system.
 - **`[validationErrors]`**: Displays validation errors for the corresponding field.
@@ -149,21 +149,20 @@ The directives like `[validate]` and `[validationErrors]` use the `FivaseValidat
 
 ## 4. Connect the Form to the Validation Manager
 
-Once the form fields are set up, you need to inject the `FivaseValidationManager` into your component and trigger validation when the form is submitted.
+Once the form fields are set up, you need to inject the `FivaseForm` into your component and trigger validation when the form is submitted.
 
 ```ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FivaseValidationManager } from 'your-library-path';
+import { FivaseForm } from 'your-library-path';
 
 @Component({
   selector: 'app-user-form',
   templateUrl: './user-form.component.html',
   providers: [
     {
-      provide: FivaseValidationManager,
-      useFactory: (fivaseServicesHost: FivaseServicesHost, formId: string) => {
-	    let config = fivaseServicesHost.configHost.getConfig(formId);
-        return new FivaseValidationManager(config);
+      provide: FivaseForm,
+      useFactory: (fivaseServices: FivaseServices, formId: string) => {
+        return fivaseServices.createFivaseForm(formId);
       },
       deps: [FivaseConfigHost, FORM_ID]
     },
@@ -171,18 +170,18 @@ import { FivaseValidationManager } from 'your-library-path';
   ]
 })
 export class UserFormComponent implements OnInit, OnDestroy {
-  constructor(private fivaseValidationManager: FivaseValidationManager) {}
+  constructor(private fivaseForm: FivaseForm) {}
 
   ngOnInit(): void {
     // Initialization logic if needed
   }
 
   ngOnDestroy(): void {
-    this.fivaseValidationManager.destroy(); // Ensure cleanup
+    this.fivaseForm.destroy(); // Ensure cleanup
   }
 
   submitForm(): void {
-    const validationResults = this.fivaseValidationManager.validate();
+    const validationResults = this.fivaseForm.validate();
 
     if (validationResults === null) {
       // Proceed with form submission logic
@@ -196,7 +195,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
 
 ```
 
-The `FivaseValidationManager` is injected into your form via DI, which means the directives (`validate`, `validationErrors`, `containsInvalid`) automatically access it.
+The `FivaseForm` is injected into your form via DI, which means the directives (`validate`, `validationErrors`, `containsInvalid`) automatically access it.
 
 ## 5. Customizing the Directives
 
@@ -217,21 +216,20 @@ Here is a simplified implementation of how *jivs-angular* handles change and inp
 export class InputHtmlTagDirectiveEventHandler extends DirectiveActionBase implements IDirectiveEventHandler {
   setupEventHandlers(
     element: HTMLElement,
-	renderer: Renderer2,
+  renderer: Renderer2,
     valueHostName: string,
-    fivaseValidationManager: FivaseValidationManager
+    fivaseForm: FivaseForm
   ): void {
 
-    if (element) {
-		renderer.listen(element, 'change', (event: Event) => {
-		  const inputValue = (event.target as HTMLInputElement).value;
-		  fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true });
-		});
-		renderer.listen(element, 'input', (event: Event) => {
-		  const inputValue = (event.target as HTMLInputElement).value;
-		  fivaseValidationManager.setInputValue(valueHostName, inputValue, { validate: true, 	
-			duringEdit: true });
-		});		
+  if (element) {
+    renderer.listen(element, 'change', (event: Event) => {
+      const inputValue = (event.target as HTMLInputElement).value;
+      fivaseForm.setInputValue(valueHostName, inputValue, { validate: true });
+    });
+    renderer.listen(element, 'input', (event: Event) => {
+    const inputValue = (event.target as HTMLInputElement).value;
+    fivaseForm.setInputValue(valueHostName, inputValue, { validate: true,   
+      duringEdit: true });
     }
   }
 }
@@ -257,7 +255,7 @@ export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
     renderer: Renderer2,
     valueHostName: string,
     validationState: ValueHostValidationState,
-    fivaseValidationManager: FivaseValidationManager,
+    fivaseForm: FivaseForm,
     options?: IDirectiveRendererOptions
   ): void {
 
@@ -265,9 +263,9 @@ export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
       renderer.setProperty(element, 'innerHTML', '');
 
       // Apply the values of invalidCssClass and validCssClass in the base class
-      super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseValidationManager, options);
-	  
-	  let issuesFound = validationState.issuesFound;
+      super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseForm, options);
+    
+    let issuesFound = validationState.issuesFound;
       if (issuesFound && issuesFound.length > 0) {
         
         // Create a <ul> element to display the errors
@@ -293,8 +291,22 @@ export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
 
 Suppose you have already created a custom `IDirectiveRenderer` for the `[validationErrors]` directive called `"ErrorTable"`. Now, we need to register this class in the appropriate factory to ensure it is used by the application.
 
-Each Directive has its own factory, found in the FivaseServicesHost. In this example, we'll use
-FivaseServicesHost.errorMessagesDirectiveRendererFactory, and add your class during the constructor of the NgModule.
+Each Directive has its own factories to cover all Directive Actions it supports.
+The factories in the FivaseServices. Register yours by calling its getFactory().register() as shown here:
+```ts
+let factory = fivaseServices.getFactory(
+  DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).register(
+     'ErrorTableRenderer', new ErrorTableDirectiveRenderer());
+```
+To use it, add the [fivase-render] or [fivase-eventhandler] attribute to the tag, and pass in the name you supplied:
+```ts
+<div [validationErrors]="ValueHostName" [fivase-renderer]="ErrorTableRenderer" >
+</div>
+```
+
+
+ In this example, we'll use
+FivaseServices.errorMessagesDirectiveRendererFactory, and add your class during the constructor of the NgModule.
 
 #### Registering `"MyErrorPresentation"` with the `ErrorPresentationDirectiveActionFactory`
 
@@ -305,7 +317,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { UserFormComponent } from './user-form/user-form.component';
-import { FivaseServicesHost } from 'your-library-path';
+import { FivaseServices } from 'your-library-path';
 
 import { addFivaseFormConfigurations } from './fivase-config-factory';  // Import the companion function
 import { ErrorTable } from './fivase-extensions/errorTable';
@@ -315,24 +327,24 @@ import { ErrorTable } from './fivase-extensions/errorTable';
   imports: [BrowserModule],
   providers: [
     {
-      provide: FivaseServicesHost,
-      useFactory: ()=> new FivaseServicesHost(new InMemoryFivaseStateStore())
+      provide: FivaseServices,
+      useFactory: ()=> new FivaseServices(new InMemoryFivaseStateStore())
     }
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
-	constructor(private fivaseServicesHost: FivaseServicesHost)
-	{
-		addFivaseFormConfigurations(fivaseServicesHost.configHost);
-		
-	// Use one of these two approaches:
-	// 1. Make it the default:
-		fivaseServicesHost.errorMessagesDirectiveRendererFactory.defaultFallback = new ErrorTable();
-	
-	// 2. Make it work with the [fivase-renderer] attribute:
-		fivaseServicesHost.errorMessagesDirectiveRendererFactory.register('ErrorTable', new ErrorTable()); // <tag [directive] fivase-renderer='ErrorTable' >
-	}
+  constructor(private fivaseServices: FivaseServices)
+  {
+    addFivaseFormConfigurations(fivaseServices.configHost);
+    
+  // Use one of these two approaches:
+  // 1. Make it the default:
+    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).defaultFallback = new ErrorTable();
+  
+  // 2. Make it work with the [fivase-renderer] attribute:
+    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).register('ErrorTableRenderer', new ErrorTableDirectiveRenderer()); // <tag [directive] fivase-renderer='ErrorTable' >
+  }
 }
 ```
 
@@ -344,45 +356,49 @@ Now we need to wire it up to your component class.
 
 ```ts
 @Component(
-	selector: 'app-mycomponent'
+  selector: 'app-mycomponent'
 )
 export class MyComponent implments OnInit, OnDestroy
 {
-	constructor(private fivaseServicesHost: FivaseServicesHost,
-	  private el: ElementRef)
-	{
-	}
-	
-	ngOnInit(): void
-	{
-		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement, new MyClass());
-	}
-	ngOnDestroy(): void
-	{
-		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement);
-	}
+  constructor(private fivaseServices: FivaseServices,
+    private el: ElementRef)
+  {
+  }
+  
+  ngOnInit(): void
+  {
+    this.fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_NAME)
+      .available(el.nativeElement, new MyClass());
+  }
+  ngOnDestroy(): void
+  {
+    this.fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_NAME).
+      .unavailable(el.nativeElement);
+  }
 }
 ```
 Here's when you implement the interface on the component class.
 
 ```ts
 @Component(
-	selector: 'app-mycomponent'
+  selector: 'app-mycomponent'
 )
 export class MyComponent implments OnInit, OnDestroy, IDirectiveEventHandler
 {
-	constructor(private fivaseServicesHost: FivaseServicesHost,
-	  private el: ElementRef)
-	{
-	}
-	
-	ngOnInit(): void
-	{
-		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement, this);
-	}
-	ngOnDestroy(): void
-	{
-		this.fivaseServicesHost.factoryPropertyName.available(el.nativeElement);
-	}
+  constructor(private fivaseServices: FivaseServices,
+    private el: ElementRef)
+  {
+  }
+  
+  ngOnInit(): void
+  {
+    this.fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_NAME)
+      .available(el.nativeElement, this);
+  }
+  ngOnDestroy(): void
+  {
+    this.fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_NAME)
+      .unavailable(el.nativeElement);
+  }
 }
 ```
