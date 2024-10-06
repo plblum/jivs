@@ -30,29 +30,43 @@ We'll refer to this library as jivs-angular.
 
 ## **Guidelines for Future Interactions**
 
-1. Code Development Topics: When starting a new code topic, focus on discussing the vision or concept first with minimal or no code. Present short snippets only after confirming the approach. Avoid jumping directly into full implementations.
+# Updated Guidelines for ChatGPT Interactions
 
-2. Code Changes: Provide a targeted snippet of the change without restating the "before" case. Keep the snippet minimal, focusing on one change at a time. You don’t need to include full code unless explicitly requested.
+## Overview
+The following guidelines ensure that interactions are focused entirely on reacting to user instructions without offering proactive suggestions or next steps. This approach puts the user in complete control over the conversation flow.
 
-3. Full Code Output: Only provide the full code when explicitly requested after changes have been discussed. Focus on incremental changes rather than whole implementations. I often return this to "complete code".
+## Guidelines for Future Interactions
 
-4. When providing complete code that was based on earlier work, ensure that all comments in the previous content are included, including type-level or class-level, inline, and function-level. Unless our work already changed a comment, I expect the original comment.
+1. **Code Development Topics**: When starting a new code topic, focus solely on discussing the vision or concept presented by the user. Avoid adding proactive suggestions or assumptions regarding the next steps. Only present short snippets when explicitly instructed to do so.
 
-5. Change Explanation: Keep explanations to a minimum unless the change is complex or unrelated to the discussion. If further clarification is needed, I will ask for more details. Provide "explanation on request" for why changes were made.
+2. **Code Changes**: Provide targeted snippets of code as per the user's request. Do not restate existing code or introduce other unrelated changes unless specifically directed. Keep the snippet minimal and precise, with no added context. When working on snippets based on existing work, do not replace the existing code unless explicitly instructed. Instead, focus on showing modifications that preserve the original code, including comments, as much as possible. Avoid rewriting anything that does not need to be changed.
 
-6. Step-by-step Collaboration: Focus on one concept, change, or snippet at a time, pausing for feedback before moving on to the next step. This ensures alignment at each stage of the process.
+3. **Full Code Output**: Only provide the full code when explicitly requested by the user. Focus on delivering incremental changes instead of whole implementations.
 
-7. User Documentation: We will approach it one block at a time. Each block will be reviewed iteratively, with me providing feedback on changes or additions. Once a block is finalized and I am happy with it, we will move on to the next section. No new content or sections should be introduced until the current block is approved. Provide minimal content in each segment, and avoid full output until prompted. Omit summaries and conclusions unless necessary.
+4. **Comment Preservation**: When providing complete code based on previous work, ensure all original comments are included unless specifically instructed to modify them. Avoid summarizing existing comments unless requested.
 
-8. Review Questions: Respond directly to review questions without detailed explanations unless they are requested. If you have concerns about the feedback, follow up with clarifications or questions.
+5. **Change Explanation**: Only provide an explanation for changes when explicitly asked. If a change is complex or unrelated, wait for the user to prompt for more details.
 
-9. Feedback and Questions: Always answer the question first when feedback and a question are combined, before proceeding with further work or modifications.
+6. **Step-by-step Collaboration**: Focus on one concept, change, or snippet at a time, and wait for user feedback before proceeding. This ensures alignment at every stage.
 
-10. Snippet vs. Complete Code: Clearly indicate whether a response contains a full implementation (complete code) or a focused example (snippet). When changes are discussed in snippets, those changes will be explicitly merged into the latest source code at a later step, with confirmation from the user.
+7. **User Documentation**: Approach documentation in segments as directed by the user. Each segment should be reviewed iteratively without introducing additional sections until the current block is approved. Keep content minimal, and avoid summaries until explicitly prompted.
 
-11. When we are just editing existing comments, just output the comment area related to the change. I'm focused on reading the comment itself and want to avoid the noise or delays associated with adding nearby code.
+8. **Review Questions**: Respond directly to the user's questions. Avoid providing additional context or assumptions beyond the user's request.
 
-12. Comments should focus on the purpose of the code, not teaching how to program. This applies to both abstract and non-abstract cases. Example of a bad comment, which teaches: "Abstract method to be implemented by subclasses for their specific setup.". Example of a good comment, "Sets up the directive based on the resolved valueHostName."
+9. **Feedback and Questions**: When feedback and questions are combined, answer the question first, before proceeding with further changes or modifications.
+
+10. **Snippet vs. Complete Code**: Clearly indicate whether a response contains a snippet or a full implementation. Always wait for user confirmation before merging snippets into the complete source code.
+
+11. **Comment Editing**: When editing comments, output only the relevant comment text. Avoid adding unrelated code or details to minimize noise.
+
+12. **Purpose-focused Comments**: Keep comments focused on describing the purpose of the code. Avoid teaching programming concepts in comments. Comments should reflect intent without being instructional.
+
+13. **Avoid Proactive Suggestions**: Do not suggest next steps or directions. Only proceed when prompted by the user.
+
+14. **Reacting to User Input**: React solely to the user's instructions without making assumptions about their future requirements. Do not initiate any new steps or directions.
+
+15. **Minimize Summaries**: Avoid summaries or conclusions unless explicitly directed by the user. Focus only on addressing the current request.
+
 
 
 ## Project names

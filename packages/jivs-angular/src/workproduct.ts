@@ -115,6 +115,52 @@ export interface IValueChangeListenerAction {
 }
 
 /**
+ * Interface for setting up listeners for focus changes on an element.
+ * This action will listen for focus and blur events and communicate with the FivaseForm.
+ *
+ * Each Directive class that uses IFocusListenerAction has its own Factory, based on
+ * ActionFactoryBase which is registered in the FivaseServices class.
+ *
+ * When getting the instance from the factory, use the constant ACTION_FOCUS_LISTENER.
+ * ```ts
+ * let focusListener = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_FOCUS_LISTENER).resolve(element, '');
+ * ```
+ * That factory provides a default instance, which can be overridden by the [fivase-focuslistener] attribute
+ * on the same element or component as the directive. Components can also provide a specific
+ * implementation that handles their unique focus requirements. They can either implement standalone
+ * classes or implement the interfaces directly on the component class. Within the component,
+ * they notify the factory to use their implementation by calling the available method.
+ * The factory's resolve function will look for that instance, before falling back to the default instance.
+ *
+ * Classes implementing this interface should not expect any Angular Dependency Injection
+ * into their constructor. They are created explicitly when registering with the factory.
+ */
+export interface IFocusListenerAction {
+    /**
+     * Sets up focus-related event handlers on the target element.
+     *
+     * @param element - The target DOM element.
+     * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
+     * @param valueHostName - The name of the value host associated with this element.
+     * @param fivaseForm - The FivaseForm instance to manage interactions.
+     */
+    listenForFocusChanges(
+        element: HTMLElement,
+        renderer: Renderer2,
+        valueHostName: string,
+        fivaseForm: IFivaseForm
+    ): void;
+
+    /**
+     * Removes any event handlers that were attached to the element.
+     * @param element - The target DOM element.
+     * @param renderer - The Angular Renderer2 service used to remove event listeners.
+     */
+    cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void;
+}
+
+
+/**
  * Concrete implementation of `IValueChangeListenerAction` that targets all HTML tags supporting
  * validation-related events, including 'input', 'textarea', 'select', 'checkbox', and 'file' types. 
  * This class listens for 'input', 'change' events and triggers validation logic accordingly.
@@ -752,6 +798,73 @@ export class ErrorMessagesRenderer extends RendererActionBase {
 }
 
 /**
+ * Default implementation for handling focus events on standard HTML tags.
+ * It listens for focus and blur events (or focusin and focusout based on constructor parameter).
+ */
+export class HtmlTagFocusListener implements IFocusListenerAction {
+    private focusHandler: EventListener = () => {};
+    private blurHandler: EventListener = () => {};
+
+    /**
+     * Creates an instance of HtmlTagFocusListener.
+     *
+     * @param useFocusInOut - Determines whether to use focusin/focusout (which bubble) or focus/blur (which do not bubble).
+     */
+    constructor(private useFocusInOut: boolean = false) {}
+
+    /**
+     * Sets up focus-related event handlers on the target element.
+     * Sends focus gained/lost messages through the FivaseForm.
+     *
+     * @param element - The target DOM element.
+     * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
+     * @param valueHostName - The name of the value host associated with this element.
+     * @param fivaseForm - The FivaseForm instance to manage interactions.
+     */
+    listenForFocusChanges(
+        element: HTMLElement,
+        renderer: Renderer2,
+        valueHostName: string,
+        fivaseForm: IFivaseForm
+    ): void {
+        this.focusHandler = () => fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_GAINED);
+        this.blurHandler = () => fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_LOST);
+
+        if (this.useFocusInOut) {
+            element.addEventListener('focusin', this.focusHandler);
+            element.addEventListener('focusout', this.blurHandler);
+        } else {
+            element.addEventListener('focus', this.focusHandler);
+            element.addEventListener('blur', this.blurHandler);
+        }
+    }
+
+    /**
+     * Removes any event handlers that were attached to the element.
+     * This helps prevent memory leaks when the element is destroyed or no longer needs focus handling.
+     *
+     * @param element - The target DOM element.
+     * @param renderer - The Angular Renderer2 service used to remove event listeners.
+     */
+    cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void {
+        if (this.useFocusInOut) {
+            element.removeEventListener('focusin', this.focusHandler);
+            element.removeEventListener('focusout', this.blurHandler);
+        } else {
+            element.removeEventListener('focus', this.focusHandler);
+            element.removeEventListener('blur', this.blurHandler);
+        }
+    }
+}
+
+/**
+ * Used by FivaseForm's subscribeToValueHostMessaging system as available commands.
+ */
+export const COMMAND_FOCUS_GAINED = 'focusGained';
+export const COMMAND_FOCUS_LOST = 'focusLost';
+
+
+/**
  * These are used by the Fivase Directives to
  * associate themselves with the appropriate ActionFactoryBase implementations.
  */
@@ -763,6 +876,8 @@ export const DIRECTIVE_SHOW_WHEN_REQUIRED = 'fivase-ShowWhenRequired';
 
 export const ACTION_RENDERER = 'Renderer';
 export const ACTION_VALUE_CHANGE_LISTENER = 'ValueChangeListener';
+export const ACTION_FOCUS_LISTENER = 'FocusListener';
+
 
 /**
  * Interface for ActionFactoryBase without generics.
@@ -1038,6 +1153,32 @@ export class ValueChangeListenerActionFactory extends ActionFactoryBase<IValueCh
         return instance && typeof instance.listenForValueChanges === 'function';
     }
 }
+
+/**
+ * Factory class for creating instances of `IFocusListenerAction`.
+ * This factory handles setting up focus-related actions for directives.
+ * It extends `ActionFactoryBase` to provide specific implementations of the focus listener interface.
+ */
+export class FocusListenerActionFactory extends ActionFactoryBase<IFocusListenerAction> {
+    /**
+     * The name of the Directive Action associated with this factory.
+     */
+    public get actionName(): string {
+        return ACTION_FOCUS_LISTENER;
+    }
+
+    /**
+     * Validates that the given instance conforms to `IFocusListenerAction`.
+     * 
+     * @param instance - The instance to validate.
+     * @returns A boolean indicating whether the instance is valid.
+     */
+    protected isValidInstance(instance: IFocusListenerAction): boolean {
+        return typeof instance.listenForFocusChanges === 'function' &&
+               typeof instance.cleanupEventHandlers === 'function';
+    }
+}
+
 
 /**
  * Abstract base class for Fivase-related directives that need a ValueHostName.
@@ -1327,11 +1468,11 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
 }
 /**
  * Directive `validate` manages how an input element interacts with Fivase.
- * It must supply the value to be validated to ValidationManager and update the 
+ * It must supply the value to be validated to ValidationManager and update the
  * UI to show any validation state changes.
- * 
+ *
  * 'validate' takes the value of the ValueHostName registered with Jivs ValidationManager.
- * 
+ *
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
  * <tag [validate]="valueHostName"></tag>
@@ -1342,18 +1483,23 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
  * </tag>
  * ```
  * ### [fivase-target]
- * This optional input allows the directive to target a specific element within a component's template 
+ * This optional input allows the directive to target a specific element within a component's template
  * where this directive will do its work. If not provided, the directive will use the host element.
- * 
+ *
  * ### [fivase-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the IssuesFoundRenderer.
- * 
+ *
  * ### [fivase-valuechangelistener]
  * Use to select the custom implementation of IValueChangeListenerAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the HtmlTagValueChangeListener.
+ *
+ * ### [fivase-focuslistener]
+ * Use to select the custom implementation of IFocusListenerAction from the factory
+ * by providing the name of the implementation. The name is case-insensitive.
+ * When not assigned, the factory defaults to the HtmlTagFocusListener.
  */
 @Directive({
     selector: '[validate]'
@@ -1362,10 +1508,10 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     /**
      * The internal property that will be used in the directive to manage
-     * the name of the value host. The `valueHostName` is part of the Jivs validation system and allows Jivs to identify 
+     * the name of the value host. The `valueHostName` is part of the Jivs validation system and allows Jivs to identify
      * which form field is being represented for validation.
-     * 
-     * This allows the directive to either take a value directly via input or 
+     *
+     * This allows the directive to either take a value directly via input or
      * inherit it from a parent `ValueHostNameDirective`.
      */
 
@@ -1389,6 +1535,14 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      */
     @Input('fivase-valuechangelistener') eventHandlerName:string |  undefined;
 
+    /**
+     * Select a custom implementation of `IFocusListenerAction` from the factory
+     * by supplying the name of the implementation. The name is case-insensitive.
+     */
+    @Input('fivase-focuslistener') focusHandlerName: string | undefined;
+
+    private focusListener: IFocusListenerAction | null = null;
+
     constructor(
         el: ElementRef,
         renderer: Renderer2,
@@ -1407,12 +1561,19 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_VALUE_CHANGE_LISTENER) as ValueChangeListenerActionFactory;
     }
 
+    protected get resolveFocusListenerFactory(): FocusListenerActionFactory {
+        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_FOCUS_LISTENER) as FocusListenerActionFactory;
+    }
+
     /**
      * resolves the IValueChangeListenerAction implementation from either the [fivase-valuechangelistener] input or the Factory.
      * Has the event handler setup the input events to deliver the input value to the ValidationManager.
-     * @param valueHostName 
+     * Resolves the IFocusListenerAction implementation from the [fivase-focuslistener] input or the Factory.
+     * Sets up listeners for focus in and focus out events to deliver focus messages to the FivaseForm.
+     * @param valueHostName
      */
     protected setupDirective(valueHostName: string): void {
+        // Setup Value Change Listener
         let eventHandler = this.resolveEventHandlerFactory
             .resolve(this.el.nativeElement, this.eventHandlerName);
 
@@ -1425,14 +1586,29 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
             valueHostName,
             this.fivaseForm
         );
+
+        // Setup Focus Listener
+        this.focusListener = this.resolveFocusListenerFactory
+            .resolve(this.el.nativeElement, this.focusHandlerName);
+
+        if (!this.focusListener) {
+            console.warn('No focus listener was created for the directive. Proceeding without focus handling.');
+        } else {
+            this.focusListener.listenForFocusChanges(
+                this.getTargetElement(),
+                this.renderer,
+                valueHostName,
+                this.fivaseForm
+            );
+        }
     }
 
     /**
      * Override to manage the data-invalid attribute based on validation issues.
-     * This method sets or removes the 'data-invalid' and 'data-severity' attributes based on whether 
+     * This method sets or removes the 'data-invalid' and 'data-severity' attributes based on whether
      * validation issues are found.
      * The data-invalid attribute is used by ContainsInvalidChildrenDirective to find invalid children.
-     * 
+     *
      * NOTE: While its possible to combine data-severity into data-invalid as a single attribute,
      * we want to use data-severity in other cases, whereas data-invalid is specific to the input, so you can find the input.
      */
@@ -1453,7 +1629,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     /**
      * Override the method to pass the valid and invalid CSS classes to the render.
-     * 
+     *
      * @returns An object containing the valid and invalid CSS classes.
      */
     protected getRenderOptions(): IRendererActionOptions {
@@ -1462,9 +1638,17 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
             disabledCssClass: this.validCssClass
         };
     }
+
     public ngOnDestroy(): void {
-        this.resolveEventHandlerFactory
-            .unavailable(this.el.nativeElement);
+        // Clean up Value Change Listener
+        this.resolveEventHandlerFactory.unavailable(this.el.nativeElement);
+
+        // Clean up Focus Listener
+        if (this.focusListener) {
+            this.focusListener.cleanupEventHandlers(this.getTargetElement(), this.renderer);
+        }
+        this.resolveFocusListenerFactory.unavailable(this.el.nativeElement);
+
         super.ngOnDestroy();
     }
 }
@@ -2313,8 +2497,23 @@ export class FivaseServices implements IFivaseServices {
             new ShowWhenRequiredRenderer()));
         this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_ISSUES_FOUND,
             new ShowWhenIssuesFoundRenderer()));
+        // Create the factory for FocusListenerAction
+        const focusListenerFactory = new FocusListenerActionFactory(
+            DIRECTIVE_VALIDATE_INPUT,
+            new HtmlTagFocusListener(false) // Default instance
+        );
+    
+        // Register named instances with different configurations
+        focusListenerFactory.register(NAME_FOCUS_LISTENER, new HtmlTagFocusListener(false));
+        focusListenerFactory.register(NAME_BUBBLING_FOCUS_LISTENER, new HtmlTagFocusListener(true));
+    
+        // Register the factory in FivaseServices
+        this.registerFactory(focusListenerFactory);        
     }
 }
+
+export const NAME_FOCUS_LISTENER = 'focusListener';
+export const NAME_BUBBLING_FOCUS_LISTENER = 'bubblingFocusListener';
 
 /**
  * Interface responsible for storing and retrieving any state from Fivase, 
