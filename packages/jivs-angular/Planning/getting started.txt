@@ -203,20 +203,20 @@ The `FivaseForm` is injected into your form via DI, which means the directives (
 
 When building forms, there are many scenarios beyond the typical `<input>` elements. You may need to handle different types of inputs—like custom components or special widgets—that don't behave the same way as standard HTML form elements. Similarly, how errors are presented to the user can vary widely, from inline text to more complex UI elements like tooltips or modal popups.
 
-To accommodate these differences, *jivs-angular* gives you the flexibility to define how events are handled and how content is rendered by implementing two key interfaces: `IDirectiveEventHandler` and `IDirectiveRenderer`.
+To accommodate these differences, *jivs-angular* gives you the flexibility to define how events are handled and how content is rendered by implementing two key interfaces: `IValueChangeListenerAction` and `IRendererAction`.
 
-### **`IDirectiveEventHandler`: Handling Input Events**
+### **`IValueChangeListenerAction`: Handling Input Events**
 
-The `IDirectiveEventHandler` interface ensures that your custom components or non-standard HTML elements send their values to the ValidationManager as they change. Whether it's a dropdown, a custom date picker, or a file input, this interface allows you to specify how to capture user input and pass it to the validation system.
+The `IValueChangeListenerAction` interface ensures that your custom components or non-standard HTML elements send their values to the ValidationManager as they change. Whether it's a dropdown, a custom date picker, or a file input, this interface allows you to specify how to capture user input and pass it to the validation system.
 
 Here is a simplified implementation of how *jivs-angular* handles change and input events in standard HTML elements like `<input>` or `<textarea>`:
 
 ```ts
 // NOTE: Jivs provides StandardHtmlTagDirectiveEventHandler, which is far richer than this.
-export class InputHtmlTagDirectiveEventHandler extends DirectiveActionBase implements IDirectiveEventHandler {
-  setupEventHandlers(
+export class InputHtmlTagDirectiveEventHandler implements IValueChangeListenerAction {
+  listenForValueChanges(
     element: HTMLElement,
-  renderer: Renderer2,
+    renderer: Renderer2,
     valueHostName: string,
     fivaseForm: FivaseForm
   ): void {
@@ -235,9 +235,9 @@ export class InputHtmlTagDirectiveEventHandler extends DirectiveActionBase imple
 }
 ```
 
-### **`IDirectiveRenderer`: Changing the UI**
+### **`IRendererAction`: Changing the UI**
 
-The `IDirectiveRenderer` interface allows you to customize how Directives render. For showing error messages for example, you might want to show simple text-based errors, tooltips, or even a list of issues in a modal or alert.
+The `IRendererAction` interface allows you to customize how Directives render. For showing error messages for example, you might want to show simple text-based errors, tooltips, or even a list of issues in a modal or alert.
 
 Here is simplified implementation of how *jivs-angular* renders the error messages from the list of IssueFound objects:
 
@@ -250,20 +250,20 @@ export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
     super(invalidCssClass, validCssClass);
   }
 
-  public renderForFivaseDirective(
+  public render(
     element: HTMLElement,
     renderer: Renderer2,
     valueHostName: string,
     validationState: ValueHostValidationState,
     fivaseForm: FivaseForm,
-    options?: IDirectiveRendererOptions
+    options?: IRendererActionOptions
   ): void {
 
       // Clear existing content inside the element
       renderer.setProperty(element, 'innerHTML', '');
 
       // Apply the values of invalidCssClass and validCssClass in the base class
-      super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseForm, options);
+      super.render(element, renderer, valueHostName, validationState, fivaseForm, options);
     
     let issuesFound = validationState.issuesFound;
       if (issuesFound && issuesFound.length > 0) {
@@ -289,28 +289,24 @@ export class ErrorsInULTagDirectiveRenderer extends DirectiveRenderBase {
 
 ### **Registering your class with a Factory**
 
-Suppose you have already created a custom `IDirectiveRenderer` for the `[validationErrors]` directive called `"ErrorTable"`. Now, we need to register this class in the appropriate factory to ensure it is used by the application.
+Suppose you have already created a custom `IRendererAction` for the `[validationErrors]` directive called `"ErrorTableRenderer"`. 
+Now, we need to register this class in the appropriate factory to ensure it is used by the application.
 
 Each Directive has its own factories to cover all Directive Actions it supports.
 The factories in the FivaseServices. Register yours by calling its getFactory().register() as shown here:
 ```ts
 let factory = fivaseServices.getFactory(
-  DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).register(
-     'ErrorTableRenderer', new ErrorTableDirectiveRenderer());
+  DIRECTIVE_VALIDATION_ERRORS, ACTION_RENDERER).register(
+     'ErrorTableRenderer', new ErrorTableRenderer());
 ```
-To use it, add the [fivase-render] or [fivase-eventhandler] attribute to the tag, and pass in the name you supplied:
+To use it, add the [fivase-render] or [fivase-valuechangelistener] attribute to the tag, and pass in the name you supplied:
 ```ts
 <div [validationErrors]="ValueHostName" [fivase-renderer]="ErrorTableRenderer" >
 </div>
 ```
+#### Full example
 
-
- In this example, we'll use
-FivaseServices.errorMessagesDirectiveRendererFactory, and add your class during the constructor of the NgModule.
-
-#### Registering `"MyErrorPresentation"` with the `ErrorPresentationDirectiveActionFactory`
-
-Here’s how to register `"MyErrorPresentation"`:
+In this example, we'll use the factory for the [validateErrors] to supply it with your implementation of IRendererAction.
 
 ```ts
 import { NgModule } from '@angular/core';
@@ -340,10 +336,10 @@ export class AppModule {
     
   // Use one of these two approaches:
   // 1. Make it the default:
-    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).defaultFallback = new ErrorTable();
+    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERRORS, ACTION_RENDERER).defaultFallback = new ErrorTableRenderer();
   
   // 2. Make it work with the [fivase-renderer] attribute:
-    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERROR, ACTION_RENDER).register('ErrorTableRenderer', new ErrorTableDirectiveRenderer()); // <tag [directive] fivase-renderer='ErrorTable' >
+    fivaseServices.getFactory(DIRECTIVE_VALIDATION_ERRORS, ACTION_RENDERER).register('ErrorTableRenderer', new ErrorTableRenderer()); // <tag [directive] fivase-renderer='ErrorTableRenderer' >
   }
 }
 ```
@@ -383,7 +379,7 @@ Here's when you implement the interface on the component class.
 @Component(
   selector: 'app-mycomponent'
 )
-export class MyComponent implments OnInit, OnDestroy, IDirectiveEventHandler
+export class MyComponent implments OnInit, OnDestroy, IValueChangeListenerAction
 {
   constructor(private fivaseServices: FivaseServices,
     private el: ElementRef)

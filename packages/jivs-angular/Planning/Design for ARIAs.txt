@@ -166,9 +166,9 @@
   - **`gainedFocus`**: Sent when the input gains focus, causing the associated error message to become visible.
   - **`lostFocus`**: Sent when the input loses focus, allowing the associated error message to be hidden, as long as the screen reader can still access the message when needed.
 
-## DirectiveAction Types for Focus and Blur Events
+## Directive Actions Types for Focus and Blur Events
 
-In the implementation of `ValidationInputDirective`, we will need two new `DirectiveAction` interfaces to handle focus and blur events. These interfaces will be used to set up event handlers for the input element and manage the interaction between the input field and the validation system.
+In the implementation of `ValidationInputDirective`, we will need two new `Directive Actions` interfaces to handle focus and blur events. These interfaces will be used to set up event handlers for the input element and manage the interaction between the input field and the validation system.
 
 ### Required Types
 
@@ -177,9 +177,9 @@ In the implementation of `ValidationInputDirective`, we will need two new `Direc
    - **Factory**: `DirectiveFocusEventsHandlerFactory`.
    - **Default Class Implementation**: `StandardHtmlFocusEventsHandler`, which handles traditional DOM focus and blur events. Users can replace this for custom components that have their own messaging for these activities.
 
-2. **IDirectiveMessageVisibility** (extends `IDirectiveRenderer`)
-   - **Purpose**: Listens for the `gainedFocus` and `lostFocus` commands, updating the UI elements associated with the input field based on its focus state (e.g., showing or hiding error messages). `IDirectiveMessageVisibility` extends `IDirectiveRenderer`, as both are interconnected. The popup capability is introduced in `IDirectiveRenderer.renderForFivaseDirective`, and `IDirectiveMessageVisibility` invokes the same code.
-   - **No Factory or Default Class Implementation Needed**: `ValidationErrorsDirective` will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IDirectiveRenderer` instance. This mechanism allows enabling or disabling the functionality smoothly.
+2. **IDirectiveMessageVisibility** (extends `IRendererAction`)
+   - **Purpose**: Listens for the `gainedFocus` and `lostFocus` commands, updating the UI elements associated with the input field based on its focus state (e.g., showing or hiding error messages). `IDirectiveMessageVisibility` extends `IRendererAction`, as both are interconnected. The popup capability is introduced in `IRendererAction.render`, and `IDirectiveMessageVisibility` invokes the same code.
+   - **No Factory or Default Class Implementation Needed**: `ValidationErrorsDirective` will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IRendererAction` instance. This mechanism allows enabling or disabling the functionality smoothly.
 
 ## Impact on Existing Code
 
@@ -190,7 +190,7 @@ In the implementation of `ValidationInputDirective`, we will need two new `Direc
    - This directive will always wire up the supplied `IDirectiveFocusEventsHandler`, even if the error presentation does not explicitly require it. This ensures that focus and blur events are handled consistently across the system.
 
 3. **ValidationErrorsDirective**:
-   - This directive will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IDirectiveRenderer` instance. If the implementation is present, it will invoke the necessary functionality to show or hide the error message content appropriately.
+   - This directive will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IRendererAction` instance. If the implementation is present, it will invoke the necessary functionality to show or hide the error message content appropriately.
 
 
 # Screen Reader Compatibility with Hidden Error Messages

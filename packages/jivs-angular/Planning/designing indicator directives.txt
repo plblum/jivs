@@ -75,31 +75,6 @@ With `[valueHostName]`:
 ```
 ---
 
-## **Customization Options**
-
-Each directive allows users to specify custom CSS classes to override the defaults, providing flexibility to match specific UI requirements. **Global defaults** are provided for each directive to ensure a smooth out-of-the-box experience, but users can easily override these defaults where necessary.
-
-### **Custom CSS Classes:**
-
-- **`[val-invalid-class]`**: Customizes the CSS class applied when validation fails. By default, the system applies a global class (e.g., `'invalid'`), but users can override it with their own class.
-```html
-  <input validate="email" [val-invalid-class]="'my-invalid-class'">
-```
-
-- [val-valid-class]: Customizes the CSS class applied when validation succeeds. A global default class is provided, but users can specify their own.
-```html
-<input validate="email" [val-valid-class]="'my-valid-class'">
-```
----
-
-## **Callbacks for State Changes**
-
-Each directive can trigger callbacks when validation states change, allowing custom logic to be executed. This works both for components (where the template specifies a function of the component instance) and generic cases (where a default function is triggered).
-
-This feature allows for seamless integration of UI behaviors like fading out completion indicators or handling custom validation displays.
-
----
-
 ## **Preconfigured Templates & Best Practices**
 
 To help users get started quickly, here are several template examples for common validation scenarios, along with suggested CSS. These templates can be easily customized by overriding the provided CSS classes or adding your own.

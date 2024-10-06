@@ -80,7 +80,7 @@ When generating markdown output that includes HTML, CSS, or TypeScript code, rep
 	 - css classes, invalidCssClass and validCssClass
 	 - aria attribute values
 	 - Settings changed event to be called after localization has changed the strings so directives can refresh arias and other localization settings
-4. We may introduce new DirectiveAction types to allow users to inject appropriate handlers for gainedFocus and lostFocus messages (FivaseForm.sendMessage). This will give users more flexibility in how they manage focus-based interactions.
+4. We may introduce new Directive Actions types to allow users to inject appropriate handlers for gainedFocus and lostFocus messages (FivaseForm.sendMessage). This will give users more flexibility in how they manage focus-based interactions.
 
 6. Work on ValidationSummary. It will use PresentationDirectiveActions but needs to show the summaryMessage. It will monitor validation callbacks.
 7. Add a directive on a submit button to disable it or handle validation.

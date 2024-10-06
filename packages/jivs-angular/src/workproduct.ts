@@ -16,8 +16,14 @@ import { ValidationManager } from '@plblum/jivs-engine/build/Validation/Validati
  * It allows Directives that deal with appearance behaviors to vary their rendering
  * of that appearance through classes that implement this interface. 
  * 
- * Each Directive class that uses IDirectiveRenderer has its own Factory, based on
- * DirectiveActionFactoryBase which is a property of the FivaseServices class.
+ * Each Directive class that uses IRendererAction has its own Factory, based on
+ * ActionFactoryBase which is a registered in the FivaseServices class.
+ * 
+ * When getting the instance from the factory, use the constant ACTION_RENDERER.
+ * ```ts
+ * let renderer = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).resolve(element, '');
+ * ```
+ * 
  * That factory provides a default instance, which can be overridden by the [fivase-render] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
@@ -28,7 +34,7 @@ import { ValidationManager } from '@plblum/jivs-engine/build/Validation/Validati
  * Classes implementing this interface should not expect any Angular Dependency Injection 
  * into their constructor.  They are created explicitly when registering with the factory.
  */
-export interface IDirectiveRenderer {
+export interface IRendererAction {
     /**
      * Handles the rendering needed by a Fivase Directive based on the validation state of the element
      * and/or its associated ValueHost.
@@ -46,28 +52,33 @@ export interface IDirectiveRenderer {
      * logic, errors, and state.
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
-    renderForFivaseDirective(
+    render(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions
+        options?: IRendererActionOptions
     ): void;
 }
 
-export interface IDirectiveRendererOptions {
+export interface IRendererActionOptions {
     enabledCssClass?: string | null;
     disabledCssClass?: string | null
 }
 
 /**
- * Interface for setting up event handlers needed by a Fivase Directive
- * to handle changes in the value of the inputs, and supply it to FivaseForm.
+ * Interface for setting up listeners for value changes on an element
+ * that will transfer the value into Fivase and invoke validation logic.
  * 
- * Each Directive class that uses IDirectiveEventHandler has its own Factory, based on
- * DirectiveActionFactoryBase which is a property of the FivaseServices class.
- * That factory provides a default instance, which can be overridden by the [fivase-eventhandler] attribute
+ * Each Directive class that uses IValueChangeListenerAction has its own Factory, based on
+ * ActionFactoryBase which is a registered in the FivaseServices class.
+ * 
+ * When getting the instance from the factory, use the constant ACTION_VALUE_CHANGE_LISTENER.
+ * ```ts
+ * let renderer = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_VALUE_CHANGE_LISTENER).resolve(element, '');
+ * ```
+ * That factory provides a default instance, which can be overridden by the [fivase-valuechangelistener] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
  * classes or implement the interfaces directly on the component class. Within the component,
@@ -77,7 +88,7 @@ export interface IDirectiveRendererOptions {
  * Classes implementing this interface should not expect any Angular Dependency Injection 
  * into their constructor.  They are created explicitly when registering with the factory.
  */
-export interface IDirectiveEventHandler {
+export interface IValueChangeListenerAction {
     /**
      * Sets up validation-related event handlers on the target element.
      * 
@@ -89,7 +100,7 @@ export interface IDirectiveEventHandler {
      * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
      * Fivase's ValidationManager object, fully configured and ready to use. 
      */
-    setupEventHandlers(
+    listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -104,7 +115,7 @@ export interface IDirectiveEventHandler {
 }
 
 /**
- * Concrete implementation of `IDirectiveEventHandler` that targets all HTML tags supporting
+ * Concrete implementation of `IValueChangeListenerAction` that targets all HTML tags supporting
  * validation-related events, including 'input', 'textarea', 'select', 'checkbox', and 'file' types. 
  * This class listens for 'input', 'change' events and triggers validation logic accordingly.
  * 
@@ -116,14 +127,14 @@ export interface IDirectiveEventHandler {
  * constructor's parameters, consider just replacing the default in ValidationInputDirectiveFactory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.validationInputDirectiveFactory.defaultFallback(new StandardHtmlTagEventDirectiveAction(true, 200));
+ * fivaseServices.getFactory(DIRECTIVE_VALIDATE_INPUT, ACTION_VALUE_CHANGE_LISTENER).defaultFallback(new HtmlTagValueChangeListener(true, 200));
  * ```
- * Alternatively, use the [fivase-eventhandler] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [fivase-valuechangelistener] attribute to supply an instance directly to the tag.
  */
-export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandler {
+export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
 
     /**
-     * Creates an instance of `StandardHtmlTagEventDirectiveAction`.
+     * Creates an instance of `HtmlTagValueChangeListener`.
      * 
      * @param inputEventEnabled - Optional parameter to control whether 'input' event listeners are attached 
      *  (default is true). This allows control over whether real-time validation 
@@ -175,7 +186,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
      * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param valueHostName - The name of the value host associated with this element, used to identify the validation target.
      */
-    public setupEventHandlers(
+    public listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -285,7 +296,7 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
 }
 
 /**
- * DirectiveRendererBase provides a foundation for rendering.
+ * RendererActionBase provides a foundation for rendering, in support of a Directive.
  * This class offers the ability to apply or remove CSS classes 
  * based on validation states (valid/invalid).
  * 
@@ -296,9 +307,9 @@ export class StandardHtmlTagEventDirectiveAction implements IDirectiveEventHandl
  * - Can hide elements by applying a CSS class that sets display: none and the hidden attribute.
  * 
  */
-export abstract class DirectiveRendererBase implements IDirectiveRenderer {
+export abstract class RendererActionBase implements IRendererAction {
     /**
-     * Creates an instance of `DirectiveRendererBase`.
+     * Creates an instance of `RendererActionBase`.
      * 
      * @param enabledCssClass - Default CSS class applied when in enabled state. Overridden
      * by options.enabledCssClass if provided.
@@ -367,13 +378,13 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
      * Fivase's ValidationManager object, fully configured and ready to use. 
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
-    public renderForFivaseDirective(
+    public render(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions
+        options?: IRendererActionOptions
     ): void {
         let twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseForm, options);
         if (twoStates !== null) {
@@ -401,7 +412,7 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions
+        options?: IRendererActionOptions
     )
     {
         let enabledCssClass = options?.enabledCssClass ?? this.enabledCssClass;
@@ -444,7 +455,7 @@ export abstract class DirectiveRendererBase implements IDirectiveRenderer {
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null;
+        options?: IRendererActionOptions): boolean | null;
 
     /**
      * Utility to add an error message to an element and apply appropriate attributes, including data-severity='error|severe|warn'.
@@ -472,26 +483,26 @@ export function changeCssClasses(toAdd: string | null | undefined, toRemove: str
 }    
 
 /**
- * Concrete implementation of `IDirectiveRenderer` that applies a CSS class to the target element
+ * Concrete implementation of `IRendererAction` that applies a CSS class to the target element
  * depending on ValidationState.IssuesFound. It uses enabledCssClass when there are issues found and disabledCssClass
  * when there are no issues found.
  * The default classes are enabledCssClass = 'invalid' and disabledCssClass = 'valid'.
  * 
  * This class does not show the error messages within IssuesFound. 
- * For that, use ErrorMessagesDirectiveRender.
+ * For that, use ErrorMessagesRenderer.
  * This class does not change the visibility of the element, unless
- * the CSS classes have styles for that. Consider ShowWhenIssuesFoundDirectiveRenderer instead.
+ * the CSS classes have styles for that. Consider ShowWhenIssuesFoundRenderer instead.
  * 
  * This targets the IssuesFoundDirective.
- * It is the default supplied by the IssuesFoundDirectiveFactory. If you want to change the 
- * constructor's parameters, consider just replacing the default in IssuesFoundDirectiveFactory.defaultFallback
+ * It is the default supplied by a factory. If you want to change the 
+ * constructor's parameters, consider just replacing the default in factory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.issuesFoundDirectiveFactory.defaultFallback(new IssuesFoundDirectiveRenderer('invalid-issues', 'valid-issues'));
+ * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new IssuesFoundRenderer('invalid-issues', 'valid-issues'));
  * ```
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
-export class IssuesFoundDirectiveRenderer extends DirectiveRendererBase {
+export class IssuesFoundRenderer extends RendererActionBase {
 
     constructor(
         enabledCssClass: string | null = 'invalid',
@@ -502,25 +513,25 @@ export class IssuesFoundDirectiveRenderer extends DirectiveRendererBase {
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null {
+        options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
 }
 
 /**
- * Concrete implementation of `IDirectiveRenderer` that hides or shows the element based on the presence of issues.
+ * Concrete implementation of `IRendererAction` that hides or shows the element based on the presence of issues.
  * It does not change any CSS classes.
  * 
  * This targets the ShowWhenIssuesFoundDirective.
- * It is the default supplied by the ShowWhenIssuesFoundDirectiveFactory. If you want to change the 
- * constructor's parameters, consider just replacing the default in ShowWhenIssuesFoundDirectiveFactory.defaultFallback
+ * It is the default supplied by a factory. If you want to change the 
+ * constructor's parameters, consider just replacing the default in factory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.showWhenIssuesFoundDirectiveFactory.defaultFallback(new ShowWhenIssuesFoundDirectiveRenderer('invalid-showissues', 'valid-showissues'));
+ * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenIssuesFoundRenderer('invalid-showissues', 'valid-showissues'));
  * ```
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
-export class ShowWhenIssuesFoundDirectiveRenderer extends DirectiveRendererBase {
+export class ShowWhenIssuesFoundRenderer extends RendererActionBase {
     constructor(
         enabledCssClass: string | null = null,
         disabledCssClass: string | null = null) {
@@ -529,26 +540,26 @@ export class ShowWhenIssuesFoundDirectiveRenderer extends DirectiveRendererBase 
 
     protected resolveTwoStates(valueHostName: string, validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null {
+        options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
 }
 
 /**
- * Concrete implementation of `IDirectiveRenderer` that shows or hides the element based on 
+ * Concrete implementation of `IRendererAction` that shows or hides the element based on 
  * the ValidationState.corrected property. By default, it has no CSS classes assigned to enabledCssClass
  * or disabledCssClass because its focus is visibility.
  * 
  * This targets the ShowWhenCorrectedDirective.
- * It is the default supplied by the ShowWhenCorrectedDirectiveFactory. If you want to change the 
- * constructor's parameters, consider just replacing the default in ShowWhenCorrectedDirectiveFactory.defaultFallback
+ * It is the default supplied by a factory. If you want to change the 
+ * constructor's parameters, consider just replacing the default in factory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.showWhenCorrectedDirectiveFactory.defaultFallback(new ShowWhenCorrectedDirectiveRenderer('corrected', 'not-corrected'));
+ * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenCorrectedRenderer('corrected', 'not-corrected'));
  * ```
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
-export class ShowWhenCorrectedDirectiveRenderer extends DirectiveRendererBase {
+export class ShowWhenCorrectedRenderer extends RendererActionBase {
     constructor(
         enabledCssClass: string | null = null,
         disabledCssClass: string | null = null) {
@@ -557,26 +568,26 @@ export class ShowWhenCorrectedDirectiveRenderer extends DirectiveRendererBase {
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null {
+        options?: IRendererActionOptions): boolean | null {
         return validationState.corrected;
     }
 }
 
 /**
- * Concrete implementation of `IDirectiveRenderer` that shows or hides the element based on
+ * Concrete implementation of `IRendererAction` that shows or hides the element based on
  * the ValueHost.requiresInput property. By default, it has no CSS classes assigned to enabledCssClass
  * or disabledCssClass because its focus is visibility.
  * 
  * This targets the ShowWhenRequiredDirective.
- * It is the default supplied by the ShowWhenRequiredDirectiveFactory. If you want to change the 
- * constructor's parameters, consider just replacing the default in ShowWhenRequiredDirectiveFactory.defaultFallback
+ * It is the default supplied by a factory. If you want to change the 
+ * constructor's parameters, consider just replacing the default in factory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.showWhenRequiredDirectiveFactory.defaultFallback(new ShowWhenRequiredDirectiveRenderer('required', 'not-required'));
+ * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenRequiredRenderer('required', 'not-required'));
  * ```
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
-export class ShowWhenRequiredDirectiveRenderer extends DirectiveRendererBase {
+export class ShowWhenRequiredRenderer extends RendererActionBase {
     
     constructor(
         enabledCssClass: string | null = null,
@@ -586,7 +597,7 @@ export class ShowWhenRequiredDirectiveRenderer extends DirectiveRendererBase {
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null {
+        options?: IRendererActionOptions): boolean | null {
         let vh = fivaseForm.validationManager.getInputValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
@@ -596,7 +607,7 @@ export class ShowWhenRequiredDirectiveRenderer extends DirectiveRendererBase {
 }
 
 /**
- * This implementation of `IDirectiveRenderer` generates a list of error messages from
+ * This implementation of `IRendererAction` generates a list of error messages from
  * the IssuesFound array in the validation state. While it can be used to fully display the UI
  * for errors, it is designed to be used in conjunction with other render directives within
  * a component that offers complexities found in UIs that display errors, such as popups
@@ -620,15 +631,15 @@ export class ShowWhenRequiredDirectiveRenderer extends DirectiveRendererBase {
  * the issuesFound.
  * 
  * This targets the ErrorMessagesDirective.
- * It is the default supplied by the ErrorMessagesDirectiveFactory. If you want to change the 
- * constructor's parameters, consider just replacing the default in ErrorMessagesDirectiveFactory.defaultFallback
+ * It is the default supplied by a factory. If you want to change the 
+ * constructor's parameters, consider just replacing the default in factory.defaultFallback
  * where you setup the FivaseServices.
  * ```ts
- * fivaseServices.errorMessagesDirectiveFactory.defaultFallback(new ErrorMessagesDirectiveRenderer('ul', 'li, 'error-list', 'error-item'));
+ * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ErrorMessagesRenderer('ul', 'li, 'error-list', 'error-item'));
  * ```
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
-export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
+export class ErrorMessagesRenderer extends RendererActionBase {
     constructor(
         outerTag: string | null = 'ul',
         innerTag: string = 'li',
@@ -680,13 +691,13 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
     }   
     private _innerTag: string;
 
-    public renderForFivaseDirective(
+    public render(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions
+        options?: IRendererActionOptions
     ): void {
         // Clear existing content inside the element
         renderer.setProperty(element, 'innerHTML', '');
@@ -719,7 +730,7 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
         }
 
         // Apply the CSS class logic from the base class
-        super.renderForFivaseDirective(element, renderer, valueHostName, validationState, fivaseForm, options);
+        super.render(element, renderer, valueHostName, validationState, fivaseForm, options);
     }
 
     /**
@@ -735,28 +746,28 @@ export class ErrorMessagesDirectiveRender extends DirectiveRendererBase {
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
-        options?: IDirectiveRendererOptions): boolean | null {
+        options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
 }
 
 /**
  * These are used by the Fivase Directives to
- * associate themselves with the appropriate DirectiveActionFactoryBase implementations.
+ * associate themselves with the appropriate ActionFactoryBase implementations.
  */
-export const DIRECTIVE_INPUT_VALIDATION = 'fivase-ValidateInput';
-export const DIRECTIVE_VALIDATION_ERROR = 'fivase-ErrorMessages';
+export const DIRECTIVE_VALIDATE_INPUT = 'fivase-ValidateInput';
+export const DIRECTIVE_VALIDATION_ERRORS = 'fivase-ErrorMessages';
 export const DIRECTIVE_SHOW_WHEN_ISSUES_FOUND = 'fivase-ShowWhenIssuesFound';
 export const DIRECTIVE_SHOW_WHEN_CORRECTED = 'fivase-ShowWhenCorrected';
 export const DIRECTIVE_SHOW_WHEN_REQUIRED = 'fivase-ShowWhenRequired';
 
-export const ACTION_RENDER = 'Render';
-export const ACTION_EVENT_HANDLER = 'EventHandler';
+export const ACTION_RENDERER = 'Renderer';
+export const ACTION_VALUE_CHANGE_LISTENER = 'ValueChangeListener';
 
 /**
- * Interface for DirectiveActionFactoryBase without generics.
+ * Interface for ActionFactoryBase without generics.
  */
-export interface IDirectiveActionFactory {
+export interface IActionFactory {
     /**
      * The name of the directive associated with this factory.
      */
@@ -766,21 +777,21 @@ export interface IDirectiveActionFactory {
      * The name of the Directive Action associated with this factory.
      * This value is always used by available/unavailable methods.
      */
-    get directiveActionName(): string;
+    get actionName(): string;
 
     /**
-     * Determines if the directiveName and directiveActionName match the given parameters.
+     * Determines if the directiveName and actionName match the given parameters.
      * Always uses case sensitive match.
      * @param directiveName
-     * @param directiveActionName
+     * @param actionName
      */
-    matches(directiveName: string, directiveActionName: string): boolean;
+    matches(directiveName: string, actionName: string): boolean;
 
     /**
      * Registers an instance of a directive action associated with a unique 
      * name. These values are only used when the resolve function is supplied
      * the name parameter. The name parameter value is expected to come from the Directive's
-     * [fivase-render] or [fivase-eventhandler] attribute, and is null or undefined
+     * [fivase-render] or [fivase-valuechangelistener] attribute, and is null or undefined
      * if the attribute is not present.
      * 
      * @param name - The name used to register the instance.
@@ -816,8 +827,8 @@ export interface IDirectiveActionFactory {
 }
 
 /**
- * Abstract factory class that manages the `IDirectiveEventHandler` and
- * `IDirectiveRenderer` instances needed by Fivase Directives. 
+ * Abstract factory class that manages the `IValueChangeListenerAction` and
+ * `IRendererAction` instances needed by Fivase Directives. 
  * 
  * Each Directive will create subclasses specific to each Directive Action it uses.
  * Those will be registered in the FivaseServices class via IFivaseServices.registerFactory.
@@ -835,7 +846,7 @@ export interface IDirectiveActionFactory {
  *   in the defaultFallback property. The user can override it during factory setup.
  * - Instances registered to a unique name. That name will be supplied by attributes
  *   found on the same element or component as the directive: [fivase-render] and
- *   [fivase-eventhandler]. So the user can supply the unique name through the attribute
+ *   [fivase-valuechangelistener]. So the user can supply the unique name through the attribute
  *   to override the default instance.
  * - Components often have to supply a specific implementation that handles their unique event
  *   handling or Render requirements. They can either implement stand-alone classes
@@ -846,7 +857,7 @@ export interface IDirectiveActionFactory {
  * 
  * NOTE: By design, the factory expects the instances it holds to be immutable and resuable.
  */
-export abstract class DirectiveActionFactoryBase<T> implements IDirectiveActionFactory {
+export abstract class ActionFactoryBase<T> implements IActionFactory {
     constructor (directiveName: string, defaultFallback: T) {
         this._defaultFallback = defaultFallback;
         this._directiveName = directiveName;
@@ -864,17 +875,17 @@ export abstract class DirectiveActionFactoryBase<T> implements IDirectiveActionF
      * The name of the Directive Action associated with this factory.
      * This value is always used by available/unavailable methods.
      */
-    public abstract get directiveActionName(): string;
+    public abstract get actionName(): string;
 
     /**
-     * Determines if the directiveName and directiveActionName match the given parameters.
+     * Determines if the directiveName and actionName match the given parameters.
      * Always uses case sensitive match.
      * @param directiveName 
-     * @param directiveActionName 
+     * @param actionName 
      * @returns 
      */
-    public matches(directiveName: string, directiveActionName: string): boolean {
-        return this.directiveName === directiveName && this.directiveActionName === directiveActionName;
+    public matches(directiveName: string, actionName: string): boolean {
+        return this.directiveName === directiveName && this.actionName === actionName;
     }
     //#endregion find the right factory
 
@@ -903,7 +914,7 @@ export abstract class DirectiveActionFactoryBase<T> implements IDirectiveActionF
      * Registers an instance of a directive action associated with a unique 
      * name. These values are only used when the resolve function is supplied
      * the name parameter. The name parameter value is expected to come from the Directive's
-     * [fivase-render] or [fivase-eventhandler] attribute, and is null or undefined
+     * [fivase-render] or [fivase-valuechangelistener] attribute, and is null or undefined
      * if the attribute is not present.
      * 
      * @param name - The name used to register the instance.
@@ -977,7 +988,7 @@ export abstract class DirectiveActionFactoryBase<T> implements IDirectiveActionF
      */
     protected get customPropertyName(): string
     {
-        return `fivase-${this.directiveName}-${this.directiveActionName}`;
+        return `fivase-${this.directiveName}-${this.actionName}`;
     }
 
     /**
@@ -990,41 +1001,41 @@ export abstract class DirectiveActionFactoryBase<T> implements IDirectiveActionF
 }
 
 /**
- * Factory for the `IDirectiveRenderer` interface.
+ * Factory for the `IRendererAction` interface.
  * All Directives that use this must supply their DirectiveName and default implementation
- * of IDirectiveRenderer in the constructor.
+ * of IRendererAction in the constructor.
  */
-export class DirectiveRendererFactory extends DirectiveActionFactoryBase<IDirectiveRenderer> {
+export class RendererActionFactory extends ActionFactoryBase<IRendererAction> {
 
-    constructor(directiveName: string, defaultFallback: IDirectiveRenderer) {
+    constructor(directiveName: string, defaultFallback: IRendererAction) {
         super(directiveName, defaultFallback);
     }
 
-    public get directiveActionName(): string {
-        return ACTION_RENDER;
+    public get actionName(): string {
+        return ACTION_RENDERER;
     }
-    protected isValidInstance(instance: IDirectiveRenderer): boolean {
-        return instance && typeof instance.renderForFivaseDirective === 'function';
+    protected isValidInstance(instance: IRendererAction): boolean {
+        return instance && typeof instance.render === 'function';
     }
 }
 
 /**
- * Factory for the `IDirectiveEventHandler` interface.
+ * Factory for the `IValueChangeListenerAction` interface.
  * All Directives that use this must supply their DirectiveName and default implementation
- * of IDirectiveEventHandler in the constructor.
+ * of IValueChangeListenerAction in the constructor.
  */
-export class DirectiveEventHandlerFactory extends DirectiveActionFactoryBase<IDirectiveEventHandler> {
+export class ValueChangeListenerActionFactory extends ActionFactoryBase<IValueChangeListenerAction> {
     
-    constructor(directiveName: string, defaultFallback: IDirectiveEventHandler) {
+    constructor(directiveName: string, defaultFallback: IValueChangeListenerAction) {
         super(directiveName, defaultFallback);
     }
 
-    public get directiveActionName(): string {
-        return ACTION_EVENT_HANDLER;
+    public get actionName(): string {
+        return ACTION_VALUE_CHANGE_LISTENER;
     }
 
-    protected isValidInstance(instance: IDirectiveEventHandler): boolean {
-        return instance && typeof instance.setupEventHandlers === 'function';
+    protected isValidInstance(instance: IValueChangeListenerAction): boolean {
+        return instance && typeof instance.listenForValueChanges === 'function';
     }
 }
 
@@ -1049,7 +1060,7 @@ export class DirectiveEventHandlerFactory extends DirectiveActionFactoryBase<IDi
  * ```
  * However, the valueHostName can be inherited from a parent ValueHostNameDirective.
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *    <tag [directive]>
  * </tag>
  * 
@@ -1154,13 +1165,12 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
 }
 
 /**
- * Abstract base class for Fivase Directives that observe validation state changes
- * on a ValueHost and uses an implementation of `IDirectiveRenderer` to 
- * update the user interface based on the state.
+ * Abstract base class for Fivase Directives that provides an implementation of `IRendererAction` to 
+ * update the user interface based on validation state changes.
  * 
  * Key functionality includes:
  * - Subscribing to validation state changes via the `FivaseForm`.
- * - Applying a render through an object that supports `IDirectiveRenderer`, which
+ * - Applying a render through an object that supports `IRendererAction`, which
  *   comes from a factory property on FivasServicesHost.
  * 
  * Every implementation requires it to be assigned to a Jivs `ValueHostName` 
@@ -1170,7 +1180,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
  * ```
  * However, the valueHostName can be inherited from a parent ValueHostNameDirective.
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *    <tag [directive]>
  * </tag>
  * ```
@@ -1180,20 +1190,20 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer from the factory
+ * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  */
 @Directive()
-export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
+export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
 
     /**
-     * Select a custom implementation of `IDirectiveRenderer` from the factory
+     * Select a custom implementation of `IRendererAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
     @Input('fivase-render') renderFactoryName: string | undefined;
 
     private subscription: Subscription | null = null;
-    protected directiveRenderer: IDirectiveRenderer | null = null;
+    protected directiveRenderer: IRendererAction | null = null;
 
     constructor(
         el: ElementRef,
@@ -1211,7 +1221,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
     protected abstract get directiveNameInFactory(): string;
 
     /**
-     * Establishes the PresentionDirectiveAction implementation from either the [fivase-render] input or the Factory.
+     * Establishes the IRendererAction implementation from either the [fivase-render] input or the Factory.
      * Establishes a subscription to the validation state changes for the ValueHost.
      * @param valueHostName 
      */
@@ -1224,16 +1234,16 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
     }
 
     /** 
-     * Gets the factory from fivaseServices used to create the IDirectiveRenderer implementation.
+     * Gets the factory from fivaseServices used to create the IRendererAction implementation.
     */
-    protected get resolveRendererFactory(): DirectiveRendererFactory
+    protected get resolveRendererFactory(): RendererActionFactory
     {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_RENDER) as DirectiveRendererFactory;
+        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_RENDERER) as RendererActionFactory;
     }
 
     /**
      * Uses the FivaseForm to subscribe to validation state changes for the ValueHost.
-     * Passes the validation state to the IDirectiveRenderer implementation.
+     * Passes the validation state to the IRendererAction implementation.
      * @param valueHostName 
      */
     private setupSubscription(valueHostName: string): void {
@@ -1255,13 +1265,13 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
     /**
      * Handles the render of a validation state change on a ValueHost.
      * 
-     * This method applies validation render using the `IDirectiveRenderer`.
+     * This method applies validation render using the `IRendererAction`.
      * 
      * @param targetElement - The resolved HTML element to apply the render to.
      * @param validationState - The current validation state of the ValueHost.
      */
     protected onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
-        this.directiveRenderer!.renderForFivaseDirective(
+        this.directiveRenderer!.render(
             targetElement,
             this.renderer,
             this.valueHostName!,
@@ -1295,7 +1305,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
      * 
      * @returns An object with configuration options for validation render.
      */
-    protected getRenderOptions(): IDirectiveRendererOptions {
+    protected getRenderOptions(): IRendererActionOptions {
         return {};
     }
 
@@ -1327,7 +1337,7 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
  * <tag [validate]="valueHostName"></tag>
  * ```
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *    <tag [validate]>
  * </tag>
  * ```
@@ -1336,19 +1346,19 @@ export abstract class RenderDirectiveBase extends FivaseDirectiveBase {
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer from the factory
+ * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
- * When not assigned, the factory defaults to the IssuesFoundDirectiveRenderer.
+ * When not assigned, the factory defaults to the IssuesFoundRenderer.
  * 
- * ### [fivase-eventhandler]
- * Use to select the custom implementation of IDirectiveEventHandler from the factory
+ * ### [fivase-valuechangelistener]
+ * Use to select the custom implementation of IValueChangeListenerAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
- * When not assigned, the factory defaults to the StandardHtmlTagEventDirectiveAction.
+ * When not assigned, the factory defaults to the HtmlTagValueChangeListener.
  */
 @Directive({
     selector: '[validate]'
 })
-export class ValidateInputDirective extends RenderDirectiveBase {
+export class ValidateInputDirective extends RenderingDirectiveBase {
 
     /**
      * The internal property that will be used in the directive to manage
@@ -1363,21 +1373,21 @@ export class ValidateInputDirective extends RenderDirectiveBase {
 
     /**
      * CSS class applied when validation fails (invalid state).
-     * Passed along to the IDirectiveRenderer implementation.
+     * Passed along to the IRendererAction implementation.
      */
     @Input('invalid-class') invalidCssClass: string = 'input-invalid';
 
     /**
      * CSS class applied when validation succeeds (valid state).
-     * Passed along to the IDirectiveRenderer implementation.
+     * Passed along to the IRendererAction implementation.
      */
     @Input('valid-class') validCssClass: string = 'input-valid';
 
     /**
-     * Select a custom implementation of `IDirectiveEventHandler` from the factory
+     * Select a custom implementation of `IValueChangeListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-eventhandler') eventHandlerName:string |  undefined;
+    @Input('fivase-valuechangelistener') eventHandlerName:string |  undefined;
 
     constructor(
         el: ElementRef,
@@ -1390,15 +1400,15 @@ export class ValidateInputDirective extends RenderDirectiveBase {
     }
 
     protected get directiveNameInFactory(): string {
-        return DIRECTIVE_INPUT_VALIDATION;
+        return DIRECTIVE_VALIDATE_INPUT;
     }
 
-    protected get resolveEventHandlerFactory(): DirectiveEventHandlerFactory {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_EVENT_HANDLER) as DirectiveEventHandlerFactory;
+    protected get resolveEventHandlerFactory(): ValueChangeListenerActionFactory {
+        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_VALUE_CHANGE_LISTENER) as ValueChangeListenerActionFactory;
     }
 
     /**
-     * resolves the IDirectiveEventHandler implementation from either the [fivase-eventhandler] input or the Factory.
+     * resolves the IValueChangeListenerAction implementation from either the [fivase-valuechangelistener] input or the Factory.
      * Has the event handler setup the input events to deliver the input value to the ValidationManager.
      * @param valueHostName 
      */
@@ -1409,7 +1419,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
         if (!eventHandler)
             throw new Error('No event handler was created for the directive.');
 
-        eventHandler.setupEventHandlers(
+        eventHandler.listenForValueChanges(
             this.getTargetElement(),
             this.renderer,
             valueHostName,
@@ -1446,7 +1456,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
      * 
      * @returns An object containing the valid and invalid CSS classes.
      */
-    protected getRenderOptions(): IDirectiveRendererOptions {
+    protected getRenderOptions(): IRendererActionOptions {
         return {
             enabledCssClass: this.invalidCssClass,
             disabledCssClass: this.validCssClass
@@ -1472,7 +1482,7 @@ export class ValidateInputDirective extends RenderDirectiveBase {
  * <tag [validationErrors]="valueHostName"></tag>
  * ```
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *    <tag [validationErrors]>
  * </tag>
  * ```
@@ -1481,9 +1491,9 @@ export class ValidateInputDirective extends RenderDirectiveBase {
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer, instead of using the Factory.
- * It takes the class name of the desired IDirectiveRenderer object.
- * When not assigned, the factory defaults to ErrorMessagesDirectiveRender which displays a list of error messages in <ul><li> tags.
+ * Use to select the custom implementation of IRendererAction, instead of using the Factory.
+ * It takes the class name of the desired IRendererAction object.
+ * When not assigned, the factory defaults to ErrorMessagesRenderer which displays a list of error messages in <ul><li> tags.
  * 
  * Example usage:
  * ```html
@@ -1503,9 +1513,9 @@ export class ValidateInputDirective extends RenderDirectiveBase {
 @Directive({
     selector: '[validationErrors]',
 })
-export class ValidationErrorsDirective extends RenderDirectiveBase {
+export class ValidationErrorsDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
-        return DIRECTIVE_VALIDATION_ERROR;
+        return DIRECTIVE_VALIDATION_ERRORS;
     }   
 
     /**
@@ -1519,14 +1529,14 @@ export class ValidationErrorsDirective extends RenderDirectiveBase {
     @Input('validationErrors') valueHostName: string | undefined;
     /**
      * CSS class applied when validation fails (invalid state).
-     * Passed along to the IDirectiveRenderer implementation.
+     * Passed along to the IRendererAction implementation.
   
      */
     @Input('invalid-class') invalidCssClass: string = 'error-invalid';
 
     /**
      * CSS class applied when validation succeeds (valid state).
-     * Passed along to the IDirectiveRenderer implementation.
+     * Passed along to the IRendererAction implementation.
      */
     @Input('valid-class') validCssClass: string = 'error-valid';
 
@@ -1535,7 +1545,7 @@ export class ValidationErrorsDirective extends RenderDirectiveBase {
      * 
      * @returns An object containing the valid and invalid CSS classes.
      */
-    protected getRenderOptions(): IDirectiveRendererOptions {
+    protected getRenderOptions(): IRendererActionOptions {
         return {
             enabledCssClass: this.invalidCssClass,
             disabledCssClass: this.validCssClass
@@ -1555,21 +1565,21 @@ export class ValidationErrorsDirective extends RenderDirectiveBase {
  * <tag [showWhenCorrected]="valueHostName"></tag>
  * ```
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *   <tag [showWhenCorrected]>
  * </tag>
  * ```
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer from the factory
+ * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
- * The default is ShowWhenCorrectedRenderDirectiveAction which shows the element when the input is corrected
+ * The default is ShowWhenCorrectedRenderer which shows the element when the input is corrected
  * and hides otherwise.
  */
 @Directive({
     selector: '[showWhenCorrected]'
 })
-export class ShowWhenCorrectedDirective extends RenderDirectiveBase {
+export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
         return DIRECTIVE_SHOW_WHEN_CORRECTED;
     }
@@ -1597,21 +1607,21 @@ export class ShowWhenCorrectedDirective extends RenderDirectiveBase {
  * <tag [showWhenRequired]="valueHostName"></tag>
  * ```
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *   <tag [showWhenRequired]>
  * </tag>
  * ```
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer from the factory
+ * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
- * The default is showWhenRequiredRenderDirectiveAction which shows the element when the input is corrected
+ * The default is showWhenRequiredRenderer which shows the element when the input is corrected
  * and hides otherwise.
  */
 @Directive({
     selector: '[showWhenRequired]'
 })
-export class ShowWhenRequiredDirective extends RenderDirectiveBase {
+export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
         return DIRECTIVE_SHOW_WHEN_REQUIRED;
     }
@@ -1639,21 +1649,21 @@ export class ShowWhenRequiredDirective extends RenderDirectiveBase {
  * <tag [showWhenIssuesFound]="valueHostName"></tag>
  * ```
  * ```ts
- * <tag [fivase-valueHostName]="valueHostName">
+ * <tag [valueHostName]="valueHostName">
  *   <tag [showWhenIssuesFound]>
  * </tag>
  * ```
  * 
  * ### [fivase-render]
- * Use to select the custom implementation of IDirectiveRenderer from the factory
+ * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
- * The default is showWhenIssuesFoundRenderDirectiveAction which shows the element when the input is corrected
+ * The default is showWhenIssuesFoundRenderer which shows the element when the input is corrected
  * and hides otherwise.
  */
 @Directive({
     selector: '[showWhenIssuesFound]'
 })
-export class ShowWhenIssuesFounddDirective extends RenderDirectiveBase {
+export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
         return DIRECTIVE_SHOW_WHEN_ISSUES_FOUND;
     }
@@ -1668,8 +1678,6 @@ export class ShowWhenIssuesFounddDirective extends RenderDirectiveBase {
      */
     @Input('showWhenIssuesFound') valueHostName: string | undefined;
 }
-
-
 
 /**
  * Directive `containsInvalid` manages the appearance of a containing tag, like <div>,
@@ -2178,18 +2186,18 @@ export interface IFivaseServices {
     configHost: IFivaseConfigHost;
 
     /**
-     * Adds or replaces a factory for creating instances of IDirectiveAction for a directive.
+     * Adds or replaces a factory for creating instances of Directive Actions.
      * @param factory 
      */
-    registerFactory(factory: IDirectiveActionFactory): void;
+    registerFactory(factory: IActionFactory): void;
     
     /**
-     * Retrieves the factory for creating instances of IDirectiveAction for a directive.
+     * Retrieves the factory for creating instances of Directive Actions.
      * Throws an error if the factory is not found.
      * @param directiveName 
-     * @param directiveActionName 
+     * @param actionName 
      */
-    getFactory(directiveName: string, directiveActionName: string): IDirectiveActionFactory;
+    getFactory(directiveName: string, actionName: string): IActionFactory;
 }
 
 /**
@@ -2259,52 +2267,52 @@ export class FivaseServices implements IFivaseServices {
     private _configHost: FivaseConfigHost;
 
     /**
-     * Adds or replaces a factory for creating instances of IDirectiveAction for a directive.
+     * Adds or replaces a factory for creating instances of Directive Actions for a directive.
      * The key is DirectiveName|DirectiveActionName.
      */
-    protected factories: Map<string, IDirectiveActionFactory> = new Map();
+    protected factories: Map<string, IActionFactory> = new Map();
 
-    protected resolveKey(directiveName: string, directiveActionName: string): string {
-        return `${directiveName}|${directiveActionName}`;
+    protected resolveKey(directiveName: string, actionName: string): string {
+        return `${directiveName}|${actionName}`;
     }   
     /**
-     * Adds or replaces a factory for creating instances of IDirectiveAction for a directive.
+     * Adds or replaces a factory for creating instances of Directive Actions for a directive.
      * @param factory 
      */
-    public registerFactory(factory: IDirectiveActionFactory): void
+    public registerFactory(factory: IActionFactory): void
     {
-        let key = this.resolveKey(factory.directiveName, factory.directiveActionName);
+        let key = this.resolveKey(factory.directiveName, factory.actionName);
         this.factories.set(key, factory);
     }
     
     /**
-     * Retrieves the factory for creating instances of IDirectiveAction for a directive.
+     * Retrieves the factory for creating instances of Directive Actions for a directive.
      * Throws an error if the factory is not found.
      * @param directiveName 
-     * @param directiveActionName 
+     * @param actionName 
      */
-    public getFactory(directiveName: string, directiveActionName: string): IDirectiveActionFactory { 
-        let key = this.resolveKey(directiveName, directiveActionName);
+    public getFactory(directiveName: string, actionName: string): IActionFactory { 
+        let key = this.resolveKey(directiveName, actionName);
         let factory = this.factories.get(key);
         if (!factory) {
-            throw new Error(`Factory not found for ${directiveName}:${directiveActionName}`);
+            throw new Error(`Factory not found for ${directiveName}:${actionName}`);
         }
         return factory;
     }
 
     protected preRegisterFactories(): void {
-        this.registerFactory(new DirectiveEventHandlerFactory(DIRECTIVE_INPUT_VALIDATION, 
-            new StandardHtmlTagEventDirectiveAction()));
-        this.registerFactory(new DirectiveRendererFactory(DIRECTIVE_INPUT_VALIDATION,
-            new IssuesFoundDirectiveRenderer()));
-        this.registerFactory(new DirectiveRendererFactory(DIRECTIVE_VALIDATION_ERROR,
-            new ErrorMessagesDirectiveRender()));
-        this.registerFactory(new DirectiveRendererFactory(DIRECTIVE_SHOW_WHEN_CORRECTED,
-            new ShowWhenCorrectedDirectiveRenderer()));
-        this.registerFactory(new DirectiveRendererFactory(DIRECTIVE_SHOW_WHEN_REQUIRED,
-            new ShowWhenRequiredDirectiveRenderer()));
-        this.registerFactory(new DirectiveRendererFactory(DIRECTIVE_SHOW_WHEN_ISSUES_FOUND,
-            new ShowWhenIssuesFoundDirectiveRenderer()));
+        this.registerFactory(new ValueChangeListenerActionFactory(DIRECTIVE_VALIDATE_INPUT, 
+            new HtmlTagValueChangeListener()));
+        this.registerFactory(new RendererActionFactory(DIRECTIVE_VALIDATE_INPUT,
+            new IssuesFoundRenderer()));
+        this.registerFactory(new RendererActionFactory(DIRECTIVE_VALIDATION_ERRORS,
+            new ErrorMessagesRenderer()));
+        this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_CORRECTED,
+            new ShowWhenCorrectedRenderer()));
+        this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_REQUIRED,
+            new ShowWhenRequiredRenderer()));
+        this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_ISSUES_FOUND,
+            new ShowWhenIssuesFoundRenderer()));
     }
 }
 

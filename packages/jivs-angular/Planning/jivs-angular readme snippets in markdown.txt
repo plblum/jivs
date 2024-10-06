@@ -104,13 +104,13 @@ In this example:
 
 ### **Advanced Use Cases Requiring Interface Implementation and Factory Registration**
 
-In some scenarios, `[fivase-target]` may not provide enough control, particularly when custom event handling or complex logic is required. In these cases, developers can extend the existing `IEventsDirectiveAction` or `IPresentationDirectiveAction` implementations by registering custom actions with the appropriate factory. This ensures that your directive actions remain modular and reusable.
+In some scenarios, `[fivase-target]` may not provide enough control, particularly when custom event handling or complex logic is required. In these cases, developers can extend the existing `IValueChangeListenerAction` or `IRendererAction` implementations by registering custom actions with the appropriate factory. This ensures that your directive actions remain modular and reusable.
 
-#### Example of a Custom `IEventsDirectiveAction`:
+#### Example of a Custom `IValueChangeListenerAction`:
 
 ```ts
-export class CustomEventsDirectiveAction implements IEventsDirectiveAction {
-    public setupEventHandlers(
+export class CustomValueChangeListener implements IValueChangeListenerAction {
+    public listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -127,9 +127,11 @@ export class CustomEventsDirectiveAction implements IEventsDirectiveAction {
   }
 }
 ```
-### **Registering the Custom DirectiveAction in the Factory via `@NgModule`**
+### **Registering the Custom Directive Actions in the Factory via `@NgModule`**
 
-Your project’s design follows an approach where `EventsDirectiveActionFactory` and related factories are singletons defined in the `@NgModule` provider list. Custom actions, such as `CustomEventsDirectiveAction`, are registered in the module’s constructor to ensure they are available throughout the application.
+Your project’s design follows an approach where `EventsDirectiveActionFactory` and related factories are singletons defined in the `@NgModule` provider list. Custom actions, such as `CustomValueChangeListener`, are registered in the module’s constructor to ensure they are available throughout the application.
+
+!!! THIS CODE IS OBSOLETE
 
 ```typescript
 @NgModule({
@@ -168,17 +170,17 @@ export class AppModule {
     this.errorPresentationFactory.register('MyErrorPresentation', MyErrorPresentation);
 
     // Register the custom events directive action
-    this.eventsFactory.register('CustomEvents', CustomEventsDirectiveAction);
+    this.eventsFactory.register('CustomEvents', CustomValueChangeListener);
   }
 }
 ```
-# Documentation for [fivase-presentation] and [fivase-eventHandler].
+# Documentation for [fivase-renderer] and [fivase-valuechangelistener].
 
-## Using `[fivase-presentation]` and the Presentation Factory
+## Using `[fivase-renderer]` and the Presentation Factory
 
-When working with form validation, the `IPresentationDirectiveAction` interface controls how validation results are presented. You can supply your custom implementations either through the **PresentationDirectiveActionFactory** (set up in `@NgModule`) or with the `[fivase-presentation]` attribute.
+When working with form validation, the `IRendererAction` interface controls how validation results are presented. You can supply your custom implementations either through the **PresentationDirectiveActionFactory** (set up in `@NgModule`) or with the `[fivase-renderer]` attribute.
 
-Use the factory for consistent, reusable presentation logic across your application. If you need a one-off custom implementation for a specific input or prefer to handle the presentation logic directly, you can use the `[fivase-presentation]` attribute by passing the class name as the attribute value.
+Use the factory for consistent, reusable presentation logic across your application. If you need a one-off custom implementation for a specific input or prefer to handle the presentation logic directly, you can use the `[fivase-renderer]` attribute by passing the class name as the attribute value.
 
 ### Example Usage:
 
@@ -186,15 +188,15 @@ Use the factory for consistent, reusable presentation logic across your applicat
 <!-- Using a custom presentation class -->
 <input 
   validate="username" 
-  [fivase-presentation]="CustomPresentationDirectiveAction">
+  [fivase-renderer]="CustomRenderer">
 ```
-In this example, `CustomPresentationDirectiveAction` is a class implementing `IPresentationDirectiveAction`, which provides custom presentation logic for the username field.
+In this example, `CustomRenderer` is a class implementing `IRendererAction`, which provides custom presentation logic for the username field.
 
-## Using `[fivase-eventHandler]` and the Events Factory
+## Using `[fivase-valuechangelistener]` and the Events Factory
 
-The `IEventsDirectiveAction` interface manages how **events on your inputs deliver their values to Jivs**, triggering validation updates. You can supply your custom implementations either through the **EventsDirectiveActionFactory** (set up in `@NgModule`) or with the `[fivase-eventHandler]` attribute.
+The `IValueChangeListenerAction` interface manages how **events on your inputs deliver their values to Jivs**, triggering validation updates. You can supply your custom implementations either through the **EventsDirectiveActionFactory** (set up in `@NgModule`) or with the `[fivase-valuechangelistener]` attribute.
 
-The factory is suitable for most cases, providing consistent and reusable event handling logic. If you need one-off event handling or direct control over when and how validation is triggered, you can use the `[fivase-eventHandler]` attribute by passing the class name as the attribute value.
+The factory is suitable for most cases, providing consistent and reusable event handling logic. If you need one-off event handling or direct control over when and how validation is triggered, you can use the `[fivase-valuechangelistener]` attribute by passing the class name as the attribute value.
 
 ### Example Usage:
 
@@ -202,17 +204,17 @@ The factory is suitable for most cases, providing consistent and reusable event 
 <!-- Using a custom event handler class -->
 <input 
   validate="email" 
-  [fivase-eventHandler]="CustomEventsDirectiveAction">
+  [fivase-valuechangelistener]="CustomValueChangeListener">
 ```
-In this example, `CustomEventsDirectiveAction` is a class implementing `IEventsDirectiveAction`, ensuring that events on this input deliver their values to Jivs for validation.
+In this example, `CustomValueChangeListener` is a class implementing `IValueChangeListenerAction`, ensuring that events on this input deliver their values to Jivs for validation.
 
 
 
-# **Using Custom DirectiveActions**
+# **Using Custom Directive Actions**
 
 ## **Overview**
 
-In this guide, we will explore how to connect Fivase with your own custom components. Your component does not know how to send data to Jivs for validation nor how to take in the validation results to show there are errors. Instead, we have you write DirectiveAction classes to handle those, and connect them to your component.
+In this guide, we will explore how to connect Fivase with your own custom components. Your component does not know how to send data to Jivs for validation nor how to take in the validation results to show there are errors. Instead, we have you write Directive Actions classes to handle those, and connect them to your component.
 
 This approach allows the developer to easily connect validation to the UI without modifying the core logic of the component itself.
 
@@ -220,30 +222,30 @@ This approach allows the developer to easily connect validation to the UI withou
 
 ## **Concepts**
 
-### **DirectiveAction**
+### **Directive Actions**
 
-A **DirectiveAction** is a class that encapsulates specific behavior, such as handling events or updating the UI presentation based on validation states. There are two types of DirectiveActions used in this guide:
-1. **Events DirectiveAction**: Manages user input events (e.g., button clicks) and triggers validation.
-2. **Presentation DirectiveAction**: Updates the UI, typically by applying or removing CSS classes, based on the result of the validation.
+A **Directive Actions** is a class that encapsulates specific behavior, such as handling events or updating the UI presentation based on validation states. There are two types of DirectiveActions used in this guide:
+1. **Events Directive Actions**: Manages user input events (e.g., button clicks) and triggers validation.
+2. **Presentation Directive Actions**: Updates the UI, typically by applying or removing CSS classes, based on the result of the validation.
 
-### **Companion DirectiveActions**
+### **Companion Directive Actions**
 
 In this use case, the component leverages **companion objects** to handle event and presentation logic. This means:
 - The component does not directly implement validation interfaces.
-- Instead, it provides companion classes (`QuantitySelectorEventHandler`, `QuantitySelectorValidationPresentation`) to handle validation and UI updates.
+- Instead, it provides companion classes (`QuantitySelectorValueChangeListener`, `QuantitySelectorErrorRenderer`) to handle validation and UI updates.
 
 ---
 
-## **Two Approaches for Using Companion DirectiveActions**
+## **Two Approaches for Using Companion Directive Actions**
 
-There are two main ways to utilize **Companion DirectiveActions**:
+There are two main ways to utilize **Companion Directive Actions**:
 
 1. **Using Attributes in the Template**:  
-   You can declare the directive actions directly within your component's template using the `[fivase-eventHandler]` and `[fivase-presentation]` attributes.
+   You can declare the directive actions directly within your component's template using the `[fivase-valuechangelistener]` and `[fivase-renderer]` attributes.
    
    Example:
    ```html
-   <app-quantityselector [validate]="quantity" [fivase-eventHandler]="value" [fivase-presentation]="value"></app-quantityselector>
+   <app-quantityselector [validate]="quantity" [fivase-valuechangelistener]="value" [fivase-renderer]="value"></app-quantityselector>
    ```
    
 2.  **Using Helper Functions:**
@@ -291,12 +293,12 @@ export class QuantitySelector {
 }
 ```
 
-### Implement IEventsDirectiveAction to handle the emitted event
+### Implement IValueChangeListenerAction to handle the emitted event
 We need to intercept the quantityChange event and in doing so, pass the value to Jivs.
 
 Supposing we already have an instance of QuantitySelector in this.component, here's the relevant code:
 ```ts
-    setupEventHandlers(
+    listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -310,23 +312,22 @@ Supposing we already have an instance of QuantitySelector in this.component, her
   }
 ```
 
-Here is the full implementation of the **QuantitySelectorEventHandler**.
+Here is the full implementation of the **QuantitySelectorValueChangeListener**.
 
 ```ts
-import { DirectiveActionBase } from 'your-library-path';
-import { IEventsDirectiveAction, FivaseForm } from 'your-library-path';
+import { IValueChangeListenerAction, FivaseForm } from 'your-library-path';
 import { ElementRef, Renderer2 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { QuantitySelector } from './quantityselector';
 
-export class QuantitySelectorEventHandler extends DirectiveActionBase implements IEventsDirectiveAction, IDestroyableDirectiveAction {
+export class QuantitySelectorValueChangeListener implements IValueChangeListenerAction {
   private subscription: Subscription;
 
   constructor(private component: QuantitySelector) {
     super();
   }
 
-    setupEventHandlers(
+    listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -348,18 +349,17 @@ export class QuantitySelectorEventHandler extends DirectiveActionBase implements
 }
 ```
 
-### Implement IPresentationDirectiveAction to update the UI
+### Implement IRendererAction to update the UI
 Through the applyValidationPresentation method, Jivs will pass us an array of IssueFound objects when there are issues and null when there is not. We want to add the 'invalid' class to the native element when there are issues and remove it when there are not.
 
-Here is the full implementation of the **QuantitySelectorValidationPresentation**, which applies or removes CSS classes based on the validation results for the `quantity`.
+Here is the full implementation of the **QuantitySelectorErrorRenderer**, which applies or removes CSS classes based on the validation results for the `quantity`.
 
 ```ts
-import { DirectiveActionBase } from 'your-library-path';
-import { IPresentationDirectiveAction } from 'your-library-path';
+import { IRendererAction, RendererActionBase } from 'your-library-path';
 import { ElementRef, Renderer2 } from '@angular/core';
 import { IssueFound } from 'jivs-angular';
 
-export class QuantitySelectorValidationPresentation extends DirectiveActionBase implements IPresentationDirectiveAction {
+export class QuantitySelectorErrorRenderer extends RendererActionBase implements IRendererAction {
   constructor() {
     super();
   }
@@ -382,13 +382,13 @@ export class QuantitySelectorValidationPresentation extends DirectiveActionBase 
 }
 ```
 
-
 ### Updating the Component with Helper Functions
 
 Next, we introduce the **helper functions** from Jivs-angular into your component. These snippets show how to attach and clean up the companion directive actions:
 
 #### **Imports from Jivs-angular**
 
+!!! THIS SECTION IS OUT OF DATE
 ```ts
 import { attachDirectiveActionsToElement, cleanupDirectiveActionsFromElement } from 'jivs-angular';
 ```
@@ -399,8 +399,8 @@ We add `attachDirectiveActionsToElement()` in the `ngOnInit()` lifecycle hook to
 ```ts
 ngOnInit(): void {
   attachDirectiveActionsToElement(this.elementRef.nativeElement, 
-    new QuantitySelectorEventHandler(this), 
-    new QuantitySelectorValidationPresentation());
+    new QuantitySelectorValueChangeListener(this), 
+    new QuantitySelectorErrorRenderer());
 }
 ```
 > If you don't need one of these, pass in null.
@@ -419,8 +419,8 @@ Here is the completed implementation:
 
 ```ts
 import { Component, ElementRef, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { QuantitySelectorEventHandler } from './quantityselector-event-handler';
-import { QuantitySelectorValidationPresentation } from './quantityselector-validation-presentation';
+import { QuantitySelectorValueChangeListener } from './quantityselector-event-handler';
+import { QuantitySelectorErrorRenderer } from './quantityselector-validation-presentation';
 import { attachDirectiveActionsToElement, cleanupDirectiveActionsFromElement } from 'jivs-angular';
 
 @Component({
@@ -442,8 +442,8 @@ export class QuantitySelector implements OnInit, OnDestroy {
 
   ngOnInit(): void {
 	  attachDirectiveActionsToElement(this.elementRef.nativeElement, 
-	    new QuantitySelectorEventHandler(this.renderer, this), 
-	    new QuantitySelectorValidationPresentation(this.renderer));
+	    new QuantitySelectorValueChangeListener(this.renderer, this), 
+	    new QuantitySelectorErrorRenderer(this.renderer));
   }
 
   increment(): void {
@@ -469,7 +469,7 @@ export class QuantitySelector implements OnInit, OnDestroy {
 
 ## **Alternative Approach: Implementing Interfaces on the Component**
 
-While using companion `DirectiveAction` classes is a flexible solution, there is another approach that may be more suitable when you want to keep all the logic contained within the component itself. This approach involves having your component directly implement the necessary `DirectiveAction` interfaces: `IEventsDirectiveAction` and `IPresentationDirectiveAction`.
+While using companion `Directive Actions` classes is a flexible solution, there is another approach that may be more suitable when you want to keep all the logic contained within the component itself. This approach involves having your component directly implement the necessary `Directive Actions` interfaces: `IValueChangeListenerAction` and `IRendererAction`.
 
 By implementing these interfaces on the component, you can directly handle validation events and UI updates within the component code, keeping everything in one place.
 
@@ -477,22 +477,22 @@ By implementing these interfaces on the component, you can directly handle valid
 
 This approach is ideal when:
 - You want to maintain all component-related logic (including validation and UI presentation) in a single file.
-- You prefer not to create separate `DirectiveAction` classes and would rather implement the required behaviors directly in the component.
+- You prefer not to create separate `Directive Actions` classes and would rather implement the required behaviors directly in the component.
 - The validation or presentation logic is tightly coupled with the component's internal state, making it more convenient to handle events and validation results within the component.
 
 ---
 
 ### **Implementing Interfaces on the Component**
 
-Let’s modify the previous example to show how the `QuantitySelector` component itself can implement the required interfaces (`IEventsDirectiveAction` and `IPresentationDirectiveAction`), allowing it to handle validation events and UI updates directly.
+Let’s modify the previous example to show how the `QuantitySelector` component itself can implement the required interfaces (`IValueChangeListenerAction` and `IRendererAction`), allowing it to handle validation events and UI updates directly.
 
 ### **Updated QuantitySelector Component**
 
-The component will now implement the `IEventsDirectiveAction` and `IPresentationDirectiveAction` interfaces directly:
+The component will now implement the `IValueChangeListenerAction` and `IRendererAction` interfaces directly:
 
 ```ts
 import { Component, ElementRef, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { IEventsDirectiveAction, IPresentationDirectiveAction, FivaseForm, IssueFound } from 'jivs-angular';
+import { IValueChangeListenerAction, IRendererAction, FivaseForm, IssueFound } from 'jivs-angular';
 
 @Component({
   selector: 'app-quantityselector',
@@ -504,7 +504,7 @@ import { IEventsDirectiveAction, IPresentationDirectiveAction, FivaseForm, Issue
     </div>
   `
 })
-export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveAction, IPresentationDirectiveAction {
+export class QuantitySelector implements OnInit, OnDestroy, IValueChangeListenerAction, IRendererAction {
   quantity = 0;
 
   @Output() quantityChange = new EventEmitter<{ oldValue: number, newValue: number }>();
@@ -535,8 +535,8 @@ export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveActi
     cleanupDirectiveActionsFromElement(this.elementRef.nativeElement);
   }
 
-  // Implementing the IEventsDirectiveAction interface
-    setupEventHandlers(
+  // Implementing the IValueChangeListenerAction interface
+    listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -549,7 +549,7 @@ export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveActi
     });
   }
 
-  // Implementing the IPresentationDirectiveAction interface
+  // Implementing the IRendererAction interface
     applyValidationPresentation(
         element: HTMLElement,
         renderer: Renderer2,
@@ -570,17 +570,17 @@ export class QuantitySelector implements OnInit, OnDestroy, IEventsDirectiveActi
 
 ### **Key Points of This Approach**
 
-1. **Interface Implementation**: The component now implements both `IEventsDirectiveAction` and `IPresentationDirectiveAction`. This allows the component to manage validation events and UI updates directly.
+1. **Interface Implementation**: The component now implements both `IValueChangeListenerAction` and `IRendererAction`. This allows the component to manage validation events and UI updates directly.
 
-2. **Helper Functions**: Instead of attaching external `DirectiveAction` objects, we attach the component itself as both the event handler and the presentation handler via the `attachDirectiveActionsToElement` helper function.
+2. **Helper Functions**: Instead of attaching external `Directive Actions` objects, we attach the component itself as both the event handler and the presentation handler via the `attachDirectiveActionsToElement` helper function.
 
-3. **Streamlined Code**: With this approach, you avoid creating separate classes for `DirectiveAction`, keeping the component logic in a single file.
+3. **Streamlined Code**: With this approach, you avoid creating separate classes for `Directive Actions`, keeping the component logic in a single file.
 
 ---
 
 ### **Choosing the Right Approach**
 
-Now that you’ve seen both approaches—using companion `DirectiveAction` classes and implementing the interfaces directly on the component—it’s up to you to decide which method best suits your needs. If you prefer a more modular approach, you can use the companion classes. If you prefer to keep all your logic together in one place, implementing the interfaces directly on the component may be the better option.
+Now that you’ve seen both approaches—using companion `Directive Actions` classes and implementing the interfaces directly on the component—it’s up to you to decide which method best suits your needs. If you prefer a more modular approach, you can use the companion classes. If you prefer to keep all your logic together in one place, implementing the interfaces directly on the component may be the better option.
 
 ---
 
