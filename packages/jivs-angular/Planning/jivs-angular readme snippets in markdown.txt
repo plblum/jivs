@@ -593,7 +593,6 @@ The `[popup]` directive is intended to support error message designs where the e
 Here is a classic scenario. While there are validation errors, the user only sees an icon. When the mouse is over the icon, the error messages appear.
 
  ```html
-
 <div [showWhenInvalid]="valueHostName">
    <div>
      <img src="info-icon.png" />

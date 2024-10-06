@@ -160,38 +160,22 @@
   - **User Interaction**: This dynamic behavior ensures that users get immediate feedback when they interact with form inputs, making the experience more responsive and accessible.
 
 ## Implementation
+- This feature uses existing features with these types: IPopupAction, IFocusListenerAction, PopupDirective.
 
-- **ValidationInputDirective**: This directive will set up event handlers (e.g., `focus` and `blur` events) to trigger focus-related commands using `FivaseForm.sendMessage`. These commands notify other directives about input focus changes.
-- **Handling Commands**: The following commands will manage error message visibility:
-  - **`gainedFocus`**: Sent when the input gains focus, causing the associated error message to become visible.
-  - **`lostFocus`**: Sent when the input loses focus, allowing the associated error message to be hidden, as long as the screen reader can still access the message when needed.
+- **ValidationInputDirective**: 
+This directive will set up event handlers (e.g., `focus` and `blur` events) to trigger focus-related commands using IFocusListenerAction. These commands notify other directives about input focus changes.
+- **Handling Commands**: The PopupDirective will subscribe to those focus-related commands.
 
-## Directive Actions Types for Focus and Blur Events
+Here is a classic scenario. While there are validation errors, the user only sees an icon. When the mouse is over the icon, the error messages appear.
 
-In the implementation of `ValidationInputDirective`, we will need two new `Directive Actions` interfaces to handle focus and blur events. These interfaces will be used to set up event handlers for the input element and manage the interaction between the input field and the validation system.
-
-### Required Types
-
-1. **IDirectiveFocusEventsHandler**
-   - **Purpose**: Sets up the event handlers for `focus` and `blur` events on the input field. This action ensures that when an input gains or loses focus, the corresponding commands (`gainedFocus`, `lostFocus`) are sent to the validation system.
-   - **Factory**: `DirectiveFocusEventsHandlerFactory`.
-   - **Default Class Implementation**: `StandardHtmlFocusEventsHandler`, which handles traditional DOM focus and blur events. Users can replace this for custom components that have their own messaging for these activities.
-
-2. **IDirectiveMessageVisibility** (extends `IRendererAction`)
-   - **Purpose**: Listens for the `gainedFocus` and `lostFocus` commands, updating the UI elements associated with the input field based on its focus state (e.g., showing or hiding error messages). `IDirectiveMessageVisibility` extends `IRendererAction`, as both are interconnected. The popup capability is introduced in `IRendererAction.render`, and `IDirectiveMessageVisibility` invokes the same code.
-   - **No Factory or Default Class Implementation Needed**: `ValidationErrorsDirective` will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IRendererAction` instance. This mechanism allows enabling or disabling the functionality smoothly.
-
-## Impact on Existing Code
-
-1. **FivaseServices**:
-   - The factory `DirectiveFocusEventsHandlerFactory` will be supported within `FivaseServices`.
-
-2. **ValidationInputDirective**:
-   - This directive will always wire up the supplied `IDirectiveFocusEventsHandler`, even if the error presentation does not explicitly require it. This ensures that focus and blur events are handled consistently across the system.
-
-3. **ValidationErrorsDirective**:
-   - This directive will determine if it needs to use `IDirectiveMessageVisibility` based on its presence in the `IRendererAction` instance. If the implementation is present, it will invoke the necessary functionality to show or hide the error message content appropriately.
-
+ ```html
+<div [showWhenInvalid]="valueHostName">
+   <div>
+     <img src="info-icon.png" />
+   </div>
+   <div [popup] [validationErrors]></div>
+</div>
+```
 
 # Screen Reader Compatibility with Hidden Error Messages
 
@@ -333,3 +317,32 @@ this.services.textLocalizerService.register('required', customTexts);
 ```
 ## Considerations:
 TextLocalizerService should allow registration of custom localization keys and default text, with global configuration access via FivaseServices.
+
+
+# ARIA Support in PopupDirective (Aligned with "Design for ARIAs")
+
+## Focus and Blur Events for Error Message Visibility:
+
+- The PopupDirective listens for focus and blur events on associated input elements.
+- When the input gains focus, the directive makes associated error messages visible, ensuring the user is alerted to issues.
+- When the input loses focus, the popup can be hidden, maintaining a clean UI.
+
+## `aria-hidden` Attribute:
+
+- The PopupDirective manages the aria-hidden attribute to control whether the popup content (like error messages) is accessible to screen readers.
+- When Hidden: aria-hidden="true" ensures screen readers ignore the hidden content.
+- When Visible: aria-hidden="false" allows screen readers to detect and announce error messages when they are relevant.
+
+## aria-errormessage Support:
+
+The directive continues using the existing aria-errormessage logic, linking input fields to the appropriate error message elements by their IDs. This linkage remains consistent, and no changes are needed in how IDs are handled.
+
+## Alignment with ValidationErrorDirective:
+
+The PopupDirective ensures synchronization with the ValidationErrorDirective by controlling error message visibility in response to focus/blur events, but it doesn't alter the overall ID structure for ARIA attributes.
+
+## Dynamic Error Feedback:
+
+By making error messages visible on focus and hiding them on blur, the PopupDirective ensures a seamless dynamic experience for users, particularly those relying on screen readers. This also aligns with the goal of immediate, accessible feedback outlined in the design document.
+
+In conclusion, the PopupDirective aligns with the broader "Design for ARIAs" goals by handling visibility, focus events, and ensuring that ARIA attributes like aria-hidden and aria-errormessage are properly maintained. This integration ensures both accessibility and responsiveness in forms with validation.
