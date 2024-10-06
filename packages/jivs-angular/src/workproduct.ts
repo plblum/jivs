@@ -293,7 +293,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             default:
                 console.warn(`Unsupported tagName: ${tagName}`);
         }
-    
+
 
         function setupForInputTag(): void {
             // Handle input types like checkbox and file
@@ -372,8 +372,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * Remove any event handlers that were attached to the element.
      * @param element 
      */
-    public cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void
-    {
+    public cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void {
         //!!! remove event handlers for 'change' and 'input' events
         // Need a solution that uses renderer object.
     }
@@ -434,7 +433,7 @@ export abstract class RendererActionBase implements IRendererAction {
         return this._disabledCssClass;
     }
     private _disabledCssClass: string | null;
-    
+
     /**
      * Optional parameter to hide the element when two states are present.
      * Its value determines which of the two states will hide the element.
@@ -497,8 +496,7 @@ export abstract class RendererActionBase implements IRendererAction {
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions
-    )
-    {
+    ) {
         let enabledCssClass = options?.enabledCssClass ?? this.enabledCssClass;
         let disabledCssClass = options?.disabledCssClass ?? this.disabledCssClass;
 
@@ -526,7 +524,7 @@ export abstract class RendererActionBase implements IRendererAction {
             } else {
                 renderer.removeStyle(element, 'display');
                 renderer.removeAttribute(element, 'hidden');
-            }    
+            }
         }
     }
 
@@ -564,7 +562,7 @@ export function changeCssClasses(toAdd: string | null | undefined, toRemove: str
     if (toRemove) {
         renderer.removeClass(element, toRemove);
     }
-}    
+}
 
 /**
  * Concrete implementation of `IRendererAction` that applies a CSS class to the target element
@@ -593,7 +591,7 @@ export class IssuesFoundRenderer extends RendererActionBase {
         disabledCssClass: string | null = 'valid') {
         super(enabledCssClass, disabledCssClass, false);
     }
-    
+
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
@@ -672,7 +670,7 @@ export class ShowWhenCorrectedRenderer extends RendererActionBase {
  * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
  */
 export class ShowWhenRequiredRenderer extends RendererActionBase {
-    
+
     constructor(
         enabledCssClass: string | null = null,
         disabledCssClass: string | null = null) {
@@ -743,7 +741,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      * Determines the outer tag surrounding a list of error messages.
      * It defaults to 'ul'.
      */
-    protected get outerTag(): string | null{
+    protected get outerTag(): string | null {
         return this._outerTag;
     }
     private _outerTag: string | null;
@@ -772,7 +770,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      */
     protected get innerTag(): string {
         return this._innerTag;
-    }   
+    }
     private _innerTag: string;
 
     public render(
@@ -840,15 +838,15 @@ export class ErrorMessagesRenderer extends RendererActionBase {
  * It listens for focus and blur events (or focusin and focusout based on constructor parameter).
  */
 export class HtmlTagFocusListener implements IFocusListenerAction {
-    private focusHandler: EventListener = () => {};
-    private blurHandler: EventListener = () => {};
+    private focusHandler: EventListener = () => { };
+    private blurHandler: EventListener = () => { };
 
     /**
      * Creates an instance of HtmlTagFocusListener.
      *
      * @param useFocusInOut - Determines whether to use focusin/focusout (which bubble) or focus/blur (which do not bubble).
      */
-    constructor(private useFocusInOut: boolean = false) {}
+    constructor(private useFocusInOut: boolean = false) { }
 
     /**
      * Sets up focus-related event handlers on the target element.
@@ -921,7 +919,7 @@ export class PopupAction implements IPopupAction {
         private showCssClass: string = 'popup-show',
         private hideCssClass: string = 'popup-hide',
         private useDisplayNone: boolean = true
-    ) {}
+    ) { }
 
     /**
      * Shows the popup element by applying the appropriate CSS class and/or removing the `display: none` style.
@@ -1073,11 +1071,11 @@ export interface IActionFactory {
  * NOTE: By design, the factory expects the instances it holds to be immutable and resuable.
  */
 export abstract class ActionFactoryBase<T> implements IActionFactory {
-    constructor (directiveName: string, defaultFallback: T) {
+    constructor(directiveName: string, defaultFallback: T) {
         this._defaultFallback = defaultFallback;
         this._directiveName = directiveName;
     }
-//#region find the right factory
+    //#region find the right factory
     /**
      * The name of the directive associated with this factory.
      */
@@ -1118,7 +1116,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
         }
     }
 
-//#region instance management    
+    //#region instance management    
     /**
      * Contains instances that were registered by name.
      * Names are case insensitive and stored here in lowercase.
@@ -1152,10 +1150,10 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
     public resolve(element: HTMLElement, name: string | null | undefined): T {
         if (name) {
             let instance = this.registryByName.get(name.toLowerCase());
-            if (instance) 
+            if (instance)
                 return instance;
             throw new Error(`No instance found for name: ${name} in the factory ${this.constructor.name}.`);
-            
+
         }
         let componentInstance = this.getFromComponent(element);
         if (componentInstance) {
@@ -1170,11 +1168,11 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      * @param element 
      * @returns 
      */
-    protected getFromComponent(element: HTMLElement) : T | undefined {
+    protected getFromComponent(element: HTMLElement): T | undefined {
         return (element as any)[this.customPropertyName];
     }
     //#endregion instance management
-    
+
     /**
      * Used by a component to attach its own instance of the directive action to an element.
      * Expected to be called from the component's ngOnInit method. 
@@ -1201,8 +1199,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      * Likewise, unavailable removes the custom property.
      * The resolve method will look for this custom property and use the instance if found.
      */
-    protected get customPropertyName(): string
-    {
+    protected get customPropertyName(): string {
         return `fivase-${this.directiveName}-${this.actionName}`;
     }
 
@@ -1240,7 +1237,7 @@ export class RendererActionFactory extends ActionFactoryBase<IRendererAction> {
  * of IValueChangeListenerAction in the constructor.
  */
 export class ValueChangeListenerActionFactory extends ActionFactoryBase<IValueChangeListenerAction> {
-    
+
     constructor(directiveName: string, defaultFallback: IValueChangeListenerAction) {
         super(directiveName, defaultFallback);
     }
@@ -1275,7 +1272,7 @@ export class FocusListenerActionFactory extends ActionFactoryBase<IFocusListener
      */
     protected isValidInstance(instance: IFocusListenerAction): boolean {
         return typeof instance.listenForFocusChanges === 'function' &&
-               typeof instance.cleanupEventHandlers === 'function';
+            typeof instance.cleanupEventHandlers === 'function';
     }
 }
 
@@ -1299,7 +1296,7 @@ export class PopupActionFactory extends ActionFactoryBase<IPopupAction> {
      */
     protected isValidInstance(instance: IPopupAction): boolean {
         return typeof instance.show === 'function' &&
-               typeof instance.hide === 'function';
+            typeof instance.hide === 'function';
     }
 }
 
@@ -1370,6 +1367,8 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.setupDirective(this.resolveValueHostName());
+        this.initializeAriaManager(); // Ensure Aria Manager is initialized after the directive setup
+
     }
 
     /**
@@ -1429,12 +1428,30 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
         return this.el.nativeElement;
     }
 
+    protected ariaManager!: AriaAttributeManager; // Initialized after the element is ready
+
+    /**
+     * Ensures ariaManager is created and initialized with the appropriate settings.
+     */
+    protected initializeAriaManager(): void {
+        this.ariaManager = new AriaAttributeManager(this.getTargetElement(), this.fivaseServices.ariaSettings, this.fivaseForm);
+        this.initAriaAttributes(); // Calls an abstract method for additional subclass-specific setup
+    }
+
+    /**
+     * Provides static aria attributes for the directive.
+     */
+    protected initAriaAttributes(): void {
+
+    }
+
     ngOnDestroy(): void {
         // not required but good form
         (this.el as any) = undefined;
-        (this.fivaseServices as any) = undefined;        
+        (this.fivaseServices as any) = undefined;
         (this.fivaseForm as any) = undefined;
         (this.valueHostNameDirective as any) = undefined;
+        (this.ariaManager as any) = undefined;
     }
 
 }
@@ -1511,8 +1528,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     /** 
      * Gets the factory from fivaseServices used to create the IRendererAction implementation.
     */
-    protected get resolveRendererFactory(): RendererActionFactory
-    {
+    protected get resolveRendererFactory(): RendererActionFactory {
         return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_RENDERER) as RendererActionFactory;
     }
 
@@ -1667,7 +1683,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * Select a custom implementation of `IValueChangeListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-valuechangelistener') eventHandlerName:string |  undefined;
+    @Input('fivase-valuechangelistener') eventHandlerName: string | undefined;
 
     /**
      * Select a custom implementation of `IFocusListenerAction` from the factory
@@ -1757,6 +1773,8 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         }
         this.severityAttribute(targetElement, validationState);
 
+        this.updateAriaAttributes(validationState);
+
         // Call the base class to handle render
         super.onValueHostValidationStateChanged(targetElement, validationState);
     }
@@ -1771,6 +1789,32 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
             enabledCssClass: this.invalidCssClass,
             disabledCssClass: this.validCssClass
         };
+    }
+
+    protected initAriaAttributes(): void {
+        // Set aria-required based on the requiresInput field in the ValueHost
+        const valueHost = this.fivaseForm.validationManager.getInputValueHost(this.valueHostName!);
+        if (valueHost && valueHost.requiresInput) {
+            this.ariaManager.setAriaRequired(); // Set aria-required if requiresInput is true
+        }
+
+        // Set aria-errormessage once since it is static
+        this.ariaManager.setAriaErrormessage(this.valueHostName);
+    }
+
+    /**
+     * Updates dynamic ARIA attributes (aria-invalid, aria-live) based on validation state.
+     */
+    protected updateAriaAttributes(validationState: ValueHostValidationState): void {
+        // severity should be null, error or severe. Null for no issues found, error for issues found, severe for at least one severe issue found.
+        let severity: ValidationSeverity | null = null;
+        if (validationState.issuesFound) {
+            severity = validationState.issuesFound.reduce((highest, issue) => issue.severity > highest.severity ? issue : highest, validationState.issuesFound[0]).severity ?? null;
+        }
+
+        // Set dynamic ARIA attributes
+        this.ariaManager.setAriaInvalid(!validationState.isValid);
+        this.ariaManager.setAriaLive(severity);
     }
 
     public ngOnDestroy(): void {
@@ -1834,7 +1878,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 export class ValidationErrorsDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
         return DIRECTIVE_VALIDATION_ERRORS;
-    }   
+    }
 
     /**
      * The internal property that will be used in the directive to manage
@@ -1869,6 +1913,40 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
             disabledCssClass: this.validCssClass
         };
     }
+
+    /**
+     * Initializes ARIA attributes that do not change dynamically (e.g., aria-roledescription).
+     */
+    protected initAriaAttributes(): void {
+        // Set aria-roledescription with the directive name
+        this.ariaManager.setAriaRoleDescription(DIRECTIVE_VALIDATION_ERRORS);
+    }
+
+    /**
+     * Updates dynamic ARIA attributes (aria-live, aria-hidden) based on the validation state.
+     */
+    protected updateAriaAttributes(validationState: ValueHostValidationState): void {
+        // severity should be null, error or severe. Null for no issues found, error for issues found, severe for at least one severe issue found.
+        let severity: ValidationSeverity | null = null;
+        if (validationState.issuesFound) {
+            severity = validationState.issuesFound.reduce((highest, issue) => issue.severity > highest.severity ? issue : highest, validationState.issuesFound[0]).severity ?? null;
+        }
+
+        // Update aria-live based on severity
+        this.ariaManager.setAriaLive(severity);
+
+        // Update aria-hidden based on whether the input is valid
+        this.ariaManager.setBooleanAttribute('aria-hidden', validationState.isValid);
+    }
+
+    /**
+     * Handles validation state changes and updates ARIA attributes accordingly.
+     */
+    protected onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
+        super.onValueHostValidationStateChanged(targetElement, validationState);
+        this.updateAriaAttributes(validationState);  // Update ARIA attributes dynamically
+    }
+
 }
 
 /**
@@ -2054,98 +2132,110 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
  * ```
  */
 @Directive({
-  selector: '[popup]' // The directive name remains [popup]
+    selector: '[popup]' // The directive name remains [popup]
 })
 export class PopupDirective extends FivaseDirectiveBase {
-  private subscription: Subscription | null = null;
-  private popupAction: IPopupAction | null = null;
+    private subscription: Subscription | null = null;
+    private popupAction: IPopupAction | null = null;
 
-  /**
-   * Input to specify a custom factory name for IPopupAction.
-   * This allows for a custom implementation of the popup behavior.
-   */
-  @Input('fivase-popup') popupFactoryName: string | undefined; // Changed input name to 'fivase-popup'
+    /**
+     * Input to specify a custom factory name for IPopupAction.
+     * This allows for a custom implementation of the popup behavior.
+     */
+    @Input('fivase-popup') popupFactoryName: string | undefined; // Changed input name to 'fivase-popup'
 
-  constructor(
-    el: ElementRef,
-    renderer: Renderer2,
-    fivaseServices: FivaseServices,
-    fivaseForm: IFivaseForm,
-    @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
-  ) {
-    super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
-  }
-
-  /**
-   * Setup the directive by resolving the IPopupAction from the factory
-   * and subscribing to the appropriate messages for the given valueHostName.
-   * 
-   * @param {string} valueHostName - The name of the value host for the popup action.
-   */
-  protected setupDirective(valueHostName: string): void {
-    // Resolve the popup action from the factory
-    this.popupAction = this.resolvePopupActionFactory().resolve(
-      this.getFactoryElement(), this.popupFactoryName);
-
-    // Check if popupAction is resolved, throw an error if not
-    if (!this.popupAction) {
-      throw new Error('PopupAction could not be resolved for PopupDirective. Ensure a valid PopupAction is provided in the factory.');
+    constructor(
+        el: ElementRef,
+        renderer: Renderer2,
+        fivaseServices: FivaseServices,
+        fivaseForm: IFivaseForm,
+        @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
+    ) {
+        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
     }
 
-    // Subscribe to FivaseForm messages for this valueHostName
-    this.subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
-      switch (message) {
-        case 'focusGained':
-        case 'show':
-          this.popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
-          break;
-        case 'focusLost':
-        case 'hide':
-          this.popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
-          break;
-        default:
-          break;
-      }
-    });
-  }
+    /**
+     * Setup the directive by resolving the IPopupAction from the factory
+     * and subscribing to the appropriate messages for the given valueHostName.
+     * 
+     * @param {string} valueHostName - The name of the value host for the popup action.
+     */
+    protected setupDirective(valueHostName: string): void {
+        // Resolve the popup action from the factory
+        this.popupAction = this.resolvePopupActionFactory().resolve(
+            this.getFactoryElement(), this.popupFactoryName);
 
-  /**
-   * Resolves the PopupActionFactory from FivaseServices used to create 
-   * the IPopupAction implementation.
-   * 
-   * @returns {PopupActionFactory}
-   */
-  protected resolvePopupActionFactory(): PopupActionFactory {
-    return this.fivaseServices.getFactory(this.directiveNameInFactory, 'PopupActionFactory') as PopupActionFactory;
-  }
+        // Check if popupAction is resolved, throw an error if not
+        if (!this.popupAction) {
+            throw new Error('PopupAction could not be resolved for PopupDirective. Ensure a valid PopupAction is provided in the factory.');
+        }
 
-  /**
-   * The constant used to identify the directive in factory lookups.
-   * The value comes from the DIRECTIVE_POPUP constant.
-   * 
-   * @returns {string}
-   */
-  protected get directiveNameInFactory(): string {
-    return DIRECTIVE_POPUP;
-  }
+        // Subscribe to FivaseForm messages for this valueHostName
+        this.subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
+            switch (message) {
+                case 'focusGained':
+                case 'show':
+                    this.popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this.updateAriaHidden(false);  
+                    break;
+                case 'focusLost':
+                case 'hide':
+                    this.popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this.updateAriaHidden(true); 
+                    break;
+                default:
+                    break;
+            }
+        });
 
-  /**
-   * Cleanup by unsubscribing from the form's value host messaging and 
-   * removing the popup action.
-   */
-  public ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = null;
     }
 
-    if (this.popupAction) {
-      this.resolvePopupActionFactory().unavailable(this.getFactoryElement());
-      this.popupAction = null;
+    /**
+     * Resolves the PopupActionFactory from FivaseServices used to create 
+     * the IPopupAction implementation.
+     * 
+     * @returns {PopupActionFactory}
+     */
+    protected resolvePopupActionFactory(): PopupActionFactory {
+        return this.fivaseServices.getFactory(this.directiveNameInFactory, 'PopupActionFactory') as PopupActionFactory;
     }
 
-    super.ngOnDestroy();
-  }
+    /**
+     * The constant used to identify the directive in factory lookups.
+     * The value comes from the DIRECTIVE_POPUP constant.
+     * 
+     * @returns {string}
+     */
+    protected get directiveNameInFactory(): string {
+        return DIRECTIVE_POPUP;
+    }
+
+    /**
+     * Updates the `aria-hidden` attribute based on the visibility of the popup.
+     * 
+     * @param isHidden - Whether the popup is hidden from screen readers (true) or visible (false).
+     */
+    private updateAriaHidden(isHidden: boolean): void {
+        this.ariaManager.setBooleanAttribute('aria-hidden', isHidden);
+    }
+
+    /**
+     * Cleanup by unsubscribing from the form's value host messaging and 
+     * removing the popup action.
+     */
+    public ngOnDestroy(): void {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+            this.subscription = null;
+        }
+
+        if (this.popupAction) {
+            this.resolvePopupActionFactory().unavailable(this.getFactoryElement());
+            this.popupAction = null;
+        }
+
+        super.ngOnDestroy();
+    }
 }
 
 
@@ -2322,8 +2412,7 @@ export class FivaseForm implements IFivaseForm {
     /**
      * Access to the FivaseServices instance
      */
-    public get services(): IFivaseServices
-    {
+    public get services(): IFivaseServices {
         return this._services;
     }
     private _services: IFivaseServices;
@@ -2361,13 +2450,13 @@ export class FivaseForm implements IFivaseForm {
     public setValue(valueHostName: string, value: any, options?: SetValueOptions): void {
         this.validationManager.vh.input(valueHostName).setValue(value, options);
     }
-/**
- * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setInputValue(inputValue,options)`.
- * See Fivase documentation for details.
- * @param valueHostName 
- * @param inputValue 
- * @param options 
- */
+    /**
+     * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setInputValue(inputValue,options)`.
+     * See Fivase documentation for details.
+     * @param valueHostName 
+     * @param inputValue 
+     * @param options 
+     */
     public setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void {
         this.validationManager.vh.input(valueHostName).setInputValue(inputValue, options);
     }
@@ -2452,8 +2541,7 @@ export class FivaseForm implements IFivaseForm {
      * @param valueHostName 
      * @param callback 
      */
-    public subscribeToValueHostMessaging(valueHostName: string, callback: (command: string, payload?: any) => void): Subscription
-    {
+    public subscribeToValueHostMessaging(valueHostName: string, callback: (command: string, payload?: any) => void): Subscription {
         return this._valueHostMessagingSubject
             .pipe(filter(forCallback => forCallback.valueHostName === valueHostName))
             .subscribe(event => callback(event.command, event.payload));
@@ -2462,8 +2550,7 @@ export class FivaseForm implements IFivaseForm {
      * Unsubscribes from the value host messaging by calling the unsubscribe method on the provided subscription.
      * @param subscription 
      */
-    public unsubscribeFromValueHostMessaging(subscription: Subscription): void
-    {
+    public unsubscribeFromValueHostMessaging(subscription: Subscription): void {
         subscription.unsubscribe();
     }
     /**
@@ -2472,8 +2559,7 @@ export class FivaseForm implements IFivaseForm {
      * @param command - The command to send.
      * @param payload - Optional data to send with the command.
      */
-    public sendMessage(valueHostName: string, command: string, payload?: any): void
-    {
+    public sendMessage(valueHostName: string, command: string, payload?: any): void {
         this._valueHostMessagingSubject.next({ valueHostName, command, payload });
     }
 
@@ -2534,7 +2620,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
 
     constructor(private stateStore: IFivaseStateStore) { }
 
-    
+
     /**
      * Retrieves the configuration for a given form ID, including any saved state and callbacks.
      * 
@@ -2660,7 +2746,7 @@ export interface IFivaseServices {
      * @param factory 
      */
     registerFactory(factory: IActionFactory): void;
-    
+
     /**
      * Retrieves the factory for creating instances of Directive Actions.
      * Throws an error if the factory is not found.
@@ -2668,6 +2754,12 @@ export interface IFivaseServices {
      * @param actionName 
      */
     getFactory(directiveName: string, actionName: string): IActionFactory;
+
+    /**
+     * Global ARIA settings that configure ARIA-related attributes for form validation.
+     * This can be accessed and modified by the user after initialization.
+     */
+    ariaSettings: IAriaSettings;
 }
 
 /**
@@ -2700,8 +2792,23 @@ export interface IFivaseServices {
  *   information between form rebuilds.
  */
 export class FivaseServices implements IFivaseServices {
-    constructor(stateStore: IFivaseStateStore) { 
+    constructor(stateStore: IFivaseStateStore) {
         this._configHost = new FivaseConfigHost(stateStore);
+
+        // Initialize ariaSettings with default values
+        this._ariaSettings = {
+            ariaEnabled: true,  // ARIA is enabled by default
+            errorMessageIdPostfix: "_errorMessages",  // Default postfix for error message IDs
+            ariaLiveSeverity: "auto",  // Default live severity is auto
+            roleDescriptions: {
+                // Default role description for the ValidationErrorDirective
+                ValidationErrorDirective: {
+                    text: 'Error Messages',
+                    l10nKey: 'AriaRoleErrorMessages'
+                }
+                // Additional role descriptions for other directives can be added here
+            }
+        };
     }
     /**
      * Creates a FivaseForm with the configuration specific to formId.
@@ -2709,8 +2816,7 @@ export class FivaseServices implements IFivaseServices {
      * @param formId 
      * @returns The instance created.
      */
-    public createFivaseForm(formId: string): IFivaseForm
-    {
+    public createFivaseForm(formId: string): IFivaseForm {
         let config = this.configHost.getConfig(formId);
         return new FivaseForm(config, this);
     }
@@ -2730,11 +2836,22 @@ export class FivaseServices implements IFivaseServices {
      * const config = fivaseServices.configHost.getConfig('myFormId');
      * ```
      */
-    public get configHost(): IFivaseConfigHost
-    {
+    public get configHost(): IFivaseConfigHost {
         return this._configHost;
     }
     private _configHost: FivaseConfigHost;
+
+
+    /**
+     * Getter for the ARIA settings. This provides access to the global ARIA configuration.
+     * Users can modify the settings after accessing them.
+     */
+    get ariaSettings(): IAriaSettings {
+        return this._ariaSettings;
+    }
+
+    // Private property to store the ARIA settings
+    private _ariaSettings: IAriaSettings;
 
     /**
      * Adds or replaces a factory for creating instances of Directive Actions for a directive.
@@ -2744,24 +2861,23 @@ export class FivaseServices implements IFivaseServices {
 
     protected resolveKey(directiveName: string, actionName: string): string {
         return `${directiveName}|${actionName}`;
-    }   
+    }
     /**
      * Adds or replaces a factory for creating instances of Directive Actions for a directive.
      * @param factory 
      */
-    public registerFactory(factory: IActionFactory): void
-    {
+    public registerFactory(factory: IActionFactory): void {
         let key = this.resolveKey(factory.directiveName, factory.actionName);
         this.factories.set(key, factory);
     }
-    
+
     /**
      * Retrieves the factory for creating instances of Directive Actions for a directive.
      * Throws an error if the factory is not found.
      * @param directiveName 
      * @param actionName 
      */
-    public getFactory(directiveName: string, actionName: string): IActionFactory { 
+    public getFactory(directiveName: string, actionName: string): IActionFactory {
         let key = this.resolveKey(directiveName, actionName);
         let factory = this.factories.get(key);
         if (!factory) {
@@ -2771,7 +2887,7 @@ export class FivaseServices implements IFivaseServices {
     }
 
     protected preRegisterFactories(): void {
-        this.registerFactory(new ValueChangeListenerActionFactory(DIRECTIVE_VALIDATE_INPUT, 
+        this.registerFactory(new ValueChangeListenerActionFactory(DIRECTIVE_VALIDATE_INPUT,
             new HtmlTagValueChangeListener()));
         this.registerFactory(new RendererActionFactory(DIRECTIVE_VALIDATE_INPUT,
             new IssuesFoundRenderer()));
@@ -2788,16 +2904,17 @@ export class FivaseServices implements IFivaseServices {
             DIRECTIVE_VALIDATE_INPUT,
             new HtmlTagFocusListener(false) // Default instance
         );
-    
+
         // Register named instances with different configurations
         focusListenerFactory.register(NAME_FOCUS_LISTENER, new HtmlTagFocusListener(false));
         focusListenerFactory.register(NAME_BUBBLING_FOCUS_LISTENER, new HtmlTagFocusListener(true));
-    
+
         // Register the factory in FivaseServices
-        this.registerFactory(focusListenerFactory);       
-        
+        this.registerFactory(focusListenerFactory);
+
         this.registerFactory(new PopupActionFactory(DIRECTIVE_POPUP, new PopupAction()));
     }
+
 }
 
 export const NAME_FOCUS_LISTENER = 'focusListener';
@@ -2830,5 +2947,243 @@ export class InMemoryFivaseStateStore implements IFivaseStateStore {
 
     saveState(key: string, state: any): void {
         this.stateMap.set(key, state);
+    }
+}
+
+/**
+ * Interface that defines the structure for ARIA attribute settings.
+ * These settings control how ARIA attributes are applied globally in validation directives.
+ */
+export interface IAriaSettings {
+    /**
+     * Controls whether ARIA attributes are enabled globally.
+     * Default: true
+     * When set to false, ARIA attributes will not be applied.
+     */
+    ariaEnabled: boolean;
+
+    /**
+     * The postfix pattern used for generating the `aria-errormessage` ID.
+     * This value is appended to the input's ID to form the associated error message's ID.
+     * Default: "_errorMessages"
+     */
+    errorMessageIdPostfix: string;
+
+    /**
+     * The default value for the `aria-live` attribute, which defines how error messages
+     * are announced by screen readers.
+     * Options:
+     * - "assertive": Announces immediately
+     * - "polite": Announces when the user finishes their current interaction
+     * - "auto": Determines automatically based on the error severity
+     * Default: "auto"
+     */
+    ariaLiveSeverity: "assertive" | "polite" | "auto";
+
+    /**
+     * A dictionary that provides default role descriptions for each directive.
+     * The keys represent the directive names, and the values are the corresponding
+     * localized descriptions, used to describe the element's role to screen readers.
+     */
+    roleDescriptions: {
+        [directiveName: string]: {
+            text: string;    // Default role description text
+            l10nKey: string; // Localization key to fetch localized text
+        };
+    };
+}
+
+/**
+ * ElementAttributeManager is responsible for managing generic HTML attributes on an element.
+ * It provides methods to set, remove, and retrieve attributes from the HTML element.
+ */
+export class ElementAttributeManager {
+    protected element: HTMLElement;
+
+    /**
+     * Constructor that takes an HTMLElement and manages its attributes.
+     * @param element The HTMLElement that will be managed by this class.
+     */
+    constructor(element: HTMLElement) {
+        this.element = element;
+    }
+
+    /**
+     * Sets or removes an attribute on the element.
+     * If the value is `null` or `undefined`, the attribute is removed.
+     * @param attrName The name of the attribute to set or remove.
+     * @param value The value of the attribute. If null/undefined, the attribute is removed.
+     */
+    public setAttribute(attrName: string, value: string | null): void {
+        if (value === null || value === undefined) {
+            this.element.removeAttribute(attrName);
+        } else {
+            this.element.setAttribute(attrName, value);
+        }
+    }
+
+    /**
+     * Removes an attribute from the element.
+     * @param attrName The name of the attribute to remove.
+     */
+    public removeAttribute(attrName: string): void {
+        this.element.removeAttribute(attrName);
+    }
+
+    /**
+     * Gets the value of an attribute.
+     * @param attrName The name of the attribute to retrieve.
+     * @returns The value of the attribute, or null if it doesn't exist.
+     */
+    public getAttribute(attrName: string): string | null {
+        return this.element.getAttribute(attrName);
+    }
+
+    /**
+     * Sets or removes a boolean attribute.
+     * If the value is `true`, the attribute is set; otherwise, it is removed.
+     * @param attrName The name of the boolean attribute.
+     * @param value A boolean indicating whether to set or remove the attribute.
+     */
+    public setBooleanAttribute(attrName: string, value: boolean): void {
+        if (value) {
+            this.element.setAttribute(attrName, "");
+        } else {
+            this.element.removeAttribute(attrName);
+        }
+    }
+}
+
+/**
+ * AriaAttributeManager is designed to help directive writers manage ARIA attributes 
+ * consistently and efficiently for any HTML element. It abstracts away the logic 
+ * of setting, removing, and retrieving ARIA attributes, ensuring that they respect 
+ * the global configuration provided by IAriaSettings and the localization services in IFivaseForm.
+ * 
+ * Usage:
+ * - Directive writers can instantiate this class with the target HTML element, global ARIA settings, 
+ *   and form services (IFivaseForm) to dynamically manage ARIA attributes.
+ * - The class supports common ARIA attributes needed for form validation, such as `aria-invalid`, 
+ *   `aria-errormessage`, `aria-roledescription`, and `aria-live`.
+ * - All ARIA attributes managed by this class are controlled by the settings in IAriaSettings, 
+ *   allowing global customization and localization.
+ * 
+ * Key Benefits:
+ * - Centralized ARIA attribute management: Keeps directives clean by offloading ARIA-specific logic.
+ * - Localization support: Automatically applies localized text for attributes like `aria-roledescription`.
+ * - Flexibility: Can handle dynamic ARIA attribute changes based on validation states or user interactions.
+ * 
+ * Example Use in Directives:
+ * In your directive, create an instance of AriaAttributeManager and use it to set ARIA attributes
+ * based on the validation state of the input element.
+ * 
+ * Example:
+ * ```typescript
+ * const ariaManager = new AriaAttributeManager(this.element, this.ariaSettings, this.fivaseForm);
+ * ariaManager.setAriaInvalid(isInvalid);
+ * ariaManager.setAriaErrormessage(inputId);
+ * ```
+ * 
+ * This class ensures consistency, readability, and maintainability in managing ARIA attributes 
+ * across multiple directives.
+ */
+export class AriaAttributeManager extends ElementAttributeManager {
+    private ariaSettings: IAriaSettings;
+    private fivaseForm: IFivaseForm;
+
+    /**
+     * Constructor that takes an HTMLElement, IAriaSettings, and IFivaseForm to manage ARIA attributes.
+     * @param element The HTMLElement that will have ARIA attributes managed.
+     * @param ariaSettings Global ARIA settings to control ARIA behavior.
+     * @param fivaseForm Provides localization and form-related services.
+     */
+    constructor(element: HTMLElement, ariaSettings: IAriaSettings, fivaseForm: IFivaseForm) {
+        super(element);
+        this.ariaSettings = ariaSettings;
+        this.fivaseForm = fivaseForm;
+    }
+
+    /**
+     * Sets the `aria-invalid` attribute based on the validation state.
+     * @param isInvalid Boolean indicating whether the input is invalid.
+     */
+    public setAriaInvalid(isInvalid: boolean): void {
+        if (this.ariaSettings.ariaEnabled) {
+            this.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+        }
+    }
+
+    /**
+     * Sets the `aria-errormessage` attribute with the given error message ID.
+     * Does nothing if the inputId is null, undefined, or empty.
+     * @param inputId The input's ID used to form the error message ID.
+     */
+    public setAriaErrormessage(inputId: string | null | undefined): void {
+        if (this.ariaSettings.ariaEnabled && inputId) {
+            const errorMessageId = `${inputId}${this.ariaSettings.errorMessageIdPostfix}`;
+            this.setAttribute('aria-errormessage', errorMessageId);
+        }
+    }
+
+    /**
+     * Sets the `aria-roledescription` attribute using the role description from IAriaSettings.
+     * If the directiveName is not found or the settings are undefined, this function does nothing.
+     * @param directiveName The name of the directive to retrieve the role description.
+     */
+    public setAriaRoleDescription(directiveName: string): void {
+        if (this.ariaSettings.ariaEnabled) {
+            const roleDescriptionConfig = this.ariaSettings.roleDescriptions[directiveName];
+            if (!roleDescriptionConfig) {
+                return; // Do nothing if role description is undefined
+            }
+
+            const localizedRoleDescription = this.fivaseForm.validationManager.services.textLocalizerService.localize(
+                this.fivaseForm.validationManager.services.cultureService.activeCultureId,
+                roleDescriptionConfig.l10nKey,
+                roleDescriptionConfig.text
+            );
+
+            if (localizedRoleDescription) {
+                this.setAttribute('aria-roledescription', localizedRoleDescription);
+            }
+        }
+    }
+
+    /**
+     * Sets the `aria-live` attribute based on ValidationSeverity and IAriaSettings.
+     * If severity is 'warning', this function does nothing.
+     * @param severity The validation severity (severe, error, warning). Use null to rmoeve
+     */
+    public setAriaLive(severity: ValidationSeverity | null): void {
+        if (this.ariaSettings.ariaEnabled) {
+            if (severity === null) {
+                this.removeAttribute('aria-live');
+                return;
+            }
+            if (severity === ValidationSeverity.Warning) {
+                return; // Do nothing if the severity is 'warning'
+            }
+
+            let ariaLiveValue: string | null = null;
+            if (this.ariaSettings.ariaLiveSeverity === "auto") {
+                ariaLiveValue = severity === ValidationSeverity.Severe ? "assertive" : "polite";
+            } else {
+                ariaLiveValue = this.ariaSettings.ariaLiveSeverity;
+            }
+
+            if (ariaLiveValue) {
+                this.setAttribute('aria-live', ariaLiveValue);
+            }
+        }
+    }
+
+    /**
+     * Sets the `aria-required` attribute.
+     * Since this value does not change, it is hardcoded to true.
+     */
+    public setAriaRequired(): void {
+        if (this.ariaSettings.ariaEnabled) {
+            this.setAttribute('aria-required', 'true');
+        }
     }
 }
