@@ -143,6 +143,8 @@ The directives like `[validate]` and `[validationErrors]` use the `FivaseForm` s
 - **`[showWhenIssuesFound]`**: Shows the tag only when the valueHost has issues to report.
 - **`[showWhenCorrected]`**: Shows the tag only when the user just fixed a validation error.
 - **`[showWhenRequired]`**: Shows the tag only when the ValueHost has a validator that is ValidationCategory=Require.
+- **`[popup]`**: Shows or hides an element, usually associated with popping up the error messages of validators. It knows to Show
+     when input has focus or on demand.
 - **`[valueHostName]`**: Provides a container around other directives to identify the valueHostName used by those directives,
   so you assign it at the top level of the component, and other directives just inherit it.
 

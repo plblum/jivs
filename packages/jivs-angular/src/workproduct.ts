@@ -159,6 +159,44 @@ export interface IFocusListenerAction {
     cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void;
 }
 
+/**
+ * Interface for managing the display of popup elements within a Fivase directive.
+ * Provides methods to show and hide the popup as needed.
+ * 
+ * Often popups are just changing the visibility of an element, but 
+ * some need to be positioned or animated beyond what a style sheet class can do.
+ * Use PopupAction class for the standard case, and implement this interface for custom behavior.
+ * 
+ * Each Directive class that uses `IPopupAction` has its own Factory, based on
+ * `ActionFactoryBase`, which is registered in the `FivaseServices` class.
+ * 
+ * When getting the instance from the factory, use the constant `ACTION_POPUP`.
+ * ```ts
+ * let popupAction = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_POPUP).resolve(element, '');
+ * ```
+ * 
+ * Classes implementing this interface should not expect any Angular Dependency Injection 
+ * into their constructor. They are created explicitly when registering with the factory.
+ */
+export interface IPopupAction {
+    /**
+     * Handles the display of the popup for a Fivase Directive.
+     * This method is called when the associated event (e.g., focusGained) is triggered.
+     * 
+     * @param element - The DOM element associated with the directive.
+     * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
+     */
+    show(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void;
+
+    /**
+     * Handles hiding the popup for a Fivase Directive.
+     * This method is called when the associated event (e.g., focusLost) is triggered.
+     * 
+     * @param element - The DOM element associated with the directive.
+     * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
+     */
+    hide(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void;
+}
 
 /**
  * Concrete implementation of `IValueChangeListenerAction` that targets all HTML tags supporting
@@ -863,6 +901,66 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
 export const COMMAND_FOCUS_GAINED = 'focusGained';
 export const COMMAND_FOCUS_LOST = 'focusLost';
 
+/**
+ * The `PopupAction` class manages the display of popup elements within a Fivase directive.
+ * It provides methods to show and hide elements based on CSS classes or styles.
+ * 
+ * - `showCssClass`: The CSS class to apply when showing the element.
+ * - `hideCssClass`: The CSS class to apply when hiding the element.
+ * - `useDisplayNone`: A boolean flag indicating whether to set `display: none` when hiding the element.
+ */
+export class PopupAction implements IPopupAction {
+    /**
+     * Constructs a new `PopupAction` instance.
+     * 
+     * @param showCssClass - The CSS class to apply when showing the popup. Default is 'popup-show'.
+     * @param hideCssClass - The CSS class to apply when hiding the popup. Default is 'popup-hide'.
+     * @param useDisplayNone - Indicates whether to use `display: none` for hiding the element. Default is `true`.
+     */
+    constructor(
+        private showCssClass: string = 'popup-show',
+        private hideCssClass: string = 'popup-hide',
+        private useDisplayNone: boolean = true
+    ) {}
+
+    /**
+     * Shows the popup element by applying the appropriate CSS class and/or removing the `display: none` style.
+     * 
+     * @param element - The DOM element to show.
+     * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
+     * @param fivaseServices - The FivaseServices instance, to provide access to tooling and configurations.
+     */
+    public show(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+        if (this.useDisplayNone) {
+            renderer.removeStyle(element, 'display');
+        }
+        if (this.showCssClass) {
+            renderer.addClass(element, this.showCssClass);
+        }
+        if (this.hideCssClass) {
+            renderer.removeClass(element, this.hideCssClass);
+        }
+    }
+
+    /**
+     * Hides the popup element by applying the appropriate CSS class and/or setting `display: none` style.
+     * 
+     * @param element - The DOM element to hide.
+     * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
+     * @param fivaseServices - The FivaseServices instance, to provide access to tooling and configurations.
+     */
+    public hide(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+        if (this.useDisplayNone) {
+            renderer.setStyle(element, 'display', 'none');
+        }
+        if (this.hideCssClass) {
+            renderer.addClass(element, this.hideCssClass);
+        }
+        if (this.showCssClass) {
+            renderer.removeClass(element, this.showCssClass);
+        }
+    }
+}
 
 /**
  * These are used by the Fivase Directives to
@@ -873,10 +971,12 @@ export const DIRECTIVE_VALIDATION_ERRORS = 'fivase-ErrorMessages';
 export const DIRECTIVE_SHOW_WHEN_ISSUES_FOUND = 'fivase-ShowWhenIssuesFound';
 export const DIRECTIVE_SHOW_WHEN_CORRECTED = 'fivase-ShowWhenCorrected';
 export const DIRECTIVE_SHOW_WHEN_REQUIRED = 'fivase-ShowWhenRequired';
+export const DIRECTIVE_POPUP = 'fivase-Popup';
 
 export const ACTION_RENDERER = 'Renderer';
 export const ACTION_VALUE_CHANGE_LISTENER = 'ValueChangeListener';
 export const ACTION_FOCUS_LISTENER = 'FocusListener';
+export const ACTION_POPUP = 'Popup';
 
 
 /**
@@ -1179,6 +1279,31 @@ export class FocusListenerActionFactory extends ActionFactoryBase<IFocusListener
     }
 }
 
+/**
+ * Factory class for creating instances of `IPopupAction`.
+ * This factory handles setting up popup showing and hiding actions for the PopupDirective..
+ */
+export class PopupActionFactory extends ActionFactoryBase<IPopupAction> {
+    /**
+     * The name of the Directive Action associated with this factory.
+     */
+    public get actionName(): string {
+        return ACTION_POPUP;
+    }
+
+    /**
+     * Validates that the given instance conforms to `IPopupAction`.
+     * 
+     * @param instance - The instance to validate.
+     * @returns A boolean indicating whether the instance is valid.
+     */
+    protected isValidInstance(instance: IPopupAction): boolean {
+        return typeof instance.show === 'function' &&
+               typeof instance.hide === 'function';
+    }
+}
+
+
 
 /**
  * Abstract base class for Fivase-related directives that need a ValueHostName.
@@ -1295,6 +1420,15 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
         return this.el.nativeElement;
     }
 
+    /**
+     * For use when calling a DirectiveActionFactoryBase.resolve method,
+     * as the value stored by factory.available uses the value returned here.
+     * @returns 
+     */
+    protected getFactoryElement(): HTMLElement {
+        return this.el.nativeElement;
+    }
+
     ngOnDestroy(): void {
         // not required but good form
         (this.el as any) = undefined;
@@ -1368,7 +1502,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      */
     protected setupDirective(valueHostName: string): void {
         this.directiveRenderer = this.resolveRendererFactory.resolve(
-            this.el.nativeElement, this.renderFactoryName);
+            this.getFactoryElement(), this.renderFactoryName);
 
         this.setupSubscription(valueHostName);
         this.setupInitialRender(valueHostName);
@@ -1454,7 +1588,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * Cleans up by unsubscribing from validation state changes when the directive is destroyed.
      */
     public ngOnDestroy(): void {
-        this.resolveRendererFactory.unavailable(this.el.nativeElement);
+        this.resolveRendererFactory.unavailable(this.getFactoryElement());
 
         if (this.subscription) {
             this.fivaseForm.unsubscribeFromValueHostValidationState(this.subscription);
@@ -1575,7 +1709,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
     protected setupDirective(valueHostName: string): void {
         // Setup Value Change Listener
         let eventHandler = this.resolveEventHandlerFactory
-            .resolve(this.el.nativeElement, this.eventHandlerName);
+            .resolve(this.getFactoryElement(), this.eventHandlerName);
 
         if (!eventHandler)
             throw new Error('No event handler was created for the directive.');
@@ -1589,7 +1723,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
         // Setup Focus Listener
         this.focusListener = this.resolveFocusListenerFactory
-            .resolve(this.el.nativeElement, this.focusHandlerName);
+            .resolve(this.getFactoryElement(), this.focusHandlerName);
 
         if (!this.focusListener) {
             console.warn('No focus listener was created for the directive. Proceeding without focus handling.');
@@ -1641,13 +1775,13 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     public ngOnDestroy(): void {
         // Clean up Value Change Listener
-        this.resolveEventHandlerFactory.unavailable(this.el.nativeElement);
+        this.resolveEventHandlerFactory.unavailable(this.getFactoryElement());
 
         // Clean up Focus Listener
         if (this.focusListener) {
             this.focusListener.cleanupEventHandlers(this.getTargetElement(), this.renderer);
         }
-        this.resolveFocusListenerFactory.unavailable(this.el.nativeElement);
+        this.resolveFocusListenerFactory.unavailable(this.getFactoryElement());
 
         super.ngOnDestroy();
     }
@@ -1862,6 +1996,158 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
      */
     @Input('showWhenIssuesFound') valueHostName: string | undefined;
 }
+
+
+/**
+ * Directive `popup` manages the visibility of popups tied to a specific input or form field.
+ * It listens for messages such as `focusGained`, `focusLost`, `show`, and `hide` sent via
+ * the `FivaseForm` messaging system and uses `IPopupAction` to show or hide popups accordingly.
+ * 
+ * Expected behavior:
+ * - When the input receives focus, the popup is shown by listening to the `focusGained` message.
+ * - When the input loses focus, the popup is hidden by listening to the `focusLost` message.
+ * - On demand to show, call the FivaseForm.sendMessage('show', valueHostName).
+ * - On demand to hide, call the FivaseForm.sendMessage('hide', valueHostName).
+ *
+ * The popup's behavior is defined by the `IPopupAction` interface, which is resolved through a factory
+ * provided by `FivaseServices`. This directive can either use a default implementation of `IPopupAction`
+ * or select a custom implementation by specifying the factory name through the `fivase-popup` input.
+ *
+ * `popup` takes the value of the `ValueHostName` registered with the Jivs ValidationManager and uses
+ * it to subscribe to the appropriate form field messages.
+ *
+ * The `popup` directive must either be assigned the `ValueHostName` directly or be contained within a
+ * `ValueHostNameDirective`.
+ *
+ * ### Example Usage:
+ * ```ts
+ * <div [popup]="valueHostName"></div>
+ * ```
+ * ```ts
+ * <tag [valueHostName]="valueHostName">
+ *    <tag [popup]>
+ * </tag>
+ * ```
+ *
+ * ### [fivase-target]
+ * This optional input allows the directive to target a specific element within a component's template 
+ * where the popup actions will be applied. If not provided, the directive will default to using the host element.
+ *
+ * ### [fivase-popup]
+ * This input allows specifying a custom factory name for resolving the `IPopupAction`. It is optional,
+ * and if not provided, the factory will default to the standard popup implementation.
+ *
+ * Example usage:
+ * ```html
+ * <div [popup]="valueHostName" [fivase-popup]="'popup-action'"></div>
+ * ```
+ * Here is a more traditional case, where the icon is shown and the popup is displayed 
+ * based on some code, like a mouse over.
+ * ```html
+ * <!-- A component that includes icons and text, using this directive to manage the popup: -->
+ * <div [showWhenInvalid]="valueHostName">
+ *   <div>
+ *     <img src="info-icon.png" />
+ *   </div>
+ *   <div [popup] [validationErrors]></div>
+ * </div>
+ * ```
+ */
+@Directive({
+  selector: '[popup]' // The directive name remains [popup]
+})
+export class PopupDirective extends FivaseDirectiveBase {
+  private subscription: Subscription | null = null;
+  private popupAction: IPopupAction | null = null;
+
+  /**
+   * Input to specify a custom factory name for IPopupAction.
+   * This allows for a custom implementation of the popup behavior.
+   */
+  @Input('fivase-popup') popupFactoryName: string | undefined; // Changed input name to 'fivase-popup'
+
+  constructor(
+    el: ElementRef,
+    renderer: Renderer2,
+    fivaseServices: FivaseServices,
+    fivaseForm: IFivaseForm,
+    @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
+  ) {
+    super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
+  }
+
+  /**
+   * Setup the directive by resolving the IPopupAction from the factory
+   * and subscribing to the appropriate messages for the given valueHostName.
+   * 
+   * @param {string} valueHostName - The name of the value host for the popup action.
+   */
+  protected setupDirective(valueHostName: string): void {
+    // Resolve the popup action from the factory
+    this.popupAction = this.resolvePopupActionFactory().resolve(
+      this.getFactoryElement(), this.popupFactoryName);
+
+    // Check if popupAction is resolved, throw an error if not
+    if (!this.popupAction) {
+      throw new Error('PopupAction could not be resolved for PopupDirective. Ensure a valid PopupAction is provided in the factory.');
+    }
+
+    // Subscribe to FivaseForm messages for this valueHostName
+    this.subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
+      switch (message) {
+        case 'focusGained':
+        case 'show':
+          this.popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
+          break;
+        case 'focusLost':
+        case 'hide':
+          this.popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  /**
+   * Resolves the PopupActionFactory from FivaseServices used to create 
+   * the IPopupAction implementation.
+   * 
+   * @returns {PopupActionFactory}
+   */
+  protected resolvePopupActionFactory(): PopupActionFactory {
+    return this.fivaseServices.getFactory(this.directiveNameInFactory, 'PopupActionFactory') as PopupActionFactory;
+  }
+
+  /**
+   * The constant used to identify the directive in factory lookups.
+   * The value comes from the DIRECTIVE_POPUP constant.
+   * 
+   * @returns {string}
+   */
+  protected get directiveNameInFactory(): string {
+    return DIRECTIVE_POPUP;
+  }
+
+  /**
+   * Cleanup by unsubscribing from the form's value host messaging and 
+   * removing the popup action.
+   */
+  public ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+
+    if (this.popupAction) {
+      this.resolvePopupActionFactory().unavailable(this.getFactoryElement());
+      this.popupAction = null;
+    }
+
+    super.ngOnDestroy();
+  }
+}
+
 
 /**
  * Directive `containsInvalid` manages the appearance of a containing tag, like <div>,
@@ -2508,7 +2794,9 @@ export class FivaseServices implements IFivaseServices {
         focusListenerFactory.register(NAME_BUBBLING_FOCUS_LISTENER, new HtmlTagFocusListener(true));
     
         // Register the factory in FivaseServices
-        this.registerFactory(focusListenerFactory);        
+        this.registerFactory(focusListenerFactory);       
+        
+        this.registerFactory(new PopupActionFactory(DIRECTIVE_POPUP, new PopupAction()));
     }
 }
 

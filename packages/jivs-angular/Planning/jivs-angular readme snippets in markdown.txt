@@ -584,3 +584,116 @@ Now that you’ve seen both approaches—using companion `Directive Actions` cla
 
 ---
 
+# Documentation for `[popup]`
+
+### **Using `[popup]` to Control Popup Visibility**
+
+The `[popup]` directive is intended to support error message designs where the error messages are hidden, despite there being errors, until something demands they get shown. 
+
+Here is a classic scenario. While there are validation errors, the user only sees an icon. When the mouse is over the icon, the error messages appear.
+
+ ```html
+
+<div [showWhenInvalid]="valueHostName">
+   <div>
+     <img src="info-icon.png" />
+   </div>
+   <div [popup] [validationErrors]></div>
+</div>
+```
+
+Popup Directive is aware of focus and blur events on the input, to cause it to trigger the popup. You can also invoke the popup by calling:
+```ts
+fivaseForm.sendMessage('valueHostName', 'show'); // or 'hide'
+```
+
+It leverages the `IPopupAction` interface, which dictates how "show" and "hide" is implemented. By default, it uses an implementation called PopupAction which shows and hides through both display style attribute changes and style sheet changes.
+
+Implement your own when you need to position the popup or do something else that requires code.
+
+The popup's behavior is directly tied to a form field, and the `popup` directive must either be assigned the `ValueHostName` of that field or be contained within a `ValueHostName` or `showWhenInvalid` Directive.
+
+---
+
+### **Inputs**
+
+- `popup`: This directive must be applied to an element where you want the popup behavior tied to a specific form field.
+  
+- `[fivase-popup]`: (Optional) Use this input to specify a name that you registered with the factory. If not provided, the default popup implementation is used.
+- `[fivase-target]`: This optional input allows the directive to target a specific element within a component's template where the popup actions will be applied. If not provided, the directive will default to using the host element.
+
+### **Implementing and Using Custom `IPopupAction`**
+
+#### **Step 1: Implement `IPopupAction`**
+
+To create a custom popup behavior, implement the `IPopupAction` interface, which defines the logic for showing and hiding popups. This interface is called when events like `focusGained` or `focusLost` are triggered.
+
+Example:
+
+```ts
+import { IPopupAction } from './popup-action.interface';
+import { Renderer2 } from '@angular/core';
+import { IFivaseServices } from './fivase-services.interface';
+
+export class CustomPopupAction implements IPopupAction {
+
+  show(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+    renderer.setStyle(element, 'display', 'block');
+    renderer.addClass(element, 'custom-popup-show');
+  }
+
+  hide(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+    renderer.setStyle(element, 'display', 'none');
+    renderer.removeClass(element, 'custom-popup-show');
+  }
+}
+```
+
+In this example:
+- **show()** method is called to make the popup visible.
+- **hide()** method is called to hide the popup.
+
+---
+
+#### **Step 2: Register Custom Popup Action with Factory**
+
+Next, register the custom `IPopupAction` with the factory. This allows the `PopupDirective` to resolve your custom implementation when it is used.
+
+Example:
+
+```ts
+import { PopupActionFactory } from './popup-action-factory.interface';
+import { CustomPopupAction } from './custom-popup-action';
+
+export class AppModule {
+  constructor(private popupFactory: PopupActionFactory) {
+    this.popupFactory.register('CustomPopupAction', CustomPopupAction);
+  }
+}
+```
+
+Here, `CustomPopupAction` is registered with the factory and is associated with the key `'CustomPopupAction'`.
+
+---
+
+#### **Step 3: Using Custom `IPopupAction` in the Template**
+
+Now, you can use the custom popup action by specifying it in the `[fivase-popup]` attribute in your Angular templates.
+
+Example:
+
+```html
+<!-- Applying the popup directive with a custom implementation -->
+<div [popup]="valueHostName" [fivase-popup]="'CustomPopupAction'"></div>
+```
+
+In this example:
+- The `[fivase-popup]="'CustomPopupAction'"` specifies that the custom popup behavior should be used for this element.
+- The `valueHostName` ensures the directive is tied to the correct input element.
+
+---
+
+By following these steps, you can easily create custom popup behaviors, register them, and use them throughout your application. This approach provides flexibility for handling different popup display needs across various components.
+
+
+
