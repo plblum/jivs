@@ -637,6 +637,25 @@ export function createIssueFound(valueHost: IValueHost,
     };
 }
 
+/**
+ * Determines the highest severity level from a list of issues.
+ *
+ * @param issues - An array of `IssueFound` objects or null. If null or an empty array is provided, the function returns null.
+ * @returns The highest `ValidationSeverity` found in the issues array, or null if the array is empty or null.
+ */
+export function highestSeverity(issues: IssueFound[] | null): ValidationSeverity | null {
+    if (!issues || issues.length === 0)
+        return null;
+    let severity: ValidationSeverity = ValidationSeverity.Warning;
+    for (let issue of issues) {
+        if (issue.severity > severity)
+            severity = issue.severity;
+        if (severity === ValidationSeverity.Severe) // optimization
+            return severity;
+    }
+    return severity;
+}   
+
 //#region Factory
 
 /**

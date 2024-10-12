@@ -85,16 +85,8 @@ When generating markdown output that includes HTML, CSS, or TypeScript code, rep
 
 
 # Notes list for me to work out
-1. Provide ARIA attributes that are configurable, and localizable.
-   This may take adding settings in FivaseServices.
-2. Provide localizable tooltip strings available for various directives. Will be used by Required, Corrected, and IssueFound Directives so the user knows their purpose.
-3. FivaseServices:
-   - Support a settings service pattern, where each Directive can get:
-     - global configuration
-	 - css classes, invalidCssClass and validCssClass
-	 - aria attribute values
-	 - Settings changed event to be called after localization has changed the strings so directives can refresh arias and other localization settings
-4. We may introduce new Directive Actions types to allow users to inject appropriate handlers for gainedFocus and lostFocus messages (FivaseForm.sendMessage). This will give users more flexibility in how they manage focus-based interactions.
+
+5. Provide localizable tooltip strings available for various directives. Will be used by Required, Corrected, and IssueFound Directives so the user knows their purpose.
 
 6. Work on ValidationSummary. It will use PresentationDirectiveActions but needs to show the summaryMessage. It will monitor validation callbacks.
 7. Add a directive on a submit button to disable it or handle validation.

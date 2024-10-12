@@ -9,6 +9,7 @@ import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interface
 import { SetInputValueOptions } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';
 
 /**
  * Interface handles the rendering needed by a Fivase Directive based
@@ -91,18 +92,38 @@ export interface IRendererActionOptions {
 export interface IValueChangeListenerAction {
     /**
      * Sets up validation-related event handlers on the target element.
+     * The method attaches event listeners for anything that may be validated.
+     * Your listener should get the value from the component and pass it back to Fivase,
+     * where it will be validated.
+     * If your component has a value that is a string, use the setInputValueCallback,
+     * which will use InputValueHost.setInputValue to set the value in Fivase.
+     * If your component has a value that is not a string, use the setValueCallback,
+     * which will use ValueHost.setValue to set the value in Fivase.
      * 
      * @param element - The target DOM element. It could be an input field, a
      * container, etc.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
+     * @param setInputValueCallback - A callback function that hands the input value to Fivase
+     * to store in the ValueHost and validate. It is called when the value is a string
+     * and needs conversion or a parser to make it a native value.
+     * You may setup the parser in the ValueHost, or use your own in this function.
+     * If you handle it here, call both setInputValueCallback and setValueCallback.
+     * The "duringEdit" parameter is true when the value is being edited, specifically when the 
+     * oninput event is triggered. Use false for most other cases.
+     * @param setValueCallback - A callback function that hands the value to Fivase to store in the
+     * ValueHost and validate. It is called when the value is already its native type.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
      * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. 
+     * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * to implement the call to ValueHost.setInputValue or ValueHost.setValue instead of using 
+     * the callback functions.
      */
     listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
+        setInputValueCallback: (inputValue: string, duringEdit: boolean) => void,
+        setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
         fivaseForm: IFivaseForm
     ): void;
@@ -265,14 +286,30 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * 
      * The appropriate event handlers are installed using a switch statement based on the tag name.
      * 
-     * @param element - The target HTMLElement to apply the render to.
+     * @param element - The target DOM element. It could be an input field, a
+     * container, etc.
+     * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
+     * @param setInputValueCallback - A callback function that hands the input value to Fivase
+     * to store in the ValueHost and validate. It is called when the value is a string
+     * and needs conversion or a parser to make it a native value.
+     * You may setup the parser in the ValueHost, or use your own in this function.
+     * If you handle it here, call both setInputValueCallback and setValueCallback.
+     * The "duringEdit" parameter is true when the value is being edited, specifically when the 
+     * oninput event is triggered. Use false for most other cases.
+     * @param setValueCallback - A callback function that hands the value to Fivase to store in the
+     * ValueHost and validate. It is called when the value is already its native type.
+     * @param valueHostName - The name of the value host associated with this element, used to identify
+     * the data being validated.
      * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. 
-     * @param valueHostName - The name of the value host associated with this element, used to identify the validation target.
+     * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * to implement the call to ValueHost.setInputValue or ValueHost.setValue instead of using 
+     * the callback functions.
      */
     public listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
+        setInputValueCallback: (inputValue: string, nativeValue: any, duringEdit: boolean) => void,
+        setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
         fivaseForm: IFivaseForm
     ): void {
@@ -315,7 +352,8 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             // Handle checkbox validation
             renderer.listen(element, 'change', (event: Event) => {
                 const isChecked = (event.target as HTMLInputElement).checked;
-                fivaseForm.setValue(valueHostName, isChecked, { validate: true });
+                setValueCallback(isChecked);
+           //     fivaseForm.setValue(valueHostName, isChecked, { validate: true });
             });
         }
 
@@ -332,7 +370,8 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
                         }))
                     )
                     : ''; // Send empty string if no files are selected
-                fivaseForm.setValue(valueHostName, fileData, { validate: true });
+                setValueCallback(fileData);
+         //       fivaseForm.setValue(valueHostName, fileData, { validate: true });
             });
         }
 
@@ -340,21 +379,19 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             // Handle select element validation (only listen for 'change' event)
             renderer.listen(element, 'change', (event: Event) => {
                 const selectValue = (event.target as HTMLSelectElement).value;
-                fivaseForm.setInputValue(valueHostName, selectValue, { validate: true });
+                setInputValueCallback(selectValue, undefined, false);
+          //      fivaseForm.setInputValue(valueHostName, selectValue, { validate: true });
             });
         }
 
         function setupInputEventHandler(): void {
             if (self.inputEventEnabled) {
-                //   renderer.listen(element, 'input', (event: Event) => {
-                //     const inputValue = (event.target as HTMLInputElement).value;
-                //     fivaseForm.setInputValue(valueHostName,  inputValue, { validate: true, duringEdis: true });
-                //   });
                 fromEvent(element, 'input')
                     .pipe(debounceTime(self.inputEventDebounceTime))  // Wait before handling the event
                     .subscribe((event: Event) => {
                         const inputValue = (event.target as HTMLInputElement).value;
-                        fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit: true });
+                        setInputValueCallback(inputValue, undefined, true);
+                  //      fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit: true });
                     });
             }
         }
@@ -363,7 +400,8 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             // Handle change event
             renderer.listen(element, 'change', (event: Event) => {
                 const inputValue = (event.target as HTMLInputElement).value;
-                fivaseForm.setInputValue(valueHostName, inputValue, { validate: true });
+                setInputValueCallback(inputValue, undefined, false);
+            //    fivaseForm.setInputValue(valueHostName, inputValue, { validate: true });
             });
         }
     }
@@ -1586,8 +1624,8 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
             this.renderer.removeAttribute(targetElement, 'data-severity');
         } else {
             // find the highest severity and set it as data-severity
-            let highestSeverity = issuesFound.reduce((highest, issue) => issue.severity > highest ? issue.severity : highest, ValidationSeverity.Warning);
-            this.renderer.setAttribute(targetElement, 'data-severity', ValidationSeverity[highestSeverity].toLowerCase());
+            let highest = highestSeverity(issuesFound)!;
+            this.renderer.setAttribute(targetElement, 'data-severity', ValidationSeverity[highest].toLowerCase());
         }
     }
     /**
@@ -1635,7 +1673,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
  * ### [fivase-target]
  * This optional input allows the directive to target a specific element within a component's template
  * where this directive will do its work. If not provided, the directive will use the host element.
- *
+ * 
  * ### [fivase-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
@@ -1691,6 +1729,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      */
     @Input('fivase-focuslistener') focusHandlerName: string | undefined;
 
+
     private focusListener: IFocusListenerAction | null = null;
 
     constructor(
@@ -1733,6 +1772,12 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         eventHandler.listenForValueChanges(
             this.getTargetElement(),
             this.renderer,
+            (inputValue: string, duringEdit: boolean) => {
+                this.fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit : duringEdit  });
+            },
+            (nativeValue: any) => {
+                this.fivaseForm.setInputValue(valueHostName, nativeValue, { validate: true });
+            },
             valueHostName,
             this.fivaseForm
         );
@@ -1946,7 +1991,6 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
         super.onValueHostValidationStateChanged(targetElement, validationState);
         this.updateAriaAttributes(validationState);  // Update ARIA attributes dynamically
     }
-
 }
 
 /**
@@ -1966,6 +2010,10 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
  * </tag>
  * ```
  * 
+ * ### [fivase-target]
+ * This optional input allows the directive to target a specific element within a component's template 
+ * where the popup actions will be applied. If not provided, the directive will default to using the host element.
+ *  
  * ### [fivase-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
@@ -2008,6 +2056,10 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
  * </tag>
  * ```
  * 
+ * ### [fivase-target]
+ * This optional input allows the directive to target a specific element within a component's template 
+ * where the popup actions will be applied. If not provided, the directive will default to using the host element.
+ * 
  * ### [fivase-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
@@ -2049,6 +2101,9 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
  *   <tag [showWhenIssuesFound]>
  * </tag>
  * ```
+ * ### [fivase-target]
+ * This optional input allows the directive to target a specific element within a component's template 
+ * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  * 
  * ### [fivase-render]
  * Use to select the custom implementation of IRendererAction from the factory
@@ -2110,7 +2165,7 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
  * ### [fivase-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
- *
+ * 
  * ### [fivase-popup]
  * This input allows specifying a custom factory name for resolving the `IPopupAction`. It is optional,
  * and if not provided, the factory will default to the standard popup implementation.

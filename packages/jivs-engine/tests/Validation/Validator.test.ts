@@ -7,7 +7,7 @@ import {
 
 } from "../../src/Conditions/ConcreteConditions";
 
-import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
+import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -16,7 +16,7 @@ import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
-import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
+import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
@@ -1325,4 +1325,63 @@ describe('dispose', () => {
 
     });               
 
+});
+
+describe('highestSeverity', () => {
+    // Tests the highestSeverity function against an array of IssueFound objects, 0 IssueFound, or null.
+    function createIF(severity: ValidationSeverity): IssueFound {
+        return {
+            valueHostName: 'name',
+            errorCode: 'code',
+            severity: severity,
+            errorMessage: '',
+            summaryMessage: undefined
+        };
+    }
+    
+    test('highestSeverity returns the highest severity from an array of issues', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Error),
+            createIF(ValidationSeverity.Severe)
+        ];
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Severe);
+    });
+    test('highestSeverity returns null when passed an empty array', () => {
+        expect(highestSeverity([])).toBeNull();
+    });
+    test('highestSeverity returns null when passed null', () => {
+        expect(highestSeverity(null)).toBeNull();
+    }); 
+    test('highestSeverity returns the severity when passed a single IssueFound', () => {
+        let issue: IssueFound = createIF(ValidationSeverity.Warning);
+        expect(highestSeverity([issue])).toBe(ValidationSeverity.Warning);
+    }); 
+    test('highestSeverity returns the Warning severity when passed 3 warning IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Warning);
+    });
+    test('highestSeverity returns the Error severity when passed 2 warning and one Error IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Error)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Error);
+    });    
+    test('highestSeverity returns the Severe severity when passed 2 warning and 1 severe IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Severe),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Severe);
+    });    
 });
