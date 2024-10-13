@@ -618,7 +618,7 @@ The popup's behavior is directly tied to a form field, and the `popup` directive
 
 - `popup`: This directive must be applied to an element where you want the popup behavior tied to a specific form field.
   
-- `[fivase-popup]`: (Optional) Use this input to specify a name that you registered with the factory. If not provided, the default popup implementation is used.
+- `[fivase-popupAction]`: (Optional) Use this input to specify a name that you registered with the factory. If not provided, the default popup implementation is used.
 - `[fivase-target]`: This optional input allows the directive to target a specific element within a component's template where the popup actions will be applied. If not provided, the directive will default to using the host element.
 
 ### **Implementing and Using Custom `IPopupAction`**
@@ -677,17 +677,17 @@ Here, `CustomPopupAction` is registered with the factory and is associated with 
 
 #### **Step 3: Using Custom `IPopupAction` in the Template**
 
-Now, you can use the custom popup action by specifying it in the `[fivase-popup]` attribute in your Angular templates.
+Now, you can use the custom popup action by specifying it in the `[fivase-popupAction]` attribute in your Angular templates.
 
 Example:
 
 ```html
 <!-- Applying the popup directive with a custom implementation -->
-<div [popup]="valueHostName" [fivase-popup]="'CustomPopupAction'"></div>
+<div [popup]="valueHostName" [fivase-popupAction]="'CustomPopupAction'"></div>
 ```
 
 In this example:
-- The `[fivase-popup]="'CustomPopupAction'"` specifies that the custom popup behavior should be used for this element.
+- The `[fivase-popupAction]="'CustomPopupAction'"` specifies that the custom popup behavior should be used for this element.
 - The `valueHostName` ensures the directive is tied to the correct input element.
 
 ---

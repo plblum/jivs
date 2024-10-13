@@ -85,18 +85,30 @@ When generating markdown output that includes HTML, CSS, or TypeScript code, rep
 
 
 # Notes list for me to work out
+1. Support a subscription command 'setFocus' to let a click on an validationsummary error message notify the input associated with that message to show itself and set focus.
+2. Work on ValidationSummary. It will use RenderingActions but needs to show the summaryMessage. It will monitor validation callbacks.
 
 5. Provide localizable tooltip strings available for various directives. Will be used by Required, Corrected, and IssueFound Directives so the user knows their purpose.
 
-6. Work on ValidationSummary. It will use PresentationDirectiveActions but needs to show the summaryMessage. It will monitor validation callbacks.
-7. Add a directive on a submit button to disable it or handle validation.
+
+7. Add a directive on a submit button to disable it or handle validation. Or at least document the use cases for submitting:
+   - Explicit (save button)
+   - Click on a tab. Validate current view and prevent moving to new tab if errors.
+   - Wizard style next/prev clicks. Validate current view and prevent moving to new tab if errors.
+   - Discuss when to use groups: a single model has fields grouped under tabs or wizard views. Each is a group. That's because 
+     there is a single list of ValueHosts for that model. If there are separate models for each view, they can each have their
+     own ValidationManager and can be validated independently.
 8. Developing components
    - Provide several prototypes of components that show an error message, required indicator, corrected indicator, validation summary, and a complete field input enclosed in a box.
    - Document how to configure any component to support Jivs. Sending input data in. Getting issues out.
    - Develop examples of custom components and custom HTML elements. Use the model of a quantity tool on a shopping site with minus and plus commands and the current count. There will be different ways to supply events, including DOM events and Angular listeners. The plan includes using DOM Shadow API and actual Angular components. DirectiveActions will be used to reach into them to get the current value or attach a listener. Custom DOM events will deliver the target element, QuantityHtmlElement, with a Value property that is a number.
-9. Error message wrapping tags should identify severity to allow css to change based on that. This belongs in a separate project for Jivs-HTML.
-11. Often creating an ErrorMessage component has [showWhenInvalid]="valuehostname" on its outer container
-    and [validationErrors] inside. This is a good case for validationErrors inheriting valueHostName from showWhenInvalid.
+9. Documentation: section on Use cases:
+   - Optional conditions using WhenCondition
+   - Inverting the value of conditions using NotCondition
+   - Complex logic using AnyCondition and/or AllConditions
+   - Validation while you type: setInputValue(duringEdit: true) and conditions that implement IEvaluateConditionDuringEdits
+   - When to use validation groups vs using separate ValidationManagers
+   - When to invoke form level validation: Submit button, tabs, wizards
 
 
 

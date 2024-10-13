@@ -1382,7 +1382,8 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
      * input name (e.g., 'validate', 'validationErrors', etc.).
      * 
      * This allows the directive to either take a value directly via input or 
-     * inherit it from a parent `ValueHostNameDirective`.
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
      */
     @Input() valueHostName: string | undefined;
 
@@ -1699,8 +1700,9 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * the name of the value host. The `valueHostName` is part of the Jivs validation system and allows Jivs to identify
      * which form field is being represented for validation.
      *
-     * This allows the directive to either take a value directly via input or
-     * inherit it from a parent `ValueHostNameDirective`.
+     * This allows the directive to either take a value directly via input or 
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
      */
 
     @Input('validate') valueHostName: string | undefined;
@@ -1854,7 +1856,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         // severity should be null, error or severe. Null for no issues found, error for issues found, severe for at least one severe issue found.
         let severity: ValidationSeverity | null = null;
         if (validationState.issuesFound) {
-            severity = validationState.issuesFound.reduce((highest, issue) => issue.severity > highest.severity ? issue : highest, validationState.issuesFound[0]).severity ?? null;
+            severity = highestSeverity(validationState.issuesFound);
         }
 
         // Set dynamic ARIA attributes
@@ -1931,7 +1933,8 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
      * which form field is being represented for validation.
      * 
      * This allows the directive to either take a value directly via input or 
-     * inherit it from a parent `ValueHostNameDirective`.
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
      */
     @Input('validationErrors') valueHostName: string | undefined;
     /**
@@ -1974,7 +1977,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
         // severity should be null, error or severe. Null for no issues found, error for issues found, severe for at least one severe issue found.
         let severity: ValidationSeverity | null = null;
         if (validationState.issuesFound) {
-            severity = validationState.issuesFound.reduce((highest, issue) => issue.severity > highest.severity ? issue : highest, validationState.issuesFound[0]).severity ?? null;
+            severity = highestSeverity(validationState.issuesFound);
         }
 
         // Update aria-live based on severity
@@ -2080,7 +2083,8 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
      * which form field is being represented for validation.
      * 
      * This allows the directive to either take a value directly via input or 
-     * inherit it from a parent `ValueHostNameDirective`.
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
      */
     @Input('showWhenRequired') valueHostName: string | undefined;
 }
@@ -2125,7 +2129,8 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
      * which form field is being represented for validation.
      * 
      * This allows the directive to either take a value directly via input or 
-     * inherit it from a parent `ValueHostNameDirective`.
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
      */
     @Input('showWhenIssuesFound') valueHostName: string | undefined;
 }
@@ -2144,7 +2149,7 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
  *
  * The popup's behavior is defined by the `IPopupAction` interface, which is resolved through a factory
  * provided by `FivaseServices`. This directive can either use a default implementation of `IPopupAction`
- * or select a custom implementation by specifying the factory name through the `fivase-popup` input.
+ * or select a custom implementation by specifying the factory name through the `fivase-popupAction` input.
  *
  * `popup` takes the value of the `ValueHostName` registered with the Jivs ValidationManager and uses
  * it to subscribe to the appropriate form field messages.
@@ -2166,13 +2171,13 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  * 
- * ### [fivase-popup]
+ * ### [fivase-popupAction]
  * This input allows specifying a custom factory name for resolving the `IPopupAction`. It is optional,
  * and if not provided, the factory will default to the standard popup implementation.
  *
  * Example usage:
  * ```html
- * <div [popup]="valueHostName" [fivase-popup]="'popup-action'"></div>
+ * <div [popup]="valueHostName" [fivase-popupAction]="'popup-action'"></div>
  * ```
  * Here is a more traditional case, where the icon is shown and the popup is displayed 
  * based on some code, like a mouse over.
@@ -2194,10 +2199,21 @@ export class PopupDirective extends FivaseDirectiveBase {
     private popupAction: IPopupAction | null = null;
 
     /**
+     * The internal property that will be used in the directive to manage
+     * the name of the value host. The `valueHostName` is part of the Jivs validation system and allows Jivs to identify 
+     * which form field is being represented for validation.
+     * 
+     * This allows the directive to either take a value directly via input or 
+     * inherit it from a containing `ValueHostNameDirective`. If inheriting,
+     * leave this property undefined.
+     */
+    @Input('popup') valueHostName: string | undefined;
+    
+    /**
      * Input to specify a custom factory name for IPopupAction.
      * This allows for a custom implementation of the popup behavior.
      */
-    @Input('fivase-popup') popupFactoryName: string | undefined; // Changed input name to 'fivase-popup'
+    @Input('fivase-popupAction') popupFactoryName: string | undefined; // Changed input name to 'fivase-popupAction'
 
     constructor(
         el: ElementRef,
