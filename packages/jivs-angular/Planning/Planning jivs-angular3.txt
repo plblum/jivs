@@ -109,6 +109,7 @@ When generating markdown output that includes HTML, CSS, or TypeScript code, rep
    - Validation while you type: setInputValue(duringEdit: true) and conditions that implement IEvaluateConditionDuringEdits
    - When to use validation groups vs using separate ValidationManagers
    - When to invoke form level validation: Submit button, tabs, wizards
+   - Supporting clicks on error messages to set focus to input
 
 
 

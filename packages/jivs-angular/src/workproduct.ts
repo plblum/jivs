@@ -583,7 +583,7 @@ export abstract class RendererActionBase implements IRendererAction {
      * @param renderer 
      * @param errorMessage 
      */
-    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound): void {
+    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseFormat: IFivaseForm): void {
         renderer.setProperty(element, 'innerHTML', issueFound.errorMessage);    // NOTE: errorMessage is already in HTML format
         renderer.setAttribute(element, 'data-severity', ValidationSeverity[issueFound.severity].toLowerCase());
         //!!!PENDING: ARIA attributes
@@ -750,6 +750,9 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
  * We expect the user to assign any classes they need directly to the tag, as its value is not influenced by 
  * the issuesFound.
  * 
+ * Optionally, it can setup the UI to set focus to the input element when an error message is clicked.
+ * Set the setFocusToInput parameter of the constructor to true to enable this feature.
+ * 
  * This targets the ErrorMessagesDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
@@ -761,6 +764,7 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
  */
 export class ErrorMessagesRenderer extends RendererActionBase {
     constructor(
+        setFocusToInput: boolean = false,
         outerTag: string | null = 'ul',
         innerTag: string = 'li',
         outerTagCssClass: string | null = 'error-messages',
@@ -769,6 +773,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
         disabledCssClass?: string
     ) {
         super(enabledCssClass, disabledCssClass);
+        this._setFocusToInput = setFocusToInput;
         this._outerTag = outerTag;
         this._innerTag = innerTag;
         this._outerTagCssClass = outerTagCssClass;
@@ -811,6 +816,16 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     }
     private _innerTag: string;
 
+
+    /**
+     * Extends each error message UI to set focus to the input element when clicked
+     * by calling fivaseForm.sendMessage(COMMAND_SETFOCUS, valueHostName).
+     */
+    protected get setFocusToInput(): boolean {
+        return this._setFocusToInput;
+    }
+    private _setFocusToInput: boolean = false;    
+
     public render(
         element: HTMLElement,
         renderer: Renderer2,
@@ -828,7 +843,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
                 // No outer tag, so just display the first error message
                 const listItem = renderer.createElement(this.innerTag);
                 changeCssClasses(this.innerTagCssClass, null, listItem, renderer);
-                this.addErrorMessageToElement(listItem, renderer, issuesFound[0]);
+                this.addErrorMessageToElement(listItem, renderer, issuesFound[0], fivaseForm);
                 renderer.appendChild(element, listItem);
             }
             else {
@@ -840,7 +855,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
                 issuesFound.forEach(issue => {
                     const listItem = renderer.createElement(this.innerTag);
                     changeCssClasses(this.innerTagCssClass, null, listItem, renderer);
-                    this.addErrorMessageToElement(listItem, renderer, issue);
+                    this.addErrorMessageToElement(listItem, renderer, issue, fivaseForm);
                     renderer.appendChild(outer, listItem);
                 });
 
@@ -851,6 +866,29 @@ export class ErrorMessagesRenderer extends RendererActionBase {
 
         // Apply the CSS class logic from the base class
         super.render(element, renderer, valueHostName, validationState, fivaseForm, options);
+    }
+
+    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseForm: IFivaseForm): void {
+        if (this.setFocusToInput) {
+            this.addSetFocusToValueHost(element, renderer, fivaseForm, issueFound.valueHostName);
+        }
+        super.addErrorMessageToElement(element, renderer, issueFound, fivaseForm);
+    }
+
+    /**
+     * Provides the ability to set focus to the input element when an error message is clicked.
+     * This implementation listens for a click event on the entire element.
+     * Other implementations may offer a specific element to click on.
+     * A good UI will ensure the element's styles make it appear clickable.
+     * @param element 
+     * @param renderer 
+     * @param fivaseForm 
+     * @param valueHostName 
+     */
+    protected addSetFocusToValueHost(element: HTMLElement, renderer: Renderer2, fivaseForm: IFivaseForm, valueHostName: string): void {
+        renderer.listen(element, 'click', () => {
+            fivaseForm.sendMessage(valueHostName, COMMAND_SETFOCUS);
+        });
     }
 
     /**
@@ -936,6 +974,12 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
  */
 export const COMMAND_FOCUS_GAINED = 'focusGained';
 export const COMMAND_FOCUS_LOST = 'focusLost';
+/**
+ * Inputs should listen to this command to set focus on themselves.
+ * It is invoked by some ErrorMessagesRenderers that respond to a click on a specific
+ * error message by setting focus on the input.
+ */
+export const COMMAND_SETFOCUS = 'setFocus';
 
 /**
  * The `PopupAction` class manages the display of popup elements within a Fivase directive.
@@ -2962,8 +3006,12 @@ export class FivaseServices implements IFivaseServices {
             new HtmlTagValueChangeListener()));
         this.registerFactory(new RendererActionFactory(DIRECTIVE_VALIDATE_INPUT,
             new IssuesFoundRenderer()));
-        this.registerFactory(new RendererActionFactory(DIRECTIVE_VALIDATION_ERRORS,
-            new ErrorMessagesRenderer()));
+        
+        const errorMessagesRendererFactory = new RendererActionFactory(DIRECTIVE_VALIDATION_ERRORS,
+            new ErrorMessagesRenderer());
+        this.registerFactory(errorMessagesRendererFactory);
+        errorMessagesRendererFactory.register(NAME_SETFOCUSONCLICK_ERROR_MESSAGES, new ErrorMessagesRenderer(true));
+
         this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_CORRECTED,
             new ShowWhenCorrectedRenderer()));
         this.registerFactory(new RendererActionFactory(DIRECTIVE_SHOW_WHEN_REQUIRED,
@@ -2988,8 +3036,20 @@ export class FivaseServices implements IFivaseServices {
 
 }
 
+/**
+ * FocusListenerActionFactory uses this to select the HtmlTagFocusListener that uses focus/blur events.
+ */
 export const NAME_FOCUS_LISTENER = 'focusListener';
+/**
+ * FocusListenerActionFactory uses this to select the HtmlTagFocusListener that uses focusin/focusout events.
+ */
 export const NAME_BUBBLING_FOCUS_LISTENER = 'bubblingFocusListener';
+/**
+ * RendererActionFactory for DIRECTIVE_VALIDATION_ERRORS uses this to supply a
+ * renderer for showing error messages that sets focus on the input when clicked.
+ * Same as new ErrorMessagesRenderer(true).
+ */
+export const NAME_SETFOCUSONCLICK_ERROR_MESSAGES = 'setFocusOnClickErrorMessages';
 
 /**
  * Interface responsible for storing and retrieving any state from Fivase, 
