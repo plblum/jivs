@@ -259,11 +259,11 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             }
         }
 
-        // enablerCondition takes precedence over instanceState.enabled
+        // enablerCondition takes precedence over instanceState.enabled except when enabled is explicitly set to true, which takes the highest precedence. 
+        // This allows the enabler condition to disable the ValueHost, but not to enable it when it would otherwise be disabled by initialEnabled or instanceState.enabled.
         if (this.instanceState.enabled === true)
             return true;
 
-        // the presence of enablerConfig always overrides initialEnabled.
         if (!this.config.enablerConfig && this.config.initialEnabled !== undefined)
             return this.config.initialEnabled;
         
