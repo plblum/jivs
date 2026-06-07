@@ -242,6 +242,9 @@ JivsForm provides form-oriented access to validation functionality.
 
 JivsForm acts as a stable React Adapter abstraction over aggregate validation concepts exposed by the Jivs Engine.
 
+It does not have any stateful information found on ValidationState, especially because
+when you retrieve JivsForm, you also get back ValidationState from useFormValidation().
+
 ---
 
 ## Conceptual API
@@ -255,9 +258,16 @@ Conceptually, JivsForm exposes:
 | getValidationManager() | Provides access to the ValidationManager directly. |
 |                        |                                                    |
 
-The final API surface is defined elsewhere.
 
 This document focuses on form-oriented usage patterns.
+
+```ts
+interface JivsForm {
+    readonly groupName: string | null;
+    validate(): Promise<ValidationState>;
+    getValidationManager(): ValidationManager;
+}
+```
 
 ---
 
