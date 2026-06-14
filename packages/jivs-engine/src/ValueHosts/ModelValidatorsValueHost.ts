@@ -1,7 +1,7 @@
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  * Those errors do not specify a ValueHostName associated with any ValueHost registered.
- * @module ValueHosts/ConcreteClasses/BusinessLogicErrorsValueHost
+ * @module ValueHosts/ConcreteClasses/ModelValidatorsValueHost
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -18,7 +18,7 @@ import { IValidationManager } from '../Interfaces/ValidationManager';
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  * Those errors do not specify a ValueHostName associated with any ValueHost registered.
  */
-export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
+export class ModelValidatorsValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
     constructor(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState) {
         super(validationManager, config, state);
@@ -62,7 +62,7 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: BusinessLogicErrorsValueHostName
+                    valueHostName: ModelValidatorsValueHostName
                 });
                 issueCount++;
             }
@@ -87,16 +87,16 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
         // nothing to do
     }
 }
-export const BusinessLogicErrorsValueHostName = '*';   
+export const ModelValidatorsValueHostName = '*';   
 
-export const BusinessLogicErrorsValueHostType = 'BusinessLogicErrors';
-export class BusinessLogicErrorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
+export const ModelValidatorsValueHostType = 'BusinessLogicErrors';
+export class ModelValidatorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
-        return config.valueHostType === BusinessLogicErrorsValueHostType;
+        return config.valueHostType === ModelValidatorsValueHostType;
     }
     public create(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
-        return new BusinessLogicErrorsValueHost(validationManager, config, state);
+        return new ModelValidatorsValueHost(validationManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do

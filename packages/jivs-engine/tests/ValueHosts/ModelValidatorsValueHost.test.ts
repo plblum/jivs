@@ -1,5 +1,5 @@
-import { BusinessLogicErrorsValueHostGenerator, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
-import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostType } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
+import { ModelValidatorsValueHostGenerator, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
+import { ModelValidatorsValueHost, ModelValidatorsValueHostType } from "../../src/ValueHosts/ModelValidatorsValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { ValidationStatus, ValueHostValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
@@ -11,7 +11,7 @@ interface ITestSetupConfig {
     validationManager: MockValidationManager,
     config: ValidatableValueHostBaseConfig,
     state: ValidatableValueHostBaseInstanceState,
-    valueHost: BusinessLogicErrorsValueHost
+    valueHost: ModelValidatorsValueHost
 };
 
 
@@ -21,8 +21,8 @@ function setupInputValueHost(
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
-        valueHostType: BusinessLogicErrorsValueHostType,
-        name: BusinessLogicErrorsValueHostName,
+        valueHostType: ModelValidatorsValueHostType,
+        name: ModelValidatorsValueHostName,
         label: '*',
     };
     let updatedConfig: ValidatableValueHostBaseConfig = (!config) ?
@@ -37,7 +37,7 @@ function setupInputValueHost(
     let updatedState: ValidatableValueHostBaseInstanceState = (!state) ?
         defaultState :
         { ...defaultState, ...state };
-    let vh = new BusinessLogicErrorsValueHost(vm,
+    let vh = new ModelValidatorsValueHost(vm,
         updatedConfig, updatedState);
     return {
         services: services,
@@ -48,7 +48,7 @@ function setupInputValueHost(
     };
 }
 
-describe('BusinessLogicErrorsValueHost.validate', () => {
+describe('ModelValidatorsValueHost.validate', () => {
     test('No BusinessLogicErrors results in ValidationStatus.Valid', () => {
         let setup = setupInputValueHost();
         let vr: ValueHostValidateResult | null = null;
@@ -80,7 +80,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
     });    
     test('One BusinessLogicErrors with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -99,7 +99,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
     });        
     test('One BusinessLogicErrors with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -118,7 +118,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Severe,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
     });            
     test('One BusinessLogicErrors with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
@@ -137,7 +137,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
     });            
     test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
@@ -157,7 +157,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "EC1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
     });          
     test('2 BusinessLogicErrors (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
@@ -180,13 +180,13 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });        
     });            
     test('2 BusinessLogicErrors (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
@@ -209,40 +209,40 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "WARNING2",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         });        
     });                
 });
 
-describe('BusinessLogicErrorsValueHostGenerator members', () => {
-    test('CanCreate returns true for BusinessLogicErrorsValueHostType', () => {
-        let testItem = new BusinessLogicErrorsValueHostGenerator();
+describe('ModelValidatorsValueHostGenerator members', () => {
+    test('CanCreate returns true for ModelValidatorsValueHostType', () => {
+        let testItem = new ModelValidatorsValueHostGenerator();
         expect(testItem.canCreate({
-            valueHostType: BusinessLogicErrorsValueHostType,
+            valueHostType: ModelValidatorsValueHostType,
             name: 'Field1',
             label: '',
         })).toBe(true);
     });
     test('CanCreate returns false for unexpected type', () => {
-        let testItem = new BusinessLogicErrorsValueHostGenerator();
+        let testItem = new ModelValidatorsValueHostGenerator();
         expect(testItem.canCreate({
             valueHostType: 'Unexpected',
             name: 'Field1',
             label: '',
         })).toBe(false);
     });
-    test('create returns instance of BusinessLogicErrorsValueHost with VM, Config and InstanceState established', () => {
+    test('create returns instance of ModelValidatorsValueHost with VM, Config and InstanceState established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            valueHostType: BusinessLogicErrorsValueHostType,
+            valueHostType: ModelValidatorsValueHostType,
             label: '',
         };
         let state: ValidatableValueHostBaseInstanceState = {
@@ -251,11 +251,11 @@ describe('BusinessLogicErrorsValueHostGenerator members', () => {
             status: ValidationStatus.NotAttempted,
             value: undefined,
         };
-        let testItem = new BusinessLogicErrorsValueHostGenerator();
+        let testItem = new ModelValidatorsValueHostGenerator();
         let vh: IValidatableValueHostBase | null = null;
         expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
-        expect(vh).toBeInstanceOf(BusinessLogicErrorsValueHost);
+        expect(vh).toBeInstanceOf(ModelValidatorsValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config value
     });
     test('cleanupInstanceState existing state has no IssuesFound. Returns the same data', () => {
@@ -268,19 +268,19 @@ describe('BusinessLogicErrorsValueHostGenerator members', () => {
         let state = { ...originalState };
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            valueHostType: BusinessLogicErrorsValueHostType,
+            valueHostType: ModelValidatorsValueHostType,
             label: '',
         };
-        let testItem = new BusinessLogicErrorsValueHostGenerator();
+        let testItem = new ModelValidatorsValueHostGenerator();
         expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
 
     test('createInstanceState returns instance with name and InitialValue from Config', () => {
-        let testItem = new BusinessLogicErrorsValueHostGenerator();
+        let testItem = new ModelValidatorsValueHostGenerator();
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            valueHostType: BusinessLogicErrorsValueHostType,
+            valueHostType: ModelValidatorsValueHostType,
             label: '',
             initialValue: 'TEST',
         };

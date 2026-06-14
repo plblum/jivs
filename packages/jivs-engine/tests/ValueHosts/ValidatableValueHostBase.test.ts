@@ -663,7 +663,7 @@ describe('corrected property', () => {
 });
 
 describe('ValidatableValueHostBase.setBusinessLogicError', () => {
-    test('One call with error adds to the list for the BusinessLogicErrorsValueHost', () => {
+    test('One call with error adds to the list for the ModelValidatorsValueHost', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(() => setup.valueHost.setBusinessLogicError({
@@ -683,7 +683,7 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
             });
     });
 
-    test('Two calls with errors (ERROR, WARNING) adds to the list for the BusinessLogicErrorsValueHost', () => {
+    test('Two calls with errors (ERROR, WARNING) adds to the list for the ModelValidatorsValueHost', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(() => setup.valueHost.setBusinessLogicError({

@@ -6,7 +6,7 @@ import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { BusinessLogicErrorsValueHostType } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
+import { ModelValidatorsValueHostType } from "../../src/ValueHosts/ModelValidatorsValueHost";
 import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsValueHostBase";
 
@@ -226,7 +226,7 @@ describe('InputValueHostFactory', () => {
         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '' })).toBe(true);
         expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);
         expect(factory.isRegistered({ valueHostType: ValueHostType.Calc, name: '' })).toBe(true);
-        expect(factory.isRegistered({ valueHostType: BusinessLogicErrorsValueHostType, name: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: ModelValidatorsValueHostType, name: '' })).toBe(true);
 
         expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(false);
     });
@@ -284,7 +284,7 @@ describe('InputValueHostFactory', () => {
             expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(true);
             expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);
             expect(factory.isRegistered({ valueHostType: ValueHostType.Calc, name: '' })).toBe(true);
-            expect(factory.isRegistered({ valueHostType: BusinessLogicErrorsValueHostType, name: '' })).toBe(true);
+            expect(factory.isRegistered({ valueHostType: ModelValidatorsValueHostType, name: '' })).toBe(true);
     
             expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '' })).toBe(false);
         });

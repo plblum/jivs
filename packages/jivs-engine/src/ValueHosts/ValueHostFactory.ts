@@ -7,7 +7,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
-import { BusinessLogicErrorsValueHostGenerator } from './BusinessLogicErrorsValueHost';
+import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
@@ -115,7 +115,7 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
     factory.register(new PropertyValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
-    factory.register(new BusinessLogicErrorsValueHostGenerator());    
+    factory.register(new ModelValidatorsValueHostGenerator());    
 }
 
 /**
@@ -136,7 +136,7 @@ export class InputValueHostFactory extends ValueHostFactory
         this.register(new InputValueHostGenerator());
         this.register(new StaticValueHostGenerator());
         this.register(new CalcValueHostGenerator());
-        this.register(new BusinessLogicErrorsValueHostGenerator());            
+        this.register(new ModelValidatorsValueHostGenerator());            
     }
     private _propertyValueHostGenerator: PropertyValueHostGenerator = new PropertyValueHostGenerator();
 
@@ -166,7 +166,7 @@ export class PropertyValueHostFactory extends ValueHostFactory
         this.register(new PropertyValueHostGenerator());
         this.register(new StaticValueHostGenerator());
         this.register(new CalcValueHostGenerator());
-        this.register(new BusinessLogicErrorsValueHostGenerator());            
+        this.register(new ModelValidatorsValueHostGenerator());            
     }
     private _inputValueHostGenerator: InputValueHostGenerator = new InputValueHostGenerator();
 

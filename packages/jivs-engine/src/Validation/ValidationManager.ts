@@ -4,7 +4,7 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicErrorsValueHostType, BusinessLogicErrorsValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
+import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
@@ -295,7 +295,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in associatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
-     * Internally, a BusinessLogicErrorsValueHost is added to the list of ValueHosts to hold any
+     * Internally, a ModelValidatorsValueHost is added to the list of ValueHosts to hold any
      * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      * @param options - Only considers the skipCallback option.
@@ -309,12 +309,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         }
         if (errors)
             for (let error of errors) {
-                let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicErrorsValueHostName);
+                let vh = this.getValueHost(error.associatedValueHostName ?? ModelValidatorsValueHostName);
                 if (!vh && !error.associatedValueHostName) {
                     vh = this.addValueHost({
-                        valueHostType: BusinessLogicErrorsValueHostType,
+                        valueHostType: ModelValidatorsValueHostType,
                         label: '*',
-                        name: BusinessLogicErrorsValueHostName
+                        name: ModelValidatorsValueHostName
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)

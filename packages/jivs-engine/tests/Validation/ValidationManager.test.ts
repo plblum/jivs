@@ -3,7 +3,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
+import { ModelValidatorsValueHost, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
 import { IssueFound, ValidationSeverity, ValidationState, BusinessLogicError, ValidateOptions, ValidationStatus, ValueHostValidateResult, SetIssuesFoundErrorCodeMissingBehavior } from '../../src/Interfaces/Validation';
@@ -1628,16 +1628,16 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName,
+            valueHostName: ModelValidatorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
-        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
+        expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeInstanceOf(ModelValidatorsValueHost);
 
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual([<IssueFound>{
+        expect(setup.validationManager.getIssuesForInput(ModelValidatorsValueHostName)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName,
+            valueHostName: ModelValidatorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
@@ -1670,8 +1670,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             summaryMessage: 'BL_ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeNull();
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toBeNull();
+        expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(ModelValidatorsValueHostName)).toBeNull();
     });
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
@@ -1699,7 +1699,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             <IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicErrorsValueHostName,
+                valueHostName: ModelValidatorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1711,12 +1711,12 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             summaryMessage: 'SUMMARY CONDITION ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual(
+        expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeInstanceOf(ModelValidatorsValueHost);
+        expect(setup.validationManager.getIssuesForInput(ModelValidatorsValueHostName)).toEqual(
             [<IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicErrorsValueHostName,
+                valueHostName: ModelValidatorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1751,7 +1751,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             errorMessage: 'BL_ERROR',
             summaryMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([
@@ -1780,7 +1780,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             errorCode: 'GENERATED_0',
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicErrorsValueHostName
+            valueHostName: ModelValidatorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([
