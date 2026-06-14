@@ -3,7 +3,7 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { PropertyValueHostConfig, PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidateOptions,
-    BusinessLogicError,
+    ExternalIssueFound,
     SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
@@ -357,10 +357,10 @@ describe('toIPropertyValueHost function', () => {
             throw new Error("Method not implemented.");
         }
 
-        setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions | undefined): boolean {
+        setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(options?: ValidateOptions | undefined): boolean {
+        clearExternalIssuesFound(options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSave: boolean = false;

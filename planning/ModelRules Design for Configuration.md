@@ -664,12 +664,12 @@ interface ModelRulesConfigureOptions {
   disableCache?: boolean;
   variantName?: string;
   issuesFound?: Array<IssueFound>;
-  businessLogicErrors?: Array<BusinessLogicError>;
+  ExternalIssueFounds?: Array<ExternalIssueFound>;
 }
 ```
 
 * issuesFound - when the call to the server has found Jivs issuesFound, supply it and configure() will call ValidationManager.setIssuesFound()
-* businessLogicErrors - when the call to the server has found non-Jivs businessLogicErrors, supply it and configure() will call ValidationManager.setBusinessLogicErrors()
+* ExternalIssueFounds - when the call to the server has found non-Jivs ExternalIssueFounds, supply it and configure() will call ValidationManager.setExternalIssuesFound()
 
 
 ## 15. Current Summary

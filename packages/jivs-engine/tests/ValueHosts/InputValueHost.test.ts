@@ -6,7 +6,7 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError,
+    ExternalIssueFound,
     SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
@@ -1353,10 +1353,10 @@ describe('toIInputValueHost function', () => {
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         corrected: boolean = false;
-        setBusinessLogicError(error: BusinessLogicError): boolean {
+        setExternalIssueFound(error: ExternalIssueFound): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(): boolean {
+        clearExternalIssuesFound(): boolean {
             throw new Error("Method not implemented.");
         }
         get doNotSave(): boolean {

@@ -107,14 +107,14 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `BusinessLogicErrors` and applies them through `ValidationManager.setBusinessLogicErrors()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If save logic needs a model object and one has not yet been created, set it up
 8. Client submits to server
 9. Server performs early security screening on hostile or suspicious input
 
    * If security screening stops the workflow outside the normal Jivs returned-error flow, the workflow ends here.
-   * The developer can instead convert that outcome into a `BusinessLogicError`, continue, and include it in the returned list later.
+   * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 10. Server prepares the Jivs validation runtime
 
     * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
@@ -129,19 +129,19 @@ That guidance is especially important for:
     * If the developer stops here, save is blocked and the workflow moves to packaging and delivery.
 12. (Server) If non-Jivs checks code needs a model object, set it up.
 13. Server runs other non-Jivs checks when the workflow continues
-14. Server code converts native app errors from those checks to `BusinessLogicErrors`
+14. Server code converts native app errors from those checks to `ExternalIssuesFound`
 15. If no server-side errors exist, the server attempts save.
 
     * If save logic needs a model object and one has not yet been created, set it up
     * Run save process
     * If save succeeds, the error-reporting workflow ends.
-    * If save fails, server code converts save-time native app errors to `BusinessLogicErrors`.
+    * If save fails, server code converts save-time native app errors to `ExternalIssuesFound`.
 16. Returned errors are packaged and reported to the client
 
-    * Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+    * Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
     * App/server delivers packaged content in the response
-    * App/client retrieves and deserializes the broader response, then gets `issuesFound` / `businessLogicErrors`
-    * App/framework code applies the returned `issuesFound` / `businessLogicErrors` to the existing `ValidationManager`
+    * App/client retrieves and deserializes the broader response, then gets `issuesFound` / `externalIssueFounds`
+    * App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValidationManager`
     * Client callbacks/hooks update visuals
 
       * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -161,14 +161,14 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `BusinessLogicErrors` and applies them through `ValidationManager.setBusinessLogicErrors()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If save logic needs a model object and one has not yet been created, set it up
 8. Client submits data to server
 9. Server performs early security screening on hostile or suspicious input
 
    * If security screening stops the workflow outside the normal Jivs returned-error flow, the workflow ends here.
-   * The developer can instead convert that outcome into a `BusinessLogicError`, continue, and include it in the returned list later.
+   * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 10. Server prepares the Jivs validation runtime
 
 * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
@@ -185,21 +185,21 @@ That guidance is especially important for:
 
 12. (Server) If non-Jivs checks code needs a model object, set it up.
 13. Server runs other non-Jivs checks when the workflow continues
-14. Server code converts native app errors from those checks to `BusinessLogicErrors`
+14. Server code converts native app errors from those checks to `ExternalIssuesFound`
 15. If no server-side errors exist, the server attempts save.
 
 * If save logic needs a model object and one has not yet been created, set it up
 * Run save process
 * If save succeeds, the error-reporting workflow ends.
-* If save fails, server code converts save-time native app errors to `BusinessLogicErrors`.
+* If save fails, server code converts save-time native app errors to `ExternalIssuesFound`.
 
 16. Returned errors are packaged and reported to the client
 
-* Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+* Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
 * App/server injects packaged content into the returned page data
 * New page loads
-* App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `businessLogicErrors`
-* Client calls `ModelRules.configure()` with `issuesFound` / `businessLogicErrors` in `ModelRulesConfigureOptions`
+* App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `externalIssueFounds`
+* Client calls `ModelRules.configure()` with `issuesFound` / `externalIssueFounds` in `ModelRulesConfigureOptions`
 * `configure()` creates the new `ValidationManager` and reapplies the returned errors
 * Client callbacks/hooks update visuals
 
@@ -211,7 +211,7 @@ That guidance is especially important for:
 2. Server performs early security screening on hostile or suspicious input
 
    * If security screening stops the workflow outside the normal Jivs returned-error flow, the workflow ends here.
-   * The developer can instead convert that outcome into a `BusinessLogicError`, continue, and include it in the returned list later.
+   * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 3. Server prepares the Jivs validation runtime
 
    * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
@@ -226,16 +226,16 @@ That guidance is especially important for:
    * If the developer stops here, save is blocked and the workflow moves to packaging and response reporting.
 5. (Server) If non-Jivs checks code needs a model object, set it up.
 6. Server runs other non-Jivs checks
-7. Server code converts native app errors from those checks to `BusinessLogicErrors`
+7. Server code converts native app errors from those checks to `ExternalIssuesFound`
 8. If no server-side errors exist, the server attempts save or completes the requested operation.
 
    * If save or operation logic needs a model object and one has not yet been created, set it up
    * Run save process or complete the requested operation
    * If the operation succeeds, the error-reporting workflow ends.
-   * If the operation fails, server code converts save-time or operation-time native app errors to `BusinessLogicErrors`.
+   * If the operation fails, server code converts save-time or operation-time native app errors to `ExternalIssuesFound`.
 9. Returned errors are packaged and reported in the server response
 
-   * Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+   * Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
    * App/server delivers the response in its API or service-specific format
    * The consumer may inspect, map, or otherwise consume the returned Jivs content
    * No client-side Jivs `ValidationManager` restoration step is assumed
@@ -255,7 +255,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `BusinessLogicErrors` and applies them through `ValidationManager.setBusinessLogicErrors()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If submit logic needs a model object and one has not yet been created, set it up
 8. Client submits data to a server or API that does not use Jivs
@@ -263,8 +263,8 @@ That guidance is especially important for:
 
    * *The response format is owned by that server/API, not by Jivs.*
 10. App/client retrieves and deserializes the returned response
-11. Client-side code converts the returned server/API errors into `BusinessLogicErrors`
-12. Client-side Jivs applies the converted `BusinessLogicErrors` to the existing `ValidationManager`
+11. Client-side code converts the returned server/API errors into `ExternalIssuesFound`
+12. Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValidationManager`
 13. Client callbacks/hooks update visuals
 
     * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -284,7 +284,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `BusinessLogicErrors` and applies them through `ValidationManager.setBusinessLogicErrors()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If the intended next step needs a model object and one has not yet been created, set it up
 8. App/client code performs the intended next step
@@ -319,7 +319,7 @@ That guidance is especially important for:
 
 * `ValidationManager.validate()` usage in the Jivs story
 * `IssuesFound`
-* `BusinessLogicErrors`
+* `ExternalIssuesFound`
 * packaging Jivs-facing returned content
 * applying/restoring Jivs-facing returned content into `ValidationManager`
 * state preservation/restoration hooks where already supported by engine
@@ -343,7 +343,7 @@ Examples:
 * how a response is returned
 * where packaged content is stored on a returned page or response
 * how non-Jivs response content is shaped
-* conversion from app-native error types into `BusinessLogicErrors`
+* conversion from app-native error types into `ExternalIssuesFound`
 * save orchestration and business workflow decisions
 
 ### Possible thin adapter boundary
@@ -408,7 +408,7 @@ Use this workflow when the client invokes an action, such as submit or executing
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `BusinessLogicErrors` and applies them through `ValidationManager.setBusinessLogicErrors()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 
 7. If the next step for that action needs a model object and one has not yet been created, set it up
@@ -443,8 +443,8 @@ The workflow-specific variants begin at step 8:
 
 Use this workflow when the client receives returned Jivs-facing errors and applies them to the existing `ValidationManager`.
 
-1. `C-RETR` App/client retrieves and deserializes the broader response, then gets `issuesFound` / `businessLogicErrors`
-2. `C-AERR` App/framework code applies the returned `issuesFound` / `businessLogicErrors` to the existing `ValidationManager`
+1. `C-RETR` App/client retrieves and deserializes the broader response, then gets `issuesFound` / `externalIssueFounds`
+2. `C-AERR` App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValidationManager`
 3. `C-VISL` Client callbacks/hooks update visuals
 
    * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -465,8 +465,8 @@ It is the client-side template used when the original `ValidationManager` is sti
 
 Use this workflow when the client receives returned Jivs-facing errors and restores them while creating/configuring a new `ValidationManager`.
 
-1. `C-RETR` App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `businessLogicErrors`
-2. Client calls `ModelRules.configure()` with `issuesFound` / `businessLogicErrors` in `ModelRulesConfigureOptions`
+1. `C-RETR` App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `externalIssueFounds`
+2. Client calls `ModelRules.configure()` with `issuesFound` / `externalIssueFounds` in `ModelRulesConfigureOptions`
 3. `configure()` creates the new `ValidationManager` and reapplies the returned errors
 4. `C-VISL` Client callbacks/hooks update visuals
 
@@ -486,11 +486,11 @@ It is the client-side template used when the earlier client instance no longer e
 
 ### `C-ADPT` Client non-Jivs returned-error adaptation workflow
 
-Use this workflow when the client receives returned errors from a server or API that does not use Jivs, and client-side code must convert those returned errors into `BusinessLogicErrors`.
+Use this workflow when the client receives returned errors from a server or API that does not use Jivs, and client-side code must convert those returned errors into `ExternalIssuesFound`.
 
 1. App/client retrieves and deserializes the returned response
-2. Client-side code converts the returned server/API errors into `BusinessLogicErrors`
-3. `C-AERR` Client-side Jivs applies the converted `BusinessLogicErrors` to the existing `ValidationManager`
+2. Client-side code converts the returned server/API errors into `ExternalIssuesFound`
+3. `C-AERR` Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValidationManager`
 4. `C-VISL` Client callbacks/hooks update visuals
 
    * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -507,7 +507,7 @@ This is the client-side returned-error path used when the server or API does not
 
 Step 1 intentionally does not use `C-RETR`, because this is a different retrieval case than the Jivs-facing returned-content retrieval used by `C-APLY` and `C-RSTR`.
 
-Step 3 uses `C-AERR`, which can also be applied to step 2 of `C-APLY`, since the underlying code may be one function that accepts both `issuesFound` and `businessLogicErrors`, with `issuesFound` passed as `null` in `C-ADPT`.
+Step 3 uses `C-AERR`, which can also be applied to step 2 of `C-APLY`, since the underlying code may be one function that accepts both `issuesFound` and `externalIssueFounds`, with `issuesFound` passed as `null` in `C-ADPT`.
 
 ### `C-GRUP` Client validation-group handoff workflow
 
@@ -554,7 +554,7 @@ Use this workflow when the server uses Jivs to perform server-side validation an
 2. Server performs early security screening on hostile or suspicious input
 
    * If security screening stops the workflow outside the normal Jivs returned-error flow, the workflow ends here.
-   * The developer can instead convert that outcome into a `BusinessLogicError`, continue, and include it in the returned list later.
+   * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 
 3. Server prepares the Jivs validation runtime
 
@@ -574,14 +574,14 @@ Use this workflow when the server uses Jivs to perform server-side validation an
 
 6. Server runs other non-Jivs checks when the workflow continues
 
-7. Server code converts native app errors from those checks to `BusinessLogicErrors`
+7. Server code converts native app errors from those checks to `ExternalIssuesFound`
 
 8. If no server-side errors exist, the server attempts save or completes the requested operation.
 
    * If save or operation logic needs a model object and one has not yet been created, set it up
    * Run save process or complete the requested operation
    * If the operation succeeds, the error-reporting workflow ends.
-   * If the operation fails, server code converts save-time or operation-time native app errors to `BusinessLogicErrors`.
+   * If the operation fails, server code converts save-time or operation-time native app errors to `ExternalIssuesFound`.
 
 9. Server resolves the packaging strategy for the selected response path
 
@@ -611,7 +611,7 @@ Packaging and delivery are handled by the packaging workflows.
 
 Use this workflow when returned Jivs-facing errors are packaged and delivered in the response.
 
-1. `S-JPKG` Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+1. `S-JPKG` Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
 2. App/server delivers packaged content in the response
 
 #### Derived from
@@ -632,7 +632,7 @@ It stops at delivery of the packaged content in the response.
 
 Use this workflow when returned Jivs-facing errors are packaged and injected into the returned page data.
 
-1. `S-JPKG` Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+1. `S-JPKG` Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
 2. App/server injects packaged content into the returned page data
 
 #### Derived from
@@ -653,7 +653,7 @@ It stops at injection of the packaged content into the returned page data.
 
 Use this workflow when returned Jivs-facing errors are packaged and delivered in an API or service-specific response format.
 
-1. `S-JPKG` Jivs packager packages `IssuesFound` and `BusinessLogicErrors`
+1. `S-JPKG` Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
 2. App/server delivers the response in its API or service-specific format
 
 #### Derived from
@@ -741,7 +741,7 @@ The packaging story cannot assume that the server always has errors to send back
 
 * no Jivs-facing returned errors
 * `IssuesFound` only
-* `BusinessLogicErrors` only
+* `ExternalIssuesFound` only
 * both
 
 That is important because the broader response may still contain other application-defined content even when the Jivs-facing portion is empty.
@@ -753,7 +753,7 @@ We deliberately deferred these:
 * final interface/class names
 * exact internal shape of every packaging implementation
 * the best names for any returned-error payload properties
-* whether every app-native error should be adapted into `BusinessLogicErrors`
+* whether every app-native error should be adapted into `ExternalIssuesFound`
 * the final factory API and packager method signatures
 
 That is still consistent with the original planning goal: understand the use cases, show the real workflow steps, identify the true Jivs boundary objects/phases, and avoid premature commitment to final class/interface design.

@@ -17,7 +17,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
+import { type ValidateOptions, ValidationSeverity, type IssueFound, ExternalIssueFound } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
 import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
@@ -497,19 +497,19 @@ export class Validator implements IValidator {
     }
 
     /**
-     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
-     * list of Validators through this. This function determines if the businessLogicError is
+     * When ValueHost.setExternalIssueFound is called, it provides each entry to the existing
+     * list of Validators through this. This function determines if the externalIssueFound is
      * actually for the same error code as itself, and returns a ValidatorValidateResult, just
      * like calling validate() itself.
      * The idea is to use the UI's representation of the validator, including its error messages
      * with its own tokens, instead of those supplied by the business logic.
-     * @param businessLogicError 
-     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * @param externalIssueFound 
+     * @returns if null, it did not handle the ExternalIssueFound. If a ValidatorValidateResult,
      * it should be used in the ValueHost's state of validation.
      */
-    public tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null
+    public tryValidatorSwap(externalIssueFound: ExternalIssueFound): ValidatorValidateResult | null
     {
-        if (businessLogicError.errorCode === this.errorCode)
+        if (externalIssueFound.errorCode === this.errorCode)
         {
             let issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
             issueFound.severity = this.severity;

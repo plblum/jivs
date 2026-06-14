@@ -26,7 +26,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
-import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
+import { ValidateOptions, ExternalIssueFound, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
 import { ValueHostInstanceState } from './ValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
@@ -117,7 +117,7 @@ export interface IValidationManager extends IValueHostsManager {
      * @param options - Only considers the skipCallback option.
      * @returns when true, the validation snapshot has changed.
      */
-    setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean;
+    setExternalIssuesFound(errors: Array<ExternalIssueFound> | null, options?: ValidateOptions): boolean;
 
     /**
      * Lists all issues found (error messages and supporting info) for a single ValidatorsValueHostBase
@@ -239,8 +239,8 @@ export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks
 
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
-     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
-     * clearBusinessLogicErrors() and a few edge cases.
+     * That includes validate(), clearValidation(), setExternalIssuesFound(), 
+     * clearExternalIssuesFound() and a few edge cases.
      * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.

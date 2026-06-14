@@ -6,7 +6,7 @@ import { MockValidationServices } from "../TestSupport/mocks";
 import { ModelValidatorsValueHost, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
-import { IssueFound, ValidationSeverity, ValidationState, BusinessLogicError, ValidateOptions, ValidationStatus, ValueHostValidateResult, SetIssuesFoundErrorCodeMissingBehavior } from '../../src/Interfaces/Validation';
+import { IssueFound, ValidationSeverity, ValidationState, ExternalIssueFound, ValidateOptions, ValidationStatus, ValueHostValidateResult, SetIssuesFoundErrorCodeMissingBehavior } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, toIValidationManager,
@@ -1615,9 +1615,9 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
 
         expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound, expectedIssueFound2]);
     });
-    test('With 1 BusinessLogicError not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the businesslogicerror, and there is a new ValueHost for the BusinessLogic', () => {
+    test('With 1 ExternalIssueFound not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the externalIssueFound, and there is a new ValueHost for the BusinessLogic', () => {
         let setup = setupValidationManager();
-        let result = setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
@@ -1642,11 +1642,11 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             summaryMessage: 'BL_ERROR'
         }]);
     });
-    test('With 1 ValueHost that is assigned without validators 1 BusinessLogicError, isValid=false, DoNotSave=true, getIssuesFound has the businesslogicerror, and there is a no ValueHost for the BusinessLogic', () => {
+    test('With 1 ValueHost that is assigned without validators 1 ExternalIssueFound, isValid=false, DoNotSave=true, getIssuesFound has the externalIssueFound, and there is a no ValueHost for the BusinessLogic', () => {
 
         let config = setupInputValueHostConfig(0, []);
         let setup = setupValidationManager([config]);
-        let result = setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
                 associatedValueHostName: config.name
@@ -1673,13 +1673,13 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
         expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(ModelValidatorsValueHostName)).toBeNull();
     });
-    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
+    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 ExternalIssueFound not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors externalIssueFound, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         config.validatorConfigs![0].errorMessage = 'CONDITION ERROR';
         config.validatorConfigs![0].summaryMessage = 'SUMMARY CONDITION ERROR';
         let setup = setupValidationManager([config]);
-        let result = setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
             }
@@ -1721,20 +1721,20 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
                 summaryMessage: 'BL_ERROR'
             }]);
     });
-    test('setBusinessLogicErrors has not supplied any errors and returns false', () => {
+    test('setExternalIssuesFound has not supplied any errors and returns false', () => {
         let setup = setupValidationManager();
-        let result = setup.validationManager.setBusinessLogicErrors([]);
+        let result = setup.validationManager.setExternalIssuesFound([]);
         expect(result).toBe(false);
     });    
-    test('setBusinessLogicErrors called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
+    test('setExternalIssuesFound called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
         let setup = setupValidationManager();
-        let result =  setup.validationManager.setBusinessLogicErrors([
+        let result =  setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
             }
         ]);
         expect(result).toBe(true);
-        result = setup.validationManager.setBusinessLogicErrors([]);
+        result = setup.validationManager.setExternalIssuesFound([]);
         expect(result).toBe(true);
     });        
     test('OnValidated callback test invokes callback with expected ValidationState', () => {
@@ -1754,7 +1754,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: ModelValidatorsValueHostName
         };
 
-        setup.validationManager.setBusinessLogicErrors([
+        setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
@@ -1783,7 +1783,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: ModelValidatorsValueHostName
         };
 
-        setup.validationManager.setBusinessLogicErrors([
+        setup.validationManager.setExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
@@ -2601,7 +2601,7 @@ describe('toIValidationManager function', () => {
             },
             isValid: false,
             doNotSave: true,
-            setBusinessLogicErrors: function (errors: BusinessLogicError[] | null, options?: ValidateOptions | undefined): boolean {
+            setExternalIssuesFound: function (errors: ExternalIssueFound[] | null, options?: ValidateOptions | undefined): boolean {
                 throw new Error("Function not implemented.");
             },
             getIssuesForInput: function (valueHostName: string): IssueFound[] | null {

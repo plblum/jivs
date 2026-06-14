@@ -193,11 +193,11 @@ export interface IssueFound {
 /**
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
- * and passed to ValidationManager.setBusinessLogicErrors where it becomes exposed to 
+ * and passed to ValidationManager.setExternalIssuesFound where it becomes exposed to 
  * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
  * by specifying that valueHostName in AssociatedValueHostName.
  */
-export interface BusinessLogicError {
+export interface ExternalIssueFound {
     /**
      * The error message to show to the user. It should be fully realized, no tokens
      * or language conversion expected to be handled by the ValidationManager.
@@ -252,7 +252,7 @@ export interface ValidationState
 
     /**
      * All issues current found (except ValueHosts not matching the validation group which are excluded.)
-     * Includes issues found by setBusinessLogicErrors too.
+     * Includes issues found by setExternalIssuesFound too.
      * If none, it is null
      */
     issuesFound: Array<IssueFound> | null;

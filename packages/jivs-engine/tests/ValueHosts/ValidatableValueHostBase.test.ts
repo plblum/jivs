@@ -7,7 +7,7 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError
+    ExternalIssueFound
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -532,10 +532,10 @@ describe('ValidatableValueHostBase.clearValidation', () => {
 
     });
 
-    test('Without calling validate but with BusinessLogicError (Error), Ensure the state discards BusinessLogicError after clear', () => {
+    test('Without calling validate but with ExternalIssueFound (Error), Ensure the state discards ExternalIssueFound after clear', () => {
         let setup = setupValidatableValueHostBase({}, null, ValidationStatus.Undetermined);
 
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
@@ -553,7 +553,7 @@ describe('ValidatableValueHostBase.clearValidation', () => {
                 status: ValidationStatus.NotAttempted,
                 issuesFound: null,
                 value: undefined,
-                businessLogicErrors: [
+                externalIssuesFound: [
                     {
                         errorMessage: 'ERROR',
                         severity: ValidationSeverity.Error
@@ -635,23 +635,23 @@ describe('corrected property', () => {
         setup.valueHost.setCorrected(false);
         expect(setup.valueHost.corrected).toBe(false);   
     });        
-    test('Initially corrected=true then use setBusinessLogicErrors, corrected=false', () => {
+    test('Initially corrected=true then use setExternalIssuesFound, corrected=false', () => {
         let setup = setupValidatableValueHostBase(null, null);
         setup.valueHost.setCorrected(true);
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'Error',
             errorCode: 'EC',
         });
         expect(setup.valueHost.corrected).toBe(false);
     });    
-    test('Initially corrected=true then use clearBusinessLogicErrors, corrected=false', () => {
+    test('Initially corrected=true then use clearExternalIssuesFound, corrected=false', () => {
         let setup = setupValidatableValueHostBase(null, null);
-        setup.valueHost.setBusinessLogicError({ // because clearBusinessLogicErrors depends on an existing error to take any action
+        setup.valueHost.setExternalIssueFound({ // because clearExternalIssuesFound depends on an existing error to take any action
             errorMessage: 'Error',
             errorCode: 'EC',
         });        
         setup.valueHost.setCorrected(true);
-        setup.valueHost.clearBusinessLogicErrors();
+        setup.valueHost.clearExternalIssuesFound();
         expect(setup.valueHost.corrected).toBe(false);
     });        
     test('Initially corrected=true then use clearValidation, corrected=false', () => {
@@ -662,11 +662,11 @@ describe('corrected property', () => {
     });        
 });
 
-describe('ValidatableValueHostBase.setBusinessLogicError', () => {
+describe('ValidatableValueHostBase.setExternalIssueFound', () => {
     test('One call with error adds to the list for the ModelValidatorsValueHost', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setBusinessLogicError({
+        expect(() => setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         })).not.toThrow();
@@ -674,9 +674,9 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1); // first changes the value; second changes ValidationStatus
         let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange.businessLogicErrors).toBeDefined();
-        expect(valueChange.businessLogicErrors![0]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange.externalIssuesFound).toBeDefined();
+        expect(valueChange.externalIssuesFound![0]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
 
@@ -686,11 +686,11 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
     test('Two calls with errors (ERROR, WARNING) adds to the list for the ModelValidatorsValueHost', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setBusinessLogicError({
+        expect(() => setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         })).not.toThrow();
-        expect(() => setup.valueHost.setBusinessLogicError({
+        expect(() => setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         })).not.toThrow();
@@ -698,21 +698,21 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange1.businessLogicErrors).toBeDefined();
-        expect(valueChange1.businessLogicErrors![0]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange1.externalIssuesFound).toBeDefined();
+        expect(valueChange1.externalIssuesFound![0]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
             });
         let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
-        expect(valueChange2.businessLogicErrors).toBeDefined();
-        expect(valueChange2.businessLogicErrors![0]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange2.externalIssuesFound).toBeDefined();
+        expect(valueChange2.externalIssuesFound![0]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
             });
-        expect(valueChange2.businessLogicErrors![1]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange2.externalIssuesFound![1]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'WARNING',
                 severity: ValidationSeverity.Warning
             });
@@ -720,7 +720,7 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
     test('One call with null makes no changes to the state', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setBusinessLogicError(null!)).not.toThrow();
+        expect(() => setup.valueHost.setExternalIssueFound(null!)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
@@ -729,7 +729,7 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
     test('With ValueHost.isEnabled=false, still applied and now has a logged message', () => {
         let setup = setupValidatableValueHostBase();
         setup.valueHost.setEnabled(false);
-        expect(() => setup.valueHost.setBusinessLogicError({
+        expect(() => setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         })).not.toThrow();
@@ -737,50 +737,50 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the enabled flag; second changes ValidationStatus
         let valueChange = <ValidatableValueHostBaseInstanceState>changes[1];
-        expect(valueChange.businessLogicErrors).toBeDefined();
-        expect(valueChange.businessLogicErrors![0]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange.externalIssuesFound).toBeDefined();
+        expect(valueChange.externalIssuesFound![0]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
 
             });
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('ExternalIssueFound applied on disabled ValueHost.', LoggingLevel.Warn, null)).toBeTruthy();
     });
 
 });
-describe('clearBusinessLogicErrors', () => {
+describe('clearExternalIssuesFound', () => {
     test('Call while no existing makes not changes to the state', () => {
         let setup = setupValidatableValueHostBase();
         let result: boolean | null = null;
-        expect(() => result = setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(false);
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
     });
-    test('Set then Clear creates two state entries with state.BusinessLogicErrors undefined by the end', () => {
+    test('Set then Clear creates two state entries with state.ExternalIssuesFound undefined by the end', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setBusinessLogicError({
+        expect(() => setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         })).not.toThrow();
         let result: boolean | null = null;
-        expect(() => result = setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(true);
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
         let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange1.businessLogicErrors).toBeDefined();
-        expect(valueChange1.businessLogicErrors![0]).toEqual(
-            <BusinessLogicError>{
+        expect(valueChange1.externalIssuesFound).toBeDefined();
+        expect(valueChange1.externalIssuesFound![0]).toEqual(
+            <ExternalIssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
             });
         let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
-        expect(valueChange2.businessLogicErrors).toBeUndefined();
+        expect(valueChange2.externalIssuesFound).toBeUndefined();
     });
     test('onValueHostValidationStateChanged called', () => {
         let onValidateResult: ValueHostValidationState | null = null;
@@ -809,13 +809,13 @@ describe('clearBusinessLogicErrors', () => {
 
         vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
 
-        expect(() => vh.setBusinessLogicError({
+        expect(() => vh.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         }, { skipCallback: true })).not.toThrow();
         expect(onValidateResult).toBeNull();  // because of skipCallback
 
-        let result = vh.clearBusinessLogicErrors();
+        let result = vh.clearExternalIssuesFound();
         expect(result).toBe(true);
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: true,
@@ -852,13 +852,13 @@ describe('clearBusinessLogicErrors', () => {
         }, null) as TestValidatableValueHost;
         vm.validate({ skipCallback: true });
 
-        vh.setBusinessLogicError({
+        vh.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         }, { skipCallback: true });
         expect(onValidateResult).toBeNull();  // because of skipCallback
 
-        let result = vh.clearBusinessLogicErrors({ skipCallback: true});
+        let result = vh.clearExternalIssuesFound({ skipCallback: true});
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull(); // because of skipCallback
     });       
@@ -928,9 +928,9 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         expect(issuesFound).toBeNull();
     });
 
-    test('No Validation errors, but has BusinessLogicError (Error) reports just the BusinessLogicError', () => {
+    test('No Validation errors, but has ExternalIssueFound (Error) reports just the ExternalIssueFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
@@ -949,9 +949,9 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         ];
         expect(issuesFound).toEqual(expected);
     });
-    test('No Validation errors, but has BusinessLogicError (Severe) reports just the BusinessLogicError', () => {
+    test('No Validation errors, but has ExternalIssueFound (Severe) reports just the ExternalIssueFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'SEVERE',
             severity: ValidationSeverity.Severe
         });
@@ -970,9 +970,9 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         ];
         expect(issuesFound).toEqual(expected);
     });
-    test('No Validation errors, but has BusinessLogicError (Warning) reports just the BusinessLogicError', () => {
+    test('No Validation errors, but has ExternalIssueFound (Warning) reports just the ExternalIssueFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
@@ -1074,10 +1074,10 @@ describe('toIValidatableValueHostBase', () => {
             corrected: false,
             currentValidationState: {} as any,
     
-            setBusinessLogicError: function (error: BusinessLogicError): boolean {
+            setExternalIssueFound: function (error: ExternalIssueFound): boolean {
                 throw new Error('Function not implemented.');
             },
-            clearBusinessLogicErrors: function (): boolean {
+            clearExternalIssuesFound: function (): boolean {
                 throw new Error('Function not implemented.');
             },
             doNotSave: false,
@@ -1199,10 +1199,10 @@ describe('toIValidatableValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
 
-        setBusinessLogicError(error: BusinessLogicError): boolean {
+        setExternalIssueFound(error: ExternalIssueFound): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(): boolean {
+        clearExternalIssuesFound(): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSave = false;

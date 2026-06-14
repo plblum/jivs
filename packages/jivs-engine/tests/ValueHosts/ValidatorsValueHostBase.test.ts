@@ -7,7 +7,7 @@ import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition
 import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
-import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
+import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, ExternalIssueFound, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
@@ -972,9 +972,9 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
     });
-    test('Without Validators but have a BusinessLogicError (Error), isValid=false, ValidationStatus = Invalid', () => {
+    test('Without Validators but have a ExternalIssueFound (Error), isValid=false, ValidationStatus = Invalid', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
-        let result = setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
         });
         expect(result).toBe(true);
@@ -982,9 +982,9 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
     });
-    test('Without Validators but have a BusinessLogicError (Warning), isValid=true, ValidationStatus = Undetermined because warning does not change anything and no validators means Undetermined', () => {
+    test('Without Validators but have a ExternalIssueFound (Warning), isValid=true, ValidationStatus = Undetermined because warning does not change anything and no validators means Undetermined', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
-        let result = setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
@@ -993,14 +993,14 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
     });
-    test('setBusinessLogicError with same data back-to-back with different error codes returns true on both calls. Expect two IssuesFound', () => {
+    test('setExternalIssueFound with same data back-to-back with different error codes returns true on both calls. Expect two IssuesFound', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
-        let result = setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setExternalIssueFound({
             errorCode: 'TEST1',
             errorMessage: 'ERROR',
         });
         expect(result).toBe(true);
-        result = setup.valueHost.setBusinessLogicError({
+        result = setup.valueHost.setExternalIssueFound({
             errorCode: 'TEST2',
             errorMessage: 'ERROR',
         });
@@ -1009,14 +1009,14 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(2);
     });    
-    test('setBusinessLogicError with same data back-to-back with the same error codes returns true on first and false on second due to no real change. Only one IssueFound', () => {
+    test('setExternalIssueFound with same data back-to-back with the same error codes returns true on first and false on second due to no real change. Only one IssueFound', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
-        let result = setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setExternalIssueFound({
             errorCode: 'TEST',
             errorMessage: 'ERROR',
         });
         expect(result).toBe(true);
-        result = setup.valueHost.setBusinessLogicError({
+        result = setup.valueHost.setExternalIssueFound({
             errorCode: 'TEST',
             errorMessage: 'ERROR',
         });
@@ -1025,7 +1025,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(1);
     });    
-    test('With 1 Condition evaluating as NoMatch and have a BusinessLogicError (Warning). isValid is false due to NoMatch. ValidationStatus=Invalid', () => {
+    test('With 1 Condition evaluating as NoMatch and have a ExternalIssueFound (Warning). isValid is false due to NoMatch. ValidationStatus=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1036,7 +1036,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {
         };
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
@@ -1044,7 +1044,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
     });
-    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Error). isValid is false due to BusinessLogicError. ValidationStatus=Invalid', () => {
+    test('With 1 Condition evaluating as Match and have a ExternalIssueFound (Error). isValid is false due to ExternalIssueFound. ValidationStatus=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1055,7 +1055,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {
         };
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
@@ -1063,7 +1063,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
     });
-    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Warning). isValid is true. ValidationStatus=Valid', () => {
+    test('With 1 Condition evaluating as Match and have a ExternalIssueFound (Warning). isValid is true. ValidationStatus=Valid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1074,7 +1074,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {
         };
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
@@ -1082,14 +1082,14 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
     });
-    test('With ValueHost.isEnabled=false, Without Validators but have a BusinessLogicError (Error), everything continues to work plus there is a log entry so when re-enabled it is there', () => {
+    test('With ValueHost.isEnabled=false, Without Validators but have a ExternalIssueFound (Error), everything continues to work plus there is a log entry so when re-enabled it is there', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
         setup.valueHost.setEnabled(false);
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
         });
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost', LoggingLevel.Warn)).toBeTruthy();
+        expect(logger.findMessage('ExternalIssueFound applied on disabled ValueHost', LoggingLevel.Warn)).toBeTruthy();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
         let issuesFound = setup.valueHost.getIssuesFound();
         expect(issuesFound).toBeNull();
@@ -1129,7 +1129,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             errorCode: 'GENERATED_0'
         };
 
-        let result = vh.setBusinessLogicError({
+        let result = vh.setExternalIssueFound({
             errorMessage: 'BL_ERROR',
         });
         expect(result).toBe(true);
@@ -1166,7 +1166,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             ]
         }, null) as TestValidatorsValueHost;
 
-        let result = vh.setBusinessLogicError({
+        let result = vh.setExternalIssueFound({
             errorMessage: 'BL_ERROR',
         }, { skipCallback: true});
         expect(result).toBe(true);
@@ -2115,9 +2115,9 @@ describe('clearValidation', () => {
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toBeNull();
 
     });    
-    test('Without calling validate but with BusinessLogicError (Error), Ensure the state discards BusinessLogicError after clear', () => {
+    test('Without calling validate but with ExternalIssueFound (Error), Ensure the state discards ExternalIssueFound after clear', () => {
         let setup = setupValidatorsValueHostBaseForValidate([], {});
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
@@ -2135,7 +2135,7 @@ describe('clearValidation', () => {
                 status: ValidationStatus.NotAttempted,
                 issuesFound: null,
                 value: undefined,
-                businessLogicErrors: [
+                externalIssuesFound: [
                     {
                         errorMessage: 'ERROR',
                         severity: ValidationSeverity.Error
@@ -2254,9 +2254,9 @@ describe('clearValidation', () => {
 });
 
 
-describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
+describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
     
-    test('With existing validator using the same errorcode as businesslogicerror and the validator was previously valid, add an issueFound and not a businesslogicerror', () => {
+    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously valid, add an issueFound and not a externalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -2309,7 +2309,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         vm.validate(); 
         expect(vh.getIssuesFound()).toEqual([neverMatchIssueFound]);        
 
-        let result = vh.setBusinessLogicError({
+        let result = vh.setExternalIssueFound({
             errorCode: 'TOBEREPLACED',
             errorMessage: 'Business Logic error message',
 //            severity: ValidationSeverity.Error will use Severe for Category=Require
@@ -2326,7 +2326,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         });
 
     });    
-    test('With existing validator using the same errorcode as businesslogicerror and the validator was previously invalid, replace that validators IssueFound and do not add the businesslogicerror', () => {
+    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously invalid, replace that validators IssueFound and do not add the externalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -2379,7 +2379,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         vm.validate(); 
         expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
 
-        let result = vh.setBusinessLogicError({
+        let result = vh.setExternalIssueFound({
             errorCode: 'TOBEREPLACED',
             errorMessage: 'Business Logic error message',
             severity: ValidationSeverity.Error // by declaring, it overrides the original and is useful here to see the issuefound changed
@@ -2495,7 +2495,7 @@ describe('ValidatorsValueHostBase.getIssuesFound', () => {
         expect(issuesToReport).toEqual(expected);
     });
 
-    test('1 Validation error, and has BusinessLogicError (Error) reports 2 entries with BusinessLogicError last', () => {
+    test('1 Validation error, and has ExternalIssueFound (Error) reports 2 entries with ExternalIssueFound last', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -2508,7 +2508,7 @@ describe('ValidatorsValueHostBase.getIssuesFound', () => {
 
         ];
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, {});
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'BL_ERROR',
             // use the default         severity: ValidationSeverity.Error
         });
@@ -3069,10 +3069,10 @@ describe('toIValidatorsValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
 
-        setBusinessLogicError(error: BusinessLogicError): boolean {
+        setExternalIssueFound(error: ExternalIssueFound): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(): boolean {
+        clearExternalIssuesFound(): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSave: boolean = false;

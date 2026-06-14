@@ -5,7 +5,7 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
     type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
-    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
+    type ExternalIssueFound, type IssueFound, StatefulValueHostValidateResult,
     ValidationState,
     SetIssuesFoundErrorCodeMissingBehavior
 } from './Validation';
@@ -88,21 +88,21 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
+     * Each time called, it adds to the existing list. Use clearExternalIssuesFound() first if starting a fresh list.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
      * @param options - Only supports the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean;
+    setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean;
 
     /**
      * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * ValidationManager as calls are made to SetExternalIssuesFound and clearValidation().
      * @param options - Only supports the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    clearBusinessLogicErrors(options?: ValidateOptions): boolean;
+    clearExternalIssuesFound(options?: ValidateOptions): boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
@@ -208,7 +208,7 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
      */
-    businessLogicErrors?: Array<BusinessLogicError>;
+    externalIssuesFound?: Array<ExternalIssueFound>;
 
     /**
      * When true, an async Validator is running
@@ -222,7 +222,7 @@ export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableVal
 
 /**
  * The value returned by onValueHostValidationStateChanged.
- * It includes all issuesfound and businesslogicerrors
+ * It includes all issuesfound and externalIssuesFound
  * as compared to validate() which is limited to just the issuesfound.
  */
 export interface ValueHostValidationState extends ValidationState
@@ -269,8 +269,8 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks {
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
-     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
-     * clearBusinessLogicErrors() and a few edge cases.
+     * That includes validate(), clearValidation(), setExternalIssuesFound(), 
+     * clearExternalIssuesFound() and a few edge cases.
      * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.

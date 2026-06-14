@@ -7,7 +7,7 @@
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
+import { type ValidateOptions, type ExternalIssueFound, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
@@ -301,10 +301,10 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param options - Only considers the skipCallback option.
      * @returns When true, the validation snapshot has changed.
      */
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean {
+    public setExternalIssuesFound(errors: Array<ExternalIssueFound> | null, options?: ValidateOptions): boolean {
         let changed = false;
         for (let vh of this.validatableValueHost()) {
-            if (vh.clearBusinessLogicErrors())
+            if (vh.clearExternalIssuesFound())
                 changed = true;
         }
         if (errors)
@@ -318,7 +318,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)
-                    if (vh.setBusinessLogicError(error, options))
+                    if (vh.setExternalIssueFound(error, options))
                         changed = true;
             }
         if (changed)
@@ -406,7 +406,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
 
     /**
      * Called when ValueHost's validate() function has returned.
-     * Also when validation is cleared or BusinessLogicErrors are added or removed.
+     * Also when validation is cleared or ExternalIssuesFound are added or removed.
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.

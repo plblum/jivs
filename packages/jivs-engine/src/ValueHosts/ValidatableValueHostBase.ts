@@ -9,7 +9,7 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
+import { ExternalIssueFound, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
@@ -170,10 +170,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * If the Enabler condition changes the state to enabled, it remains up to the user
      * to call validate() again to get the new state.
      * While disabled, some validation activity can still happen:
-     * - BusinessLogicErrors can be set, but will not be available with
+     * - ExternalIssuesFound can be set, but will not be available with
      *   getIssuesFound() until the ValueHost is enabled again.
      * - The onValueHostValidationStateChanged event will be raised
-     *   on actions that change the state, such as setting a BusinessLogicError.
+     *   on actions that change the state, such as setting a ExternalIssueFound.
      * Otherwise all calls to get ValidationStatus will act as if the ValueHost 
      * has no errors, except for ValidationState which is set to Disabled.
      * @param enabled 
@@ -236,8 +236,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return ValidationStatus.Disabled;
 
         // any business logic errors that aren't warnings override ValidationStatus with Invalid.
-        if (this.businessLogicErrors)
-            for (let error of this.businessLogicErrors)
+        if (this.externalIssuesFound)
+            for (let error of this.externalIssuesFound)
                 if (error.severity !== ValidationSeverity.Warning)
                     return ValidationStatus.Invalid;
         return this.instanceState.status;
@@ -297,7 +297,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         stateToUpdate.status = ValidationStatus.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
-        delete stateToUpdate.businessLogicErrors;
+        delete stateToUpdate.externalIssuesFound;
         delete stateToUpdate.corrected;
     }
     /**
@@ -330,37 +330,37 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
+     * Each time called, it adds to the existing list. Use clearExternalIssuesFound() first if starting a fresh list.
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
      */
-    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
+    public setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean {
         if (error) {
             if (!this.isEnabled())
             {
-                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);
+                this.logger.message(LoggingLevel.Warn, () => `ExternalIssueFound applied on disabled ValueHost "${this.getName()}"`);
             }
     
             // check for existing with the same errorcode and replace
             let replacementIndex = -1;
-            if (error.errorCode && this.instanceState.businessLogicErrors) 
-                for (let i = 0; i < this.instanceState.businessLogicErrors.length; i++)
+            if (error.errorCode && this.instanceState.externalIssuesFound) 
+                for (let i = 0; i < this.instanceState.externalIssuesFound.length; i++)
                 {
-                    if (this.instanceState.businessLogicErrors[i].errorCode === error.errorCode)
+                    if (this.instanceState.externalIssuesFound[i].errorCode === error.errorCode)
                     {
                         replacementIndex = i;
                         break;
                     }
                 }
             let changed = this.updateInstanceState((stateToUpdate) => {
-                if (!stateToUpdate.businessLogicErrors)
-                    stateToUpdate.businessLogicErrors = [];
+                if (!stateToUpdate.externalIssuesFound)
+                    stateToUpdate.externalIssuesFound = [];
                 if (replacementIndex === -1)
-                    stateToUpdate.businessLogicErrors.push(error);
+                    stateToUpdate.externalIssuesFound.push(error);
                 else
-                    stateToUpdate.businessLogicErrors[replacementIndex] = error;
+                    stateToUpdate.externalIssuesFound[replacementIndex] = error;
                 delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
@@ -373,15 +373,15 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     /**
      * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * ValidationManager as calls are made to SetExternalIssuesFound and clearValidation().
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    public clearBusinessLogicErrors(options?: ValidateOptions): boolean {
-        if (this.businessLogicErrors) {
+    public clearExternalIssuesFound(options?: ValidateOptions): boolean {
+        if (this.externalIssuesFound) {
             let changed = this.updateInstanceState((stateToUpdate) => {
-                delete stateToUpdate.businessLogicErrors;
+                delete stateToUpdate.externalIssuesFound;
                 delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
@@ -395,7 +395,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     /**
      * Helper to call onValueHostValidationStateChanged due to a change in the state associated
-     * with Validate itself or BusinessLogicErrors.
+     * with Validate itself or ExternalIssuesFound.
      * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      * 
@@ -436,8 +436,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * exposes the Business Logic Errors list. If none, it is null.
      */
-    protected get businessLogicErrors(): Array<BusinessLogicError> | null {
-        return this.instanceState.businessLogicErrors ?? null;
+    protected get externalIssuesFound(): Array<ExternalIssueFound> | null {
+        return this.instanceState.externalIssuesFound ?? null;
     }
 
     //#endregion business logic errors
@@ -492,15 +492,15 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 list.push(issue);
             }
         }
-        this.addBusinessLogicErrorsToSnapshotList(list);
+        this.addExternalIssuesFoundToSnapshotList(list);
 
         return list.length ? list : null;
     }
 
-    private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
-        if (this.businessLogicErrors) {
+    private addExternalIssuesFoundToSnapshotList(list: Array<IssueFound>): void {
+        if (this.externalIssuesFound) {
             let issueCount = 0;
-            for (let error of this.businessLogicErrors) {
+            for (let error of this.externalIssuesFound) {
                 list.push({
                     valueHostName: this.getName(),
                     errorCode: cleanString(error.errorCode)  ?? `GENERATED_${issueCount}`,

@@ -7,7 +7,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, ExternalIssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -322,7 +322,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
+     * Each time called, it adds to the existing list. Use clearExternalIssuesFound() first if starting a fresh list.
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * 
      * In this class, we first see if the errorcode in the error matches an existing validator.
@@ -332,11 +332,11 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
      */
-    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
+    public setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean {
         if (error) {
             if (!this.isEnabled())
             {
-                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);                
+                this.logger.message(LoggingLevel.Warn, () => `ExternalIssueFound applied on disabled ValueHost "${this.getName()}"`);                
             }
         
             // see if the error code matches an existing validator.
@@ -376,7 +376,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }
                 }
         }
-        return super.setBusinessLogicError(error, options);
+        return super.setExternalIssueFound(error, options);
     }
 
     /**

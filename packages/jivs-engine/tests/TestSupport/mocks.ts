@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConf
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostConfig, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ExternalIssueFound, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -209,10 +209,10 @@ export class MockInputValueHost extends MockValueHost
         throw new Error("Method not implemented.");
     }
 
-    setBusinessLogicError(error: BusinessLogicError): boolean {
+    setExternalIssueFound(error: ExternalIssueFound): boolean {
         throw new Error("Method not implemented.");
     }
-    clearBusinessLogicErrors(): boolean {
+    clearExternalIssuesFound(): boolean {
         throw new Error("Method not implemented.");
     }
 
@@ -633,7 +633,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
 
     doNotSave: boolean = false;
 
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): boolean
+    public setExternalIssuesFound(errors: Array<ExternalIssueFound> | null): boolean
     {
         throw new Error("Method not implemented.");        
     }        

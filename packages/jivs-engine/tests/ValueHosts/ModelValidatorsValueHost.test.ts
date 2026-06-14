@@ -49,7 +49,7 @@ function setupInputValueHost(
 }
 
 describe('ModelValidatorsValueHost.validate', () => {
-    test('No BusinessLogicErrors results in ValidationStatus.Valid', () => {
+    test('No ExternalIssuesFound results in ValidationStatus.Valid', () => {
         let setup = setupInputValueHost();
         let vr: ValueHostValidateResult | null = null;
         expect(() => vr = setup.valueHost.validate()).not.toThrow();
@@ -57,7 +57,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         expect(vr!.status).toBe(ValidationStatus.Valid);
         expect(vr!.issuesFound).toBeNull();
     });
-    test('Has group which is ignored. No BusinessLogicErrors results in ValidationStatus.Valid', () => {
+    test('Has group which is ignored. No ExternalIssuesFound results in ValidationStatus.Valid', () => {
         let setup = setupInputValueHost();
         let vr: ValueHostValidateResult | null = null;
         expect(() => vr = setup.valueHost.validate({ group: 'GROUPA' })).not.toThrow();
@@ -65,9 +65,9 @@ describe('ModelValidatorsValueHost.validate', () => {
         expect(vr!.status).toBe(ValidationStatus.Valid);
         expect(vr!.issuesFound).toBeNull();
     });    
-    test('One BusinessLogicErrors with only ErrorMesage results in ValidationStatus.Invalid and one IssueFound because severity=undefined means severity=Error', () => {
+    test('One ExternalIssuesFound with only ErrorMesage results in ValidationStatus.Invalid and one IssueFound because severity=undefined means severity=Error', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
         });
         let vr: ValueHostValidateResult | null = null;
@@ -83,9 +83,9 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });
     });    
-    test('One BusinessLogicErrors with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
+    test('One ExternalIssuesFound with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
@@ -102,9 +102,9 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });
     });        
-    test('One BusinessLogicErrors with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
+    test('One ExternalIssuesFound with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Severe
         });
@@ -121,9 +121,9 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });
     });            
-    test('One BusinessLogicErrors with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
+    test('One ExternalIssuesFound with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
@@ -140,9 +140,9 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });
     });            
-    test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
+    test('One ExternalIssuesFound with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error,
             errorCode: "EC1"
@@ -160,13 +160,13 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });
     });          
-    test('2 BusinessLogicErrors (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
+    test('2 ExternalIssuesFound (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });        
@@ -189,13 +189,13 @@ describe('ModelValidatorsValueHost.validate', () => {
             valueHostName: ModelValidatorsValueHostName
         });        
     });            
-    test('2 BusinessLogicErrors (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
+    test('2 ExternalIssuesFound (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
         let setup = setupInputValueHost();
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        setup.valueHost.setBusinessLogicError({
+        setup.valueHost.setExternalIssueFound({
             errorMessage: 'WARNING2',
             severity: ValidationSeverity.Warning
         });        

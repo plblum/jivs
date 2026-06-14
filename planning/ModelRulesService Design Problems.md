@@ -169,7 +169,7 @@ The earlier design did not keep those phases separate enough.
 
 That matters because save failures are not simply another kind of validator result.
 
-They are their own part of the workflow and often arrive back at the client as `BusinessLogicErrors`.
+They are their own part of the workflow and often arrive back at the client as `ExternalIssuesFound`.
 
 ---
 
@@ -204,7 +204,7 @@ Those `IssuesFound` may be part of the server response.
 The client may receive:
 
 * `IssuesFound`
-* `BusinessLogicErrors`
+* `ExternalIssuesFound`
 * or both
 
 That is a normal outcome, not an edge case.
@@ -298,7 +298,7 @@ The future validation-side design document will likely need to answer questions 
 * How should hidden security checks be represented?
 * How should pre-save business checks be represented?
 * How should save failures be represented?
-* How should `IssuesFound` and `BusinessLogicErrors` move from server to client?
+* How should `IssuesFound` and `ExternalIssuesFound` move from server to client?
 * What helper APIs, if any, should exist for pushing returned server errors back into `ValidationManager`?
 
 ---
@@ -312,7 +312,7 @@ It describes:
 * the use cases
 * the major workflow parts
 * the client/server responsibilities
-* the difference between `IssuesFound` and `BusinessLogicError`
+* the difference between `IssuesFound` and `ExternalIssueFound`
 * the difference between shared configuration and environment-specific execution
 
 This Problems document is narrower.
@@ -330,7 +330,7 @@ Until later detailed documents settle the implementation, future work should kee
 * Do not assume that post-save failures are just another validator result.
 * Do not weaken the shared-configuration story just because the validation workflow has to be split.
 * Do preserve the central role of `ValidationManager.validate()` on both client and server.
-* Do preserve the possibility of returning either or both `IssuesFound` and `BusinessLogicErrors` from the server.
+* Do preserve the possibility of returning either or both `IssuesFound` and `ExternalIssuesFound` from the server.
 * Do preserve support for shared business-authored rules, UI extension of those rules, and client-authored model rules.
 
 ---

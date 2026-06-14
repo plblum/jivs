@@ -95,11 +95,11 @@
 
 * BusinessLogic error message feedback loop
 - Users should be able to supply native values for any tokens you might support, like {Value} will include:
-<BusinessLogicError>{
+<ExternalIssueFound>{
 	errorMessage: string;
 	tokenSupport: [ { tokenName: "Value", nativeValue: 10 } ]
 }
-The setBusinessLogicError will:	
+The setExternalIssueFound will:	
 
 - Run the tokenSupport values against the tokens of errorMessage and summaryErrorMessage
 - Run the MessageTokenResolverService against the remaining tokens
@@ -143,7 +143,7 @@ used to handle collections which need unique paths per each item in the collecti
 
 * Document using conditions to find invalid matches, so there can be specific errors that tell the user exactly what to fix.
 
-* Should setBusinessLogicError be able to override a disabled validator when its error code matches? Suppose we let the user create validators on the UI just to show for business logic responses. They can be enabled=false full time, but when setBusinessLogicError matches to it, it acts like its enabled.
+* Should setExternalIssueFound be able to override a disabled validator when its error code matches? Suppose we let the user create validators on the UI just to show for business logic responses. They can be enabled=false full time, but when setExternalIssueFound matches to it, it acts like its enabled.
 
 
 * IValueHost implementations:

@@ -96,7 +96,7 @@ The overall validation and save story has these major workflow parts.
 
 1. Run Jivs field validators through `ValidationManager.validate()`.
 2. Optionally run client-only augmentation checks.
-3. If the user submits and the server responds with errors, feed returned `IssuesFound` and/or `BusinessLogicErrors` into `ValidationManager` so the UI updates.
+3. If the user submits and the server responds with errors, feed returned `IssuesFound` and/or `ExternalIssuesFound` into `ValidationManager` so the UI updates.
 
 ### Server side
 
@@ -108,7 +108,7 @@ The overall validation and save story has these major workflow parts.
 9. If save fails, convert failures into returned business errors.
 10. Return success or errors.
 
-See also: README’s “Submit data to the server” story: server returns Jivs issues and business logic errors, and the client pushes them back into `ValidationManager` using `setIssuesFound()` and `setBusinessLogicErrors()`.
+See also: README’s “Submit data to the server” story: server returns Jivs issues and business logic errors, and the client pushes them back into `ValidationManager` using `setIssuesFound()` and `setExternalIssuesFound()`.
 
 ### 3.1 Client-side Jivs validation after editing completes
 
@@ -135,7 +135,7 @@ These are separate from normal Jivs validator execution.
 After an attempted save, the server may return either or both:
 
 * IssuesFound
-* BusinessLogicErrors
+* ExternalIssuesFound
 
 The client may feed those results back into `ValidationManager` so Jivs-connected UI components update their validation state.
 
@@ -162,7 +162,7 @@ Examples:
 * Suspicious input pattern checks
 * Other hidden security rules
 
-These checks may produce generalized responses, `BusinessLogicErrors`, or security-specific handling outside the normal user-facing validation flow.
+These checks may produce generalized responses, `ExternalIssuesFound`, or security-specific handling outside the normal user-facing validation flow.
 
 ### 3.6 Server-side pre-save business checks
 
@@ -175,7 +175,7 @@ Examples:
 * External service checks
 * Business policies not expressed as Jivs field validators
 
-These often produce `BusinessLogicErrors`.
+These often produce `ExternalIssuesFound`.
 
 ### 3.7 Save decision
 
@@ -196,7 +196,7 @@ Examples:
 
 These are not pre-save validation failures.
 
-They are a separate phase and often produce `BusinessLogicErrors` for return to the client.
+They are a separate phase and often produce `ExternalIssuesFound` for return to the client.
 
 ### 3.9 Final server response
 
@@ -204,8 +204,8 @@ The server response may legitimately be:
 
 * Success
 * Only IssuesFound
-* Only BusinessLogicErrors
-* Both IssuesFound and BusinessLogicErrors
+* Only ExternalIssuesFound
+* Both IssuesFound and ExternalIssuesFound
 
 This overall workflow is one of the key reasons the detailed design should not assume that all configuration and all validation execution belong in one abstraction.
 
@@ -248,9 +248,9 @@ They come from running `ValidationManager.validate()` against configured ValueHo
 
 They are the direct output of Jivs field/configuration validation.
 
-### 4.4 BusinessLogicError
+### 4.4 ExternalIssueFound
 
-`BusinessLogicError` represents issues produced outside the normal Jivs validator pipeline.
+`ExternalIssueFound` represents issues produced outside the normal Jivs validator pipeline.
 
 Examples:
 
@@ -260,7 +260,7 @@ Examples:
 * Save failures
 * External system failures discovered during save
 
-A `BusinessLogicError` may be associated with a ValueHost when possible, but it is not the same thing as an `IssueFound`.
+A `ExternalIssueFound` may be associated with a ValueHost when possible, but it is not the same thing as an `IssueFound`.
 
 ### 4.5 Shared Configuration
 
@@ -438,7 +438,7 @@ Typical responsibilities:
 * Run server-only security checks
 * Run server-only pre-save business checks
 * Attempt save only when appropriate
-* Map save failures into BusinessLogicErrors
+* Map save failures into ExternalIssuesFound
 * Return success and/or error payloads to the client
 
 ---
@@ -496,7 +496,7 @@ These checks may not behave like normal user-facing validation.
 Possible outcomes include:
 
 * Generalized field/model error response
-* BusinessLogicError response
+* ExternalIssueFound response
 * Security-specific handling outside normal validation flow
 
 ### 8.5 Server-side pre-save business checks
@@ -510,7 +510,7 @@ Examples:
 * External service checks
 * Business policies not represented as Jivs field validators
 
-These often produce `BusinessLogicError` results.
+These often produce `ExternalIssueFound` results.
 
 ### 8.6 Post-save failure handling
 
@@ -525,7 +525,7 @@ Examples:
 
 These are not the same thing as pre-save validation.
 
-They should be treated as their own phase and often produce `BusinessLogicError` results for the client.
+They should be treated as their own phase and often produce `ExternalIssueFound` results for the client.
 
 ---
 
@@ -534,18 +534,18 @@ They should be treated as their own phase and often produce `BusinessLogicError`
 The overall system may produce either or both of these error outputs:
 
 * IssuesFound
-* BusinessLogicErrors
+* ExternalIssuesFound
 
 Important distinction:
 
 * IssuesFound come from Jivs validators.
-* BusinessLogicErrors come from outside the normal Jivs validator pipeline.
+* ExternalIssuesFound come from outside the normal Jivs validator pipeline.
 
 A server response may legitimately contain:
 
 * Only IssuesFound
-* Only BusinessLogicErrors
-* Both IssuesFound and BusinessLogicErrors
+* Only ExternalIssuesFound
+* Both IssuesFound and ExternalIssuesFound
 * Success with no errors
 
 On the client, returned errors may be pushed back into `ValidationManager` so components can update their validation state accordingly.
@@ -632,13 +632,13 @@ The following guardrails should guide later detailed documents.
 
 * Do not assume that shared configuration and all validation execution belong in one class.
 * Do not assume that server-only checks should be portable to the client.
-* Do not assume that IssuesFound and BusinessLogicErrors are interchangeable.
+* Do not assume that IssuesFound and ExternalIssuesFound are interchangeable.
 * Do not assume that UI-specific extension must edit business-owned source directly.
 * Do not assume that post-save failures are just another form of pre-save validation.
 * Do not assume that one detailed API shape is already settled.
 * Do preserve the central role of ValidationManager.validate() for Jivs field/configuration validation.
 * Do preserve the server’s role as authoritative validator.
-* Do preserve the possibility of returning either or both IssuesFound and BusinessLogicErrors from the server.
+* Do preserve the possibility of returning either or both IssuesFound and ExternalIssuesFound from the server.
 * Do preserve support for both business-model-driven and UI-only targets.
 
 ---
@@ -675,7 +675,7 @@ This overview establishes the broad design direction:
 * Jivs needs a strong shared-configuration story.
 * Client and server both rely on Jivs field/configuration validation through ValidationManager.
 * Server-side validation remains authoritative.
-* IssuesFound and BusinessLogicErrors are both important but represent different sources of problems.
+* IssuesFound and ExternalIssuesFound are both important but represent different sources of problems.
 * UI needs a clean way to extend shared business-owned rules for form-specific variations.
 * Detailed implementation should be split into focused design documents rather than forcing every concern into one abstraction too early.
 

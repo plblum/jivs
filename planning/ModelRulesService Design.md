@@ -107,7 +107,7 @@ Business-owned validators
 Cross-field rules
 Model-level validation
 Server/database/external validation
-BusinessLogicError generation
+ExternalIssueFound generation
 ```
 
 The UI Developer consumes that service and may refine it.
@@ -227,7 +227,7 @@ Business/UI configuration sequencing
 Configuration caching through ValidationServices.cacheService
 ValidationManager validation
 Async Jivs validation completion
-BusinessLogicError application through ValidationManager.setBusinessLogicErrors()
+ExternalIssueFound application through ValidationManager.setExternalIssuesFound()
 Final ValidationState retrieval through ValidationManager.getValidationState()
 Logging through ValidationServices.logService
 ```
@@ -674,11 +674,11 @@ Stage 2: Business rules validation when not short-circuited
 5. Determine short-circuit behavior from options.shortCircuitWhenDoNotSave.
    When undefined, it behaves as true.
 6. If short-circuiting applies and ValidationState.doNotSave is true:
-   a. Call applyBusinessLogicErrors(..., null, ...).
+   a. Call applyExternalIssuesFound(..., null, ...).
    b. If that returns false, return the original ValidationState.
    c. If that returns true, return ValidationManager.getValidationState().
 7. Run validateBusinessRules().
-8. Call applyBusinessLogicErrors(..., businessErrors, ...).
+8. Call applyExternalIssuesFound(..., businessErrors, ...).
 9. If that returns false, return the original ValidationState from step 2.
 10. If that returns true, return ValidationManager.getValidationState().
 ```
@@ -698,17 +698,17 @@ Important short-circuit behavior:
 Short-circuiting exists to avoid unnecessary business validation work.
 This is especially useful when business validation may involve server, database, or other external calls.
 The accepted rule is to short-circuit when ValidationState.doNotSave is true.
-When short-circuiting, prior business logic errors are cleared through applyBusinessLogicErrors(..., null, ...).
+When short-circuiting, prior business logic errors are cleared through applyExternalIssuesFound(..., null, ...).
 ```
 
 Important business-error behavior:
 
 ```txt
-ModelRulesServiceBase does not manually merge BusinessLogicError into IssueFound.
-ValidationManager.setBusinessLogicErrors() performs business-error integration.
+ModelRulesServiceBase does not manually merge ExternalIssueFound into IssueFound.
+ValidationManager.setExternalIssuesFound() performs business-error integration.
 Business errors are attached to associated ValueHosts when possible.
 Unassociated business errors are represented through the ValidationManager’s business-logic error handling mechanism.
-The final combined issue list is exposed by ValidationManager after setBusinessLogicErrors().
+The final combined issue list is exposed by ValidationManager after setExternalIssuesFound().
 ModelRulesServiceBase does not call ValidationManager.validate() a second time after applying business errors.
 Instead it reads the final combined ValidationState through ValidationManager.getValidationState() only when state changed after the initial Jivs validation result.
 ```
@@ -738,11 +738,11 @@ protected validateJivsRules(
 protected validateBusinessRules(
     validationManager: ValidationManager,
     params?: ModelRulesValidateParams
-): Promise<Array<BusinessLogicError> | null>;
+): Promise<Array<ExternalIssueFound> | null>;
 
-protected applyBusinessLogicErrors(
+protected applyExternalIssuesFound(
     validationManager: ValidationManager,
-    businessErrors: Array<BusinessLogicError> | null,
+    businessErrors: Array<ExternalIssueFound> | null,
     params?: ModelRulesValidateParams
 ): boolean;
 ```
@@ -752,11 +752,11 @@ Decisions:
 ```txt
 validateJivsRules() is overridable.
 validateBusinessRules() is overridable.
-applyBusinessLogicErrors() is overridable.
+applyExternalIssuesFound() is overridable.
 validateBusinessRules() returns null when there are no business errors.
-applyBusinessLogicErrors() remains a thin wrapper around ValidationManager.setBusinessLogicErrors().
-applyBusinessLogicErrors() returns boolean so validate() can decide whether to reuse the original ValidationState or call getValidationState().
-Both short-circuit and non-short-circuit paths use applyBusinessLogicErrors().
+applyExternalIssuesFound() remains a thin wrapper around ValidationManager.setExternalIssuesFound().
+applyExternalIssuesFound() returns boolean so validate() can decide whether to reuse the original ValidationState or call getValidationState().
+Both short-circuit and non-short-circuit paths use applyExternalIssuesFound().
 ```
 
 ---
@@ -779,7 +779,7 @@ Known facts:
 
 ```txt
 ValidationManager.validate() creates a fresh ValidationState when Jivs validation runs.
-ValidationManager.setBusinessLogicErrors() applies business errors but does not itself return ValidationState.
+ValidationManager.setExternalIssuesFound() applies business errors but does not itself return ValidationState.
 The final state should come from ValidationManager, not from manual merging inside ModelRulesServiceBase.
 ModelRulesServiceBase should not call ValidationManager.validate() a second time after applying business errors.
 ValidationManager.getValidationState() is a pure read operation.
@@ -839,14 +839,14 @@ This supports both business-model-driven and UI-only validation targets.
 
 ---
 
-## 21. BusinessLogicError
+## 21. ExternalIssueFound
 
-`BusinessLogicError` already exists in Jivs.
+`ExternalIssueFound` already exists in Jivs.
 
 `validateBusinessRules()` should return:
 
 ```ts
-Promise<Array<BusinessLogicError> | null>
+Promise<Array<ExternalIssueFound> | null>
 ```
 
 `null` means no business errors.
@@ -854,7 +854,7 @@ Promise<Array<BusinessLogicError> | null>
 `ModelRulesService.validate()` applies results through:
 
 ```ts
-validationManager.setBusinessLogicErrors(
+validationManager.setExternalIssuesFound(
     businessErrors,
     params?.options
 );
@@ -885,15 +885,15 @@ Recommended path:
 ```txt
 1. Validate through IModelRulesService.validate().
 2. If valid, attempt save.
-3. If save fails, convert server/save failures into BusinessLogicError objects.
-4. Apply those BusinessLogicError objects to ValidationManager using the same business-error mechanism.
+3. If save fails, convert server/save failures into ExternalIssueFound objects.
+4. Apply those ExternalIssueFound objects to ValidationManager using the same business-error mechanism.
 5. Read the updated ValidationState from ValidationManager.
 ```
 
 Current direction:
 
 ```txt
-Post-save issue handling should probably use ValidationManager.setBusinessLogicErrors().
+Post-save issue handling should probably use ValidationManager.setExternalIssuesFound().
 A separate public helper may still be useful, but it should likely accept ValidationManager, not only a detached ValidationState.
 ```
 
@@ -949,9 +949,9 @@ Testing
 ## 24. Decisions Captured
 
 ```txt
-J-001: BusinessLogicError already exists and should be used.
+J-001: ExternalIssueFound already exists and should be used.
 J-002: validateBusinessRules() returns null when there are no business errors.
-J-003: setBusinessLogicErrors() replace/clear behavior is used.
+J-003: setExternalIssuesFound() replace/clear behavior is used.
 J-004: ModelRulesValidateOptions extends ValidateOptions.
 J-005: No existing base options type for configuration.
 J-006: configure() returns ValidationManager only; diagnostics use logService.
@@ -974,7 +974,7 @@ J-022: ModelRulesValidationMode was considered but abandoned.
 J-023: validate() always begins with Jivs validation and may then run business validation.
 J-024: validate() starts fresh through ValidationManager.validate().
 J-025: validate() awaits completion of async Jivs validation.
-J-026: Business errors are integrated through ValidationManager.setBusinessLogicErrors().
+J-026: Business errors are integrated through ValidationManager.setExternalIssuesFound().
 J-027: No generics are used in this service area.
 J-028: ModelRulesServiceBase is non-generic.
 J-029: UI-only rules-service subclasses are valid and may leave business methods empty.
@@ -983,16 +983,16 @@ J-031: shortCircuitWhenDoNotSave is an explicit option.
 J-032: If shortCircuitWhenDoNotSave is undefined, it behaves as true.
 J-033: When short-circuiting on doNotSave, prior business errors are cleared.
 J-034: In the short-circuit path, if clearing business errors does not change state, validate() may return the original ValidationState.
-J-035: In the normal path, applyBusinessLogicErrors() determines whether validate() reuses the original ValidationState or calls getValidationState().
+J-035: In the normal path, applyExternalIssuesFound() determines whether validate() reuses the original ValidationState or calls getValidationState().
 J-036: ValidationManager exposes getValidationState() as a public wrapper over internal state creation.
-J-037: validateJivsRules(), validateBusinessRules(), and applyBusinessLogicErrors() are all overridable.
-J-038: applyBusinessLogicErrors() remains a thin wrapper with overridability.
-J-039: Both short-circuit and non-short-circuit paths use applyBusinessLogicErrors().
+J-037: validateJivsRules(), validateBusinessRules(), and applyExternalIssuesFound() are all overridable.
+J-038: applyExternalIssuesFound() remains a thin wrapper with overridability.
+J-039: Both short-circuit and non-short-circuit paths use applyExternalIssuesFound().
 J-040: Two notification waves are accepted in the normal two-stage flow.
 J-041: ValidationManager is a reusable stateful session object.
 J-042: ModelRulesServiceBase is stateless.
 J-043: ValidationManager.getValidationState() is core to the architecture.
-J-044: Just use BusinessLogicError.
+J-044: Just use ExternalIssueFound.
 ```
 
 ## 25. Open Issues
@@ -1132,7 +1132,7 @@ UI-only validation through explicit concrete rules services
 Configuration caching
 Async validator completion
 Short-circuiting before business validation when doNotSave is already true
-BusinessLogicError integration
+ExternalIssueFound integration
 Final ValidationState retrieval through ValidationManager.getValidationState()
 Stable string-based service identity
 Factory-based service resolution for string and constructor identifiers
@@ -1220,7 +1220,7 @@ abstract class ModelRulesServiceBase {
             params?.options?.shortCircuitWhenDoNotSave ?? true;
 
         if (shortCircuit && jivsState.doNotSave) {
-            const changed = this.applyBusinessLogicErrors(
+            const changed = this.applyExternalIssuesFound(
                 validationManager,
                 null,
                 params
@@ -1235,7 +1235,7 @@ abstract class ModelRulesServiceBase {
             params
         );
 
-        const changed = this.applyBusinessLogicErrors(
+        const changed = this.applyExternalIssuesFound(
             validationManager,
             businessErrors,
             params
@@ -1256,16 +1256,16 @@ abstract class ModelRulesServiceBase {
     protected async validateBusinessRules(
         _validationManager: ValidationManager,
         _params?: ModelRulesValidateParams
-    ): Promise<Array<BusinessLogicError> | null> {
+    ): Promise<Array<ExternalIssueFound> | null> {
         return null;
     }
 
-    protected applyBusinessLogicErrors(
+    protected applyExternalIssuesFound(
         validationManager: ValidationManager,
-        businessErrors: Array<BusinessLogicError> | null,
+        businessErrors: Array<ExternalIssueFound> | null,
         params?: ModelRulesValidateParams
     ): boolean {
-        return validationManager.setBusinessLogicErrors(
+        return validationManager.setExternalIssuesFound(
             businessErrors,
             params?.options
         );
@@ -1285,7 +1285,7 @@ class PersonModelRulesService
     protected override async validateBusinessRules(
         _validationManager: ValidationManager,
         params?: ModelRulesValidateParams
-    ): Promise<Array<BusinessLogicError> | null> {
+    ): Promise<Array<ExternalIssueFound> | null> {
         if (!params?.model) {
             return null;
         }

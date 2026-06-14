@@ -47,13 +47,13 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
             issuesFound: null,
             status: ValidationStatus.Valid
         };
-        if (this.businessLogicErrors)
+        if (this.externalIssuesFound)
         {
             let iif: Array<IssueFound> = [];
             let issueCount = 0; // used to generate unique keys in IssueCount. They are fake ConditionTypes.
             let errorFound = false;
 
-            for (let error of this.businessLogicErrors)
+            for (let error of this.externalIssuesFound)
             {
                 let errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
                 if (error.severity !== ValidationSeverity.Warning)
@@ -89,7 +89,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
 }
 export const ModelValidatorsValueHostName = '*';   
 
-export const ModelValidatorsValueHostType = 'BusinessLogicErrors';
+export const ModelValidatorsValueHostType = 'ExternalIssuesFound';
 export class ModelValidatorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {

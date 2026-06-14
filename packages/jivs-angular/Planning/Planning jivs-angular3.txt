@@ -97,7 +97,7 @@ interface IValidationManager {
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
-    setBusinessLogicErrors(errors, options?): boolean;
+    setExternalIssuesFound(errors, options?): boolean;
     getIssuesForInput(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];
     setIssuesFound(issuesFound, behavior): boolean;
