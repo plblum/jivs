@@ -574,7 +574,7 @@ We'll using the Builder API to configure our form.
 // create the start date ValueHost and its validators
 builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
   .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
-  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' }, 
+  .lessThanOrEqual('NumOfDays', null, 'DiffDays', 
      'The two dates must be less than {CompareTo} days apart.', 
   { 
     errorCode: 'NumOfDays',

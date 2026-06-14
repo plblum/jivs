@@ -1,5 +1,8 @@
 * Change of valuehost.enabled or enabler condition result must fire the onvalueHostValidationState callback, except if the current validationstate is notattempted. The UI needs to update validator related features as that state changes.
 
+* Rename 'enabler' method, especially on the builder. builder.enabler(valuehost, condition) -> builder.enableWhen(valuehost, condition) or perhaps builder.input(valueHost).enableWhen(condition)
+
+
 * Possibly introduce callback that notifies a specific input that it needs to show itself and set focus. ValidationSummary calls ValidationManager.setFocusTo(valueHostName) and it fires this callback. All inputs can listen to that callback and take appropriate actions if they are the same valueHostName. This will allow clicks on error messages to set focus to the relevant input.
 
 
@@ -113,7 +116,7 @@ build().requireTextAndNotNull
 build().requireTextOrNull
 
 Product name: Fivase
-Field Validation Service - FiVaSe Fivase "Fee-Vah-Seh"
+Field Validation Service - FiVaSe Fivase "Fee-Vah-Seh" "Fih-Vah-See"
 
 
 
