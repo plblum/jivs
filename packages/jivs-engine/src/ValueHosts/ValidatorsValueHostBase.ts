@@ -121,23 +121,26 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         continue;
                     validatorsInUse++;
                     if (inputValResult.issueFound) {
-                        switch (inputValResult.issueFound.severity) {
-                            case ValidationSeverity.Error:
-                            case ValidationSeverity.Severe:
-                                result.status = ValidationStatus.Invalid;
-                                break;
-                            case ValidationSeverity.Warning:
-                                if (result.status === ValidationStatus.Undetermined)
-                                    result.status = ValidationStatus.Valid;
-                                break;
-                        }
+                        if (!inputValResult.issueFound.displayOnly) // if displayOnly = true, no change to ValidationStatus
+                            switch (inputValResult.issueFound.severity) {
+                                case ValidationSeverity.Error:
+                                    result.status = ValidationStatus.Invalid;
+                                    break;
+                                case ValidationSeverity.Severe:
+                                    result.status = ValidationStatus.Invalid;
+                                    stop = true;
+                                    break;
+                                case ValidationSeverity.Warning:
+                                    if (result.status === ValidationStatus.Undetermined)
+                                        result.status = ValidationStatus.Valid;
+                                    break;
+                            }
 
                         if (!result.issuesFound)
                             result.issuesFound = [];
                         let issueFound = inputValResult.issueFound;
                         result.issuesFound.push(issueFound);
-                        if (issueFound.severity === ValidationSeverity.Severe)
-                            stop = true;
+                            
                     }
                     else if (result.status === ValidationStatus.Undetermined)
                         if (inputValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)

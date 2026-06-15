@@ -12,7 +12,7 @@ Refactor the BusinessLogicError concept to support:
 ### Problem 1: Submit Button Disabled Trap
 **Current:** BusinessLogicErrors with severity Error/Severe set validationStatus=Invalid, making doNotSave=true, which can disable submit buttons. User cannot click submit to re-validate and clear the errors.
 
-**Solution:** Add `fromServer` flag to ExternalIssueFound. Server-sourced issues don't contribute to doNotSave calculation, allowing submit button to remain enabled.
+**Solution:** Add `displayOnly` flag to ExternalIssueFound. Server-sourced issues don't contribute to doNotSave calculation, allowing submit button to remain enabled.
 
 ### Problem 2: No Model-Level Validation
 **Current:** BusinessLogicErrorsValueHost holds errors but cannot run validators. Model-level rules (e.g., "That username already exists. Try another.") must be implemented externally.
@@ -40,7 +40,7 @@ User-supplied validation issue (input format). Fields:
 - `errorCode?: string` - optional identifier for swap matching
 - `associatedValueHostName?: string` - field association (omit for model-level)
 - `severity?: ValidationSeverity` - visual emphasis only (Error=red, Warning=yellow)
-- `fromServer?: boolean` - when true, doesn't block save (set by setValidationPayload)
+- `displayOnly?: boolean` - when true, doesn't block save (set by setValidationPayload)
 
 ### ValidationPayload
 Package for transferring validation state between server and client:
@@ -92,12 +92,12 @@ ValidatableValueHostBase
 
 Must distinguish between:
 - Validator-generated IssuesFound (always block)
-- Client-generated ExternalIssueFound (block unless fromServer=true)
-- Server-generated ExternalIssueFound (never block, fromServer=true)
+- Client-generated ExternalIssueFound (block unless displayOnly=true)
+- Server-generated ExternalIssueFound (never block, displayOnly=true)
 
 **Logic location:** ValidatableValueHostBase.doNotSave getter
 
-**Approach:** Check if Invalid status is only due to fromServer ExternalIssueFound. If so, return false (don't block).
+**Approach:** Check if Invalid status is only due to displayOnly ExternalIssueFound. If so, return false (don't block).
 
 ## API Changes
 
@@ -120,7 +120,7 @@ getValidationPayload(externalIssues: Array<ExternalIssueFound> | null): Validati
 
 /**
  * Client-side: Restore validation state from server payload.
- * Sets fromServer=true on all externalIssues to prevent blocking.
+ * Sets displayOnly=true on all externalIssues to prevent blocking.
  * Attempts validator swap for better error messages.
  * @param payload - Validation data from server
  * @param encode - Targets HTML encoding. When supplied, the function takes the 
@@ -136,7 +136,7 @@ setValidationPayload(payload: ValidationPayload, encode?: null|(text: string)=>s
 ```typescript
 /**
  * Client-side: Set validation errors from local business logic.
- * These errors WILL block save (fromServer is not set).
+ * These errors WILL block save (displayOnly is not set).
  * Use for client-side validation that already has correct error messages.
  * Any error here is expected to be discarded and replaced upon the next
  * attempt to validate from local business logic. This entirely
@@ -224,12 +224,12 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 - ValidationManager.ts
 - Builder classes
 
-### Phase 4: Add fromServer Flag & doNotSave Logic
+### Phase 4: Add displayOnly Flag & doNotSave Logic
 **Goal:** Prevent server errors from blocking client submit
 
 **Tasks:**
-1. Add fromServer?: boolean to ExternalIssueFound interface
-2. Update doNotSave getter logic to check fromServer
+1. Add displayOnly?: boolean to ExternalIssueFound interface
+2. Update doNotSave getter logic to check displayOnly
 3. Implement helper to distinguish Invalid sources
 4. Update tests for blocking behavior
 5. Document "don't disable submit button with doNotSave"
@@ -246,7 +246,7 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 1. Create ValidationPayload interface
 2. Implement getValidationPayload() on ValidationManager
 3. Implement setValidationPayload() on ValidationManager
-   - Sets fromServer=true on all externalIssues
+   - Sets displayOnly=true on all externalIssues
    - Calls existing setIssuesFound + setBusinessLogicErrors internally
 4. Add documentation and examples
 5. Update tests

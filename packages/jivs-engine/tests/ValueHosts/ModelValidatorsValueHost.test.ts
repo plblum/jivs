@@ -80,7 +80,8 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
     });    
     test('One ExternalIssuesFound with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -99,7 +100,8 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
     });        
     test('One ExternalIssuesFound with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -118,7 +120,8 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Severe,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
     });            
     test('One ExternalIssuesFound with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
@@ -137,7 +140,8 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
     });            
     test('One ExternalIssuesFound with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
@@ -157,7 +161,8 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "EC1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
     });          
     test('2 ExternalIssuesFound (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
@@ -180,13 +185,15 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });        
     });            
     test('2 ExternalIssuesFound (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
@@ -209,15 +216,37 @@ describe('ModelValidatorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "WARNING2",
             severity: ValidationSeverity.Warning,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: false
         });        
-    });                
+    });   
+    test('One ExternalIssuesFound with displayOnly=true results in ValidationStatus.Valid', () => {
+        let setup = setupInputValueHost();
+        setup.valueHost.setExternalIssueFound({
+            errorMessage: 'ERROR',
+            displayOnly: true,
+        });
+        let vr: ValueHostValidateResult | null = null;
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
+        expect(vr).not.toBeNull();
+        expect(vr!.status).toBe(ValidationStatus.Valid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            errorCode: "GENERATED_0",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Error,
+            valueHostName: ModelValidatorsValueHostName,
+            displayOnly: true
+        });
+    });       
 });
 
 describe('ModelValidatorsValueHostGenerator members', () => {

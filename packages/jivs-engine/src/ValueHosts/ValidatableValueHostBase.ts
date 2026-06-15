@@ -238,7 +238,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         // any business logic errors that aren't warnings override ValidationStatus with Invalid.
         if (this.externalIssuesFound)
             for (let error of this.externalIssuesFound)
-                if (error.severity !== ValidationSeverity.Warning)
+                if (error.severity !== ValidationSeverity.Warning && !error.displayOnly)
                     return ValidationStatus.Invalid;
         return this.instanceState.status;
     }

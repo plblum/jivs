@@ -187,6 +187,19 @@ export interface IssueFound {
      * If null/undefined, summary viewer should use errorMessage.
      */
     summaryMessage?: string;
+
+    /**
+     * Specialize situation: Normally IssuesFound are used to develop values
+     * like ValidationState.doNotSave and isValid. They are always used
+     * to show their error messages. If you want to include an error message with
+     * no impact on doNotSave or isValid, assign to true.
+     * Use case: ExternalIssueFound from the server is passed to the client
+     * which then becomes an IssueFound that should not block attempts to save
+     * because the user can only clear them after the next call to the server.
+     * Same property is on ExternalIssueFound for the same reason, to allow the server 
+     * to specify that the issue is only for display and should not block saving.
+     */
+    displayOnly?: boolean;
 }
 
 
@@ -225,6 +238,20 @@ export interface ExternalIssueFound {
      * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
     errorCode?: string;
+
+    /**
+     * Specialize situation: Normally ExternalIssuesFound are used to develop values
+     * like ValidationState.doNotSave and isValid after they are converted into 
+     * IssueFound objects. If you want to include an error message with
+     * no impact on doNotSave or isValid, assign to true and this will be reassigned
+     * to the IssueFound.displayOnly property during the conversion to IssueFound.
+     * Use case: ExternalIssueFound from the server is passed to the client
+     * which then becomes an IssueFound that should not block attempts to save
+     * because the user can only clear them after the next call to the server.
+     * Same property is on ExternalIssueFound for the same reason, to allow the server 
+     * to specify that the issue is only for display and should not block saving.
+     */
+    displayOnly?: boolean;    
 }
 
 

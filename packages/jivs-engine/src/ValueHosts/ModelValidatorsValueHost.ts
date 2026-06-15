@@ -56,13 +56,14 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
             for (let error of this.externalIssuesFound)
             {
                 let errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
-                if (error.severity !== ValidationSeverity.Warning)
+                if (error.severity !== ValidationSeverity.Warning && !error.displayOnly)
                     errorFound = true;
                 iif.push({
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: ModelValidatorsValueHostName
+                    valueHostName: ModelValidatorsValueHostName,
+                    displayOnly: error.displayOnly ?? false,
                 });
                 issueCount++;
             }
