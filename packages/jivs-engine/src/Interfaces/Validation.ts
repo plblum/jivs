@@ -163,6 +163,9 @@ export interface IssueFound {
     /**
      * Error code is either what was supplied on ValidatorConfig.errorCode
      * or Condition.ConditionType.
+     * Essential to align the IssueFound with the correct Validator when passing in external 
+     * errors, each with its own error code, through setExternalIssuesFound. 
+     * Otherwise, the system won't know which validator to apply the error to and won't be able to generate the correct error messages.
      */
     errorCode: string;
 

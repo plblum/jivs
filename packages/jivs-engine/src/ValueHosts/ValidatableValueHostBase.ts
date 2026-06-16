@@ -559,7 +559,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (!issueFound.errorCode)
             errorMsg = 'IssueFound needs an errorCode';
         /* istanbul ignore next */ // defensive. Does not get called with the current implementation
-        if (issueFound.valueHostName !== this.getName())
+        else if (issueFound.valueHostName !== this.getName())
             errorMsg = 'IssueFound has wrong valueHostName';
         if (errorMsg)
         {

@@ -166,6 +166,30 @@ export interface IValidationManager extends IValueHostsManager {
     setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;    
 
     /**
+     * Server-side: Package validation results for transfer to client in the form of a string.
+     * The consumer can then transfer this string to the client and use fromValidationPayload to restore the state of validation.
+     * The internals are not intended for use by the consumer.
+     * Combines validator-generated IssuesFound with user-supplied ExternalIssueFound.
+     * @param externalIssues - Errors from business logic, external validators, etc.
+     * @returns Package ready for HTTP/API response
+     */
+    toValidationPayload(externalIssues: Array<ExternalIssueFound> | null): string
+
+    /**
+     * Client-side: Restore validation state from server payload that came from toValidationPayload. 
+     * The payload contains both validator-generated IssuesFound and user-supplied ExternalIssueFound.
+     * Sets displayOnly=true on all externalIssues to prevent blocking.
+     * Attempts validator swap for better error messages.
+     * Optionally applies an encoding function to the error messages, such as HTML encoding for safe display on the client.
+     * @param payload - Validation data from server
+     * @param encode - Targets HTML encoding. When supplied, the function takes the 
+     original errorMessage and returns a revised one. We will supply a function
+     called htmlEncoder(string): string so the user just drops that name in as the parameter.
+    * @returns true if state changed
+    */
+    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean    
+
+    /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
      * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
      * at the validationManager level to know.
