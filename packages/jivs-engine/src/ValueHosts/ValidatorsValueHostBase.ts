@@ -351,6 +351,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     if (valResult) {
                         if (error.severity)
                             valResult.issueFound!.severity = error.severity;
+                    // note: error.displayOnly is intentionally not copied to the issueFound. We want to preserve the IssueFound as capable of making the ValidationStatus Invalid
                         let changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
@@ -460,7 +461,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
             let warningFound = false;
             if (issuesFound) {
                 for (let issueFound of state.issuesFound!) {
-                    if (issueFound.severity !== ValidationSeverity.Warning) {
+                    if (issueFound.severity !== ValidationSeverity.Warning && !issueFound.displayOnly) {
                         vr = ValidationStatus.Invalid;
                         break;
                     }

@@ -63,7 +63,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
                     valueHostName: ModelValidatorsValueHostName,
-                    displayOnly: error.displayOnly ?? false,
+                    displayOnly: error.displayOnly, // expect undefined as a typical value
                 });
                 issueCount++;
             }

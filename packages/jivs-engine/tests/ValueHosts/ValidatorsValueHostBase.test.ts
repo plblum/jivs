@@ -942,7 +942,7 @@ describe('validate() with IssueFound.displayOnly flag', () => {
         constructor(
             private _errorCode: string,
             private severity: ValidationSeverity,
-            private displayOnly: boolean,
+            private displayOnly?: boolean,
             private shouldMatch: boolean = false
         ) {}
 
@@ -1193,6 +1193,18 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
     });
     test('Without Validators but have a ExternalIssueFound (Error) and displayOnly=true, isValid=true, ValidationStatus = Undetermined because displayOnly does not change anything and no validators means Undetermined', () => {
+        let setup = setupValidatorsValueHostBaseForValidate(null, null);
+        let result = setup.valueHost.setExternalIssueFound({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            displayOnly: true
+        });
+        expect(result).toBe(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.isValid).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
+    });    
+    test('Without Validators but have a ExternalIssueFound.displayOnly, isValid=true, ValidationStatus = Undetermined', () => {
         let setup = setupValidatorsValueHostBaseForValidate(null, null);
         let result = setup.valueHost.setExternalIssueFound({
             errorMessage: 'ERROR',

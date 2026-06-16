@@ -506,7 +506,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                     errorCode: cleanString(error.errorCode)  ?? `GENERATED_${issueCount}`,
                     severity: error.severity ?? ValidationSeverity.Error,
                     errorMessage: error.errorMessage,
-                    summaryMessage: error.errorMessage
+                    summaryMessage: error.errorMessage,
+                    displayOnly: error.displayOnly // expect undefined as a typical value
                 });
                 issueCount++;
             }
@@ -589,7 +590,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             updating.push(issueFound);
         let changed = this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.issuesFound = updating;
-            if (issueFound.severity !== ValidationSeverity.Warning)
+            if (issueFound.severity !== ValidationSeverity.Warning && !issueFound.displayOnly)
                 stateToUpdate.status = ValidationStatus.Invalid;
             //!!!PENDING: Clean up async work done against the same error code?
             return stateToUpdate;
