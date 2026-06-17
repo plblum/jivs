@@ -173,7 +173,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * - ExternalIssuesFound can be set, but will not be available with
      *   getIssuesFound() until the ValueHost is enabled again.
      * - The onValueHostValidationStateChanged event will be raised
-     *   on actions that change the state, such as setting a ExternalIssueFound.
+     *   on actions that change the state, such as setting a external IssueFound.
      * Otherwise all calls to get ValidationStatus will act as if the ValueHost 
      * has no errors, except for ValidationState which is set to Disabled.
      * @param enabled 
@@ -336,7 +336,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
      */
+    ///!!!OBSOLETE.
     public setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean {
+/*        OBSOLETE
         if (error) {
             if (!this.isEnabled())
             {
@@ -369,11 +371,78 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 return true;
             }
         }
+*/            
         return false;
     }
+
     /**
-     * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetExternalIssuesFound and clearValidation().
+     * For a list of external issuesfound, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issuesFound 
+     * @param options - Only considers the skipCallback option.
+     */
+    public addExternalIssuesFound(issuesFound: Array<IssueFound>, options?: ValidateOptions): boolean
+    {
+        let changed = false;
+        if (issuesFound && issuesFound.length)
+        {
+            for (let issue of issuesFound) {      
+                if (this.addExternalIssueFound(issue, options)) {
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issueFound 
+     * @param options - Only considers the skipCallback option.
+     */
+    public addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions): boolean
+    {
+        if (issueFound) {
+            if (!this.isEnabled())
+            {
+                this.logger.message(LoggingLevel.Warn, () => `External IssueFound applied on disabled ValueHost "${this.getName()}"`);
+            }
+    
+            // check for existing with the same errorcode and replace
+            let replacementIndex = -1;
+            if (issueFound.errorCode && this.instanceState.externalIssuesFound) 
+                for (let i = 0; i < this.instanceState.externalIssuesFound.length; i++)
+                {
+                    if (this.instanceState.externalIssuesFound[i].errorCode === issueFound.errorCode)
+                    {
+                        replacementIndex = i;
+                        break;
+                    }
+                }
+            let changed = this.updateInstanceState((stateToUpdate) => {
+                if (!stateToUpdate.externalIssuesFound)
+                    stateToUpdate.externalIssuesFound = [];
+                if (replacementIndex === -1)
+                    stateToUpdate.externalIssuesFound.push(issueFound);
+                else
+                    stateToUpdate.externalIssuesFound[replacementIndex] = issueFound;
+                delete stateToUpdate.corrected;
+                return stateToUpdate;
+            }, this);
+            if (changed) {
+                this.invokeOnValueHostValidationStateChanged(options);
+                return true;
+            }
+        }
+        return false;        
+    }
+    /**
+     * Removes existing external issues found.
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
@@ -434,9 +503,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     
     /**
-     * exposes the Business Logic Errors list. If none, it is null.
+     * Exposes the external issues found list. If none, it is null.
      */
-    protected get externalIssuesFound(): Array<ExternalIssueFound> | null {
+    protected get externalIssuesFound(): Array<IssueFound> | null {
         return this.instanceState.externalIssuesFound ?? null;
     }
 
@@ -527,6 +596,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * @param behavior - keep or omit an issueFound that does not have a matching validator
      * based on the errorCode. Defaults to Keep.
      */
+    /// !!!OBSOLETE
     public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
     {
         assertNotNull(issuesFound, 'issuesFound');
@@ -552,13 +622,16 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * so the UI can incorporate it.
      * @param issueFound 
      */
+    /// !!!OBSOLETE
     protected setIssueFound(issueFound: IssueFound, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
     {
+/*        
         assertNotNull(issueFound, 'issueFound');
         let errorMsg: string | null = null;
         if (!issueFound.errorCode)
-            errorMsg = 'IssueFound needs an errorCode';
+            errorMsg = 'IssueFound needs an errorCode'; */
         /* istanbul ignore next */ // defensive. Does not get called with the current implementation
+/*        
         else if (issueFound.valueHostName !== this.getName())
             errorMsg = 'IssueFound has wrong valueHostName';
         if (errorMsg)
@@ -597,6 +670,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }, this);
 
         return changed;
+        */
+        return false;
     }
         
     //#endregion validation results

@@ -94,15 +94,8 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * @param options - Only supports the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
+    /// !!!OBSOLETE.
     setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean;
-
-    /**
-     * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetExternalIssuesFound and clearValidation().
-     * @param options - Only supports the skipCallback option.
-     * @returns true when a change was made to the known validation state.
-     */
-    clearExternalIssuesFound(options?: ValidateOptions): boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
@@ -154,7 +147,33 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * @param behavior - keep or omit an issueFound that does not have a matching validator
      * based on the errorCode.
      */
+    //!!!OBSOLETE
     setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;
+
+    /**
+     * For a list of external issuesfound, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issuesFound 
+     * @param options - Only considers the skipCallback option.
+     */
+    addExternalIssuesFound(issuesFound: Array<IssueFound>, options?: ValidateOptions): boolean;
+
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issueFound 
+     * @param options - Only considers the skipCallback option.
+     */
+    addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions): boolean;    
+    /**
+     * Removes existing external issues found.
+     * @param options - Only supports the skipCallback option.
+     * @returns true when a change was made to the known validation state.
+     */
+    clearExternalIssuesFound(options?: ValidateOptions): boolean;    
 }
 
 /**
@@ -205,10 +224,10 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
      */
     group?: string;
     /**
-     * If there are any business logic errors, they are kept here.
+     * If there are any external errors, they are kept here.
      * If not, this is undefined.
      */
-    externalIssuesFound?: Array<ExternalIssueFound>;
+    externalIssuesFound?: Array<IssueFound>;
 
     /**
      * When true, an async Validator is running

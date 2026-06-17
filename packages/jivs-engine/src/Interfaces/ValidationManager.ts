@@ -118,6 +118,34 @@ export interface IValidationManager extends IValueHostsManager {
      * @returns when true, the validation snapshot has changed.
      */
     setExternalIssuesFound(errors: Array<ExternalIssueFound> | null, options?: ValidateOptions): boolean;
+    
+    /**
+     * For a list of external errors, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+    
+     * When Business Logic gathers data from the UI, it runs its own final validation.
+     * If its own business rule has been violated or there is another issue, 
+     * it should be passed here where it becomes exposed to 
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in ValueHostName.
+     * Each time its called, all previous external errors are abandoned.
+     * @param errors - A list of external errors to show or null to indicate no errors.
+     * @param options - Only considers the skipCallback option.
+     * @returns when true, the validation snapshot has changed.
+     */
+    addExternalIssuesFound(errors: Array<IssueFound> | null, options?: ValidateOptions): boolean;
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+
+     * @param error - The IssueFound to add to the list of external IssuesFound.
+     * @param options - Only considers the skipCallback option.
+     * @returns when true, the validation snapshot has changed.
+     */
+    addExternalIssueFound(error: IssueFound, options?: ValidateOptions): boolean;
 
     /**
      * Lists all issues found (error messages and supporting info) for a single ValidatorsValueHostBase

@@ -332,86 +332,112 @@ describe('toIPropertyValueHost function', () => {
         expect(toIPropertyValueHost(testItem)).toBe(testItem);
     });
     class TestIPropertyValueHostImplementation implements IPropertyValueHost {
+        private name: string = 'TestHost';
+        private label: string = 'Test Label';
+        private value: any = undefined;
+        private enabled: boolean = true;
+        private issues: IssueFound[] = [];
+        private instanceStateMap: Map<string, ValidTypesForInstanceStateStorage> = new Map();
+
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
         getPropertyName(): string {
-            throw new Error("Method not implemented.");
+            return this.name;
         }
         getValidator(errorCode: string): IValidator | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
 
         otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
-            throw new Error("Method not implemented.");
         }
         validate(options?: ValidateOptions | undefined): ValueHostValidateResult | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
         clearValidation(options?: ValidateOptions | undefined): boolean {
-            throw new Error("Method not implemented.");
+            this.issues = [];
+            return true;
         }
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         get currentValidationState(): ValueHostValidationState {
-            throw new Error("Method not implemented.");
+            return {
+                isValid: this.isValid,
+                doNotSave: this.doNotSave,
+                issuesFound: this.issues.length > 0 ? this.issues : null,
+                status: this.validationStatus,
+                asyncProcessing: this.asyncProcessing,
+                corrected: this.corrected
+            };
         }
-
         setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions | undefined): boolean {
-            throw new Error("Method not implemented.");
+            return true;
         }
+        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+            this.issues.push(...issuesFound);
+            return true;
+        }
+        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+            this.issues.push(issueFound);
+            return true;
+        }        
         clearExternalIssuesFound(options?: ValidateOptions | undefined): boolean {
-            throw new Error("Method not implemented.");
+            this.issues = [];
+            return true;
         }
         doNotSave: boolean = false;
         corrected: boolean = false;
         getIssueFound(errorCode: string): IssueFound | null {
-            throw new Error("Method not implemented.");
+            return this.issues.find(i => i.errorCode === errorCode) ?? null;
         }
         getIssuesFound(group?: string | undefined): IssueFound[] | null {
-            throw new Error("Method not implemented.");
+            return this.issues.length > 0 ? this.issues : null;
         }
         setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
         {
-            throw new Error('Function not implemented.');
+            this.issues = issuesFound;
+            return true;
         }
         getName(): string {
-            throw new Error("Method not implemented.");
+            return this.name;
         }
         getLabel(): string {
-            throw new Error("Method not implemented.");
+            return this.label;
         }
 
         getValue() {
-            throw new Error("Method not implemented.");
+            return this.value;
         }
         setValue(value: any, options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.value = value;
         }
         setValueToUndefined(options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.value = undefined;
         }
         getDataType(): string | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
         getDataTypeLabel(): string {
-            throw new Error("Method not implemented.");
+            return '';
         }
         isEnabled(): boolean {
-            throw new Error("Method not implemented.");
+            return this.enabled;
         }
         setEnabled(enabled: boolean): void {
-            throw new Error("Method not implemented.");
+            this.enabled = enabled;
         }
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
-            throw new Error("Method not implemented.");
+            if (value === undefined) {
+                this.instanceStateMap.delete(key);
+            } else {
+                this.instanceStateMap.set(key, value);
+            }
         }
         getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
-            throw new Error("Method not implemented.");
+            return this.instanceStateMap.get(key);
         }
         isChanged: boolean = false;
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
-            throw new Error("Method not implemented.");
         }
     }
 

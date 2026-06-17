@@ -2601,6 +2601,7 @@ describe('toIValidationManager function', () => {
             },
             isValid: false,
             doNotSave: true,
+            ///!!!OBSOLETE
             setExternalIssuesFound: function (errors: ExternalIssueFound[] | null, options?: ValidateOptions | undefined): boolean {
                 throw new Error("Function not implemented.");
             },
@@ -2662,6 +2663,18 @@ describe('toIValidationManager function', () => {
                 throw new Error('Function not implemented.');
             },
             notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
+                throw new Error('Function not implemented.');
+            },
+            addExternalIssuesFound: function (errors: IssueFound[] | null, options?: ValidateOptions | undefined): boolean {
+                throw new Error('Function not implemented.');
+            },
+            addExternalIssueFound: function (error: IssueFound, options?: ValidateOptions | undefined): boolean {
+                throw new Error('Function not implemented.');
+            },
+            toValidationPayload: function (externalIssues: ExternalIssueFound[] | null): string {
+                throw new Error('Function not implemented.');
+            },
+            fromValidationPayload: function (payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
                 throw new Error('Function not implemented.');
             }
         };

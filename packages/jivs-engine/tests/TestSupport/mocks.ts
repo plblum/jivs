@@ -208,14 +208,19 @@ export class MockInputValueHost extends MockValueHost
     get currentValidationState(): ValueHostValidationState {
         throw new Error("Method not implemented.");
     }
-
+///!!!OBSOLETE
     setExternalIssueFound(error: ExternalIssueFound): boolean {
         throw new Error("Method not implemented.");
     }
-    clearExternalIssuesFound(): boolean {
+    clearExternalIssuesFound(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
-
+    addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+        throw new Error("Method not implemented.");
+    }
+    addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+        throw new Error("Method not implemented.");
+    }
     getIssueFound(conditionType: string): IssueFound | null
     {
         throw new Error("Method not implemented."); 
@@ -539,6 +544,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         super({ services: services, valueHostConfigs: [] });
         this.config.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
     }
+    notifyValidationStateChangedDelay?: number | undefined;
 
     public get config(): ValidationManagerConfig
     {
@@ -632,7 +638,19 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
     isValid: boolean = true;        
 
     doNotSave: boolean = false;
-
+    addExternalIssuesFound(errors: IssueFound[] | null, options?: ValidateOptions | undefined): boolean {
+        throw new Error("Method not implemented.");
+    }
+    addExternalIssueFound(error: IssueFound, options?: ValidateOptions | undefined): boolean {
+        throw new Error("Method not implemented.");
+    }
+    toValidationPayload(externalIssues: ExternalIssueFound[] | null): string {
+        throw new Error("Method not implemented.");
+    }
+    fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
+        throw new Error("Method not implemented.");
+    }
+//!!!OBSOLETE
     public setExternalIssuesFound(errors: Array<ExternalIssueFound> | null): boolean
     {
         throw new Error("Method not implemented.");        

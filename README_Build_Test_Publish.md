@@ -35,6 +35,11 @@ cd packages/<package-name>
 npm run compile
 ```
 
+### Also compile tests but not run
+```bash
+tsc -p tsconfig_with_tests.json
+```
+
 ## 🧪 Test
 
 ### Entire Workspace (from root)
@@ -85,3 +90,9 @@ npm run typedoc           # Generate API documentation
 - TypeScript compilation uses `tsc` command
 - Tests use Jest
 
+
+## TypeScript circular dependencies
+We use the npm package madge to call out circular dependencies.
+```bash
+npx madge --circular --extensions ts ./src
+```

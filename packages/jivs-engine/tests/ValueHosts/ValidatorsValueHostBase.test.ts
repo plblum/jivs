@@ -3259,98 +3259,117 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+        private issues: IssueFound[] = [];
+        private data: Map<string, ValidTypesForInstanceStateStorage> = new Map();
+        private hostValue: any = undefined;
+        private hostInputValue: any = undefined;
+        private hostEnabled: boolean = true;
+
         valueHostsManager: IValidationManager = {} as IValidationManager;
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
-            throw new Error("Method not implemented.");
         }
 
 
         getInputValue() {
-            throw new Error("Method not implemented.");
+            return this.hostInputValue;
         }
         setInputValue(value: any, options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.hostInputValue = value;
         }
         setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.hostValue = nativeValue;
+            this.hostInputValue = inputValue;
         }
         otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
-            throw new Error("Method not implemented.");
         }
         validate(options?: ValidateOptions | undefined): ValueHostValidateResult {
-            throw new Error("Method not implemented.");
+            return { issuesFound: null, status: ValidationStatus.Valid };
         }
         clearValidation(): boolean {
-            throw new Error("Method not implemented.");
+            this.issues = [];
+            return true;
         }
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         corrected: boolean = false;
         get currentValidationState(): ValueHostValidationState {
-            throw new Error("Method not implemented.");
+            return { isValid: this.isValid, doNotSave: this.doNotSave, status: this.validationStatus, issuesFound: this.issues, asyncProcessing: false, corrected: false };
         }
-
+//!!!OBSOLETE
         setExternalIssueFound(error: ExternalIssueFound): boolean {
-            throw new Error("Method not implemented.");
+            return true;
         }
-        clearExternalIssuesFound(): boolean {
-            throw new Error("Method not implemented.");
+        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+            this.issues.push(...issuesFound);
+            return true;
+        }
+        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+            this.issues.push(issueFound);
+            return true;
+        }        
+        clearExternalIssuesFound(options?: ValidateOptions): boolean {
+            return true;
         }
         doNotSave: boolean = false;
         getIssueFound(errorCode: string): IssueFound | null {
-            throw new Error("Method not implemented.");
+            return this.issues.find(i => i.errorCode === errorCode) ?? null;
         }
 
         getIssuesFound(group?: string | undefined): IssueFound[] {
-            throw new Error("Method not implemented.");
+            return this.issues;
         }
         setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
         {
-            throw new Error('Function not implemented.');
+            this.issues = issuesFound;
+            return true;
         }        
         getConversionErrorMessage(): string | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
         requiresInput: boolean = false;
         getName(): string {
-            throw new Error("Method not implemented.");
+            return 'TestHost';
         }
         getLabel(): string {
-            throw new Error("Method not implemented.");
+            return 'Test Host Label';
         }
 
         getValue() {
-            throw new Error("Method not implemented.");
+            return this.hostValue;
         }
         setValue(value: any, options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.hostValue = value;
         }
         setValueToUndefined(options?: SetValueOptions | undefined): void {
-            throw new Error("Method not implemented.");
+            this.hostValue = undefined;
         }
         getDataType(): string | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
         getDataTypeLabel(): string {
-            throw new Error("Method not implemented.");
+            return '';
         }
         isChanged: boolean = false;
         isEnabled(): boolean {
-            throw new Error("Method not implemented.");
+            return this.hostEnabled;
         }
         setEnabled(enabled: boolean): void {
-            throw new Error("Method not implemented.");
+            this.hostEnabled = enabled;
         }        
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
-            throw new Error("Method not implemented.");
+            if (value === undefined) {
+                this.data.delete(key);
+            } else {
+                this.data.set(key, value);
+            }
         }
         getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
-            throw new Error("Method not implemented.");
+            return this.data.get(key);
         }
         getValidator(errorCode: string): IValidator | null {
-            throw new Error("Method not implemented.");
+            return null;
         }
 
     }

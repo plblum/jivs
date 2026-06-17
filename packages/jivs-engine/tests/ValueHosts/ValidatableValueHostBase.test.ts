@@ -1058,7 +1058,7 @@ describe('toIValidatableValueHostBase', () => {
     test('Compatible object match', () => {
         let testItem: IValidatableValueHostBase = {
             valueHostsManager: {} as IValidationManager,
-            dispose(): void {},
+            dispose(): void { },
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
                 throw new Error('Function not implemented.');
             },
@@ -1073,11 +1073,17 @@ describe('toIValidatableValueHostBase', () => {
             asyncProcessing: false,
             corrected: false,
             currentValidationState: {} as any,
-    
+///!!! OBSOLETE
             setExternalIssueFound: function (error: ExternalIssueFound): boolean {
                 throw new Error('Function not implemented.');
             },
-            clearExternalIssuesFound: function (): boolean {
+            addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+                throw new Error("Method not implemented.");
+            },
+            addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+                throw new Error("Method not implemented.");
+            },      
+            clearExternalIssuesFound: function (options?: ValidateOptions): boolean {
                 throw new Error('Function not implemented.');
             },
             doNotSave: false,
@@ -1088,8 +1094,7 @@ describe('toIValidatableValueHostBase', () => {
             getIssuesFound: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
-            setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
-            {
+            setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean {
                 throw new Error('Function not implemented.');
             },
 
@@ -1111,7 +1116,7 @@ describe('toIValidatableValueHostBase', () => {
             getDataTypeLabel(): string {
                 throw new Error("Method not implemented.");
             },
-        
+
             saveIntoInstanceState: function (key: string, value: any): void {
                 throw new Error('Function not implemented.');
             },
@@ -1131,7 +1136,7 @@ describe('toIValidatableValueHostBase', () => {
             },
             setEnabled(enabled: boolean): void {
                 throw new Error("Method not implemented.");
-            }            
+            }
         }
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
@@ -1198,11 +1203,17 @@ describe('toIValidatableValueHostBase function', () => {
         get currentValidationState(): ValueHostValidationState {
             throw new Error("Method not implemented.");
         }
-
+///!!! OBSOLETE
         setExternalIssueFound(error: ExternalIssueFound): boolean {
             throw new Error("Method not implemented.");
         }
-        clearExternalIssuesFound(): boolean {
+        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+            throw new Error('Method not implemented.');
+        }
+        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+            throw new Error('Method not implemented.');
+        }        
+        clearExternalIssuesFound(options?: ValidateOptions): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSave = false;

@@ -61,8 +61,9 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
                 iif.push({
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
+                    summaryMessage: error.summaryMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: ModelValidatorsValueHostName,
+                    valueHostName: ModelValidatorsValueHostName,    // should be the same as the ValueHostName of this ValueHost, which is '*'
                     displayOnly: error.displayOnly, // expect undefined as a typical value
                 });
                 issueCount++;
@@ -90,7 +91,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
 }
 export const ModelValidatorsValueHostName = '*';   
 
-export const ModelValidatorsValueHostType = 'ExternalIssuesFound';
+export const ModelValidatorsValueHostType = 'ModelValidatorsValueHost';
 export class ModelValidatorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {

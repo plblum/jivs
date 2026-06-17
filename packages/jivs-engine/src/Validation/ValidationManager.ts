@@ -21,6 +21,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
 import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
+import { LoggingLevel } from '../Interfaces/LoggerService';
 
 
 /**
@@ -311,11 +312,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             for (let error of errors) {
                 let vh = this.getValueHost(error.associatedValueHostName ?? ModelValidatorsValueHostName);
                 if (!vh && !error.associatedValueHostName) {
-                    vh = this.addValueHost({
-                        valueHostType: ModelValidatorsValueHostType,
-                        label: '*',
-                        name: ModelValidatorsValueHostName
-                    }, null);
+                    vh = this.createModelValidatorsValueHost();
                 }
                 if (vh instanceof ValidatableValueHostBase)
                     if (vh.setExternalIssueFound(error, options))
@@ -325,6 +322,87 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             this.notifyValidationStateChanged(null, options, true);
         return changed;
     }
+
+    /**
+     * For a list of external errors, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+    
+     * When Business Logic gathers data from the UI, it runs its own final validation.
+     * If its own business rule has been violated or there is another issue, 
+     * it should be passed here where it becomes exposed to 
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in ValueHostName.
+     * Each time its called, all previous external errors are abandoned.
+     * @param errors - A list of external errors to show or null to indicate no errors.
+     * @param options - Only considers the skipCallback option.
+     * @returns when true, the validation snapshot has changed.
+     */
+    public addExternalIssuesFound(errors: Array<IssueFound> | null, options?: ValidateOptions): boolean
+    {
+        let changed = false;
+        for (let vh of this.validatableValueHost()) {
+            if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
+                changed = true;
+        }
+        if (errors)
+            for (let error of errors) {
+                if (this.addExternalIssueFound(error, options))
+                    changed = true;
+            }
+        if (changed)
+            this.notifyValidationStateChanged(null, options, true);
+        return changed;
+    }
+    /**
+     * Discards all external errors previously set with addExternalIssuesFound.
+     * @param options - Only considers the skipCallback option.
+     * @returns when true, the validation snapshot has changed.
+     */
+    public clearExternalIssuesFound(options?: ValidateOptions): boolean
+    {
+        let changed = false;
+        for (let vh of this.validatableValueHost()) {
+            if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
+                changed = true;
+        }
+
+        if (changed)
+            this.notifyValidationStateChanged(null, options, true);
+        return changed;
+    }    
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * Any with empty valueHostName are directed to the ModelValidatorsValueHost, which is the ValueHost that holds errors not associated with any particular ValueHost. If there is no ModelValidatorsValueHost, one will be created.
+     * ModelValidatorsValueHost is created if not already available.
+
+     * @param error - The IssueFound to add to the list of external IssuesFound.
+     * @param options - Only considers the skipCallback option.
+     * @returns when true, the validation snapshot has changed.
+     */
+    public addExternalIssueFound(error: IssueFound, options?: ValidateOptions): boolean
+    {
+        let changed = false;
+        if (!error.valueHostName) 
+            error.valueHostName = ModelValidatorsValueHostName;
+        let vh = this.getValueHost(error.valueHostName);
+        if (!vh)
+            if (error.valueHostName === ModelValidatorsValueHostName) {
+                vh = this.createModelValidatorsValueHost();
+            }
+            else {
+                this.logger.message(LoggingLevel.Warn, () => `Could not find ValueHost with name ${error.valueHostName}`);
+                return false;
+            }
+        if (vh instanceof ValidatableValueHostBase)
+            if (vh.setExternalIssueFound(error, options))
+                changed = true;
+        return changed;
+    }
+
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
@@ -381,6 +459,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param behavior - keep or omit an issueFound that does not have a matching validator
      * based on the errorCode. Defaults to Keep
      */
+    /// !!!OBSOLETE
     public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
     {
         assertNotNull(issuesFound, 'issuesFound');
@@ -392,28 +471,48 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return changed;
     }
 
+    protected createModelValidatorsValueHost(): IValidatorsValueHostBase {
+        // find existing by ModelValidatorsValueHostName
+        // If found, return it. If not, create a new one and add it to the ValueHosts.
+        // Log when creating
+        let vh = this.getValueHost(ModelValidatorsValueHostName);
+        if (vh)
+            return vh as IValidatorsValueHostBase;
+        this.logger.message(LoggingLevel.Info, ()=> 'Creating ModelValidatorsValueHost');
+        return this.addValueHost({
+            valueHostType: ModelValidatorsValueHostType,
+            label: '*',
+            name: ModelValidatorsValueHostName
+        }, null) as IValidatorsValueHostBase;
+    }
+
     //#region Payload
     /**
      * Server-side: Package validation results for transfer to client in the form of a string.
      * The consumer can then transfer this string to the client and use fromValidationPayload to restore the state of validation.
      * The internals are not intended for use by the consumer.
-     * Combines validator-generated IssuesFound with user-supplied ExternalIssueFound.
+     * Combines validator-generated IssuesFound with user-supplied External IssuesFound.
+     * User can supply external issues prior to this, using addExternalIssueFound, 
+     * or can supply them as a parameter to this function. 
+     * If supplied as a parameter, it will override any prior external issues.
      * @param externalIssues - Errors from business logic, external validators, etc.
      * @returns Package ready for HTTP/API response
      */
-    public toValidationPayload(externalIssues: Array<ExternalIssueFound> | null): string
+    public toValidationPayload(externalIssues: Array<IssueFound> | null): string
     {
-        let payload = {
-            issuesFound: this.getIssuesFound(),
-            externalIssuesFound: externalIssues
-        };
+        if (externalIssues && externalIssues.length > 0)
+            this.setExternalIssuesFound(externalIssues, { skipCallback: true }); // will clear prior external issues
+        let payload = this.getIssuesFound(); // combines validator-generated IssuesFound with user-supplied External IssuesFound
         return JSON.stringify(payload);
     }
 
     /**
      * Client-side: Restore validation state from server payload that came from toValidationPayload. 
-     * The payload contains both validator-generated IssuesFound and user-supplied ExternalIssueFound.
-     * Sets displayOnly=true on all externalIssues to prevent blocking.
+     * The payload contains both validator-generated and user-supplied IssuesFound,
+     * and does not distinguish between them. 
+     * Sets displayOnly=true on all to prevent blocking later client side validation
+     * because we got this from the server, and need to call the server to determine
+     * these values.
      * Attempts validator swap for better error messages.
      * Optionally applies an encoding function to the error messages, such as HTML encoding for safe display on the client.
      * @param payload - Validation data from server
@@ -424,16 +523,23 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     */
     public fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean
     {
-        let parsed: { issuesFound: Array<IssueFound> | null, externalIssuesFound: Array<ExternalIssueFound> | null } = JSON.parse(payload);
-        if (encode) {
-            if (parsed.issuesFound)
-                parsed.issuesFound.forEach(i => i.errorMessage = encode(i.errorMessage));
-            if (parsed.externalIssuesFound)
-                parsed.externalIssuesFound.forEach(i => i.errorMessage = encode(i.errorMessage));
+        this.clearExternalIssuesFound({ skipCallback: true }); // clear prior validation results because we are about to set new ones, and we don't want to trigger callbacks until the end. Also, this ensures that any error from the payload that doesn't match a validator will be added based on the behavior of setIssuesFound.
+        let parsed: Array<IssueFound> = JSON.parse(payload);
+        if (!parsed) {
+            this.logger.message(LoggingLevel.Warn, () => 'No issues found in payload');
+            return false;
         }
-        if (this.setIssuesFound(parsed.issuesFound ?? [], SetIssuesFoundErrorCodeMissingBehavior.Omit) ||
-            this.setExternalIssuesFound(parsed.externalIssuesFound))
+        parsed.forEach(i => {
+            if (!i.valueHostName) {
+                i.valueHostName = ModelValidatorsValueHostName;
+            }
+            i.displayOnly = true; // we got this from the server, and need to call the server to determine these values, so prevent client side validation from blocking based on these values.
+            if (encode)
+                i.errorMessage = encode(i.errorMessage);
+        });
+        if (this.addExternalIssuesFound(parsed))
             return true;
+
         return false; // Placeholder, implement actual state change logic
     }
     //#endregion Payload

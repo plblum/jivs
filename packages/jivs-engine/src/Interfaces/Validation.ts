@@ -157,24 +157,31 @@ export enum ValidationSeverity {
  */
 export interface IssueFound {
     /**
-     * Containing ValueHostName
+     * Containing ValueHostName.
+     * If used internally, it should be the same as the ValueHostName of the ValueHost that generated it.
+     * If the developer is supplying it externally, it should be the ValueHostName of the ValueHost they want to associate the error with
+     * or left null or empty to associated with the ModelValidatorsValueHost
      */
-    valueHostName: ValueHostName;
+    valueHostName?: ValueHostName;
     /**
      * Error code is either what was supplied on ValidatorConfig.errorCode
      * or Condition.ConditionType.
      * Essential to align the IssueFound with the correct Validator when passing in external 
      * errors, each with its own error code, through setExternalIssuesFound. 
      * Otherwise, the system won't know which validator to apply the error to and won't be able to generate the correct error messages.
+     * Internally, it is required.
+     * If the developer is supplying it externally, it can be null/undefined and the system will generate one.
+     * In doing so, the developer opts out of validator alignment.
      */
-    errorCode: string;
+    errorCode?: string;
 
     /**
      * Determines how a Validator will behave when a Condition evaluates as NoMatch.
      * It may show error messages, prevent further evaluation of conditions
      * on the same ValueHost, and block saving.
+     * When unassigned, it uses ValidationSeverity.Error.
     */
-    severity: ValidationSeverity;
+    severity?: ValidationSeverity;
 
     /**
      * The error message nearby the input field/element, ready to display in the UI.

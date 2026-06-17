@@ -1353,10 +1353,18 @@ describe('toIInputValueHost function', () => {
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         corrected: boolean = false;
+        ///!!!OBSOLETE
         setExternalIssueFound(error: ExternalIssueFound): boolean {
             throw new Error("Method not implemented.");
         }
-        clearExternalIssuesFound(): boolean {
+
+        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+            throw new Error("Method not implemented.");
+        }
+        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+            throw new Error("Method not implemented.");
+        }        
+        clearExternalIssuesFound(options?: ValidateOptions): boolean {
             throw new Error("Method not implemented.");
         }
         get doNotSave(): boolean {

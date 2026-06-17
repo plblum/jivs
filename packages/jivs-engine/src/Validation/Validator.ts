@@ -648,6 +648,8 @@ export function highestSeverity(issues: IssueFound[] | null): ValidationSeverity
         return null;
     let severity: ValidationSeverity = ValidationSeverity.Warning;
     for (let issue of issues) {
+        if (!issue.severity)
+            issue.severity = ValidationSeverity.Error; // default severity
         if (issue.severity > severity)
             severity = issue.severity;
         if (severity === ValidationSeverity.Severe) // optimization
