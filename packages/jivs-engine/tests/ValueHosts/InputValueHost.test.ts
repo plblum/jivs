@@ -1358,10 +1358,10 @@ describe('toIInputValueHost function', () => {
             throw new Error("Method not implemented.");
         }
 
-        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+        addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
         }
-        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+        addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
         }        
         clearExternalIssuesFound(options?: ValidateOptions): boolean {

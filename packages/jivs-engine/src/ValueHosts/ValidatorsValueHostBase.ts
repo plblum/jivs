@@ -121,20 +121,21 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         continue;
                     validatorsInUse++;
                     if (inputValResult.issueFound) {
-                        if (!inputValResult.issueFound.displayOnly) // if displayOnly = true, no change to ValidationStatus
-                            switch (inputValResult.issueFound.severity) {
-                                case ValidationSeverity.Error:
-                                    result.status = ValidationStatus.Invalid;
-                                    break;
-                                case ValidationSeverity.Severe:
-                                    result.status = ValidationStatus.Invalid;
-                                    stop = true;
-                                    break;
-                                case ValidationSeverity.Warning:
-                                    if (result.status === ValidationStatus.Undetermined)
-                                        result.status = ValidationStatus.Valid;
-                                    break;
-                            }
+                        inputValResult.issueFound.doNotSave = true;
+                        switch (inputValResult.issueFound.severity) {
+                            case ValidationSeverity.Error:
+                                result.status = ValidationStatus.Invalid;
+                                break;
+                            case ValidationSeverity.Severe:
+                                result.status = ValidationStatus.Invalid;
+                                stop = true;
+                                break;
+                            case ValidationSeverity.Warning:
+                                if (result.status === ValidationStatus.Undetermined)
+                                    result.status = ValidationStatus.Valid;
+                                inputValResult.issueFound.doNotSave = false;
+                                break;
+                        }
 
                         if (!result.issuesFound)
                             result.issuesFound = [];
@@ -314,6 +315,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      */
     protected orderValidators(unordered: Array<IValidator>): Array<IValidator> {
         let fn = (a: IValidator, b: IValidator): number => a.condition.category - b.condition.category;
+         /* istanbul ignore if */
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else        /* istanbul ignore next */ // we don't run our unit tests in pre-ES2016 mode required to test this.
@@ -335,7 +337,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
      */
+    ///!!!OBSOLETE
     public setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean {
+/*        
         if (error) {
             if (!this.isEnabled())
             {
@@ -351,7 +355,76 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     if (valResult) {
                         if (error.severity)
                             valResult.issueFound!.severity = error.severity;
-                    // note: error.displayOnly is intentionally not copied to the issueFound. We want to preserve the IssueFound as capable of making the ValidationStatus Invalid
+                    // note: error.doNotSave is intentionally not copied to the issueFound. We want to preserve the IssueFound as capable of making the ValidationStatus Invalid
+                        let changed = this.updateInstanceState((stateToUpdate) => {
+                            let replacementIndex = -1;
+                            if (!stateToUpdate.issuesFound)
+                            */
+        /* istanbul ignore next */ // defensive. Current code always sets this up
+        /*
+                                stateToUpdate.issuesFound = [];
+                            // replace if the same issuefound exists
+                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++) {
+                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode) {
+                                    replacementIndex = issueIndex;
+                                    break;
+                                }
+                            }
+
+                            if (replacementIndex === -1)
+                                stateToUpdate.issuesFound.push(valResult.issueFound!);
+                            else
+                                stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
+                            stateToUpdate.status = ValidationStatus.Invalid;
+                            //NOTE: leave stateToUpdate.group and asyncProcessing alone
+                            return stateToUpdate;
+                        }, this);
+                        if (changed) {
+                            this.invokeOnValueHostValidationStateChanged(options);
+                            return true;
+                        }
+                    }
+                }
+        }
+        return super.setExternalIssueFound(error, options);
+        */
+        return false;
+    }
+
+    /*
+    * An IssueFound normally arrives in the externalIssuesFound array via setExternalIssueFound. 
+    * However, it may be overridden by the presence of a Validator already setup with the same errorcode.
+    * In that case, we add or replace an IssueFound in instanceState.issuesFound previously setup.
+    * Our intent: preserve the validator's error messages, and severity (can be overridden).
+    * The validator may not have found the issue on the client side, but the server did, 
+    * so we act like the client-side validator found it, preserving the error message from the client side.
+     */
+    public addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
+    {
+        if (error) {
+            if (!this.isEnabled())
+            {
+                this.logger.message(LoggingLevel.Warn, () => `IssueFound applied on disabled ValueHost "${this.getName()}"`);                
+            }
+        
+            // If the errorCode aligns to a validator, create that validator's IssueFound shape instead.
+            // From this point on, the issue is treated as a validator result, not as an external issue.
+            // That means validator semantics apply, including the validator's doNotSave behavior.
+            // The external IssueFound likely starts with doNotSave = false
+            if (error.errorCode)
+                for (let i = 0; i < this.validators().length; i++) {
+                    let validator = this.validators()[i];
+                    let valResult = validator.tryValidatorSwap(error);
+                    if (valResult) {
+                // We are replacing the external issue with a validator-owned IssueFound.
+                // Preserve an explicit severity override from the external issue, and if that
+                // override makes the issue a warning, also make it non-blocking.
+                        if (error.severity !== undefined) {
+                            valResult.issueFound!.severity = error.severity;
+                            if (error.severity == ValidationSeverity.Warning)
+                                valResult.issueFound!.doNotSave = false;
+                        }
+
                         let changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
@@ -380,7 +453,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }
                 }
         }
-        return super.setExternalIssueFound(error, options);
+        return super.addExternalIssueFound(error, determinedLocally, options);        
     }
 
     /**
@@ -461,7 +534,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
             let warningFound = false;
             if (issuesFound) {
                 for (let issueFound of state.issuesFound!) {
-                    if (issueFound.severity !== ValidationSeverity.Warning && !issueFound.displayOnly) {
+                    if (issueFound.severity !== ValidationSeverity.Warning) {
                         vr = ValidationStatus.Invalid;
                         break;
                     }

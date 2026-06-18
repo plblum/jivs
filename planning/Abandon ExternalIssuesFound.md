@@ -2,30 +2,28 @@
 
 ## Agreed so far
 
-* `fromValidationPayload()` should be the client-side import pipeline for server-returned issues.
-* `toValidationPayload()` should move toward emitting a single flattened `IssueFound[]`.
-* All issues imported through `fromValidationPayload()` must end up with `displayOnly = true`.
-* `fromValidationPayload()` should be responsible for payload-specific cleanup, including:
+* `fromValidationPayload()` is the client-side import pipeline for server-returned issues.
+* `toValidationPayload()` moves toward emitting a single flattened `IssueFound[]`.
+* All issues imported through `fromValidationPayload()` end up with `doNotSave = false`.
+* `fromValidationPayload()` is responsible for payload-specific cleanup, including:
 
-  * forcing `displayOnly = true`
-  * trying validator-based swap when `errorCode` is present
+  * forcing `doNotSave = false` on every imported issue before add
+  * trying validator alignment when `errorCode` is present
   * applying encoding
-* `setIssuesFound()` should remain focused on storage/distribution into the issue path consumed by `getIssuesFound()`.
-* `setExternalIssuesFound()` should not be the place for swap logic.
-* Internal separation between validator-managed issues and external/client-local issues is still architecturally useful.
-* On the client, `externalIssuesFound` remains for client-created issues, especially client-side model-level errors.
+* There is one public issue type: `IssueFound`.
+* There are still two operational paths:
+
+  * validator-generated issues
+  * external issues
+* `ExternalIssueFound` is deprecated and being removed from the main architecture.
+* `addExternalIssueFound()` / `addExternalIssuesFound()` are the public APIs for adding developer-supplied issues, with possible validator alignment by `errorCode` before final storage.
+* `setExternalIssuesFound()` is deprecated and should not be the place for swap logic.
+* Internal separation between validator-managed issues and external issues is still architecturally useful.
+* On the client, imported server issues and client-created issues both enter through the external issue APIs, but validator alignment may move them into validator-owned state.
 * On the server, flattening external issues into `IssueFound` before transport is acceptable.
-* `IssueFound.errorCode` is optional for externally supplied issues and always present for validator-generated issues.
-
-## Open design work
-
-* New public issue injection API: `addIssueFound()` and `addIssuesFound()` replace `setIssuesFound()` and `setExternalIssuesFound()`.
-* Define the exact payload shape for `toValidationPayload()` / `fromValidationPayload()`.
-* Decide whether `ExternalIssueFound` remains as a public type, becomes server-only, or is deprecated.
-* Define what `setIssuesFound()` should do with issues whose `errorCode` does not match a local validator.
-* Decide whether `SetIssuesFoundErrorCodeMissingBehavior` stays, changes default behavior, or is removed.
-* Define the precise storage path for imported server issues on the client.
-* Document the updated server/client workflow and the distinction between client-local external issues vs imported server issues.
+* `IssueFound.doNotSave` is the save-blocking flag.
+* `IssueFound` now has mostly optional properties for developer ergonomics.
+* Validator-generated issues still populate the properties they need, especially `errorCode`.
 
 ## Current architecture
 
@@ -162,9 +160,16 @@ The result is that the old design is functional but harder to explain and harder
 
 ## New architecture
 
-The new design removes `ExternalIssueFound` as a separate issue type.
+The new design keeps one public issue type but still preserves two operational paths.
 
-Developers add their own non-validator errors by creating `IssueFound` directly.
+The single public issue type is `IssueFound`. Developers create `IssueFound` directly when they want to add non-validator errors. Validator code also produces `IssueFound`.
+
+The two operational paths are:
+
+* validator-generated issues
+* external issues
+
+That means the old type split goes away, but the architectural split does not. External issues remain a first-class concept in APIs and storage, even though they now use the same `IssueFound` shape as validator-generated issues.
 
 Jivs still keeps a separation internally between:
 
@@ -177,17 +182,19 @@ Public retrieval remains unified through `getIssuesFound()`, which combines both
 
 The transport model is also simplified. Server-to-client transfer no longer sends two collections. `toValidationPayload()` sends only the combined `IssueFound[]` list. `fromValidationPayload()` restores from that single list.
 
-On the client side, imported server issues are not treated as client-local `externalIssuesFound`. Instead, `fromValidationPayload()` cleans each imported issue and places it into the normal issue path that feeds `getIssuesFound()`.
+On the client side, imported server issues are normalized by `fromValidationPayload()` and then added through the same external issue APIs used by `addExternalIssueFound()`. If validator alignment succeeds, the resulting issue is stored in validator-owned state instead of remaining in external issue storage.
 
-The most important protection is that every imported server issue is marked `displayOnly = true`. That allows the client to show server-returned issues without letting those imported issues block the client from running its own validation and attempting another server call through `ValidationState.doNotSave`.
+The most important protection is that every imported server issue is assigned `doNotSave = false`. That allows the client to show server-returned issues without letting those imported issues block the client from running its own validation and attempting another server call through `ValidationState.doNotSave`.
 
 Notes:
 
 * There is now one public issue shape: `IssueFound`.
+* There are still two operational paths: validator issues and external issues.
 * Internal storage remains separated where that is architecturally useful.
 * Public retrieval remains one combined list.
 * Transport also becomes one combined list.
-* Imported server issues are display-only on the client.
+* Imported server issues are non-blocking on the client because `doNotSave = false` is explicitly forced during import before add.
+* `fromValidationPayload()` replaces the current external issue layer before importing new server issues.
 
 ## New design workflows
 
@@ -196,7 +203,7 @@ Notes:
 ```text
 App code
   -> create IssueFound or IssueFound[]
-  -> addIssueFound() / addIssuesFound()
+  -> addExternalIssueFound() / addExternalIssuesFound()
   -> store in ValueHost.externalIssuesFound
   -> getIssuesFound() merges results
   -> UI displays one combined list
@@ -207,6 +214,9 @@ Notes:
 * Developers no longer create `ExternalIssueFound`.
 * Externally added issues still remain separate internally from validator-generated issues.
 * The UI still reads one combined list.
+* Dev can set IssueFound.doNotSave as they see fit. When not supplied, it is set for them to 
+
+  the value of the determinedLocally parameter.
 
 ### 2. Normal validation inside Jivs
 
@@ -225,6 +235,7 @@ Notes:
 * The validator path remains intact.
 * Validator-generated issues continue to drive validation state.
 * Internal separation from externally added issues is preserved.
+* For validator-created issues, `IssueFound.doNotSave` is set to true unless `severity = warning`.
 
 ### 3. Server-side validation and save decisions
 
@@ -260,13 +271,14 @@ Notes:
 * There is only one transported issue list.
 * The transport no longer preserves a second issue type.
 * The client only needs the unified UI-facing issue shape.
+* fromValidationPayload always assigns IssueFound.doNotSave = false to ensure later round trips with the server to resolve those Issues found.
 
 ### 5. Client-side import of server issues
 
 ```text
 Imported IssueFound
   -> fromValidationPayload()
-  -> displayOnly = true
+  -> doNotSave = false
   -> tryValidatorSwap() when applicable
   -> encode when needed
   -> add into issue path consumed by getIssuesFound()
@@ -276,15 +288,16 @@ Imported IssueFound
 Notes:
 
 * Payload cleanup belongs to `fromValidationPayload()`.
-* Imported server issues are shown to the user but do not block client-side progression through `doNotSave`.
-* The client-side `externalIssuesFound` concept remains for client-created issues, not for imported server payload.
+* Imported server issues are shown to the user but do not block client-side progression through `doNotSave` because import forces `doNotSave = false`.
+* Imported server issues are stored through the external issue path after payload cleanup.
+* `fromValidationPayload()` begins by clearing the current external issue layer so imported issues replace earlier external issues.
 
 ### 6. Client-side local external issues
 
 ```text
 Client-only failure
   -> create IssueFound
-  -> addIssueFound()
+  -> addExternalIssueFound()
   -> store in client external issue path
   -> getIssuesFound()
   -> UI displays result
@@ -293,7 +306,7 @@ Client-only failure
 Notes:
 
 * This is for client-originated issues such as model-level or request-level failures.
-* These are distinct from imported server payload issues.
+* These use the same external issue path as imported server issues.
 * They still participate in the normal Jivs UI retrieval path.
 
 ### 7. Round-trip state preservation
@@ -317,40 +330,55 @@ Notes:
 ### `IssueFound`
 
 * Keep as the single public issue shape.
-* Allow developer-created issues to omit `errorCode`.
-* Keep validator-created issues supplying `errorCode`.
+* Allow developer-created issues to omit most properties.
+* Keep validator-created issues supplying the properties they need.
+* Use `doNotSave` as the save-blocking flag.
+* `errorCode` identifies an issue concept and may be used to align an external or imported issue to a validator-owned issue shape without executing validator logic.
 * Ensure it can represent transported server issues and client-local external issues.
 
 ### `ExternalIssueFound`
 
+* Deprecate throughout.
 * Remove from the main architecture.
 * Replace public usage with `IssueFound`.
-* Decide later whether to fully delete it or keep a temporary compatibility layer.
+* Keep only as a temporary compatibility layer if needed during transition.
 
 ### `ValidationManager`
 
-#### `addIssueFound(issueFound)`
+#### `addExternalIssueFound(issueFound, determinedLocally, options?)`
 
 * Public API for adding one developer-supplied issue into Jivs.
 * Accepts `IssueFound`, not `ExternalIssueFound`.
 * Does not run validator execution.
 * Does not perform payload import cleanup.
-* Does not perform `tryValidatorSwap()`.
+* Supports validator alignment by `errorCode` as part of normal behavior.
+* Supports `determinedLocally` as a standalone parameter.
+
+  * `determinedLocally` expresses whether this issue was determined within the current local cycle.
+  * When `determinedLocally = false`, the issue must not block save, so `doNotSave = false` is forced.
+  * When `determinedLocally = true`, an omitted `doNotSave` may be defaulted according to local policy.
 * Routes the issue by `valueHostName`.
 * When `valueHostName` matches a `ValueHost`, assign it there.
 * Special case: when `valueHostName` is missing, route to `ModelValidatorsValueHost`.
 * If `ModelValidatorsValueHost` does not exist, create it first.
 * Before assigning to `ModelValidatorsValueHost`, update `issueFound.valueHostName` to `"*"`.
-* Stores the issue in the external issue path for that target `ValueHost`.
+* Stores the issue in the external issue path for that target `ValueHost` when validator alignment does not occur.
+* If validator alignment succeeds, stores the resulting validator-aligned issue in validator-owned state instead.
 * Ensures the added issue becomes visible through `getIssuesFound()`.
 * Preserves issue state for page regeneration and round-trip UI restoration.
 
-#### `addIssuesFound(issuesFound)`
+#### `addExternalIssuesFound(issuesFound, determinedLocally, options?)`
 
 * Public API for adding a list of developer-supplied issues into Jivs.
 * Convenience method only.
-* Loops through the list and calls `addIssueFound()` for each item.
-* Does not add extra behavior beyond repeated `addIssueFound()` calls.
+* Supports `determinedLocally` as a standalone parameter.
+
+  * `determinedLocally` expresses whether these issues were determined within the current local cycle.
+  * When `determinedLocally = false`, imported or foreign issues are forced to `doNotSave = false`.
+  * When `determinedLocally = true`, locally determined issues may keep or default `doNotSave` according to local policy.
+* `options?` remains available for any additional method options.
+* Loops through the list and calls `addExternalIssueFound()` for each item.
+* Does not add extra behavior beyond repeated `addExternalIssueFound()` calls.
 
 #### `toValidationPayload()`
 
@@ -365,10 +393,11 @@ Notes:
 
 * Client-side import pipeline for server-returned issues.
 * Accepts the single transported `IssueFound[]` payload.
+* Begins by calling `clearExternalIssuesFound()` so the current external issue layer is replaced.
 * Parses and validates payload shape.
 * For each imported issue:
 
-  * force `displayOnly = true`
+  * force `doNotSave = false`
   * apply encoding rules when needed
   * if `errorCode` can be used for swap, attempt `tryValidatorSwap()`
   * if swap does not happen, keep the imported issue
@@ -376,23 +405,40 @@ Notes:
   * when `valueHostName` is missing, route to `ModelValidatorsValueHost`
   * if `ModelValidatorsValueHost` does not exist, create it first
   * before assigning to `ModelValidatorsValueHost`, update `issueFound.valueHostName` to `"*"`
-* Adds the final issue into the issue path used by `getIssuesFound()`.
-* Does not place imported server issues into the client-local `externalIssuesFound` bucket.
+  * add the final issue through `addExternalIssueFound()`
+* Stores imported issues through the external issue path.
 * Ensures imported issues are visible in the UI.
-* Ensures imported issues do not block client-side progression through `ValidationState.doNotSave`.
+* Ensures imported issues do not block client-side progression through `ValidationState.doNotSave` because import forces `doNotSave = false`.
+
+#### `clearExternalIssuesFound(options?)`
+
+* Public API that clears externally added issues.
+* Clears the external issue path without clearing validator-managed validation state.
+* Supports the payload import workflow where imported issues replace the current external issue layer.
 
 #### Protected helper methods on `ValidationManager`
 
 * Add a protected method whose job is to create `ModelValidatorsValueHost` if it does not already exist.
 * Add a protected method whose job is to assign `"*"` as the `valueHostName` for issues routed to `ModelValidatorsValueHost`.
 * These helpers are shared infrastructure for routing.
-* They are intended for use by more than one method, not only `addIssueFound()`.
+* They are intended for use by more than one method, not only `addExternalIssueFound()`.
 
-### `ValidatableValueHost`
+### `ValidatableValueHostBase`
 
 * Keep separate internal storage for validator-generated issues and externally added issues.
 * Continue exposing one combined list through `getIssuesFound()`.
 * Support storing developer-added `IssueFound` in `externalIssuesFound`.
+* `doNotSave` is determined by this rule:
+
+  1. `NeedsValidation` => `true`
+  2. `asyncProcessing` => `true`
+  3. Check validator-owned `instanceState.issuesFound`:
+
+     * if any validator issue has `doNotSave === true`, return `true`
+  4. Check `externalIssuesFound`:
+
+     * if any external issue has `doNotSave === true`, return `true`
+  5. Otherwise `false`.
 
 ### `ModelValidatorsValueHost`
 
@@ -403,14 +449,16 @@ Notes:
 ### `Validator`
 
 * Keep current behavior where validator-generated issues always have an `errorCode`.
-* Keep validator-based swap support for imported server issues.
+* Keep validator alignment support for imported and developer-added external issues.
+* A matching `errorCode` means the same issue concept, not proof that validator logic executed.
 * No change to the normal validator issue-generation path.
 
 ### `ValidationState`
 
 * No structural redesign.
 * Continue exposing the combined `issuesFound` list.
-* Continue deriving `isValid` and `doNotSave` from validator-managed issues, with `displayOnly` protecting imported server issues from blocking client validation.
+* `isValid` is false when there is any non-warning issue.
+* `doNotSave` is true when validation still needs to run, async processing is active, or any validator/external issue has `doNotSave = true`.
 
 ### Payload types
 
@@ -426,7 +474,7 @@ Notes:
 
 ## Unit test cases
 
-### `ValidationManager.addIssueFound()`
+### `ValidationManager.addExternalIssueFound()`
 
 * Adds a field-level `IssueFound` to the matching `ValueHost.externalIssuesFound`.
 * Adds a model-level `IssueFound` with no `valueHostName` by creating `ModelValidatorsValueHost` when missing.
@@ -437,9 +485,9 @@ Notes:
 * Keeps the added issue out of validator-managed issue storage.
 * Preserves issue state for round-trip regeneration.
 
-### `ValidationManager.addIssuesFound()`
+### `ValidationManager.addExternalIssuesFound()`
 
-* Adds each item by delegating to `addIssueFound()`.
+* Adds each item by delegating to `addExternalIssueFound()`.
 * Supports a mixed list of field-level and model-level issues.
 * Preserves list order in the resulting visible issue list when order matters.
 
@@ -455,7 +503,10 @@ Notes:
 ### `ValidationManager.fromValidationPayload()`
 
 * Imports a payload containing one `IssueFound[]` list.
-* Marks every imported issue `displayOnly = true`.
+* Begins by calling `clearExternalIssuesFound()`.
+* Replaces the current external issue layer.
+* Preserves validator-managed issues.
+* Explicitly forces every imported issue `doNotSave = false` before add.
 * Imports field-level issues into the issue path visible through `getIssuesFound()`.
 * Imports model-level issues with no `valueHostName` by creating `ModelValidatorsValueHost` when missing.
 * Imports model-level issues with no `valueHostName` by assigning `valueHostName = "*"` before storage.
@@ -463,17 +514,27 @@ Notes:
 * Applies encoding when required.
 * Attempts swap when `errorCode` is present.
 * Keeps the original imported issue when swap does not occur.
-* Does not place imported server issues into the client-local external issue bucket.
+* Stores imported issues through the external issue path.
 * Ensures imported issues are visible through `getIssuesFound()`.
 * Ensures imported issues do not cause `ValidationState.doNotSave` to block client-side progression.
 
+### `ValidationManager.clearExternalIssuesFound()`
+
+* Clears externally added issues.
+* Does not clear validator-managed issues.
+* Supports replacing the external issue layer during payload import.
+* Honors supported options correctly.
+
 ### Swap behavior during `fromValidationPayload()`
 
-* Swaps an imported issue when `errorCode` matches a local validator.
-* Keeps `displayOnly = true` on the swapped issue.
+* Aligns an imported issue when `errorCode` matches a local validator.
+* Alignment means the same issue concept, not that validator logic executed.
+* The resulting issue is validator-aligned and stored in validator-owned state.
+* The swapped issue does not preserve the original external `doNotSave`.
+* Warning severity override still makes the issue non-blocking.
 * Keeps the original imported issue when `errorCode` has no validator match.
 * Keeps the original imported issue when `errorCode` is missing.
-* Preserves routing after swap so the final issue is assigned to the correct target.
+* Preserves routing after alignment so the final issue is assigned to the correct target.
 
 ### `ValidatableValueHost`
 
@@ -482,6 +543,7 @@ Notes:
 * `getIssuesFound()` returns externally added issues only when no validator issues exist.
 * `getIssuesFound()` returns a combined list when both sources exist.
 * Externally added issues remain visible without becoming validator-managed issues.
+* Host `doNotSave` is true when validator issues or external issues contain an item with `doNotSave = true`.
 
 ### `ModelValidatorsValueHost`
 
@@ -493,7 +555,8 @@ Notes:
 
 * Validator-generated issues still affect `isValid`.
 * Validator-generated issues still affect `doNotSave`.
-* Imported server issues with `displayOnly = true` remain visible but do not force invalid client-side save state.
+* External non-warning issues with `doNotSave = false` still make `isValid = false` without forcing save blocking.
+* Imported server issues with `doNotSave = false` remain visible but do not force client-side save blocking unless validator alignment produces a validator-aligned blocking issue.
 * Client-local externally added issues follow the intended status behavior for their storage path.
 
 ### Round-trip state retention
@@ -507,10 +570,13 @@ Notes:
 
 ### Add your own errors
 
-* Create `IssueFound` and add it through `addIssueFound()` or `addIssuesFound()`.
+* Create `IssueFound` and add it through `addExternalIssueFound()` or `addExternalIssuesFound()`.
 * Use `valueHostName` to attach the issue to a specific field.
 * Omit `valueHostName` to create a model-level issue. Jivs will route it to the model validators host.
 * Your added issues will appear through `getIssuesFound()` along with validator-generated issues.
+* Use `doNotSave = true` when you want Jivs to block the follow-up action.
+* Omit `doNotSave` when you want `addExternalIssuesFound(..., determinedLocally, options?)` to decide the default.
+* Set `doNotSave = false` when the issue should be shown but not block saving.
 * Use this for errors outside normal validation, such as save failures, service failures, or business logic errors.
 
 ### Use Jivs on both server and client
@@ -523,13 +589,15 @@ Notes:
 
 ### What `fromValidationPayload()` does for you
 
+* Clears the current external issue layer.
 * Imports the server-returned `IssueFound[]` payload.
-* Marks every imported issue as `displayOnly = true`.
+* Marks every imported issue as `doNotSave = false`.
 * Tries client-side issue replacement when `errorCode` supports it.
+* Stores imported issues through the external issue path.
 * Keeps imported issues visible without letting them block new client-side validation attempts.
 
 ### Recommended mental model
 
-* Use `addIssueFound()` for your own local issues.
+* Use `addExternalIssueFound()` for your own local issues.
 * Use `toValidationPayload()` and `fromValidationPayload()` to move Jivs issues from server to client.
 * Use `getIssuesFound()` to retrieve the combined list for display.

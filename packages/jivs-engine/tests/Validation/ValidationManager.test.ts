@@ -2665,10 +2665,10 @@ describe('toIValidationManager function', () => {
             notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
                 throw new Error('Function not implemented.');
             },
-            addExternalIssuesFound: function (errors: IssueFound[] | null, options?: ValidateOptions | undefined): boolean {
+            addExternalIssuesFound: function (errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
                 throw new Error('Function not implemented.');
             },
-            addExternalIssueFound: function (error: IssueFound, options?: ValidateOptions | undefined): boolean {
+            addExternalIssueFound: function (error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
                 throw new Error('Function not implemented.');
             },
             toValidationPayload: function (externalIssues: ExternalIssueFound[] | null): string {

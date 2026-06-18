@@ -59,17 +59,15 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
     setEnabled(enabled: boolean): void;    
 
     /**
-     * When ValueHost.setExternalIssueFound is called, it provides each entry to the existing
-     * list of Validators through this. This function determines if the externalIssueFound is
-     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
-     * like calling validate() itself.
-     * The idea is to use the UI's representation of the validator, including its error messages
-     * with its own tokens, instead of those supplied by the business logic.
-     * @param externalIssueFound 
+     * Creates a validator-aligned IssueFound when the supplied issue has the same errorCode.
+     * This does not execute validation logic.
+     * Returns null when the issue does not align to this validator.
+     * Returns a ValidatorValidateResult that can be stored in validator-owned state when it does.
+     * @param issueFound 
      * @returns if null, it did not handle the ExternalIssueFound. If a ValidatorValidateResult,
      * it should be used in the ValueHost's state of validation.
      */
-    tryValidatorSwap(externalIssueFound: ExternalIssueFound): ValidatorValidateResult | null;
+    tryValidatorSwap(externalIssueFound: IssueFound): ValidatorValidateResult | null;
 
 }
 

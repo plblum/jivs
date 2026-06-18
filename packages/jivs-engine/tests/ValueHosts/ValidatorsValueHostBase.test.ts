@@ -461,7 +461,8 @@ function createIssueFound(errorCode: string,
         errorCode: errorCode,
         severity: severity,
         errorMessage: errorMessage,
-        summaryMessage: summaryMessage
+        summaryMessage: summaryMessage,
+        doNotSave: severity !== ValidationSeverity.Warning
     };
 }
 describe('constructor and resulting property values', () => {
@@ -778,7 +779,8 @@ describe('ValidatorsValueHostBase.validate', () => {
                 errorMessage: 'Local',
                 summaryMessage: 'Summary',
                 severity: ValidationSeverity.Error,
-                valueHostName: 'Field1'
+                valueHostName: 'Field1',
+                doNotSave: true
             };
         let setup: ITestSetupConfigWithMocks;
         if (expectedResult)
@@ -895,7 +897,8 @@ describe('ValidatorsValueHostBase.validate', () => {
                     valueHostName: 'Field1',
                     severity: ValidationSeverity.Error,
                     errorMessage: 'Error',
-                    summaryMessage: 'Error'
+                    summaryMessage: 'Error',
+                    doNotSave: true
                 }],
                 isValid: false,
                 doNotSave: true,
@@ -936,203 +939,6 @@ describe('ValidatorsValueHostBase.validate', () => {
     });    
 });
 
-describe('validate() with IssueFound.displayOnly flag', () => {
-    // Mock validator that returns ValidatorValidateResult with configurable displayOnly flag
-    class MockValidatorForDisplayOnly implements IValidator {
-        constructor(
-            private _errorCode: string,
-            private severity: ValidationSeverity,
-            private displayOnly?: boolean,
-            private shouldMatch: boolean = false
-        ) {}
-
-        validate(options?: ValidateOptions): ValidatorValidateResult {
-            if (this.shouldMatch) {
-                return {
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null,
-                    skipped: false
-                };
-            }
-            return {
-                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                issueFound: {
-                    errorCode: this._errorCode,
-                    valueHostName: 'Field1',
-                    severity: this.severity,
-                    errorMessage: 'Error message',
-                    summaryMessage: 'Summary message',
-                    displayOnly: this.displayOnly
-                },
-                skipped: false
-            };
-        }
-
-        get errorCode(): string { return this._errorCode; }
-        get condition(): ICondition { return null as any; }
-        get conditionType(): string { return 'MockCondition'; }
-        get enabled(): boolean { return true; }
-        setEnabled(enabled: boolean): void {}
-        gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {}
-        dispose(): void {}
-        tryValidatorSwap(error: ExternalIssueFound): ValidatorValidateResult | null { return null; }
-        getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
-            return [];
-        }
-    }
-
-    // ValueHost that uses mock validators instead of generating them from config
-    class TestValidatorsValueHostWithMockValidators extends TestValidatorsValueHost {
-        private mockValidators: Array<IValidator> = [];
-
-        public setMockValidators(validators: Array<IValidator>): void {
-            this.mockValidators = validators;
-        }
-
-        protected override validators(): Array<IValidator> {
-            return this.mockValidators;
-        }
-    }
-
-    // Helper to setup with mock validators
-    function setupWithMockValidators(mockValidators: Array<IValidator>): ITestSetupConfigWithMocks {
-        let services = new MockValidationServices(true, true);
-        supportTestValueHostInServices(services);
-        let vm = new MockValidationManager(services);
-        let config = finishPartialValidatorsValueHostBaseConfig(null);
-        let state = finishPartialValidatorsValueHostBaseInstanceState(null);
-        
-        let mockVH = new TestValidatorsValueHostWithMockValidators(vm, config, state);
-        mockVH.setMockValidators(mockValidators);
-        
-        return {
-            services: services,
-            validationManager: vm,
-            config: config,
-            state: state,
-            valueHost: mockVH
-        };
-    }
-
-    test('With displayOnly=true and severity=Error, ValidationStatus is Undetermined and issue is in issuesFound', () => {
-        let mockValidator = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Error, true);
-        let setup = setupWithMockValidators([mockValidator]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Undetermined);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(1);
-        expect(result!.issuesFound![0].errorCode).toBe('ERR1');
-        expect(result!.issuesFound![0].displayOnly).toBe(true);
-    });
-
-    test('With displayOnly=true and severity=Severe, ValidationStatus is Undetermined and issue is in issuesFound', () => {
-        let mockValidator = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Severe, true);
-        let setup = setupWithMockValidators([mockValidator]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Undetermined);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(1);
-        expect(result!.issuesFound![0].errorCode).toBe('ERR1');
-        expect(result!.issuesFound![0].severity).toBe(ValidationSeverity.Severe);
-        expect(result!.issuesFound![0].displayOnly).toBe(true);
-    });
-
-    test('With displayOnly=true and severity=Warning (initial status Undetermined), ValidationStatus is Undetermined and issue is in issuesFound', () => {
-        let mockValidator = new MockValidatorForDisplayOnly('WARN1', ValidationSeverity.Warning, true);
-        let setup = setupWithMockValidators([mockValidator]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Undetermined);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(1);
-        expect(result!.issuesFound![0].errorCode).toBe('WARN1');
-        expect(result!.issuesFound![0].severity).toBe(ValidationSeverity.Warning);
-        expect(result!.issuesFound![0].displayOnly).toBe(true);
-    });
-
-    test('With displayOnly=false and severity=Error, ValidationStatus remains as determined by normal validation logic', () => {
-        let mockValidator = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Error, false);
-        let setup = setupWithMockValidators([mockValidator]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Invalid);        
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(1);
-        expect(result!.issuesFound![0].displayOnly).toBe(false);
-    });
-
-    test('With two validators: first with displayOnly=true/Warning, second with normal Error, ValidationStatus is Invalid', () => {
-        let mockValidator1 = new MockValidatorForDisplayOnly('WARN1', ValidationSeverity.Warning, true);
-        let mockValidator2 = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Error, false);
-        let setup = setupWithMockValidators([mockValidator1, mockValidator2]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Invalid);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(2);
-        expect(result!.issuesFound![0].errorCode).toBe('WARN1');
-        expect(result!.issuesFound![0].displayOnly).toBe(true);
-        expect(result!.issuesFound![1].errorCode).toBe('ERR1');
-        expect(result!.issuesFound![1].displayOnly).toBe(false);
-    });
-
-    test('With two validators: first matches, second with displayOnly=true/Warning, ValidationStatus is Valid', () => {
-        let mockValidator1 = new MockValidatorForDisplayOnly('MATCH1', ValidationSeverity.Error, false, true);
-        let mockValidator2 = new MockValidatorForDisplayOnly('WARN1', ValidationSeverity.Warning, true);
-        let setup = setupWithMockValidators([mockValidator1, mockValidator2]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Valid);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(1);
-        expect(result!.issuesFound![0].errorCode).toBe('WARN1');
-        expect(result!.issuesFound![0].displayOnly).toBe(true);
-    });
-
-    test('With displayOnly=true and severity=Severe, processing does not stop after this validator', () => {
-        let mockValidator1 = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Severe, true);
-        let mockValidator2 = new MockValidatorForDisplayOnly('ERR2', ValidationSeverity.Error, false);
-        let setup = setupWithMockValidators([mockValidator1, mockValidator2]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Invalid);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(2); // Only first validator should have run
-        expect(result!.issuesFound![0].errorCode).toBe('ERR1');
-        expect(result!.issuesFound![0].severity).toBe(ValidationSeverity.Severe);
-    });
-
-    test('With displayOnly=true/Error after a normal Error, both issues are collected and status is Invalid', () => {
-        let mockValidator1 = new MockValidatorForDisplayOnly('ERR1', ValidationSeverity.Error, false);
-        let mockValidator2 = new MockValidatorForDisplayOnly('ERR2', ValidationSeverity.Error, true);
-        let setup = setupWithMockValidators([mockValidator1, mockValidator2]);
-        
-        let result = setup.valueHost.validate();
-        
-        expect(result).not.toBeNull();
-        expect(result!.status).toBe(ValidationStatus.Invalid);
-        expect(result!.issuesFound).not.toBeNull();
-        expect(result!.issuesFound!.length).toBe(2);
-        expect(result!.issuesFound![0].displayOnly).toBe(false);
-        expect(result!.issuesFound![1].displayOnly).toBe(true);
-    });
-});
 
 describe('validate() and its impact on isValid and ValidationStatus', () => {
 
@@ -1349,7 +1155,8 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             severity: ValidationSeverity.Error,
             valueHostName: 'Field1',
             summaryMessage: 'BL_ERROR',
-            errorCode: 'GENERATED_0'
+            errorCode: 'GENERATED_0',
+            doNotSave: true
         };
 
         let result = vh.setExternalIssueFound({
@@ -1673,7 +1480,8 @@ describe('corrected property', () => {
             errorMessage: 'NeverMatch',
             summaryMessage: 'NeverMatch',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let snapshot = vm.validate(); // ensure we have an invalid state without business logic
@@ -1923,7 +1731,8 @@ describe('validate with async Conditions', () => {
                 errorMessage: 'Local',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Summary'
+                summaryMessage: 'Summary',
+                doNotSave: true
             };
 
             validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
@@ -2011,7 +1820,8 @@ describe('validate with async Conditions', () => {
                 errorMessage: 'Never',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Summary'
+                summaryMessage: 'Summary',
+                doNotSave: true
             };
             validateWithAsyncConditions(ConditionEvaluateResult.Match,
                 [{
@@ -2044,14 +1854,16 @@ describe('validate with async Conditions', () => {
                 errorMessage: 'Never',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Never Summary'
+                summaryMessage: 'Never Summary',
+                doNotSave: true
             };
             let issueFoundFromPromise: IssueFound = {
                 errorCode: 'TEST',
                 errorMessage: 'Local',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Summary'
+                summaryMessage: 'Summary',
+                doNotSave: true
             };
             validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
                 [{
@@ -2086,14 +1898,16 @@ describe('validate with async Conditions', () => {
                 errorMessage: 'Never',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Never Summary'
+                summaryMessage: 'Never Summary',
+                doNotSave: true
             };
             let issueFoundFromPromise: IssueFound = {
                 errorCode: 'TEST',
                 errorMessage: 'Local',
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1',
-                summaryMessage: 'Summary'
+                summaryMessage: 'Summary',
+                doNotSave: true
             };
             validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
                 [{
@@ -2404,7 +2218,8 @@ describe('clearValidation', () => {
             errorMessage: 'Error',
             summaryMessage: 'Error',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
@@ -2458,7 +2273,8 @@ describe('clearValidation', () => {
             errorMessage: 'Error',
             summaryMessage: 'Error',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
@@ -2519,14 +2335,16 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             errorMessage: 'TOBEREPLACED Error message',
             summaryMessage: 'TOBEREPLACED Error message',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
         let neverMatchIssueFound: IssueFound = {
             errorCode: 'WILLNOTBEREPLACED',
             errorMessage: 'Never match',
             summaryMessage: 'Never match',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };        
 
         vm.validate(); 
@@ -2590,14 +2408,16 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             errorMessage: 'TOBEREPLACED Error message',
             summaryMessage: 'TOBEREPLACED Error message',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Warning
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
         };
         let neverMatchIssueFound: IssueFound = {
             errorCode: 'WILLNOTBEREPLACED',
             errorMessage: 'Never match',
             summaryMessage: 'Never match',
             valueHostName: 'Field1',
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };        
         vm.validate(); 
         expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
@@ -2705,14 +2525,16 @@ describe('ValidatorsValueHostBase.getIssuesFound', () => {
                 errorCode: NeverMatchesConditionType,
                 severity: ValidationSeverity.Warning,
                 errorMessage: '1',
-                summaryMessage: 'Summary1'
+                summaryMessage: 'Summary1',
+                doNotSave: false
             },
             {
                 valueHostName: 'Field1',
                 errorCode: NeverMatchesConditionType2,
                 severity: ValidationSeverity.Error,
                 errorMessage: '2',
-                summaryMessage: 'Summary2'
+                summaryMessage: 'Summary2',
+                doNotSave: true
             }
         ];
         expect(issuesToReport).toEqual(expected);
@@ -2746,14 +2568,16 @@ describe('ValidatorsValueHostBase.getIssuesFound', () => {
                 errorCode: NeverMatchesConditionType,
                 severity: ValidationSeverity.Error,
                 errorMessage: 'Condition Error',
-                summaryMessage: 'Summary Condition Error'
+                summaryMessage: 'Summary Condition Error',
+                doNotSave: true
             },
             {
                 valueHostName: 'Field1',
                 errorCode: 'GENERATED_0',
                 severity: ValidationSeverity.Error,
                 errorMessage: 'BL_ERROR',
-                summaryMessage: 'BL_ERROR'
+                summaryMessage: 'BL_ERROR',
+                doNotSave: true
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2805,7 +2629,8 @@ describe('setIssuesFound', () => {
                     severity: s,
                     valueHostName: valueHostName,
                     errorMessage: 'Message errorcode ' + code + ' from IssueFound',
-                    summaryMessage: 'Summary errorcode ' + code + ' from IssueFound'                    
+                    summaryMessage: 'Summary errorcode ' + code + ' from IssueFound',
+                    doNotSave: s !== ValidationSeverity.Warning
                 }
             );
         }
@@ -2866,6 +2691,7 @@ describe('setIssuesFound', () => {
             severity: ValidationSeverity.Error,
             valueHostName: valueHostName,
             summaryMessage: 'errorcode ' + ec, // expected to match the one setup in vhConfig
+            doNotSave: true
         };        
     }
     test('With 2 validators on the VH and nothing validated, provide an IssueFound for each. Expect ValidationStatus=Invalid and both IssuesFound returned verbatim from getIssuesFound()', () => {
@@ -3301,11 +3127,11 @@ describe('toIValidatorsValueHostBase function', () => {
         setExternalIssueFound(error: ExternalIssueFound): boolean {
             return true;
         }
-        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+        addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             this.issues.push(...issuesFound);
             return true;
         }
-        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+        addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             this.issues.push(issueFound);
             return true;
         }        
@@ -3471,7 +3297,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3504,7 +3331,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3535,7 +3363,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3570,7 +3399,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3604,7 +3434,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3640,14 +3471,16 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
             errorCode: NeverMatchesConditionType,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: false
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3683,21 +3516,24 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
             errorCode: NeverMatchesConditionType,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: false
         });
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
             errorCode: ConditionType.Range,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {
@@ -3740,21 +3576,24 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             errorCode: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
             errorCode: NeverMatchesConditionType,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: false
         });
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
             errorCode: ConditionType.Range,
             errorMessage: '',
             severity: ValidationSeverity.Severe,
-            summaryMessage: ''
+            summaryMessage: '',
+            doNotSave: true
         });
         let state = { ...originalState };
         let config: ValidatorsValueHostBaseConfig = {

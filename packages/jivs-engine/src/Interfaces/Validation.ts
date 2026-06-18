@@ -164,12 +164,12 @@ export interface IssueFound {
      */
     valueHostName?: ValueHostName;
     /**
+     * Identifies the issue type.
      * Error code is either what was supplied on ValidatorConfig.errorCode
      * or Condition.ConditionType.
-     * Essential to align the IssueFound with the correct Validator when passing in external 
-     * errors, each with its own error code, through setExternalIssuesFound. 
-     * Otherwise, the system won't know which validator to apply the error to and won't be able to generate the correct error messages.
-     * Internally, it is required.
+     * Used to align an external or imported IssueFound with a validator's IssueFound shape.
+     * Internally generated IssueFounds must always supply it based on ValidatorConfig.errorCode
+     * or Condition.ConditionType.
      * If the developer is supplying it externally, it can be null/undefined and the system will generate one.
      * In doing so, the developer opts out of validator alignment.
      */
@@ -199,17 +199,17 @@ export interface IssueFound {
     summaryMessage?: string;
 
     /**
-     * Specialize situation: Normally IssuesFound are used to develop values
-     * like ValidationState.doNotSave and isValid. They are always used
-     * to show their error messages. If you want to include an error message with
-     * no impact on doNotSave or isValid, assign to true.
-     * Use case: ExternalIssueFound from the server is passed to the client
-     * which then becomes an IssueFound that should not block attempts to save
-     * because the user can only clear them after the next call to the server.
-     * Same property is on ExternalIssueFound for the same reason, to allow the server 
-     * to specify that the issue is only for display and should not block saving.
+     * Determines if this IssueFound contributes to ValidationState.doNotSave.
+     * ValidationState.doNotSave becomes true for at least one IssueFound with doNotSave true.
+     * (It becomes true for other reasons too.)
+     * Internal validation should always set this to true unless the Severity is warning.
+     * External validation should set this to true if the error was determined by the client app's code and 
+     * thus likely to be revised by the next local validation.
+     * Set to false when the error was determined by other factors such as the server, which allows the error message to be shown to the user
+     * without blocking the next attempt to save, which is important when the user can only clear the error after the next call to the server.
+     * Defaults to true when undefined.
      */
-    displayOnly?: boolean;
+    doNotSave?: boolean;
 }
 
 
@@ -220,6 +220,7 @@ export interface IssueFound {
  * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
  * by specifying that valueHostName in AssociatedValueHostName.
  */
+///!!!OBSOLETE
 export interface ExternalIssueFound {
     /**
      * The error message to show to the user. It should be fully realized, no tokens

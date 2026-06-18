@@ -373,11 +373,11 @@ describe('toIPropertyValueHost function', () => {
         setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions | undefined): boolean {
             return true;
         }
-        addExternalIssuesFound(issuesFound: IssueFound[], options?: ValidateOptions | undefined): boolean {
+        addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             this.issues.push(...issuesFound);
             return true;
         }
-        addExternalIssueFound(issueFound: IssueFound, options?: ValidateOptions | undefined): boolean {
+        addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             this.issues.push(issueFound);
             return true;
         }        

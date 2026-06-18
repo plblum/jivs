@@ -138,9 +138,9 @@ export class Validator implements IValidator {
     }
     private _logger: LoggerFacade | null = null;    
     /**
-     * Provides the error code associated with this instance.
-     * It uses ValidatorConfig.errorCode when assigned
-     * and ConditionType when not assigned.
+     * The validator's issue identifier.
+     * Uses ValidatorConfig.errorCode when assigned,
+     * otherwise ConditionType.
      */
     public get errorCode(): string
     {
@@ -494,26 +494,23 @@ export class Validator implements IValidator {
         issueFound.summaryMessage = summaryMessage ?
             services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.validationManager, this) :
             undefined;
+        issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning; // default to blocking save for errors, but not warnings. This can be overridden by the caller by directly setting doNotSave on the IssueFound.
     }
 
     /**
-     * When ValueHost.setExternalIssueFound is called, it provides each entry to the existing
-     * list of Validators through this. This function determines if the externalIssueFound is
-     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
-     * like calling validate() itself.
-     * The idea is to use the UI's representation of the validator, including its error messages
-     * with its own tokens, instead of those supplied by the business logic.
+     * Creates a validator-aligned IssueFound when the supplied issue has the same errorCode.
+     * This does not execute validation logic.
      * @param externalIssueFound 
-     * @returns if null, it did not handle the ExternalIssueFound. If a ValidatorValidateResult,
-     * it should be used in the ValueHost's state of validation.
+     * @returns null when the issue does not align to this validator.
+     * Returns a ValidatorValidateResult that can be stored in validator-owned state when it does.
      */
-    public tryValidatorSwap(externalIssueFound: ExternalIssueFound): ValidatorValidateResult | null
+    public tryValidatorSwap(externalIssueFound: IssueFound): ValidatorValidateResult | null
     {
         if (externalIssueFound.errorCode === this.errorCode)
         {
             let issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
             issueFound.severity = this.severity;
-            this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);            
+            this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);
             let resultState: ValidatorValidateResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 issueFound: issueFound
@@ -633,7 +630,8 @@ export function createIssueFound(valueHost: IValueHost,
         errorCode: validator.errorCode,
         severity: ValidationSeverity.Error,
         errorMessage: '',
-        summaryMessage: undefined
+        summaryMessage: undefined,
+        doNotSave: true
     };
 }
 

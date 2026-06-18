@@ -35,7 +35,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
     }
 
     /**
-     * Result is based on the presence of Business Logic Errors that are not warnings.
+     * Result is based on the presence of external IssuesFound that are not warnings.
      * If none, ValidationStatus = Valid.
      * If only warnings, ValidationStatus = Valid and IssuesFound are generated for each.
      * Otherwise, ValidationStatus = Invalid and IssuesFound are generated from each error.
@@ -56,7 +56,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
             for (let error of this.externalIssuesFound)
             {
                 let errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
-                if (error.severity !== ValidationSeverity.Warning && !error.displayOnly)
+                if (error.severity !== ValidationSeverity.Warning)
                     errorFound = true;
                 iif.push({
                     errorCode: errorCode,
@@ -64,7 +64,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
                     summaryMessage: error.summaryMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
                     valueHostName: ModelValidatorsValueHostName,    // should be the same as the ValueHostName of this ValueHost, which is '*'
-                    displayOnly: error.displayOnly, // expect undefined as a typical value
+                    doNotSave: error.doNotSave ?? false, // NOTE: default to false only for external issues
                 });
                 issueCount++;
             }
