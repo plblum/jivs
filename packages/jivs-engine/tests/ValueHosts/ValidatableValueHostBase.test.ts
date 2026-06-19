@@ -1,6 +1,6 @@
 import { IssueFound, SetIssuesFoundErrorCodeMissingBehavior, ValidationStatus } from './../../src/Interfaces/Validation';
 import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostBaseCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
-import { ValidatableValueHostBase, toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
@@ -8,288 +8,24 @@ import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../..
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
-import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
+import { IValidator } from "../../src/Interfaces/Validator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
-import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
-import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
-import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
-
-/**
- * Used to test the abstract class. We won't be testing overridden abstract methods.
- */
-class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
-{
-    public validateWillReturn: ValueHostValidateResult | null = null;
-    public setValidateWillReturn(validationStatus: ValidationStatus | null): void
-    {
-        if (validationStatus)
-            this.validateWillReturn = {
-                status: validationStatus,
-                issuesFound: (validationStatus === ValidationStatus.Undetermined ||
-                    validationStatus === ValidationStatus.NeedsValidation ||
-                    validationStatus === ValidationStatus.Valid) ? null : [{
-                        valueHostName: 'Field1',
-                        errorCode: 'TEST',
-                        errorMessage: 'Error',
-                        severity: ValidationSeverity.Error
-                    }]
-            };
-        else
-            this.validateWillReturn = null;
-    }
-    // emulate the state change
-    public setCorrected(corrected: boolean): void
-    {
-        this.updateInstanceState((stateToUpdate) => {
-            if (corrected)
-                stateToUpdate.corrected = true;
-            else
-                delete stateToUpdate.corrected;
-            return stateToUpdate;
-        }, this);
-    }
-    // emulate the state change
-    public setAsyncProcess(isAsync: boolean): void
-    {
-        this.updateInstanceState((stateToUpdate) => {
-            if (isAsync)
-                stateToUpdate.asyncProcessing = true;
-            else
-                delete stateToUpdate.asyncProcessing;
-            return stateToUpdate;
-        }, this);
-    }    
-    // emulate the state change
-    public setValidationStatus(status: ValidationStatus): void
-    {
-        this.updateInstanceState((stateToUpdate) => {
-            stateToUpdate.status = status;
-            return stateToUpdate;
-        }, this);
-    }        
-    public gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
-        for (const name of this.associatedValueHostNames)
-            collection.add(name);
-    }
-
-    public get handledErrorCodes(): Array<string>
-    {
-        return this._handledErrorCodes;
-    }
-    public set handledErrorCodes(value: Array<string>)
-    {
-        this._handledErrorCodes = value;
-    }    
-    private _handledErrorCodes: Array<string> = [];
-    protected handlesErrorCode(errorCode: string): boolean {
-        return this.handledErrorCodes.includes(errorCode);
-    }    
-    public validate(options?: ValidateOptions | undefined): ValueHostValidateResult | null {
-        this.validateCallCount++;
-        this.updateInstanceState((stateToUpdate) => {
-            stateToUpdate.status =
-                this.validateWillReturn ? this.validateWillReturn.status : ValidationStatus.NotAttempted;
-            stateToUpdate.issuesFound =
-                this.validateWillReturn ? this.validateWillReturn.issuesFound : null;
-
-            return stateToUpdate;
-        }, this);
-        return this.validateWillReturn;    // setup to allow setValueOptions.validate to invoke it.
-    }
-    public associatedValueHostNames: Array<string> = [];
-    public validateCallCount: number = 0;
-
-    
-    public get exposed_externalIssuesFound(): Array<IssueFound> | null {
-        return this.externalIssuesFound;
-    }
-    public get exposed_issuesFound(): Array<IssueFound> | null {
-        return this.instanceState.issuesFound;
-    }
-    public exposed_setIssueFound(issueFound: IssueFound): boolean 
-    {
-        return this.setIssueFound(issueFound)
-    }
-
-}
-/**
- * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
- */
-class TestValidatableValueHostGenerator implements IValueHostGenerator {
-    public canCreate(config: ValueHostConfig): boolean {
-        return config.valueHostType === 'TestValidatableValueHost';
-    }
-    public create(validationManager : IValidationManager, config: ValueHostConfig, state: ValidatableValueHostBaseInstanceState): IValueHost {
-        return new TestValidatableValueHost(validationManager, config, state);
-    }
-    public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValueHostConfig): void {
-    }
-    public createInstanceState(config: ValueHostConfig): ValidatableValueHostBaseInstanceState {
-        let state: ValidatableValueHostBaseInstanceState = {
-            name: config.name,
-            value: config.initialValue,
-            status: ValidationStatus.NotAttempted,
-            issuesFound: null
-        };
-        return state;
-    }
-
-}
-function addGeneratorToServices(services: IValidationServices): void
-{
-    let factory = new ValueHostFactory();
-    factory.register(new TestValidatableValueHostGenerator());
-    services.valueHostFactory = factory;
-}
-
-interface ITestSetupConfig {
-    services: MockValidationServices,
-    validationManager: MockValidationManager,
-    config: ValidatableValueHostBaseConfig,
-    state: ValidatableValueHostBaseInstanceState,
-    valueHost: TestValidatableValueHost
-};
-
-function createValidatableValueHostBaseConfig(fieldNumber: number = 1,
-    dataType: string = LookupKey.String,
-    initialValue?: any): ValidatableValueHostBaseConfig {
-    return {
-        name: 'Field' + fieldNumber,
-        label: 'Label' + fieldNumber,
-        valueHostType: 'TestValidatableValueHost',
-        dataType: dataType,
-        initialValue: initialValue
-    };
-}
-
-function finishPartialValidatableValueHostBaseConfig(partialConfig: Partial<ValidatableValueHostBaseConfig> | null):
-    ValidatableValueHostBaseConfig {
-    let defaultIVH = createValidatableValueHostBaseConfig(1, LookupKey.String);
-    if (partialConfig) {
-        return { ...defaultIVH, ...partialConfig };
-    }
-    return defaultIVH;
-}
-
-function finishPartialValidatableValueHostBaseConfigs(partialConfigs: Array<Partial<ValidatableValueHostBaseConfig>> | null):
-    Array<ValidatableValueHostBaseConfig> | null {
-    let result: Array<ValidatableValueHostBaseConfig> = [];
-    if (partialConfigs) {
-        for (let i = 0; i < partialConfigs.length; i++) {
-            let vhd = partialConfigs[i];
-            result.push(finishPartialValidatableValueHostBaseConfig(vhd));
-        }
-    }
-
-    return result;
-}
+import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
 
 
-function createValidatorConfig(condConfig: ConditionConfig | null): ValidatorConfig {
-    return {
-        conditionConfig: condConfig,
-        errorMessage: 'Local',
-        summaryMessage: 'Summary',
-    };
-}
-function finishPartialValidatorConfig(validatorConfig: Partial<ValidatorConfig> | null):
-    ValidatorConfig {
-    let defaultIVD = createValidatorConfig(null);
-    if (validatorConfig) {
-        return { ...defaultIVD, ...validatorConfig };
-    }
-    return defaultIVD;
-}
-
-function finishPartialValidatorConfigs(validatorConfigs: Array<Partial<ValidatorConfig>> | null):
-    Array<ValidatorConfig> {
-    let result: Array<ValidatorConfig> = [];
-    if (validatorConfigs) {
-        let defaultIVD = createValidatorConfig(null);
-        for (let i = 0; i < validatorConfigs.length; i++) {
-            let vd = validatorConfigs[i];
-            result.push(finishPartialValidatorConfig(vd));
-        }
-    }
-
-    return result;
-}
-
-function createValidatableValueHostBaseInstanceState(fieldNumber: number = 1): ValidatableValueHostBaseInstanceState {
-    return {
-        name: 'Field' + fieldNumber,
-        value: undefined,
-        issuesFound: null,
-        status: ValidationStatus.NotAttempted
-    };
-}
-function finishPartialValidatableValueHostBaseInstanceState(partialState: Partial<ValidatableValueHostBaseInstanceState> | null): ValidatableValueHostBaseInstanceState {
-    let defaultIVS = createValidatableValueHostBaseInstanceState(1);
-    if (partialState) {
-        return { ...defaultIVS, ...partialState };
-    }
-    return defaultIVS;
-}
-
-/**
- * Returns an ValueHost (ValidatableValueHostBase subclass) ready for testing.
- * @param partialIVHConfig - Provide just the properties that you want to test.
- * Any not supplied but are required will be assigned using these rules:
- * name: 'Field1',
- * label: 'Label1',
- * valueHostType: 'Test',
- * DataType: LookupKey.String,
- * InitialValue: 'DATA'
- * @param partialState - Use the default state by passing null. Otherwise pass
- * a state. Your state will override default values. To avoid overriding,
- * pass the property with a value of undefined.
- * These are the default values
- * name: 'Test'
- * Value: undefined
- * InputValue: undefined
- * IssuesFound: null,
- * ValidationStatus: NotAttempted
- * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Config,
- * and the state.
- */
-function setupValidatableValueHostBase(
-    partialIVHConfig?: Partial<ValidatableValueHostBaseConfig> | null,
-    partialState?: Partial<ValidatableValueHostBaseInstanceState> | null,
-    validateWillReturn: ValidationStatus | null = null): ITestSetupConfig {
-    let services = new MockValidationServices(true, true);
-    addGeneratorToServices(services);
-
-    let vm = new MockValidationManager(services);
-    let updatedConfig = finishPartialValidatableValueHostBaseConfig(partialIVHConfig ?? null);
-    let updatedState = finishPartialValidatableValueHostBaseInstanceState(partialState ?? null);
-
-    let vh = vm.addValueHost(updatedConfig, updatedState) as TestValidatableValueHost;
-    vh.setValidateWillReturn(validateWillReturn);
-    //new ValidatableValueHostBase(vm, updatedConfig, updatedState);
-    return {
-        services: services,
-        validationManager: vm,
-        config: updatedConfig,
-        state: updatedState,
-        valueHost: vh as TestValidatableValueHost
-    };
-}
 
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
         let services = new MockValidationServices(true, true);
-        addGeneratorToServices(services);
+        addTestValidatableValueHostGeneratorToServices(services);
         let vm = new MockValidationManager(services);
         let testItem: TestValidatableValueHost | null = null;
         expect(()=> testItem = new TestValidatableValueHost(vm, {
@@ -934,7 +670,7 @@ describe('addExternalIssuesFound', () => {
             }
         };
 
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
@@ -983,7 +719,7 @@ describe('addExternalIssuesFound', () => {
             }
         };
 
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
@@ -1333,7 +1069,7 @@ describe('addExternalIssueFound', () => {
             }
         };
 
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
@@ -1361,7 +1097,7 @@ describe('addExternalIssueFound', () => {
             }
         };
 
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
@@ -1517,7 +1253,7 @@ describe('clearExternalIssuesFound', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
@@ -1561,7 +1297,7 @@ describe('clearExternalIssuesFound', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',

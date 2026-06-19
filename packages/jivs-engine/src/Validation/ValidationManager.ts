@@ -359,25 +359,25 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * this value.
      * @returns when true, the validation snapshot has changed.
      */
-    public addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
-    {
+    public addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean {
         let changed = false;
-        if (!error.valueHostName) 
+        if (!error.valueHostName)
             error.valueHostName = ModelValidatorsValueHostName;
         let vh = this.getValueHost(error.valueHostName);
         // disabled reroutes to ModelValidatorsValueHost so we can still show it somewhere
         if (vh && !vh.isEnabled()) {
             vh = null;
+            this.logger.message(LoggingLevel.Warn, () => `ValueHost ${error.valueHostName} is disabled. Rerouting error to ${ModelValidatorsValueHostName} ValueHost.`);
             error.valueHostName = ModelValidatorsValueHostName;
         }
-        if (!vh)
-            if (error.valueHostName === ModelValidatorsValueHostName) {
-                vh = this.createModelValidatorsValueHost();
-            }
-            else {
+        if (!vh) {
+            vh = this.createModelValidatorsValueHost();
+            if (error.valueHostName !== ModelValidatorsValueHostName) {
                 this.logger.message(LoggingLevel.Warn, () => `Could not find ValueHost with name ${error.valueHostName}`);
-                return false;
+                error.valueHostName = ModelValidatorsValueHostName;
             }
+        }
+            
         if (vh instanceof ValidatableValueHostBase)
             if (vh.addExternalIssueFound(error, determinedLocally, options))
                 changed = true;
