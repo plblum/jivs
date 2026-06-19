@@ -3,7 +3,7 @@
  * @module Validator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
-import { ExternalIssueFound, IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';

@@ -6,8 +6,7 @@ import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
-    ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    ExternalIssueFound
+    ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -78,6 +77,8 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
         }, this);
     }        
     public gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+        for (const name of this.associatedValueHostNames)
+            collection.add(name);
     }
 
     public get handledErrorCodes(): Array<string>
@@ -93,6 +94,7 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
         return this.handledErrorCodes.includes(errorCode);
     }    
     public validate(options?: ValidateOptions | undefined): ValueHostValidateResult | null {
+        this.validateCallCount++;
         this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.status =
                 this.validateWillReturn ? this.validateWillReturn.status : ValidationStatus.NotAttempted;
@@ -102,6 +104,20 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
             return stateToUpdate;
         }, this);
         return this.validateWillReturn;    // setup to allow setValueOptions.validate to invoke it.
+    }
+    public associatedValueHostNames: Array<string> = [];
+    public validateCallCount: number = 0;
+
+    
+    public get exposed_externalIssuesFound(): Array<IssueFound> | null {
+        return this.externalIssuesFound;
+    }
+    public get exposed_issuesFound(): Array<IssueFound> | null {
+        return this.instanceState.issuesFound;
+    }
+    public exposed_setIssueFound(issueFound: IssueFound): boolean 
+    {
+        return this.setIssueFound(issueFound)
     }
 
 }
@@ -486,7 +502,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
 });
 
 // clearValidation(): void
-describe('ValidatableValueHostBase.clearValidation', () => {
+describe('clearValidation', () => {
     test('After validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
 
         let setup = setupValidatableValueHostBase({}, null, ValidationStatus.Undetermined);
@@ -532,13 +548,13 @@ describe('ValidatableValueHostBase.clearValidation', () => {
 
     });
 
-    test('Without calling validate but with ExternalIssueFound (Error), Ensure the state discards ExternalIssueFound after clear', () => {
+    test('Without calling validate but with external IssuesFound (Error), Ensure the state discards external IssuesFound after clear', () => {
         let setup = setupValidatableValueHostBase({}, null, ValidationStatus.Undetermined);
 
-        setup.valueHost.setExternalIssueFound({
+        setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        });
+        }, true);
 
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
@@ -556,7 +572,8 @@ describe('ValidatableValueHostBase.clearValidation', () => {
                 externalIssuesFound: [
                     {
                         errorMessage: 'ERROR',
-                        severity: ValidationSeverity.Error
+                        severity: ValidationSeverity.Error,
+                        doNotSave: true
                     }
                 ]
             },
@@ -573,7 +590,18 @@ describe('ValidatableValueHostBase.clearValidation', () => {
 // doNotSave: boolean
 describe('doNotSave', () => {
 
-    function trydoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
+/* Rules are:
+- asyncProcessing=true, doNotSave=true
+- ValidationStatus=NeedsValidation, doNotSave=true
+- ValidationStatus=Disabled, doNotSave=false
+- Any IssuesFound or ExternalIssuesFound with doNotSave=true, doNotSave=true (overridden by ValidationStatus and asyncProcessing)
+- otherwise false
+*/    
+
+    function tryDoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean,
+        initialIssuesFound: Array<IssueFound> = [],
+        externalIssuesFound: Array<IssueFound> | null = null
+    ): void {
         let vhConfig: ValidatableValueHostBaseConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost'
@@ -582,30 +610,96 @@ describe('doNotSave', () => {
         let state: Partial<ValidatableValueHostBaseInstanceState> = {
             name: 'Field1',
             status: initialValidationStatusCode,
-            issuesFound: [],
+            issuesFound: initialIssuesFound,
             asyncProcessing: hasPendings
         };
 
         let setup = setupValidatableValueHostBase(vhConfig, state);
+        if (externalIssuesFound)
+            setup.valueHost.addExternalIssuesFound(externalIssuesFound, true);
 
         expect(setup.valueHost.doNotSave).toBe(expectedResult);
 
     }    
-    test('ValidationStatus = Valid, doNotSave=false', () => {
-        trydoNotSave(ValidationStatus.Valid, false, false);
+    test('ValidationStatus = Valid and asyncProcessing=false, doNotSave=false', () => {
+        tryDoNotSave(ValidationStatus.Valid, false, false);
+        issuesFoundImpact_NoAsyncProcessing(ValidationStatus.Valid);
     });
-    test('ValidationStatus = Undetermined, doNotSave=false', () => {
-        trydoNotSave(ValidationStatus.Undetermined, false, false);
+    test('ValidationStatus = Valid and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.Valid, true, true);
+    });    
+    test('ValidationStatus = Undetermined and asyncProcessing=false, doNotSave=false without issuesfound, doNotSave=true when issuesFound indicate so', () => {
+        tryDoNotSave(ValidationStatus.Undetermined, false, false);
+        issuesFoundImpact_NoAsyncProcessing(ValidationStatus.Undetermined);
     });
-    test('ValidationStatus = Invalid, doNotSave=true', () => {
-        trydoNotSave(ValidationStatus.Invalid, false, true);
+    test('ValidationStatus = Undetermined and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.Undetermined, true, true);
+    });    
+    test('ValidationStatus = Invalid and asyncProcessing=false, doNotSave=false without issuesfound, doNotSave=true when issuesFound indicate so', () => {
+        tryDoNotSave(ValidationStatus.Invalid, false, false);
+        issuesFoundImpact_NoAsyncProcessing(ValidationStatus.Invalid);
     });
-    test('ValidationStatus = Valid but with async pending, doNotSave=true', () => {
-        trydoNotSave(ValidationStatus.Valid, true, true);
+    test('ValidationStatus = Invalid and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.Invalid, true, true);
     });
-    test('ValidationStatus = NeedsValidation, doNotSave=true', () => {
-        trydoNotSave(ValidationStatus.NeedsValidation, true, true);
+    test('ValidationStatus = NeedsValidation and asyncProcessing=false, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.NeedsValidation, false, true);
     });
+    test('ValidationStatus = NeedsValidation and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.NeedsValidation, true, true);
+    });
+    test('ValidationStatus = Disabled and asyncProcessing=false, doNotSave=false', () => {
+        tryDoNotSave(ValidationStatus.Disabled, false, false);
+    });
+    test('ValidationStatus = Disabled and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.Disabled, true, true);
+    });
+    test('ValidationStatus = NotAttempted and asyncProcessing=false, doNotSave=false without issuesfound, doNotSave=true when issuesFound indicate so', () => {
+        tryDoNotSave(ValidationStatus.NotAttempted, false, false);
+        issuesFoundImpact_NoAsyncProcessing(ValidationStatus.NotAttempted);
+    });
+    test('ValidationStatus = NotAttempted and asyncProcessing=true, doNotSave=true', () => {
+        tryDoNotSave(ValidationStatus.NotAttempted, true, true);
+    });    
+    function issuesFoundImpact_NoAsyncProcessing(valStatus: ValidationStatus) {
+        // when we have any issuesfound or externalissues found, we use their doNotSave flags instead of ValidationStatus.
+        // With one issueFound.doNotSave=true
+        tryDoNotSave(valStatus, false, true, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: true }]);
+        // With one issueFound.doNotSave=false
+        tryDoNotSave(valStatus, false, false, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false }]);
+        // With multiple issueFound with mixed doNotSave but at least one is true, doNotSave=true
+        tryDoNotSave(valStatus, false, true, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: true }]);
+        // With multiple issueFound with with all doNotSave=false, doNotSave=false
+        tryDoNotSave(valStatus, false, false, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }]);
+        // With external issues found with mixed doNotSave but at least one is true, doNotSave=true
+        tryDoNotSave(valStatus, false, true, [], [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: true }]);
+        // With external issues found with all doNotSave=false, doNotSave=false
+        tryDoNotSave(valStatus, false, false, [], [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }]);
+        // both issuesfound and externalissues where one issuefound is doNotSave=true, doNotSave=true
+        tryDoNotSave(valStatus, false, true, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: true }],
+            [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }]);
+        // both issuesfound and externalissues where one externalissue is doNotSave=true, doNotSave=true
+        tryDoNotSave(valStatus, false, true, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }],
+            [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+                { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: true }]);
+        // both issuesfound and externalissues where one issueFound are doNotSave=true, doNotSave=true
+        tryDoNotSave(valStatus, false, true, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: true }],
+            [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+                { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }]);
+        // both issuesfound and externalissues where all issueFound and externalissues are doNotSave=false, doNotSave=false
+        tryDoNotSave(valStatus, false, false, [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+            { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }],
+            [{ errorMessage: 'Error', severity: ValidationSeverity.Error, doNotSave: false },
+                { errorMessage: 'Error2', severity: ValidationSeverity.Error, doNotSave: false }]);        
+    }
 
 });
 describe('corrected property', () => {
@@ -638,18 +732,18 @@ describe('corrected property', () => {
     test('Initially corrected=true then use setExternalIssuesFound, corrected=false', () => {
         let setup = setupValidatableValueHostBase(null, null);
         setup.valueHost.setCorrected(true);
-        setup.valueHost.setExternalIssueFound({
+        setup.valueHost.addExternalIssueFound({
             errorMessage: 'Error',
             errorCode: 'EC',
-        });
+        }, true);
         expect(setup.valueHost.corrected).toBe(false);
     });    
     test('Initially corrected=true then use clearExternalIssuesFound, corrected=false', () => {
         let setup = setupValidatableValueHostBase(null, null);
-        setup.valueHost.setExternalIssueFound({ // because clearExternalIssuesFound depends on an existing error to take any action
+        setup.valueHost.addExternalIssueFound({ // because clearExternalIssuesFound depends on an existing error to take any action
             errorMessage: 'Error',
             errorCode: 'EC',
-        });        
+        }, true);        
         setup.valueHost.setCorrected(true);
         setup.valueHost.clearExternalIssuesFound();
         expect(setup.valueHost.corrected).toBe(false);
@@ -661,66 +755,422 @@ describe('corrected property', () => {
         expect(setup.valueHost.corrected).toBe(false);
     });        
 });
-
-describe('ValidatableValueHostBase.setExternalIssueFound', () => {
-    test('One call with error adds to the list for the ModelValidatorsValueHost', () => {
+describe('addExternalIssuesFound', () => {
+    test('Adds multiple issues in order', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setExternalIssueFound({
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR 1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'WARNING 1',
+                severity: ValidationSeverity.Warning
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR 1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            },
+            {
+                errorMessage: 'WARNING 1',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            }
+        ]);
+    });
+
+    test('Applies default doNotSave per item', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'WARNING',
+                severity: ValidationSeverity.Warning
+            }
+        ], false);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR',
+                severity: ValidationSeverity.Error,
+                doNotSave: false
+            },
+            {
+                errorMessage: 'WARNING',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            }
+        ]);
+    });
+
+    test('Preserves explicit doNotSave values per item', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR',
+                severity: ValidationSeverity.Error,
+                doNotSave: false
+            },
+            {
+                errorMessage: 'WARNING',
+                severity: ValidationSeverity.Warning,
+                doNotSave: true
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR',
+                severity: ValidationSeverity.Error,
+                doNotSave: false
+            },
+            {
+                errorMessage: 'WARNING',
+                severity: ValidationSeverity.Warning,
+                doNotSave: true
+            }
+        ]);
+    });
+
+    test('Same errorCode in batch replaces earlier issue instead of appending', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR 1',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'ERROR 2',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Warning
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR 2',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            }
+        ]);
+    });
+
+    test('Distinct errorCode values append in order', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR 1',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'ERROR 2',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Error
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR 1',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            },
+            {
+                errorMessage: 'ERROR 2',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }
+        ]);
+    });
+
+    test('Adding a batch clears corrected', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setCorrected(true);
+
+        expect(setup.valueHost.corrected).toBe(true);
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+
+    test('onValueHostValidationStateChanged not called when options.skipCallback=true', () => {
+        let onValidateResult: ValueHostValidationState | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+
+        addGeneratorToServices(vmConfig.services);
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
+            valueHostType: 'TestValidatableValueHost',
+            name: 'Field1'
+        }, null) as TestValidatableValueHost;
+
+        let result = vh.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'WARNING',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Warning
+            }
+        ], true, { skipCallback: true });
+
+        expect(result).toBe(true);
+        expect(onValidateResult).toBeNull();
+        expect(vh.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            },
+            {
+                errorMessage: 'WARNING',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            }
+        ]);
+    });
+
+    test('onValueHostValidationStateChanged called with current validation state', () => {
+        let onValidateResult: ValueHostValidationState | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+
+        addGeneratorToServices(vmConfig.services);
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
+            valueHostType: 'TestValidatableValueHost',
+            name: 'Field1'
+        }, null) as TestValidatableValueHost;
+
+        let result = vh.addExternalIssuesFound([
+            {
+                errorMessage: 'ERROR',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'WARNING',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Warning
+            }
+        ], true);
+
+        expect(result).toBe(true);
+        expect(vh.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'ERROR',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            },
+            {
+                errorMessage: 'WARNING',
+                errorCode: 'EC2',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            }
+        ]);
+        expect(onValidateResult).toEqual(<ValueHostValidationState>{
+            isValid: false,
+            issuesFound: [
+                {
+                    valueHostName: 'Field1',
+                    errorCode: 'EC1',
+                    severity: ValidationSeverity.Error,
+                    errorMessage: 'ERROR',
+                    summaryMessage: 'ERROR',
+                    doNotSave: true
+                },
+                {
+                    valueHostName: 'Field1',
+                    errorCode: 'EC2',
+                    severity: ValidationSeverity.Warning,
+                    errorMessage: 'WARNING',
+                    summaryMessage: 'WARNING',
+                    doNotSave: false
+                }
+            ],
+            doNotSave: true,
+            asyncProcessing: false,
+            status: ValidationStatus.Invalid,
+            corrected: false
+        });
+    });
+
+    test('Empty list is a no-op', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssuesFound([], true);
+
+        expect(result).toBe(false);
+        expect(setup.valueHost.exposed_externalIssuesFound).toBeNull();
+    });
+    test('Adding external issues does not overwrite existing validator-managed issues', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let setResult = setup.valueHost.exposed_setIssueFound({
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+
+        expect(setResult).toBe(true);
+        expect(setup.valueHost.exposed_issuesFound).toEqual(<IssueFound[]>[
+            {
+                valueHostName: 'Field1',
+                errorMessage: 'VALIDATOR ERROR',
+                summaryMessage: 'VALIDATOR ERROR',
+                errorCode: 'VAL1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }
+        ]);
+
+        let result = setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'EXTERNAL ERROR',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error
+            }
+        ], true);
+
+        expect(result).toBe(true);
+
+        expect(setup.valueHost.exposed_issuesFound).toEqual(<IssueFound[]>[
+            {
+                valueHostName: 'Field1',
+                errorMessage: 'VALIDATOR ERROR',
+                summaryMessage: 'VALIDATOR ERROR',
+                errorCode: 'VAL1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }
+        ]);
+
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'EXTERNAL ERROR',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }
+        ]);
+    });    
+});
+describe('addExternalIssueFound', () => {
+    test('One call with error adds to the list', () => {
+        let setup = setupValidatableValueHostBase();
+
+        expect(() => setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        })).not.toThrow();
+        }, true)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1); // first changes the value; second changes ValidationStatus
         let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
         expect(valueChange.externalIssuesFound).toBeDefined();
         expect(valueChange.externalIssuesFound![0]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error
+                severity: ValidationSeverity.Error,
+                doNotSave: true
 
             });
     });
 
-    test('Two calls with errors (ERROR, WARNING) adds to the list for the ModelValidatorsValueHost', () => {
+    test('Two calls with errors (ERROR, WARNING) adds to the list', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setExternalIssueFound({
+        expect(() => setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        })).not.toThrow();
-        expect(() => setup.valueHost.setExternalIssueFound({
+        }, true)).not.toThrow();
+        expect(() => setup.valueHost.addExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
-        })).not.toThrow();
+        }, true)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
         expect(valueChange1.externalIssuesFound).toBeDefined();
         expect(valueChange1.externalIssuesFound![0]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error
+                severity: ValidationSeverity.Error,
+                doNotSave: true
             });
         let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
         expect(valueChange2.externalIssuesFound).toBeDefined();
         expect(valueChange2.externalIssuesFound![0]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error
+                severity: ValidationSeverity.Error,
+                doNotSave: true
             });
         expect(valueChange2.externalIssuesFound![1]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'WARNING',
-                severity: ValidationSeverity.Warning
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
             });
     });
     test('One call with null makes no changes to the state', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setExternalIssueFound(null!)).not.toThrow();
+        expect(() => setup.valueHost.addExternalIssueFound(null!, true)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
@@ -729,25 +1179,299 @@ describe('ValidatableValueHostBase.setExternalIssueFound', () => {
     test('With ValueHost.isEnabled=false, still applied and now has a logged message', () => {
         let setup = setupValidatableValueHostBase();
         setup.valueHost.setEnabled(false);
-        expect(() => setup.valueHost.setExternalIssueFound({
+        expect(() => setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        })).not.toThrow();
+        }, true)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the enabled flag; second changes ValidationStatus
         let valueChange = <ValidatableValueHostBaseInstanceState>changes[1];
         expect(valueChange.externalIssuesFound).toBeDefined();
         expect(valueChange.externalIssuesFound![0]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error
-
+                severity: ValidationSeverity.Error,
+                doNotSave: true
             });
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ExternalIssueFound applied on disabled ValueHost.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('IssueFound applied on disabled ValueHost', LoggingLevel.Warn, null)).toBeTruthy();
+    });
+    test('Error with determinedLocally=false defaults doNotSave=false', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
+        }, false);
+
+        expect(result).toBe(true);
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(1);
+
+        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
+        expect(valueChange.externalIssuesFound).toBeDefined();
+        expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            doNotSave: false
+        });
     });
 
+    test('Explicit doNotSave is preserved', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            doNotSave: false
+        }, true);
+
+        expect(result).toBe(true);
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(1);
+
+        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
+        expect(valueChange.externalIssuesFound).toBeDefined();
+        expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            doNotSave: false
+        });
+    });
+
+    test('Same errorCode replaces existing external issue instead of appending', () => {
+        let setup = setupValidatableValueHostBase();
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR 1',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR 2',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Warning
+        }, true)).toBe(true);
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(2);
+
+        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        expect(valueChange2.externalIssuesFound).toBeDefined();
+        expect(valueChange2.externalIssuesFound!.length).toBe(1);
+        expect(valueChange2.externalIssuesFound![0]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR 2',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
+        });
+    });
+
+    test('Different errorCode values append to the external issues list', () => {
+        let setup = setupValidatableValueHostBase();
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR 1',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR 2',
+            errorCode: 'EC2',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(2);
+
+        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        expect(valueChange2.externalIssuesFound).toBeDefined();
+        expect(valueChange2.externalIssuesFound!.length).toBe(2);
+        expect(valueChange2.externalIssuesFound![0]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR 1',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+        expect(valueChange2.externalIssuesFound![1]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR 2',
+            errorCode: 'EC2',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+    });
+
+    test('Adding an external issue clears corrected', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setCorrected(true);
+
+        expect(setup.valueHost.corrected).toBe(true);
+
+        let result = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(result).toBe(true);
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+
+    test('onValueHostValidationStateChanged not called when options.skipCallback=true', () => {
+        let onValidateResult: ValueHostValidationState | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+
+        addGeneratorToServices(vmConfig.services);
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
+            valueHostType: 'TestValidatableValueHost',
+            name: 'Field1'
+        }, null) as TestValidatableValueHost;
+
+        let result = vh.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true, { skipCallback: true });
+
+        expect(result).toBe(true);
+        expect(onValidateResult).toBeNull();
+    });
+
+    test('onValueHostValidationStateChanged called with current validation state', () => {
+        let onValidateResult: ValueHostValidationState | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+
+        addGeneratorToServices(vmConfig.services);
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<ValidatableValueHostBaseConfig>{
+            valueHostType: 'TestValidatableValueHost',
+            name: 'Field1'
+        }, null) as TestValidatableValueHost;
+
+        let result = vh.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(result).toBe(true);
+        expect(onValidateResult).toEqual(<ValueHostValidationState>{
+            isValid: false,
+            issuesFound: [{
+                valueHostName: 'Field1',
+                errorCode: 'EC1',
+                severity: ValidationSeverity.Error,
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR',
+                doNotSave: true
+            }],
+            doNotSave: true,
+            asyncProcessing: false,
+            status: ValidationStatus.Invalid,
+            corrected: false
+        });
+    });
+
+    test('Returns true when a real change is applied', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            errorCode: 'EC1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(result).toBe(true);
+    });
+    test('Non-warning defaults doNotSave to determinedLocally=true when omitted', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let result = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(result).toBe(true);
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(1);
+
+        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
+        expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+    });  
+    test('External issue with summaryMessage preserves it in getIssueFound', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            summaryMessage: 'EXTERNAL SUMMARY',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(addResult).toBe(true);
+
+        let result = setup.valueHost.getIssueFound('EXT1');
+
+        expect(result).toEqual(<IssueFound>{
+            valueHostName: 'Field1',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error,
+            errorMessage: 'EXTERNAL ERROR',
+            summaryMessage: 'EXTERNAL SUMMARY',
+            doNotSave: true
+        });
+    });
+
+    test('External issue with summaryMessage preserves it in getIssuesFound', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            summaryMessage: 'EXTERNAL SUMMARY',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(addResult).toBe(true);
+
+        let result = setup.valueHost.getIssuesFound();
+
+        expect(result).toEqual(<IssueFound[]>[
+            {
+                valueHostName: 'Field1',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error,
+                errorMessage: 'EXTERNAL ERROR',
+                summaryMessage: 'EXTERNAL SUMMARY',
+                doNotSave: true
+            }
+        ]);
+    });    
 });
 describe('clearExternalIssuesFound', () => {
     test('Call while no existing makes not changes to the state', () => {
@@ -762,10 +1486,10 @@ describe('clearExternalIssuesFound', () => {
     test('Set then Clear creates two state entries with state.ExternalIssuesFound undefined by the end', () => {
         let setup = setupValidatableValueHostBase();
 
-        expect(() => setup.valueHost.setExternalIssueFound({
+        expect(() => setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        })).not.toThrow();
+        }, true)).not.toThrow();
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(true);
@@ -775,9 +1499,10 @@ describe('clearExternalIssuesFound', () => {
         let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
         expect(valueChange1.externalIssuesFound).toBeDefined();
         expect(valueChange1.externalIssuesFound![0]).toEqual(
-            <ExternalIssueFound>{
+            <IssueFound>{
                 errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error
+                severity: ValidationSeverity.Error,
+                doNotSave: true
             });
         let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
         expect(valueChange2.externalIssuesFound).toBeUndefined();
@@ -809,10 +1534,10 @@ describe('clearExternalIssuesFound', () => {
 
         vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
 
-        expect(() => vh.setExternalIssueFound({
+        expect(() => vh.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        }, { skipCallback: true })).not.toThrow();
+        }, true, { skipCallback: true })).not.toThrow();
         expect(onValidateResult).toBeNull();  // because of skipCallback
 
         let result = vh.clearExternalIssuesFound();
@@ -852,21 +1577,109 @@ describe('clearExternalIssuesFound', () => {
         }, null) as TestValidatableValueHost;
         vm.validate({ skipCallback: true });
 
-        vh.setExternalIssueFound({
+        vh.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        }, { skipCallback: true });
+        }, true, { skipCallback: true });
         expect(onValidateResult).toBeNull();  // because of skipCallback
 
         let result = vh.clearExternalIssuesFound({ skipCallback: true});
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull(); // because of skipCallback
     });       
+    test('Clearing externalIssuesFound does not clear validator-managed issuesFound', () => {
+        let setup = setupValidatableValueHostBase();
 
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        expect(setup.valueHost.exposed_setIssueFound(validatorIssue)).toBe(true);
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        expect(setup.valueHost.exposed_issuesFound).toEqual([validatorIssue]);
+        expect(setup.valueHost.exposed_externalIssuesFound).toEqual(<IssueFound[]>[
+            {
+                errorMessage: 'EXTERNAL ERROR',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }
+        ]);
+
+        expect(() => setup.valueHost.clearExternalIssuesFound()).not.toThrow();
+
+        expect(setup.valueHost.exposed_issuesFound).toEqual([validatorIssue]);
+        expect(setup.valueHost.exposed_externalIssuesFound).toBeNull();
+    });
+
+    test('After clearing externalIssuesFound, getIssuesFound returns only validator-managed issues', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        expect(setup.valueHost.exposed_setIssueFound(validatorIssue)).toBe(true);
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        expect(() => setup.valueHost.clearExternalIssuesFound()).not.toThrow();
+
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
+        expect(issuesFound).toEqual([validatorIssue]);
+    });
+
+    test('When there are only external issues, clearing externalIssuesFound makes getIssuesFound return null', () => {
+        let setup = setupValidatableValueHostBase();
+
+        expect(setup.valueHost.addExternalIssuesFound([
+            {
+                errorMessage: 'EXTERNAL ERROR',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error
+            },
+            {
+                errorMessage: 'EXTERNAL WARNING',
+                errorCode: 'EXT2',
+                severity: ValidationSeverity.Warning
+            }
+        ], true)).toBe(true);
+
+        expect(setup.valueHost.exposed_issuesFound).toBeNull();
+        expect(setup.valueHost.exposed_externalIssuesFound).not.toBeNull();
+
+        expect(() => setup.valueHost.clearExternalIssuesFound()).not.toThrow();
+
+        expect(setup.valueHost.exposed_issuesFound).toBeNull();
+        expect(setup.valueHost.exposed_externalIssuesFound).toBeNull();
+
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
+        expect(issuesFound).toBeNull();
+    });
 });
 
 // getIssueFound(validatorConfig: ValidatorConfig): IssueFound | null
-describe('ValidatableValueHostBase.getIssueFound only checking without calls to validate', () => {
+describe('getIssueFound only checking without calls to validate', () => {
     test('Pass null returns null', () => {
         let setup = setupValidatableValueHostBase(null, null);
         let issueFound: IssueFound | null = null;
@@ -918,9 +1731,189 @@ describe('ValidatableValueHostBase.getIssueFound only checking without calls to 
     });                
 
 });
+describe('getIssueFound various', () => {
+    test('Returns null when disabled even if validator-managed issue exists', () => {
+        let setup = setupValidatableValueHostBase();
 
+        let setResult = setup.valueHost.exposed_setIssueFound({
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+
+        expect(setResult).toBe(true);
+
+        setup.valueHost.setEnabled(false);
+
+        let result = setup.valueHost.getIssueFound('VAL1');
+
+        expect(result).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
+
+    });
+
+    test('Returns null when errorCode is null, empty, or whitespace', () => {
+        let setup = setupValidatableValueHostBase();
+
+        expect(setup.valueHost.getIssueFound(null as unknown as string)).toBeNull();
+        expect(setup.valueHost.getIssueFound('')).toBeNull();
+        expect(setup.valueHost.getIssueFound('   ')).toBeNull();
+    });
+
+    test('Returns matching validator-managed issue by errorCode', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let issue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        let setResult = setup.valueHost.exposed_setIssueFound(issue);
+
+        expect(setResult).toBe(true);
+        expect(setup.valueHost.exposed_issuesFound).toEqual([issue]);
+
+        let result = setup.valueHost.getIssueFound('VAL1');
+
+        expect(result).toEqual(issue);
+    });
+
+    test('Trims whitespace and returns matching validator-managed issue', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let issue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        let setResult = setup.valueHost.exposed_setIssueFound(issue);
+
+        expect(setResult).toBe(true);
+
+        let result = setup.valueHost.getIssueFound('  VAL1  ');
+
+        expect(result).toEqual(issue);
+    });
+
+    test('Returns null when no validator-managed or external issue matches', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let setResult = setup.valueHost.exposed_setIssueFound({
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        });
+
+        expect(setResult).toBe(true);
+
+        setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        let result = setup.valueHost.getIssueFound('MISSING');
+
+        expect(result).toBeNull();
+    });
+
+    test('Returns matching external issue by errorCode', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+
+        expect(addResult).toBe(true);
+
+        let result = setup.valueHost.getIssueFound('EXT1');
+
+        expect(result).toEqual(<IssueFound>{
+            valueHostName: 'Field1',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error,
+            errorMessage: 'EXTERNAL ERROR',
+            summaryMessage: 'EXTERNAL ERROR',
+            doNotSave: true
+        });
+    });
+
+    test('Returns matching external warning issue with normalized shape', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL WARNING',
+            errorCode: 'EXTWARN1',
+            severity: ValidationSeverity.Warning
+        }, true);
+
+        expect(addResult).toBe(true);
+
+        let result = setup.valueHost.getIssueFound('EXTWARN1');
+
+        expect(result).toEqual(<IssueFound>{
+            valueHostName: 'Field1',
+            errorCode: 'EXTWARN1',
+            severity: ValidationSeverity.Warning,
+            errorMessage: 'EXTERNAL WARNING',
+            summaryMessage: 'EXTERNAL WARNING',
+            doNotSave: false
+        });
+    });
+
+    test('Finds validator-managed and external issues from the combined visible issue set', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        let setResult = setup.valueHost.exposed_setIssueFound(validatorIssue);
+        expect(setResult).toBe(true);
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+        expect(addResult).toBe(true);
+
+        expect(setup.valueHost.getIssueFound('VAL1')).toEqual(validatorIssue);
+        expect(setup.valueHost.getIssueFound('EXT1')).toEqual(<IssueFound>{
+            valueHostName: 'Field1',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error,
+            errorMessage: 'EXTERNAL ERROR',
+            summaryMessage: 'EXTERNAL ERROR',
+            doNotSave: true
+        });
+    });
+
+});
 // getIssuesFound(): Array<IssueFound>
-describe('ValidatableValueHostBase.getIssuesFound without calling validate', () => {
+describe('getIssuesFound without calling validate', () => {
     test('Nothing to report returns null', () => {
         let setup = setupValidatableValueHostBase(null, null);
         let issuesFound: Array<IssueFound> | null = null;
@@ -928,12 +1921,12 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         expect(issuesFound).toBeNull();
     });
 
-    test('No Validation errors, but has ExternalIssueFound (Error) reports just the ExternalIssueFound', () => {
+    test('No Validation errors, but has external IssuesFound (Error) reports just the external IssuesFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setExternalIssueFound({
+        setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        });
+        }, true);
         let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -944,17 +1937,18 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
                 errorCode: 'GENERATED_0',
                 severity: ValidationSeverity.Error,
                 errorMessage: 'ERROR',
-                summaryMessage: 'ERROR'
+                summaryMessage: 'ERROR',
+                doNotSave: true
             },
         ];
         expect(issuesFound).toEqual(expected);
     });
-    test('No Validation errors, but has ExternalIssueFound (Severe) reports just the ExternalIssueFound', () => {
+    test('No Validation errors, but has external IssuesFound (Severe) reports just the external IssuesFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setExternalIssueFound({
+        setup.valueHost.addExternalIssueFound({
             errorMessage: 'SEVERE',
             severity: ValidationSeverity.Severe
-        });
+        }, true);
         let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -965,17 +1959,18 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
                 errorCode: 'GENERATED_0',
                 severity: ValidationSeverity.Severe,
                 errorMessage: 'SEVERE',
-                summaryMessage: 'SEVERE'
+                summaryMessage: 'SEVERE',
+                doNotSave: true
             },
         ];
         expect(issuesFound).toEqual(expected);
     });
-    test('No Validation errors, but has ExternalIssueFound (Warning) reports just the ExternalIssueFound', () => {
+    test('No Validation errors, but has external IssuesFound (Warning) reports just the external IssuesFound', () => {
         let setup = setupValidatableValueHostBase();
-        setup.valueHost.setExternalIssueFound({
+        setup.valueHost.addExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
-        });
+        }, true);
         let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -986,7 +1981,8 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
                 errorCode: 'GENERATED_0',
                 severity: ValidationSeverity.Warning,
                 errorMessage: 'WARNING',
-                summaryMessage: 'WARNING'
+                summaryMessage: 'WARNING',
+                doNotSave: false
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -1003,6 +1999,73 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         issuesFound = setup.valueHost.getIssuesFound()
         expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeNull();
     });         
+
+    test('Returns validator-managed issues when they exist and there are no external issues', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        let setResult = setup.valueHost.exposed_setIssueFound(validatorIssue);
+
+        expect(setResult).toBe(true);
+        expect(setup.valueHost.exposed_issuesFound).toEqual([validatorIssue]);
+        expect(setup.valueHost.exposed_externalIssuesFound).toBeNull();
+
+        let result = setup.valueHost.getIssuesFound();
+
+        expect(result).toEqual([validatorIssue]);
+    });
+
+    test('Returns combined validator-managed and external issues', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        let setResult = setup.valueHost.exposed_setIssueFound(validatorIssue);
+        expect(setResult).toBe(true);
+
+        let addResult = setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true);
+        expect(addResult).toBe(true);
+
+        let result = setup.valueHost.getIssuesFound();
+
+        expect(result).toEqual(<IssueFound[]>[
+            {
+                valueHostName: 'Field1',
+                errorMessage: 'VALIDATOR ERROR',
+                summaryMessage: 'VALIDATOR ERROR',
+                errorCode: 'VAL1',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            },
+            {
+                valueHostName: 'Field1',
+                errorCode: 'EXT1',
+                severity: ValidationSeverity.Error,
+                errorMessage: 'EXTERNAL ERROR',
+                summaryMessage: 'EXTERNAL ERROR',
+                doNotSave: true
+            }
+        ]);
+    });
 });
 describe('setEnabled', () => {
     test('When set to false, existing validation is cleared', () => {
@@ -1041,7 +2104,80 @@ describe('setEnabled', () => {
         expect(setup.valueHost.isValid).toBe(false);
     });    
 });
+describe('otherValueHostChangedNotification', () => {
+    test('Same ValueHost name is ignored', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['OtherField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.Valid);
 
+        setup.valueHost.otherValueHostChangedNotification('Field1', false);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.validateCallCount).toBe(0);
+    });
+
+    test('When validationStatus is NotAttempted, notification is ignored', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['OtherField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.NotAttempted);
+
+        setup.valueHost.otherValueHostChangedNotification('OtherField', false);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+        expect(setup.valueHost.validateCallCount).toBe(0);
+    });
+
+    test('When revalidate=false and validationStatus is already NeedsValidation, notification is ignored', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['OtherField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.NeedsValidation);
+
+        setup.valueHost.otherValueHostChangedNotification('OtherField', false);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.validateCallCount).toBe(0);
+    });
+
+    test('Unassociated ValueHost name is ignored', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['DifferentField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.Valid);
+
+        setup.valueHost.otherValueHostChangedNotification('OtherField', false);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.validateCallCount).toBe(0);
+    });
+
+    test('Associated ValueHost name with revalidate=false sets NeedsValidation', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['OtherField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.Valid);
+        setup.valueHost.setCorrected(true);
+        setup.valueHost.setAsyncProcess(true);
+
+        setup.valueHost.otherValueHostChangedNotification('OtherField', false);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.validateCallCount).toBe(0);
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.exposed_issuesFound).toBeNull();
+    });
+
+    test('Associated ValueHost name with revalidate=true calls validate', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.associatedValueHostNames = ['OtherField'];
+        setup.valueHost.setValidationStatus(ValidationStatus.Valid);
+        setup.valueHost.setValidateWillReturn(ValidationStatus.Invalid);
+
+        setup.valueHost.otherValueHostChangedNotification('OtherField', true);
+
+        expect(setup.valueHost.validateCallCount).toBe(1);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHost.exposed_issuesFound).not.toBeNull();
+    });
+});
 describe('toIValidatableValueHostBase', () => {
     test('Real instance match', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
@@ -1073,10 +2209,7 @@ describe('toIValidatableValueHostBase', () => {
             asyncProcessing: false,
             corrected: false,
             currentValidationState: {} as any,
-///!!! OBSOLETE
-            setExternalIssueFound: function (error: ExternalIssueFound): boolean {
-                throw new Error('Function not implemented.');
-            },
+
             addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
                 throw new Error("Method not implemented.");
             },
@@ -1156,7 +2289,161 @@ describe('toIValidatableValueHostBase', () => {
         expect(toIValidatableValueHostBase({ getName: null })).toBeNull();
     });
 });
+describe('currentValidationState', () => {
+    test('No issues returns a valid empty state', () => {
+        let setup = setupValidatableValueHostBase();
 
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: true,
+            issuesFound: null,
+            doNotSave: false,
+            asyncProcessing: false,
+            status: ValidationStatus.NotAttempted,
+            corrected: false
+        });
+    });
+    test('No issues but setValue returns a valid empty state with NeedsValidation', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setValue('Test');
+
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: true,
+            issuesFound: null,
+            doNotSave: true,
+            asyncProcessing: false,
+            status: ValidationStatus.NeedsValidation,
+            corrected: false
+        });
+    });
+    test('Validator-managed error returns invalid blocking state', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR ERROR',
+            summaryMessage: 'VALIDATOR ERROR',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        };
+
+        expect(setup.valueHost.exposed_setIssueFound(validatorIssue)).toBe(true);
+
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: false,
+            issuesFound: [validatorIssue],
+            doNotSave: true,
+            asyncProcessing: false,
+            status: ValidationStatus.Invalid,
+            corrected: false
+        });
+    });
+
+    test('External warning returns valid non-blocking state with issue present', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setValidateWillReturn(ValidationStatus.Valid);
+        setup.valueHost.setValue('Test');
+        setup.valueHost.validate();
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL WARNING',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Warning
+        }, true)).toBe(true);
+
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: true,
+            issuesFound: [
+                {
+                    valueHostName: 'Field1',
+                    errorCode: 'EXT1',
+                    severity: ValidationSeverity.Warning,
+                    errorMessage: 'EXTERNAL WARNING',
+                    summaryMessage: 'EXTERNAL WARNING',
+                    doNotSave: false
+                }
+            ],
+            doNotSave: false,
+            asyncProcessing: false,
+            status: ValidationStatus.Valid,
+            corrected: false
+        });
+    });
+
+    test('Combined validator-managed and external issues return correct aggregate state', () => {
+        let setup = setupValidatableValueHostBase();
+
+        let validatorIssue = <IssueFound>{
+            valueHostName: 'Field1',
+            errorMessage: 'VALIDATOR WARNING',
+            summaryMessage: 'VALIDATOR WARNING',
+            errorCode: 'VAL1',
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
+        };
+
+        expect(setup.valueHost.exposed_setIssueFound(validatorIssue)).toBe(true);
+        expect(setup.valueHost.addExternalIssueFound({
+            errorMessage: 'EXTERNAL ERROR',
+            errorCode: 'EXT1',
+            severity: ValidationSeverity.Error
+        }, true)).toBe(true);
+
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: false,
+            issuesFound: [
+                {
+                    valueHostName: 'Field1',
+                    errorMessage: 'VALIDATOR WARNING',
+                    summaryMessage: 'VALIDATOR WARNING',
+                    errorCode: 'VAL1',
+                    severity: ValidationSeverity.Warning,
+                    doNotSave: false
+                },
+                {
+                    valueHostName: 'Field1',
+                    errorCode: 'EXT1',
+                    severity: ValidationSeverity.Error,
+                    errorMessage: 'EXTERNAL ERROR',
+                    summaryMessage: 'EXTERNAL ERROR',
+                    doNotSave: true
+                }
+            ],
+            doNotSave: true,
+            asyncProcessing: false,
+            status: ValidationStatus.Invalid,
+            corrected: false
+        });
+    });
+
+    test('Corrected is reflected in currentValidationState', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setValidateWillReturn(ValidationStatus.Valid);
+        setup.valueHost.validate();
+        setup.valueHost.setCorrected(true);
+
+        let result = setup.valueHost.currentValidationState;
+
+        expect(result).toEqual(<ValueHostValidationState>{
+            isValid: true,
+            issuesFound: null,
+            doNotSave: false,
+            asyncProcessing: false,
+            status: ValidationStatus.Valid,
+            corrected: true
+        });
+    });
+});
 describe('toIValidatableValueHostBase function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
@@ -1203,10 +2490,7 @@ describe('toIValidatableValueHostBase function', () => {
         get currentValidationState(): ValueHostValidationState {
             throw new Error("Method not implemented.");
         }
-///!!! OBSOLETE
-        setExternalIssueFound(error: ExternalIssueFound): boolean {
-            throw new Error("Method not implemented.");
-        }
+
         addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             throw new Error('Method not implemented.');
         }

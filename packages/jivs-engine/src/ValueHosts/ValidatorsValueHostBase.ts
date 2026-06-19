@@ -7,7 +7,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, ExternalIssueFound } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -322,77 +322,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             return unordered.sort(fn);
     }
 
-    /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearExternalIssuesFound() first if starting a fresh list.
-     * It calls onValueHostValidationStateChanged if there was a changed to the state.
-     * 
-     * In this class, we first see if the errorcode in the error matches an existing validator.
-     * If so, we use that validator, and add an IssueFound from that validator.
-     * 
-     * @param error - A business logic error to show. If it has an errorCode assigned and the same
-     * errorCode is already recorded here, the new entry replaces the old one.
-     * @returns true when a change was made to the known validation state.
-     */
-    ///!!!OBSOLETE
-    public setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions): boolean {
-/*        
-        if (error) {
-            if (!this.isEnabled())
-            {
-                this.logger.message(LoggingLevel.Warn, () => `ExternalIssueFound applied on disabled ValueHost "${this.getName()}"`);                
-            }
-        
-            // see if the error code matches an existing validator.
-            // If so, use that validator's ValidatorValidateResult instead.
-            if (error.errorCode)
-                for (let i = 0; i < this.validators().length; i++) {
-                    let validator = this.validators()[i];
-                    let valResult = validator.tryValidatorSwap(error);
-                    if (valResult) {
-                        if (error.severity)
-                            valResult.issueFound!.severity = error.severity;
-                    // note: error.doNotSave is intentionally not copied to the issueFound. We want to preserve the IssueFound as capable of making the ValidationStatus Invalid
-                        let changed = this.updateInstanceState((stateToUpdate) => {
-                            let replacementIndex = -1;
-                            if (!stateToUpdate.issuesFound)
-                            */
-        /* istanbul ignore next */ // defensive. Current code always sets this up
-        /*
-                                stateToUpdate.issuesFound = [];
-                            // replace if the same issuefound exists
-                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++) {
-                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode) {
-                                    replacementIndex = issueIndex;
-                                    break;
-                                }
-                            }
-
-                            if (replacementIndex === -1)
-                                stateToUpdate.issuesFound.push(valResult.issueFound!);
-                            else
-                                stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
-                            stateToUpdate.status = ValidationStatus.Invalid;
-                            //NOTE: leave stateToUpdate.group and asyncProcessing alone
-                            return stateToUpdate;
-                        }, this);
-                        if (changed) {
-                            this.invokeOnValueHostValidationStateChanged(options);
-                            return true;
-                        }
-                    }
-                }
-        }
-        return super.setExternalIssueFound(error, options);
-        */
-        return false;
-    }
-
     /*
-    * An IssueFound normally arrives in the externalIssuesFound array via setExternalIssueFound. 
+    * An IssueFound normally arrives in the externalIssuesFound array via addExternalIssueFound. 
     * However, it may be overridden by the presence of a Validator already setup with the same errorcode.
     * In that case, we add or replace an IssueFound in instanceState.issuesFound previously setup.
     * Our intent: preserve the validator's error messages, and severity (can be overridden).

@@ -7,7 +7,7 @@
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type ExternalIssueFound, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
+import { type ValidateOptions, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
@@ -290,38 +290,6 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         }
         return false;        
     }
-    /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in associatedValueHostName.
-     * Each time its called, all previous business logic errors are abandoned.
-     * Internally, a ModelValidatorsValueHost is added to the list of ValueHosts to hold any
-     * error that lacks an associatedValueHostName.
-     * @param errors - A list of business logic errors to show or null to indicate no errors.
-     * @param options - Only considers the skipCallback option.
-     * @returns When true, the validation snapshot has changed.
-     */
-    public setExternalIssuesFound(errors: Array<ExternalIssueFound> | null, options?: ValidateOptions): boolean {
-        let changed = false;
-        for (let vh of this.validatableValueHost()) {
-            if (vh.clearExternalIssuesFound())
-                changed = true;
-        }
-        if (errors)
-            for (let error of errors) {
-                let vh = this.getValueHost(error.associatedValueHostName ?? ModelValidatorsValueHostName);
-                if (!vh && !error.associatedValueHostName) {
-                    vh = this.createModelValidatorsValueHost();
-                }
-                if (vh instanceof ValidatableValueHostBase)
-                    if (vh.setExternalIssueFound(error, options))
-                        changed = true;
-            }
-        if (changed)
-            this.notifyValidationStateChanged(null, options, true);
-        return changed;
-    }
 
     /**
      * For a list of external errors, meaning the developer's own code
@@ -397,6 +365,11 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         if (!error.valueHostName) 
             error.valueHostName = ModelValidatorsValueHostName;
         let vh = this.getValueHost(error.valueHostName);
+        // disabled reroutes to ModelValidatorsValueHost so we can still show it somewhere
+        if (vh && !vh.isEnabled()) {
+            vh = null;
+            error.valueHostName = ModelValidatorsValueHostName;
+        }
         if (!vh)
             if (error.valueHostName === ModelValidatorsValueHostName) {
                 vh = this.createModelValidatorsValueHost();

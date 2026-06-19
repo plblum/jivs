@@ -3,7 +3,6 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { PropertyValueHostConfig, PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidateOptions,
-    ExternalIssueFound,
     SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
@@ -369,9 +368,6 @@ describe('toIPropertyValueHost function', () => {
                 asyncProcessing: this.asyncProcessing,
                 corrected: this.corrected
             };
-        }
-        setExternalIssueFound(error: ExternalIssueFound, options?: ValidateOptions | undefined): boolean {
-            return true;
         }
         addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             this.issues.push(...issuesFound);

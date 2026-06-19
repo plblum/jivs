@@ -213,57 +213,6 @@ export interface IssueFound {
 }
 
 
-/**
- * When Business Logic gathers data from the UI, it runs its own final validation.
- * If its own business rule has been violated, it should be recorded with this interface
- * and passed to ValidationManager.setExternalIssuesFound where it becomes exposed to 
- * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
- * by specifying that valueHostName in AssociatedValueHostName.
- */
-///!!!OBSOLETE
-export interface ExternalIssueFound {
-    /**
-     * The error message to show to the user. It should be fully realized, no tokens
-     * or language conversion expected to be handled by the ValidationManager.
-     * The same message will be shown in the ValidationSummary and a ValueHost's validation.
-     */
-    errorMessage: string;
-    /**
-     * If the message is associated with a ValueHost, assign the ValueHostName.
-     * That makes the message available to the ValueHost's validation.
-     * The Summary can take advantage of it to establish a hyperlink on the message
-     * that jumps to the ValueHost's input field/element.
-     */
-    associatedValueHostName?: string;
-
-    /**
-     * Provides the severity. When unassigned, it uses ValidationSeverity.Error.
-     * Values of Error and Severe will change the ValidationReport to Invalid.
-     */
-    severity?: ValidationSeverity;
-    /**
-     * Optional information about the error to pass along to the ValidationSummary.
-     * It should be a short error code as a string. It will be used in the IssueFound instance
-     * returned from validate() and getIssuesFound().
-     * Same as ConditionType unless you set the ValidatorConfig.errorCode property.
-     * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
-     */
-    errorCode?: string;
-
-    /**
-     * Specialize situation: Normally ExternalIssuesFound are used to develop values
-     * like ValidationState.doNotSave and isValid after they are converted into 
-     * IssueFound objects. If you want to include an error message with
-     * no impact on doNotSave or isValid, assign to true and this will be reassigned
-     * to the IssueFound.displayOnly property during the conversion to IssueFound.
-     * Use case: ExternalIssueFound from the server is passed to the client
-     * which then becomes an IssueFound that should not block attempts to save
-     * because the user can only clear them after the next call to the server.
-     * Same property is on ExternalIssueFound for the same reason, to allow the server 
-     * to specify that the issue is only for display and should not block saving.
-     */
-    displayOnly?: boolean;    
-}
 
 
 /**
@@ -290,7 +239,7 @@ export interface ValidationState
 
     /**
      * All issues current found (except ValueHosts not matching the validation group which are excluded.)
-     * Includes issues found by setExternalIssuesFound too.
+     * Includes issues found by addExternalIssuesFound too.
      * If none, it is null
      */
     issuesFound: Array<IssueFound> | null;

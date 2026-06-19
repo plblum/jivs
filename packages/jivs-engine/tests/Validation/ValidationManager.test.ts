@@ -6,7 +6,7 @@ import { MockValidationServices } from "../TestSupport/mocks";
 import { ModelValidatorsValueHost, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
-import { IssueFound, ValidationSeverity, ValidationState, ExternalIssueFound, ValidateOptions, ValidationStatus, ValueHostValidateResult, SetIssuesFoundErrorCodeMissingBehavior } from '../../src/Interfaces/Validation';
+import { IssueFound, ValidationSeverity, ValidationState, ValidateOptions, ValidationStatus, ValueHostValidateResult, SetIssuesFoundErrorCodeMissingBehavior } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, toIValidationManager,
@@ -332,7 +332,8 @@ describe('startModifying()', () => {
                     valueHostName: 'Field1',
                     severity: ValidationSeverity.Severe,    // due to required
                     errorMessage: 'msg',
-                    summaryMessage: 'msg'
+                    summaryMessage: 'msg',
+                    doNotSave: true
                 }
             ]
         });
@@ -375,7 +376,8 @@ describe('startModifying()', () => {
                     valueHostName: 'Field1',
                     severity: ValidationSeverity.Severe,    // due to required
                     errorMessage: 'Error',
-                    summaryMessage: 'Error'
+                    summaryMessage: 'Error',
+                    doNotSave: true
                 }
             ]
         });
@@ -410,7 +412,8 @@ describe('startModifying()', () => {
                     valueHostName: 'Field1',
                     severity: ValidationSeverity.Severe,    // due to required
                     errorMessage: 'msg',
-                    summaryMessage: 'msg'
+                    summaryMessage: 'msg',
+                    doNotSave: true
                 }
             ]
         });
@@ -1460,7 +1463,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let validationState : ValidationState | null = null;
@@ -1489,7 +1493,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let validationState : ValidationState | null = null;
@@ -1588,14 +1593,16 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
         let expectedIssueFound2: IssueFound = {
             errorCode: NeverMatchesConditionType,
             valueHostName: 'Field2',
             errorMessage: 'Error 2: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         let validationState : ValidationState | null = null;
@@ -1615,13 +1622,13 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
 
         expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound, expectedIssueFound2]);
     });
-    test('With 1 ExternalIssueFound not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the externalIssueFound, and there is a new ValueHost for the BusinessLogic', () => {
+    test('With 1 external IssueFound not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the external IssueFound, and there is a new ValueHost for the BusinessLogic', () => {
         let setup = setupValidationManager();
-        let result = setup.validationManager.setExternalIssuesFound([
+        let result = setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
-        ]);
+        ], true);
         expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
         expect(setup.validationManager.doNotSave).toBe(true);
@@ -1630,7 +1637,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             severity: ValidationSeverity.Error,
             valueHostName: ModelValidatorsValueHostName,
             errorCode: 'GENERATED_0',
-            summaryMessage: 'BL_ERROR'
+            summaryMessage: 'BL_ERROR',
+            doNotSave: true
         }]);
         expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeInstanceOf(ModelValidatorsValueHost);
 
@@ -1639,19 +1647,20 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             severity: ValidationSeverity.Error,
             valueHostName: ModelValidatorsValueHostName,
             errorCode: 'GENERATED_0',
-            summaryMessage: 'BL_ERROR'
+            summaryMessage: 'BL_ERROR',
+            doNotSave: true
         }]);
     });
-    test('With 1 ValueHost that is assigned without validators 1 ExternalIssueFound, isValid=false, DoNotSave=true, getIssuesFound has the externalIssueFound, and there is a no ValueHost for the BusinessLogic', () => {
+    test('With 1 ValueHost that is assigned without validators 1 external IssueFound, isValid=false, DoNotSave=true, getIssuesFound has the external IssueFound, and there is a no ValueHost for the BusinessLogic', () => {
 
         let config = setupInputValueHostConfig(0, []);
         let setup = setupValidationManager([config]);
-        let result = setup.validationManager.setExternalIssuesFound([
+        let result = setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
-                associatedValueHostName: config.name
+                valueHostName: config.name
             }
-        ]);
+        ], true);
         expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
         expect(setup.validationManager.doNotSave).toBe(true);
@@ -1660,30 +1669,32 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
             errorCode: 'GENERATED_0',
-            summaryMessage: 'BL_ERROR'
+            summaryMessage: 'BL_ERROR',
+            doNotSave: true
         }]);
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
             errorCode: 'GENERATED_0',
-            summaryMessage: 'BL_ERROR'
+            summaryMessage: 'BL_ERROR',
+            doNotSave: true
         }]);
 
         expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(ModelValidatorsValueHostName)).toBeNull();
     });
-    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 ExternalIssueFound not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors externalIssueFound, BLValueHost has the BLError, InputValueHost has its own error', () => {
+    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 external IssueFound not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors external IssueFound, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         config.validatorConfigs![0].errorMessage = 'CONDITION ERROR';
         config.validatorConfigs![0].summaryMessage = 'SUMMARY CONDITION ERROR';
         let setup = setupValidationManager([config]);
-        let result = setup.validationManager.setExternalIssuesFound([
+        let result = setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
             }
-        ]);
+        ], true);
         expect(result).toBe(true);
         setup.validationManager.validate();
         expect(setup.validationManager.isValid).toBe(false);
@@ -1694,21 +1705,24 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
                 severity: ValidationSeverity.Error,
                 valueHostName: config.name,
                 errorCode: NeverMatchesConditionType,
-                summaryMessage: 'SUMMARY CONDITION ERROR'
+                summaryMessage: 'SUMMARY CONDITION ERROR',
+                doNotSave: true
             },
             <IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
                 valueHostName: ModelValidatorsValueHostName,
                 errorCode: 'GENERATED_0',
-                summaryMessage: 'BL_ERROR'
+                summaryMessage: 'BL_ERROR',
+                doNotSave: true
             }]);
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([<IssueFound>{
             errorMessage: 'CONDITION ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
             errorCode: NeverMatchesConditionType,
-            summaryMessage: 'SUMMARY CONDITION ERROR'
+            summaryMessage: 'SUMMARY CONDITION ERROR',
+            doNotSave: true
         }]);
 
         expect(setup.validationManager.getValueHost(ModelValidatorsValueHostName)).toBeInstanceOf(ModelValidatorsValueHost);
@@ -1718,24 +1732,25 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
                 severity: ValidationSeverity.Error,
                 valueHostName: ModelValidatorsValueHostName,
                 errorCode: 'GENERATED_0',
-                summaryMessage: 'BL_ERROR'
+                summaryMessage: 'BL_ERROR',
+                doNotSave: true
             }]);
     });
-    test('setExternalIssuesFound has not supplied any errors and returns false', () => {
+    test('addExternalIssuesFound has not supplied any errors and returns false', () => {
         let setup = setupValidationManager();
-        let result = setup.validationManager.setExternalIssuesFound([]);
+        let result = setup.validationManager.addExternalIssuesFound([], true);
         expect(result).toBe(false);
     });    
-    test('setExternalIssuesFound called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
+    test('addExternalIssuesFound called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
         let setup = setupValidationManager();
-        let result =  setup.validationManager.setExternalIssuesFound([
+        let result =  setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
             }
-        ]);
+        ], true);
         expect(result).toBe(true);
-        result = setup.validationManager.setExternalIssuesFound([]);
-        expect(result).toBe(true);
+        let result2 = setup.validationManager.addExternalIssuesFound([], true);
+        expect(result2).toBe(true);
     });        
     test('OnValidated callback test invokes callback with expected ValidationState', () => {
         let callbackValue: ValidationState | null = null;
@@ -1751,14 +1766,15 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             errorMessage: 'BL_ERROR',
             summaryMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            doNotSave: true
         };
 
-        setup.validationManager.setExternalIssuesFound([
+        setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
-        ]);
+        ], true);
         expect(callbackValue).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -1780,14 +1796,15 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             errorCode: 'GENERATED_0',
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: ModelValidatorsValueHostName
+            valueHostName: ModelValidatorsValueHostName,
+            doNotSave: true,
         };
 
-        setup.validationManager.setExternalIssuesFound([
+        setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR'
             }
-        ], { skipCallback: true});
+        ], true, { skipCallback: true});
         expect(callbackValue).toBeNull();
 
     });    
@@ -1833,7 +1850,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
-            severity: ValidationSeverity.Severe // only because Require conditions default to Severe
+            severity: ValidationSeverity.Severe, // only because Require conditions default to Severe
+            doNotSave: true
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
@@ -1861,7 +1879,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
@@ -1883,7 +1902,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         setup.validationManager.getInputValueHost('Field1')?.setInputValue(''); // requires text for duringEdit
@@ -1932,7 +1952,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
@@ -1973,7 +1994,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-            severity: ValidationSeverity.Error
+            severity: ValidationSeverity.Error,
+            doNotSave: true
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
@@ -2191,7 +2213,8 @@ describe('setIssuesFound', () => {
                     severity: s,
                     valueHostName: valueHostName,
                     errorMessage: 'Message errorcode ' + code + ' from IssueFound',
-                    summaryMessage: 'Summary errorcode ' + code + ' from IssueFound'                    
+                    summaryMessage: 'Summary errorcode ' + code + ' from IssueFound',
+                    doNotSave: s !== ValidationSeverity.Warning 
                 }
             );
         }
@@ -2601,10 +2624,7 @@ describe('toIValidationManager function', () => {
             },
             isValid: false,
             doNotSave: true,
-            ///!!!OBSOLETE
-            setExternalIssuesFound: function (errors: ExternalIssueFound[] | null, options?: ValidateOptions | undefined): boolean {
-                throw new Error("Function not implemented.");
-            },
+
             getIssuesForInput: function (valueHostName: string): IssueFound[] | null {
                 throw new Error("Function not implemented.");
             },
@@ -2671,7 +2691,7 @@ describe('toIValidationManager function', () => {
             addExternalIssueFound: function (error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
                 throw new Error('Function not implemented.');
             },
-            toValidationPayload: function (externalIssues: ExternalIssueFound[] | null): string {
+            toValidationPayload: function (externalIssues: IssueFound[] | null): string {
                 throw new Error('Function not implemented.');
             },
             fromValidationPayload: function (payload: string, encode?: ((text: string) => string) | null | undefined): boolean {

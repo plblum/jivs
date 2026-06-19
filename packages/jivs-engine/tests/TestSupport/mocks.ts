@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConf
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostConfig, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ExternalIssueFound, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -208,10 +208,7 @@ export class MockInputValueHost extends MockValueHost
     get currentValidationState(): ValueHostValidationState {
         throw new Error("Method not implemented.");
     }
-///!!!OBSOLETE
-    setExternalIssueFound(error: ExternalIssueFound): boolean {
-        throw new Error("Method not implemented.");
-    }
+
     clearExternalIssuesFound(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
@@ -233,6 +230,7 @@ export class MockInputValueHost extends MockValueHost
     {
         throw new Error("Method not implemented.");
     }
+
     public getConversionErrorMessage(): string | null
     {
         return this._conversionErrorMessage ?? null;
@@ -644,17 +642,13 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
     addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-    toValidationPayload(externalIssues: ExternalIssueFound[] | null): string {
+    toValidationPayload(externalIssues: IssueFound[] | null): string {
         throw new Error("Method not implemented.");
     }
     fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-//!!!OBSOLETE
-    public setExternalIssuesFound(errors: Array<ExternalIssueFound> | null): boolean
-    {
-        throw new Error("Method not implemented.");        
-    }        
+   
     getIssuesForInput(valueHostName: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }

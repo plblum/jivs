@@ -17,9 +17,9 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound, ExternalIssueFound } from '../Interfaces/Validation';
+import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -33,7 +33,6 @@ import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 /**
@@ -646,7 +645,7 @@ export function highestSeverity(issues: IssueFound[] | null): ValidationSeverity
         return null;
     let severity: ValidationSeverity = ValidationSeverity.Warning;
     for (let issue of issues) {
-        if (!issue.severity)
+        if (issue.severity == null)  // null/undefined
             issue.severity = ValidationSeverity.Error; // default severity
         if (issue.severity > severity)
             severity = issue.severity;

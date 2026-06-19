@@ -1078,7 +1078,8 @@ describe('Validator.validate', () => {
                     errorMessage: 'Local',
                     summaryMessage: 'Summary',
                     severity: ValidationSeverity.Error,
-                    valueHostName: 'Field1'
+                    valueHostName: 'Field1',
+                    doNotSave: true
                 }
             });
         });
@@ -1335,7 +1336,8 @@ describe('highestSeverity', () => {
             errorCode: 'code',
             severity: severity,
             errorMessage: '',
-            summaryMessage: undefined
+            summaryMessage: undefined,
+            doNotSave: severity !== ValidationSeverity.Warning   // just to have some difference in the objects based on severity
         };
     }
     

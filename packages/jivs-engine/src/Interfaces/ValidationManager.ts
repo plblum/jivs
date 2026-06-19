@@ -26,7 +26,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
-import { ValidateOptions, ExternalIssueFound, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
+import { ValidateOptions, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
 import { ValueHostInstanceState } from './ValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
@@ -107,17 +107,6 @@ export interface IValidationManager extends IValueHostsManager {
      * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
-    /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time its called, all previous business logic errors are abandoned.
-     * @param errors - A list of business logic errors to show or null to indicate no errors.
-     * @param options - Only considers the skipCallback option.
-     * @returns when true, the validation snapshot has changed.
-     */
-    setExternalIssuesFound(errors: Array<ExternalIssueFound> | null, options?: ValidateOptions): boolean;
     
     /**
      * For a list of external errors, meaning the developer's own code
@@ -210,7 +199,7 @@ export interface IValidationManager extends IValueHostsManager {
      * @param externalIssues - Errors from business logic, external validators, etc.
      * @returns Package ready for HTTP/API response
      */
-    toValidationPayload(externalIssues: Array<ExternalIssueFound> | null): string
+    toValidationPayload(externalIssues: Array<IssueFound> | null): string
 
     /**
      * Client-side: restore transferred IssueFound state from toValidationPayload().
@@ -303,7 +292,7 @@ export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks
 
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
-     * That includes validate(), clearValidation(), setExternalIssuesFound(), 
+     * That includes validate(), clearValidation(), addExternalIssuesFound(), 
      * clearExternalIssuesFound() and a few edge cases.
      * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
