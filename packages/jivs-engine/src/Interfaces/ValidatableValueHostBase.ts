@@ -49,6 +49,14 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
     clearValidation(options?: ValidateOptions): boolean;
 
     /**
+     * Determines if the ValueHost is matches to a specific group, or if no group is supplied,
+     * it is always matches.
+     * Allows loops through valueHosts to take options.group into account.
+     */
+    groupCheck(options?: ValidateOptions): boolean;
+
+
+    /**
      * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false when instanceState.status is Invalid. Any other instanceState.status
      * return true.

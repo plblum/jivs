@@ -1329,7 +1329,11 @@ describe('toIInputValueHost function', () => {
     class TestIInputValueHostImplementation implements IInputValueHost {
 
         valueHostsManager: IValidationManager = {} as IValidationManager;       
-        dispose(): void {}
+        dispose(): void { }
+        groupCheck(options?: ValidateOptions | undefined): boolean {
+            throw new Error("Method not implemented.");
+        }
+        
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }

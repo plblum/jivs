@@ -198,7 +198,10 @@ export class MockInputValueHost extends MockValueHost
     isValid: boolean = false;
     asyncProcessing: boolean = false;
     corrected: boolean = false;
-    
+    groupCheck(options?: ValidateOptions | undefined): boolean {
+        return true;
+    }
+
     get doNotSave(): boolean
     {
         throw new Error("Method not implemented.");

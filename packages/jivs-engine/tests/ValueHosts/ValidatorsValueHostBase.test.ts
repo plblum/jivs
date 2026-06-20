@@ -3099,6 +3099,7 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+
         private issues: IssueFound[] = [];
         private data: Map<string, ValidTypesForInstanceStateStorage> = new Map();
         private hostValue: any = undefined;
@@ -3109,7 +3110,9 @@ describe('toIValidatorsValueHostBase function', () => {
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
         }
-
+        groupCheck(options?: ValidateOptions | undefined): boolean {
+            return true;
+        }
 
         getInputValue() {
             return this.hostInputValue;

@@ -1951,7 +1951,7 @@ describe('toIValidatableValueHostBase', () => {
             },
             addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
                 throw new Error("Method not implemented.");
-            },      
+            },
             clearExternalIssuesFound: function (options?: ValidateOptions): boolean {
                 throw new Error('Function not implemented.');
             },
@@ -2005,6 +2005,9 @@ describe('toIValidatableValueHostBase', () => {
             },
             setEnabled(enabled: boolean): void {
                 throw new Error("Method not implemented.");
+            },
+            groupCheck: function (options?: ValidateOptions | undefined): boolean {
+                throw new Error('Function not implemented.');
             }
         }
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
@@ -2198,6 +2201,9 @@ describe('toIValidatableValueHostBase function', () => {
     class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
         valueHostsManager: IValueHostsManager = {} as IValidationManager;  
         dispose(): void {}
+        groupCheck(options?: ValidateOptions | undefined): boolean {
+            throw new Error('Method not implemented.');
+        }
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }

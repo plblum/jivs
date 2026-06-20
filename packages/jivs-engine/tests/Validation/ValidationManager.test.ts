@@ -810,7 +810,7 @@ describe('addToValueHosts with Input or Property ValueHosts', () => {
         testValueHostInstanceState(testItem, 'Field1', copiedLastState);        
     });    
 });
-describe('ValueHostsManager.addOrUpdateValueHost completely replaces the ValueHost instance', () => {
+describe('addOrUpdateValueHost completely replaces the ValueHost instance', () => {
     test('Replace the config to install a validator', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
@@ -1321,7 +1321,7 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
         expect(() => initialValueHost.getFromInstanceState('anything')).toThrow();  // deref error
     });            
 });
-describe('ValidationManager.getValueHost, getValidatorsValueHost, getInputValueHost, getPropertyValueHost getCalcValueHost, getStaticValueHost', () => {
+describe('getValueHost, getValidatorsValueHost, getInputValueHost, getPropertyValueHost getCalcValueHost, getStaticValueHost', () => {
     test('With 2 InputValueHostConfigs, get each with all functions. Expect null for Calc and Static', () => {
 
         let config1: InputValueHostConfig = {
@@ -1470,7 +1470,7 @@ describe('ValidationManager.getValueHost, getValidatorsValueHost, getInputValueH
 // doNotSave: boolean
 // getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound>
 // getIssuesFound(group?: string): Array<IssueFound>
-describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound based on the results', () => {
+describe('validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound based on the results', () => {
     test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSave=false, getIssuesForInput=[], getIssuesFound=[]', () => {
         let setup = setupValidationManager();
         expect(setup.validationManager.isValid).toBe(true);
@@ -2118,7 +2118,114 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });        
 });
-describe('ValidationManager.clearValidation', () => {
+describe('validate2, and isValid, doNotSave, getIssuesForInput, getIssuesFound based on the results', () => {
+    test('validate() passes final ValidationState to callback', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.onValidationStateChanged = 
+            (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
+        builder.input('Field1', LookupKey.String).requireText(null, 'required');
+        let valConfig = builder.complete();
+
+        let callbackValidationState: ValidationState | null = null;
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+
+        let validationState = testItem.validate();
+
+        expect(callbackValidationState).toBe(validationState);
+        expect(callbackValidationState).not.toBeNull();
+        expect(callbackValidationState!.issuesFound?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
+    });
+
+    test('validate({ skipCallback: true }) suppresses callback', () => {
+        let callbackValidationState : ValidationState | null = null;
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.onValidationStateChanged = 
+            (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
+
+        builder.input('Field1', LookupKey.String).requireText(null, 'required');
+        let valConfig = builder.complete();
+
+        let callback = jest.fn();
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+
+        let validationState = testItem.validate({
+            skipCallback: true
+        });
+
+        expect(validationState).not.toBeNull();
+        expect(callbackValidationState).toBeNull();
+    });
+
+    test('validate({ group }) filters issuesFound to that group', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.input('Field1', LookupKey.String, { group: 'A' }).requireText(null, 'required A');
+        builder.input('Field2', LookupKey.String, { group: 'B' }).requireText(null, 'required B');
+        let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+        testItem.getInputValueHost('Field2')!.setValues('', '');
+
+        let validationState = testItem.validate({ group: 'A' });
+
+        expect(validationState.issuesFound).not.toBeNull();
+        expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required A')).toBe(true);
+        expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field2' && x.errorMessage === 'required B')).toBe(false);
+    });
+
+    test('validate({ group }) reflects group specific isValid, doNotSave and asyncProcessing', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.input('Field1', LookupKey.String, { group: 'A' }).requireText(null, 'required A');
+        builder.input('Field2', LookupKey.String, { group: 'B' }).requireText(null, 'required B');
+        let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('ok', 'ok');
+        testItem.getInputValueHost('Field2')!.setValues('', '');
+
+        let validationState = testItem.validate({ group: 'A' });
+        let validationState2 = testItem.validate({ group: 'B' });
+
+        expect(validationState.issuesFound == null || validationState.issuesFound.length === 0).toBe(true);
+        expect(validationState.isValid).toBe(true);
+        expect(validationState.doNotSave).toBe(false);
+        expect(validationState.asyncProcessing).toBe(false);
+
+        expect(validationState2.issuesFound != null && validationState2.issuesFound.length === 1).toBe(true);
+        expect(validationState2.isValid).toBe(false);
+        expect(validationState2.doNotSave).toBe(true);    
+        expect(validationState2.asyncProcessing).toBe(false);
+    });
+
+    test('validate() excludes disabled hosts from validation and aggregate state', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.input('Field1', LookupKey.String).requireText(null, 'required 1');
+        builder.input('Field2', LookupKey.String).requireText(null, 'required 2');
+        let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+        testItem.getInputValueHost('Field2')!.setValues('', '');
+        testItem.getInputValueHost('Field2')!.setEnabled(false);
+
+        let validationState = testItem.validate();
+
+        expect(validationState.issuesFound).not.toBeNull();
+        expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required 1')).toBe(true);
+        expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field2' && x.errorMessage === 'required 2')).toBe(false);
+    });
+});
+
+
+
+describe('clearValidation', () => {
     test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {
 
         let config1 = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2486,7 +2593,7 @@ describe('setIssuesFound', () => {
 });
 
 // updateState(updater: (stateToUpdate: TState) => TState): TState
-describe('ValidationManager.updateState', () => {
+describe('updateState', () => {
     interface ITestExtendedState extends ValidationManagerInstanceState {
         Value: number;
     }
@@ -3552,5 +3659,100 @@ describe('fromValidationPayload()', () => {
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
         expect(issuesFound!.some((x) => x.errorMessage === 'MODEL_ERROR')).toBe(true);
+    });
+});
+
+describe('clearExternalIssuesFound()', () => {
+    test('clears existing external issues', () => {
+        let setup = setupValidationManagerForAddExternalIssueFoundTests();
+
+        setup.validationManager.addExternalIssueFound(
+            {
+                errorMessage: 'MODEL_ERROR'
+            },
+            true
+        );
+
+        expect(setup.validationManager.getIssuesFound()?.some((x) => x.errorMessage === 'MODEL_ERROR')).toBe(true);
+
+        setup.validationManager.clearExternalIssuesFound();
+
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
+    });
+
+    test('does not clear validator-managed issues', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.input('Field1', LookupKey.String).requireText(null, 'required');
+        let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+        testItem.validate();
+
+        expect(testItem.getIssuesFound()?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
+
+        testItem.clearExternalIssuesFound();
+
+        expect(testItem.getIssuesFound()?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
+    });
+
+    test('clears external issues while preserving validator-managed issues', () => {
+        let services = createValidationServicesForTesting();
+        let builder = build(services);
+        builder.input('Field1', LookupKey.String).requireText(null, 'required');
+        let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(valConfig);
+        testItem.getInputValueHost('Field1')!.setValues('', '');
+        testItem.validate();
+        testItem.addExternalIssueFound(
+            {
+                errorMessage: 'MODEL_ERROR'
+            },
+            true
+        );
+
+        let issuesBeforeClear = testItem.getIssuesFound();
+        expect(issuesBeforeClear?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
+        expect(issuesBeforeClear?.some((x) => x.errorMessage === 'MODEL_ERROR')).toBe(true);
+
+        testItem.clearExternalIssuesFound();
+
+        let issuesAfterClear = testItem.getIssuesFound();
+        expect(issuesAfterClear?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required')).toBe(true);
+        expect(issuesAfterClear?.some((x) => x.errorMessage === 'MODEL_ERROR')).toBe(false);
+    });
+
+    test('clears field-level and model-level external issues', () => {
+        let config = {
+            ...createValidatableValueHostBaseConfig(1),
+            name: 'Field1',
+            label: 'Field 1'
+        };
+
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config]);
+
+        setup.validationManager.addExternalIssueFound(
+            {
+                valueHostName: 'Field1',
+                errorMessage: 'FIELD_ERROR'
+            },
+            true
+        );
+        setup.validationManager.addExternalIssueFound(
+            {
+                errorMessage: 'MODEL_ERROR'
+            },
+            true
+        );
+
+        let issuesBeforeClear = setup.validationManager.getIssuesFound();
+        expect(issuesBeforeClear?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'FIELD_ERROR')).toBe(true);
+        expect(issuesBeforeClear?.some((x) => x.errorMessage === 'MODEL_ERROR')).toBe(true);
+
+        setup.validationManager.clearExternalIssuesFound();
+
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
 });

@@ -339,7 +339,11 @@ describe('toIPropertyValueHost function', () => {
         private instanceStateMap: Map<string, ValidTypesForInstanceStateStorage> = new Map();
 
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
-        dispose(): void {}
+        dispose(): void { }
+        groupCheck(options?: ValidateOptions | undefined): boolean {
+            throw new Error("Method not implemented.");
+        }
+        
         getPropertyName(): string {
             return this.name;
         }

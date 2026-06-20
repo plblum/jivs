@@ -210,10 +210,10 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     protected createValidationState(options?: ValidateOptions): ValidationState
     {
         return {
-            isValid: this.isValid,
-            doNotSave: this.doNotSave,
+            isValid: this.calculateIsValid(options),
+            doNotSave: this.calculateDoNotSave(options),
             issuesFound: this.getIssuesFound(options ? options.group : undefined),
-            asyncProcessing: this.asyncProcessing
+            asyncProcessing: this.calculateAsyncProcessing(options)
         };
     }
 
@@ -261,8 +261,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
+        return this.calculateIsValid();
+    }
+
+    protected calculateIsValid(options?: ValidateOptions): boolean {
         for (let vh of this.validatableValueHost())
-            if (!vh.isValid)
+            if (vh.groupCheck(options) && !vh.isValid)
                 return false;
         return true;
     }
@@ -273,10 +277,13 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Invalid or NeedsValidation
      */
     public get doNotSave(): boolean {
-        for (let vh of this.validatableValueHost()) {
-            if (vh.doNotSave)
+        return this.calculateDoNotSave();
+    }
+
+    public calculateDoNotSave(options?: ValidateOptions): boolean {
+        for (let vh of this.validatableValueHost())
+            if (vh.groupCheck(options) && vh.doNotSave)
                 return true;
-        }
         return false;
     }
     /**
@@ -289,6 +296,13 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
                 return true;
         }
         return false;        
+    }
+
+    protected calculateAsyncProcessing(options?: ValidateOptions): boolean {
+        for (let vh of this.validatableValueHost())
+            if (vh.groupCheck(options) && vh.asyncProcessing)
+                return true;
+        return false;
     }
 
     /**

@@ -263,7 +263,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public clearValidation(options?: ValidateOptions): boolean {
         let changed = false;
         if (options)
-            if (!this.groupsMatch(options.group, true))
+            if (!this.groupCheck(options))
                 return false;
         changed = this.updateInstanceState((stateToUpdate) => {
             this.clearValidationDataFromInstanceState(stateToUpdate);
@@ -273,6 +273,18 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             if (!options || !options?.skipCallback)
                 this.invokeOnValueHostValidationStateChanged(options);
         return changed;
+    }
+
+    /**
+     * Determines if the ValueHost is matches to a specific group, or if no group is supplied,
+     * it is always matches.
+     * Allows loops through valueHosts to take options.group into account.
+     */
+    public groupCheck(options?: ValidateOptions): boolean
+    {
+        if (!options || !options.group)
+            return true;
+        return this.groupsMatch(options.group, true);
     }
 
     /**
