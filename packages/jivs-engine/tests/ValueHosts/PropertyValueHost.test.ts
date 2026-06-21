@@ -2,16 +2,14 @@ import { PropertyValueHost, PropertyValueHostGenerator, toIPropertyValueHost } f
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { PropertyValueHostConfig, PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import {
-    ValidationStatus, IssueFound, ValueHostValidateResult, ValidateOptions,
-    SetIssuesFoundErrorCodeMissingBehavior
+    ValidationStatus, IssueFound, ValueHostValidateResult, ValidateOptions
 } from "../../src/Interfaces/Validation";
-import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
+import { IValidator } from "../../src/Interfaces/Validator";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
@@ -392,11 +390,6 @@ describe('toIPropertyValueHost function', () => {
         }
         getIssuesFound(group?: string | undefined): IssueFound[] | null {
             return this.issues.length > 0 ? this.issues : null;
-        }
-        setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
-        {
-            this.issues = issuesFound;
-            return true;
         }
         getName(): string {
             return this.name;

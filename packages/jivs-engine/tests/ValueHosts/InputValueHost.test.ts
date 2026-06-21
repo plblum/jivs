@@ -5,8 +5,7 @@ import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/InputValueHost";
 import {
-    ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    SetIssuesFoundErrorCodeMissingBehavior
+    ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -31,7 +30,6 @@ import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { ValidationServices } from "../../src/Services/ValidationServices";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 
@@ -1386,10 +1384,7 @@ describe('toIInputValueHost function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
-        setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
-        {
-            throw new Error('Function not implemented.');
-        }        
+
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }

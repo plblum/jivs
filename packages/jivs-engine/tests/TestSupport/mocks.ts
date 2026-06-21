@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConf
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostConfig, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -229,10 +229,6 @@ export class MockInputValueHost extends MockValueHost
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }    
-    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
-    {
-        throw new Error("Method not implemented.");
-    }
 
     public getConversionErrorMessage(): string | null
     {
@@ -658,10 +654,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }
-    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
-    {
-        throw new Error("Method not implemented.");        
-    }
+
     notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
     {
 

@@ -1,4 +1,4 @@
-import { IssueFound, SetIssuesFoundErrorCodeMissingBehavior, ValidationStatus } from './../../src/Interfaces/Validation';
+import { IssueFound, ValidationStatus } from './../../src/Interfaces/Validation';
 import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostBaseCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
 import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
@@ -1963,9 +1963,6 @@ describe('toIValidatableValueHostBase', () => {
             getIssuesFound: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
-            setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean {
-                throw new Error('Function not implemented.');
-            },
 
             getLabel: function (): string {
                 throw new Error('Function not implemented.');
@@ -2250,10 +2247,7 @@ describe('toIValidatableValueHostBase function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
-        setIssuesFound(issuesFound: Array<IssueFound>): boolean
-        {
-            throw new Error('Function not implemented.');
-        }        
+   
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }

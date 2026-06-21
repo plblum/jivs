@@ -7,7 +7,7 @@
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
+import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
 import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
@@ -444,28 +444,6 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return list.length ? list : null;
     }
     
-    /**
-     * Adds or replaces all IssueFound items to the appropriate ValueHosts.
-     * Each ValueHost will invoke the onValueHostValidationStateChanged callback if needed.
-     * 
-     * Use case: client-side getting server-side Jivs-generated IssuesFound,
-     * so the UI can incorporate it.
-     * @param issuesFound 
-     * @param behavior - keep or omit an issueFound that does not have a matching validator
-     * based on the errorCode. Defaults to Keep
-     */
-    /// !!!OBSOLETE
-    public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
-    {
-        assertNotNull(issuesFound, 'issuesFound');
-        let changed = false;
-        for (let vh of this.validatableValueHost()) {
-            if (vh.setIssuesFound(issuesFound, behavior))
-                changed = true;
-        }
-        return changed;
-    }
-
     protected createModelValidatorsValueHost(): IValidatorsValueHostBase {
         // find existing by ModelValidatorsValueHostName
         // If found, return it. If not, create a new one and add it to the ValueHosts.
@@ -518,7 +496,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     */
     public fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean
     {
-        this.clearExternalIssuesFound({ skipCallback: true }); // clear prior validation results because we are about to set new ones, and we don't want to trigger callbacks until the end. Also, this ensures that any error from the payload that doesn't match a validator will be added based on the behavior of setIssuesFound.
+        this.clearExternalIssuesFound({ skipCallback: true }); // clear prior validation results because we are about to set new ones, and we don't want to trigger callbacks until the end.
         let parsed: Array<IssueFound> = JSON.parse(payload);
         if (!parsed) {
             this.logger.message(LoggingLevel.Warn, () => 'No issues found in payload');
