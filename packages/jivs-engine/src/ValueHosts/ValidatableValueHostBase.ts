@@ -299,8 +299,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let expectedGroup: string[] | string | null | undefined = undefined;
         if (fromLastValidation)
             expectedGroup = this.instanceState.group;
+
+        // Every ValueHost has an effective group name of '.' if not specified, so use that for matching purposes.
+        // Rules for group matching when requestedGroup is undefined:
+        // - If requestedGroup is null, undefined, or '', groupsMatch will always return true.
+        // - If requestedGroup has text or an array of text, the expected group must exactly match.
+        //   By supplying expectedGroup = '.', we anticipate NO MATCH (knowing that the only way to have a group of '.' is to explicitly set it, which is uncommon and not the default).
         if (expectedGroup === undefined)
-            expectedGroup = this.config.group;    // may still be undefined
+            expectedGroup = this.config.group ?? '.'; 
 
         return groupsMatch(requestedGroup, expectedGroup);
     }

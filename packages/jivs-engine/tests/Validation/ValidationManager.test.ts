@@ -19,7 +19,8 @@ import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces
 import { IValidatableValueHostBase, ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
-    UserSuppliedResultCondition, UserSuppliedResultConditionType
+    UserSuppliedResultCondition, UserSuppliedResultConditionType,
+    NeverMatchesConditionType2
 } from "../../src/Support/conditionsForTesting";
 import { IValueHostsManager, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
@@ -2117,8 +2118,6 @@ describe('validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound ba
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });        
-});
-describe('validate2, and isValid, doNotSave, getIssuesForInput, getIssuesFound based on the results', () => {
     test('validate() passes final ValidationState to callback', () => {
         let services = createValidationServicesForTesting();
         let builder = build(services);
@@ -2221,9 +2220,216 @@ describe('validate2, and isValid, doNotSave, getIssuesForInput, getIssuesFound b
         expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required 1')).toBe(true);
         expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field2' && x.errorMessage === 'required 2')).toBe(false);
     });
+
+
+    test('returns only issues for the requested group', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        expect(setup.validationManager.getIssuesFound('A')).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType })
+        ]);
+        expect(setup.validationManager.getIssuesFound('B')).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType2 })
+        ]);
+    });
+
+    test('returns null when no issues match the requested group', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, null);
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate({ group: 'A' });
+
+        expect(setup.validationManager.getIssuesFound('B')).toBeNull();
+    });
+
+    test('returns null when there are no issues at all for the requested group', () => {
+        let configA = setupInputValueHostConfig(0, null);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, null);
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        expect(setup.validationManager.getIssuesFound('A')).toBeNull();
+        expect(setup.validationManager.getIssuesFound('B')).toBeNull();
+    });
+  
+    test('getIssuesFound(group) matches group names case-insensitively', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'GroupA';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.group = 'GroupB';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        expect(setup.validationManager.getIssuesFound('groupa')).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType })
+        ]);
+        expect(setup.validationManager.getIssuesFound('GROUPB')).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType2 })
+        ]);
+    });
+
+    test('getIssuesFound("*") behaves the same as getIssuesFound() with no group filter', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        expect(setup.validationManager.getIssuesFound('*')).toEqual(
+            setup.validationManager.getIssuesFound()
+        );
+    });
+
+    test('validate() returns isValid=true and doNotSave=false when a host needs validation but is skipped by a non-matching group', () => {
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config]);
+        let vh = setup.validationManager.getValueHost(config.name) as IValidatableValueHostBase;
+        vh.setValue('test', { validate: false });    // should set validation status to NeedsValidation
+        expect(vh.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
+        // validate() returns ValidationState for VM. Do avoid changing vh's state
+        // we must call it with a group that does not match.
+
+        let validationState = setup.validationManager.validate({ group: 'nonMatchingGroup'});
+        expect(vh.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        });
+
+    });
+
+    test('validate(group:B) returns the correct results for group b only which isValid=true, doNotSave=false', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [AlwaysMatchesConditionType]);
+        configB.group = 'B';
+        let setup = setupValidationManager([configA, configB]);
+        let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
+        let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+
+        let validationState = setup.validationManager.validate({ group: 'B' }); 
+        expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
+        expect(vhB.currentValidationState.status).toBe(ValidationStatus.Valid);
+
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        });
+
+    });
+
+    test('validate(group:B) returns the correct results for group b only which isValid=false, doNotSave=true', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.group = 'B';
+        let setup = setupValidationManager([configA, configB]);
+        let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
+        let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+
+        let validationState = setup.validationManager.validate({ group: 'B' }); 
+        expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
+        expect(vhB.currentValidationState.status).toBe(ValidationStatus.Invalid);
+
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                   'valueHostName': vhB.getName(),
+                   'doNotSave': true,
+                   'errorCode': NeverMatchesConditionType2,
+                   'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
+                   'severity': ValidationSeverity.Error,
+                   'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
+                 }         
+            ],
+            asyncProcessing: false
+        });
+    });
+    test('Two ValueHosts that have warning validators results with 2 issues but ValidationState.doNotSave=false', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.validatorConfigs![0].severity = ValidationSeverity.Warning;
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.validatorConfigs![0].severity = ValidationSeverity.Warning;
+        let setup = setupValidationManager([configA, configB]);
+        let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
+        let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+
+        let validationState = setup.validationManager.validate(); 
+        expect(vhA.currentValidationState.status).toBe(ValidationStatus.Valid);
+        expect(vhA.currentValidationState.doNotSave).toBe(false);
+        expect(vhB.currentValidationState.status).toBe(ValidationStatus.Valid);
+        expect(vhB.currentValidationState.doNotSave).toBe(false);
+
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: [
+                {
+                   'valueHostName': vhA.getName(),
+                   'doNotSave': false,
+                   'errorCode': NeverMatchesConditionType,
+                   'errorMessage': 'Error 1: ' + NeverMatchesConditionType,
+                   'severity': ValidationSeverity.Warning,
+                   'summaryMessage': 'Summary 1: ' + NeverMatchesConditionType,
+                 },            
+                {
+                   'valueHostName': vhB.getName(),
+                   'doNotSave': false,
+                   'errorCode': NeverMatchesConditionType2,
+                   'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
+                   'severity': ValidationSeverity.Warning,
+                   'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
+                 }         
+            ],
+            asyncProcessing: false
+        });
+    });        
+    test('getIssuesForInput returns null for an existing host that is not a ValidatableValueHostBase', () => {
+        let services = createValidationServicesForTesting();
+        let cf = services.conditionFactory as ConditionFactory;
+        cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
+        let builder = new ValidationManagerConfigBuilder(services);
+        builder.input('Field1', LookupKey.String);
+        builder.static('Field2', LookupKey.Number);
+        let vm = new ValidationManager(builder);
+
+        vm.validate();
+
+        expect(vm.getIssuesForInput('Field2')).toBeNull();
+    });    
 });
-
-
 
 describe('clearValidation', () => {
     test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {
@@ -2320,6 +2526,179 @@ describe('clearValidation', () => {
 
         setup.validationManager.clearValidation({ skipCallback: true});
         expect(callbackValue).toBeNull();
+    });
+
+    test('returns false when there is no validation state to clear', () => {
+        let config = createValidatableValueHostBaseConfig(1);
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config]);
+
+        let changed = setup.validationManager.clearValidation();
+
+        expect(changed).toBe(false);
+    });
+
+    test('returns false when a group is supplied and no matching host has validation state', () => {
+
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, null);   // has no validators
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate({ group: 'A' });
+
+        let changed = setup.validationManager.clearValidation({ group: 'B' });
+
+        expect(changed).toBe(false);
+    });
+
+    test('clearValidation({ group }) only clears validation state for the matching group', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);   // has no validators
+        configB.group = 'B';
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        expect(setup.validationManager.getIssuesFound()).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType }),
+            expect.objectContaining({ errorCode: NeverMatchesConditionType2 })
+        ]);
+
+        let changed = setup.validationManager.clearValidation({ group: 'A' });
+
+        expect(changed).toBe(true);
+        expect(setup.validationManager.getIssuesFound()).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType2 })
+        ]);
+        expect(setup.validationManager.getIssuesFound('A')).toBeNull();
+        expect(setup.validationManager.getIssuesFound('B')).toEqual([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType2 })
+        ]);
+    });
+    test('clearValidation({ group: "*" }) behaves the same as clearValidation() with no group filter', () => {
+        let configA = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        configA.group = 'A';
+        let configB = setupInputValueHostConfig(1, [NeverMatchesConditionType2]);
+        configB.group = 'B';
+
+        let setup = setupValidationManager([configA, configB]);
+
+        setup.validationManager.validate();
+
+        let changed = setup.validationManager.clearValidation({ group: '*' });
+
+        expect(changed).toBe(true);
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
+    });    
+});
+
+describe('asyncProcessing', () => {
+    test('validate() returns asyncProcessing=true when one validatable host is async', () => {
+        let config = createValidatableValueHostBaseConfig(1);
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config]);
+        let host = setup.validationManager.getValueHost(config.name) as TestValidatableValueHost;
+
+        host.setValidateWillReturn(ValidationStatus.Valid);
+        host.setAsyncProcess(true);
+
+        let validationState = setup.validationManager.validate();
+
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: true,
+            issuesFound: null,
+            asyncProcessing: true
+        });
+        expect(setup.validationManager.asyncProcessing).toBe(true);
+    });
+
+    test('validate() returns asyncProcessing=true when one of multiple validatable hosts is async', () => {
+        let config1 = createValidatableValueHostBaseConfig(1);
+        let config2 = createValidatableValueHostBaseConfig(2);
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config1, config2]);
+
+        let host1 = setup.validationManager.getValueHost(config1.name) as TestValidatableValueHost;
+        let host2 = setup.validationManager.getValueHost(config2.name) as TestValidatableValueHost;
+
+        host1.setValidateWillReturn(ValidationStatus.Valid);
+        host2.setValidateWillReturn(ValidationStatus.Valid);
+        host2.setAsyncProcess(true);
+
+        let validationState = setup.validationManager.validate();
+
+        expect(validationState).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: true,
+            issuesFound: null,
+            asyncProcessing: true
+        });
+        expect(setup.validationManager.asyncProcessing).toBe(true);
+    });
+
+    test('validate({ group }) only reports asyncProcessing for hosts in the requested group', () => {
+        let config1 = {
+            ...createValidatableValueHostBaseConfig(1),
+            group: 'A'
+        };
+        let config2 = {
+            ...createValidatableValueHostBaseConfig(2),
+            group: 'B'
+        };
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config1, config2]);
+
+        let host1 = setup.validationManager.getValueHost(config1.name) as TestValidatableValueHost;
+        let host2 = setup.validationManager.getValueHost(config2.name) as TestValidatableValueHost;
+
+        host1.setValidateWillReturn(ValidationStatus.Valid);
+        host2.setValidateWillReturn(ValidationStatus.Valid);
+        host1.setAsyncProcess(true);
+
+        let validationStateA = setup.validationManager.validate({ group: 'A' });
+        let validationStateB = setup.validationManager.validate({ group: 'B' });
+
+        expect(validationStateA).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: true,
+            issuesFound: null,
+            asyncProcessing: true
+        });
+        expect(validationStateB).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        });
+    });
+
+    test('clearValidation() clears manager asyncProcessing after an async host was validated', () => {
+        let config = createValidatableValueHostBaseConfig(1);
+        let setup = setupValidationManagerForAddExternalIssueFoundTests([config]);
+        let host = setup.validationManager.getValueHost(config.name) as TestValidatableValueHost;
+
+        host.setValidateWillReturn(ValidationStatus.Valid);
+        host.setAsyncProcess(true);
+
+        let validationState = setup.validationManager.validate();
+
+        expect(validationState.asyncProcessing).toBe(true);
+        expect(setup.validationManager.asyncProcessing).toBe(true);
+
+        let changed = setup.validationManager.clearValidation();
+
+        expect(changed).toBe(true);
+        expect(setup.validationManager.asyncProcessing).toBe(false);
+
+        let validationStateAfterClear = setup.validationManager.validate();
+
+        expect(validationStateAfterClear).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        });
     });
 });
 
@@ -3484,4 +3863,6 @@ describe('clearExternalIssuesFound()', () => {
 
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
+
 });
+
