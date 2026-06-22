@@ -204,4 +204,10 @@ creates
 
 * User can install a token formatter to convert "message {token}" with a value of { value: 'text', purpose: 'value' } into "message <span class='value'>text</span>"
 
-
+* Right now, the PropertyValueHost and server side support has a poor story for handling raw string values found in HTML forms. 
+PropertyValueHost may benefit from some of InputValueHost's setInputValue and parsing to allow easy transfer of the raw data 
+and to capture errors via the DataTypeCheckCondition. If the user has to parse themselves, they have to report a parser errorMessage
+right now through ConversionError.
+* Perhaps PropertyValueHost should handle the same conversionErrorTokenValue as in InputValueHost so the server side parser can report
+into the DataTypeCheckCondition.
+* Double-check our DataTypeCheck story for server side Jivs.

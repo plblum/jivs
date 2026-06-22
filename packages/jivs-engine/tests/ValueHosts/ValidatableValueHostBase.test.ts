@@ -2180,6 +2180,30 @@ describe('currentValidationState', () => {
         });
     });
 });
+describe('groupCheck tests', () => {
+    test('a variety of tests when group is unassigned', () => {
+        let setup = setupValidatableValueHostBase();
+        expect(setup.valueHost.groupCheck()).toBe(true);
+        expect(setup.valueHost.groupCheck({})).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '' })).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '*' })).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '   ' })).toBe(false);
+        expect(setup.valueHost.groupCheck({ group: 'Group1' })).toBe(false);
+    });
+    test('a variety of tests when group is assigned', () => {
+        let setup = setupValidatableValueHostBase(null, 
+            {
+                    group: 'Group1'
+            });
+        expect(setup.valueHost.groupCheck()).toBe(true);
+        expect(setup.valueHost.groupCheck({})).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '' })).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '*' })).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: '   ' })).toBe(false);
+        expect(setup.valueHost.groupCheck({ group: 'Group1' })).toBe(true);
+        expect(setup.valueHost.groupCheck({ group: 'Group2' })).toBe(false);
+    });
+});
 describe('toIValidatableValueHostBase function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));

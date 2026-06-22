@@ -1,3 +1,7 @@
+## 0.20.0
+- Provide a way for Jivs on the server side to supply its validation IssuesFound to the client. See ValidationManager.fromValidationPayload and toValidationPayload.
+- Revise how external errors are handled. REPLACED setBusinessLogicErrors and its ExternalIssueFound class with addExternalIssuesFound that takes IssueFound.
+
 ## 0.19.0
 - Introduce a new library, jivs-configanalysis, that is part of the overall source code [here](https://github.com/plblum/jivs). It focuses on testing that your configuration is going to deliver as expected when you create a ValidationManager from it.
 - jivs-engine contains numerous minor changes to support jivs-configanalysis.

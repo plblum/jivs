@@ -2329,7 +2329,7 @@ describe('validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound ba
         let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
-        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+        vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.validationManager.validate({ group: 'B' }); 
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
@@ -2353,7 +2353,7 @@ describe('validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound ba
         let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
-        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+        vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.validationManager.validate({ group: 'B' }); 
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
@@ -2384,7 +2384,7 @@ describe('validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound ba
         let vhA = setup.validationManager.getValueHost(configA.name) as IValidatableValueHostBase;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
-        vhA.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
+        vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.validationManager.validate(); 
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.Valid);

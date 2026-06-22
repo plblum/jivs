@@ -339,145 +339,167 @@ firstNameFld.attachEventListener('oninput', (evt)=>{
   vm.vh.input('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
-### When the user submits the data - client side handling
-The ValidationManager should already have all changed values captured due to onchange events on your Inputs. 
 
-Run validation and proceed with submission if data is valid.
+### When the browser submits data to the server
+
+Overview of the steps:
+
+1. Validate the data, gathering issues found. If there are issues found, stop.
+2. Send the data to the server to be saved.
+3. Process the server's response. If there were errors, route them into Jivs' ValidationManager for display.
+
+**Step 1**
+- 1a. Call `ValidationManager.validate()`. Its result is ValidationState. When `ValidationState.doNotSave` is true, 
+do not attempt step 2.
+- 1b. If you have other processes prior to saving, execute them. They may result in errors too. They should be converted into an IssueFound object
+and submitted as `Array<IssueFound>` to `ValidationManager.addExternalIssuesFound(array)`. They will appear in the UI supported by Jivs. Do not attempt step 2.
+
+**Step 2** 
+- 2a. Package up your data and send it to the server
+- 2b. Server does its thing: server-side validation, actual saving, and returning the result: success or a list of errors.
+- 2c. Evaluate the response from the server. 
+    - If successful, you are done.
+**Step 3**
+
+- 3a. Retrieve the errors and supply them to Jivs through either `ValidationManager.addExternalIssuesFound(errors, true)` or `ValidationManager.fromValidationPayload(validationPayload)`.
+    - `addExternalIssuesFound` targets a server side where you dictate the format of errors. 
+    - `fromValidationPayload` targets Jivs running node.js on the server side.
+
+#### Client side submission workflow
+
 ```ts
-let status = vm.validate(); // it will notify elements in your UI of validation changes
-if (status.doNotSave)
-  // Prevent saving. User has to fix things
-else
-  // Submit the page's data
-```
-### Submit data to the server
-There are several implementations for handling data submission, but all require validating all data before saving. (Otherwise hackers can push data to your server easily.)
-
-The overall steps are:
-
-1. Validate the data, gathering issues found.
-2. If there were no issues, save the data.
-3. If there were issues, do not save. Instead, pass the issues back to the client so Jivs can show them.
-
-**Step 1** is where we find different implementations.
-- Data is from an HTML \<form> - Form data is all strings. They need to be parsed to the native values that you save. Parsing may identify errors. If no errors are found, then apply validation. Parsing errors themselves represent a kind of validation response, and will be sent back to Jivs.
-- Data is from JSON - A JSON string parser can convert some data to its native values. Where it cannot, provide a parser. 
-- Data is from another source - As you may have picked up, the key concept is to ensure that everything not in its native form has a parser or conversion code.
-
-Jivs can assist when you have Node.js on the server. Otherwise, the work is up to you.
-
-**Step 2** is up to you.
-
-**Step 3** has a server and client side implementation.
-
-On the server side, create a JSON representation of the business logic errors found. If you use Jivs own `ExternalIssueFound interface`, you will reduce the work on the client side.
-```ts
-interface ExternalIssueFound {
-    errorMessage: string;
-    associatedValueHostName?: string;
-    severity?: ValidationSeverity;
-    errorCode?: string;
-}
-```
-If you use Jivs on the server side, also create JSON from the results of `ValidationManager.getIssuesFound()`. This is an array of IssueFound objects.
-
-Let's suppose you generated the following script for the client side:
-```ts
-var ExternalIssueFounds = [
-  { ... error 1 ... },
-  { ... error 2 ... }
-];
-var jivsIssuesFound = [
-  { ... issue 1 ... },
-  { ... issue 2 ... }
-];
-```
-On the client side, convert *ExternalIssueFounds* into an array of ExternalIssueFound objects as shown here.
-```ts
-// this converts from a different data format into ExternalIssueFound objects
-let blErrors: Array<ExternalIssueFound> = [];
-for (let i = 0; i < ExternalIssueFounds.length; i++)
+// we already have the ValidationManager instance fully configured in the variable vm
+// step 1a
+let validationState = vm.validate();  // any validation errors will be sent to the UI via onValidationStateChanged callback
+if (!validationState.doNotSave)
 {
-  let error = ExternalIssueFounds[i];
-  let blError: ExternalIssueFound = {
-    errorMessage: error.myErrorMessage,
-    errorCode: myMapToErrorCode(error), // optional. Try to match up to a known client-side error code or Condition Type to get the UI's error messages
-    associatedValueHostName: myMapToValueHostName(error)  // optional. Jivs will update the actual field, not just the ValidationSummary
-   };
-   blErrors.push(blError);
+  // step 1b
+  let issuesFound: Array<IssueFound> = [];
+  // your code for evaluating errors here.
+  // Suppose that you convert your data into a Model object
+  // and run some of your own validation on that object.
+
+  let modelResult = convertToModel(); // again, your code
+  // modelResult = { model: object | null, errormessage: string | null, errorCode: number }
+  if (modelResult.errorMessage)
+    issuesFound.push({
+      errorMessage: modelResult.errorMessage,
+      errorCode: `{modelResult.errorCode}`;
+    });
+
+  if (issuesFound.length === 0)
+  {
+    // step 2 
+    // suppose you call your server and get back a promise<ModelType>
+    await save(modelResult.model, 
+      // Promise resolve function hooked up within your save() function
+      (model: ModelType) => {
+        // Step 2c. success - take next steps
+        // up to you!
+      },
+      // Promise reject function hooked up within your save() function
+      (errorInfo)=>{
+        // Step 3a -- when not using Jivs on the server...
+
+        // Here we have some error data your save function understands inside of errorInfo.
+        // Lets suppose it is Array<{ errorMessage: string, errorCode: number}>
+        // Convert into array<IssueFound>
+        issuesFound = []; // reusing it
+        for (let error of errorInfo)
+        {
+          issuesFound.push({
+            errorMessage: error.errorMessage,
+            errorCode: `{error.errorCode}`;
+          });
+        }
+        // Provide your errors to jivs to show in the UI
+        vm.addExternalIssuesFound(issuesFound, false); // false = issues were found elsewhere. 
+        // These will update the UI via onValidationStateChanged callback
+
+      });
+  }
+  else
+  {
+    // Step 1b continued
+    // Provide your errors to jivs to show in the UI
+    vm.addExternalIssuesFound(issuesFound, true); // true = issues were found locally. 
+    // These will update the UI via onValidationStateChanged callback
+  }
 }
-```
-Finally call `ValidationManager.setExternalIssuesFound()` with the business logic errors array and `ValidationManager.setIssuesFound()` with the Jivs issues found.
-```ts
-vm.setExternalIssuesFound(blErrors);	// will notify the UI's validation elements
-vm.setIssuesFound(jivsIssuesFound);		// also will notify UI's validation elements
-```
-> `setIssuesFound()` has an optional second parameter. Suppose your server side code actually has a validator not setup on the client, and it is part of Issues Found. Use the second parameter to determine whether to keep it or omit it. By default, it is kept.
 
-### Using Jivs on a Node.js server
-#### Data is from an HTML \<form>
-The HTML form data starts as strings. Convert each form element into its native value.
+// Here is the reject function if you are using jivs on the server side.
+// You have already passed a string generated by ValidationManager.toValidationPayload()
+// through the response and retrieved that string into validationPayload...
 
-- Using built-in parsing:
-  * Ensure you have setup appropriate DataTypeParser objects in the services. See [Setup services](#validationservices).
-  * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned. dataType will serve to lookup the DataTypeParser. However, if the parser uses a different Lookup Key, set it on the InputValueHostConfig.parserLookupKey property.
-  * Pass the string value from the form data into the InputValueHost: 
-    ```ts
-    vm.vh.input('FirstName').setInputValue(formValue);
-    ```
-- Using your own parsing:
-  * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned.
-  * Parse - for you to implement. Just need to get back either the native value or an error message.
-  ```ts
-  let { nativeValue, errorMessage } = myParser(text); 
-  ```
+    // Promise reject function hooked up within your save() function
+    (validationPayload) => {
+      // Step 3 -- when using Jivs on the server...
+      
+      // Provide your errors to jivs to show in the UI
+      vm.fromValidationPayload(validationPayload);
+      // These will update the UI via onValidationStateChanged callback
 
-  * If there are no errors, pass both the input value and native value into the InputValueHost:
-  ```ts
-  vm.vh.input('FirstName').setValues(nativeValue, inputValue);
-  ```
-  * If there are errors, pass *undefined* for the native value, the input value, and the error message into the InputValueHost: 
-  ```ts
-  vm.vh.input('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
-  ```
-  
-Continue below with [Validation and either save or handle errors](#validate-and-either-save-or-handle-errors).
-#### Data is in JSON
-Upon converting a JSON string into an object, you can pass along each property to the associated ValueHost.
-We recommend using InputValueHost over PropertyValueHost in case there are strings that need parsing.
-```ts
-vm.vh.input('FirstName').setValue(nativeValue);
+    });
 ```
 
-There remain several cases that involve parsing, and for those, use the instructions in the previous section.
-- You know the field's value is incompatible with the native value without running a parser on it. For example, you know the JSON property contains a string representation of the number you need.
-- The field's value is a string, but it must be cleaned up through parsing, before its value is allowed to be saved.
+### Server-side saving data
 
-#### Validate and either save or handle errors
-* Validate using `validationManager.validate()`. Capture any errors it finds from `validationManager.getIssuesFound()`.
-* Also run your business logic validation against the model for cases not covered by input level validators. Capture any errors it finds.
-* If there are no errors, save the data.
-* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See above, step 3.
+#### Server side overview
+1. You first ensure that there are no hacking attempts like SQL Injection attacks. This happens on the raw data.
+2. Run server side validation against all properties of the model. \*\*
+    - Gather errors and return them to the client.
+3. Run any additional validation or business logic.
+    - Gather errors and return them to the client.
+4. Save the data.
+    - Gather errors and return them to the client.
+5. (No errors at this point) Return a success notification to the client.
+
+
+\*\* **Deep dive: server-side validation** 
+- Server side validation is required because hackers can submit malicious data. 
+- When your APIs use the same code to save the model, they supplied model can have invalid values.
+- Jivs can assist here if you use node.js. You can use the same business logic to handle server-side validation of the inputs. But you are responsible for gathering other errors.
+
+
+#### Using Jivs on a Node.js server
+
+1. Review the submitted request for attacks (for example, SQL Injection) and stop if found.
+2. Retrieve the submitted model. 
+3. Configure and create a ValidationManager instance for that model.
+4. Distribute fields from the model into Jivs through one of these:
+    * `ValidationManager.getValueHost(fieldname).setValue(property value)`
+    * If your data comes from a raw string, and not its native value in the model, run it through a parser.
+    See the next topic.
+5. Call ValidationManager.validate(). It returns a ValidationStatus object
+    * If `ValidationStatus.doNotSave` is true, there are errors that must be sent back to the client.
+    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+6. Execute additional pre-save actions such as: duplicate check, complex logic against the overall model, etc.
+    * If there were errors, build `Array<IssueFound>` from them.
+    * Call `ValidationManager.addExternalIssuesFound(your array)`.
+    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+7. Save.
+    * If there were errors, build `Array<IssueFound>` from them.
+    * Call `ValidationManager.addExternalIssuesFound(your array)`.
+    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+8. (No errors occurred). Send your "success" response.
+
+##### Parsing raw strings to native values
+The HTML form data starts as strings. Other formats may also supply strings. In this case, you use a parser
+to translate the string into its native value.
+
 ```ts
-let status = vm.validate();
-let ExternalIssueFounds = myBusinessLogicValidation();	// you write this.
-if (status.doNotSave || ExternalIssueFounds) {
-  // Gather the issues found and deliver them to the client-side
-  // This should send back up to 2 lists: IssuesFound from Jivs and those from your code.
-  // On the client-side, we'll each list into Jivs differently, keep the lists separate.
-  sendErrorsBack(vm.getIssuesFound(), ExternalIssueFounds); // you write sendErrorsBack()
-}
-else {
-  // Data can be saved.
-  // If you don't already have a populated model, 
-  // you might create Model and transfer values from each ValueHost like this:
-  let model = new PersonModel();
-  model.FirstName = vm.vh.input('FirstName').getValue();
-  model.LastName = vm.vh.input('LastName').getValue();
-  
-  // Save the data.
-  repository.update(model);	// your code
-}
+let { nativeValue, errorMessage } = myParser(text); 
+```
+
+Then you report both values to Jivs like this:
+
+```ts
+ValidationManager.getValueHost('FirstName').setValues(nativeValue, raw string);
+```
+When parsing fails, you report the error along with the raw string like this:
+
+```ts
+ValidationManager.getValueHost('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
 ```
 
 ### Showing all errors in a ValidationSummary
@@ -487,7 +509,7 @@ You need these tools to setup your ValidationSummary:
 * An HTML element to host the ValidationSummary.
 * A function that responds to the `onValidationStateChanged callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
 * Use the `getIssuesFound()` function on ValidationManager to retrieve those issues. 
->You will get issues generated by your business logic too with `ValidationManager.setExternalIssuesFound()`.
+>You will get issues generated by your business logic too with `ValidationManager.addExternalIssuesFound()`.
 
 We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
 ```ts
@@ -1564,7 +1586,7 @@ interface IValidationManager {
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
-    setExternalIssuesFound(errors, options?): boolean;
+    addExternalIssuesFound(issuesFound, developedLocally, options?): boolean;
         
     isValid: boolean;
     doNotSave: boolean;
@@ -2527,7 +2549,7 @@ Let's go through ValidationState properties:
 All of these actions can change the validation state whether on ValidationManager or a ValueHost. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
 - `validate()`
 - `clearValidation()`
-- `setExternalIssueFound()`
+- `addExternalIssuesFound()` and `addExternalIssueFound()`
 - `clearExternalIssuesFound()`
 - using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setInputValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
