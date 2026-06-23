@@ -1,8 +1,11 @@
 # Model Rules Design Overview
 
-**Version:** 0.1
+**Version:** 0.3
+
 **Status:** Working Draft
+
 **Scope:** Cross-cutting architecture and use cases for model rules in Jivs
+
 **Purpose of this document:** Establish guardrails and shared terminology before detailed configuration and validation-side designs are finalized.
 
 ---
@@ -100,15 +103,13 @@ The overall validation and save story has these major workflow parts.
 
 ### Server side
 
-4. Run Jivs field validators through `ValidationManager.validate()` using the applicable model rules.
-5. Run server-only security checks.
+4. Run server-only security checks. Stop if any are found.
+5. Run Jivs field validators through `ValidationManager.validate()` using the applicable model rules.
 6. Run server-only pre-save business checks.
 7. If any relevant errors exist, return without saving.
 8. Attempt save.
 9. If save fails, convert failures into returned business errors.
 10. Return success or errors.
-
-See also: README’s “Submit data to the server” story: server returns Jivs issues and business logic errors, and the client pushes them back into `ValidationManager` using `setIssuesFound()` and `setExternalIssuesFound()`.
 
 ### 3.1 Client-side Jivs validation after editing completes
 
@@ -139,7 +140,19 @@ After an attempted save, the server may return either or both:
 
 The client may feed those results back into `ValidationManager` so Jivs-connected UI components update their validation state.
 
-### 3.4 Server-side Jivs validation
+### 3.4 Server-side hidden security checks
+
+The server may run additional checks that are intentionally not client-facing.
+
+Examples:
+
+* Injection attack detection
+* Suspicious input pattern checks
+* Other hidden security rules
+
+These checks may produce security-specific handling outside the normal user-facing validation flow.
+
+### 3.5 Server-side Jivs validation
 
 The server runs `ValidationManager.validate()` against configuration created from the same model rules.
 
@@ -150,19 +163,7 @@ This server-side Jivs validation produces:
 * ValidationState
 * IssuesFound
 
-Those `IssuesFound` may be included in the server response.
-
-### 3.5 Server-side hidden security checks
-
-The server may run additional checks that are intentionally not client-facing.
-
-Examples:
-
-* Injection attack detection
-* Suspicious input pattern checks
-* Other hidden security rules
-
-These checks may produce generalized responses, `ExternalIssuesFound`, or security-specific handling outside the normal user-facing validation flow.
+Those `IssuesFound` may be included in the server response. See section 3.9 "Final server response".
 
 ### 3.6 Server-side pre-save business checks
 
@@ -175,13 +176,18 @@ Examples:
 * External service checks
 * Business policies not expressed as Jivs field validators
 
-These often produce `ExternalIssuesFound`.
+These must result an array of `IssueFound` supplied
+to `ValidationManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
 
 ### 3.7 Save decision
 
-If any relevant errors are found before save, the server returns without saving.
+If any relevant errors are found before save, the server returns without saving, supplying errors back to the client.
 
-If not, the server attempts save.
+At this point, you have both a validationState from ValidationManager.validate() and an array that was supplied into addExternalIssuesFound().
+
+if (validationState.doNotSave == true || the array has at least one)
+then you cannot save, and must supply those errors back to the client.
+
 
 ### 3.8 Post-save failure handling
 
@@ -196,17 +202,38 @@ Examples:
 
 These are not pre-save validation failures.
 
-They are a separate phase and often produce `ExternalIssuesFound` for return to the client.
+These must result an array of `IssueFound` supplied
+to `ValidationManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
 
 ### 3.9 Final server response
 
 The server response may legitimately be:
 
 * Success
-* Only IssuesFound
-* Only ExternalIssuesFound
-* Both IssuesFound and ExternalIssuesFound
+* Only issues found by ValidationManager.validate()
+* Only issues reported through ValidationManager.addExternalIssuesFound()
+* Both types of issues.
 
+#### When success
+Developer determines the appropriate response. For example, HTTP 200 with a JSON payload of the model.
+
+#### When there are issues and Jivs is on the client side:
+
+Return the string from `ValidationManager.toValidationPayload()` as part of the response payload in a way determined by the developer.
+
+On the client side, a `ValidationManager` takes in that string through `fromValidationPayload()`.
+
+#### When there are issues and Jivs is not on the client side, such as an API call
+Gather the array of `IssueFound` from `ValidationManager.getIssuesFound()` and convert them into the desired model for the API response.
+
+#### Client dictates the error format in the response
+The same code may be used for both a Jivs client and an API. Yet they need different response handling. The server code should have a way
+to select an appropriate response handler based on the client.
+That also means the client must identify its needs.
+
+
+
+### Final thoughts on section
 This overall workflow is one of the key reasons the detailed design should not assume that all configuration and all validation execution belong in one abstraction.
 
 ---
@@ -242,15 +269,22 @@ A validation target may be:
 
 ### 4.3 IssuesFound
 
-`IssuesFound` are produced by Jivs validators.
+IssuesFound is a shorthand for `IssueFound` objects. They represent
+specifics about a single issue found ('error') including the error message, error code (optional), severity (optional), and ability to block saving via 'doNotSave' property.
+
+There are two ways these are generated:
+
+#### ValidationManager.validate
+
+`IssueFound` objects are produced by Jivs validators.
 
 They come from running `ValidationManager.validate()` against configured ValueHosts and validators.
 
 They are the direct output of Jivs field/configuration validation.
 
-### 4.4 ExternalIssueFound
+#### External IssuesFound
 
-`ExternalIssueFound` represents issues produced outside the normal Jivs validator pipeline.
+External IssuesFound represents issues produced outside the normal Jivs validator pipeline.
 
 Examples:
 
@@ -260,9 +294,36 @@ Examples:
 * Save failures
 * External system failures discovered during save
 
-A `ExternalIssueFound` may be associated with a ValueHost when possible, but it is not the same thing as an `IssueFound`.
+The developer creates an IssueFound object representing each error
+they found and supplies an array into `ValidationManager.addExternalIssuesFound()`.
 
-### 4.5 Shared Configuration
+External IssuesFound are maintained in a separate list from validation generated IssuesFound, allowing them to persist despite rerunning validation. They get cleared by either calling ValidationManager.clearExternalIssuesFound() or addExternalIssuesFound().
+
+### 4.4 ValidationState
+
+ValidationState is an object representing the state of validation as a result of calling ValidationManager.validate(). It includes these values:
+
+* isValid - Used by the UI, not to block saving
+* doNotSave - Used to block saving, not by the UI
+* asyncProcessing - When true, we are awaiting an async process associated with a validator to finish.
+* issuesFound - null or an array of IssueFound, including both validation and external generation.
+
+### 4.5 ValueHostValidateResult
+ValueHostValidateResult is an object representing the state of validation from a single Validatable ValueHost (implementation of IValidatableValueHostBase including InputValueHost and PropertyValueHost). It includes these values:
+
+* status - enumerated type providing a sense of lifecycle: NotAttempted, NeedsValidation (because the input changed), Undetermined, Invalid, Valid, Disabled.
+* issuesFound - null or an error of IssueFound, limited to those
+from the validation work, not external.
+
+### 4.6 ValueHostValidationState
+ValueHostValidationState is a ValueHost companion to the ValidationState of the ValidationManager. It is slightly different from ValueHostValidateResult. 
+
+It inherits from ValidationState adding the status and issuesFound properties we see from ValueHostValidateResult, except issuesFound here contains both validation and external sources.
+
+ValidationManager builds its ValidationState from these objects, not ValueHostValidateResult.
+
+
+### 4.7 Shared Configuration
 
 Shared configuration means the rules/configuration that can be authored once and used in more than one environment.
 
@@ -273,7 +334,7 @@ Typical examples:
 * Cross-field rules
 * Common configuration variants
 
-### 4.6 Environment-Specific Execution
+### 4.8 Environment-Specific Execution
 
 Environment-specific execution means validation-related work that depends on where the code runs.
 
@@ -284,6 +345,29 @@ Examples:
 * Database lookups
 * External service checks
 * Save-time failure handling
+
+### 4.9 Builder
+The term Builder is a shorthand for a class that provides a fluent way to configure a ValidationManager.
+
+Instead of:
+```ts
+let config: ValidationManagerConfig = {
+    services: getValidationServices(),
+    ... a multitude of properties in object style ...
+}
+let vm = new ValidationManager(config);
+```
+
+Use the builder:
+```ts
+let builder = build(createValidationServices('en-US'));
+... work with builder to add ValueHosts and their Validators ...
+builder.input('fieldname1').required(parameters).regexp(parameters);
+builder.input('fieldname2');
+
+let vm = new ValidationManager(builder);
+
+```
 
 ---
 
@@ -384,7 +468,7 @@ Typical responsibilities:
 * Shared configuration intended for both client and server
 * Business-owned configuration intended to be reused unchanged or extended by the UI
 
-The business layer may also own server-side pre-save logic, but that is not automatically the same thing as shared Jivs configuration.
+The business layer may also own server-side pre-save logic in addition to the shared Jivs configuration. This part is outside of Jivs, but Jivs will report issues found if the server-side developer passes in IssueFound objects to `ValidationManager.addExternalIssuesFound()`.
 
 ### 7.2 UI Layer consuming or extending shared model rules
 
@@ -438,7 +522,7 @@ Typical responsibilities:
 * Run server-only security checks
 * Run server-only pre-save business checks
 * Attempt save only when appropriate
-* Map save failures into ExternalIssuesFound
+* Map save failures into IssuesFound, passed in through `ValidationManager.addExternalIssuesFound()`.
 * Return success and/or error payloads to the client
 
 ---
@@ -496,7 +580,7 @@ These checks may not behave like normal user-facing validation.
 Possible outcomes include:
 
 * Generalized field/model error response
-* ExternalIssueFound response
+* External IssueFound response
 * Security-specific handling outside normal validation flow
 
 ### 8.5 Server-side pre-save business checks
@@ -510,7 +594,7 @@ Examples:
 * External service checks
 * Business policies not represented as Jivs field validators
 
-These often produce `ExternalIssueFound` results.
+These often produce External `IssueFound` results.
 
 ### 8.6 Post-save failure handling
 
@@ -525,7 +609,7 @@ Examples:
 
 These are not the same thing as pre-save validation.
 
-They should be treated as their own phase and often produce `ExternalIssueFound` results for the client.
+They should be treated as their own phase and often produce External `IssueFound` results for the client.
 
 ---
 
@@ -533,19 +617,12 @@ They should be treated as their own phase and often produce `ExternalIssueFound`
 
 The overall system may produce either or both of these error outputs:
 
-* IssuesFound
-* ExternalIssuesFound
-
-Important distinction:
-
-* IssuesFound come from Jivs validators.
-* ExternalIssuesFound come from outside the normal Jivs validator pipeline.
+* IssuesFound from Jivs validators
+* IssuesFound from external sources
 
 A server response may legitimately contain:
 
-* Only IssuesFound
-* Only ExternalIssuesFound
-* Both IssuesFound and ExternalIssuesFound
+* IssuesFound from either or both validators and external sources
 * Success with no errors
 
 On the client, returned errors may be pushed back into `ValidationManager` so components can update their validation state accordingly.
@@ -632,78 +709,12 @@ The following guardrails should guide later detailed documents.
 
 * Do not assume that shared configuration and all validation execution belong in one class.
 * Do not assume that server-only checks should be portable to the client.
-* Do not assume that IssuesFound and ExternalIssuesFound are interchangeable.
 * Do not assume that UI-specific extension must edit business-owned source directly.
 * Do not assume that post-save failures are just another form of pre-save validation.
 * Do not assume that one detailed API shape is already settled.
 * Do preserve the central role of ValidationManager.validate() for Jivs field/configuration validation.
 * Do preserve the server’s role as authoritative validator.
-* Do preserve the possibility of returning either or both IssuesFound and ExternalIssuesFound from the server.
+* Do preserve the possibility of returning IssueFound whether generated by the Jivs validator or external.
 * Do preserve support for both business-model-driven and UI-only targets.
 
 ---
-
-## 14. Likely Follow-on Design Documents
-
-This overview should be followed by more detailed documents, likely including:
-
-* A configuration-focused design document
-* A validation/execution lifecycle design document
-* Possibly a factory/resolution design document if needed
-* Possibly a companion-library integration design document if needed
-
-Those documents may repeat some terminology and pattern-oriented sections where helpful.
-
----
-
-## 15. Open Questions Carried Forward
-
-* What final names should be used for the configuration-side abstractions?
-* How should shared business configuration be extended by UI-specific variants?
-* How should factories resolve business-model-driven vs UI-specific forms?
-* How should model identity and form/presentation identity relate?
-* How should config analysis integrate without coupling jivs-engine to jivs-configanalysis?
-* How should server-side Jivs validation results and server-side business/security/save errors be modeled in the detailed lifecycle design?
-* What helper APIs, if any, should exist for pushing returned server errors back into ValidationManager?
-
----
-
-## 16. Summary
-
-This overview establishes the broad design direction:
-
-* Jivs needs a strong shared-configuration story.
-* Client and server both rely on Jivs field/configuration validation through ValidationManager.
-* Server-side validation remains authoritative.
-* IssuesFound and ExternalIssuesFound are both important but represent different sources of problems.
-* UI needs a clean way to extend shared business-owned rules for form-specific variations.
-* Detailed implementation should be split into focused design documents rather than forcing every concern into one abstraction too early.
-
-This document is intended to keep the detailed design work aligned with those realities.
-
----
-
-## 17. Scope and Non-Scope
-
-### In scope
-
-* Use cases for model rules
-* Shared terminology
-* Client/server responsibilities
-* Business-layer vs UI-layer responsibilities
-* The overall role of Jivs validation
-* The overall role of business errors returned outside Jivs validators
-* Single Source of Truth boundaries
-* Guardrails for later design documents
-
-### Out of scope
-
-* Final interface names
-* Final method signatures
-* Final factory registration APIs
-* Detailed caching APIs
-* Detailed config analysis integration APIs
-* Detailed submit/save lifecycle APIs
-* Detailed class hierarchies
-
-This document may mention likely directions, but it should avoid locking them in too early.

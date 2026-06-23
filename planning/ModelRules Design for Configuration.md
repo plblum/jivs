@@ -1,6 +1,6 @@
 # Configuration
 
-**Version:** 0.2
+**Version:** 0.3
 
 **Status:** Working Draft
 
@@ -12,19 +12,11 @@
 
 This document defines the configuration-side design for model rules.
 
-It is the first focused document derived from the earlier unified `ModelRulesService` design work.
-
-This document is intentionally limited to **configuration**.
-
-It does **not** define:
-
-* validation orchestration
-* save workflow
-* business-error application
-* server-response handling
-* post-save failure handling
-
-Those belong to separate validation-side design work.
+_Premise_: In Jivs, users are expected to place their validation rules in separate areas from their UI code,
+and if possible, do it in a reusable and testable way. At this time, we have some great tools to help them
+through the Builder object's fluent syntax, but we don't have a nice story to package rules by individual models
+and/or forms. A revised approach will involve a class from which each model or form rules are introduced.
+Within the class are methods that let the developer add their rules, still using the Builder's fluent syntax.
 
 The goal here is to define a configuration abstraction that is:
 
@@ -42,8 +34,8 @@ This design defines a configuration abstraction focused entirely on producing a 
 
 The key types are:
 
-* `IModelRules`
-* `ModelRulesBase`
+* `IModelRules` - interface
+* `ModelRulesBase` - abstract base implementing IModelRules
 
 The public entry point is:
 
@@ -72,10 +64,6 @@ const vm = rules.configure();
 This document does not define:
 
 * a model-rules factory
-* validation-side helper APIs
-* business validation execution
-* server-only checks
-* save-time failure handling
 * the internal design of the `jivs-configanalysis` module
 
 This document does define how configuration-side model rules interact with a config-analysis service when that optional module is installed and registered into `ValidationServices`.
@@ -85,13 +73,14 @@ This document does define how configuration-side model rules interact with a con
 ## 4. Primary Developer Story
 
 The preferred structured way to configure the ValidationManager is through `IModelRules` / `ModelRulesBase`.
+It consumes the Builder so that the developer can create fluent syntax for configurations.
 
 This applies to both:
 
 * business-logic-authored reusable model rules
 * UI-authored reusable rules classes
 
-Direct Builder usage remains available as a lower-level alternative, consistent with existing Jivs documentation.
+Direct Builder without it usage remains available as a lower-level alternative, consistent with existing Jivs documentation.
 
 However, the preferred path is to wrap reusable configuration in a model-rules class because it:
 
@@ -115,11 +104,13 @@ class PersonModelRules extends ModelRulesBase {
 }
 ```
 
-This class defines the base configuration through `configureRules()`.
+This class defines the model's configuration through `configureRules()`.
 
 ### 5.2 Form subclass of model rules
 
-A UI developer subclasses the model rules class for a specific form or presentation.
+A UI developer subclasses the model rules class for a specific form or presentation. This is mostly used
+to override a business logic's model configuration, but could be used with a form's configuration to provide 
+variations.
 
 Example:
 
@@ -159,18 +150,18 @@ interface ModelRulesConfigureOptions {
 }
 
 interface ModelRulesConfigureParams<
-  TConfigureOptions extends ModelRulesConfigureOptions = ModelRulesConfigureOptions,
-> {
+  TConfigureOptions extends ModelRulesConfigureOptions = ModelRulesConfigureOptions> {
   options?: TConfigureOptions;
 }
 ```
 
 Notes:
 
-* `variantName` remains part of configuration
+* `variantName` Developer can use this to allow the caller to execute a named variant.
+Its used at the developer's discretion.
 * `disableCache` keeps caching on by default, unless explicitly disabled
 * `configAnalysisOptions` enables config analysis when it is not `null` or `undefined`. It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
-* she shape of `configAnalysisOptions` belongs to the installed config-analysis module, not to `jivs-engine`
+* The shape of `configAnalysisOptions` belongs to the installed config-analysis module, not to `jivs-engine`
 
 ### 6.2 IModelRules
 
@@ -182,7 +173,7 @@ interface IModelRules {
 }
 ```
 
-`configure()` is the single public entry point.
+`configure()` is the single public entry point. It returns a new ValidationManager.
 
 ### 6.3 IModifyModelRulesForUI
 
@@ -200,6 +191,8 @@ This is a narrow capability interface.
 It is not intended to replace `IModelRules`.
 
 Its purpose is to mark subclasses that add UI modification after base configuration has run.
+It targets the UI developer who is working on a form against a business logic model so they
+can focus on the changes needed to achieve the correct user experience.
 
 ---
 
@@ -271,13 +264,13 @@ It is not intended to be overridden under normal use.
 
 Defines the main configuration for the rules class.
 
-This is the required subclass hook.
+This is the required subclass hook (an abstract method).
 
-Use it to define the model-oriented rules for a business model, or the full rules for a standalone UI-only rules class.
-
-It is intended to be overridden.
+Override to define the model-oriented rules for a business model, or the full rules for a standalone UI-only rules class.
 
 #### `getModelRulesKey()`
+
+Part of caching the configuration.
 
 Supplies the base identity string used as the first component of the cache key.
 
@@ -286,6 +279,8 @@ The default implementation should return `this.constructor.name`.
 Override this only when the default identity is not suitable.
 
 #### `createConfigCacheKey(params)`
+
+Part of caching the configuration.
 
 Builds the full cache key used for configuration caching.
 
@@ -332,11 +327,10 @@ The high-level behavior is:
 
    1. Create the builder.
    2. Run `configureRules()`.
-   3. If the instance has `modifyForUI()`, call `builder.startUILayerConfig()`.
-   4. Then call `modifyForUI()`.
-   5. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
-   6. Finalize the builder into config.
-   7. Store config in cache if enabled.
+   3. If the instance has `modifyForUI()`, call `builder.startUILayerConfig()`. Then call `modifyForUI()`.
+   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
+   5. Finalize the builder into config.
+   6. Store config in cache if enabled.
 5. Create a new `ValidationManager` from the config.
 6. Return the `ValidationManager`.
 
@@ -479,6 +473,9 @@ The following is **not** cached:
 Reason:
 
 * configuration is static and reusable
+  * **Alert: a configuration may contain callbacks and function pointers. These are not intended to survive
+  a page regeneration. Callbacks can be restored as the page regenerates due to their well known nature. 
+  Functions do not have this safety net.** 
 * `ValidationManager` is stateful and must be created anew for each `configure()` call
 
 ### 10.1 ICachingService
@@ -623,6 +620,8 @@ It only:
 * retrieves the registered service by name through ValidationServices.getService()
 * checks whether `analyze` exists as a function
 * calls `analyze(builder, params.options.configAnalysisOptions)`
+* Provides the validationServices object to allow analyze to access many other services,
+including the loggerService through which it may generate a report.
 
 ### 12.4 What the config-analysis module owns
 
@@ -658,32 +657,29 @@ The following topics are intentionally deferred:
 
 ### 14.1 New options for supporting post-save errors
 
+** Will not use **
+
 ```ts
 interface ModelRulesConfigureOptions {
   configAnalysisOptions?: unknown;
   disableCache?: boolean;
   variantName?: string;
-  issuesFound?: Array<IssueFound>;
-  ExternalIssueFounds?: Array<ExternalIssueFound>;
+  externalIssueFounds?: Array<IssueFound>;
 }
 ```
 
-* issuesFound - when the call to the server has found Jivs issuesFound, supply it and configure() will call ValidationManager.setIssuesFound()
-* ExternalIssueFounds - when the call to the server has found non-Jivs ExternalIssueFounds, supply it and configure() will call ValidationManager.setExternalIssuesFound()
+* externalIssueFounds - when the call to the server results in errors, supply it and configure() will call ValidationManager.addExternalIssuesFound(errors, false)
 
+This will not be used because it is a follow up step to creating a ValidationManager and can handle two use cases:
 
-## 15. Current Summary
+* data comes from errors converted into IssuesFound using addExternalIssuesFound
+* data is the string from ValidationManager.toValidationPayload that will be provided to fromValidationPayload.
 
-The current configuration-side design is:
-
-* `IModelRules` is the public contract
-* `ModelRulesBase` is the default base implementation
-* callers create rules instances directly
-* `configure()` is the single public entry point
-* `configureRules()` is the required configuration hook
-* `IModifyModelRulesForUI` adds optional UI modification through `modifyForUI()`
-* `builder.startUILayerConfig()` is called only between base configuration and UI modification
-* caching remains first-class
-* `ICachingService` is exposed through `ValidationServices`
-* config analysis is optional and is invoked through a named service registered in `ValidationServices`
-* `configAnalysisOptions` belongs to the config-analysis module, not to `jivs-engine`
+```ts
+let vm = new ValidationManager(config);
+vm.addExternalIssuesFound(issuesFound, false);
+```
+```ts
+let vm = new ValidationManager(config);
+vm.fromValidationPayload(validationPayload);
+```
