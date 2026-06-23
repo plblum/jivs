@@ -1,0 +1,224 @@
+import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
+import { RulesBase } from "../../src/Validation/ModelRules";
+import { CONFIG_ANALYSIS_SERVICE_NAME, IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
+import { MockValidationServices } from "../TestSupport/mocks";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
+
+enableFluentConditions();
+
+class Person
+{
+    firstName: string = '';
+    lastName: string = '';
+}
+class PersonModelRules extends RulesBase {
+    constructor(services: IValidationServices) {
+        super(services);
+    }
+    protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+        builder.property('firstName', LookupKey.String).requireText();
+        builder.property('lastName', LookupKey.String).requireText();
+        if (options?.variantName === 'variant1') {
+            builder.property('age', LookupKey.Integer);
+        }
+    }
+
+    public exposeCacheKey(options?: RulesConfigOptions): string {
+        return this.createConfigCacheKey(options);
+    }
+}
+
+describe('RulesBase subclass for a single Model and no form involvement', () => {
+
+    test('configureRules adds rules for the model', () => {
+        let services = new MockValidationServices(true, true);
+        let rules = new PersonModelRules(services);
+        let config = rules.configure();
+        // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
+        config.valueHostConfigs.forEach(vhc => {
+            expect(vhc.valueHostType).toBe('Property');
+            expect(vhc.name).toMatch(/firstName|lastName/);
+            let validators = (<InputValueHostConfig>vhc).validatorConfigs;
+            expect(validators).not.toBeNull();
+            expect(validators!.length).toBe(1);
+            expect(validators![0].conditionConfig).not.toBeNull();
+            expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+        });
+        // check the cachingService to see if the config was cached
+        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        expect(cachedConfig).not.toBeNull();
+        expect(cachedConfig).toBe(config);
+    });
+    // variantName = 'variant1'
+    test('configureRules uses variantName to create a different config', () => {
+        let services = new MockValidationServices(true, true);
+        let rules = new PersonModelRules(services);
+        let config = rules.configure( { variantName: 'variant1' });
+        // check that the second config has the age property
+        expect(config.valueHostConfigs.length).toBe(3);
+        let ageVhc = config.valueHostConfigs.find(vhc => vhc.name === 'age');
+        expect(ageVhc).not.toBeNull();
+    });
+
+
+    describe('caching use cases', () => {
+        test('configureRules uses cached config when available', () => {
+            let services = new MockValidationServices(true, true);
+            let rules = new PersonModelRules(services);
+            let config1 = rules.configure();
+            let config2 = rules.configure();
+            expect(config2).toBe(config1);
+        });
+        // options.disableCache = true
+        test('configureRules does not use cached config when options.disableCache = true', () => {
+            let services = new MockValidationServices(true, true);
+            let rules = new PersonModelRules(services);
+            let config1 = rules.configure({ disableCache: true });
+            let config2 = rules.configure({ disableCache: true });
+            expect(config2).not.toBe(config1);
+            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            expect(cachedConfig).toBeUndefined();
+        });
+        // options.disableCache = false
+        test('configureRules uses cached config when options.disableCache = false', () => {
+            let services = new MockValidationServices(true, true);
+            let rules = new PersonModelRules(services);
+            let config1 = rules.configure();
+            let config2 = rules.configure({ disableCache: false });
+            expect(config2).toBe(config1);
+        });
+        // variantName = 'variant1' on second call caches two different configs
+        test('configureRules uses variantName to create a different config', () => {
+            let services = new MockValidationServices(true, true);
+            let rules = new PersonModelRules(services);
+            let config1 = rules.configure();
+            let config2 = rules.configure({ variantName: 'variant1' });
+            expect(config2).not.toBe(config1);
+            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            expect(cachedConfig).toBe(config1);
+            let cachedConfig2 = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey({ variantName: 'variant1' }));
+            expect(cachedConfig2).toBe(config2);
+
+        });
+
+    });
+    describe('config analysis features - using a mock service', () => {
+        class MockConfigAnalysisService {
+            public analyzeDone: boolean = false;
+
+            public analyze(builder: ValidationManagerConfigBuilder, options?: unknown): void {
+                this.analyzeDone = true;    
+            }
+        }
+        // configAnalysisOptions is supplied but no service exists
+        test('configureRules does not analyze config when no service exists', () => {
+            let services = new MockValidationServices(true, true);
+            let rules = new PersonModelRules(services);
+            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
+            // normal behavior.
+            expect(config.valueHostConfigs.length).toBe(2);
+        });
+        // configAnalysisOptions is supplied and a service exists
+        test('configureRules analyzes config when service exists', () => {
+            let services = new MockValidationServices(true, true);
+            let caService = new MockConfigAnalysisService();
+            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
+            let rules = new PersonModelRules(services);
+            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
+            expect(caService.analyzeDone).toBe(true);
+            expect(config.valueHostConfigs.length).toBe(2);
+        });
+        // configAnalysisOptions is not supplied and a service exists
+        test('configureRules does not analyze config when configAnalysisOptions is not supplied', () => {
+            let services = new MockValidationServices(true, true);
+            let caService = new MockConfigAnalysisService();
+            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
+            let rules = new PersonModelRules(services);
+            let config = rules.configure();
+            expect(caService.analyzeDone).toBe(false);
+            expect(config.valueHostConfigs.length).toBe(2);
+        });
+        // configAnalysisOptions is supplied and a service exists but the service does not implement analyze()
+        test('configureRules does not analyze config when service does not implement analyze()', () => {
+            let services = new MockValidationServices(true, true);
+            let caService = {};
+            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
+            let rules = new PersonModelRules(services);
+            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
+            expect(config.valueHostConfigs.length).toBe(2);
+        });
+
+        // configAnalysis does not run if caching is enabled and the config is cached
+        test('configureRules does not analyze config when caching is enabled and config is cached', () => {
+            let services = new MockValidationServices(true, true);
+            let caService = new MockConfigAnalysisService();
+            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
+            let rules = new PersonModelRules(services);
+            let config1 = rules.configure({ configAnalysisOptions: { someOption: true } });
+            expect(caService.analyzeDone).toBe(true);
+            caService.analyzeDone = false;
+            let config2 = rules.configure({ configAnalysisOptions: { someOption: true } });
+            expect(caService.analyzeDone).toBe(false);
+            expect(config2).toBe(config1);
+        });
+    });
+
+});
+
+describe('RulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
+    class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
+        constructor(services: IValidationServices) {
+            super(services);
+        }
+        adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+            // add form-specific rules and adjustments such as to labels and error messages here
+            // note that PropertyValueHosts from the Model class have been converted 
+            // to InputValueHosts prior to calling this due to builder.startUILayerConfig().
+            builder.input('firstName', { label: 'First Name' });
+            builder.input('lastName', { label: 'Last Name' });
+            if (options?.variantName === 'variant1') {
+                builder.input('age', { label: 'Age' });
+            }
+        }
+    }
+    // same tests as above, but using the FormRules subclass instead of the ModelRules subclass
+    test('configureRules adds rules for the model and form', () => {
+        let services = new MockValidationServices(true, true);
+        let rules = new PersonEditFormRules(services);
+        let config = rules.configure();
+        // find 2 inputValueHostConfigs, each with one validator and the RequiredText condition
+        config.valueHostConfigs.forEach(vhc => {
+            expect(vhc.valueHostType).toBe('Input');    // it started as 'Property' but was converted to 'Input' by builder.startUILayerConfig()
+            expect(vhc.name).toMatch(/firstName|lastName/);
+            expect(vhc.label).toMatch(/First Name|Last Name/);
+            let validators = (<InputValueHostConfig>vhc).validatorConfigs;
+            expect(validators).not.toBeNull();
+            expect(validators!.length).toBe(1);
+            expect(validators![0].conditionConfig).not.toBeNull();
+            expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+        });
+        // check the cachingService to see if the config was cached
+        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        expect(cachedConfig).not.toBeNull();
+        expect(cachedConfig).toBe(config);
+    });
+
+    // variantName = 'variant1'
+    test('configureRules uses variantName to create a different config', () => {
+        let services = new MockValidationServices(true, true);
+        let rules = new PersonEditFormRules(services);
+        let config = rules.configure({ variantName: 'variant1' });
+        // check that the second config has the age property
+        expect(config.valueHostConfigs.length).toBe(3);
+        let ageVhc = config.valueHostConfigs.find(vhc => vhc.name === 'age');
+        expect(ageVhc).not.toBeNull();
+        expect(ageVhc!.label).toBe('Age');
+    });
+
+    // caching tests are the same as above, so not repeated here
+});
+

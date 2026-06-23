@@ -34,14 +34,17 @@ This design defines a configuration abstraction focused entirely on producing a 
 
 The key types are:
 
-* `IModelRules` - interface
-* `ModelRulesBase` - abstract base implementing IModelRules
+* `IRules` - interface
+* `RulesBase` - abstract base implementing IRules
+* `ModelRulesBase` - abstract base subclassing RulesBase specifically targetting business logic model rules
+* `FormRulesBase` - abstract base subclassing RulesBase specifically targetting Forms that do not have an associated Model.
+* `IAdaptModelRulesToForm` - Interface used by Form developers who subclass from a ModelRules class to adapt it to their form.
 
-The public entry point is:
+The IRules public entry point is:
 
 * `configure()`
 
-`configure()` returns a `ValidationManager`.
+`configure()` returns a `ValidationManagerConfig`.
 
 The scope of this abstraction is:
 
@@ -54,40 +57,57 @@ Example direction:
 
 ```ts
 const rules = new PersonEditFormRules(services);
-const vm = rules.configure();
+const config = rules.configure();
+config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
+const vm = new ValidationManager(config);
 ```
 
 ---
 
-## 3. Non-Goals
+## 3. API overview
 
-This document does not define:
+```ts
+interface IRules {
+  configure(
+    options?: RulesConfigOptions
+  ): ValidationManagerConfig;
+}
 
-* a model-rules factory
-* the internal design of the `jivs-configanalysis` module
+abstract class RulesBase implements IRules {}
 
-This document does define how configuration-side model rules interact with a config-analysis service when that optional module is installed and registered into `ValidationServices`.
+abstract class ModelRulesBase extends RulesBase {}
+
+abstract class FormRulesBase extends RulesBase {}
+
+interface IAdaptModelRulesToForm {
+  adaptToForm(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigureOptions,
+  ): void;
+}
+```
 
 ---
 
 ## 4. Primary Developer Story
 
-The preferred structured way to configure the ValidationManager is through `IModelRules` / `ModelRulesBase`.
-It consumes the Builder so that the developer can create fluent syntax for configurations.
+The preferred structured way to configure the ValidationManager is through this system (`IRules`, `RulesBase`, etc)
+instead of using the Builder directly because it wraps fixed rules in a class with these benefits:
+
+* keeps configuration out of page/component code
+* improves testability
+* creates a stable reusable configuration unit on both client and server
+* supports subclass-based Form customization
 
 This applies to both:
 
 * business-logic-authored reusable model rules
 * UI-authored reusable rules classes
 
+`RulesBase` consumes the Builder so that the developer can create fluent syntax for configurations. Thus the Builder
+remains an essential tool, but the developer doesn't create it. They just consume it.
+
 Direct Builder without it usage remains available as a lower-level alternative, consistent with existing Jivs documentation.
-
-However, the preferred path is to wrap reusable configuration in a model-rules class because it:
-
-* keeps configuration out of page/component code
-* improves testability
-* creates a stable reusable configuration unit
-* supports subclass-based UI customization
 
 ---
 
@@ -95,47 +115,57 @@ However, the preferred path is to wrap reusable configuration in a model-rules c
 
 ### 5.1 Business-logic model rules
 
-A business logic developer defines a rules class for a model.
+A business logic developer defines a rules class for a model by subclassing `ModelRulesBase`.
+The class defines the model's configuration through `configureRules()` which is abstract in `ModelRulesBase`.
 
 Example:
 
 ```ts
 class PersonModelRules extends ModelRulesBase {
+  public configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  {
+    // setup rules for Person model using the builder
+  }
 }
 ```
 
-This class defines the model's configuration through `configureRules()`.
 
-### 5.2 Form subclass of model rules
 
-A UI developer subclasses the model rules class for a specific form or presentation. This is mostly used
-to override a business logic's model configuration, but could be used with a form's configuration to provide 
-variations.
+### 5.2 Forms that start with a model
+
+A UI developer subclasses the model rules class for a specific form or presentation
+and implements `IAdaptModelRulesToForm`. This is mostly used to override a business logic's model configuration, 
+but could be used with a form's configuration to provide variations.
 
 Example:
 
 ```ts
-class PersonEditFormRules extends PersonModelRules implements IModifyModelRulesForUI {
+class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
+  public adaptToForm(builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions): void {
+      // update existing ValueHosts and add any that are Form specific
+    }
 }
 ```
 
-This subclass inherits the base model configuration and adds UI modifications through `modifyForUI()`.
+This subclass inherits the base model configuration and adds UI modifications through `adaptToForm()`.
 
-### 5.3 UI-only reusable rules
+### 5.3 Form-only rules
 
-A UI developer may define a reusable rules class without inheriting from a business-model rules class.
+A UI developer may define a rules class without inheriting from a business-model rules class
+by subclassing `FormRulesBase`. In this case, they don't have a model. Instead, they override
+`configureRules()` to supply all rules needed by the form. No need to implement `IAdaptModelRulesToForm` here.
 
 Example:
 
 ```ts
-class LoginFormRules extends ModelRulesBase {
+class LoginFormRules extends FormRulesBase {
+  public configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  {
+    // setup rules for Login form using the builder
+  }  
 }
 ```
-
-In that case, the class defines its configuration through `configureRules()`.
-
-Further discussion of UI-only guidance is deferred, but this usage remains valid and supported.
-
 ---
 
 ## 6. Public Contract
@@ -143,15 +173,10 @@ Further discussion of UI-only guidance is deferred, but this usage remains valid
 ### 6.1 Configure options
 
 ```ts
-interface ModelRulesConfigureOptions {
+interface RulesConfigOptions {
   configAnalysisOptions?: unknown;
   disableCache?: boolean;
   variantName?: string;
-}
-
-interface ModelRulesConfigureParams<
-  TConfigureOptions extends ModelRulesConfigureOptions = ModelRulesConfigureOptions> {
-  options?: TConfigureOptions;
 }
 ```
 
@@ -163,34 +188,34 @@ Its used at the developer's discretion.
 * `configAnalysisOptions` enables config analysis when it is not `null` or `undefined`. It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
 * The shape of `configAnalysisOptions` belongs to the installed config-analysis module, not to `jivs-engine`
 
-### 6.2 IModelRules
+### 6.2 IRules
 
 ```ts
-interface IModelRules {
+interface IRules {
   configure(
-    params?: ModelRulesConfigureParams,
-  ): ValidationManager;
+    options?: RulesConfigOptions,
+  ): ValidationManagerConfig;
 }
 ```
 
 `configure()` is the single public entry point. It returns a new ValidationManager.
 
-### 6.3 IModifyModelRulesForUI
+### 6.3 IAdaptModelRulesToForm
 
 ```ts
-interface IModifyModelRulesForUI {
-  modifyForUI(
+interface IAdaptModelRulesToForm {
+  adaptToForm(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions
   ): void;
 }
 ```
 
 This is a narrow capability interface.
 
-It is not intended to replace `IModelRules`.
+It is not intended to replace `IRules`.
 
-Its purpose is to mark subclasses that add UI modification after base configuration has run.
+Its purpose is to mark subclasses that add Form modification after Model configuration has run.
 It targets the UI developer who is working on a form against a business logic model so they
 can focus on the changes needed to achieve the correct user experience.
 
@@ -199,40 +224,41 @@ can focus on the changes needed to achieve the correct user experience.
 ## 7. Base Class Shape
 
 ```ts
-abstract class ModelRulesBase implements IModelRules {
+abstract class RulesBase implements IRules {
   protected constructor(
     protected readonly services: ValidationServices,
   );
 
   public configure(
-    params?: ModelRulesConfigureParams,
-  ): ValidationManager;
+    options?: RulesConfigOptions,
+  ): ValidationManagerConfig;
 
   protected abstract configureRules(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): void;
 
   protected getModelRulesKey(): string;
 
   protected createConfigCacheKey(
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): string;
 
   protected createBuilder(
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): ValidationManagerConfigBuilder;
 
   protected buildConfig(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): ValidationManagerConfig;
 
-  protected createValidationManager(
-    config: ValidationManagerConfig,
-    params?: ModelRulesConfigureParams,
-  ): ValidationManager;
+  protected configAnalysis(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+
 }
+
+abstract class ModelRulesBase extends RulesBase {}
+abstract class FormRulesBase extends RulesBase {}
 ```
 
 ### Method purposes
@@ -245,7 +271,7 @@ Subclasses call this through `super(services)`.
 
 It is not intended to be overridden.
 
-#### `configure(params)`
+#### `configure(options)`
 
 The single public entry point.
 
@@ -255,12 +281,13 @@ It orchestrates the full configuration process:
 * builder creation
 * base rules configuration
 * optional UI modification
+* run optional ConfigAnalysis
 * config finalization
-* `ValidationManager` creation
+* cache storage
 
 It is not intended to be overridden under normal use.
 
-#### `configureRules(builder, params)`
+#### `configureRules(builder, options)`
 
 Defines the main configuration for the rules class.
 
@@ -278,7 +305,7 @@ The default implementation should return `this.constructor.name`.
 
 Override this only when the default identity is not suitable.
 
-#### `createConfigCacheKey(params)`
+#### `createConfigCacheKey(options)`
 
 Part of caching the configuration.
 
@@ -288,7 +315,7 @@ Its default implementation should use `getModelRulesKey()` together with `varian
 
 It is intended to be overridable when a subclass needs extra cache-key components.
 
-#### `createBuilder(params)`
+#### `createBuilder(options)`
 
 Creates the `ValidationManagerConfigBuilder` used during configuration.
 
@@ -296,7 +323,7 @@ Most subclasses should not need to override this.
 
 Keep this protected support method available for framework extensibility.
 
-#### `buildConfig(builder, params)`
+#### `buildConfig(builder, options)`
 
 Finalizes the builder into `ValidationManagerConfig`.
 
@@ -304,19 +331,15 @@ Most subclasses should not need to override this.
 
 It remains protected for now to keep the framework shape explicit and extensible.
 
-#### `createValidationManager(config, params)`
+#### `configAnalysis(builder, options)`
 
-Creates the `ValidationManager` returned by `configure()`.
-
-Most subclasses should not need to override this.
-
-Keep this protected support method available for framework extensibility.
-
+When options.configAnalysisOptions is assigned and the configAnalysis service is present,
+it performs the analysis. It outputs results usually to the console. Use during non-production situations.
 ---
 
 ## 8. Configuration Flow
 
-`ModelRulesBase.configure()` owns the overall configuration process.
+`RulesBase.configure()` owns the overall configuration process.
 
 The high-level behavior is:
 
@@ -327,16 +350,16 @@ The high-level behavior is:
 
    1. Create the builder.
    2. Run `configureRules()`.
-   3. If the instance has `modifyForUI()`, call `builder.startUILayerConfig()`. Then call `modifyForUI()`.
-   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
+   3. If the instance has `adaptToForm()`, call `builder.startUILayerConfig()`. Then call `adaptToForm()`.
+   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, 
+      if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
    5. Finalize the builder into config.
    6. Store config in cache if enabled.
-5. Create a new `ValidationManager` from the config.
-6. Return the `ValidationManager`.
+5. Return the `ValidationManagerConfig`.
 
 Important rule:
 
-* `builder.startUILayerConfig()` is called **only** between `configureRules()` and `modifyForUI()` . It is only used with IModifyModelRulesForUI is implemented.
+* `builder.startUILayerConfig()` is called **only** between `configureRules()` and `adaptToForm()` . It is only used with `IAdaptModelRulesToForm` is implemented.
 
 It is not called before `configureRules()`.
 
@@ -344,48 +367,35 @@ It is not called before `configureRules()`.
 
 ```ts
 public configure(
-  params?: ModelRulesConfigureParams,
+  options?: RulesConfigOptions,
 ): ValidationManager {
-  const cacheKey = this.createConfigCacheKey(params);
-  const useCache = !params?.options?.disableCache;
-
   let config: ValidationManagerConfig | null = null;
+  const cacheKey = this.createConfigCacheKey(options);
+  const useCache = !options?.options?.disableCache;
+
 
   if (useCache)
-    config = this.tryLoadCachedConfig(cacheKey, params);
+    config = this.tryLoadCachedConfig(cacheKey, options);
 
   if (!config) {
-    const builder = this.createBuilder(params);
+    const builder = this.createBuilder(options);
 
-    this.configureRules(builder, params);
+    this.configureRules(builder, options);
 
-    const uiRules = this as Partial<IModifyModelRulesForUI>;
-    if (typeof uiRules.modifyForUI === "function") {
+    const uiRules = this as Partial<IAdaptModelRulesToForm>;
+    if (typeof uiRules.adaptToForm === "function") {
       builder.startUILayerConfig();
-      uiRules.modifyForUI(builder, params);
+      uiRules.adaptToForm(builder, options);
     }
+    this.configAnalysis(builder, options);
 
-    const configAnalysisService = this.services.getService(
-      MODEL_RULES_CONFIG_ANALYSIS_SERVICE_NAME,
-    ) as { analyze?: (target: unknown, options?: unknown) => void } | null;
-
-    if (
-      params?.options?.configAnalysisOptions != null &&
-      typeof configAnalysisService?.analyze === "function"
-    ) {
-      configAnalysisService.analyze(
-        builder,
-        params.options.configAnalysisOptions,
-      );
-    }
-
-    config = this.buildConfig(builder, params);
+    config = this.buildConfig(builder, options);
 
     if (useCache)
-      this.saveCachedConfig(cacheKey, config, params);
+      this.saveCachedConfig(cacheKey, config, options);
   }
 
-  return this.createValidationManager(config, params);
+  return config;
 }
 ```
 
@@ -410,29 +420,29 @@ class PersonModelRules extends ModelRulesBase {
 
   protected override configureRules(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): void;
 }
 ```
 
 This class defines base model/business configuration only.
 
-It does not implement `IModifyModelRulesForUI`.
+It does not implement `IAdaptModelRulesToForm`.
 
 ### 9.2 Form subclass of model
 
 ```ts
 class PersonEditFormRules
   extends PersonModelRules
-  implements IModifyModelRulesForUI
+  implements IAdaptModelRulesToForm
 {
   public constructor(
     services: ValidationServices,
   );
 
-  public modifyForUI(
+  public adaptToForm(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): void;
 }
 ```
@@ -442,14 +452,14 @@ This class inherits base model rules and adds UI-layer modifications.
 ### 9.3 Form only
 
 ```ts
-class LoginFormRules extends ModelRulesBase {
+class LoginFormRules extends FormRulesBase {
   public constructor(
     services: ValidationServices,
   );
 
   protected override configureRules(
     builder: ValidationManagerConfigBuilder,
-    params?: ModelRulesConfigureParams,
+    options?: RulesConfigOptions,
   ): void;
 }
 ```
@@ -473,10 +483,22 @@ The following is **not** cached:
 Reason:
 
 * configuration is static and reusable
-  * **Alert: a configuration may contain callbacks and function pointers. These are not intended to survive
-  a page regeneration. Callbacks can be restored as the page regenerates due to their well known nature. 
-  Functions do not have this safety net.** 
 * `ValidationManager` is stateful and must be created anew for each `configure()` call
+
+#### Caching Configuration Notes
+A configuration may contain callbacks and function pointers. These are not intended to survive
+a page regeneration. 
+
+* Callbacks are found on the top level ValidationManagerConfig, like onValidationStateChanged. They are expected to be reassigned 
+as part of the Rules configuration like this:
+  ```ts
+  let config = rules.configure(options);
+  config.onValidationStateChanged = (params)=> {};  // and others
+  let vm = new ValidationManager(config);
+  ```
+* Functions are buried inside of conditions and cannot be restored. In this case, do not use caching.
+
+
 
 ### 10.1 ICachingService
 
@@ -540,7 +562,7 @@ The expected pattern is that `createConfigCacheKey()` uses `getModelRulesKey()` 
 
 ---
 
-## 11. Design Notes
+## 12. Design Notes
 
 ### 11.1 Why subclassing was chosen
 
@@ -550,7 +572,7 @@ In the subclassing shape:
 
 * a model rules class defines base configuration through `configureRules()`
 * a form-specific subclass inherits that configuration
-* the form subclass optionally adds `modifyForUI()`
+* the form subclass optionally adds `adaptToForm()`
 
 In the factory/composition shape:
 
@@ -563,17 +585,17 @@ Subclassing was chosen because it keeps the configuration story simpler.
 
 The UI subclass can inherit model configuration directly and then optionally provide UI modification, without requiring that extra public builder-population method.
 
-### 11.2 Why `modifyForUI()` is not on `ModelRulesBase`
+### 11.2 Why `adaptToForm()` is not on `RulesBase`
 
-`modifyForUI()` is intentionally not part of the base class contract.
+`adaptToForm()` is intentionally not part of the base class contract.
 
 If it were on the base class, runtime detection would always succeed and there would need to be a second opt-in mechanism.
 
-Instead, UI modification is treated as an added capability through `IModifyModelRulesForUI`.
+Instead, UI modification is treated as an added capability through `IAdaptModelRulesToForm`.
 
 ### 11.3 Runtime detection approach
 
-At runtime, `configure()` checks only whether `modifyForUI` exists as a function.
+At runtime, `configure()` checks only whether `adaptToForm` exists as a function.
 
 For config analysis, `configure()` also checks whether a registered service exposes an `analyze()` function.
 
@@ -585,7 +607,7 @@ This is sufficient for the intended pattern.
 
 Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in validationServices via setService().
 
-When the user installs and registers the config-analysis module into `ValidationServices`, `ModelRulesBase.configure()` may invoke it before building the final config.
+When the user installs and registers the config-analysis module into `ValidationServices`, `RulesBase.configure()` may invoke it before building the final config.
 
 ### 12.1 Service lookup
 
@@ -603,9 +625,28 @@ const CONFIG_ANALYSIS_SERVICE_NAME = "ConfigAnalysisService";
 
 Config analysis runs only when:
 
-* `params?.options?.configAnalysisOptions` is not `null` or `undefined`
+* options?.configAnalysisOptions` is not `null` or `undefined`
 * a service is registered under the config-analysis service name
 * that service exposes an `analyze()` function
+
+```ts
+protected configAnalysis(builder: ValidationManager, options?: RulesConfigOptions): void
+{
+    if (!options?.configAnalysisOptions)
+      return;
+    const configAnalysisService = this.services.getService(
+      CONFIG_ANALYSIS_SERVICE_NAME,
+    ) as { analyze?: (target: unknown, options?: unknown) => void } | null;
+
+    if (typeof configAnalysisService?.analyze === "function"
+    ) {
+      configAnalysisService.analyze(
+        builder,
+        options.configAnalysisOptions,
+      );
+    }
+}
+```
 
 ### 12.3 What `jivs-engine` knows
 
@@ -641,45 +682,43 @@ It also lets the config-analysis module remain independently customizable.
 
 ---
 
-## 13. Deferred Topics
+## 14. Page regeneration
 
-The following topics are intentionally deferred:
+*This is not really a configuration issue as much as its a workflow that happens side-by-side with configuration.*
 
-* the internal design of the config-analysis module
-* deeper UI-only guidance
-* validation-side design
-* save workflow design
-* server/client validation lifecycle design
+The ValidationManager gets discarded when a page posts back and gets a fresh copy.
+This process happens in many situations like MVC and ASP.NET webforms.
 
----
+A round-trip may be the result of errors on the server, and the server will
+supply those errors in some way to the client. The configuration process is followed by
+applying those errors to the new ValidationManager instance.
 
-## 14. New ideas to work through this design
+### Jivs on the server-side
+The server side code must pass along the string from its ValidationManager.toValidationPayload().
 
-### 14.1 New options for supporting post-save errors
-
-** Will not use **
+The client adds this call to the ValidationManager: `vm.fromValidationPayload(payload)`.
 
 ```ts
-interface ModelRulesConfigureOptions {
-  configAnalysisOptions?: unknown;
-  disableCache?: boolean;
-  variantName?: string;
-  externalIssueFounds?: Array<IssueFound>;
-}
+let payload = getJivsPayload(); // user's code
+const rules = new PersonEditFormRules(services);
+const config = rules.configure();
+config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
+const vm = new ValidationManager(config);
+if (payload)
+  vm.fromValidationPayload(payload);
 ```
 
-* externalIssueFounds - when the call to the server results in errors, supply it and configure() will call ValidationManager.addExternalIssuesFound(errors, false)
-
-This will not be used because it is a follow up step to creating a ValidationManager and can handle two use cases:
-
-* data comes from errors converted into IssuesFound using addExternalIssuesFound
-* data is the string from ValidationManager.toValidationPayload that will be provided to fromValidationPayload.
+### Other server side code
+The server sends errors to the client in its own format. On the client,
+retrieve them and convert them into an array of `IssueFound`. Then pass the 
+IssuesFound to ValidationManager: `vm.addExternalIssuesFound(issuesFound, false)`.
 
 ```ts
-let vm = new ValidationManager(config);
-vm.addExternalIssuesFound(issuesFound, false);
-```
-```ts
-let vm = new ValidationManager(config);
-vm.fromValidationPayload(validationPayload);
+let issuesFound = getIssuesFound(); // user's code to retrieve errors and return an array of IssueFound objects.
+const rules = new PersonEditFormRules(services);
+const config = rules.configure();
+config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
+const vm = new ValidationManager(config);
+if (issuesFound?.length > 0)
+  vm.addExternalIssuesFound(issuesFound, false);
 ```

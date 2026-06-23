@@ -55,6 +55,8 @@ import { ValidationManagerConfigBuilderFactory } from "../../src/Services/Manage
 import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
+import { ICachingService } from "../../src/Interfaces/CachingService";
+import { CachingService } from "../../src/Services/CachingService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -302,6 +304,7 @@ export class MockValidationServices implements IValidationServices
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
         this.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
+        this.cachingService = new CachingService();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -527,6 +530,14 @@ export class MockValidationServices implements IValidationServices
         factory.services = this;
     }
     private _managerConfigModifierFactory!: IManagerConfigModifierFactory;
+
+    public get cachingService(): ICachingService {
+        return this._cachingService;
+    }
+    public set cachingService(service: ICachingService) {
+        this._cachingService = service;
+    }
+    private _cachingService!: ICachingService;
 }
 
 /**

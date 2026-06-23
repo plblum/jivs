@@ -24,6 +24,8 @@ import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilder
 import { ValidationManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 import { ValidationManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { ValidatorConfigMergeService } from './ConfigMergeService';
+import { ICachingService } from '../Interfaces/CachingService';
+import { CachingService } from './CachingService';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -139,4 +141,22 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
     protected defaultManagerConfigModifierFactory(): IManagerConfigModifierFactory {
         return new ValidationManagerConfigModifierFactory();
     }
+
+    /**
+     * Service to get the ICachingService instance that 
+     * determines how to merge ValueHost configurations from business logic and UI.
+     */
+    public get cachingService(): ICachingService {
+        let service = this.getService<ICachingService>(ServiceName.cache);
+        if (!service)
+        {
+            service = new CachingService();
+            this.setService(ServiceName.cache, service);
+        }
+
+        return service;
+    }
+    public set cachingService(service: ICachingService) {
+        this.setService(ServiceName.cache, service);
+    }            
 }

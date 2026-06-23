@@ -1,0 +1,75 @@
+/**
+ * In Jivs, users are expected to place their validation rules in separate areas from their UI code,
+ * and if possible, do it in a reusable and testable way. The Rules classes, inheriting from IRules,
+ * encapsolate a configuration abstraction that is:
+ * - reusable
+ * - testable
+ * - UI-independent
+ * - compatible with both business-logic-owned and UI-authored rules
+ * - suitable for subclass-based UI augmentation
+ * 
+ * Subclass from abstract ModelRulesBase or FormRulesBase to implement your own rules.
+ * 
+ * Then use it to create a ValidationManagerConfig object, which can be used to create a ValidationManager.
+ * 
+    ```ts
+    const rules = new PersonEditFormRules(services);
+    const config = rules.configure();
+    config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
+    const vm = new ValidationManager(config);
+    ```
+ * @module Validation/Types/ModelRules
+ */
+
+import { ValidationManagerConfigBuilder } from "../Validation/ValidationManagerConfigBuilder";
+import { ValidationManagerConfig } from "./ValidationManager";
+
+/**
+ * Extends the behavior within IRules.configure.
+ */
+export interface RulesConfigOptions {
+    /**
+     * Enables config analysis through jivs-configanalysis module when it is not `null` or `undefined`. 
+     * It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
+     * The shape of `configAnalysisOptions` belongs to the installed config-analysis module, 
+     * not to `jivs-engine` which is why it is typed as `unknown`.
+     */
+    configAnalysisOptions?: unknown;
+    /**
+     * When `true`, disables caching of the rules configuration. This is useful for testing and debugging.
+     */
+    disableCache?: boolean;
+    /**
+     * Developer can use this to allow the caller to execute a named variant.
+       Its used at the developer's discretion.
+     */
+  variantName?: string;
+}
+
+/**
+ * Top level interface for rules classes. It is implemented by RuleBase.
+ * It is used to create a ValidationManagerConfig object from any rules built 
+ * into each concrete class. Create concrete classes for each Model
+ * or Form that uses Jivs validation. 
+ */
+export interface IRules {
+  configure(options?: RulesConfigOptions): ValidationManagerConfig;
+}
+
+/**
+ * Interface used by Form developers who subclass from a ModelRules class to adapt it to their form.
+ * It ensures that the form starts with the ModelRules configuration, 
+ * and then adds any form-specific rules to it.
+ * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
+ */
+export interface IAdaptModelRulesToForm {
+  adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+}
+
+/**
+ * The name of the service used to analyze the ValidationManagerConfig.
+ * This is the only aspect of jivs-configanalysis that jivs-engine needs to know about. 
+ * The rest of the config-analysis module is not used by jivs-engine.
+ * IValidationService.setService(CONFIG_ANALYSIS_SERVICE_NAME, ...) is used to set the service.
+ */
+export const CONFIG_ANALYSIS_SERVICE_NAME = "ConfigAnalysisService";

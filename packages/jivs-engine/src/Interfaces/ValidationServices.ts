@@ -10,6 +10,7 @@ import { IMessageTokenResolverService } from './MessageTokenResolverService';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IDataTypeParserService } from './DataTypeParserService';
 import { IValidatorConfigMergeService } from './ConfigMergeService';
+import { ICachingService } from './CachingService';
 
 /**
  * Full interface representation of ValidationServices.
@@ -51,6 +52,11 @@ export interface IValidationServices extends IValueHostsServices {
      * Factory for generating Validator.
      */
     validatorFactory: IValidatorFactory;
+
+    /**
+     * Service for caching data.
+     */
+    cachingService: ICachingService;
 
 }
 
@@ -146,6 +152,11 @@ export enum ServiceName {
     /**
      * IValuesToModelFactory - in jivs-ssot
      */
-    valuesToModelFactory = 'ValuesToModelFactory'
+    valuesToModelFactory = 'ValuesToModelFactory',
+
+    /**
+     * ICachingService
+     */
+    cache = 'Cache'
 
 }
