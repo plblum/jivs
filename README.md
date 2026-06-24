@@ -57,14 +57,16 @@ A validation rule is a single condition that evaluates the incoming data and det
     ```ts
     export class PersonModelRules extends ModelRulesBase {
       protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
-        builder.input('firstName').requireText().regExp('^[\w''\s\-]*$');
-        builder.input('lastName').requireText().regExp('^[\w''\s\-]*$');
+        builder.input('firstName').requireText().regExp('^[\\w\\s''\\-']*$');
+        builder.input('lastName').requireText().regExp('^[\\w\\s''\\-]*$');
       }
     }
     ```
 -	The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
       ```ts
-      export class PersonFormEditorRules extends PersonModelRules : IAdaptModelRulesToForm {
+      export class PersonFormEditorRules 
+        extends PersonModelRules 
+        implements IAdaptModelRulesToForm {
         protected adaptToForm(builder: ConfigBuilder, options?: RulesConfigOptions): void {
           // apply some properties to the fields and validators
           builder.input('firstName', {label: 'First Name'}).requireText({ errorMessage: '{Label} is required.'});
@@ -245,6 +247,7 @@ Here are a few terms used.
 You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
 - **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
 - **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
+- **Model Rules**, **ModelRulesBase**, **FormRulesBase** - Model rules describes the business logic rules for validation specific to a Model. You encapsolate those rules in a subclass of `ModelRulesBase`. If you don't have a model, subclass from `FormRulesBase` instead.
 - **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
 - **Builder API** - Tooling to configure the ValueHosts and their Validators used by ValidationManager.
 - **Builder object** - An object supplying the Builder API that is used to configure prior to creating the ValidationManager.
@@ -534,7 +537,7 @@ let services = createValidationServices('en-US');
 let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
-builder.onValidationStateChanged = formValidated;
+config.onValidationStateChanged = formValidated;
 let vm = new ValidationManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
@@ -572,22 +575,7 @@ function formValidated(validationManager: IValidationManager, validationState: V
 
 The goal of configuration is to create a `ValidationManager`.
 
-In most apps, configuration starts with a class derived from `ModelRulesBase`. That class defines each field's ValueHost and its the validation rules. Call its `configure()` method to build and return a `ValidationManagerConfig`. Then attach any callbacks needed by the UI and create the `ValidationManager` as shown here:
-
-
-```ts
-const services = createValidationServices('en-US');
-const rules = new YourModelRulesClass(services); // see below
-const config = rules.configure();
-
-// optional callback examples...
-config.onValidationStateChanged = myValidationStateChangedFn;
-config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
-
-const vm = new ValidationManager(config);
-```
-
-> If you haven't already done so, please ensure that you have added the `createValidationServices()` function, as described in [Configuring ValidationServices](#configuring-validationservices).
+In most apps, configuration starts with a class derived from [`ModelRulesBase`](#rules) or `FormRulesBase`. That class defines each field's `ValueHost` and its validation rules. Call its `configure()` method to build and return a `ValidationManagerConfig`. Then attach any callbacks needed by the UI and create the `ValidationManager` as shown here:
 
 ### Define rules for the model
 
@@ -601,7 +589,7 @@ class Person {
 }
 ```
 
-Create a `ModelRulesBase` subclass to define the validation rules for that model:
+Create a [`ModelRulesBase`](#rules) subclass to define the validation rules for that model:
 
 ```ts
 class PersonModelRules extends ModelRulesBase {
@@ -625,25 +613,22 @@ class PersonModelRules extends ModelRulesBase {
 
 This example introduces the [**Builder API**](#configuring-the-validationmanager-the-builder-api), which is used inside `configureRules()` to define ValueHosts and their validators. Most developers will use the Builder API this way, inside a rules class, rather than building configuration directly in page or component code.
 
-For details about the Builder API, see [Configuring the ValidationManager: the Builder API](#configuring-the-validationmanager-the-builder-api).
-
-Now create the `ValidationManager`:
+#### Using this rules class to create the ValidationManager
+Expect to use model-specific rules classes when writing server-side code for node.js,
+but not in the UI. Here's what the code for the server side looks like.
 
 ```ts
 const services = createValidationServices('en-US');
-const rules = new PersonModelRules(services);
+const rules = new PersonModelRules(services); 
 const config = rules.configure();
-
-// optional callbacks
-config.onValidationStateChanged = myValidationStateChangedFn;
-config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
-
 const vm = new ValidationManager(config);
 ```
 
 ### Adapt those rules for the form
 
 A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
+
+The form _must_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface, even if its `adaptToForm()` method is left empty. That step ensures the model's use of `PropertyValueHosts` is switched to `InputValueHosts`.
 
 In this example, the form developer subclasses `PersonModelRules` and adds labels for the UI. Inside `adaptToForm()`, the form works with those fields through `input()` so it can apply input-specific configuration.
 
@@ -662,30 +647,26 @@ class PersonEditFormRules
   }
 }
 ```
-
-> Notice that we replaced `builder.property(fieldName)` with `builder.input(fieldName)`. A model and a form have different needs. The business logic developer defines property ValueHosts for the model. The form developer works with those same fields as input ValueHosts so form-specific configuration can be applied.
-
-Now create the `ValidationManager`:
-
+#### Using this rules class to create the ValidationManager
 ```ts
 const services = createValidationServices('en-US');
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 
-// optional callbacks
+// typical callbacks for browser-based code
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
 const vm = new ValidationManager(config);
 ```
 
-### Define rules directly for the form
+### Define rules for the form when there is no model
 
 Sometimes a form is not backed by a business logic model.  
 
 In that case, create a `FormRulesBase` subclass and define the form's rules directly.
 
- This example is a date range editor form that asks for a start date and end date, then ensures the two dates are no more than a certain number of days apart.
+This example is a date range editor form that asks for a start date and end date, then ensures the two dates are no more than a certain number of days apart.
 
 ```ts
 class DateRangeFormRules extends FormRulesBase {
@@ -715,7 +696,7 @@ class DateRangeFormRules extends FormRulesBase {
 
   private differenceBetweenDates(
       callingValueHost: ICalcValueHost,
-      findValueHosts: IValueHostsManager) : SimpleValueType {
+      findValueHosts: IValueHostsManager): SimpleValueType {
     let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
     let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
@@ -724,21 +705,20 @@ class DateRangeFormRules extends FormRulesBase {
   }
 }
 ```
+> Notice that we inherit from `FormRulesBase`, do not implement `IAdaptModelRulesToForm`, and use `builder.input()`.
 
-Create the `ValidationManager` the same way:
-
+#### Using this rules class to create the ValidationManager
 ```ts
 const services = createValidationServices('en-US');
 const rules = new DateRangeFormRules(services);
 const config = rules.configure();
 
-// optional callbacks
+// typical callbacks for browser-based code
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
 const vm = new ValidationManager(config);
 ```
-
 ---
 # Jivs Classes: the API
 
@@ -746,6 +726,10 @@ const vm = new ValidationManager(config);
 
 You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
 
+- [Rules](#rules) – Classes used to define your model and form rules.
+    + `ModelRulesBase class` – Define validation rules for the business logic model.
+    + `FormRulesBase class` – Define validation rules directly for a form when there is no business logic model.
+    + `IAdaptModelRulesToForm interface` – Implement on a form-specific subclass when adapting rules from `ModelRulesBase`.
 -   [`ValueHost classes`](#valuehosts) – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
@@ -761,8 +745,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     
   + `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 
--   [`ValidationManager class`](#validationmanager) – The "face" of this API. Your validation-related UI elements will need access to it to do their work. It's where you
-    configure the `ValueHosts`, get access to a `ValueHost`, validate, and get the validation results. It is supported by these types:
+-   [`ValidationManager class`](#validationmanager) – The "face" of this API. It represents the fields of your form or model to Jivs through its `ValueHosts`. Your validation-related UI elements will need access to it to do their work. Use it to validate, retrieve validation results, and report additional errors determined by your business logic. It is supported by these types:
     + [`ValidationManagerConfig type`](#configuring-the-validationmanager-the-builder-api) – An object that describes all ValueHosts and their Validators.
     + [`ValidationManagerConfigBuilder class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Builder object, use it to configure the ValidationManager class. Internally, it prepares the `ValidationManagerConfig type`.
     + [`ValidationManagerConfigModifier class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Modifier object, use it to change the configuration once the ValidationManager has been created. Internally, it modifies the `ValidationManagerConfig type`.
@@ -792,6 +775,7 @@ Topics:
 - [ValueHosts](#valuehosts)
 - [Validators](#validators-connecting-conditions-to-error-messages)
 - [ValidationManager](#validationmanager)
+- [Rules](#rules)
 - [ValidationServices](#validationservices)
 - [Creating your own Conditions](#creating-your-own-conditions)
 - [Lookup Keys: DataTypes and Companion tools](#lookup-keys-data-types-and-companion-tools)
@@ -858,7 +842,7 @@ Jivs provides numerous `Condition classes`.
 </details>
 
 To use them, you need to provide a configuration with properties specific to its class. 
-> Configuration must be setup when [configuring the ValidationManager](#configuring-the-validationmanager-the-builder-api) or [using the Modifier object](#changing-the-configuration-after-creating-validationmanager-with-the-modifier-object) after it was created.
+> Configuration must be setup when [configuring the ValidationManager](#configuring-the-validationmanager-the-builder-api) or [using the Modifier object](#Modifying the configuration with the Modifier object) after it was created.
 
 We'll work with this example: Compare a date from the Input to today's date.
 
@@ -1195,12 +1179,12 @@ Jivs wants those same names for basically the same purpose of correlating with f
 
 ### Configuring ValueHosts
 You configure each ValueHost as part of configuring the overall ValidationManager.
-Typically it involves subclassing ModelRulesBase to host the business logic rules
-of your model. The code goes into the configureRules() method, which is passed a Builder
+Typically it involves subclassing [`ModelRulesBase`](#rules) to host the business logic rules
+of your model. The code goes into the `configureRules()` method, which is passed a Builder
 object to describe your configuration through the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
 #### Example
-Each `input()` adds or modifies a ValueHost of type InputValueHost. The method's parameters
+Each `property()` adds or modifies a ValueHost of type PropertyValueHost. The method's parameters
 assign properties to the ValueHost. The fluent syntax that follows it are validation rules.
 
 ```ts
@@ -1208,18 +1192,48 @@ export class PersonModelRules extends ModelRulesBase {
   protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
 
     // create the First Name ValueHost and its validators
-    builder.input('FirstName', LookupKey.String, { label: 'First name'} )
-      .requireText()
-      .notEqualTo('LastName', null, null, 
-      { 
-        errorMessage: 'You entered the same value in First Name. Double-check your work.',
-        severity: ValidationSeverity.Warning
-      });
+    builder.property('FirstName', LookupKey.String, { label: 'First name'} )
+      .requireText();
     // create the Last Name ValueHost
-    builder.input('LastName', LookupKey.String, { label: 'Last name'} );
+    builder.property('LastName', LookupKey.String, { label: 'Last name'} )
+      .requireText();
   }
 }
 ```
+When consumed by the user interface, we want to use InputValueHost, not PropertyValueHost.
+PersonModelRules class is model oriented, not UI oriented. So the form should subclass
+the model's rules class and implement `IAdaptModelRulesToForm` with at minimum an empty
+`adaptToForm()` method.
+
+```ts
+class PersonEditFormRules
+  extends PersonModelRules
+  implements IAdaptModelRulesToForm
+{
+  public adaptToForm(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions): void {
+      // just by doing this, you now have converted the model's PropertyValueHosts to InputValueHosts.
+  }
+}
+```
+
+From there, you can use the builder to further customize, except you now call `builder.input(fieldname)` instead of `builder.property(fieldname)`.
+```ts
+  public adaptToForm(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions): void {
+    builder.input('FirstName', null, { label: 'First name' });
+    builder.input('LastName', null, { label: 'Last name' })
+    // adding the notEqualTo validator to LastName...
+      .notEqualTo('FirstName', null, null, 
+        { 
+          errorMessage: 'You entered the same value in First Name. Double-check your work.',
+          severity: ValidationSeverity.Warning
+        });
+  }
+```
+
 #### Configuring ValueHosts with the Builder API
 The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has these functions to add ValueHosts by their type. (There are other functions in the [Builder API](#configuring-the-validationmanager-the-builder-api).)
 - `input()` adds or modifies an InputValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
@@ -1451,7 +1465,7 @@ interface IValidator {
 
 ### Configuring Validators
 Validators have an underlying object, ValidatorConfig, that hosts the configuration. You generally use the [Builder API](#configuring-the-validationmanager-the-builder-api) to assist setting it up.
-> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager) or [using the Modifier object](#changing-the-configuration-after-creating-validationmanager-with-the-modifier-object) after it was created.
+> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager) or [using the Modifier object](#Modifying the configuration with the Modifier object) after it was created.
 ```ts
 interface ValidatorConfig {
     errorCode?: string;
@@ -1576,7 +1590,7 @@ interface IValidationManager {
 ### Configuring the ValidationManager: The Builder API
 > Please visit "[Configuring Jivs](#configuring-jivs)" for an overview of the process.
 
-The ValidationManager is configured by passing the  `ValidationManagerConfig object` into its constructor. Typically you encapsolate the business rules in a class that inherits from `ModelRulesBase`, overriding the `configureRules()` method where you describe each field and its validators with the [Builder API](#configuring-the-validationmanager-the-builder-api).
+The ValidationManager is configured by passing the  `ValidationManagerConfig object` into its constructor. Typically you encapsolate the business rules in a class that inherits from [`ModelRulesBase`](#rules), overriding the `configureRules()` method where you describe each field and its validators with the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
 #### Example
 Each `input()` adds or modifies a ValueHost of type InputValueHost. The method's parameters
@@ -1793,7 +1807,167 @@ Let's go through these members:
 - `addValidatorsTo()` is a simplified way to add a validator without first figuring out the valueHost type. Use it like this: `addValidatorsTo('fieldname').regExp(parameters)`
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
+## Rules
+Rules classes are the preferred way to define reusable validation rules in Jivs.
+In most apps, you should create a subclass of `ModelRulesBase` to package the validation rules that belong to your business logic model.
 
+When a form uses those model rules, the form should subclass that model rules class and implement `IAdaptModelRulesToForm`.
+Only when there is no business logic model should you instead subclass `FormRulesBase`.
+
+All of these classes return a `ValidationManagerConfig` from `configure()`.
+You then create the `ValidationManager` from that config.
+
+Use these types depending on where the rules belong:
+
+* `ModelRulesBase` - Define validation rules that belong to the business logic model.
+* `FormRulesBase` - Define validation rules that belong directly to a form when there is no business logic model.
+* `IAdaptModelRulesToForm` - Implement this on a form-specific subclass when the form consumes rules from a `ModelRulesBase` subclass.
+
+### What `configure()` gives you
+
+The public entry point is `configure(options?)`.
+It creates and returns a `ValidationManagerConfig`, ready to be passed to `ValidationManager`.
+
+Inside `configure()` Jivs handles several support steps for you:
+
+* Creates the `ValidationManagerConfigBuilder` so your subclass only focuses on `configureRules()`.
+* Runs `configureRules()`. You are expected to override it to define your rules.
+* When `IAdaptModelRulesToForm` is implemented, `configure()` adapts model-oriented `PropertyValueHosts` into `InputValueHosts`, then calls `adaptToForm()` so you can adjust the rules for the form.
+* Optionally runs config analysis.
+* Finalizes the builder into `ValidationManagerConfig`.
+* Optionally caches that config for reuse.
+
+```ts
+const services = createValidationServices('en-US');
+const rules = new PersonEditFormRules(services);
+const config = rules.configure();
+const vm = new ValidationManager(config);
+```
+
+### RulesConfigOptions
+
+Use the `options` parameter on `configure()` when you need to influence how the rules are prepared.
+
+```ts
+interface RulesConfigOptions {
+  configAnalysisOptions?: unknown;
+  disableCache?: boolean;
+  variantName?: string;
+}
+```
+
+* `disableCache` - When `true`, disables cache participation for that `configure()` call.
+* `variantName` - Lets the subclass author define named variants of the same rules class, so the class's consumer can request an optional configuration path by name.
+* `configAnalysisOptions` - Enables optional config analysis when the `jivs-configanalysis` module is installed and registered.
+
+### ModelRulesBase
+
+Subclass `ModelRulesBase` to define validation rules for a model.
+A `ModelRulesBase` class is business-logic-oriented. In its primary use case, it defines `PropertyValueHosts` through `builder.property()` inside `configureRules()`.
+When your rules are form-only and there is no business logic model, see `FormRulesBase` below.
+
+```ts
+class PersonModelRules extends ModelRulesBase {
+  protected override configureRules(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    builder.property('FirstName', LookupKey.String).requireText();
+    builder.property('LastName', LookupKey.String).requireText();
+  }
+}
+```
+
+Use `ModelRulesBase` directly when Jivs operates against only the model, such as in server-side code.
+When a UI form uses those rules, the form should subclass that model rules class and implement `IAdaptModelRulesToForm`.
+
+### IAdaptModelRulesToForm
+
+When a form consumes rules supplied by a `ModelRulesBase` subclass, the form must define its own subclass and implement `IAdaptModelRulesToForm`.
+
+That step adapts the model-oriented configuration for use by the form.
+In practice, it switches the model's use of `PropertyValueHosts` to `InputValueHosts`, allowing the form to apply input-specific configuration through `builder.input()`.
+
+```ts
+class PersonEditFormRules
+  extends PersonModelRules
+  implements IAdaptModelRulesToForm
+{
+  public adaptToForm(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    builder.input('FirstName', null, { label: 'First name' });
+    builder.input('LastName', null, { label: 'Last name' });
+  }
+}
+```
+
+Implement `IAdaptModelRulesToForm` even when `adaptToForm()` is empty.
+That empty method is still the signal that the model rules are being adapted for use by the form.
+
+### FormRulesBase
+
+Subclass `FormRulesBase` when a form has no business logic model supplying its rules.
+A `FormRulesBase` class is form-oriented and normally defines `InputValueHosts`
+through `builder.input()` inside `configureRules()`.
+
+```ts
+class DateRangeFormRules extends FormRulesBase {
+  protected override configureRules(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    builder.input('StartDate', LookupKey.Date, { label: 'Start date' });
+    builder.input('EndDate', LookupKey.Date, { label: 'End date' });
+  }
+}
+```
+
+Use `FormRulesBase` when the form owns its validation rules directly and there is no model rules class to adapt.
+
+### Caching
+
+Rules configuration is cached by default.
+The cached artifact is `ValidationManagerConfig`, not `ValidationManager`.
+This lets Jivs reuse static configuration while still creating a fresh runtime `ValidationManager` each time you need one. 
+
+ 
+
+Use the `disableCache: true` option when you do not want a `configure()` call to read from or write to the cache. 
+
+```ts
+const config = rules.configure({
+  disableCache: true,
+});
+```
+
+### Config analysis
+
+The `jivs-configanalysis` module helps you find any flaws in your configuration, such as a feature requested but not found in the services.
+
+`configure()` runs it when `configAnalysisOptions` is assigned and the config-analysis service has been registered with `ValidationServices`.
+
+Use this during development or testing when you want a report about configuration problems or the final resolved configuration.
+
+```ts
+const config = rules.configure({
+  configAnalysisOptions: {
+    // options defined by jivs-configanalysis
+  },
+});
+```
+
+
+
+
+
+
+
+
+
+
+---
 ## ValidationServices
 The `ValidationServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
 
