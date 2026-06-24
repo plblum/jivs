@@ -54,10 +54,27 @@ Some of what follows expands on those topics.
 A validation rule is a single condition that evaluates the incoming data and determines if it is valid or not. There may be several distinct rules on a single input, such as "requires a value", "must be a date", etc. It is the heart of input validation.
 
 -	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
+    ```ts
+    export class PersonModelRules extends ModelRulesBase {
+      protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
+        builder.input('firstName').requireText().regExp('^[\w''\s\-]*$');
+        builder.input('lastName').requireText().regExp('^[\w''\s\-]*$');
+      }
+    }
+    ```
 -	The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
--	Provides "Condition" objects to define the validation rules.
-  - Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](http://jivs.peterblum.com/typedoc/enums/Conditions_Types.ConditionType.html)
-  - Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate. [Learn more.](#conditions---the-validation-rules)
+      ```ts
+      export class PersonFormEditorRules extends PersonModelRules : IAdaptModelRulesToForm {
+        protected adaptToForm(builder: ConfigBuilder, options?: RulesConfigOptions): void {
+          // apply some properties to the fields and validators
+          builder.input('firstName', {label: 'First Name'}).requireText({ errorMessage: '{Label} is required.'});
+          builder.input('lastName', {label: 'Last Name'}).requireText({ errorMessage: '{Label} is required.'});
+        }
+      }
+    ```
+- Provides "Condition" objects to define the validation rules.
+    - Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](http://jivs.peterblum.com/typedoc/enums/Conditions_Types.ConditionType.html)
+    - Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate. [Learn more.](#conditions---the-validation-rules)
 
 -	Most validation rules come from business logic. The UI's inputs are often textboxes, where a string representing the native value is entered. So the UI is responsible for adding validation for when the parser fails. Jivs automatically injects the "Data Type Check" validation rule to handle this.
 -	Sometimes the UI must selectively enable a rule from business logic. It can wrap the validation rule in a "WhenCondition" to handle this.
@@ -71,18 +88,6 @@ A validation rule is a single condition that evaluates the incoming data and det
   - "Calc value host" runs a calculation function whose result is its value.
   
   Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
-- A fluent syntax is used to configure your validation rules.
-  ```ts
-  let builder = build(createValidationServices('en-US'));
-  // create the start Date Value Host and its validators
-  builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
-    .require()
-    .lessThan('EndDate')
-    .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' });
-  // create the end Date Value Host
-  builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).require();
-  builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
-  ```
   
 ### Error message features
 The error message guides the user into understanding what is invalid and often suggests how to correct it. For example "Enter a date in the form MM/DD/YYYY". A poorly written error message will not be helpful. So Jivs has a lot of depth in its error message support.
@@ -270,11 +275,11 @@ Suppose that you have this HTML:
 This code initializes a ValidationManager and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
-let builder = build(createValidationServices('en-US'));
-builder.onValueHostValidationStateChanged = fieldValidated;
-... work with builder to add ValueHosts and their Validators ...
-
-let vm = new ValidationManager(builder);
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules(services);  // subclass of ModelRulesBase for your PersonModel class
+let config = rules.configure();
+config.onValueHostValidationStateChanged = fieldValidated;
+let vm = new ValidationManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
@@ -384,14 +389,14 @@ if (!validationState.doNotSave)
   if (modelResult.errorMessage)
     issuesFound.push({
       errorMessage: modelResult.errorMessage,
-      errorCode: `{modelResult.errorCode}`;
+      errorCode: `${modelResult.errorCode}`;
     });
 
   if (issuesFound.length === 0)
   {
     // step 2 
     // suppose you call your server and get back a promise<ModelType>
-    await save(modelResult.model, 
+    save(modelResult.model, 
       // Promise resolve function hooked up within your save() function
       (model: ModelType) => {
         // Step 2c. success - take next steps
@@ -409,7 +414,7 @@ if (!validationState.doNotSave)
         {
           issuesFound.push({
             errorMessage: error.errorMessage,
-            errorCode: `{error.errorCode}`;
+            errorCode: `${error.errorCode}`;
           });
         }
         // Provide your errors to jivs to show in the UI
@@ -525,12 +530,12 @@ We've modified the original example to provide a \<div> used for the ValidationS
 This code initializes a ValidationManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
-let builder = build(createValidationServices('en-US'));
-builder.onValueHostValidationStateChanged = fieldValidated;
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
+let config = rules.configure();
+config.onValueHostValidationStateChanged = fieldValidated;
 builder.onValidationStateChanged = formValidated;
-... work with builder to add ValueHosts and their Validators ...
-
-let vm = new ValidationManager(builder);
+let vm = new ValidationManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
@@ -563,211 +568,178 @@ function formValidated(validationManager: IValidationManager, validationState: V
 
 }
 ```
-
 ## Configuring Jivs
-The `ValidationManager object` is the central tool used to interact with the ValueHosts and perform validation. It is supported by `ValidationServices object` to provide services and factories.
 
-> If you haven't already done so, please ensure that you have added the createValidationServices() function, as described in [Configuring ValidationServices](#configuring-validationservices).
+The goal of configuration is to create a `ValidationManager`.
 
-When you instantiate ValidationManager, you pass in the configuration -- all ValueHosts and their Validators. So you need to build that configuration first. To do that, you will use the **Builder API**. Create a `Builder object` then use the Builder API on it. After ValidationManager is created, you can still modify the configuration using the `Modifier object`. It also has the Builder API.
+In most apps, configuration starts with a class derived from `ModelRulesBase`. That class defines each field's ValueHost and its the validation rules. Call its `configure()` method to build and return a `ValidationManagerConfig`. Then attach any callbacks needed by the UI and create the `ValidationManager` as shown here:
 
-Here is a high level view of this:
+
 ```ts
-let builder = build(createValidationServices('en'));
-... use the Builder API on builder ...
-let vm = new ValidationManager(builder);
-... later when changes are needed ...
-let modifier = vm.startModifying();
-... use the Builder API on modifier ...
-modifier.apply();
+const services = createValidationServices('en-US');
+const rules = new YourModelRulesClass(services); // see below
+const config = rules.configure();
+
+// optional callback examples...
+config.onValidationStateChanged = myValidationStateChangedFn;
+config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
+
+const vm = new ValidationManager(config);
 ```
 
-Here are the key objects associated with configuring ValidationManager:
-* [ValidationServices class](#validationservices) - provides services and factories to ValidationManager and all of the objects it contains. This comes from the createValidationServices() function, which you will prepare to meet your needs. See [Configuring ValidationServices](#configuring-validationservices) for details.
-* [ValidationManagerConfigBuilder class](#configuring-the-validationmanager-the-builder-api), also known as **Builder object** - used to define the configuration of your form's fields (as ValueHost objects) and their validators. Once configured, pass it into the ValidationManager's constructor.
-* [ValidationManagerConfigModifier class](#configuring-the-validationmanager-the-builder-api), also known as **Modifier object** - used to change the configuration of the ValidationManager after its been created.
-* [ValidationManagerConfig](#configuring-the-validationmanager-the-builder-api) - the underlying object created by the Builder API. If you write a code generator to translate your business logic into Jivs data, you often create and work with it directly. Each ValueHost has its own underlying configuration object, like InputValueHostConfig and StaticValueHostConfig. Each Validator has its own underlying object too, ValidatorConfig. Same for Conditions, ConditionConfig.
+> If you haven't already done so, please ensure that you have added the `createValidationServices()` function, as described in [Configuring ValidationServices](#configuring-validationservices).
 
-### Example configuration
-Let's configure a form with 2 inputs, which results into ValueHosts for "StartDate" and "EndDate". The validators on the StartDate input need a calculation and a static value, which results in two more ValueHosts, "DiffDays" and "NumOfDays".
+### Define rules for the model
 
-We'll using the Builder API to configure our form.
-```ts
-// create the start date ValueHost and its validators
-builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
-  .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
-  .lessThanOrEqual('NumOfDays', null, 'DiffDays', 
-     'The two dates must be less than {CompareTo} days apart.', 
-  { 
-    errorCode: 'NumOfDays',
-    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
-  });
-// create the end date ValueHost
-builder.input('EndDate', LookupKey.Date, { label: 'End date'} );
-// provide a calculation ValueHost for StartDate <= NumOfDays
-builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
-// provide a ValueHost to hold a constant which we'll assign after the ValidationManager is created
-builder.static('NumOfDays', LookupKey.Number);
-```
-Here's what the Config data looks like once setup:
-
-<div style="display: flex; flex-direction:column;"><img style="align-self:center;" src="http://jivs.peterblum.com/images/Config_example.svg"></img></div>
-
-Upon creating the ValidationManager, here are the resulting objects:
-
-<div style="display: flex; flex-direction:column;"><img style="align-self:center;" src="http://jivs.peterblum.com/images/Class_overview.svg"></img></div>
-
-There are several of approaches to configuration, based on whether you want to let your business layer define the input and validator rules, which is best practice.
-- When starting with business logic
-- When UI creates everything
-
-### When starting with business logic
-1. UI creates the [`Services object`](#validationservices) and passes it along to the business logic's code.
-2. Business logic provides its configuration.
-   + using a code generator to translate your business logic into Jivs data.
-   + using the [`Builder object`](#configuring-the-validationmanager-the-builder-api).
-3. UI uses the `Builder object` to 
-   + replace error messages and labels.
-   + add additional ValueHosts and Validators. 
-   + attach callbacks.
-4. UI creates the `ValidationManager object` passing in the `Builder object`.
-
-#### Business logic using a code generator
-```ts
-let vmConfig = applyMyBusinessLogic(createValidationServices('en-US'));	// code that you write, that returns ValidationManagerConfig
-let builder = builder(vmConfig);
-```
-See [jivs-examples/src/Config_with_BusinessLogic_using_code_generator.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Config_with_BusinessLogic_using_code_generator.ts)
-#### Business logic using the Builder object
-```ts
-let builder = builder(createValidationServices('en-US'));
-applyMyBusinessLogic(builder);	// code that you write, that uses the builder
-```
-See [jivs-examples/src/Config_with_BusinessLogic_using_Builder.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Config_with_BusinessLogic_using_Builder.ts)
-#### UI layer taking the configuration from the business logic
-```ts
-... continuing from the business logic code...
- // all further changes are applied by merging carefully with business logic's work
-builder.startUILayerConfig();
-
-// apply label to Start Date ValueHost
-// update the lessThan validator created by business logic
-// add the lessThenOrEqual validator for comparing the number of days between the dates
-builder.input('StartDate', null, { label: 'Start date'})
-  .lessThan(null, null, null, {
-    severity: ValidationSeverity.Severe
-  })
-  .lessThanOrEqual(
-    null, null, 'The two dates must be less than {CompareTo} days apart.', {
-    errorCode: 'NumOfDays',
-    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
-  });
-
-// apply label to end Date
-builder.input('EndDate', null, { label: 'End date'});
-
-// attach any callbacks
-builder.onValidationStateChanged = myValidationStateChangedFn;
-builder.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
-
-let vm = new ValidationManager(builder);
-```
-
-### When UI creates everything (not business logic driven)
-1. UI creates the [`Builder object`](#configuring-the-validationmanager-the-builder-api) along with the [`Services object`](#validationservices).
-2. Use `Builder object` to create all ValueHosts and their validators.
-3. Attach any callbacks.
-4. Create the `ValidationManager object`, passing in the Builder object.
+Suppose your app edits this model:
 
 ```ts
-let builder = build(createValidationServices('en-US'));
-// create the start Date ValueHost and its validators
-builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
-  .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
-  .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' }, 
-      'The two dates must be less than {CompareTo} days apart.', 
-  { 
-    errorCode: 'NumOfDays',
-    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
-  });
-// create the end Date ValueHost
-builder.input('EndDate', LookupKey.Date, { label: 'End date'} );
-builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
-
-// attach any callbacks
-builder.onValidationStateChanged = myValidationStateChangedFn;
-builder.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
-
-let vm = new ValidationManager(builder);
-```
-For more extensive examples, see this code file:
-
-[jivs-examples/src/Config_entirely_in_UI_Layer.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Config_entirely_in_UI_Layer.ts)
-
-### Best Practice
-The ultimate goal is to have code that does all of the configuration work for ValidationManager in its own container. That way, both the form and tests operate from the same configuration. We propose creating a Factory object where you register configurations and it creates a ValidationManager fully configured. Something like this:
-```ts
-class ValidationManagerFactory
-{
-   public register(
-       formId: string, 
-       builder: ValidationManagerConfigBuilder | ()=> ValidationManagerConfigBuilder): void {   }
-   
-   public create(formId: string): ValidationManager {   }
+class Person {
+  firstName!: string;
+  lastName!: string;
+  birthDate!: Date | null;
 }
 ```
-Use your class from within the app and your tests. [Learn more about testing.](#testing-your-work)
 
-### Changing the configuration after creating ValidationManager with the Modifier object
-Sometimes its necessary to change the configuration, perhaps just a property on a Validator or even add a ValueHost or Validator.
-> If you want to add a ValueHost or Validator, consider adding them during initial configuration and use their enabled property to disable them. Later the configuration change is just changing the enabled property.
-
-You will use the `Modifier object`, which is very similar to the `Builder object`, except it expects to merge your changes with the existing configuration. The `Modifier object` supports the Builder API with a few additions.
-
-1. Call `startModifying()` on the ValidationManager to get the `Modifier object`.
-2. Use the same functions as on build, like `input()`, `static()` and validators attached to `input()`.
-3. Call the `apply()` function on the `Modifier object`.
-
-In this example, *vm* is the ValidationManager instance.
-```ts
-let modifier = vm.startModifying();
-modifier.input('Start Date').lessThan(null, null, 'some new error message', {
-  summaryMessage: 'some new error message for {Label}'
-});
-modifier.apply();
-```
-> Don't use the `Modifier object` to change the data value of a ValueHost. The data value is stateful information, not configuration.
-
-In the previous example, that code will either add or update an existing InputValueHost and its lessThan validator. If you wanted to change only the error messages, here is another syntax with a focus only on changing validator parameters like error messages.
+Create a `ModelRulesBase` subclass to define the validation rules for that model:
 
 ```ts
-let modifier = vm.startModifying();
-modifier.updateValidator('Start Date', ConditionType.LessThan, { 
-  errorMessage: 'some new error message', 
-  summaryMessage: 'some new error message for {Label}'
-});
-modifier.apply();
-```
-You must be careful not to disable the validation rules supplied by the business logic layer without good reason. Yet the UI often has to augment them or replace them with an improved rule. The Builder API includes two functions designed to make any changes transparent: `combineWithRule()` and `replaceRule()`. When combining, the business logic Condition is retained, with the UI adding a second condition. Both become children of either the `AllMatchCondition`, `AnyMatchCondition`, or `WhenCondition`.
-> These functions are available on the `Builder object` too.
+class PersonModelRules extends ModelRulesBase {
+  protected override configureRules(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    builder.property('FirstName', LookupKey.String)
+      .requireText()
+      .stringLength(50);
 
-Here we elect to combine a new condition with the `RegExpCondition` supplied by business object layer with a `StringLengthCondition` by placing them under an `AllMatchCondition`.
+    builder.property('LastName', LookupKey.String)
+      .requireText()
+      .stringLength(50);
+
+    builder.property('BirthDate', LookupKey.Date)
+      .notNull();
+  }
+}
+```
+
+This example introduces the [**Builder API**](#configuring-the-validationmanager-the-builder-api), which is used inside `configureRules()` to define ValueHosts and their validators. Most developers will use the Builder API this way, inside a rules class, rather than building configuration directly in page or component code.
+
+For details about the Builder API, see [Configuring the ValidationManager: the Builder API](#configuring-the-validationmanager-the-builder-api).
+
+Now create the `ValidationManager`:
+
 ```ts
-let builder = build(createValidationServices('en-US'));
-builder.input('Key', LookupKey.String, { label: 'Start date'} ).regExp(/^[\d[ABCD_]+$/);
+const services = createValidationServices('en-US');
+const rules = new PersonModelRules(services);
+const config = rules.configure();
 
-let vm = new ValidationManager(builder);
+// optional callbacks
+config.onValidationStateChanged = myValidationStateChangedFn;
+config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
-let modifier = vm.startModifying();
-modifier.combineWithRule('Key', ConditionType.RegExp, CombiningUsingCondition.All,
-  (combiningBuilder)=> combiningBuilder.stringLength(10));
-modifier.apply();
+const vm = new ValidationManager(config);
 ```
-The result would be the same as if business logic had initially done this:
+
+### Adapt those rules for the form
+
+A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
+
+In this example, the form developer subclasses `PersonModelRules` and adds labels for the UI. Inside `adaptToForm()`, the form works with those fields through `input()` so it can apply input-specific configuration.
+
 ```ts
-builder.input('Key', LookupKey.String, { label: 'Start date'} ).all(
-  (childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
+class PersonEditFormRules
+  extends PersonModelRules
+  implements IAdaptModelRulesToForm
+{
+  public adaptToForm(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    builder.input('FirstName', null, { label: 'First name' });
+    builder.input('LastName', null, { label: 'Last name' });
+    builder.input('BirthDate', null, { label: 'Birth date' });
+  }
+}
 ```
+
+> Notice that we replaced `builder.property(fieldName)` with `builder.input(fieldName)`. A model and a form have different needs. The business logic developer defines property ValueHosts for the model. The form developer works with those same fields as input ValueHosts so form-specific configuration can be applied.
+
+Now create the `ValidationManager`:
+
+```ts
+const services = createValidationServices('en-US');
+const rules = new PersonEditFormRules(services);
+const config = rules.configure();
+
+// optional callbacks
+config.onValidationStateChanged = myValidationStateChangedFn;
+config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
+
+const vm = new ValidationManager(config);
+```
+
+### Define rules directly for the form
+
+Sometimes a form is not backed by a business logic model.  
+
+In that case, create a `FormRulesBase` subclass and define the form's rules directly.
+
+ This example is a date range editor form that asks for a start date and end date, then ensures the two dates are no more than a certain number of days apart.
+
+```ts
+class DateRangeFormRules extends FormRulesBase {
+  protected override configureRules(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    // create the start date ValueHost and its validators
+    builder.input('StartDate', LookupKey.Date, { label: 'Start date' })
+      .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe })
+      .lessThanOrEqual('NumOfDays', null, 'DiffDays',
+        'The two dates must be less than {CompareTo} days apart.',
+      {
+        errorCode: 'NumOfDays',
+        summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+      });
+
+    // create the end date ValueHost
+    builder.input('EndDate', LookupKey.Date, { label: 'End date' });
+
+    // provide a calculation ValueHost for StartDate <= NumOfDays
+    builder.calc('DiffDays', LookupKey.Number, this.differenceBetweenDates);
+
+    // provide a ValueHost to hold a constant which we'll assign after the ValidationManager is created
+    builder.static('NumOfDays', LookupKey.Number);
+  }
+
+  private differenceBetweenDates(
+      callingValueHost: ICalcValueHost,
+      findValueHosts: IValueHostsManager) : SimpleValueType {
+    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
+    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), null, LookupKey.TotalDays);
+    if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
+      return undefined;   // can log with findValueHosts.services.logger.log();
+    return Math.abs(totalDays2 - totalDays1);
+  }
+}
+```
+
+Create the `ValidationManager` the same way:
+
+```ts
+const services = createValidationServices('en-US');
+const rules = new DateRangeFormRules(services);
+const config = rules.configure();
+
+// optional callbacks
+config.onValidationStateChanged = myValidationStateChangedFn;
+config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
+
+const vm = new ValidationManager(config);
+```
+
+---
 # Jivs Classes: the API
 
 ## Quick API overview
@@ -1222,29 +1194,34 @@ In this example, our Model’s property names are used in the input tag’s name
 Jivs wants those same names for basically the same purpose of correlating with fields in the Model.
 
 ### Configuring ValueHosts
-ValueHosts have underlying objects that host the configuration: InputValueHostConfig, PropertyValueHostConfig, StaticValueHostConfig, and CalcValueHostConfig. You generally use the [Builder API](#configuring-the-validationmanager-the-builder-api) to assist setting them up.
+You configure each ValueHost as part of configuring the overall ValidationManager.
+Typically it involves subclassing ModelRulesBase to host the business logic rules
+of your model. The code goes into the configureRules() method, which is passed a Builder
+object to describe your configuration through the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
-> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager) or [using the Modifier API](#changing-the-configuration-after-creating-validationmanager-with-the-modifier-object) after it was created.
+#### Example
+Each `input()` adds or modifies a ValueHost of type InputValueHost. The method's parameters
+assign properties to the ValueHost. The fluent syntax that follows it are validation rules.
 
-#### Example configuration using Builder API
 ```ts
-let builder = build(createValidationServices('en-US'));
-// create the First Name ValueHost and its validators
-builder.input('FirstName', LookupKey.String, { label: 'First name'} )
-  .requireText()
-  .notEqualTo('LastName', null, null, 
-  { 
-    errorCode: 'NumOfDays',
-    severity: ValidationSeverity.Warning
-  });
-// create the Last Name ValueHost
-builder.input('LastName', LookupKey.String, { label: 'Last name'} );
+export class PersonModelRules extends ModelRulesBase {
+  protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
 
-let vm = new ValidationManager(builder);
+    // create the First Name ValueHost and its validators
+    builder.input('FirstName', LookupKey.String, { label: 'First name'} )
+      .requireText()
+      .notEqualTo('LastName', null, null, 
+      { 
+        errorMessage: 'You entered the same value in First Name. Double-check your work.',
+        severity: ValidationSeverity.Warning
+      });
+    // create the Last Name ValueHost
+    builder.input('LastName', LookupKey.String, { label: 'Last name'} );
+  }
+}
 ```
-
 #### Configuring ValueHosts with the Builder API
-The [`Builder object`](#configuring-the-validationmanager-the-builder-api) (`ValidationManagerConfigBuilder class`) has these functions to add ValueHosts by their type. (There are other functions in the [Builder API](#configuring-the-validationmanager-the-builder-api).)
+The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has these functions to add ValueHosts by their type. (There are other functions in the [Builder API](#configuring-the-validationmanager-the-builder-api).)
 - `input()` adds or modifies an InputValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
    
    input(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
@@ -1599,36 +1576,37 @@ interface IValidationManager {
 ### Configuring the ValidationManager: The Builder API
 > Please visit "[Configuring Jivs](#configuring-jivs)" for an overview of the process.
 
-The ValidationManager is configured by passing the `Builder object` (`ValidationManagerConfigBuilder class`) or `ValidationManagerConfig object` into its constructor. Ultimately, the ValidationManager uses the ValidationManagerConfig object. The `Builder object` gives you the **Builder API**, which helps prepare a ValidationManagerConfig object in an easier syntax.
+The ValidationManager is configured by passing the  `ValidationManagerConfig object` into its constructor. Typically you encapsolate the business rules in a class that inherits from `ModelRulesBase`, overriding the `configureRules()` method where you describe each field and its validators with the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
-Let's look an example using both techniques. First directly modifying ValidationManagerConfig.
-```ts
-let vmConfig = <IValidationManagerConfig>{
-  services: createValidationServices('en-US'),
-  valueHostConfigs: []
-};
-let firstNameConfig: InputValueHostConfig = {
-   valueHostType: ValueHostType.Input,
-   name: 'FirstName',
-   dataType: LookupKey.String,
-   label: 'First name',
-   validatorConfigs: [
-     {
-       conditionConfig: { conditionType: ConditionType.RequireText },
-       errorMessage: 'Requires a value'
-     }
-   ]
-};
-vmConfig.valueHostConfigs.push(firstNameConfig);
+#### Example
+Each `input()` adds or modifies a ValueHost of type InputValueHost. The method's parameters
+assign properties to the ValueHost. The fluent syntax that follows it are validation rules.
 
-let validationManager = new ValidationManager(vmConfig);
-```
-Now the same using the `Builder object`.
 ```ts
-let builder = build(createValidationServices('en-US'));
-builder.input('FirstName', LookupKey.String, { label: 'First name'})
-  .requireText(null, 'Requires a value');
-let vm = new ValidationManager(builder);
+export class PersonModel {
+  firstName: string,
+  lastName: string
+}
+export class PersonModelRules extends ModelRulesBase {
+  protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
+
+    // create the First Name ValueHost and its validators
+    builder.input('FirstName', LookupKey.String, { label: 'First name'} )
+      .requireText()
+      .notEqualTo('LastName', null, null, 
+      { 
+        errorMessage: 'You entered the same value in First Name. Double-check your work.',
+        severity: ValidationSeverity.Warning
+      });
+    // create the Last Name ValueHost
+    builder.input('LastName', LookupKey.String, { label: 'Last name'} );
+  }
+}
+// consume to build your ValidationManager
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules(services);
+let config = rules.configure();
+let vm = new ValidationManager(config);
 ```
 #### ValidationManagerConfig and Builder object
 Because the `Builder object` (`ValidationManagerConfigBuilder class`) is a tool to build a ValidationManagerConfig object, the two have much overlap.
@@ -1726,9 +1704,62 @@ builder.input('StartDate').regExp(expression, ignoreCase, {condition parameters}
 For details on all validators using the Builder API, see [All condition configurations](#all-condition-configurations).
 
 #### Modifying the configuration with the Modifier object
-Once the ValidationManager has been created, use the Builder API to make changes to its configuration by creating a `Modifier object` (`ValidationManagerConfigModifier class`).
+Sometimes its necessary to change the configuration after creating the ValidationManager, perhaps just a property on a Validator.
 
-For an overview of using the Modifier object, see [Changing the configuration after creating ValidationManager with the `Modifier object`](#changing-the-configuration-after-creating-validationmanager-with-the-modifier-object).
+> If you want to add a ValueHost or Validator, consider adding them during initial configuration and use their enabled property to disable them. Later the configuration change is just changing the enabled property.
+
+You will use the `Modifier object`, which is very similar to the `Builder object`, except it expects to merge your changes with the existing configuration. The `Modifier object` supports the Builder API with a few additions.
+
+1. Call `startModifying()` on the ValidationManager to get the `Modifier object`.
+2. Use the same functions as on build, like `input()`, `static()` and validators attached to `input()`.
+3. Call the `apply()` function on the `Modifier object`.
+
+In this example, *vm* is the ValidationManager instance.
+
+```ts
+let modifier = vm.startModifying();
+modifier.input('Start Date').lessThan(null, null, 'some new error message', {
+  summaryMessage: 'some new error message for {Label}'
+});
+modifier.apply();
+```
+
+> Don't use the `Modifier object` to change the data value of a ValueHost. The data value is stateful information, not configuration.
+
+In the previous example, that code will either add or update an existing InputValueHost and its lessThan validator. If you wanted to change only the error messages, here is another syntax with a focus only on changing validator parameters like error messages.
+
+```ts
+let modifier = vm.startModifying();
+modifier.updateValidator('Start Date', ConditionType.LessThan, {
+  errorMessage: 'some new error message',
+  summaryMessage: 'some new error message for {Label}'
+});
+modifier.apply();
+```
+
+You must be careful not to disable the validation rules supplied by the business logic layer without good reason. Yet the UI often has to augment them or replace them with an improved rule. The Builder API includes two functions designed to make any changes transparent: `combineWithRule()` and `replaceRule()`. When combining, the business logic Condition is retained, with the UI adding a second condition. Both become children of either the `AllMatchCondition`, `AnyMatchCondition`, or `WhenCondition`.
+
+> These functions are available on the `Builder object` too.
+
+Here we elect to combine a new condition with the `RegExpCondition` supplied by business object layer with a `StringLengthCondition` by placing them under an `AllMatchCondition`.
+
+```ts
+// Suppose your ValidationManager already had this ValueHost:
+builder.input('Key', LookupKey.String, { label: 'Start date'} ).regExp(/^[\d[ABCD_]+$/);
+
+// assume 'vm' references the ValidationManager
+let modifier = vm.startModifying();
+modifier.combineWithRule('Key', ConditionType.RegExp, CombiningUsingCondition.All,
+  (combiningBuilder)=> combiningBuilder.stringLength(10));
+modifier.apply();
+```
+
+The result would be the same as if business logic had initially done this:
+
+```ts
+builder.input('Key', LookupKey.String, { label: 'Start date'} ).all(
+  (childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
+```
 
 Here's the Builder API on the `Modifier object`:
 ```ts
@@ -1782,19 +1813,12 @@ Once it transpiles, you can edit as needed, although initially leave most of the
 
 Now that you have the `createValidationServices function`, use it during `ValidationManager` configuration.
 ```ts
-let builder = build(createValidationServices('en-US'));
-... use builder to add or modify ValueHost and Validator configurations ...
-let validationManager = new ValidationManager(builder);
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
+let config = rules.configure();
+let vm = new ValidationManager(config);
 ```
-Or
-```ts
-let valueHostConfigs = ... array that configures ValueHosts ...
-let vmConfig = <ValidationManagerConfig>{
-  services: createValidationServices('en-US'),
-  valueHostConfigs: ValueHostConfigs
-}
-let validationManager = new ValidationManager(vmConfig);
-```
+
 ### Customizing factories and services
 There are many services. Most code that instantiates an object is found in services and factories, not in the ValidationManager, ValueHosts, and Validators. That allows for extensive ability to customize.
 
@@ -2410,10 +2434,11 @@ interface ValueHostValidationState {
 ```
 Here is an example of using `onValueHostValidationStateChanged callback`.
 ```ts
-let builder = build(createValidationServices('en-US'));
-... use the Builder object to create your ValueHosts and validators ...
-builder.onValueHostValidationStateChanged = fieldValidated;
-let vm = new ValidationManager(builder);
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
+let config = rules.configure();
+config.onValueHostValidationStateChanged = fieldValidated;
+let vm = new ValidationManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
@@ -2501,11 +2526,12 @@ interface ValidationState {
 ```
 Here is an example of using `onValidationStateChanged callback`.
 ```ts
-let builder = build(createValidationServices('en-US'));
-... use the Builder object to create your ValueHosts and validators ...
-builder.onValueHostValidationStateChanged = fieldValidated;
+let services = createValidationServices('en-US');
+let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
+let config = rules.configure();
+config.onValueHostValidationStateChanged = fieldValidated;
 builder.onValidationStateChanged = formValidated;
-let vm = new ValidationManager(builder);
+let vm = new ValidationManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
@@ -2905,32 +2931,35 @@ You can use any testing framework you like. Jivs itself uses [Jest](https://www.
 ### Test validation requests
 The basic test will generally do this:
 1. Create the `ValidationServices object`, which may be identical to what you use in your app.
-2. Build the configuration to be use by the ValidationManager.
-3. Create the ValidationManager.
+2. Create a ModelBaseRules subclass that describes a model for your test.
+3. Create the ValidationManager from the result of the subclass's `configure()` method.
 4. Set the values that will impact a validation test.
 5. Invoke either form-wide or ValueHost specific validation, and capture the results.
 6. Evaluate the results against expectations.
 
-As we recommend in [Best Practice](##best-practice), steps 1 - 3 should be encapsulated in a function or factory. In these test examples, we'll have this function available to deliver a fully-built ValidationManager:
+We recommend that steps 1 - 3 are encapsulated into a function. In these test examples, we'll have this function available to deliver a fully-built ValidationManager:
 ```ts
+
+class DateRangeFormRules extends FormRulesBase {
+  protected override configureRules(
+    builder: ValidationManagerConfigBuilder,
+    options?: RulesConfigOptions
+  ): void {
+    // create the start date ValueHost and its validators
+    builder.input('StartDate', LookupKey.Date, { label: 'Start date' })
+      .lessThan('EndDate', null, { label: 'End date' }, { severity: ValidationSeverity.Severe });
+
+    // create the end date ValueHost
+    builder.input('EndDate', LookupKey.Date, { label: 'End date' });
+  }
+}
 function createValidationManager(): ValidationManager
 {
-  // These tests assume the TextLocalizerService has been setup with error messages.
-  // As a result, not builder does not supply them.
   let services = createValidationServices('culture identifier');
-  let builder = build();
-  
-  builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
-    .require()
-    .lessThan('EndDate')
-    .lessThanOrEqual('NumOfDays', { valueHostName: 'DiffDays' });
-  builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).require();
-  builder.calc('DiffDays', LookupKey.Number, functionThatCalculatesDiffDays); 
-  
-  return new ValidationManager(builder);
+  let rules = new DateRangeFormRules(services);
+  return new ValidationManager(rules);
  }
 ```
-
 #### Form-wide using ValidationManager.validate()
 ```ts
 test('Start and End date are supplied empty strings and report isValid=false', ()=>
@@ -2978,14 +3007,14 @@ interface ValidationState {
 Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single ValueHost).
 ```ts
 interface IssueFound {
-  valueHostName: string;
-  errorCode: string;
-  severity: ValidationSeverity;
+  valueHostName?: string;
+  errorCode?: string;
+  severity?: ValidationSeverity;
   errorMessage: string;
   summaryMessage?: string;
+  doNotSave?: boolean;
 }
 ```
-
 #### Individual ValueHosts using valueHost.validate()
 If we want, we can test individual ValueHosts for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValueHostValidateResult.html) or null for no issue.
 ```ts
