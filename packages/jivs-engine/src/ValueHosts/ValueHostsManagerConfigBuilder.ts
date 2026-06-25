@@ -103,7 +103,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/InputValueHost!IInputValueHostChangedCallback.onInputValueChanged
+     * @inheritDoc ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onInputValueChanged
      */
     public get onInputValueChanged(): InputValueChangedHandler | null {
         return this.baseConfig.onInputValueChanged ?? null;

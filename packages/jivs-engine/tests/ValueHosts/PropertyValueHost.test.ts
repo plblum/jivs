@@ -11,7 +11,7 @@
 // import { LookupKey } from "../../src/DataTypes/LookupKeys";
 // import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 // import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-// import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
+// import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 // import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 // import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 // import { ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
@@ -440,9 +440,9 @@
 
 //         expect(toIPropertyValueHost(testItem)).toBe(testItem);
 //     });
-//     test('InputValueHost return null.', () => {
+//     test('FieldValueHost return null.', () => {
 //         let vm = new MockValidationManager(new MockValidationServices(false, false));
-//         let testItem = new InputValueHost(vm, {
+//         let testItem = new FieldValueHost(vm, {
 //             name: 'Field1',
 //             label: 'Label1',
 //             validatorConfigs: []

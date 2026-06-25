@@ -214,7 +214,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * When true, it was changed. When false, it was not.
      * The setValue()/setInputValue()/setValues() functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
-     * The ValueHost.validate() function may skip validation of an InputValueHost when IsChanged is false,
+     * The ValueHost.validate() function may skip validation of an FieldValueHost when IsChanged is false,
      * depending on the options for validate. For example, calling validate immediately after loading
      * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.

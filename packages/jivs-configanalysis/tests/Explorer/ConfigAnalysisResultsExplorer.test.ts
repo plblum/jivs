@@ -4007,7 +4007,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
     });
     describe('other tests', () => {
-        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
+        test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4026,7 +4026,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });
-        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
+        test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
             let services = new ValidationServices();
             services.cultureService.register({ cultureId: 'en' });
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
@@ -4052,10 +4052,10 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });        
-        // InputValueHost with a RequireTextValidator, using TextLocalizerService to get
+        // FieldValueHost with a RequireTextValidator, using TextLocalizerService to get
         // errorMessagel10n value for 'en' and 'es', but only 'en' is registered.
         // Should report error for 'es' not found.
-        test('Build an InputValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
+        test('Build an FieldValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4079,7 +4079,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         });
         // same but both 'en' and 'es' are entries in TextLocalizerService.
         // Should not throw
-        test('Build an InputValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
+        test('Build an FieldValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();

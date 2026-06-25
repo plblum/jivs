@@ -15,7 +15,7 @@ export interface IDataTypeParserService extends IDataTypeService<IDataTypeParser
 {
     /**
      * Returns true if enabled and there is at least one parser registered.
-     * Used by InputValueHost.setInputValue instead of enabled.
+     * Used by FieldValueHost.setInputValue instead of enabled.
      */
     isActive(): boolean;
     /**

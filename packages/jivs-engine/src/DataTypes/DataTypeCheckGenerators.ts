@@ -3,7 +3,7 @@
  * @module DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */
 import { IConditionFactory, ICondition } from '../Interfaces/Conditions';
-import { IInputValueHost } from '../Interfaces/FieldValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IDataTypeCheckGenerator } from '../Interfaces/DataTypeCheckGenerator';
 import { LookupKey } from './LookupKeys';
 import { DataTypeCheckConditionConfig } from '../Conditions/ConcreteConditions';
@@ -23,7 +23,7 @@ export class IntegerDataTypeCheckGenerator implements IDataTypeCheckGenerator
     public supportsValue(dataTypeLookupKey: string): boolean {
         return this._dataTypeLookupKey === dataTypeLookupKey;
     }
-    public createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string,
+    public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string,
         conditionfactory: IConditionFactory): Array<ICondition> {
         let conditions: Array<ICondition> = [];
         conditions.push(conditionfactory.create(<DataTypeCheckConditionConfig>{

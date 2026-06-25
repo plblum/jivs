@@ -26,7 +26,7 @@ import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplace
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -117,7 +117,7 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
         super.addOverride();
     }
     public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder {
-        return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, dataType, parameters);
+        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Input, valueHostName, dataType, parameters);
     }
 
 //!!!OBSOLETE
@@ -148,7 +148,7 @@ describe('ManagerConfigBuilderBase constructor', () => {
         let builder = new TestValueHostManagerConfigBuilderBase(testItem);
         expect(testItem.valueHostConfigs).toEqual([]);
     });
-    test('vmConfig with valueHostConfigs that contains 1 InputValueHost retains that value', () => {
+    test('vmConfig with valueHostConfigs that contains 1 FieldValueHost retains that value', () => {
         let testItem = createVMConfig();
         let valueHostsConfigs: Array<ValueHostConfig> = [
             {

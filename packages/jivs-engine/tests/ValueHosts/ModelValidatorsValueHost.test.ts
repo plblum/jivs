@@ -15,7 +15,7 @@ interface ITestSetupConfig {
 };
 
 
-function setupInputValueHost(
+function setupFieldValueHost(
     config?: Partial<ValidatableValueHostBaseConfig> | null,
     state?: Partial<ValidatableValueHostBaseInstanceState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
@@ -50,7 +50,7 @@ function setupInputValueHost(
 
 describe('ModelValidatorsValueHost.validate', () => {
     test('No external IssueFound results in ValidationStatus.Valid', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         let vr: ValueHostValidateResult | null = null;
         expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
@@ -58,7 +58,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         expect(vr!.issuesFound).toBeNull();
     });
     test('Has group which is ignored. No external IssueFound results in ValidationStatus.Valid', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         let vr: ValueHostValidateResult | null = null;
         expect(() => vr = setup.valueHost.validate({ group: 'GROUPA' })).not.toThrow();
         expect(vr).not.toBeNull();
@@ -66,7 +66,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         expect(vr!.issuesFound).toBeNull();
     });    
     test('One external IssueFound with only ErrorMesage results in ValidationStatus.Invalid and one IssueFound because severity=undefined means severity=Error', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
         }, true);
@@ -85,7 +85,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });    
     test('One external IssueFound with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
@@ -105,7 +105,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });        
     test('One external IssueFound with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Severe
@@ -125,7 +125,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });            
     test('One external IssueFound with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
@@ -145,7 +145,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });            
     test('One external IssueFound with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error,
@@ -166,7 +166,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });          
     test('2 external IssueFound (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
@@ -197,7 +197,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });        
     });            
     test('2 external IssueFound (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
@@ -228,7 +228,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });        
     });   
     test('One external IssueFound with doNotSave=true results in ValidationStatus.Invalid', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             doNotSave: true,
@@ -248,7 +248,7 @@ describe('ModelValidatorsValueHost.validate', () => {
         });
     });       
     test('One external IssueFound with doNotSave=false results in ValidationStatus.Invalid', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
             doNotSave: false,

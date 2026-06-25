@@ -20,7 +20,7 @@ import {
     IEvaluateConditionDuringEdits
 } from "../Interfaces/Conditions";
 import { IDisposable } from "../Interfaces/General_Purpose";
-import { IInputValueHost } from "../Interfaces/FieldValueHost";
+import { IFieldValueHost } from "../Interfaces/FieldValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
@@ -96,7 +96,7 @@ export class AlwaysMatchesCondition extends MockConditionBase<ConditionConfig> i
         return ConditionEvaluateResult.Match;
     }
 
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
         return ConditionEvaluateResult.Match;
     }
 }
@@ -113,7 +113,7 @@ export class NeverMatchesCondition extends MockConditionBase<ConditionConfig> im
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.NoMatch;
     }
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
         return ConditionEvaluateResult.NoMatch;
     }
 }
@@ -186,7 +186,7 @@ export class UserSuppliedResultCondition extends MockConditionBase<UserSuppliedR
 export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResultCondition
     implements IEvaluateConditionDuringEdits
 {
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
         return this.config.result;
     }
 }

@@ -4,7 +4,7 @@ import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/Ev
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
-import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
     FluentValidatorConfig, FluentValidatorBuilder, FluentFactory, IFluentValidatorBuilder, FluentConditionBuilder, IFluentConditionBuilder,
@@ -117,7 +117,7 @@ describe('ValidationManagerStartFluent', () => {
 
 describe('FluentValidatorBuilder', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -128,7 +128,7 @@ describe('FluentValidatorBuilder', () => {
         expect(testItem.parentConfig).toBe(vhConfig);
     });
     test('constructor with vhConfig that has validatorConfig=null sets up vhConfig property with empty validatorConfig array', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -145,7 +145,7 @@ describe('FluentValidatorBuilder', () => {
     });
 
     test('add() with all parameters correctly defined', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -167,7 +167,7 @@ describe('FluentValidatorBuilder', () => {
         });
     });
     test('add() with null for conditionType, and other parameters correctly defined', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -192,7 +192,7 @@ describe('FluentValidatorBuilder', () => {
         });
     });
     test('add() with null for error message and error message already assigned', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -215,7 +215,7 @@ describe('FluentValidatorBuilder', () => {
         });
     });
     test('add() that defines same errorCode twice throws on the second definition', () => {
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
@@ -404,7 +404,7 @@ describe('withoutValidators()', () => {
     });    
 });
 describe('input()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
@@ -436,7 +436,7 @@ describe('input()', () => {
         };
         expect(testItem.parentConfig).toEqual(expected);
     });
-    test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
@@ -534,7 +534,7 @@ describe('input()', () => {
 //     });      
 // });
 describe('withValidators()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
@@ -566,7 +566,7 @@ describe('withValidators()', () => {
         };
         expect(testItem.parentConfig).toEqual(expected);
     });
-    test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
@@ -695,7 +695,7 @@ describe('configCalc', () => {
 describe('FluentFactory', () => {
     test('Constructor followed by create will return an instance of FluentValidatorBuilder with correct vhConfig', () => {
         let testItem = new FluentFactory();
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
@@ -707,10 +707,10 @@ describe('FluentFactory', () => {
     });
     test('Register followed by create returns an instance of the test class with correct vhConfig', () => {
         class TestFluentValidatorBuilder implements IFluentValidatorBuilder {
-            constructor(vhConfig: InputValueHostConfig) {
+            constructor(vhConfig: FieldValueHostConfig) {
                 this.parentConfig = { ...vhConfig, dataType: 'test' };
             }
-            parentConfig: InputValueHostConfig;
+            parentConfig: FieldValueHostConfig;
             add(conditionType: string, conditionConfig: ConditionConfig | null,
                 errorMessage: string | null, validatorConfig: ValidatorConfig): void {
                 throw new Error('Method not implemented.');
@@ -719,7 +719,7 @@ describe('FluentFactory', () => {
         let testItem = new FluentFactory();
         testItem.registerValidatorBuilder((vhConfig) => new TestFluentValidatorBuilder(vhConfig));
 
-        let vhConfig: InputValueHostConfig = {
+        let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []

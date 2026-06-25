@@ -3,7 +3,7 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -76,7 +76,7 @@ describe('input()', () => {
             validatorConfigs: []
         });
     });        
-    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
 
@@ -124,7 +124,7 @@ describe('input()', () => {
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual(expected);
     });
-    test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
 
@@ -612,7 +612,7 @@ describe('combineWithRule', () => {
             );
             modifier.apply();   
             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -649,7 +649,7 @@ describe('combineWithRule', () => {
                 }
             );
             modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -678,7 +678,7 @@ describe('combineWithRule', () => {
                 }
             );
             modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -709,7 +709,7 @@ describe('combineWithRule', () => {
             );
             modifier.apply();    
             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -747,7 +747,7 @@ describe('combineWithRule', () => {
             );
             modifier.apply();
             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -783,7 +783,7 @@ describe('combineWithRule', () => {
                 }
             );
             modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
@@ -816,7 +816,7 @@ describe('replaceRule', () => {
         );
         modifier.apply();        
         expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
         expect(updateValueHostConfig).toEqual({
@@ -846,7 +846,7 @@ describe('replaceRule', () => {
             }
         );
         modifier.apply();        
-        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
+        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
         expect(updateValueHostConfig).toEqual({

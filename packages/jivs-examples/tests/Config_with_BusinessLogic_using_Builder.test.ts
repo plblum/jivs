@@ -12,7 +12,7 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { RegExpConditionConfig, LessThanConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { InputValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
+import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 import { StaticValueHost } from '@plblum/jivs-engine/build/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '@plblum/jivs-engine/build/ValueHosts/CalcValueHost';
 
@@ -88,13 +88,13 @@ describe('configExample', () => {
         let vh3 = vm!.getValueHost('timeZone');
         let vh4 = vm!.getValueHost('numOfDays');
         let vh5 = vm!.getValueHost('diffDays');
-        expect(vh1).toBeInstanceOf(InputValueHost);
+        expect(vh1).toBeInstanceOf(FieldValueHost);
         expect(vh1!.getDataType()).toBe(LookupKey.Date);
         expect(vh1!.getLabel()).toBe('Start date');
-        expect(vh2).toBeInstanceOf(InputValueHost);
+        expect(vh2).toBeInstanceOf(FieldValueHost);
         expect(vh2!.getDataType()).toBe(LookupKey.Date);
         expect(vh2!.getLabel()).toBe('End date');
-        expect(vh3).toBeInstanceOf(InputValueHost);
+        expect(vh3).toBeInstanceOf(FieldValueHost);
         expect(vh3!.getDataType()).toBe(LookupKey.String);
         expect(vh4).toBeInstanceOf(StaticValueHost);
         expect(vh4!.getDataType()).toBe(LookupKey.Integer);

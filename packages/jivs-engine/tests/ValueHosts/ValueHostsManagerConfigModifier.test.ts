@@ -78,7 +78,7 @@ describe('static()', () => {
             dataType: LookupKey.Integer
         });
     });        
-    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValueHostsManager(vmConfig);
 
@@ -202,7 +202,7 @@ describe('calc()', () => {
     function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         return 1;
     }
-    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValueHostsManager(vmConfig);
 

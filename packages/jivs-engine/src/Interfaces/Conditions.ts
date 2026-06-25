@@ -23,7 +23,7 @@
 
 import { IValueHost } from './ValueHost';
 import { IValidationServices } from './ValidationServices';
-import { IInputValueHost } from './FieldValueHost';
+import { IFieldValueHost } from './FieldValueHost';
 import { IValueHostsManager } from './ValueHostsManager';
 
 /**
@@ -71,7 +71,7 @@ export interface ICondition {
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
      *   placing Require first and DataTypeCheck second.
-     * * Sets InputValueHostConfig.requiresInput.
+     * * Sets FieldValueHostConfig.requiresInput.
      * * Sets ValidatorConfig.severity when undefined, where Require
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
@@ -154,7 +154,7 @@ export enum ConditionEvaluateResult {
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Require and DataTypeCheck have special meaning.
- * Require - the InputValueHostConfig.requiresInput property is set if this is found.
+ * Require - the FieldValueHostConfig.requiresInput property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
  *   When Require, ValidatorConfig.severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
@@ -240,7 +240,7 @@ export interface SupportsDataTypeConverter extends ConditionConfig
  * ICondition.evaluate() when validateOption.DuringEdit is true.
  * This is a specialized validator, and not part of model validation.
  * Instead, it takes a string that is provided by the UI Input (via
- * InputValueHost.setInputValue()) and determines if the content is valid.
+ * FieldValueHost.setInputValue()) and determines if the content is valid.
  * Most validation is based on the already converted native value, 
  * like comparing two values. This validation should be limitd to rules
  * that are limited to a string that is likely not in good enough shape
@@ -260,14 +260,14 @@ export interface IEvaluateConditionDuringEdits extends ICondition
      * the rules of this condition. However, this implementation is often very different from
      * the implementation built around the native value. It works with a string value from the Input,
      * and you aren't expected to retrieve any other value from a ValueHost host. 
-     * @param text - Current Input Value from InputValueHost. It has not been modified, so if
+     * @param text - Current Input Value from FieldValueHost. It has not been modified, so if
      * you need to work with trimmed (lead and trail whitespace removed) text, you must take
      * care of that yourself.
      * @param valueHost - the ValueHost that invoked this.
      * @param services - just in case, your logic needs more info. However, if the data you need
      * is constant, add a property to your condition's ConditionConfig to supply it.
      */
-    evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult;
+    evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult;
 }
 
 /**

@@ -5,7 +5,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 enableFluentConditions();
@@ -42,7 +42,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         config.valueHostConfigs.forEach(vhc => {
             expect(vhc.valueHostType).toBe('Input');
             expect(vhc.name).toMatch(/firstName|lastName/);
-            let validators = (<InputValueHostConfig>vhc).validatorConfigs;
+            let validators = (<FieldValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();
             expect(validators!.length).toBe(1);
             expect(validators![0].conditionConfig).not.toBeNull();
@@ -177,7 +177,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
-            // to InputValueHosts prior to calling this due to builder.startUILayerConfig().
+            // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().
             builder.input('firstName', { label: 'First Name' });
             builder.input('lastName', { label: 'Last Name' });
             if (options?.variantName === 'variant1') {
@@ -190,12 +190,12 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         let services = new MockValidationServices(true, true);
         let rules = new PersonEditFormRules(services);
         let config = rules.configure();
-        // find 2 inputValueHostConfigs, each with one validator and the RequiredText condition
+        // find 2 fieldValueHostConfigs, each with one validator and the RequiredText condition
         config.valueHostConfigs.forEach(vhc => {
             expect(vhc.valueHostType).toBe('Input');    // it started as 'Property' but was converted to 'Input' by builder.startUILayerConfig()
             expect(vhc.name).toMatch(/firstName|lastName/);
             expect(vhc.label).toMatch(/First Name|Last Name/);
-            let validators = (<InputValueHostConfig>vhc).validatorConfigs;
+            let validators = (<FieldValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();
             expect(validators!.length).toBe(1);
             expect(validators![0].conditionConfig).not.toBeNull();

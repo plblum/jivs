@@ -12,7 +12,7 @@ import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
-import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 
@@ -384,7 +384,7 @@ describe('ValueHostConfigMergeService', () => {
                 });
         });
         //!!!OBSOLETE
-        // test('InputValueHost is source and PropertyValueHost is destination. ValueHostType changed to Input', () => {
+        // test('FieldValueHost is source and PropertyValueHost is destination. ValueHostType changed to Input', () => {
         //     testResolve({
         //         valueHostType: ValueHostType.Input,
         //         name: 'Field1',
@@ -409,7 +409,7 @@ describe('ValueHostConfigMergeService', () => {
         //         },
         //         'valueHostType replaced');
         // });
-        test('InputValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
+        test('FieldValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
             testResolve({
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -485,7 +485,7 @@ describe('ValueHostConfigMergeService', () => {
         //NOTE: Most of the testing of validatorConfigs is deferred to ValidatorConfigMergeService tests
         // This mostly demonstrates the interchange between ValueHostConfigMergeService and ValidatorConfigMergeService
         test('No conflicting validators. Copies everything except valueHostType and valueHostName', () => {
-            testResolve(<InputValueHostConfig>{
+            testResolve(<FieldValueHostConfig>{
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
                 dataType: LookupKey.Date,
@@ -501,7 +501,7 @@ describe('ValueHostConfigMergeService', () => {
                     }
                 ]
             },
-                <InputValueHostConfig>{
+                <FieldValueHostConfig>{
                     valueHostType: ValueHostType.Input,
                     name: 'Field1',
                     dataType: LookupKey.DateTime,
@@ -515,7 +515,7 @@ describe('ValueHostConfigMergeService', () => {
                         }
                     ]
                 },
-                <InputValueHostConfig>{
+                <FieldValueHostConfig>{
                     valueHostType: ValueHostType.Input,
                     name: 'Field1',
                     dataType: LookupKey.Date,
@@ -543,22 +543,22 @@ describe('ValueHostConfigMergeService', () => {
     describe('identifyValueHostConflict', () => {
         test('Matches based on the field name. Matches return the actual instance found. Non-matches return undefined.', () => {
             let testItem = new ValueHostConfigMergeService();
-            const source: InputValueHostConfig = {
+            const source: FieldValueHostConfig = {
                 name: 'Field1',
                 dataType: 'String',
                 validatorConfigs: null
             };
-            const dest1: InputValueHostConfig = {
+            const dest1: FieldValueHostConfig = {
                 name: 'Field1',
                 dataType: 'Number', // intentionally different from source
                 validatorConfigs: []
             };
-            const dest2: InputValueHostConfig = {
+            const dest2: FieldValueHostConfig = {
                 name: 'Field2',
                 dataType: 'Number', 
                 validatorConfigs: []
             };            
-            const destinations: Array<InputValueHostConfig> = [
+            const destinations: Array<FieldValueHostConfig> = [
                 dest1, dest2
             ];
             expect(testItem.identifyValueHostConflict(source, destinations)).toBe(dest1);

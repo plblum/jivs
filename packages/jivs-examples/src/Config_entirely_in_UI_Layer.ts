@@ -16,9 +16,9 @@
 
   To accomplish our goal, we will setup the ValidationManager with the following
   ValueHosts and validators:
-  * 'startDate' - an InputValueHost with a Date data type and validators.
-  * 'endDate' - an InputValueHost with a Date data type and validators.
-  * 'timeZone' - an InputValueHost with a String data type and validators.
+  * 'startDate' - an FieldValueHost with a Date data type and validators.
+  * 'endDate' - an FieldValueHost with a Date data type and validators.
+  * 'timeZone' - an FieldValueHost with a String data type and validators.
   * 'numOfDays' - a StaticValueHost with an integer data type that holds the number of days
     limit between StartDate and EndDate.
   * 'diffDays' - a CalcValueHost with an integer data type that calculates 

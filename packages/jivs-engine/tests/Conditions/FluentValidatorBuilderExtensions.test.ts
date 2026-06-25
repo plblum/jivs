@@ -1,5 +1,5 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { FluentBuilderBase, FluentValidatorBuilder, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
@@ -24,7 +24,7 @@ function TestFluentValidatorBuilder(testItem: FluentBuilderBase,
 
     expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
     let typedTextItem = testItem as FluentValidatorBuilder;
-    let config = typedTextItem.parentConfig as InputValueHostConfig;
+    let config = typedTextItem.parentConfig as FieldValueHostConfig;
     expect(config.validatorConfigs).not.toBeNull();
     expect(config.validatorConfigs!.length).toBe(1);
     let valConfig = config.validatorConfigs![0];

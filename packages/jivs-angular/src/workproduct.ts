@@ -96,7 +96,7 @@ export interface IValueChangeListenerAction {
      * Your listener should get the value from the component and pass it back to Fivase,
      * where it will be validated.
      * If your component has a value that is a string, use the setInputValueCallback,
-     * which will use InputValueHost.setInputValue to set the value in Fivase.
+     * which will use FieldValueHost.setInputValue to set the value in Fivase.
      * If your component has a value that is not a string, use the setValueCallback,
      * which will use ValueHost.setValue to set the value in Fivase.
      * 
@@ -718,7 +718,7 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions): boolean | null {
-        let vh = fivaseForm.validationManager.getInputValueHost(valueHostName);
+        let vh = fivaseForm.validationManager.getFieldValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
@@ -1884,7 +1884,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     protected initAriaAttributes(): void {
         // Set aria-required based on the requiresInput field in the ValueHost
-        const valueHost = this.fivaseForm.validationManager.getInputValueHost(this.valueHostName!);
+        const valueHost = this.fivaseForm.validationManager.getFieldValueHost(this.valueHostName!);
         if (valueHost && valueHost.requiresInput) {
             this.ariaManager.setAriaRequired(); // Set aria-required if requiresInput is true
         }
@@ -2088,7 +2088,7 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
 
 /**
  * Directive `showWhenRequired` manages the appearance of an element based on whether the input
- * has a required validator (InputValueHost.requiresInput) 
+ * has a required validator (FieldValueHost.requiresInput) 
  * It shows the element when the input is required and hides otherwise.
  * 
  * 'showWhenRequired' takes the value of the ValueHostName registered with Jivs ValidationManager.
@@ -2555,7 +2555,7 @@ export class FivaseForm implements IFivaseForm {
 
     /**
      * Call when a value supported within the ValueHosts has changed. 
-     * Consider using setInputValue instead for InputValueHosts.
+     * Consider using setInputValue instead for FieldValueHosts.
      * Same as calling `validationManager.setValue(valueHostName, value, options)`.
      * See Fivase documentation for details.
      * @param valueHostName 

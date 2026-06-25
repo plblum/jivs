@@ -12,7 +12,7 @@ import { AnalysisArgs } from "../Types/ConfigAnalysis";
 
 /**
  * Handles IDataTypeParser objects through the DataTypeParserService.
- * The requested key is the lookup key for the parser, from InputValueHostConfig.parserLookupKey.
+ * The requested key is the lookup key for the parser, from FieldValueHostConfig.parserLookupKey.
  * The ValueHostConfig.dataType will be used if the parser key is not supplied.
  * The analysis is based on DataTypeParserService.format function,
  * although it does not use the LookupKeyFallbackService to continue its search.

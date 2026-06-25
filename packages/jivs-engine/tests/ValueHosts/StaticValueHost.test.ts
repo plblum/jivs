@@ -4,7 +4,7 @@ import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStora
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
+import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
@@ -164,9 +164,9 @@ describe('toIStaticValueHost function', () => {
             });
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
-    test('Passing actual InputValueHost returns null.', () => {
+    test('Passing actual FieldValueHost returns null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new InputValueHost(vm, {
+        let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []
@@ -253,9 +253,9 @@ describe('toIStaticValueHost function', () => {
     //         });
     //     expect(toIStaticValueHost(testItem)).toBeNull();
     // });            
-    test('InputValueHost return null.', () => {
+    test('FieldValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new InputValueHost(vm, {
+        let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []

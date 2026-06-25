@@ -56,13 +56,13 @@
  * Each condition class will define its fluent method based on its ConditionType name ("requireText", "regExp", etc).
  * They will use some TypeScript Declaration Merging magic to make their
  * class appear to be part of FluentValidatorBuilder and FluentConditionBuilder, classes that connect
- * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
+ * the conditions to the FieldValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
+ * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (input()),
  *   PropertyValueHost (property()), StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorBuilder - Class that supplies Conditions and Validators
- *   to the preceding InputValueHost. It is returned by builder.input() and property() and each chained object that follows.
+ *   to the preceding FieldValueHost. It is returned by builder.input() and property() and each chained object that follows.
  * 
  * - FluentConditionBuilder - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
  *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
@@ -137,7 +137,7 @@
 import { IDisposable } from './../Interfaces/General_Purpose';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
-import { InputValueHostConfig } from "../Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
@@ -349,7 +349,7 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
             this.assertNameNotDefined(arg);
         }
         else
-            throw new TypeError('Must pass valuehost name or InputValueHostConfig');
+            throw new TypeError('Must pass valuehost name or FieldValueHostConfig');
     }        
 
     protected assertNameNotDefined(valueHostName: ValueHostName): void
@@ -362,7 +362,7 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
 
 
 /**
- * Starts a fluent chain. Its methods start InputValueHost (input()),
+ * Starts a fluent chain. Its methods start FieldValueHost (input()),
  * StaticValueHost (static()), and a collection of Conditions (conditions()).
  */
 export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
@@ -398,24 +398,24 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
 
 
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "require()".
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
+     * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      */
     public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire InputValueHostConfig. This is a special use case.
+     * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
     public input(config: FluentInputValueConfig): FluentValidatorBuilder;
     // overload resolution
     public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder
     {
-        return this.withValidators<InputValueHostConfig>(ValueHostType.Input, arg1, arg2, parameters);
+        return this.withValidators<FieldValueHostConfig>(ValueHostType.Input, arg1, arg2, parameters);
     }    
 
     //!!!OBSOLETE
@@ -451,7 +451,7 @@ export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dat
 /**
  * For fluent input() function.
  */
-export type FluentInputValueConfig = Omit<InputValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
+export type FluentInputValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 
 //!!!OBSOLETE
@@ -510,13 +510,13 @@ export abstract class FluentBuilderBase
 export interface IFluentValidatorBuilder
 {
     /**
-     * The InputValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
+     * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
      */
-    parentConfig: InputValueHostConfig;    
+    parentConfig: FieldValueHostConfig;    
     /**
      * For any implementation of a fluent function that works with FluentValidatorBuilder.
      * It takes the parameters passed into that function (conditionConfig and validatorconfig)
-     * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
+     * and assemble the final ValidatorConfig, which it adds to the FieldValueHostConfig.
      * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
@@ -533,7 +533,7 @@ export interface IFluentValidatorBuilder
 }
 
 /**
- * Supplies Conditions and Validators the preceding InputValueHost in a fluent chain. 
+ * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
  * It is returned by ValidationManagerConfigBuilder.input() and each chained object that follows.
  * 
  * This class will dynamically get fluent functions for each condition
@@ -544,7 +544,7 @@ export interface IFluentValidatorBuilder
  */
 export class FluentValidatorBuilder extends FluentBuilderBase implements IFluentValidatorBuilder
 {
-    constructor(parentConfig: InputValueHostConfig)
+    constructor(parentConfig: FieldValueHostConfig)
     {
         super();
         assertNotNull(parentConfig, 'parentConfig');
@@ -555,16 +555,16 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get parentConfig(): InputValueHostConfig
+    public get parentConfig(): FieldValueHostConfig
     {
         return this._parentConfig;
     }
-    private readonly _parentConfig: InputValueHostConfig;
+    private readonly _parentConfig: FieldValueHostConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentValidationRule.
      * It takes the parameters passed into that function (conditionConfig and validatorConfig)
-     * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
+     * and assemble the final ValidatorConfig, which it adds to the FieldValueHostConfig.
      * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
@@ -788,21 +788,21 @@ export class FluentFactory
     constructor()
     {
         this._validatorBuilderCreator =
-            (vhConfig: InputValueHostConfig) => new FluentValidatorBuilder(vhConfig);
+            (vhConfig: FieldValueHostConfig) => new FluentValidatorBuilder(vhConfig);
         this._conditionBuilderCreator =
             (vhConfig: ConditionWithChildrenBaseConfig) => new FluentConditionBuilder(vhConfig);
     }
-    public createValidatorBuilder(vhConfig: InputValueHostConfig): IFluentValidatorBuilder
+    public createValidatorBuilder(vhConfig: FieldValueHostConfig): IFluentValidatorBuilder
     {
         return this._validatorBuilderCreator(vhConfig);
     }
 
-    public registerValidatorBuilder(creator: (vhConfig: InputValueHostConfig) => IFluentValidatorBuilder): void
+    public registerValidatorBuilder(creator: (vhConfig: FieldValueHostConfig) => IFluentValidatorBuilder): void
     {
         assertNotNull(creator, 'creator');
         this._validatorBuilderCreator = creator;
     }
-    private _validatorBuilderCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorBuilder;
+    private _validatorBuilderCreator: (vhConfig: FieldValueHostConfig) => IFluentValidatorBuilder;
 
     public createConditionBuilder(vhConfig: ConditionWithChildrenBaseConfig): IFluentConditionBuilder
     {

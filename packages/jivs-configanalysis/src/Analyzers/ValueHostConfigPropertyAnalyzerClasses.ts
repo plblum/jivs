@@ -4,7 +4,7 @@
  */
 
 import { CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
@@ -138,7 +138,7 @@ export class ParserLookupKeyPropertyAnalyzer extends ValueHostConfigPropertyAnal
      * @param valueHostConfig - The value host configuration object.
      * @param helper - The analysis result helper.
      */
-    public analyze(config: InputValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: FieldValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         if (config.parserLookupKey !== undefined)
             helper.checkLookupKeyProperty('parserLookupKey', config.parserLookupKey,
                 ServiceName.parser, config, results.properties,

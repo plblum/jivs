@@ -166,7 +166,7 @@ export interface ConfigAnalysisOptions {
      * If there is no Input Value for a ValueHost, the analysis will
      * not check its parser for errors.
      */
-    inputValueHostSampleValues?: { [valueHostName: string]: unknown };
+    fieldValueHostSampleValues?: { [valueHostName: string]: unknown };
 }
 
 /**

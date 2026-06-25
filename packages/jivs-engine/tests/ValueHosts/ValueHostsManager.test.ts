@@ -942,7 +942,7 @@ describe('vh', () => {
         expect(() => vhm.vh.calc('X')).toThrow(/unknown/);
         expect(() => vhm.vh.calc('Field1')).toThrow(/CalcValueHost/);
 //!!OBSOLETE        expect(() => vhm.vh.property('Field1')).toThrow(/PropertyValueHost/);
-        expect(() => vhm.vh.input('Field1')).toThrow(/InputValueHost/);
+        expect(() => vhm.vh.input('Field1')).toThrow(/FieldValueHost/);
     });
 });
 describe('enumerateValueHosts', () => {

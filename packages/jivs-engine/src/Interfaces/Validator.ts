@@ -10,7 +10,7 @@ import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
 import { IDisposable } from './General_Purpose';
 
 /**
- * Represents a single validator for the value of an InputValueHost.
+ * Represents a single validator for the value of an FieldValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
@@ -49,8 +49,8 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
 
     /**
      * Use to change the enabled option. It overrides the value from ValidatorConfig.enabled.
-     * Use case: the list of validators on InputValueHost might change while the form is active.
-     * Add all possible cases to InputValueHost and change their enabled flag here when needed.
+     * Use case: the list of validators on FieldValueHost might change while the form is active.
+     * Add all possible cases to FieldValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
      * ValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.

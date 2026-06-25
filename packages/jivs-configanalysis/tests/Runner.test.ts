@@ -1,4 +1,4 @@
-import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
@@ -27,7 +27,7 @@ describe('ValidationManager focused', () => {
         const config: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [
-                <InputValueHostConfig>{
+                <FieldValueHostConfig>{
                     name: 'Field1',
                     validatorConfigs: [
                         {

@@ -5,7 +5,7 @@
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ICalcValueHost } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
-import { IInputValueHost } from "./FieldValueHost";
+import { IFieldValueHost } from "./FieldValueHost";
 import { IStaticValueHost } from "./StaticValueHost";
 import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHost } from "./ValueHost";
@@ -13,11 +13,11 @@ import { IValueHost } from "./ValueHost";
 export interface IValueHostAccessor extends IDisposable
 {
     /**
-     * Returns the associated InputValueHost or throws an error when
-     * the valueHostName is unknown or not an InputValueHost.
+     * Returns the associated FieldValueHost or throws an error when
+     * the valueHostName is unknown or not an FieldValueHost.
      * @param valueHostName 
      */
-    input(valueHostName: ValueHostName): IInputValueHost;
+    input(valueHostName: ValueHostName): IFieldValueHost;
     //!!OBSOLETE
     // /**
     //  * Returns the associated PropertyValueHost or throws an error when
@@ -47,7 +47,7 @@ export interface IValueHostAccessor extends IDisposable
     any(valueHostName: ValueHostName): IValueHost;
 
     // NOT USED to avoid confusion with "validators" as they both are supporting
-    // the same major implementations: InputValueHost and PropertyValueHost.
+    // the same major implementations: FieldValueHost and PropertyValueHost.
     // So why would the user consider this one?
     // /**
     //  * Returns the associated Validatable ValueHost or throws an error when
@@ -60,7 +60,7 @@ export interface IValueHostAccessor extends IDisposable
     /**
      * Returns the associated Validatable ValueHost that supports validators or throws an error when
      * the valueHostName is unknown or does not implement IValidatorsValueHostBase.
-     * Includes InputValueHost and PropertyValueHost.
+     * Includes FieldValueHost and PropertyValueHost.
      * @param valueHostName 
      */
     validators(valueHostName: ValueHostName): IValidatorsValueHostBase;

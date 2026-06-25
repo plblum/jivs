@@ -16,7 +16,7 @@ describe('EmailAddressCondition tests', () => {
         builder.input('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vh = vm.getFieldValueHost('Field1')!;
 
         let config: RegExpConditionConfig = {
             conditionType: emailAddressConditionType,
@@ -50,7 +50,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         builder.input('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vh = vm.getFieldValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
         let result = testItem.createConditions(vh, emailAddressLookupKey, services.conditionFactory);
@@ -64,7 +64,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         builder.input('Field1', emailAddressLookupKey).emailAddress();
 
         let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');
         let valResult = vh.validate();

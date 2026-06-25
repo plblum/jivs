@@ -4,7 +4,7 @@
  * Each also has an name, used to lookup the ValueHost,
  * and a Label, which is a UI friendly way to tell the user the source of a validation error.
  * There are several types of ValueHosts:
- * - InputValueHost - reflects values from user input. 
+ * - FieldValueHost - reflects values from user input. 
  *   These have validation capability.
  * - PropertyValueHost - reflects values from a Model.
  *   These have validation capability.
@@ -18,7 +18,7 @@
  * - ValidatableValueHostBase - introduces the framework for validation but does not
  *   get the Validators objects involved.
  * - ValidatorsValueHostBase - introduces Validators and completes the overall validation feature.
- *   InputValueHosts inherit from this 
+ *   FieldValueHosts inherit from this 
  * @module ValueHosts/Types/ValueHost
  */
 
@@ -278,12 +278,12 @@ export interface ValueHostConfig {
     /**
      * Identifies the type of ValueHost that will be created to 
      * support the Config. Can use the enumeration ValueHostType to get these strings.
-     * InputValueHost - 'Input'
+     * FieldValueHost - 'Input'
      * PropertyValueHost - 'Property'
      * StaticValueHost - 'Static'
      * CalcValueHost - 'Calc'
-     * If left null, the ValueHostFactory will determine between StaticValueHost and InputValueHost
-     * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
+     * If left null, the ValueHostFactory will determine between StaticValueHost and FieldValueHost
+     * by checking for inclusion of the FieldValueHostConfig.validationConfigs property.
      */
     valueHostType?: string;
     

@@ -6,13 +6,13 @@
  * - A list of Validators, each for a single validation rule and containing their own error messages
  * - An additional value that can be validated, the value directly from the Input, which is often
  *   quite different from the value intended to be stored in the Model/Entity.
- * @module ValueHosts/ConcreteClasses/InputValueHost
+ * @module ValueHosts/ConcreteClasses/FieldValueHost
  */
 import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, SetInputValueOptions } from '../Interfaces/FieldValueHost';
+import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, SetInputValueOptions } from '../Interfaces/FieldValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -24,27 +24,27 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 
 
 /**
- * Standard implementation of IInputValueHost. It owns a list of Validators
+ * Standard implementation of IFieldValueHost. It owns a list of Validators
  * which support its validate() function.
  * Use ValueHostConfig.valueHostType = "Input" for the ValidationManager to use this class.
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
-* - InputValueHostConfig - The business logic supplies these rules
+* - FieldValueHostConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
-* - InputValueHostInstanceState - InstanceState used by this InputValueHost including
+* - FieldValueHostInstanceState - InstanceState used by this FieldValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig, InputValueHostInstanceState>
-    implements IInputValueHost {
-    constructor(validationManager: IValidationManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
+export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig, FieldValueHostInstanceState>
+    implements IFieldValueHost {
+    constructor(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
         super(validationManager, config, state);
     }
 
-    //#region IInputValueHost
+    //#region IFieldValueHost
     /**
      * Exposes the latest value retrieved from the input field/element
      * exactly as supplied by that input. For example,
@@ -248,7 +248,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         this.useOnValueChanged(inputChanged, oldInput, options);
     }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: InputValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {
         super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
         if (options && (stateToUpdate.value === undefined) && options.conversionErrorTokenValue)
             stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
@@ -256,10 +256,10 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
             delete stateToUpdate.conversionErrorTokenValue;
     }
 
-    //#endregion IInputValueHost
+    //#endregion IFieldValueHost
 
 
-    protected clearValidationDataFromInstanceState(stateToUpdate: InputValueHostInstanceState): void {
+    protected clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
         super.clearValidationDataFromInstanceState(stateToUpdate);
         delete stateToUpdate.conversionErrorTokenValue;
     }
@@ -329,7 +329,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         return this.instanceState.conversionErrorTokenValue ?? null;
     }
     /**
-     * Returns the value from InputValueHostConfig.parserLookupKey.
+     * Returns the value from FieldValueHostConfig.parserLookupKey.
      */
     public getParserLookupKey(): string | null | undefined
     {
@@ -348,28 +348,28 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 }
 
 /**
- * Determines if the object implements IInputValueHost.
+ * Determines if the object implements IFieldValueHost.
  * @param source 
- * @returns source typecasted to IInputValueHost if appropriate or null if not.
+ * @returns source typecasted to IFieldValueHost if appropriate or null if not.
  */
-export function toIInputValueHost(source: any): IInputValueHost | null {
-    if (source instanceof InputValueHost)
-        return source as IInputValueHost;
+export function toIFieldValueHost(source: any): IFieldValueHost | null {
+    if (source instanceof FieldValueHost)
+        return source as IFieldValueHost;
 
     if (toIValidatorsValueHostBase(source) &&
-        hasIInputValueHostSpecificMembers(source)) {
-        return source as IInputValueHost;
+        hasIFieldValueHostSpecificMembers(source)) {
+        return source as IFieldValueHost;
     }
     return null;
 }
 /**
- *  Returns true when it finds members introduced on IInputValueHost.
+ *  Returns true when it finds members introduced on IFieldValueHost.
  * @param source 
  * @returns 
  */
-export function hasIInputValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
+export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
 {
-    let test = source as IInputValueHost;
+    let test = source as IFieldValueHost;
     return (test.getInputValue !== undefined &&
         test.setInputValue !== undefined &&
         test.setValues !== undefined &&
@@ -377,20 +377,20 @@ export function hasIInputValueHostSpecificMembers(source: IValidatorsValueHostBa
         test.getConversionErrorMessage !== undefined);
 }
 
-export class InputValueHostGenerator extends ValidatorsValueHostBaseGenerator {
+export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
             return config.valueHostType === ValueHostType.Input;
 
-        if ((config as InputValueHostConfig).validatorConfigs === undefined)
+        if ((config as FieldValueHostConfig).validatorConfigs === undefined)
             return false;
         return true;
     }
-    public create(validationManager: IValidationManager, config: InputValueHostConfig, state: InputValueHostInstanceState): IInputValueHost {
-        return new InputValueHost(validationManager, config, state);
+    public create(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState): IFieldValueHost {
+        return new FieldValueHost(validationManager, config, state);
     }
 
-    public createInstanceState(config: InputValueHostConfig): InputValueHostInstanceState {
+    public createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
         let state = super.createInstanceState(config);
 
         return {

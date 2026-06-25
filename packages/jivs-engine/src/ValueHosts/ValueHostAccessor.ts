@@ -3,10 +3,10 @@
  */
 
 import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
-import { IInputValueHost } from "../Interfaces/FieldValueHost";
+import { IFieldValueHost } from "../Interfaces/FieldValueHost";
 import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { toIInputValueHost } from "./FieldValueHost";
+import { toIFieldValueHost } from "./FieldValueHost";
 import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
 import { IStaticValueHost } from "../Interfaces/StaticValueHost";
 import { ICalcValueHost } from "../Interfaces/CalcValueHost";
@@ -20,9 +20,9 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../Interfa
  * Used by ValueHostResolver's vm property to make it easier for the user
  * to get strongly typed ValueHosts, compared to ValueHostResolver.getValueHost().
  * 
- * It simplies this syntax, shown for getting a value from a InputValueHost:
+ * It simplies this syntax, shown for getting a value from a FieldValueHost:
  * ```ts
- * let ivh = vm.getValueHost("valuehostname") as IInputValueHost;
+ * let ivh = vm.getValueHost("valuehostname") as IFieldValueHost;
  * if (ivh)
  *    x = ivh.getInputValue();
  * ```
@@ -88,13 +88,13 @@ export class ValueHostAccessor implements IValueHostAccessor
     }
 
     /**
-     * Returns the associated InputValueHost or throws an error when
-     * the valueHostName is unknown or not an InputValueHost.
+     * Returns the associated FieldValueHost or throws an error when
+     * the valueHostName is unknown or not an FieldValueHost.
      * @param valueHostName 
      */
-    public input(valueHostName: ValueHostName): IInputValueHost
+    public input(valueHostName: ValueHostName): IFieldValueHost
     {
-        return this.ensureCorrectValueHost(valueHostName, toIInputValueHost, 'InputValueHost');
+        return this.ensureCorrectValueHost(valueHostName, toIFieldValueHost, 'FieldValueHost');
     }
     //!!OBSOLETE
     // /**
@@ -135,7 +135,7 @@ export class ValueHostAccessor implements IValueHostAccessor
     }         
 
     // NOT USED to avoid confusion with "validators" as they both are supporting
-    // the same major implementations: InputValueHost and PropertyValueHost.
+    // the same major implementations: FieldValueHost and PropertyValueHost.
     // So why would the user consider this one?    
     // /**
     //  * Returns the associated Validatable ValueHost or throws an error when
@@ -151,7 +151,7 @@ export class ValueHostAccessor implements IValueHostAccessor
     /**
      * Returns the associated Validatable ValueHost that supports validators or throws an error when
      * the valueHostName is unknown or does not implement IValidatorsValueHostBase.
-     * Includes InputValueHost and PropertyValueHost.
+     * Includes FieldValueHost and PropertyValueHost.
      * @param valueHostName 
      */
     public validators(valueHostName: ValueHostName): IValidatorsValueHostBase

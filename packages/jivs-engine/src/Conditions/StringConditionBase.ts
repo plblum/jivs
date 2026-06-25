@@ -3,7 +3,7 @@
  * @module Conditions/AbstractClasses/StringConditionBase
  */
 
-import { IInputValueHost } from '../Interfaces/FieldValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHost } from '../Interfaces/ValueHost';
@@ -77,7 +77,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns When supportsDuringEdit is false, returns undetermined. Otherwise it follows
      * the rules from the Config.
      */
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValueHostsServices): ConditionEvaluateResult{
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValueHostsServices): ConditionEvaluateResult{
         if (this.config.supportsDuringEdit !== false)
         {
             if (this.config.trim ?? true)

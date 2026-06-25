@@ -1,4 +1,4 @@
-import { InputValueHostGenerator } from "../../src/ValueHosts/FieldValueHost";
+import { FieldValueHostGenerator } from "../../src/ValueHosts/FieldValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
@@ -57,7 +57,7 @@ describe('ValueHostFactory.register', () => {
         expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(false);
         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(false);
         expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
-        expect(() => factory.register(new InputValueHostGenerator())).not.toThrow();
+        expect(() => factory.register(new FieldValueHostGenerator())).not.toThrow();
         expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(true);
         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(true);
     });    
@@ -209,7 +209,7 @@ describe('ValueHostFactory.createInstanceState', () => {
     });
 });
 describe('registerDefaultValueHostGenerators', () => {
-    test('Ensure InputValueHostType gets registered', () => {
+    test('Ensure FieldValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(false);
         expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
@@ -219,9 +219,9 @@ describe('registerDefaultValueHostGenerators', () => {
 });
 
 //!!!OBSOLETE
-// describe('InputValueHostFactory', () => {
+// describe('FieldValueHostFactory', () => {
 //     test('Contains all ValueHosts except PropertyValueHost', () => {
-//         let factory = new InputValueHostFactory();
+//         let factory = new FieldValueHostFactory();
 //         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '' })).toBe(true);
 //         expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);
 //         expect(factory.isRegistered({ valueHostType: ValueHostType.Calc, name: '' })).toBe(true);
@@ -229,7 +229,7 @@ describe('registerDefaultValueHostGenerators', () => {
 
 //         expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(false);
 //     });
-//     test('create using ValueHostType.Input creates InputValueHost', () => {
+//     test('create using ValueHostType.Input creates FieldValueHost', () => {
 //         let services = new MockValidationServices(false, false);
 //         let vm = new MockValidationManager(services);
 //         let config: ValueHostConfig = {
@@ -245,14 +245,14 @@ describe('registerDefaultValueHostGenerators', () => {
 //             value: 'Value',
 //             Counter: 0
 //         };
-//         let testItem = new InputValueHostFactory();
+//         let testItem = new FieldValueHostFactory();
 //         let valueHost: IValueHost | null = null;
 //         expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
-//         expect(valueHost).toBeInstanceOf(InputValueHost);
+//         expect(valueHost).toBeInstanceOf(FieldValueHost);
 //         expect(valueHost!.getName()).toBe('Field1');
 //         expect(valueHost!.getValue()).toBe('Value');
 //     });    
-//     test('create using ValueHostType.Property returns InputValueHost (autoconverted)', () => {
+//     test('create using ValueHostType.Property returns FieldValueHost (autoconverted)', () => {
 //         let services = new MockValidationServices(false, false);
 //         let vm = new MockValidationManager(services);
 //         let config: ValueHostConfig = {
@@ -268,17 +268,17 @@ describe('registerDefaultValueHostGenerators', () => {
 //             value: 'Value',
 //             Counter: 0
 //         };
-//         let testItem = new InputValueHostFactory();
+//         let testItem = new FieldValueHostFactory();
 //         let valueHost: IValueHost | null = null;
 //         expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
-//         expect(valueHost).toBeInstanceOf(InputValueHost);
+//         expect(valueHost).toBeInstanceOf(FieldValueHost);
 //         expect(valueHost!.getName()).toBe('Field1');
 //         expect(valueHost!.getValue()).toBe('Value');
 
 //     });        
 
 //     describe('PropertyValueHostFactory', () => {
-//         test('Contains all ValueHosts except InputValueHost', () => {
+//         test('Contains all ValueHosts except FieldValueHost', () => {
 //             let factory = new PropertyValueHostFactory();
 //             expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(true);
 //             expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);

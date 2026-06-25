@@ -1,5 +1,5 @@
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
@@ -603,7 +603,7 @@ export function createExtensiveConfigAnalysisResults(): IConfigAnalysisResults {
     // It has a warning message for l10nProperty.
     let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Input, LookupKey.Integer,
         ['dataType', 'labell10n']);
-    let ivhc = vh2Result.config as InputValueHostConfig;
+    let ivhc = vh2Result.config as FieldValueHostConfig;
     ivhc.parserLookupKey = LookupKey.Minutes;
     ivhc.label = 'ValueHost2Label';
     ivhc.labell10n = 'ValueHost2LabelL10n';

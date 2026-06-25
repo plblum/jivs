@@ -10,7 +10,7 @@ import { RegExpConditionConfig, RequireTextCondition } from '../../src/Condition
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
-import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
@@ -267,7 +267,7 @@ describe('complete', () => {
 });
 ensureFluentTestConditions();
 describe('Fluent chaining on build(vmConfig).input', () => {
-    test('build(vmConfig).input: Add RequireTest condition to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).input: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').testChainRequireText({}, 'Error', {});
@@ -277,7 +277,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).input: Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).input: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1')
@@ -588,7 +588,7 @@ describe('favorUIMessages', () => {
 //                 valueHostType: ValueHostType.Static,
 //                 name: 'Field2'
 //             },
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field3',
 //                 validatorConfigs: []
@@ -606,13 +606,13 @@ describe('favorUIMessages', () => {
 //         builder.property('Field1', LookupKey.Number);
 //         builder.property('Field2');
 //         let expectedConfig: Array<ValueHostConfig> = [
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field2',
 //                 validatorConfigs: []
@@ -633,13 +633,13 @@ describe('favorUIMessages', () => {
 //         builder.startUILayerConfig({ convertPropertyToInput: false, favorUIMessages: false });
 //         builder.property('Field3');
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field2',
 //                 validatorConfigs: []
@@ -647,7 +647,7 @@ describe('favorUIMessages', () => {
 
 //         ];
 //         let expectedOverrideConfig: Array<ValueHostConfig> = [
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Property,
 //                 name: 'Field3',
 //                 validatorConfigs: []
@@ -666,13 +666,13 @@ describe('favorUIMessages', () => {
 //         builder.property('Field2');
 //         builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field2',
 //                 validatorConfigs: []
@@ -690,13 +690,13 @@ describe('favorUIMessages', () => {
 //         builder.property('Field2');
 //         builder.startUILayerConfig({ favorUIMessages: false });
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
-//             <InputValueHostConfig>{
+//             <FieldValueHostConfig>{
 //                 valueHostType: ValueHostType.Input,
 //                 name: 'Field2',
 //                 validatorConfigs: []
@@ -724,7 +724,7 @@ describe('combineWithRule', () => {
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
-            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
@@ -760,7 +760,7 @@ describe('combineWithRule', () => {
                     combiningBuilder.regExp(/abc/);
                 }
             );
-            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
@@ -817,7 +817,7 @@ describe('combineWithRule', () => {
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);   
-            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
@@ -854,7 +854,7 @@ describe('combineWithRule', () => {
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
-            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
@@ -921,7 +921,7 @@ describe('replaceRule', () => {
         );
         expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
 
-        let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+        let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
         expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
         deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
@@ -950,7 +950,7 @@ describe('replaceRule', () => {
                 expression: /abc/
             }
         );
-        let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+        let result = builder.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
         expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
         deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 

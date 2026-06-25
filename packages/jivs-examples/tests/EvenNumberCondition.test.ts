@@ -14,7 +14,7 @@ describe('EvenNumberCondition tests', () => {
         builder.input('Field1', LookupKey.Number);
 
         let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vh = vm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: evenNumberConditionType,
             valueHostName: 'Field1',
@@ -48,7 +48,7 @@ describe('EvenNumberCondition tests', () => {
         builder.input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
         let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);
         let valResult = vh.validate();

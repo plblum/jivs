@@ -555,11 +555,11 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         return this.resolveCallback<ValueChangedHandler>(this.config.onValueChanged, 'onValueChanged');
     }
     /**
-     * Called when the InputValueHost's InputValue property has changed.
+     * Called when the FieldValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
-     * You can setup the same callback on individual InputValueHosts.
-     * Here, it aggregates all InputValueHost notifications.
+     * You can setup the same callback on individual FieldValueHosts.
+     * Here, it aggregates all FieldValueHost notifications.
      */
     public get onInputValueChanged(): InputValueChangedHandler | null {
         return this.resolveCallback<InputValueChangedHandler>(this.config.onInputValueChanged, 'onInputValueChanged');

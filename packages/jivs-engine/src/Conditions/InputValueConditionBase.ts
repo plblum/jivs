@@ -9,8 +9,8 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
-import { IInputValueHost } from '../Interfaces/FieldValueHost';
-import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 
 /**
  * ConditionConfig to use with InputValueConditionBase
@@ -35,16 +35,16 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
      */
     public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
-        if (!toIInputValueHost(valueHost)) {
-            let error = new CodingError('Invalid ValueHost used. Must be an InputValueHost');
+        if (!toIFieldValueHost(valueHost)) {
+            let error = new CodingError('Invalid ValueHost used. Must be an FieldValueHost');
             this.logger(valueHostsManager.services).error(error);
         }
-        let iValueHost = valueHost as unknown as IInputValueHost;
+        let iValueHost = valueHost as unknown as IFieldValueHost;
         let value = iValueHost.getInputValue();
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
         return this.evaluateInputValue(value, iValueHost, valueHostsManager);
     }
-    protected abstract evaluateInputValue(value: any, valueHost: IInputValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
+    protected abstract evaluateInputValue(value: any, valueHost: IFieldValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 }

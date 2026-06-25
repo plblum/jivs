@@ -1,14 +1,14 @@
 /**
  * Factory for generating classes that implement IValueHost that use ValueHostConfig.
  * ValueHostConfig identifies the desired implementation.
- * Most apps will use the ValueHost and InputValueHost class implementations.
+ * Most apps will use the ValueHost and FieldValueHost class implementations.
  * When adding a new ValueHost class, implement an IValueHostGenerator and register it
  * with the ValueHostFactory.
  * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
 import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
-import { InputValueHostGenerator } from './FieldValueHost';
+import { FieldValueHostGenerator } from './FieldValueHost';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -110,7 +110,7 @@ export class ValueHostFactory implements IValueHostFactory {
 
 
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
-    factory.register(new InputValueHostGenerator());
+    factory.register(new FieldValueHostGenerator());
 //!!!OBSOLETE    factory.register(new PropertyValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
@@ -120,20 +120,20 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 //!!!OBSOLETE
 // /**
 //  * ValueHostFactory with already registered ValueHostGenerators that
-//  * targets consumers for InputValueHosts, specifically the UI layer.
-//  * InputValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
-//  * which includes generators for both InputValueHost and PropertyValueHost. 
+//  * targets consumers for FieldValueHosts, specifically the UI layer.
+//  * FieldValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
+//  * which includes generators for both FieldValueHost and PropertyValueHost. 
 //  * The two are very similar and based on the same class, ValidatorsValueHostBase.
 //  * Those are meant for different scenarios: Input for the UI and Property for business logic.
 //  * By design, this factory knows that when it is asked to generate a PropertyValueHost,
-//  * it switches to the InputValueHost.
+//  * it switches to the FieldValueHost.
 //  */
-// export class InputValueHostFactory extends ValueHostFactory
+// export class FieldValueHostFactory extends ValueHostFactory
 // {
 //     constructor()
 //     {
 //         super();
-//         this.register(new InputValueHostGenerator());
+//         this.register(new FieldValueHostGenerator());
 //         this.register(new StaticValueHostGenerator());
 //         this.register(new CalcValueHostGenerator());
 //         this.register(new ModelValidatorsValueHostGenerator());            
@@ -150,12 +150,12 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 
 // /**
 //  * ValueHostFactory with already registered ValueHostGenerators that
-//  * targets consumers for InputValueHosts, specifically the UI layer.
+//  * targets consumers for FieldValueHosts, specifically the UI layer.
 //  * PropertyValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
-//  * which includes generators for both InputValueHost and PropertyValueHost. 
+//  * which includes generators for both FieldValueHost and PropertyValueHost. 
 //  * The two are very similar and based on the same class, ValidatorsValueHostBase.
 //  * Those are meant for different scenarios: Input for the UI and Property for business logic.
-//  * By design, this factory knows that when it is asked to generate a InputValueHost,
+//  * By design, this factory knows that when it is asked to generate a FieldValueHost,
 //  * it switches to the PropertyValueHost.
 //  */
 // export class PropertyValueHostFactory extends ValueHostFactory
@@ -168,10 +168,10 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 //         this.register(new CalcValueHostGenerator());
 //         this.register(new ModelValidatorsValueHostGenerator());            
 //     }
-//     private _inputValueHostGenerator: InputValueHostGenerator = new InputValueHostGenerator();
+//     private _fieldValueHostGenerator: FieldValueHostGenerator = new FieldValueHostGenerator();
 
 //     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-//         if (this._inputValueHostGenerator.canCreate(config))
+//         if (this._fieldValueHostGenerator.canCreate(config))
 //             config = { ...config, valueHostType: ValueHostType.Property }; // don't modify the original
 //         return super.create(valueHostsManager, config, state);
 //     }

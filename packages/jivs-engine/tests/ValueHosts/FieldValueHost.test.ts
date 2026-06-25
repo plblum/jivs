@@ -1,9 +1,9 @@
 import { RegExpConditionConfig, RegExpCondition } from "../../src/Conditions/ConcreteConditions";
-import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/FieldValueHost";
+import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/FieldValueHost";
+import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, IFieldValueHostCallbacks, toIFieldValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/FieldValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
@@ -35,14 +35,14 @@ import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 interface ITestSetupConfig {
     services: MockValidationServices,
     validationManager: MockValidationManager,
-    config: InputValueHostConfig,
-    state: InputValueHostInstanceState,
-    valueHost: InputValueHost
+    config: FieldValueHostConfig,
+    state: FieldValueHostInstanceState,
+    valueHost: FieldValueHost
 };
 
-function createInputValueHostConfig(fieldNumber: number = 1,
+function createFieldValueHostConfig(fieldNumber: number = 1,
     dataType: string = LookupKey.String,
-    initialValue?: any): InputValueHostConfig {
+    initialValue?: any): FieldValueHostConfig {
     return {
         name: 'Field' + fieldNumber,
         label: 'Label' + fieldNumber,
@@ -53,22 +53,22 @@ function createInputValueHostConfig(fieldNumber: number = 1,
     };
 }
 
-function finishPartialInputValueHostConfig(partialConfig: Partial<InputValueHostConfig> | null):
-    InputValueHostConfig {
-    let defaultIVH = createInputValueHostConfig(1, LookupKey.String);
+function finishPartialFieldValueHostConfig(partialConfig: Partial<FieldValueHostConfig> | null):
+    FieldValueHostConfig {
+    let defaultIVH = createFieldValueHostConfig(1, LookupKey.String);
     if (partialConfig) {
         return { ...defaultIVH, ...partialConfig };
     }
     return defaultIVH;
 }
 
-function finishPartialInputValueHostConfigs(partialConfigs: Array<Partial<InputValueHostConfig>> | null):
-    Array<InputValueHostConfig> | null {
-    let result: Array<InputValueHostConfig> = [];
+function finishPartialFieldValueHostConfigs(partialConfigs: Array<Partial<FieldValueHostConfig>> | null):
+    Array<FieldValueHostConfig> | null {
+    let result: Array<FieldValueHostConfig> = [];
     if (partialConfigs) {
         for (let i = 0; i < partialConfigs.length; i++) {
             let vhd = partialConfigs[i];
-            result.push(finishPartialInputValueHostConfig(vhd));
+            result.push(finishPartialFieldValueHostConfig(vhd));
         }
     }
 
@@ -106,7 +106,7 @@ function finishPartialValidatorConfigs(validatorConfigs: Array<Partial<Validator
     return result;
 }
 
-function createInputValueHostInstanceState(fieldNumber: number = 1): InputValueHostInstanceState {
+function createFieldValueHostInstanceState(fieldNumber: number = 1): FieldValueHostInstanceState {
     return {
         name: 'Field' + fieldNumber,
         value: undefined,
@@ -115,8 +115,8 @@ function createInputValueHostInstanceState(fieldNumber: number = 1): InputValueH
         status: ValidationStatus.NotAttempted
     };
 }
-function finishPartialInputValueHostInstanceState(partialState: Partial<InputValueHostInstanceState> | null): InputValueHostInstanceState {
-    let defaultIVS = createInputValueHostInstanceState(1);
+function finishPartialFieldValueHostInstanceState(partialState: Partial<FieldValueHostInstanceState> | null): FieldValueHostInstanceState {
+    let defaultIVS = createFieldValueHostInstanceState(1);
     if (partialState) {
         return { ...defaultIVS, ...partialState };
     }
@@ -146,24 +146,24 @@ function finishPartialInputValueHostInstanceState(partialState: Partial<InputVal
  * ValidationManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
-function setupInputValueHost(
-    partialIVHConfig?: Partial<InputValueHostConfig> | null,
-    partialState?: Partial<InputValueHostInstanceState> | null): ITestSetupConfig {
+function setupFieldValueHost(
+    partialIVHConfig?: Partial<FieldValueHostConfig> | null,
+    partialState?: Partial<FieldValueHostInstanceState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
     (services.loggerService as CapturingLogger).chainedLogger = new ConsoleLoggerService(services.loggerService.minLevel);
     (services.loggerService as CapturingLogger).overrideMinLevelWhen({ hasData: true });
     let vm = new MockValidationManager(services);
-    let updatedConfig = finishPartialInputValueHostConfig(partialIVHConfig ?? null);
-    let updatedState = finishPartialInputValueHostInstanceState(partialState ?? null);
+    let updatedConfig = finishPartialFieldValueHostConfig(partialIVHConfig ?? null);
+    let updatedState = finishPartialFieldValueHostInstanceState(partialState ?? null);
 
-    let vh = vm.addInputValueHostWithConfig(updatedConfig, updatedState);
-    //new InputValueHost(vm, updatedConfig, updatedState);
+    let vh = vm.addFieldValueHostWithConfig(updatedConfig, updatedState);
+    //new FieldValueHost(vm, updatedConfig, updatedState);
     return {
         services: services,
         validationManager: vm,
         config: updatedConfig,
         state: updatedState,
-        valueHost: vh as InputValueHost
+        valueHost: vh as FieldValueHost
     };
 }
 
@@ -175,12 +175,12 @@ function setupInputValueHost(
  * not supplied will be provided.
  * @returns Configuration that has been setup. Use valueHost to invoke validation functions.
  */
-function setupInputValueHostForValidate(
+function setupFieldValueHostForValidate(
     partialValidatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    partialInputValueState: Partial<InputValueHostInstanceState> | null,
+    partialInputValueState: Partial<FieldValueHostInstanceState> | null,
     vhGroup?: string | null): ITestSetupConfig {
 
-    let inputValueConfig: Partial<InputValueHostConfig> = {
+    let inputValueConfig: Partial<FieldValueHostConfig> = {
         validatorConfigs: partialValidatorConfigs ?
             finishPartialValidatorConfigs(partialValidatorConfigs) :
             undefined
@@ -188,10 +188,10 @@ function setupInputValueHostForValidate(
     if (vhGroup !== undefined)
         inputValueConfig.group = vhGroup;
 
-    let updatedState = finishPartialInputValueHostInstanceState(
+    let updatedState = finishPartialFieldValueHostInstanceState(
         { ...{ inputValue: '' }, ...partialInputValueState });
 
-    return setupInputValueHost(inputValueConfig, updatedState);
+    return setupFieldValueHost(inputValueConfig, updatedState);
 }
 
 describe('constructor and resulting property values', () => {
@@ -199,8 +199,8 @@ describe('constructor and resulting property values', () => {
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let testItem: InputValueHost | null = null;
-        expect(()=> testItem = new InputValueHost(vm, {
+        let testItem: FieldValueHost | null = null;
+        expect(()=> testItem = new FieldValueHost(vm, {
             name: 'Field1',
             valueHostType: ValueHostType.Input,
             validatorConfigs: []
@@ -231,8 +231,8 @@ describe('constructor and resulting property values', () => {
     test('constructor with Config.propertyName sets up getPropertyName correctly', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let testItem: InputValueHost | null = null;
-        expect(()=> testItem = new InputValueHost(vm, {
+        let testItem: FieldValueHost | null = null;
+        expect(()=> testItem = new FieldValueHost(vm, {
             name: 'Field1',
             propertyName: 'Prop1',
             valueHostType: ValueHostType.Input,
@@ -256,33 +256,33 @@ describe('constructor and resulting property values', () => {
 describe('setValue', () => {
 
     test('ConversionErrorTokenValue supplied and is ignored by setValue.', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
     test('ConversionErrorTokenValue supplied but is not saved because value is defined', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });
     test('ConversionErrorTokenValue supplied in one call which saves it but a follow up call without it abandons it', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' });
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });
     test('Use both ConversionErrorTokenValue and Reset options will setup the error message and IsChanged is false', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR', reset: true })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
     test('Value was changed. OnValueChanged called. (confirm ancestor was not broken)', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         let testItem = setup.valueHost;
 
         let callbackInvoked = 0;
@@ -297,7 +297,7 @@ describe('setValue', () => {
     test('Value was changed. OnValueHostInstanceStateChanged called.(confirm ancestor was not broken) ', () => {
         const initialValue = 100;
 
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         let callbackInvoked = 0;
         setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             callbackInvoked++;
@@ -309,9 +309,9 @@ describe('setValue', () => {
     });
 
 });
-describe('InputValueHost.getInputValue', () => {
+describe('FieldValueHost.getInputValue', () => {
     test('Set instanceState.InputValue to undefined; getInputValue is undefined', () => {
-        let setup = setupInputValueHost(null, {
+        let setup = setupFieldValueHost(null, {
             inputValue: undefined
         });
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -320,7 +320,7 @@ describe('InputValueHost.getInputValue', () => {
         expect(value).toBeUndefined();
     });
     test('Set instanceState.InputValue to null; getInputValue is null', () => {
-        let setup = setupInputValueHost(null, {
+        let setup = setupFieldValueHost(null, {
             inputValue: null
         });
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -329,7 +329,7 @@ describe('InputValueHost.getInputValue', () => {
         expect(value).toBeNull();
     });
     test('Set instanceState.InputValue to "abc"; getInputValue is "abc"', () => {
-        let setup = setupInputValueHost(null, {
+        let setup = setupFieldValueHost(null, {
             inputValue: 'abc'
         });
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -344,7 +344,7 @@ describe('setInputValue with getInputValue to check result', () => {
     function testWithoutValidation(inputValue: any,
         options: SetInputValueOptions| null | undefined): void
     {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 //        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         setup.services.dataTypeParserService.enabled = false;
 
@@ -354,8 +354,8 @@ describe('setInputValue with getInputValue to check result', () => {
         expect(setup.valueHost.getInputValue()).toBe(inputValue);
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe(inputValue);
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);        
+        expect((<FieldValueHostInstanceState>changes[0]).inputValue).toBe(inputValue);
+        expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);        
     }
     test('Value of "ABC", options is undefined. Sets value to "ABC" and does not validate. IsChanged is true', () => {
         testWithoutValidation("ABC", undefined);
@@ -370,7 +370,7 @@ describe('setInputValue with getInputValue to check result', () => {
         testWithoutValidation("ABC", { validate: false });
     });
     test('Value of "ABC", options is { validate: true }. Sets value to "ABC" and validate (no Validators to cause Invalid, so result is Undetermined)', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: true })).not.toThrow();
@@ -379,14 +379,14 @@ describe('setInputValue with getInputValue to check result', () => {
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
-        let valueChange = <InputValueHostInstanceState>changes[0];
+        let valueChange = <FieldValueHostInstanceState>changes[0];
         expect(valueChange.inputValue).toBe("ABC");
-        let vrChange = <InputValueHostInstanceState>changes[1];
+        let vrChange = <FieldValueHostInstanceState>changes[1];
         expect(vrChange.status).toBe(ValidationStatus.Undetermined);
         expect(vrChange.changeCounter).toBe(1);
     });
     test('Before calling, validate for ValidationStatus=Undetermined. Set value to 10 with options { Reset: true }. Expect value to be 20, IsChanged = false, and ValidationStatus to NotAttempted', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -398,21 +398,21 @@ describe('setInputValue with getInputValue to check result', () => {
         expect(setup.valueHost.isChanged).toBe(false);
     });
     test('ConversionErrorTokenValue supplied and is applied because native value is undefined', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
 
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
     test('ConversionErrorTokenValue supplied and is ignored because native value is defined', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
         setup.valueHost.setValue('ABC');
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });    
     test('ConversionErrorTokenValue supplied in previous setValueToUndefined, and retained by SetInputValue despite not setting native value here', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
 
         setup.valueHost.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
@@ -423,7 +423,7 @@ describe('setInputValue with getInputValue to check result', () => {
     test('Log call when Level=Debug.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setInputValue(finalValue);
@@ -433,7 +433,7 @@ describe('setInputValue with getInputValue to check result', () => {
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 'A';   // this is the native value
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
@@ -446,7 +446,7 @@ describe('setInputValue with getInputValue to check result', () => {
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
@@ -461,20 +461,20 @@ describe('setInputValue with parser enabled to see both input value and native v
     function testWithParser(inputValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions| null | undefined,
         expectedNativeValue: any,
         expectParserCreatorToBeCalled: boolean = false
         ): ITestSetupConfig
     {
-        let ivh: InputValueHostConfig = {
+        let ivh: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
             parserLookupKey: parserLookupKey,
             parserCreator: parserCreator
         }
-        let setup = setupInputValueHost(ivh);
+        let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
@@ -499,18 +499,18 @@ describe('setInputValue with parser enabled to see both input value and native v
     function testWithParserWithErrorMessage(inputValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions| null | undefined
         ): ITestSetupConfig
     {
-        let ivh: InputValueHostConfig = {
+        let ivh: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
             parserLookupKey: parserLookupKey,
             parserCreator: parserCreator
         }
-        let setup = setupInputValueHost(ivh);
+        let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
  //       (setup.services.loggerService as CapturingLogger).
         registerDataTypeParsers(setup.services.dataTypeParserService);
@@ -533,19 +533,19 @@ describe('setInputValue with parser enabled to see both input value and native v
     function testWithParserWhereErrorIsThrown(inputValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions| null | undefined,
         errorMsg: string
         ): ITestSetupConfig
     {
-        let ivh: InputValueHostConfig = {
+        let ivh: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
             parserLookupKey: parserLookupKey,
             parserCreator: parserCreator
         }
-        let setup = setupInputValueHost(ivh);
+        let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
@@ -567,19 +567,19 @@ describe('setInputValue with parser enabled to see both input value and native v
     function testWithDisabledParser(inputValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined, // when null, no parser
-        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions | null | undefined,    // when disableParser = true
         isActiveParser: boolean = true  // when false, no parser
         ): ITestSetupConfig
     {
-        let ivh: InputValueHostConfig = {
+        let ivh: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
             parserLookupKey: parserLookupKey,
             parserCreator: parserCreator
         }
-        let setup = setupInputValueHost(ivh);
+        let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         setup.services.dataTypeParserService.enabled = isActiveParser;
         registerDataTypeParsers(setup.services.dataTypeParserService);
@@ -597,7 +597,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         return setup;
     }    
 // trims then appends '!' to show this function was applied
-    function parserFnTrimString(valueHost: IInputValueHost): IDataTypeParser<string>
+    function parserFnTrimString(valueHost: IFieldValueHost): IDataTypeParser<string>
     {
         return <IDataTypeParser<string>>{
             supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
@@ -609,7 +609,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         }
     }
     // converts to a number then adds 1 to show this function was applied.
-    function parserFnToNumber(valueHost: IInputValueHost): IDataTypeParser<number>
+    function parserFnToNumber(valueHost: IFieldValueHost): IDataTypeParser<number>
     {
         return <IDataTypeParser<number>>{
             supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
@@ -624,7 +624,7 @@ describe('setInputValue with parser enabled to see both input value and native v
             },
         }
     }    
-    function parserFnThrows(valueHost: IInputValueHost): IDataTypeParser<string>
+    function parserFnThrows(valueHost: IFieldValueHost): IDataTypeParser<string>
     {
         return <IDataTypeParser<string>>{
             supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
@@ -726,9 +726,9 @@ describe('setInputValue with parser enabled to see both input value and native v
     });
 });
 
-describe('InputValueHost.setValues with getInputValue and getValue to check result', () => {
+describe('FieldValueHost.setValues with getInputValue and getValue to check result', () => {
     test('InputValue of "10", Value of 10, options is undefined. Sets both values, IsChanged = true, and does not validate', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10")).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
@@ -737,13 +737,13 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).value).toBe(10);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("10");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
+        expect((<FieldValueHostInstanceState>changes[0]).inputValue).toBe("10");
+        expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });
     test('InputValue of "10", Value of 10, options is empty object. Sets both values, IsChanged = true, and does not validate', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", {})).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
@@ -752,12 +752,12 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).value).toBe(10);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("10");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
+        expect((<FieldValueHostInstanceState>changes[0]).inputValue).toBe("10");
+        expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);
     });
     test('InputValue of "10", Value of 10, options is null. Sets both values, IsChanged = true, and does not validate', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", null!)).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
@@ -766,12 +766,12 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).value).toBe(10);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("10");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
+        expect((<FieldValueHostInstanceState>changes[0]).inputValue).toBe("10");
+        expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);
     });
     test('InputValue of "10", Value of 10, options is { validate: false }. Sets both values, IsChanged = true, and does not validate', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: false })).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
@@ -780,12 +780,12 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).value).toBe(10);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("10");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
+        expect((<FieldValueHostInstanceState>changes[0]).inputValue).toBe("10");
+        expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);
     });
     test('InputValue of "10", Value of 10, options is { validate: true }. Sets both values, IsChanged = true, and validate (no Validators to cause Invalid, so result is Undetermined)', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: true })).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
@@ -794,36 +794,36 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
-        let valueChange = <InputValueHostInstanceState>changes[0];
+        let valueChange = <FieldValueHostInstanceState>changes[0];
         expect(valueChange.value).toBe(10);
         expect(valueChange.inputValue).toBe("10");
-        let vrChange = <InputValueHostInstanceState>changes[1];
+        let vrChange = <FieldValueHostInstanceState>changes[1];
         expect(vrChange.status).toBe(ValidationStatus.Undetermined);
         expect(vrChange.changeCounter).toBe(1);
     });
 
     test('ConversionErrorTokenValue supplied and is saved because native value is undefined', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(undefined, "ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
         expect(setup.valueHost.isChanged).toBe(true);
     });
     test('ConversionErrorTokenValue supplied but is not saved because native value is defined', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });
     test('ConversionErrorTokenValue supplied in one call which saves it but a follow up call without it abandons it', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(undefined, { ConversionErrorTokenValue: 'ERROR' })).not.toThrow();
         setup.valueHost.setValues(10, "10", { conversionErrorTokenValue: 'ERROR' });
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });
     test('ConversionErrorTokenValue and Reset supplied on second call. errorMessage is null and IsChanged is false.', () => {
-        let setup = setupInputValueHost();
+        let setup = setupFieldValueHost();
 
         expect(() => setup.valueHost.setValues(undefined, { ConversionErrorTokenValue: 'ERROR' })).not.toThrow();
         setup.valueHost.setValues(10, "10", { conversionErrorTokenValue: 'ERROR', reset: true });
@@ -833,7 +833,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
     test('Log call when Level=Debug.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setValues(finalValue, ' B ');
@@ -843,7 +843,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
@@ -856,7 +856,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
-        let setup = setupInputValueHost({}, { value: initialValue } );
+        let setup = setupFieldValueHost({}, { value: initialValue } );
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
@@ -868,12 +868,12 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
     });    
 });
 
-describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', () => {
+describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', () => {
     test('No conditions at all. DataTypeCheckCondition gets added', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
         ];
-        let state: Partial<InputValueHostInstanceState> = {};
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let state: Partial<FieldValueHostInstanceState> = {};
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;
         setup.services.autoGenerateDataTypeCheckService.enabled = true;
@@ -924,8 +924,8 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {};
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let state: Partial<FieldValueHostInstanceState> = {};
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;
         setup.services.autoGenerateDataTypeCheckService.enabled = true;
@@ -979,8 +979,8 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 summaryMessage: null
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {};
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let state: Partial<FieldValueHostInstanceState> = {};
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;
         setup.services.autoGenerateDataTypeCheckService.enabled = true;
@@ -1036,8 +1036,8 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 summaryMessage: null
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {};
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let state: Partial<FieldValueHostInstanceState> = {};
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         (setup.services.conditionFactory as ConditionFactory).register<RegExpConditionConfig>(
             ConditionType.RegExp, (config) => new RegExpCondition(config));
         let logger = setup.services.loggerService as CapturingLogger;
@@ -1088,7 +1088,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             supportsValue(dataTypeLookupKey: string): boolean {
                 return dataTypeLookupKey === phoneNumberLookupKey;
             }
-            createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
+            createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
                 return [new RegExpCondition({
                     conditionType: phoneNumberConditionType,
                     expression: /^\d\d\d \d\d\d\-\d{4}$/, // ### ###-####
@@ -1111,7 +1111,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 });
 
         let configs: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
+            <FieldValueHostConfig>{
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
                 dataType: phoneNumberLookupKey,
@@ -1128,7 +1128,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
         };
         let vm = new ValidationManager(vmConfig);
-        let vh = vm.getValueHost('Field1') as InputValueHost;     
+        let vh = vm.getValueHost('Field1') as FieldValueHost;     
         vh.setValues('ABC', 'ABC');   // will violate the regexp
         expect(onValStateChanged).toEqual(
             <ValueHostValidationState>{
@@ -1163,10 +1163,10 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
 
 });
 
-describe('InputValueHostGenerator members', () => {
+describe('FieldValueHostGenerator members', () => {
     test('CanCreate returns true for ValueHostType.Input', () => {
-        let testItem = new InputValueHostGenerator();
-        expect(testItem.canCreate(<InputValueHostConfig>{
+        let testItem = new FieldValueHostGenerator();
+        expect(testItem.canCreate(<FieldValueHostConfig>{
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: '',
@@ -1174,8 +1174,8 @@ describe('InputValueHostGenerator members', () => {
         })).toBe(true);
     });
     test('CanCreate returns false for unexpected type', () => {
-        let testItem = new InputValueHostGenerator();
-        expect(testItem.canCreate(<InputValueHostConfig>{
+        let testItem = new FieldValueHostGenerator();
+        expect(testItem.canCreate(<FieldValueHostConfig>{
             valueHostType: 'Unexpected',
             name: 'Field1',
             label: '',
@@ -1184,7 +1184,7 @@ describe('InputValueHostGenerator members', () => {
     });
 
     test('CanCreate returns true for Type not defined and presence of ValidationConfig property (using null as a value)', () => {
-        let testItem = new InputValueHostGenerator();
+        let testItem = new FieldValueHostGenerator();
         expect(testItem.canCreate(<any>{
             name: 'Field1',
             label: '',
@@ -1192,7 +1192,7 @@ describe('InputValueHostGenerator members', () => {
         })).toBe(true);
     });
     test('CanCreate returns true for Type not defined and presence of ValidationConfig property using [] as a value', () => {
-        let testItem = new InputValueHostGenerator();
+        let testItem = new FieldValueHostGenerator();
         expect(testItem.canCreate(<any>{
             name: 'Field1',
             label: '',
@@ -1200,7 +1200,7 @@ describe('InputValueHostGenerator members', () => {
         })).toBe(true);
     });
     test('CanCreate returns false for Type not defined and lack of ValidationConfig property', () => {
-        let testItem = new InputValueHostGenerator();
+        let testItem = new FieldValueHostGenerator();
         expect(testItem.canCreate(<any>{
             name: 'Field1',
             label: ''
@@ -1208,7 +1208,7 @@ describe('InputValueHostGenerator members', () => {
     });
 
     test('CanCreate returns false for Type=undefined and lack of ValidationConfig property', () => {
-        let testItem = new InputValueHostGenerator();
+        let testItem = new FieldValueHostGenerator();
         expect(testItem.canCreate(<any>{
             Type: undefined,
             name: 'Field1',
@@ -1216,32 +1216,32 @@ describe('InputValueHostGenerator members', () => {
         })).toBe(false);
     });
 
-    test('create returns instance of InputValueHost with VM, Config and State established', () => {
+    test('create returns instance of FieldValueHost with VM, Config and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let config: InputValueHostConfig = {
+        let config: FieldValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Input,
             label: '',
             validatorConfigs: null
         };
-        let state: InputValueHostInstanceState = {
+        let state: FieldValueHostInstanceState = {
             name: 'Field1',
             issuesFound: null,
             status: ValidationStatus.NotAttempted,
             value: undefined,
             inputValue: 'TEST'
         };
-        let testItem = new InputValueHostGenerator();
-        let vh: IInputValueHost | null = null;
+        let testItem = new FieldValueHostGenerator();
+        let vh: IFieldValueHost | null = null;
         expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
-        expect(vh).toBeInstanceOf(InputValueHost);
+        expect(vh).toBeInstanceOf(FieldValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config value
         expect(vh!.getInputValue()).toBe('TEST');  // check instanceState value
     });
 });
-describe('InputValueHost.requiresInput', () => {
+describe('FieldValueHost.requiresInput', () => {
     test('Has a RequireTextCondition. requiresInput returns true', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
@@ -1250,9 +1250,9 @@ describe('InputValueHost.requiresInput', () => {
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {
+        let state: Partial<FieldValueHostInstanceState> = {
         };
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
     test('Has a custom condition with Category=Require. requiresInput returns true', () => {
@@ -1264,9 +1264,9 @@ describe('InputValueHost.requiresInput', () => {
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {
+        let state: Partial<FieldValueHostInstanceState> = {
         };
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });    
     test('Lacks a condition with category=Require. requiresInput returns false', () => {
@@ -1277,9 +1277,9 @@ describe('InputValueHost.requiresInput', () => {
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {
+        let state: Partial<FieldValueHostInstanceState> = {
         };
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(false);
     });
     test('Has a RequireTextCondition but its last amongst several. requiresInput returns true', () => {
@@ -1300,9 +1300,9 @@ describe('InputValueHost.requiresInput', () => {
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {
+        let state: Partial<FieldValueHostInstanceState> = {
         };
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
     test('Has a custom condition with Category=Require but its last amongst several. requiresInput returns true', () => {
@@ -1324,17 +1324,17 @@ describe('InputValueHost.requiresInput', () => {
                 }
             }
         ];
-        let state: Partial<InputValueHostInstanceState> = {
+        let state: Partial<FieldValueHostInstanceState> = {
         };
-        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        let setup = setupFieldValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });    
 });
 
-describe('toIInputValueHost function', () => {
-    test('Passing actual InputValueHost matches interface returns same object.', () => {
+describe('toIFieldValueHost function', () => {
+    test('Passing actual FieldValueHost matches interface returns same object.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new InputValueHost(vm, {
+        let testItem = new FieldValueHost(vm, {
             name: 'Field1',
             label: 'Label1',
             validatorConfigs: []
@@ -1346,9 +1346,9 @@ describe('toIInputValueHost function', () => {
                 status: ValidationStatus.NotAttempted,
                 inputValue: undefined
             });
-        expect(toIInputValueHost(testItem)).toBe(testItem);
+        expect(toIFieldValueHost(testItem)).toBe(testItem);
     });
-    class TestIInputValueHostImplementation implements IInputValueHost {
+    class TestIFieldValueHostImplementation implements IFieldValueHost {
 
         valueHostsManager: IValidationManager = {} as IValidationManager;       
         dispose(): void { }
@@ -1462,9 +1462,9 @@ describe('toIInputValueHost function', () => {
         }
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIInputValueHostImplementation();
+        let testItem = new TestIFieldValueHostImplementation();
 
-        expect(toIInputValueHost(testItem)).toBe(testItem);
+        expect(toIFieldValueHost(testItem)).toBe(testItem);
     });
     //!!!OBSOLETE
     // test('PropertyValueHost return null.', () => {
@@ -1480,7 +1480,7 @@ describe('toIInputValueHost function', () => {
     //             issuesFound: null,
     //             status: ValidationStatus.NotAttempted
     //         });
-    //     expect(toIInputValueHost(testItem)).toBeNull();
+    //     expect(toIFieldValueHost(testItem)).toBeNull();
     // });      
     test('StaticValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
@@ -1492,7 +1492,7 @@ describe('toIInputValueHost function', () => {
                 name: 'Field1',
                 value: undefined
             });
-        expect(toIInputValueHost(testItem)).toBeNull();
+        expect(toIFieldValueHost(testItem)).toBeNull();
     });            
     test('CalcValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
@@ -1505,46 +1505,46 @@ describe('toIInputValueHost function', () => {
                 name: 'Field1',
                 value: undefined
             });
-        expect(toIInputValueHost(testItem)).toBeNull();
+        expect(toIFieldValueHost(testItem)).toBeNull();
     });            
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIInputValueHost(testItem)).toBeNull();
+        expect(toIFieldValueHost(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIInputValueHost(null)).toBeNull();
+        expect(toIFieldValueHost(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIInputValueHost(100)).toBeNull();
+        expect(toIFieldValueHost(100)).toBeNull();
     });
 });
 
-describe('toIInputValueHostCallbacks function', () => {
-    test('Passing actual InputValueHost matches interface returns same object.', () => {
+describe('toIFieldValueHostCallbacks function', () => {
+    test('Passing actual FieldValueHost matches interface returns same object.', () => {
         let testItem = new MockValidationManager(new MockValidationServices(false, false));
 
-        expect(toIInputValueHostCallbacks(testItem)).toBe(testItem);
+        expect(toIFieldValueHostCallbacks(testItem)).toBe(testItem);
     });
-    class TestIInputValueHostCallbacksImplementation implements IInputValueHostCallbacks {
+    class TestIFieldValueHostCallbacksImplementation implements IFieldValueHostCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
         onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
         onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIInputValueHostCallbacksImplementation();
+        let testItem = new TestIFieldValueHostCallbacksImplementation();
 
-        expect(toIInputValueHostCallbacks(testItem)).toBe(testItem);
+        expect(toIFieldValueHostCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIInputValueHostCallbacks(testItem)).toBeNull();
+        expect(toIFieldValueHostCallbacks(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIInputValueHostCallbacks(null)).toBeNull();
+        expect(toIFieldValueHostCallbacks(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIInputValueHostCallbacks(100)).toBeNull();
+        expect(toIFieldValueHostCallbacks(100)).toBeNull();
     });
 });
 

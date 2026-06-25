@@ -12,9 +12,9 @@ import { type ValidationManagerInstanceState, type IValidationManager, type Vali
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
-import { IInputValueHost } from '../Interfaces/FieldValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
 import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
@@ -29,8 +29,8 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * 
  * Configs are interfaces you use with plain objects to fashion them into 
  * ValidationManager's configuration. ValueHostConfig describes a ValueHost.
- * InputValueHostConfig describes an InputValueHost (which supports validation).
- * An InputValueHost takes ValidatorConfigs to fashion its list of Validators.
+ * FieldValueHostConfig describes an FieldValueHost (which supports validation).
+ * An FieldValueHost takes ValidatorConfigs to fashion its list of Validators.
  * An Validator takes various ConditionConfigs to fashion the specific 
  * validation rule.
  * 
@@ -58,7 +58,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
  *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
- *   through all eligible InputValueHosts.
+ *   through all eligible FieldValueHosts.
  * - Report a list of Issues Found for an individual UI element.
  * - Report a list of Issues Found for the entire system for a UI 
  *   element often known as "Validation Summary".
@@ -152,12 +152,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
     }
     /**
-     * Retrieves the InputValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IInputValueHost.name property
+     * Retrieves the FieldValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IFieldValueHost.name property
      * Returns the instance or null if not found or found a non-input valuehost.
      */
-    public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
-        return toIInputValueHost(this.getValueHost(valueHostName));
+    public getFieldValueHost(valueHostName: ValueHostName): IFieldValueHost | null {
+        return toIFieldValueHost(this.getValueHost(valueHostName));
     }
     // /**
     //  * Retrieves the PropertyValueHost of the identified by valueHostName
@@ -396,7 +396,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
 
     /**
-     * Lists all issues found (error messages and supporting info) for a single InputValueHost
+     * Lists all issues found (error messages and supporting info) for a single FieldValueHost
      * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of 0 or more details of issues found. 
      * When 0, there are no issues and the data is valid. If there are issues, when all
@@ -416,9 +416,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return null;
     }
     /**
-     * A list of all issues from all InputValueHosts optionally for a given group.
+     * A list of all issues from all FieldValueHosts optionally for a given group.
      * Use with a Validation Summary widget and when validating the Model itself.
-     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * @param group - Omit or null to ignore groups. Otherwise this will match to FieldValueHosts with 
      * the same group (case insensitive match).
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all

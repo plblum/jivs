@@ -260,7 +260,7 @@ export interface OverrideMinLevelWhenRule {
      * If assigned, look at the type.
      * As a string, it will be a case insensitive contained in the string.
      * Using a regexp, you can match the entire string or use case sensitivity.
-     * It can also be the class Type, such as InputValueHost (the class itself, not a string).
+     * It can also be the class Type, such as FieldValueHost (the class itself, not a string).
      */
     type?: RegExp | string | Function;
     /**

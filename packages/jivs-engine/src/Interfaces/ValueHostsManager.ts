@@ -8,7 +8,7 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IInputValueHostChangedCallback } from './FieldValueHost';
+import { IFieldValueHostChangedCallback } from './FieldValueHost';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 import { IDisposable } from './General_Purpose';
@@ -195,7 +195,7 @@ export type ValueHostsManagerConfigChangedHandler
  * Provides callback hooks for the consuming system to supply to ValueHostsManager.
  * This instance is supplied in the constructor of ValueHostsManager.
  */
-export interface IValueHostsManagerCallbacks extends IValueHostCallbacks, IInputValueHostChangedCallback {
+export interface IValueHostsManagerCallbacks extends IValueHostCallbacks, IFieldValueHostChangedCallback {
     /**
      * Called when the ValueHostsManager's InstanceState has changed.
      * React example: React component useState feature retains this value

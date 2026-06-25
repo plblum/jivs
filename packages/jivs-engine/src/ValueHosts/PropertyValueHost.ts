@@ -7,7 +7,7 @@
 // import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 // import { ValueHostType } from '../Interfaces/ValueHostFactory';
 // import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
-// import { InputValueHost, hasIInputValueHostSpecificMembers } from './InputValueHost';
+// import { FieldValueHost, hasIFieldValueHostSpecificMembers } from './FieldValueHost';
 // import { ValueHostConfig } from '../Interfaces/ValueHost';
 // import { IValidationManager } from '../Interfaces/ValidationManager';
 
@@ -17,17 +17,17 @@
 //  * Each valuehost's native value is expected to be the same as the actual
 //  * property on the model. For example, if the model has an integer property,
 //  * the value must be a number that does not contain any decimal information.
-//  * This ValueHost is a sibling of InputValueHost, which is used to manage and validate
+//  * This ValueHost is a sibling of FieldValueHost, which is used to manage and validate
 //  * inputs.
 //  * 
 //  * Business logic needs to be able to describe each property and its validators.
 //  * Its rules are expected to be converted into PropertyValueHosts with Jiv's validators.
 //  * 
 //  * There is an interesting use case: the UI can ask for business logic to build the 
-//  * ValueHosts it uses, but the UI really wants InputValueHosts.
+//  * ValueHosts it uses, but the UI really wants FieldValueHosts.
 //  * You can setup the ValidationServices so that each ValueHost created by business
-//  * logic will be converted into an InputValueHost.
-//  * Just set the ValidationServices.valueHostFactor = new InputValueHostFactory()
+//  * logic will be converted into an FieldValueHost.
+//  * Just set the ValidationServices.valueHostFactor = new FieldValueHostFactory()
 //  * or pass 'client' into the createValidationServices() function.
 //  */
 // export class PropertyValueHost extends ValidatorsValueHostBase<PropertyValueHostConfig, PropertyValueHostInstanceState>
@@ -71,11 +71,11 @@
 // export function toIPropertyValueHost(source: any): IPropertyValueHost | null {
 //     if (source instanceof PropertyValueHost)
 //         return source as IPropertyValueHost;
-//     if (source instanceof InputValueHost)
+//     if (source instanceof FieldValueHost)
 //         return null;    
 //     // defenses for class types that are compatible but offer no different members
 //     if (toIValidatorsValueHostBase(source) &&
-//         !hasIInputValueHostSpecificMembers(source) &&
+//         !hasIFieldValueHostSpecificMembers(source) &&
 //         hasIPropertyValueHostSpecificMembers(source))
 //             return source as IPropertyValueHost;
 //     return null;

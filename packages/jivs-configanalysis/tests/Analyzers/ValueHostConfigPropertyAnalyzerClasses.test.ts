@@ -4,7 +4,7 @@ import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Inte
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { PropertyValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/PropertyValueHost";
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { DataTypeParserService } from "@plblum/jivs-engine/build/Services/DataTypeParserService";
@@ -111,7 +111,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         expect(setup.results.properties).toHaveLength(0);
     });    
     test('should not add a config issue when valueHostType is Input', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,
@@ -427,7 +427,7 @@ describe('LabelPropertiesAnalyzer class', () => {
 describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // NOTE: This uses AnalysisResultsHelper.checkLookupKeyProperty() which has a full suite of tests
     test('parserLookupKey is null results in no propertyIssues for that property. No other declared property has an error so the total valueHostResults = 0', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,
@@ -445,7 +445,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     });
     // same but with undefined
     test('parserLookupKey is undefined results in no propertyIssues for that property. No other declared property has an error so the total valueHostResults = 0', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,
@@ -463,7 +463,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
 
     // pass in a parserLookupKey that is unknown, but not null
     test('parserLookupKey is custom without a fallback results in a propertyIssue for that property. No other declared property has an error so the total valueHostResults = 1', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,
@@ -482,7 +482,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     });
     // pass in a parserLookupKey that is unknown, but not null
     test('parserLookupKey is custom but has a LookupKeyFallback that is registered results in a propertyIssue for that property', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,
@@ -504,7 +504,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
 
     // register a parser and use its lookupKey. Should not result in a PropertyCAResult
     test('parserLookupKey is known results in no PropertyCAResult for that property. No other declared property has an error so the total valueHostResults = 0', () => {
-        const testValueHostConfig: InputValueHostConfig = {
+        const testValueHostConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
             dataType: LookupKey.Number,

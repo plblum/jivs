@@ -39,7 +39,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     private _enabled: boolean = true;    
     /**
      * Returns true if enabled and there is at least one parser registered.
-     * Used by InputValueHost.setInputValue instead of enabled.
+     * Used by FieldValueHost.setInputValue instead of enabled.
      */
     public isActive(): boolean
     {

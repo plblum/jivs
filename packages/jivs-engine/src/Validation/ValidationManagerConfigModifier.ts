@@ -17,7 +17,7 @@ import { resolveErrorCode } from "../Utilities/Validation";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { InputValueHostConfig } from "../Interfaces/FieldValueHost";
+import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
 
@@ -46,35 +46,35 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
     }        
     //#region validation oriented ValueHost support
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
+     * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
     public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
 
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
-     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
+     * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
     public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorBuilder;    
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param config - Supply the entire InputValueHostConfig. This is a special use case.
+     * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
     public input(config: FluentInputValueConfig): FluentValidatorBuilder;
     // overload resolution
     public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: FluentInputParameters | string | null, arg3?: FluentInputParameters): FluentValidatorBuilder {
         let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Input, arg1, arg2, arg3);        
-        return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, dataType, propsToUpdate);
+        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Input, valueHostName, dataType, propsToUpdate);
     }
 //!!!OBSOLETE
     // /**

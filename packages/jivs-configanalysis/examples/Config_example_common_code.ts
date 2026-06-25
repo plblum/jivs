@@ -126,7 +126,7 @@ export function createValidationServices(cultureID: string): ValidationServices 
         '*': 'The dates must be less than {compareTo} days apart'
     });
 
-    // enable parsing so HTML change events can pass their raw value into the InputValueHost
+    // enable parsing so HTML change events can pass their raw value into the FieldValueHost
     // through setInputValue, and the parser converts it to the native value
 
     let dtps = services.dataTypeParserService as DataTypeParserService;

@@ -27,7 +27,7 @@ import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
-import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
 import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
@@ -359,7 +359,7 @@ export class Validator implements IValidator {
             }
 
             if (options.duringEdit && this.supportsDuringEdit()) {
-                let ivh = toIInputValueHost(this.valueHost);
+                let ivh = toIFieldValueHost(this.valueHost);
                 if (ivh) {
                     let text = ivh.getInputValue();
                     if (typeof text === 'string') {
@@ -610,7 +610,7 @@ export class Validator implements IValidator {
         ];
         if (tlv[1].associatedValue === undefined)   // fallback to input value if available
         {
-            let ivh = toIInputValueHost(valueHost);
+            let ivh = toIFieldValueHost(valueHost);
             if (ivh)
                 tlv[1].associatedValue = ivh?.getInputValue();
         }

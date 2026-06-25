@@ -61,7 +61,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * builder.static('Field2', LookupKey.Date);
  * builder.property('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
  * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
- * // At this point, we've converted PropertyValueHosts to InputValueHosts and discarded 
+ * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
  * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
  * builder.input('Field1', null { label: 'Product name' })
@@ -83,7 +83,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * myBusinessLogicToJivsConverter(vmConfig); // expect 'Field1', 'Field2', and 'Field3' to be generated as shown in the previous case
  * let builder = build(vmConfig);
  * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
- * // At this point, we've converted PropertyValueHosts to InputValueHosts and discarded 
+ * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
  * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
  * builder.input('Field1', null { label: 'Product name' })
@@ -515,13 +515,13 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     /**
      * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * Protected because ValueHostManager does not support InputValueHost. 
+     * Protected because ValueHostManager does not support FieldValueHost. 
      * ValidationManager offers a public interface.
      * @param valueHostType - the ValueHostType to configure
      * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
-     * @param arg2 - optional and can be null. The value for ValueHost.dataType or InputValueHostConfig.
-     * @param arg3 - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
     protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
         valueHostType: ValueHostType | string,

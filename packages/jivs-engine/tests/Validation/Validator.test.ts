@@ -11,11 +11,11 @@ import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validati
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
+import { MockValidationManager, MockValidationServices, MockFieldValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
-import { IInputValueHost } from '../../src/Interfaces/FieldValueHost';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
@@ -65,7 +65,7 @@ class PublicifiedValidator extends Validator {
 }
 /**
  * Returns an Validator (PublicifiedValidator subclass) ready for testing.
- * The returned ValidationManager includes two InputValueHosts with IDs "Field1" and "Field2".
+ * The returned ValidationManager includes two FieldValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * ConditionConfig - RequireTextConditiontType, ValueHostName: null
@@ -78,15 +78,15 @@ class PublicifiedValidator extends Validator {
 function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     vm: MockValidationManager,
     services: MockValidationServices,
-    valueHost1: MockInputValueHost,
-    valueHost2: MockInputValueHost,
+    valueHost1: MockFieldValueHost,
+    valueHost2: MockFieldValueHost,
     config: ValidatorConfig,
     validator: PublicifiedValidator
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
-    let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
-    let vh2 = vm.addMockInputValueHost('Field2', LookupKey.String, 'Label2');
+    let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
@@ -137,7 +137,7 @@ export class ConditionWithPromiseTester implements ICondition {
         });
     }
 }
-// constructor(valueHost: IInputValueHost, config: ValidatorConfig)
+// constructor(valueHost: IFieldValueHost, config: ValidatorConfig)
 describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
         let config: ValidatorConfig = {
@@ -149,7 +149,7 @@ describe('Validator.constructor and initial property values', () => {
     test('config parameter null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = new MockInputValueHost(vm, '', '',);
+        let vh = new MockFieldValueHost(vm, '', '',);
         expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
     test('Valid parameters create and setup supporting properties', () => {
@@ -164,7 +164,7 @@ describe('Validator.constructor and initial property values', () => {
         let services = createValidationServicesForTesting();
         let builder = new ValueHostsManagerConfigBuilder(services);
         let vm = new ValueHostsManager(builder);
-        let vh = new MockInputValueHost(vm, '', '',);
+        let vh = new MockFieldValueHost(vm, '', '',);
         let testItem = new PublicifiedValidator(vh, { conditionConfig: { conditionType: 'Test' } });
 
         expect(()=> testItem.ExposeValidationManager()).toThrow('ValueHost.services must contain IValidationManager');
@@ -1024,12 +1024,12 @@ describe('Validator.validate', () => {
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
         vm: MockValidationManager,
         services: MockValidationServices,
-        vh: IInputValueHost,
+        vh: IFieldValueHost,
         testItem: Validator
     } {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Field 1');
+        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
             conditionConfig: null,
@@ -1207,14 +1207,14 @@ describe('getValuesForTokens', () => {
 describe('ValidatorFactory.create', () => {
     function setupValidatorFactory(): {
         vm: MockValidationManager,
-        vh: MockInputValueHost,
+        vh: MockFieldValueHost,
         validatorConfig: ValidatorConfig,
         factory: ValidatorFactory
     }
     {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
+        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1233,7 +1233,7 @@ describe('ValidatorFactory.create', () => {
     }
     class TestValidator extends Validator
     {
-        constructor(valueHost: IInputValueHost, validatorConfig: ValidatorConfig)
+        constructor(valueHost: IFieldValueHost, validatorConfig: ValidatorConfig)
         {
             super(valueHost, validatorConfig);
         }
@@ -1284,7 +1284,7 @@ describe('toIMessageTokenSource', () => {
     });
     test('Valid object with getValuesForTokens assigned returns it', () => {
         let test: IMessageTokenSource = {
-            getValuesForTokens: (vh: IInputValueHost, vhr: IValueHostResolver) => []
+            getValuesForTokens: (vh: IFieldValueHost, vhr: IValueHostResolver) => []
         };
         expect(toIMessageTokenSource(test)).toBe(test);
     });    

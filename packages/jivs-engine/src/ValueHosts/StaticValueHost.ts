@@ -13,7 +13,7 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
 
 
 /**
- * ValueHost implementation that does not handle validation. (See InputValueHost and PropertyValueHost for validation)
+ * ValueHost implementation that does not handle validation. (See FieldValueHost and PropertyValueHost for validation)
  * Use ValueHostConfig.valueHostType = "Static" for the ValidationManager to use this class.
  * 
  * Generally create these when:

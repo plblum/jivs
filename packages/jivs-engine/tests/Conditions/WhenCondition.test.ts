@@ -27,7 +27,7 @@ describe('WhenCondition', () => {
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let enablerConfig: WhenConditionConfig = {
@@ -64,7 +64,7 @@ describe('WhenCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -86,7 +86,7 @@ describe('WhenCondition', () => {
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -107,7 +107,7 @@ describe('WhenCondition', () => {
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -128,7 +128,7 @@ describe('WhenCondition', () => {
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -148,7 +148,7 @@ describe('WhenCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -281,7 +281,7 @@ describe('WhenCondition', () => {
         let services = new MockValidationServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -297,7 +297,7 @@ describe('WhenCondition', () => {
         let services = new MockValidationServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -314,7 +314,7 @@ describe('WhenCondition', () => {
         let services = new MockValidationServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,

@@ -13,7 +13,7 @@ import { IService } from "./Services";
  * This service keeps these relationships. The DataTypeFormatterService and DataTypeParserService
  * consume this as they try to find the best fitting Formatter or Parser.
  * 
- * Suppose that your InputValueHost has its datatype="PositiveInteger".
+ * Suppose that your FieldValueHost has its datatype="PositiveInteger".
  * Initially DataTypeFormatterService and DataTypeParserService look for a Formatter
  * or Parser whose LookupKey is "PositiveInteger". If not found, we don't want to 
  * force the user to either create a new class or register a map with "PositiveInteger"

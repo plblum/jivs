@@ -1,7 +1,7 @@
 /**
  * Factory for generating classes that implement IValueHost that use ValueHostConfig.
  * ValueHostConfig identifies the desired ValueHost class.
- * Most apps will use the standard InputValueHost class.
+ * Most apps will use the standard FieldValueHost class.
  * @module ValueHosts/Types/ValueHostFactory
  */
 
@@ -85,7 +85,7 @@ export enum ValueHostType
  */    
     Static = 'Static',
 /**
- * Associated with InputValueHost
+ * Associated with FieldValueHost
  */    
     Input = 'Input',
 //!!!OBSOLETE    

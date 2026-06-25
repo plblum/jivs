@@ -4,11 +4,11 @@
  */
 
 import { IConditionFactory, ICondition } from "./Conditions";
-import { IInputValueHost } from "./FieldValueHost";
+import { IFieldValueHost } from "./FieldValueHost";
 
 /**
  * Used to automatically generate a Condition used for Data Type Check
- * based on the DataTypeLookupKey. Only supports IInputValueHost.
+ * based on the DataTypeLookupKey. Only supports IFieldValueHost.
  * 
  * By default, automatic generation uses the DataTypeCheckCondition.
  * 
@@ -50,6 +50,6 @@ export interface IDataTypeCheckGenerator
  * @param conditionFactory
  * @returns An array of Condition instances to use or empty array auto-generation.
  */
-    createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string,
+    createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string,
         conditionFactory: IConditionFactory): Array<ICondition>;
 }

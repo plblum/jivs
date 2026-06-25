@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/Types/InputValueHost
+ * @module ValueHosts/Types/FieldValueHost
  */
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
 import { SetValueOptions } from "./ValueHost";
@@ -11,7 +11,7 @@ import { IDataTypeParser } from "./DataTypeParsers";
 * A ValueHost that supports input validation, meaning the value from
 * the user's input, such as from a textbox or <input> tag.
 * 
-* There are two types of values associated with an InputValueHost:
+* There are two types of values associated with an FieldValueHost:
 * - input value - the value supplied by the input field/element.
 *   It is often a string representation of the native data
 *   and may contain errors preventing its conversion into that native data.
@@ -31,7 +31,7 @@ import { IDataTypeParser } from "./DataTypeParsers";
 *   and supplies it with setValue or setValueUndetermined.
 * - Most Conditions look at the native value through getValue.
 */
-export interface IInputValueHost extends IValidatorsValueHostBase {
+export interface IFieldValueHost extends IValidatorsValueHostBase {
     /**
      * Exposes the latest value retrieved from the input field/element
      * exactly as supplied by the input. For example,
@@ -87,7 +87,7 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
     getConversionErrorMessage(): string | null;
     
     /**
-     * Returns the value from InputValueHostConfig.parserLookupKey.
+     * Returns the value from FieldValueHostConfig.parserLookupKey.
      */
     getParserLookupKey(): string | null | undefined;
 
@@ -101,8 +101,8 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to InputValueHostConfig.
- * This provides the backing data for each InputValueHost.
+ * It should be generatable from JSON, and simply gets typed to FieldValueHostConfig.
+ * This provides the backing data for each FieldValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
@@ -111,7 +111,7 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface InputValueHostConfig extends ValidatorsValueHostBaseConfig {
+export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
 
     /**
      * A DataTypeParser object is used when calling setInputValue() to convert
@@ -155,7 +155,7 @@ export interface InputValueHostConfig extends ValidatorsValueHostBaseConfig {
      * @returns Object that implements IDataTypeParser
      * or return null if no parser is appropriate
      */
-    parserCreator?: (valueHost: IInputValueHost) => IDataTypeParser<any> | null;
+    parserCreator?: (valueHost: IFieldValueHost) => IDataTypeParser<any> | null;
 
     /**
      * The actual property name on the model. If its the same as Config.name,
@@ -166,9 +166,9 @@ export interface InputValueHostConfig extends ValidatorsValueHostBaseConfig {
 }
 
 /**
- * Elements of InputValueHost that are stateful based on user interaction
+ * Elements of FieldValueHost that are stateful based on user interaction
  */
-export interface InputValueHostInstanceState extends ValidatorsValueHostBaseInstanceState {
+export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInstanceState {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -192,21 +192,21 @@ export interface InputValueHostInstanceState extends ValidatorsValueHostBaseInst
 
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
 
-export interface IInputValueHostChangedCallback
+export interface IFieldValueHostChangedCallback
 {
     /**
-     * Called when the InputValueHost's InputValue property has changed.
+     * Called when the FieldValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
-     * You can setup the same callback on individual InputValueHosts.
-     * Here, it aggregates all InputValueHost notifications.
+     * You can setup the same callback on individual FieldValueHosts.
+     * Here, it aggregates all FieldValueHost notifications.
      */
     onInputValueChanged?: InputValueChangedHandler | null;    
 }
 /**
- * Provides callback hooks for the consuming system to supply to IInputValueHosts.
+ * Provides callback hooks for the consuming system to supply to IFieldValueHosts.
  */
-export interface IInputValueHostCallbacks extends IInputValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
+export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
 
 }
 
@@ -222,15 +222,15 @@ export interface SetInputValueOptions extends SetValueOptions
 }
 
 /**
- * Determines if the object implements IInputValueHostCallbacks.
+ * Determines if the object implements IFieldValueHostCallbacks.
  * @param source 
- * @returns source typecasted to IInputValueHostCallbacks if appropriate or null if not.
+ * @returns source typecasted to IFieldValueHostCallbacks if appropriate or null if not.
  */
-export function toIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
+export function toIFieldValueHostCallbacks(source: any): IFieldValueHostCallbacks | null
 {
     if (toIValidatableValueHostBaseCallbacks(source))
     {
-        let test = source as IInputValueHostCallbacks;
+        let test = source as IFieldValueHostCallbacks;
         if (test.onInputValueChanged !== undefined)
             return test;
     }

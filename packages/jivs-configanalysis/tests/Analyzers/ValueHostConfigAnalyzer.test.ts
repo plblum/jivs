@@ -3,7 +3,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { NumberParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
@@ -417,10 +417,10 @@ describe('ValueHostConfigAnalyzer', () => {
             ]);
 
         });
-        // with all available ValueHostPropertyAnalyzers, check a fully populated InputValueHostConfig
+        // with all available ValueHostPropertyAnalyzers, check a fully populated FieldValueHostConfig
         // Two tests: one without any issues, one with issues for every analyzer
-        test('should analyze a fully populated InputValueHostConfig without any issues', () => {
-            const testValueHostConfig: InputValueHostConfig = {
+        test('should analyze a fully populated FieldValueHostConfig without any issues', () => {
+            const testValueHostConfig: FieldValueHostConfig = {
                 valueHostType: ValueHostType.Input,
                 name: 'testValueHost',
                 dataType: LookupKey.Number,
@@ -457,7 +457,7 @@ describe('ValueHostConfigAnalyzer', () => {
 
         });
         // same but with issues for each analyzer
-        test('should analyze a fully populated InputValueHostConfig with issues for each analyzer', () => {
+        test('should analyze a fully populated FieldValueHostConfig with issues for each analyzer', () => {
             const testValueHostConfig: any ={
                 valueHostType: ' Input ',   // ValueHostTypePropertyAnalyzer
                 name: ' whitespace ',   // ValueHostNamePropertyAnalyzer

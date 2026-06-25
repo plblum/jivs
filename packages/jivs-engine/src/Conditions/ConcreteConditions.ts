@@ -28,11 +28,11 @@ import { ConditionType } from './ConditionTypes';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IInputValueHost } from '../Interfaces/FieldValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
 import { ConditionWithOneChildBase, ConditionWithOneChildBaseConfig } from './ConditionWithOneChildBase';
 
@@ -51,13 +51,13 @@ export interface DataTypeCheckConditionConfig extends InputValueConditionBaseCon
  * at both values. When InputValue is not undefined while Value is undefined, it reports an error
  * as the converter could not get a valid value to store in the Value.
  * Supports these tokens:
- * {ConversionError} - Uses the value from IInputValueHost.getConversionErrorMessage()
+ * {ConversionError} - Uses the value from IFieldValueHost.getConversionErrorMessage()
  */
 export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeCheckConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
-    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
+    protected evaluateInputValue(value: any, valueHost: IFieldValueHost,
         valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
@@ -67,7 +67,7 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
-        let ivh = toIInputValueHost(valueHost);
+        let ivh = toIFieldValueHost(valueHost);
         if (ivh)
             list.push({
                 tokenLabel: 'ConversionError',
@@ -111,7 +111,7 @@ export interface RequireTextConditionConfig extends OneValueConditionBaseConfig 
  * It has two evaluation features:
  * - ICondition.evaluate() evaluates the native value. It ignores the trim property.
  * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
- * editing the input. It is invoked by InputValueHost.setInputValue(option.DuringEdit = true)
+ * editing the input. It is invoked by FieldValueHost.setInputValue(option.DuringEdit = true)
  * and supports the trim property.
  */
 export class RequireTextCondition extends OneValueConditionBase<RequireTextConditionConfig>
@@ -135,7 +135,7 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
         if (this.config.trim ?? true)
             text = text.trim();
         if (text == '')
