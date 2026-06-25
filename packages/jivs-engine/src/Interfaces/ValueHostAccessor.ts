@@ -18,13 +18,6 @@ export interface IValueHostAccessor extends IDisposable
      * @param valueHostName 
      */
     field(valueHostName: ValueHostName): IFieldValueHost;
-    //!!OBSOLETE
-    // /**
-    //  * Returns the associated PropertyValueHost or throws an error when
-    //  * the valueHostName is unknown or not an PropertyValueHost.
-    //  * @param valueHostName 
-    //  */
-    // property(valueHostName: ValueHostName): IPropertyValueHost;
 
      /**
      * Returns the associated StaticValueHost or throws an error when

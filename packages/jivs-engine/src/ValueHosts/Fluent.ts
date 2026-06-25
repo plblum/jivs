@@ -414,28 +414,6 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
         return this.withValidators<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, parameters);
     }    
 
-    //!!!OBSOLETE
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "require()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param dataType - optional and can be null. The value for ValueHost.dataType.
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  */
-    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. However, at this time, there are no further items in the series.
-    //  * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
-    //  * You can omit the valueHostType property.
-    //  */
-    // public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
-    // // overload resolution
-    // public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: string | null, arg3?: FluentPropertyParameters): FluentValidatorBuilder
-    // {
-    //     return this.withValidators<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
-    // }     
-
 }
 
 /**
@@ -449,13 +427,6 @@ export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dat
  */
 export type FluentFieldValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentFieldParameters = Omit<FluentFieldValueConfig, 'name' | 'dataType'>;
-
-//!!!OBSOLETE
-// /**
-//  * For fluent property() function.
-//  */
-// export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
-// export type FluentPropertyParameters = Omit<FluentPropertyValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent calc() function.

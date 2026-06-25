@@ -126,9 +126,6 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         this.addOverride();
         if (options?.favorUIMessages !== false)
             this.favorUIMessages();
-        //!!!OBSOLETE
-        // if (options?.convertPropertyToInput !== false)
-        //     this.convertPropertyToInput();
     }
 
     /**
@@ -174,25 +171,6 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         }
     }
 
-    //!!!OBSOLETE
-    // /**
-    //  * Replaces the valueHostType property value, from 'Property'
-    //  * to 'Field' (no changes to any other case).
-    //  * This allows business logic to output in its preferred ValueHostType
-    //  * and UI to upscale it to FieldValueHost.
-    //  * Only impacts the initial ValueHostConfig, not any overrides.
-    //  * @returns when true, changes were made
-    //  */
-    // public convertPropertyToInput(): boolean {
-    //     let changed = false;
-    //     this.baseConfig.valueHostConfigs.forEach((vhConfig) => {
-    //         if (vhConfig.valueHostType === ValueHostType.Property) {
-    //             vhConfig.valueHostType = ValueHostType.Field;
-    //             changed = true;
-    //         }
-    //     });
-    //     return changed;
-    // }
     /**
      * If it finds the validator with the errorcode specified, it will combine the condition with the existing condition
      * using a rule supplied or callback to let you create a conditionConfig.

@@ -81,18 +81,13 @@ export interface IValueHostGenerator {
 export enum ValueHostType
 {
 /**
- * Associated with StaticValueHost
- */    
-    Static = 'Static',
-/**
  * Associated with FieldValueHost
  */    
     Field = 'Field',
-//!!!OBSOLETE    
-// /**
-//  * Associated with PropertyValueHost
-//  */    
-//     Property = 'Property',
+/**
+ * Associated with StaticValueHost
+ */    
+    Static = 'Static',
 /**
  * Associated with CalcValueHost
  */    

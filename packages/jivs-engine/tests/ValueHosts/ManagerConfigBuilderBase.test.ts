@@ -119,11 +119,6 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
     }
-
-//!!!OBSOLETE
-    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
-    //     return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, parameters);
-    // }
 }
 
 describe('ManagerConfigBuilderBase constructor', () => {

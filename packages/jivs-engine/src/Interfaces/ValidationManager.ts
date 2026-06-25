@@ -58,15 +58,6 @@ export interface IValidationManager extends IValueHostsManager {
      */
     getFieldValueHost(valueHostName: ValueHostName): IFieldValueHost | null;
 
-    //!!!OBSOLETE
-    // /**
-    //  * Retrieves the PropertyValueHost of the identified by valueHostName
-    //  * @param valueHostName - Matches to the PropertyValueHostConfig.name property
-    //  * Returns the instance or null if not found or found a different type of value host.
-    //  */
-    // getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
-
-
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.
@@ -327,9 +318,6 @@ export function toIValidationManager(source: any): IValidationManager | null
             test.doNotSave !== undefined &&
             test.getIssuesFound !== undefined &&
             test.getFieldValueHost !== undefined
-            //!!!OBSOLETE
-            // &&
-            // test.getPropertyValueHost !== undefined
         )
             return test;
     }

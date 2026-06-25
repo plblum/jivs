@@ -237,22 +237,7 @@ describe('toIStaticValueHost function', () => {
 
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
-    //!!!OBSOLETE
-    // test('PropertyValueHost return null.', () => {
-    //     let vm = new MockValidationManager(new MockValidationServices(false, false));
-    //     let testItem = new PropertyValueHost(vm, {
-    //             name: 'Field1',
-    //             label: 'Label1',
-    //             validatorConfigs: []
-    //         },
-    //         {
-    //             name: 'Field1',
-    //             value: undefined,
-    //             issuesFound: null,
-    //             status: ValidationStatus.NotAttempted
-    //         });
-    //     expect(toIStaticValueHost(testItem)).toBeNull();
-    // });            
+ 
     test('FieldValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
         let testItem = new FieldValueHost(vm, {

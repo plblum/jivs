@@ -432,43 +432,6 @@ describe('startModifying()', () => {
             ]
         });
     });
-    //!!!OBSOLETE
-    // test('property().requireText() gets added correctly', () => {
-    //     let vmConfig: ValidationManagerConfig = {
-    //         services: new MockValidationServices(true, false), valueHostConfigs: []
-    //     };
-    //     let testItem = new PublicifiedValidationManager(vmConfig);
-
-    //     let modifier = testItem.startModifying();
-    //     modifier.property('Field1', null, { label: 'Field 1' }).requireText(null, 'msg');
-    //     modifier.apply();
-
-    //     let vh1 = testItem.getValueHost('Field1');
-    //     expect(vh1).toBeInstanceOf(PropertyValueHost);
-    //     expect(vh1!.getName()).toBe('Field1');
-    //     expect(vh1!.getLabel()).toBe('Field 1');
-    //     expect(vh1!.getDataType()).toBeNull();
-    //     let ivh1 = vh1 as PropertyValueHost;
-    //     expect(ivh1.getValidator(ConditionType.RequireText)).toBeDefined();
-
-    //     // prove the error message was used.
-
-    //     ivh1.setValue(''); // will be Invalid
-    //     let result = ivh1.validate();
-    //     expect(result).toEqual(<ValueHostValidateResult>{
-    //         status: ValidationStatus.Invalid,
-    //         issuesFound: [
-    //             {
-    //                 errorCode: ConditionType.RequireText,
-    //                 valueHostName: 'Field1',
-    //                 severity: ValidationSeverity.Severe,    // due to required
-    //                 errorMessage: 'msg',
-    //                 summaryMessage: 'msg',
-    //                 doNotSave: true
-    //             }
-    //         ]
-    //     });
-    // });    
 });
 
 function testValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
@@ -1364,13 +1327,6 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(() => vh6 = testItem.getFieldValueHost('Field2')).not.toThrow();
         expect(vh6).toBeInstanceOf(FieldValueHost);
         expect(vh6!.getName()).toBe('Field2');          
-        //!!!OBSOLETE
-        // let vh7: IPropertyValueHost | null = null;
-        // expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
-        // expect(vh7).toBeNull();
-        // let vh8: IPropertyValueHost | null = null;
-        // expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
-        // expect(vh8).toBeNull();                    
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field2')).not.toThrow();
         expect(vh9).toBeNull();
@@ -1415,13 +1371,6 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         let vh6: IFieldValueHost | null = null;
         expect(() => vh6 = testItem.getFieldValueHost('Field2')).not.toThrow();
         expect(vh6).toBeNull();  
-        //!!!OBSOLETE
-        // let vh7: IPropertyValueHost | null = null;
-        // expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
-        // expect(vh7).toBeNull();
-        // let vh8: IPropertyValueHost | null = null;
-        // expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
-        // expect(vh8).toBeNull();                
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field1')).not.toThrow();
         expect(vh9).toBeNull();
@@ -2920,10 +2869,6 @@ describe('toIValidationManager function', () => {
             getFieldValueHost: function (valueHostName: string): IFieldValueHost | null {
                 throw new Error("Function not implemented.");
             },
-            //!!!OBSOLETE
-            // getPropertyValueHost: function (valueHostName: string): IPropertyValueHost | null {
-            //     throw new Error("Function not implemented.");
-            // },
             getCalcValueHost: function (valueHostName: string): ICalcValueHost | null {
                 throw new Error("Function not implemented.");
             },

@@ -383,32 +383,6 @@ describe('ValueHostConfigMergeService', () => {
                     initialValue: 'not in source'
                 });
         });
-        //!!!OBSOLETE
-        // test('FieldValueHost is source and PropertyValueHost is destination. ValueHostType changed to Field', () => {
-        //     testResolve({
-        //         valueHostType: ValueHostType.Field,
-        //         name: 'Field1',
-        //         dataType: LookupKey.Date,
-        //         label: 'Birthdate',
-        //         labell10n: 'BD'
-        //     },
-        //         {
-        //             valueHostType: ValueHostType.Property,
-        //             name: 'Field1',
-        //             dataType: LookupKey.DateTime,
-        //             label: 'Field 1',
-        //             initialValue: 'not in source'
-        //         },
-        //         {
-        //             valueHostType: ValueHostType.Field,
-        //             name: 'Field1',
-        //             dataType: LookupKey.Date,
-        //             label: 'Birthdate',
-        //             labell10n: 'BD',
-        //             initialValue: 'not in source'
-        //         },
-        //         'valueHostType replaced');
-        // });
         test('FieldValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
             testResolve({
                 valueHostType: ValueHostType.Field,

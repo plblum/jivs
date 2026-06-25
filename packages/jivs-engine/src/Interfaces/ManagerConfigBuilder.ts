@@ -85,15 +85,6 @@ export interface BuilderOverrideOptions
      * If undefined, it defaults to true.
      */
     favorUIMessages?: boolean
-    //!!!OBSOLETE
-    // /**
-    //  * When true, use the convertPropertyToInput() function to
-    //  * replace the valueHostType property value, from 'Property'
-    //  * to 'Field' (no changes to any other case).
-    //  * This allows business logic to output in its preferred ValueHostType
-    //  * and UI to upscale it to FieldValueHost.
-    //  */
-    // convertPropertyToInput?: boolean
 }
 
 /**
@@ -186,34 +177,5 @@ export interface IValueHostsForValidatorManagerConfigBuilder<T extends Validatio
     field(config: FluentFieldValueConfig): FluentValidatorBuilder;
     // overload resolution
     field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: FluentFieldParameters | string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder;
-
-    //!!!OBSOLETE
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param dataType - optional and can be null. The value for ValueHost.dataType.
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
-    //  * You can omit the valueHostType property.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
-    // // overload resolution
-    // property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
 
 }

@@ -128,27 +128,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         expect(setup.results.properties).toHaveLength(0);
     });
-    // no error for ValueHostType.Static
-    //!!!OBSOLETE
-    // test('should not add a config issue when valueHostType is Property', () => {
-    //     const testValueHostConfig: PropertyValueHostConfig = {
-    //         valueHostType: ValueHostType.Property,
-    //         name: 'testValueHost',
-    //         dataType: LookupKey.Number,
-    //         validatorConfigs: [],   
-    //     };
-    //     // let services = createServices();
-    //     // let testItem = setupTestItem(services, true);
-
-    //     // executeGatherInValueHostConfig(testItem, testValueHostConfig, 1, 0);
-    //     // let ci = checkConfigIssue(testItem, 0, 'testValueHost');
-    //     // expect(ci.properties).toHaveLength(0);
-    //     let services = createServices();
-    //     let setup = setupForTheseTests(services, testValueHostConfig);
-    //     let testItem = new ValueHostTypePropertyAnalyzer();
-    //     testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-    //     expect(setup.results.properties).toHaveLength(0);
-    // });    
+ 
 });
 
 describe('ValueHostNamePropertyAnalyzer class', () => {

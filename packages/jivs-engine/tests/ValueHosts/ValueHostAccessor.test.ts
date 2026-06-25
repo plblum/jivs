@@ -53,20 +53,7 @@ describe('field', () => {
         let result: any;
         expect(() => result = testItem.field('Field1')).toThrow(/FieldValueHost/);
     });    
-    //!!!OBSOLETE
-    // test('Matches PropertyValueHost throws', () => {
-    //     let vhConfig: ValidationManagerConfig = {
-    //         services: createValidationServicesForTesting(),
-    //         valueHostConfigs: [{
-    //             valueHostType: ValueHostType.Property,
-    //             name: 'Field1'
-    //         }]
-    //     };
-    //     let vhm = new ValidationManager(vhConfig);
-    //     let testItem = new ValueHostAccessor(vhm);    
-    //     let result: any;
-    //     expect(() => result = testItem.field('Field1')).toThrow(/FieldValueHost/);
-    // });    
+
     test('Matches StaticValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
@@ -91,74 +78,6 @@ describe('field', () => {
         expect(() => result = testItem.field('Field1')).toThrow(/unknown/);
     });      
 });
-
-//!!!OBSOLETE
-// describe('property', () => {
-//     test('Existing PropertyValueHost', () => {
-//         let vhConfig: ValidationManagerConfig = {
-//             services: createValidationServicesForTesting(),
-//             valueHostConfigs: [{
-//                 valueHostType: ValueHostType.Property,
-//                 name: 'Field1'
-//             }]
-//         };
-//         let vhm = new ValidationManager(vhConfig);
-//         let testItem = new ValueHostAccessor(vhm);    
-//         let result: any;
-//         expect(() => result = testItem.property('Field1')).not.toThrow();
-//         expect(result).toBeInstanceOf(PropertyValueHost);
-//         expect(result.getName()).toBe('Field1');
-//     });
-//     test('Matches CalcValueHost throws', () => {
-//         let vhConfig: ValidationManagerConfig = {
-//             services: createValidationServicesForTesting(),
-//             valueHostConfigs: [{
-//                 valueHostType: ValueHostType.Calc,
-//                 name: 'Field1'
-//             }]
-//         };
-//         let vhm = new ValidationManager(vhConfig);
-//         let testItem = new ValueHostAccessor(vhm);    
-//         let result: any;
-//         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
-//     });    
-//     test('Matches StaticValueHost throws', () => {
-//         let vhConfig: ValidationManagerConfig = {
-//             services: createValidationServicesForTesting(),
-//             valueHostConfigs: [{
-//                 valueHostType: ValueHostType.Static,
-//                 name: 'Field1'
-//             }]
-//         };
-//         let vhm = new ValidationManager(vhConfig);
-//         let testItem = new ValueHostAccessor(vhm);    
-//         let result: any;
-//         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
-//     });    
-//     test('Matches FieldValueHost throws', () => {
-//         let vhConfig: ValidationManagerConfig = {
-//             services: createValidationServicesForTesting(),
-//             valueHostConfigs: [{
-//                 valueHostType: ValueHostType.Field,
-//                 name: 'Field1'
-//             }]
-//         };
-//         let vhm = new ValidationManager(vhConfig);
-//         let testItem = new ValueHostAccessor(vhm);    
-//         let result: any;
-//         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
-//     });        
-//     test('Unknown valueHostName', () => {
-//         let vhConfig: ValidationManagerConfig = {
-//             services: createValidationServicesForTesting(),
-//             valueHostConfigs: []
-//         };
-//         let vhm = new ValidationManager(vhConfig);
-//         let testItem = new ValueHostAccessor(vhm);    
-//         let result: any;
-//         expect(() => result = testItem.property('Field1')).toThrow(/unknown/);
-//     });      
-// });
 
 describe('static', () => {
     test('Existing StaticValueHost', () => {
@@ -202,20 +121,7 @@ describe('static', () => {
         let result: any;
         expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
     });    
-    //!!!OBSOLETE
-    // test('Matches PropertyValueHost throws', () => {
-    //     let vhConfig: ValidationManagerConfig = {
-    //         services: createValidationServicesForTesting(),
-    //         valueHostConfigs: [{
-    //             valueHostType: ValueHostType.Property,
-    //             name: 'Field1'
-    //         }]
-    //     };
-    //     let vhm = new ValidationManager(vhConfig);
-    //     let testItem = new ValueHostAccessor(vhm);    
-    //     let result: any;
-    //     expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
-    // });        
+  
     test('Unknown valueHostName', () => {
         let vhConfig: ValueHostsManagerConfig = {
             services: createValidationServicesForTesting(),
@@ -269,20 +175,7 @@ describe('calc', () => {
         let result: any;
         expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
     });    
-    //!!!OBSOLETE
-    // test('Matches PropertyValueHost throws', () => {
-    //     let vhConfig: ValidationManagerConfig = {
-    //         services: createValidationServicesForTesting(),
-    //         valueHostConfigs: [{
-    //             valueHostType: ValueHostType.Property,
-    //             name: 'Field1'
-    //         }]
-    //     };
-    //     let vhm = new ValidationManager(vhConfig);
-    //     let testItem = new ValueHostAccessor(vhm);    
-    //     let result: any;
-    //     expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
-    // });        
+  
     test('Unknown valueHostName', () => {
         let vhConfig: ValueHostsManagerConfig = {
             services: createValidationServicesForTesting(),
@@ -310,22 +203,6 @@ describe('any', () => {
         expect(result).toBeInstanceOf(FieldValueHost);
         expect(result.getName()).toBe('Field1');
     });
-    //!!!OBSOLETE
-    // test('Existing PropertyValueHost', () => {
-    //     let vhConfig: ValidationManagerConfig = {
-    //         services: createValidationServicesForTesting(),
-    //         valueHostConfigs: [{
-    //             valueHostType: ValueHostType.Property,
-    //             name: 'Field1'
-    //         }]
-    //     };
-    //     let vhm = new ValidationManager(vhConfig);
-    //     let testItem = new ValueHostAccessor(vhm);    
-    //     let result: any;
-    //     expect(() => result = testItem.any('Field1')).not.toThrow();
-    //     expect(result).toBeInstanceOf(PropertyValueHost);
-    //     expect(result.getName()).toBe('Field1');
-    // });
     test('Existing StaticValueHost', () => {
         let vhConfig: ValueHostsManagerConfig = {
             services: createValidationServicesForTesting(),
@@ -384,22 +261,7 @@ describe('validators', () => {
         expect(result).toBeInstanceOf(FieldValueHost);
         expect(result.getName()).toBe('Field1');
     });
-    //!!!OBSOLETE
-    // test('Existing PropertyValueHost', () => {
-    //     let vhConfig: ValidationManagerConfig = {
-    //         services: createValidationServicesForTesting(),
-    //         valueHostConfigs: [{
-    //             valueHostType: ValueHostType.Property,
-    //             name: 'Field1'
-    //         }]
-    //     };
-    //     let vhm = new ValidationManager(vhConfig);
-    //     let testItem = new ValueHostAccessor(vhm);    
-    //     let result: any;
-    //     expect(() => result = testItem.validators('Field1')).not.toThrow();
-    //     expect(result).toBeInstanceOf(PropertyValueHost);
-    //     expect(result.getName()).toBe('Field1');
-    // });
+
     test('Matches StaticValueHost throws', () => {
         let vhConfig: ValueHostsManagerConfig = {
             services: createValidationServicesForTesting(),

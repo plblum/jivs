@@ -108,72 +108,9 @@ export class ValueHostFactory implements IValueHostFactory {
     }
 }
 
-
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.register(new FieldValueHostGenerator());
-//!!!OBSOLETE    factory.register(new PropertyValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
     factory.register(new ModelValidatorsValueHostGenerator());    
 }
-
-//!!!OBSOLETE
-// /**
-//  * ValueHostFactory with already registered ValueHostGenerators that
-//  * targets consumers for FieldValueHosts, specifically the UI layer.
-//  * FieldValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
-//  * which includes generators for both FieldValueHost and PropertyValueHost. 
-//  * The two are very similar and based on the same class, ValidatorsValueHostBase.
-//  * Those are meant for different scenarios: Field for the UI and Property for business logic.
-//  * By design, this factory knows that when it is asked to generate a PropertyValueHost,
-//  * it switches to the FieldValueHost.
-//  */
-// export class FieldValueHostFactory extends ValueHostFactory
-// {
-//     constructor()
-//     {
-//         super();
-//         this.register(new FieldValueHostGenerator());
-//         this.register(new StaticValueHostGenerator());
-//         this.register(new CalcValueHostGenerator());
-//         this.register(new ModelValidatorsValueHostGenerator());            
-//     }
-//     private _propertyValueHostGenerator: PropertyValueHostGenerator = new PropertyValueHostGenerator();
-
-//     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-//         if (this._propertyValueHostGenerator.canCreate(config))
-//             config = { ...config, valueHostType: ValueHostType.Field }; // don't modify the original
-//         return super.create(valueHostsManager, config, state);
-//     }
-
-// }
-
-// /**
-//  * ValueHostFactory with already registered ValueHostGenerators that
-//  * targets consumers for FieldValueHosts, specifically the UI layer.
-//  * PropertyValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
-//  * which includes generators for both FieldValueHost and PropertyValueHost. 
-//  * The two are very similar and based on the same class, ValidatorsValueHostBase.
-//  * Those are meant for different scenarios: Field for the UI and Property for business logic.
-//  * By design, this factory knows that when it is asked to generate a FieldValueHost,
-//  * it switches to the PropertyValueHost.
-//  */
-// export class PropertyValueHostFactory extends ValueHostFactory
-// {
-//     constructor()
-//     {
-//         super();
-//         this.register(new PropertyValueHostGenerator());
-//         this.register(new StaticValueHostGenerator());
-//         this.register(new CalcValueHostGenerator());
-//         this.register(new ModelValidatorsValueHostGenerator());            
-//     }
-//     private _fieldValueHostGenerator: FieldValueHostGenerator = new FieldValueHostGenerator();
-
-//     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-//         if (this._fieldValueHostGenerator.canCreate(config))
-//             config = { ...config, valueHostType: ValueHostType.Property }; // don't modify the original
-//         return super.create(valueHostsManager, config, state);
-//     }
-
-// }

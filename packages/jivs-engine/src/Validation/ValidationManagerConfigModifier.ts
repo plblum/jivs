@@ -76,38 +76,6 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
         let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Field, arg1, arg2, arg3);        
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, propsToUpdate);
     }
-//!!!OBSOLETE
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param dataType - optional and can be null. The value for ValueHost.dataType.
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
-    //  * You can omit the valueHostType property.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
-    // // overload resolution
-    // public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
-    //     let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Property, arg1, arg2, parameters);        
-    //     return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, propsToUpdate);
-    // }
-    //#endregion validation oriented ValueHost support
 
     /**
      * If it finds the validator with the errorcode specified, it will combine the condition with the existing condition

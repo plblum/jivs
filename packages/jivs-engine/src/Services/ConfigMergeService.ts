@@ -277,9 +277,6 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
      * @returns 
      */
     protected updateValueHostType(source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
-//!!!OBSOLETE        
-        // if (source.valueHostType === ValueHostType.Field && destination.valueHostType === ValueHostType.Property)
-        //     return { useValue: ValueHostType.Field };
         if (source.valueHostType !== destination.valueHostType)
             this.logger.message(LoggingLevel.Warn, () => `Will not change ValueHostType from ${destination.valueHostType} to ${source.valueHostType}.`);
         return { useAction: 'nochange' };

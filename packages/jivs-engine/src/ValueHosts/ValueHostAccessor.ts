@@ -96,16 +96,7 @@ export class ValueHostAccessor implements IValueHostAccessor
     {
         return this.ensureCorrectValueHost(valueHostName, toIFieldValueHost, 'FieldValueHost');
     }
-    //!!OBSOLETE
-    // /**
-    //  * Returns the associated PropertyValueHost or throws an error when
-    //  * the valueHostName is unknown or not an PropertyValueHost.
-    //  * @param valueHostName 
-    //  */
-    // public property(valueHostName: ValueHostName): IPropertyValueHost
-    // {
-    //     return this.ensureCorrectValueHost(valueHostName, toIPropertyValueHost, 'PropertyValueHost');
-    // }    
+
     /**
      * Returns the associated StaticValueHost or throws an error when
      * the valueHostName is unknown or not an StaticValueHost.

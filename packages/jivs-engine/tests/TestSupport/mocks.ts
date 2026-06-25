@@ -581,13 +581,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
             return vh;
         return null;
     }
-    //!!!OBSOLETE
-    // getPropertyValueHost(valueHostName: string): IPropertyValueHost | null {
-    //     let vh = this.getValueHost(valueHostName);
-    //     if (vh instanceof PropertyValueHost)
-    //         return vh;
-    //     return null;
-    // }
+
     asyncProcessing?: boolean | undefined;
 
     public addMockValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
@@ -618,18 +612,6 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         this.valueHostConfigs.set(config.name, config);        
         return vh;
     }
-
-    //!!!OBSOLETE
-    // public addPropertyValueHostWithConfig(config: ValueHostConfig,
-    //     state: PropertyValueHostInstanceState | null): IPropertyValueHost
-    // {
-    //     if (!state)
-    //         state = this.services.valueHostFactory.createInstanceState(config) as PropertyValueHostInstanceState;
-    //     let vh = this.services.valueHostFactory.create(this, config, state) as IPropertyValueHost;
-    //     this.valueHosts.set(config.name, vh);  
-    //     this.valueHostConfigs.set(config.name, config);         
-    //     return vh;
-    // }
 
     private _hostInstanceStateChanges: Array<ValueHostInstanceState> = [];
     public onValueHostInstanceStateChangeHandler: ValueHostInstanceStateChangedHandler = (valueHost, stateToRetain) => {
