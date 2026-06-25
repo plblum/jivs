@@ -275,8 +275,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
     }
 
     /**
-     * Handling upscaling for the valueHostType property, which switching from Property to Input
-     * when the source is Input. No change otherwise.
+     * Handling upscaling for the valueHostType property. No change otherwise.
      * @param source 
      * @param destination 
      * @param identity - Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
@@ -284,8 +283,9 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
      * @returns 
      */
     protected updateValueHostType(source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
-        if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
-            return { useValue: ValueHostType.Input };
+//!!!OBSOLETE        
+        // if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
+        //     return { useValue: ValueHostType.Input };
         if (source.valueHostType !== destination.valueHostType)
             this.logger.message(LoggingLevel.Warn, () => `Will not change ValueHostType from ${destination.valueHostType} to ${source.valueHostType}.`);
         return { useAction: 'nochange' };

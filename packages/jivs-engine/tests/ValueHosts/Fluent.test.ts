@@ -466,72 +466,73 @@ describe('input()', () => {
     });      
 });
 
-describe('property()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = createFluent().property('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
-        expect(testItem.parentConfig).toEqual({
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            label: 'Field 1',
-            validatorConfigs: []
-        });
-    });
-    test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = createFluent().property('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
-        let expected = {
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            dataType: 'Test',
-            validatorConfigs: []
-        };
-        expect(testItem.parentConfig).toEqual(expected);
+//!!!OBSOLETE
+// describe('property()', () => {
+//     test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+//         let testItem = createFluent().property('Field1', null, { label: 'Field 1' });
+//         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+//         expect(testItem.parentConfig).toEqual({
+//             valueHostType: ValueHostType.Property,
+//             name: 'Field1',
+//             label: 'Field 1',
+//             validatorConfigs: []
+//         });
+//     });
+//     test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+//         let testItem = createFluent().property('Field1', 'Test');
+//         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+//         let expected = {
+//             valueHostType: ValueHostType.Property,
+//             name: 'Field1',
+//             dataType: 'Test',
+//             validatorConfigs: []
+//         };
+//         expect(testItem.parentConfig).toEqual(expected);
         
-    });
-    test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = createFluent().property('Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
-        let expected = {
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            validatorConfigs: []
-        };
-        expect(testItem.parentConfig).toEqual(expected);
-    });
-    test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = createFluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
-        let expected = {
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            dataType: 'Test',
-            label: 'Field 1',
-            validatorConfigs: []
-        };
-        expect(testItem.parentConfig).toEqual(expected);
-    });
-    test('Null name throws', () => {
-        expect(() => createFluent().property(null!)).toThrow('arg1');
+//     });
+//     test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+//         let testItem = createFluent().property('Field1');
+//         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+//         let expected = {
+//             valueHostType: ValueHostType.Property,
+//             name: 'Field1',
+//             validatorConfigs: []
+//         };
+//         expect(testItem.parentConfig).toEqual(expected);
+//     });
+//     test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+//         let testItem = createFluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+//         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+//         let expected = {
+//             valueHostType: ValueHostType.Property,
+//             name: 'Field1',
+//             dataType: 'Test',
+//             label: 'Field 1',
+//             validatorConfigs: []
+//         };
+//         expect(testItem.parentConfig).toEqual(expected);
+//     });
+//     test('Null name throws', () => {
+//         expect(() => createFluent().property(null!)).toThrow('arg1');
 
-    });
-    test('Pass in a ValueHostConfig with null name throws', () => {
-        expect(()=> createFluent().property({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+//     });
+//     test('Pass in a ValueHostConfig with null name throws', () => {
+//         expect(()=> createFluent().property({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
 
-    });        
-    test('First parameter is not compatible with overload throws', () => {
-        expect(() => createFluent().property(100 as any)).toThrow('pass');
-        expect(() => createFluent().property(false as any)).toThrow('pass');
-        expect(() => createFluent().property([] as any)).toThrow('argument is not a supported object');
-        expect(() => createFluent().property(new Date() as any)).toThrow('argument is not a supported object');
-    });
-    test('Second arg is not compatible with overload throws', () => {
-        expect(() => createFluent().property('Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => createFluent().property('Field1', false as any)).toThrow('Second parameter invalid type');        
-        expect(() => createFluent().property('Field1', [] as any)).toThrow('argument is not a supported object');        
-        expect(() => createFluent().property('Field1', new Date() as any)).toThrow('argument is not a supported object');        
-    });      
-});
+//     });        
+//     test('First parameter is not compatible with overload throws', () => {
+//         expect(() => createFluent().property(100 as any)).toThrow('pass');
+//         expect(() => createFluent().property(false as any)).toThrow('pass');
+//         expect(() => createFluent().property([] as any)).toThrow('argument is not a supported object');
+//         expect(() => createFluent().property(new Date() as any)).toThrow('argument is not a supported object');
+//     });
+//     test('Second arg is not compatible with overload throws', () => {
+//         expect(() => createFluent().property('Field1', 100 as any)).toThrow('Second parameter invalid type');
+//         expect(() => createFluent().property('Field1', false as any)).toThrow('Second parameter invalid type');        
+//         expect(() => createFluent().property('Field1', [] as any)).toThrow('argument is not a supported object');        
+//         expect(() => createFluent().property('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+//     });      
+// });
 describe('withValidators()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });

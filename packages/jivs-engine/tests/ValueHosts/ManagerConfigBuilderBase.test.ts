@@ -8,7 +8,6 @@ import { ConditionConfig } from "../../src/Interfaces/Conditions";
 
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsValueHostBase";
@@ -21,12 +20,13 @@ import {
     FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
     finishFluentValidatorBuilder, finishFluentConditionBuilder, ValueHostsManagerStartFluent,
     ValidationManagerStartFluent,
-    FluentPropertyParameters
+    FluentInputParameters
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
+import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -116,10 +116,15 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     {
         super.addOverride();
     }
+    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder {
+        return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, dataType, parameters);
+    }
 
-    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
-        return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, parameters);
-    }}
+//!!!OBSOLETE
+    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
+    //     return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, parameters);
+    // }
+}
 
 describe('ManagerConfigBuilderBase constructor', () => {
     test('Initial setup with vmConfig successful', () => {
@@ -557,6 +562,8 @@ describe('build(vmConfig).calc', () => {
 
 
 // Test cases for creating fluent functions...
+ // Each condition gets its own function that expects to have
+ // 'this' as FluentValidatorBuilder and return this for the next in the chain.
 function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
@@ -626,15 +633,15 @@ describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
 
         let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
 
-        builder.property('Field1');
-        builder.property('Field2').testChainRegExp({ expression: /abc/ });
-        builder.property('Field3').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRegExp({ expression: /def/ }, null, { errorCode: 'RegExp1' });
+        builder.input('Field1');
+        builder.input('Field2').testChainRegExp({ expression: /abc/ });
+        builder.input('Field3').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRegExp({ expression: /def/ }, null, { errorCode: 'RegExp1' });
         // same as Field3 to show it always gets the first found
-        builder.property('Field4').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRequireText({}, null, { errorCode: 'RequireText2' });
+        builder.input('Field4').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRequireText({}, null, { errorCode: 'RequireText2' });
         if (includeOverrideData) {
             builder.publicify_addOverride();
-            builder.property('Field1').testChainRequireText();
-            builder.property('Field2').testChainRegExp({ expression: /abc_alt/ }, null, { errorCode: 'RegExp1_alt' });
+            builder.input('Field1').testChainRequireText();
+            builder.input('Field2').testChainRegExp({ expression: /abc_alt/ }, null, { errorCode: 'RegExp1_alt' });
         }
         return builder;
     }
@@ -834,7 +841,7 @@ describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
     });
     test('The ValueHostName is unknown throws and different named valueHost defined', () => {
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.property('Field1');
+        testItem.input('Field1');
         testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
     });
     test('The ValueHostName is null throws', () => {
@@ -844,19 +851,19 @@ describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
 
     test('The errorCode is unknown throws when no validators on valuehost', () => {
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.property('Field1');
+        testItem.input('Field1');
         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
     });
     test('The errorCode is unknown throws when different validator on valuehost', () => {
         ensureFluentTestConditions();
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.property('Field1').testChainRequireText();
+        testItem.input('Field1').testChainRequireText();
         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
     });    
     test('The errorCode is null throws', () => {
         ensureFluentTestConditions();
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.property('Field1').testChainRequireText();
+        testItem.input('Field1').testChainRequireText();
         expect(()=> testItem.publicify_setupValueHostToCombine('Field1', null!)).toThrow(/errorCode/);       
     });
 });

@@ -32,7 +32,6 @@ import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
 import { IValidationServices } from './ValidationServices';
 import { IInputValueHost } from './InputValueHost';
-import { IPropertyValueHost } from './PropertyValueHost';
 import { ValidationManagerConfigModifier } from '../Validation/ValidationManagerConfigModifier';
 
 /**
@@ -59,12 +58,13 @@ export interface IValidationManager extends IValueHostsManager {
      */
     getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
 
-    /**
-     * Retrieves the PropertyValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the PropertyValueHostConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
+    //!!!OBSOLETE
+    // /**
+    //  * Retrieves the PropertyValueHost of the identified by valueHostName
+    //  * @param valueHostName - Matches to the PropertyValueHostConfig.name property
+    //  * Returns the instance or null if not found or found a different type of value host.
+    //  */
+    // getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
 
 
     /**
@@ -327,8 +327,11 @@ export function toIValidationManager(source: any): IValidationManager | null
             test.isValid !== undefined &&
             test.doNotSave !== undefined &&
             test.getIssuesFound !== undefined &&
-            test.getInputValueHost !== undefined &&
-            test.getPropertyValueHost !== undefined)
+            test.getInputValueHost !== undefined
+            //!!!OBSOLETE
+            // &&
+            // test.getPropertyValueHost !== undefined
+        )
             return test;
     }
     return null;

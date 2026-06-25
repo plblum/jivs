@@ -383,31 +383,32 @@ describe('ValueHostConfigMergeService', () => {
                     initialValue: 'not in source'
                 });
         });
-        test('InputValueHost is source and PropertyValueHost is destination. ValueHostType changed to Input', () => {
-            testResolve({
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Date,
-                label: 'Birthdate',
-                labell10n: 'BD'
-            },
-                {
-                    valueHostType: ValueHostType.Property,
-                    name: 'Field1',
-                    dataType: LookupKey.DateTime,
-                    label: 'Field 1',
-                    initialValue: 'not in source'
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.Date,
-                    label: 'Birthdate',
-                    labell10n: 'BD',
-                    initialValue: 'not in source'
-                },
-                'valueHostType replaced');
-        });
+        //!!!OBSOLETE
+        // test('InputValueHost is source and PropertyValueHost is destination. ValueHostType changed to Input', () => {
+        //     testResolve({
+        //         valueHostType: ValueHostType.Input,
+        //         name: 'Field1',
+        //         dataType: LookupKey.Date,
+        //         label: 'Birthdate',
+        //         labell10n: 'BD'
+        //     },
+        //         {
+        //             valueHostType: ValueHostType.Property,
+        //             name: 'Field1',
+        //             dataType: LookupKey.DateTime,
+        //             label: 'Field 1',
+        //             initialValue: 'not in source'
+        //         },
+        //         {
+        //             valueHostType: ValueHostType.Input,
+        //             name: 'Field1',
+        //             dataType: LookupKey.Date,
+        //             label: 'Birthdate',
+        //             labell10n: 'BD',
+        //             initialValue: 'not in source'
+        //         },
+        //         'valueHostType replaced');
+        // });
         test('InputValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
             testResolve({
                 valueHostType: ValueHostType.Input,

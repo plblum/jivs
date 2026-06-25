@@ -13,11 +13,8 @@ import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
-import { IPropertyValueHost } from '../Interfaces/PropertyValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
-import { toIPropertyValueHost } from '../ValueHosts/PropertyValueHost';
-import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
 import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
@@ -162,14 +159,14 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }
-    /**
-     * Retrieves the PropertyValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IPropertyValueHost.name property
-     * Returns the instance or null if not found or found a non-Property valuehost.
-     */
-    public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
-        return toIPropertyValueHost(this.getValueHost(valueHostName));
-    }    
+    // /**
+    //  * Retrieves the PropertyValueHost of the identified by valueHostName
+    //  * @param valueHostName - Matches to the IPropertyValueHost.name property
+    //  * Returns the instance or null if not found or found a non-Property valuehost.
+    //  */
+    // public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
+    //     return toIPropertyValueHost(this.getValueHost(valueHostName));
+    // }    
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.

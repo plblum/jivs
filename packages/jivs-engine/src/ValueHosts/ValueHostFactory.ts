@@ -15,7 +15,6 @@ import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { StaticValueHostGenerator } from './StaticValueHost';
 import { ValueHostType, type IValueHostFactory, type IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';
-import { PropertyValueHostGenerator } from './PropertyValueHost';
 
 /**
  * Supports creating and working with various ValueHost implementations.
@@ -112,68 +111,69 @@ export class ValueHostFactory implements IValueHostFactory {
 
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.register(new InputValueHostGenerator());
-    factory.register(new PropertyValueHostGenerator());
+//!!!OBSOLETE    factory.register(new PropertyValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
     factory.register(new ModelValidatorsValueHostGenerator());    
 }
 
-/**
- * ValueHostFactory with already registered ValueHostGenerators that
- * targets consumers for InputValueHosts, specifically the UI layer.
- * InputValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
- * which includes generators for both InputValueHost and PropertyValueHost. 
- * The two are very similar and based on the same class, ValidatorsValueHostBase.
- * Those are meant for different scenarios: Input for the UI and Property for business logic.
- * By design, this factory knows that when it is asked to generate a PropertyValueHost,
- * it switches to the InputValueHost.
- */
-export class InputValueHostFactory extends ValueHostFactory
-{
-    constructor()
-    {
-        super();
-        this.register(new InputValueHostGenerator());
-        this.register(new StaticValueHostGenerator());
-        this.register(new CalcValueHostGenerator());
-        this.register(new ModelValidatorsValueHostGenerator());            
-    }
-    private _propertyValueHostGenerator: PropertyValueHostGenerator = new PropertyValueHostGenerator();
+//!!!OBSOLETE
+// /**
+//  * ValueHostFactory with already registered ValueHostGenerators that
+//  * targets consumers for InputValueHosts, specifically the UI layer.
+//  * InputValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
+//  * which includes generators for both InputValueHost and PropertyValueHost. 
+//  * The two are very similar and based on the same class, ValidatorsValueHostBase.
+//  * Those are meant for different scenarios: Input for the UI and Property for business logic.
+//  * By design, this factory knows that when it is asked to generate a PropertyValueHost,
+//  * it switches to the InputValueHost.
+//  */
+// export class InputValueHostFactory extends ValueHostFactory
+// {
+//     constructor()
+//     {
+//         super();
+//         this.register(new InputValueHostGenerator());
+//         this.register(new StaticValueHostGenerator());
+//         this.register(new CalcValueHostGenerator());
+//         this.register(new ModelValidatorsValueHostGenerator());            
+//     }
+//     private _propertyValueHostGenerator: PropertyValueHostGenerator = new PropertyValueHostGenerator();
 
-    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-        if (this._propertyValueHostGenerator.canCreate(config))
-            config = { ...config, valueHostType: ValueHostType.Input }; // don't modify the original
-        return super.create(valueHostsManager, config, state);
-    }
+//     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
+//         if (this._propertyValueHostGenerator.canCreate(config))
+//             config = { ...config, valueHostType: ValueHostType.Input }; // don't modify the original
+//         return super.create(valueHostsManager, config, state);
+//     }
 
-}
+// }
 
-/**
- * ValueHostFactory with already registered ValueHostGenerators that
- * targets consumers for InputValueHosts, specifically the UI layer.
- * PropertyValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
- * which includes generators for both InputValueHost and PropertyValueHost. 
- * The two are very similar and based on the same class, ValidatorsValueHostBase.
- * Those are meant for different scenarios: Input for the UI and Property for business logic.
- * By design, this factory knows that when it is asked to generate a InputValueHost,
- * it switches to the PropertyValueHost.
- */
-export class PropertyValueHostFactory extends ValueHostFactory
-{
-    constructor()
-    {
-        super();
-        this.register(new PropertyValueHostGenerator());
-        this.register(new StaticValueHostGenerator());
-        this.register(new CalcValueHostGenerator());
-        this.register(new ModelValidatorsValueHostGenerator());            
-    }
-    private _inputValueHostGenerator: InputValueHostGenerator = new InputValueHostGenerator();
+// /**
+//  * ValueHostFactory with already registered ValueHostGenerators that
+//  * targets consumers for InputValueHosts, specifically the UI layer.
+//  * PropertyValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
+//  * which includes generators for both InputValueHost and PropertyValueHost. 
+//  * The two are very similar and based on the same class, ValidatorsValueHostBase.
+//  * Those are meant for different scenarios: Input for the UI and Property for business logic.
+//  * By design, this factory knows that when it is asked to generate a InputValueHost,
+//  * it switches to the PropertyValueHost.
+//  */
+// export class PropertyValueHostFactory extends ValueHostFactory
+// {
+//     constructor()
+//     {
+//         super();
+//         this.register(new PropertyValueHostGenerator());
+//         this.register(new StaticValueHostGenerator());
+//         this.register(new CalcValueHostGenerator());
+//         this.register(new ModelValidatorsValueHostGenerator());            
+//     }
+//     private _inputValueHostGenerator: InputValueHostGenerator = new InputValueHostGenerator();
 
-    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-        if (this._inputValueHostGenerator.canCreate(config))
-            config = { ...config, valueHostType: ValueHostType.Property }; // don't modify the original
-        return super.create(valueHostsManager, config, state);
-    }
+//     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
+//         if (this._inputValueHostGenerator.canCreate(config))
+//             config = { ...config, valueHostType: ValueHostType.Property }; // don't modify the original
+//         return super.create(valueHostsManager, config, state);
+//     }
 
-}
+// }

@@ -3,7 +3,6 @@ import { ValidationManagerConfigBuilder, build } from '../../src/Validation/Vali
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '../../src/Interfaces/ValidationManager';
 import { ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { IValidatableValueHostBase, ValueHostValidationState } from '../../src/Interfaces/ValidatableValueHostBase';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValidationState } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { FluentConditionBuilder, FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
@@ -11,15 +10,11 @@ import { RegExpConditionConfig, RequireTextCondition } from '../../src/Condition
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
-import { ICalcValueHost, CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
-import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
-import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
-import { ValidationManagerConfigModifier } from '../../src/Validation/ValidationManagerConfigModifier';
 
 
 function createVMConfig(): ValidationManagerConfig {
@@ -248,7 +243,7 @@ describe('complete', () => {
         testItem.static('Field1');
         testItem.publicify_addOverride();
         testItem.static('Field1', LookupKey.String, { label: 'Field 1' });
-        testItem.property('Field2').requireText();
+        testItem.input('Field2').requireText();
         let result = testItem.complete();
         expect(result.services).toBe(vmConfig.services);
         expect(result.valueHostConfigs).toEqual([{
@@ -258,7 +253,7 @@ describe('complete', () => {
             label: 'Field 1'
         },
         {
-            valueHostType: ValueHostType.Property,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: [{
                 conditionConfig: {
@@ -564,153 +559,154 @@ describe('favorUIMessages', () => {
     });    
 });
 
-describe('convertPropertyToInput', () => {
-    test('With no ValueHostConfigs defined, no changes and no exceptions', () => {
-        let vmConfig = createVMConfig();
+//!!!OBSOLETE
+// describe('convertPropertyToInput', () => {
+//     test('With no ValueHostConfigs defined, no changes and no exceptions', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let result: boolean;
-        expect(() => result = builder.convertPropertyToInput()).not.toThrow();
-        expect(result!).toBe(false);
-    });
-    test('With ValueHostConfigs defined but none with ValueHostType=Property, no changes', () => {
-        let vmConfig = createVMConfig();
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         let result: boolean;
+//         expect(() => result = builder.convertPropertyToInput()).not.toThrow();
+//         expect(result!).toBe(false);
+//     });
+//     test('With ValueHostConfigs defined but none with ValueHostType=Property, no changes', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let calcFn = (valueHost: ICalcValueHost, manager: IValueHostsManager) => 0;
-        builder.calc('Field1', LookupKey.Number, calcFn);
-        builder.static('Field2');
-        builder.input('Field3');
-        let expectedConfig: Array<ValueHostConfig> = [
-            <CalcValueHostConfig>{
-                valueHostType: ValueHostType.Calc,
-                name: 'Field1',
-                dataType: LookupKey.Number,
-                calcFn: calcFn
-            },
-            <StaticValueHostConfig>{
-                valueHostType: ValueHostType.Static,
-                name: 'Field2'
-            },
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field3',
-                validatorConfigs: []
-            },
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         let calcFn = (valueHost: ICalcValueHost, manager: IValueHostsManager) => 0;
+//         builder.calc('Field1', LookupKey.Number, calcFn);
+//         builder.static('Field2');
+//         builder.input('Field3');
+//         let expectedConfig: Array<ValueHostConfig> = [
+//             <CalcValueHostConfig>{
+//                 valueHostType: ValueHostType.Calc,
+//                 name: 'Field1',
+//                 dataType: LookupKey.Number,
+//                 calcFn: calcFn
+//             },
+//             <StaticValueHostConfig>{
+//                 valueHostType: ValueHostType.Static,
+//                 name: 'Field2'
+//             },
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field3',
+//                 validatorConfigs: []
+//             },
 
-        ];
+//         ];
 
-        expect(builder.convertPropertyToInput()).toBe(false);
-        expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedConfig);
-    });    
-    test('With ValueHostConfigs defined and all with ValueHostType=Property, changes to all ValueHostType properties', () => {
-        let vmConfig = createVMConfig();
+//         expect(builder.convertPropertyToInput()).toBe(false);
+//         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedConfig);
+//     });    
+//     test('With ValueHostConfigs defined and all with ValueHostType=Property, changes to all ValueHostType properties', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Number);
-        builder.property('Field2');
-        let expectedConfig: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Number,
-                validatorConfigs: []
-            },
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field2',
-                validatorConfigs: []
-            },
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         builder.property('Field1', LookupKey.Number);
+//         builder.property('Field2');
+//         let expectedConfig: Array<ValueHostConfig> = [
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field1',
+//                 dataType: LookupKey.Number,
+//                 validatorConfigs: []
+//             },
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field2',
+//                 validatorConfigs: []
+//             },
 
-        ];
+//         ];
 
-        expect(builder.convertPropertyToInput()).toBe(true);
-        expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedConfig);
-    });        
+//         expect(builder.convertPropertyToInput()).toBe(true);
+//         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedConfig);
+//     });        
 
-    test('With ValueHostConfigs defined in both baseconfig and overrides and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig and none in overrides', () => {
-        let vmConfig = createVMConfig();
+//     test('With ValueHostConfigs defined in both baseconfig and overrides and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig and none in overrides', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Number);
-        builder.property('Field2');
-        builder.startUILayerConfig({ convertPropertyToInput: false, favorUIMessages: false });
-        builder.property('Field3');
-        let expectedBaseConfig: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Number,
-                validatorConfigs: []
-            },
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field2',
-                validatorConfigs: []
-            },
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         builder.property('Field1', LookupKey.Number);
+//         builder.property('Field2');
+//         builder.startUILayerConfig({ convertPropertyToInput: false, favorUIMessages: false });
+//         builder.property('Field3');
+//         let expectedBaseConfig: Array<ValueHostConfig> = [
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field1',
+//                 dataType: LookupKey.Number,
+//                 validatorConfigs: []
+//             },
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field2',
+//                 validatorConfigs: []
+//             },
 
-        ];
-        let expectedOverrideConfig: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Property,
-                name: 'Field3',
-                validatorConfigs: []
-            }
+//         ];
+//         let expectedOverrideConfig: Array<ValueHostConfig> = [
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Property,
+//                 name: 'Field3',
+//                 validatorConfigs: []
+//             }
 
-        ];
-        expect(builder.convertPropertyToInput()).toBe(true);
-        expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-        expect(builder.publicify_overriddenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
-    });       
-    test('Using startUILayerConfig({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
-        let vmConfig = createVMConfig();
+//         ];
+//         expect(builder.convertPropertyToInput()).toBe(true);
+//         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
+//         expect(builder.publicify_overriddenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
+//     });       
+//     test('Using startUILayerConfig({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Number);
-        builder.property('Field2');
-        builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
-        let expectedBaseConfig: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Number,
-                validatorConfigs: []
-            },
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field2',
-                validatorConfigs: []
-            },
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         builder.property('Field1', LookupKey.Number);
+//         builder.property('Field2');
+//         builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
+//         let expectedBaseConfig: Array<ValueHostConfig> = [
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field1',
+//                 dataType: LookupKey.Number,
+//                 validatorConfigs: []
+//             },
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field2',
+//                 validatorConfigs: []
+//             },
 
-        ];
+//         ];
 
-        expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-    });        
-    test('Using startUILayerConfig({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
-        let vmConfig = createVMConfig();
+//         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
+//     });        
+//     test('Using startUILayerConfig({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+//         let vmConfig = createVMConfig();
         
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Number);
-        builder.property('Field2');
-        builder.startUILayerConfig({ favorUIMessages: false });
-        let expectedBaseConfig: Array<ValueHostConfig> = [
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Number,
-                validatorConfigs: []
-            },
-            <InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
-                name: 'Field2',
-                validatorConfigs: []
-            },
+//         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+//         builder.property('Field1', LookupKey.Number);
+//         builder.property('Field2');
+//         builder.startUILayerConfig({ favorUIMessages: false });
+//         let expectedBaseConfig: Array<ValueHostConfig> = [
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field1',
+//                 dataType: LookupKey.Number,
+//                 validatorConfigs: []
+//             },
+//             <InputValueHostConfig>{
+//                 valueHostType: ValueHostType.Input,
+//                 name: 'Field2',
+//                 validatorConfigs: []
+//             },
 
-        ];
+//         ];
 
-        expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-    });            
-});
+//         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
+//     });            
+// });
 
 describe('combineWithRule', () => {
     describe('3 parameter overload', () => {

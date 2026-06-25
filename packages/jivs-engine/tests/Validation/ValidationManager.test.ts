@@ -27,10 +27,8 @@ import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHo
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
-import { IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
-import { PropertyValueHost } from '../../src/ValueHosts/PropertyValueHost';
 import { RegExpConditionConfig, RegExpCondition, EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ConcreteConditions';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
@@ -434,42 +432,43 @@ describe('startModifying()', () => {
             ]
         });
     });
-    test('property().requireText() gets added correctly', () => {
-        let vmConfig: ValidationManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValidationManager(vmConfig);
+    //!!!OBSOLETE
+    // test('property().requireText() gets added correctly', () => {
+    //     let vmConfig: ValidationManagerConfig = {
+    //         services: new MockValidationServices(true, false), valueHostConfigs: []
+    //     };
+    //     let testItem = new PublicifiedValidationManager(vmConfig);
 
-        let modifier = testItem.startModifying();
-        modifier.property('Field1', null, { label: 'Field 1' }).requireText(null, 'msg');
-        modifier.apply();
+    //     let modifier = testItem.startModifying();
+    //     modifier.property('Field1', null, { label: 'Field 1' }).requireText(null, 'msg');
+    //     modifier.apply();
 
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeInstanceOf(PropertyValueHost);
-        expect(vh1!.getName()).toBe('Field1');
-        expect(vh1!.getLabel()).toBe('Field 1');
-        expect(vh1!.getDataType()).toBeNull();
-        let ivh1 = vh1 as PropertyValueHost;
-        expect(ivh1.getValidator(ConditionType.RequireText)).toBeDefined();
+    //     let vh1 = testItem.getValueHost('Field1');
+    //     expect(vh1).toBeInstanceOf(PropertyValueHost);
+    //     expect(vh1!.getName()).toBe('Field1');
+    //     expect(vh1!.getLabel()).toBe('Field 1');
+    //     expect(vh1!.getDataType()).toBeNull();
+    //     let ivh1 = vh1 as PropertyValueHost;
+    //     expect(ivh1.getValidator(ConditionType.RequireText)).toBeDefined();
 
-        // prove the error message was used.
+    //     // prove the error message was used.
 
-        ivh1.setValue(''); // will be Invalid
-        let result = ivh1.validate();
-        expect(result).toEqual(<ValueHostValidateResult>{
-            status: ValidationStatus.Invalid,
-            issuesFound: [
-                {
-                    errorCode: ConditionType.RequireText,
-                    valueHostName: 'Field1',
-                    severity: ValidationSeverity.Severe,    // due to required
-                    errorMessage: 'msg',
-                    summaryMessage: 'msg',
-                    doNotSave: true
-                }
-            ]
-        });
-    });    
+    //     ivh1.setValue(''); // will be Invalid
+    //     let result = ivh1.validate();
+    //     expect(result).toEqual(<ValueHostValidateResult>{
+    //         status: ValidationStatus.Invalid,
+    //         issuesFound: [
+    //             {
+    //                 errorCode: ConditionType.RequireText,
+    //                 valueHostName: 'Field1',
+    //                 severity: ValidationSeverity.Severe,    // due to required
+    //                 errorMessage: 'msg',
+    //                 summaryMessage: 'msg',
+    //                 doNotSave: true
+    //             }
+    //         ]
+    //     });
+    // });    
 });
 
 function testValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
@@ -1322,7 +1321,7 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
         expect(() => initialValueHost.getFromInstanceState('anything')).toThrow();  // deref error
     });            
 });
-describe('getValueHost, getValidatorsValueHost, getInputValueHost, getPropertyValueHost getCalcValueHost, getStaticValueHost', () => {
+describe('getValueHost, getValidatorsValueHost, getInputValueHost, getCalcValueHost, getStaticValueHost', () => {
     test('With 2 InputValueHostConfigs, get each with all functions. Expect null for Calc and Static', () => {
 
         let config1: InputValueHostConfig = {
@@ -1365,12 +1364,13 @@ describe('getValueHost, getValidatorsValueHost, getInputValueHost, getPropertyVa
         expect(() => vh6 = testItem.getInputValueHost('Field2')).not.toThrow();
         expect(vh6).toBeInstanceOf(InputValueHost);
         expect(vh6!.getName()).toBe('Field2');          
-        let vh7: IPropertyValueHost | null = null;
-        expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
-        expect(vh7).toBeNull();
-        let vh8: IPropertyValueHost | null = null;
-        expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
-        expect(vh8).toBeNull();                    
+        //!!!OBSOLETE
+        // let vh7: IPropertyValueHost | null = null;
+        // expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
+        // expect(vh7).toBeNull();
+        // let vh8: IPropertyValueHost | null = null;
+        // expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
+        // expect(vh8).toBeNull();                    
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field2')).not.toThrow();
         expect(vh9).toBeNull();
@@ -1414,13 +1414,14 @@ describe('getValueHost, getValidatorsValueHost, getInputValueHost, getPropertyVa
         expect(vh5).toBeNull();
         let vh6: IInputValueHost | null = null;
         expect(() => vh6 = testItem.getInputValueHost('Field2')).not.toThrow();
-        expect(vh6).toBeNull();        
-        let vh7: IPropertyValueHost | null = null;
-        expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
-        expect(vh7).toBeNull();
-        let vh8: IPropertyValueHost | null = null;
-        expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
-        expect(vh8).toBeNull();                
+        expect(vh6).toBeNull();  
+        //!!!OBSOLETE
+        // let vh7: IPropertyValueHost | null = null;
+        // expect(() => vh7 = testItem.getPropertyValueHost('Field1')).not.toThrow();
+        // expect(vh7).toBeNull();
+        // let vh8: IPropertyValueHost | null = null;
+        // expect(() => vh8 = testItem.getPropertyValueHost('Field2')).not.toThrow();
+        // expect(vh8).toBeNull();                
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field1')).not.toThrow();
         expect(vh9).toBeNull();
@@ -2919,9 +2920,10 @@ describe('toIValidationManager function', () => {
             getInputValueHost: function (valueHostName: string): IInputValueHost | null {
                 throw new Error("Function not implemented.");
             },
-            getPropertyValueHost: function (valueHostName: string): IPropertyValueHost | null {
-                throw new Error("Function not implemented.");
-            },
+            //!!!OBSOLETE
+            // getPropertyValueHost: function (valueHostName: string): IPropertyValueHost | null {
+            //     throw new Error("Function not implemented.");
+            // },
             getCalcValueHost: function (valueHostName: string): ICalcValueHost | null {
                 throw new Error("Function not implemented.");
             },
@@ -2993,10 +2995,10 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
             ConditionType.RegExp, (config) => new RegExpCondition(config));    
         // phase 1
         let builder = build(services);
-        builder.property('Property1').requireText();
+        builder.input('Property1').requireText();
 
         // phase 2
-        builder.startUILayerConfig({ convertPropertyToInput: true });
+        builder.startUILayerConfig();
         builder.input('Field2').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);
@@ -3034,9 +3036,9 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
             ConditionType.RegExp, (config) => new RegExpCondition(config));   
         // phase 1
         let builder = build(services);
-        builder.property('Property1').requireText();
+        builder.input('Property1').requireText();
         // phase 2
-        builder.startUILayerConfig({ convertPropertyToInput: true });
+        builder.startUILayerConfig();
         builder.input('Property1').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);

@@ -23,7 +23,6 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { IValidatableValueHostBase, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, UserSuppliedResultConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { createValidationServicesForTesting, registerDataTypeParsers } from "../../src/Support/createValidationServicesForTesting";
 import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
@@ -216,6 +215,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.valueHostsManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
+        expect(testItem!.getPropertyName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
         expect(testItem!.getDataType()).toBeNull();
         expect(testItem!.getValue()).toBeUndefined();
@@ -227,6 +227,30 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.getConversionErrorMessage()).toBeNull();
         expect(testItem!.getParserLookupKey()).toBeUndefined();
     });
+
+    test('constructor with Config.propertyName sets up getPropertyName correctly', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let testItem: InputValueHost | null = null;
+        expect(()=> testItem = new InputValueHost(vm, {
+            name: 'Field1',
+            propertyName: 'Prop1',
+            valueHostType: ValueHostType.Input,
+            validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null,
+                value: undefined
+            })).not.toThrow();
+
+        expect(testItem!.valueHostsManager).toBe(vm);
+
+        expect(testItem!.getName()).toBe('Field1');
+        expect(testItem!.getPropertyName()).toBe('Prop1');
+
+    });    
 });
 
 describe('setValue', () => {
@@ -1416,6 +1440,9 @@ describe('toIInputValueHost function', () => {
         getDataTypeLabel(): string {
             throw new Error("Method not implemented.");
         }
+        getPropertyName(): string {
+            return this.getName();
+        }        
 
         isChanged: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
@@ -1439,21 +1466,22 @@ describe('toIInputValueHost function', () => {
 
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
-    test('PropertyValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new PropertyValueHost(vm, {
-                name: 'Field1',
-                label: 'Label1',
-                validatorConfigs: []
-            },
-            {
-                name: 'Field1',
-                value: undefined,
-                issuesFound: null,
-                status: ValidationStatus.NotAttempted
-            });
-        expect(toIInputValueHost(testItem)).toBeNull();
-    });      
+    //!!!OBSOLETE
+    // test('PropertyValueHost return null.', () => {
+    //     let vm = new MockValidationManager(new MockValidationServices(false, false));
+    //     let testItem = new PropertyValueHost(vm, {
+    //             name: 'Field1',
+    //             label: 'Label1',
+    //             validatorConfigs: []
+    //         },
+    //         {
+    //             name: 'Field1',
+    //             value: undefined,
+    //             issuesFound: null,
+    //             status: ValidationStatus.NotAttempted
+    //         });
+    //     expect(toIInputValueHost(testItem)).toBeNull();
+    // });      
     test('StaticValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
         let testItem = new StaticValueHost(vm, {

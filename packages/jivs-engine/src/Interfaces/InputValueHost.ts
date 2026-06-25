@@ -90,6 +90,13 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
      * Returns the value from InputValueHostConfig.parserLookupKey.
      */
     getParserLookupKey(): string | null | undefined;
+
+    /**
+     * The actual property name on the model. If its the same as Config.name,
+     * this can be undefined.
+     * Helps mapping between model and valuehost.
+     */
+    getPropertyName(): string;        
 }
 /**
  * Just the data that is used to describe this input value.
@@ -149,6 +156,13 @@ export interface InputValueHostConfig extends ValidatorsValueHostBaseConfig {
      * or return null if no parser is appropriate
      */
     parserCreator?: (valueHost: IInputValueHost) => IDataTypeParser<any> | null;
+
+    /**
+     * The actual property name on the model. If its the same as Config.name,
+     * this can be undefined.
+     * Helps mapping between model and valuehost.
+     */
+    propertyName?: string;    
 }
 
 /**

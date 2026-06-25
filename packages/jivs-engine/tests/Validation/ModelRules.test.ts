@@ -20,10 +20,10 @@ class PersonModelRules extends RulesBase {
         super(services);
     }
     protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
-        builder.property('firstName', LookupKey.String).requireText();
-        builder.property('lastName', LookupKey.String).requireText();
+        builder.input('firstName', LookupKey.String).requireText();
+        builder.input('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {
-            builder.property('age', LookupKey.Integer);
+            builder.input('age', LookupKey.Integer);
         }
     }
 
@@ -40,7 +40,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         let config = rules.configure();
         // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
         config.valueHostConfigs.forEach(vhc => {
-            expect(vhc.valueHostType).toBe('Property');
+            expect(vhc.valueHostType).toBe('Input');
             expect(vhc.name).toMatch(/firstName|lastName/);
             let validators = (<InputValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();

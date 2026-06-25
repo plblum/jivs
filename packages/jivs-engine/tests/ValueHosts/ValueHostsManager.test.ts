@@ -941,7 +941,7 @@ describe('vh', () => {
         expect(vhm.vh.static('Field1')).toBeInstanceOf(StaticValueHost);
         expect(() => vhm.vh.calc('X')).toThrow(/unknown/);
         expect(() => vhm.vh.calc('Field1')).toThrow(/CalcValueHost/);
-        expect(() => vhm.vh.property('Field1')).toThrow(/PropertyValueHost/);
+//!!OBSOLETE        expect(() => vhm.vh.property('Field1')).toThrow(/PropertyValueHost/);
         expect(() => vhm.vh.input('Field1')).toThrow(/InputValueHost/);
     });
 });

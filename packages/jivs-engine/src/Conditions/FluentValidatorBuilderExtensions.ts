@@ -274,6 +274,8 @@ export function enableFluent(): void {
 }
 
 // --- Actual fluent functions -------
+// Each condition gets its own function that expects to have
+// 'this' as FluentValidatorBuilder and return this for the next in the chain.
 
 function dataTypeCheck(
     errorMessage?: string | null,

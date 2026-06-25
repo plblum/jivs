@@ -9,7 +9,7 @@ import { IValidationManager, ValidationManagerConfig } from "../Interfaces/Valid
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
+import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
 import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -18,8 +18,6 @@ import { IValidationServices } from "../Interfaces/ValidationServices";
 import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
-import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
-import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
 
@@ -78,37 +76,37 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
         let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Input, arg1, arg2, arg3);        
         return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, dataType, propsToUpdate);
     }
-
-    /**
-     * Fluent format to create a PropertyValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param valueHostName - the ValueHost name
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-     */
-    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
-    /**
-     * Fluent format to create a PropertyValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param valueHostName - the ValueHost name
-     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-     */
-    public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
-    /**
-     * Fluent format to create a PropertyValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-     */
-    public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
-    // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
-        let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Property, arg1, arg2, parameters);        
-        return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, propsToUpdate);
-    }
+//!!!OBSOLETE
+    // /**
+    //  * Fluent format to create a PropertyValueHostConfig.
+    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
+    //  * @param valueHostName - the ValueHost name
+    //  * @param dataType - optional and can be null. The value for ValueHost.dataType.
+    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
+    //  */
+    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
+    // /**
+    //  * Fluent format to create a PropertyValueHostConfig.
+    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
+    //  * @param valueHostName - the ValueHost name
+    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
+    //  */
+    // public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
+    // /**
+    //  * Fluent format to create a PropertyValueHostConfig.
+    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
+    //  * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
+    //  * You can omit the valueHostType property.
+    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
+    //  */
+    // public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
+    // // overload resolution
+    // public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder {
+    //     let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Property, arg1, arg2, parameters);        
+    //     return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, propsToUpdate);
+    // }
     //#endregion validation oriented ValueHost support
 
     /**

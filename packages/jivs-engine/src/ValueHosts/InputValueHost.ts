@@ -18,7 +18,6 @@ import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './Val
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { PropertyValueHost, hasIPropertyValueHostSpecificMembers } from './PropertyValueHost';
 import { IValidationManager } from '../Interfaces/ValidationManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { CodingError, ensureError } from '../Utilities/ErrorHandling';
@@ -336,6 +335,16 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     {
         return this.config.parserLookupKey;
     }
+
+    /**
+     * The actual property name on the model. If its the same as Config.name,
+     * this can be undefined.
+     * Helps mapping between model and valuehost.
+     */
+    public getPropertyName(): string
+    {
+        return this.config.propertyName ?? this.getName();
+    }    
 }
 
 /**
@@ -346,10 +355,8 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 export function toIInputValueHost(source: any): IInputValueHost | null {
     if (source instanceof InputValueHost)
         return source as IInputValueHost;
-    if (source instanceof PropertyValueHost)
-        return null;
+
     if (toIValidatorsValueHostBase(source) &&
-        !hasIPropertyValueHostSpecificMembers(source) &&
         hasIInputValueHostSpecificMembers(source)) {
         return source as IInputValueHost;
     }
