@@ -28,11 +28,11 @@ import { ConditionType } from './ConditionTypes';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/FieldValueHost';
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
 import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
 import { ConditionWithOneChildBase, ConditionWithOneChildBaseConfig } from './ConditionWithOneChildBase';
 

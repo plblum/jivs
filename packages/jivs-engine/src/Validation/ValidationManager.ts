@@ -12,9 +12,9 @@ import { type ValidationManagerInstanceState, type IValidationManager, type Vali
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
 import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
 import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';

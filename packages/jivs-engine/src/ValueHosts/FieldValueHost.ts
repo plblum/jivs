@@ -12,7 +12,7 @@ import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, SetInputValueOptions } from '../Interfaces/InputValueHost';
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, SetInputValueOptions } from '../Interfaces/FieldValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';

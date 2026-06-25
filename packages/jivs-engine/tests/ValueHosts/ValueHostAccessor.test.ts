@@ -3,7 +3,7 @@ import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager"
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 

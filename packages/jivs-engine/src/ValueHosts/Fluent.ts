@@ -137,7 +137,7 @@
 import { IDisposable } from './../Interfaces/General_Purpose';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
-import { InputValueHostConfig } from "../Interfaces/InputValueHost";
+import { InputValueHostConfig } from "../Interfaces/FieldValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';

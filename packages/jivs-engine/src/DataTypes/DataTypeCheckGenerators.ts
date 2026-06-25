@@ -3,7 +3,7 @@
  * @module DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */
 import { IConditionFactory, ICondition } from '../Interfaces/Conditions';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/FieldValueHost';
 import { IDataTypeCheckGenerator } from '../Interfaces/DataTypeCheckGenerator';
 import { LookupKey } from './LookupKeys';
 import { DataTypeCheckConditionConfig } from '../Conditions/ConcreteConditions';

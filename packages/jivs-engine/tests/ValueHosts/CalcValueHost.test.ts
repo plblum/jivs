@@ -10,7 +10,7 @@ import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";

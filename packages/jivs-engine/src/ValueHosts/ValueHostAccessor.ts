@@ -3,10 +3,10 @@
  */
 
 import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
+import { IInputValueHost } from "../Interfaces/FieldValueHost";
 import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { toIInputValueHost } from "./InputValueHost";
+import { toIInputValueHost } from "./FieldValueHost";
 import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
 import { IStaticValueHost } from "../Interfaces/StaticValueHost";
 import { ICalcValueHost } from "../Interfaces/CalcValueHost";

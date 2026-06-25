@@ -1,4 +1,4 @@
-import { InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHostGenerator } from "../../src/ValueHosts/FieldValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";

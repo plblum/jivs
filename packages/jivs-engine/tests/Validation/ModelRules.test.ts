@@ -5,7 +5,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 enableFluentConditions();

@@ -11,7 +11,7 @@
 // import { LookupKey } from "../../src/DataTypes/LookupKeys";
 // import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 // import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-// import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+// import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
 // import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 // import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 // import { ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";

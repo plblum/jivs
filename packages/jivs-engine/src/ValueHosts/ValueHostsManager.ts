@@ -15,7 +15,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerConfigChangedHandler } from '../Interfaces/ValueHostsManager';
-import { InputValueChangedHandler } from '../Interfaces/InputValueHost';
+import { InputValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 import { ValueHostAccessor } from './ValueHostAccessor';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';

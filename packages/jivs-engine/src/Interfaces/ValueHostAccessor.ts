@@ -5,7 +5,7 @@
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ICalcValueHost } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
-import { IInputValueHost } from "./InputValueHost";
+import { IInputValueHost } from "./FieldValueHost";
 import { IStaticValueHost } from "./StaticValueHost";
 import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHost } from "./ValueHost";

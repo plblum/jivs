@@ -3,7 +3,7 @@
  * @module Conditions/AbstractClasses/StringConditionBase
  */
 
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/FieldValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHost } from '../Interfaces/ValueHost';

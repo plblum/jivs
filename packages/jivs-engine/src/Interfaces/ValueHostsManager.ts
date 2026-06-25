@@ -8,7 +8,7 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IInputValueHostChangedCallback } from './InputValueHost';
+import { IInputValueHostChangedCallback } from './FieldValueHost';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 import { IDisposable } from './General_Purpose';

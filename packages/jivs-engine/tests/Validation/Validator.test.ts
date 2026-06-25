@@ -15,7 +15,7 @@ import { MockValidationManager, MockValidationServices, MockInputValueHost } fro
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
-import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
+import { IInputValueHost } from '../../src/Interfaces/FieldValueHost';
 import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';

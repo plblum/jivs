@@ -3,7 +3,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
+import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { NumberParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';

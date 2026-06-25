@@ -12,7 +12,7 @@ import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
-import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 

@@ -9,8 +9,8 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { IInputValueHost } from '../Interfaces/FieldValueHost';
+import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
 
 /**
  * ConditionConfig to use with InputValueConditionBase

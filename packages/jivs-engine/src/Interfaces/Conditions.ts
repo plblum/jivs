@@ -23,7 +23,7 @@
 
 import { IValueHost } from './ValueHost';
 import { IValidationServices } from './ValidationServices';
-import { IInputValueHost } from './InputValueHost';
+import { IInputValueHost } from './FieldValueHost';
 import { IValueHostsManager } from './ValueHostsManager';
 
 /**

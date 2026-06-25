@@ -6,7 +6,7 @@
 import { ICondition } from "./Conditions";
 import { IDataTypeCheckGenerator } from "./DataTypeCheckGenerator";
 import { IDataTypeService } from "./DataTypes";
-import { IInputValueHost } from "./InputValueHost";
+import { IInputValueHost } from "./FieldValueHost";
 import { IServicesAccessor } from "./Services";
 
 /**

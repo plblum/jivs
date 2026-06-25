@@ -3,7 +3,7 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";

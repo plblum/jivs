@@ -8,7 +8,7 @@
  */
 
 import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
-import { InputValueHostGenerator } from './InputValueHost';
+import { InputValueHostGenerator } from './FieldValueHost';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';

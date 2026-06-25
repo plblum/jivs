@@ -4,7 +4,7 @@ import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/Ev
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
-import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
     FluentValidatorConfig, FluentValidatorBuilder, FluentFactory, IFluentValidatorBuilder, FluentConditionBuilder, IFluentConditionBuilder,

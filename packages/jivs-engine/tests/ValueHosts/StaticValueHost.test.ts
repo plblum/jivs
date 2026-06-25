@@ -4,7 +4,7 @@ import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStora
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 

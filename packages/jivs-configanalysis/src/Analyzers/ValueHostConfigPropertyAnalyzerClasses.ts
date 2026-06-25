@@ -4,7 +4,7 @@
  */
 
 import { CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";

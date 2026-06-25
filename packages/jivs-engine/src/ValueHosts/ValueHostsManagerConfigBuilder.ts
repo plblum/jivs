@@ -4,7 +4,7 @@
  */
 
 import { ValueHostsManagerStartFluent } from "./Fluent";
-import { InputValueChangedHandler } from "../Interfaces/InputValueHost";
+import { InputValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';

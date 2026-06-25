@@ -2,7 +2,7 @@ import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerServic
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { createMockValidationManagerForMessageTokenResolver } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
-import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost } from "../../src/Interfaces/FieldValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";

@@ -4,7 +4,7 @@ import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Inte
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { PropertyValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/PropertyValueHost";
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { DataTypeParserService } from "@plblum/jivs-engine/build/Services/DataTypeParserService";

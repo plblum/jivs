@@ -31,7 +31,7 @@ import { ValueHostInstanceState } from './ValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
 import { IValidationServices } from './ValidationServices';
-import { IInputValueHost } from './InputValueHost';
+import { IInputValueHost } from './FieldValueHost';
 import { ValidationManagerConfigModifier } from '../Validation/ValidationManagerConfigModifier';
 
 /**

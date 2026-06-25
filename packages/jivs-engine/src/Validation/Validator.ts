@@ -27,7 +27,7 @@ import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIInputValueHost } from '../ValueHosts/FieldValueHost';
 import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
 import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';

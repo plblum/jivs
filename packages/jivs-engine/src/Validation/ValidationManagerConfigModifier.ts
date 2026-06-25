@@ -17,7 +17,7 @@ import { resolveErrorCode } from "../Utilities/Validation";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { InputValueHostConfig } from "../Interfaces/InputValueHost";
+import { InputValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
 

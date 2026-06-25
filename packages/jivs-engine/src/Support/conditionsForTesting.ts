@@ -20,7 +20,7 @@ import {
     IEvaluateConditionDuringEdits
 } from "../Interfaces/Conditions";
 import { IDisposable } from "../Interfaces/General_Purpose";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
+import { IInputValueHost } from "../Interfaces/FieldValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";

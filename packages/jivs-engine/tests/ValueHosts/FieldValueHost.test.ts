@@ -1,9 +1,9 @@
 import { RegExpConditionConfig, RegExpCondition } from "../../src/Conditions/ConcreteConditions";
-import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/FieldValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";

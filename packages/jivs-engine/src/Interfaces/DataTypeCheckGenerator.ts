@@ -4,7 +4,7 @@
  */
 
 import { IConditionFactory, ICondition } from "./Conditions";
-import { IInputValueHost } from "./InputValueHost";
+import { IInputValueHost } from "./FieldValueHost";
 
 /**
  * Used to automatically generate a Condition used for Data Type Check

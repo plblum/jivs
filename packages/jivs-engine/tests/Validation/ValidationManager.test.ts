@@ -5,7 +5,7 @@ import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/I
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ModelValidatorsValueHost, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
+import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/FieldValueHost';
 import { IssueFound, ValidationSeverity, ValidationState, ValidateOptions, ValidationStatus, ValueHostValidateResult } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
@@ -28,7 +28,7 @@ import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
+import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/FieldValueHost';
 import { RegExpConditionConfig, RegExpCondition, EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ConcreteConditions';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';

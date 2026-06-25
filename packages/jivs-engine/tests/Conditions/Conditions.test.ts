@@ -66,7 +66,7 @@ import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/Cond
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { CodingError, InvalidTypeError } from '../../src/Utilities/ErrorHandling';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
-import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
+import { IInputValueHost } from '../../src/Interfaces/FieldValueHost';
 import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
 
 function setupServicesAndVM(): {

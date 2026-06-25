@@ -6,7 +6,7 @@ import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from '
 import { ValidationManagerConfig, IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { SetInputValueOptions } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
+import { SetInputValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';

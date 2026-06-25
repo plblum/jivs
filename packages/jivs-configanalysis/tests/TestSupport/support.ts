@@ -1,5 +1,5 @@
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";

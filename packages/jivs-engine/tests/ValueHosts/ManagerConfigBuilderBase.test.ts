@@ -26,7 +26,7 @@ import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplace
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {

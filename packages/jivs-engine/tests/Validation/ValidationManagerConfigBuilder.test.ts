@@ -10,7 +10,7 @@ import { RegExpConditionConfig, RequireTextCondition } from '../../src/Condition
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
-import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { InputValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
