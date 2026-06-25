@@ -293,7 +293,7 @@ export function finishPartialValidatableValueHostBaseInstanceState(partialState:
  * These are the default values
  * name: 'Test'
  * Value: undefined
- * InputValue: undefined
+ * TextValue: undefined
  * IssuesFound: null,
  * ValidationStatus: NotAttempted
  * @returns An object with all of the parts that were setup including 

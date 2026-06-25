@@ -361,7 +361,7 @@ export class Validator implements IValidator {
             if (options.duringEdit && this.supportsDuringEdit()) {
                 let ivh = toIFieldValueHost(this.valueHost);
                 if (ivh) {
-                    let text = ivh.getInputValue();
+                    let text = ivh.getTextValue();
                     if (typeof text === 'string') {
                         this.logger.message(LoggingLevel.Debug, () => 'Using DuringEdit validation');
 
@@ -612,7 +612,7 @@ export class Validator implements IValidator {
         {
             let ivh = toIFieldValueHost(valueHost);
             if (ivh)
-                tlv[1].associatedValue = ivh?.getInputValue();
+                tlv[1].associatedValue = ivh?.getTextValue();
         }
         if (toIMessageTokenSource(this.condition))   // since we cannot test for the IMessageTokenSource interface at runtime
             tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));

@@ -44,13 +44,13 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * ## Without Business Logic
  * ```ts
  * let builder = build(createValidatorServices('client'));
- * builder.input('Field1', LookupKey.String).requireText();
+ * builder.field('Field1', LookupKey.String).requireText();
  * builder.static('Field2', LookupKey.Date);
- * builder.input('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
+ * builder.field('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * // later when you need to modify vm:
  * let modifier = vm.startModifying();
- * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+ * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
  * 
@@ -63,14 +63,14 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
  * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
- * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
- * builder.input('Field1', null { label: 'Product name' })
- * builder.input('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
+ * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
+ * builder.field('Field1', null { label: 'Product name' })
+ * builder.field('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
  * 
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * // later when you need to modify vm:
  * let modifier = vm.startModifying();
- * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+ * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
  * 
@@ -85,14 +85,14 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
  * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
- * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
- * builder.input('Field1', null { label: 'Product name' })
- * builder.input('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
+ * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
+ * builder.field('Field1', null { label: 'Product name' })
+ * builder.field('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
  * 
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * // later when you need to modify vm:
  * let modifier = vm.startModifying();
- * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+ * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
  * ## Combining a condition from the UI with the conditions from the business logic
@@ -105,15 +105,15 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * - Make the business logic's condition optional by wrapping it in a WhenCondition.
  *   ```ts
  *   // business logic
- *   builder.input('Field1', LookupKey.String).notNull();
+ *   builder.field('Field1', LookupKey.String).notNull();
  *   // UI wants it to look like this:
- *   builder.input('Field1', LookupKey.String)
+ *   builder.field('Field1', LookupKey.String)
  *      .when(
  *          (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
  *          (childBuilder)=> childBuilder.notNull()
  *    );
  *   // using the combineConditionWith() function
- *   builder.input('Field1').combineConditionWith(
+ *   builder.field('Field1').combineConditionWith(
  *      ConditionType.NotNull, // error code
  *      CombineUsingCondition.When,
  *      (combiningBuilder)=> combiningBuilder.equalToValue('YES', 'Field2'));
@@ -121,13 +121,13 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * - All conditions must evaluate as a match using the AllCondition
  *   ```ts
  *   // business logic
- *   builder.input('Field1', LookupKey.String).regexp(/^[A-Z]+$/i);
+ *   builder.field('Field1', LookupKey.String).regexp(/^[A-Z]+$/i);
  *   // UI wants it to look like this:
- *   builder.input('Field1', LookupKey.String)
+ *   builder.field('Field1', LookupKey.String)
  *     .all((childrenBuilder)=> childrenBuilder.regexp(/^[A-Z]+$/i).stringLength(10));
  * 
  *   // using the combineConditionWith() function
- *   builder.input('Field1').combineConditionWith(
+ *   builder.field('Field1').combineConditionWith(
  *      ConditionType.NotNull, // error code
  *      CombineUsingCondition.All,
  *      (combiningBuilder)=> combiningBuilder.stringLength(10));
@@ -135,13 +135,13 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * - Either condition can evaluate as a match using the AnyCondition
  * - The UI's condition is a complete replacement for the business logic's condition.
  *   // business logic
- *   builder.input('Field1', LookupKey.String).notNull();
+ *   builder.field('Field1', LookupKey.String).notNull();
  *   // UI wants it to look like this:
- *   builder.input('Field1', LookupKey.String)
+ *   builder.field('Field1', LookupKey.String)
  *     .all((childrenBuilder)=> childrenBuilder.requireText());   // because requireText() includes notNull() 
  * 
  *   // using the replaceConditionWith() function
- *   builder.input('Field1').replaceConditionWith(
+ *   builder.field('Field1').replaceConditionWith(
  *      ConditionType.NotNull, // error code
  *      (replacementBuilder)=> replacementBuilder.requireText());
  *  ```
@@ -437,7 +437,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             if ((valueHostConfig! as ValidatorsValueHostBaseConfig).validatorConfigs == null) // null or undefined
                 valueHostType = ValueHostType.Static;
             else
-                valueHostType = ValueHostType.Input;
+                valueHostType = ValueHostType.Field;
 
         if (valueHostType !== expectedType)
             throw new CodingError(`ValueHost name "${valueHostConfig!.name}" is not type=${expectedType}.`);
@@ -518,7 +518,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * Protected because ValueHostManager does not support FieldValueHost. 
      * ValidationManager offers a public interface.
      * @param valueHostType - the ValueHostType to configure
-     * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
+     * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
      * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
      * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost

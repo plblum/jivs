@@ -1,6 +1,6 @@
 /**
  * ValidationManager is the central object for using this system.
- * It is where you describe the shape of your inputs and their validation rules.
+ * It is where you describe the shape of your fields and their validation rules.
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
@@ -23,7 +23,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
  * ValidationManager is the central object for using this system.
- * It is where you describe the shape of your inputs and their validation rules.
+ * It is where you describe the shape of your fields and their validation rules.
  * Once setup, it keeps a list of ValueHost objects that represent the elements of your model
  * or form, even if they don't need validation.
  * 
@@ -90,7 +90,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      *   onValidationStateChanged: (validationManager, validationState)=> { },
      *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
-     *   onInputValueChanged: (valueHost, oldValue) => { }
+     *   onTextValueChanged: (valueHost, oldValue) => { }
      *   onConfigChanged: (valueHost, valueHostConfig) => { }
      * }
      * ```
@@ -132,7 +132,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * // later when you need to modify vm:
      * let modifier = vm.startModifying();
      * // supply changes to the ValueHostConfigs
-     * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+     * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
      * // merge those changes into the ValidationManager
      * modifier.apply(); // consider modifier disposed at this point 
      * ```
@@ -154,7 +154,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     /**
      * Retrieves the FieldValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the IFieldValueHost.name property
-     * Returns the instance or null if not found or found a non-input valuehost.
+     * Returns the instance or null if not found or found a non-field valuehost.
      */
     public getFieldValueHost(valueHostName: ValueHostName): IFieldValueHost | null {
         return toIFieldValueHost(this.getValueHost(valueHostName));
@@ -409,7 +409,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null {
+    public getIssuesForField(valueHostName: ValueHostName): Array<IssueFound> | null {
         let vh = this.getValueHost(valueHostName);
         if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();

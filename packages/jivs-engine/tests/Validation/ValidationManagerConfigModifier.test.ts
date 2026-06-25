@@ -54,52 +54,52 @@ class Publicify_ValidationManagerConfigModifier extends ValidationManagerConfigM
     }
 
 }
-describe('input()', () => {
-    test('Existing Field1 of input gets updated', () => {
+describe('field()', () => {
+    test('Existing Field1 of field gets updated', () => {
         let vmConfig = createVMConfig();
         vmConfig.valueHostConfigs.push({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.Integer
         });
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input('Field1', null, { label: 'Field 1' });
+        let testItem = modifier.field('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Integer,
             validatorConfigs: []
         });
     });        
-    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input('Field1', null, { label: 'Field 1' });
+        let testItem = modifier.field('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             label: 'Field 1',
             validatorConfigs: []
         });
     });
-    test('Name, data type supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Name, data type supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input('Field1', 'Test');
+        let testItem = modifier.field('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: 'Test',
             validatorConfigs: []
@@ -108,15 +108,15 @@ describe('input()', () => {
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual(expected);
     });
-    test('Name supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Name supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input('Field1');
+        let testItem = modifier.field('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -129,10 +129,10 @@ describe('input()', () => {
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = modifier.field({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -147,11 +147,11 @@ describe('input()', () => {
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem = modifier.input('Field1', { label: 'Field 1' });
+        let testItem = modifier.field('Field1', { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             label: 'Field 1',
             validatorConfigs: []
@@ -162,9 +162,9 @@ describe('input()', () => {
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        expect(() => modifier.input('Field1', false as any)).toThrow(/Second parameter/);
-        expect(() => modifier.input('Field1', 10 as any)).toThrow(/Second parameter/);
-        expect(() => modifier.input('Field1', false as any)).toThrow(/Second parameter/);        
+        expect(() => modifier.field('Field1', false as any)).toThrow(/Second parameter/);
+        expect(() => modifier.field('Field1', 10 as any)).toThrow(/Second parameter/);
+        expect(() => modifier.field('Field1', false as any)).toThrow(/Second parameter/);        
     });        
     test('Add same name twice throws', () => {
         let vmConfig = createVMConfig();
@@ -172,27 +172,27 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
 
-        let testItem = modifier.input('Field1');
-        expect(() => modifier.input('Field1')).toThrow(/already defined/);
+        let testItem = modifier.field('Field1');
+        expect(() => modifier.field('Field1')).toThrow(/already defined/);
     });
-    test('Add 2 inputs, 1 non-input. All valid and generates 3 ValueHostConfigs in vmConfig', () => {
+    test('Add 2 fields, 1 non-field. All valid and generates 3 ValueHostConfigs in vmConfig', () => {
         let vmConfig = createVMConfig();
 
         let vm = new Publicify_ValidationManager(vmConfig);
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
-        let testItem1 = modifier.input('Field1');
+        let testItem1 = modifier.field('Field1');
         expect(testItem1).toBeInstanceOf(FluentValidatorBuilder);
         let expected1 = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: []
         };
         expect(testItem1.parentConfig).toEqual(expected1);
-        let testItem2 = modifier.input('Field2');
+        let testItem2 = modifier.field('Field2');
         expect(testItem2).toBeInstanceOf(FluentValidatorBuilder);
         let expected2 = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field2',
             validatorConfigs: []
         };
@@ -212,13 +212,13 @@ describe('input()', () => {
         let vm = new Publicify_ValidationManager(createVMConfig());
         let testItem = new Publicify_ValidationManagerConfigModifier(vm);
 
-        expect(() => testItem.input(null!)).toThrow('arg1');
+        expect(() => testItem.field(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
         let vm = new Publicify_ValidationManager(createVMConfig());
         let testItem = new Publicify_ValidationManagerConfigModifier(vm);
-        expect(() => testItem.input(100 as any)).toThrow('name could not be identified.');
+        expect(() => testItem.field(100 as any)).toThrow('name could not be identified.');
     });
 });
 
@@ -401,7 +401,7 @@ describe('updateValidator', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1')
+        let testItem = builder.field('Field1')
             .requireText(null, 'OriginalError');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
@@ -413,7 +413,7 @@ describe('updateValidator', () => {
             });
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -432,7 +432,7 @@ describe('updateValidator', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').requireText(null, 'OriginalError');
+        let testItem = builder.field('Field1').requireText(null, 'OriginalError');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         modifier.updateValidator('Field1', ConditionType.RequireText,
@@ -444,7 +444,7 @@ describe('updateValidator', () => {
             });
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -474,7 +474,7 @@ describe('updateValidator', () => {
     test('With no matching errorCode, throws', () => {
         let vmConfig = createVMConfig();
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1');
+        let testItem = builder.field('Field1');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         expect(() => modifier.updateValidator('Field1', 'ERRORCODE',
@@ -487,14 +487,14 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1');
+        let testItem = builder.field('Field1');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         modifier.addValidatorsTo('Field1').requireText(null, 'RequireMessage');
         modifier.apply();
 
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -508,14 +508,14 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1');
+        let testItem = builder.field('Field1');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         modifier.addValidatorsTo('Field1').requireText().regExp('\\d');
         modifier.apply();
 
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -549,13 +549,13 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').requireText();
+        let testItem = builder.field('Field1').requireText();
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         expect(() => modifier.addValidatorsTo('Field1').requireText(null, 'Required')).not.toThrow();
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -569,7 +569,7 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').requireText({}, null, { errorCode: 'ERRORCODE' });
+        let testItem = builder.field('Field1').requireText({}, null, { errorCode: 'ERRORCODE' });
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         expect(() => modifier.addValidatorsTo('Field1').notNull(null, {
@@ -579,7 +579,7 @@ describe('addValidatorsTo', () => {
         })).not.toThrow();
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -600,7 +600,7 @@ describe('combineWithRule', () => {
         test('Existing and new condition appear as the new value of ValidatorConfig within AllMatchCondition', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -616,7 +616,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -639,7 +639,7 @@ describe('combineWithRule', () => {
         test('New condition replaces existing and errorCode is set to the original condition', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -653,7 +653,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -669,7 +669,7 @@ describe('combineWithRule', () => {
         test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -682,7 +682,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     conditionConfig: {
@@ -697,7 +697,7 @@ describe('combineWithRule', () => {
         test('CombineUsingCondition.All', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -713,7 +713,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -735,7 +735,7 @@ describe('combineWithRule', () => {
         test('CombineUsingCondition.When', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -751,7 +751,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -773,7 +773,7 @@ describe('combineWithRule', () => {
         test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
             let vmConfig = createVMConfig();
             let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
@@ -787,7 +787,7 @@ describe('combineWithRule', () => {
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
             expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     conditionConfig: {
@@ -805,7 +805,7 @@ describe('replaceRule', () => {
     test('Using builder to create replacement replaces and errorCode is set to the original condition', () => {
         let vmConfig = createVMConfig();
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText();
+        builder.field('Field1').requireText();
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
 
@@ -820,7 +820,7 @@ describe('replaceRule', () => {
         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
         expect(updateValueHostConfig).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 errorCode: ConditionType.RequireText,
@@ -835,7 +835,7 @@ describe('replaceRule', () => {
     test('Using ConditionConfig as the replacement replaces and errorCode is set to the original condition', () => {
         let vmConfig = createVMConfig();
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText();
+        builder.field('Field1').requireText();
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
 
@@ -850,7 +850,7 @@ describe('replaceRule', () => {
         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
         expect(updateValueHostConfig).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 errorCode: ConditionType.RequireText,

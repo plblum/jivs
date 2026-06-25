@@ -112,7 +112,7 @@ describe('Callbacks get and set', () => {
         expect(result.onValueChanged).toBe(replacementHandler);
     });
     
-    test('onInputValueChanged', () => {
+    test('onTextValueChanged', () => {
         function handler(valueHost: IValueHost, oldValue: any): void
         {
             
@@ -125,14 +125,14 @@ describe('Callbacks get and set', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
-            onInputValueChanged: handler
+            onTextValueChanged: handler
         };
         let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onInputValueChanged).toBe(handler);
-        testItem.onInputValueChanged = replacementHandler;
-        expect(testItem.onInputValueChanged).toBe(replacementHandler);
+        expect(testItem.onTextValueChanged).toBe(handler);
+        testItem.onTextValueChanged = replacementHandler;
+        expect(testItem.onTextValueChanged).toBe(replacementHandler);
         let result = testItem.complete();
-        expect(result.onInputValueChanged).toBe(replacementHandler);
+        expect(result.onTextValueChanged).toBe(replacementHandler);
     });
     
     

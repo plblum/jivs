@@ -5,7 +5,6 @@ import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost"
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { PropertyValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/PropertyValueHost";
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { DataTypeParserService } from "@plblum/jivs-engine/build/Services/DataTypeParserService";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
@@ -110,9 +109,9 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         expect(setup.results.properties).toHaveLength(0);
     });    
-    test('should not add a config issue when valueHostType is Input', () => {
+    test('should not add a config issue when valueHostType is Field', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             validatorConfigs: [],
@@ -130,25 +129,26 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         expect(setup.results.properties).toHaveLength(0);
     });
     // no error for ValueHostType.Static
-    test('should not add a config issue when valueHostType is Property', () => {
-        const testValueHostConfig: PropertyValueHostConfig = {
-            valueHostType: ValueHostType.Property,
-            name: 'testValueHost',
-            dataType: LookupKey.Number,
-            validatorConfigs: [],   
-        };
-        // let services = createServices();
-        // let testItem = setupTestItem(services, true);
+    //!!!OBSOLETE
+    // test('should not add a config issue when valueHostType is Property', () => {
+    //     const testValueHostConfig: PropertyValueHostConfig = {
+    //         valueHostType: ValueHostType.Property,
+    //         name: 'testValueHost',
+    //         dataType: LookupKey.Number,
+    //         validatorConfigs: [],   
+    //     };
+    //     // let services = createServices();
+    //     // let testItem = setupTestItem(services, true);
 
-        // executeGatherInValueHostConfig(testItem, testValueHostConfig, 1, 0);
-        // let ci = checkConfigIssue(testItem, 0, 'testValueHost');
-        // expect(ci.properties).toHaveLength(0);
-        let services = createServices();
-        let setup = setupForTheseTests(services, testValueHostConfig);
-        let testItem = new ValueHostTypePropertyAnalyzer();
-        testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        expect(setup.results.properties).toHaveLength(0);
-    });    
+    //     // executeGatherInValueHostConfig(testItem, testValueHostConfig, 1, 0);
+    //     // let ci = checkConfigIssue(testItem, 0, 'testValueHost');
+    //     // expect(ci.properties).toHaveLength(0);
+    //     let services = createServices();
+    //     let setup = setupForTheseTests(services, testValueHostConfig);
+    //     let testItem = new ValueHostTypePropertyAnalyzer();
+    //     testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
+    //     expect(setup.results.properties).toHaveLength(0);
+    // });    
 });
 
 describe('ValueHostNamePropertyAnalyzer class', () => {
@@ -428,7 +428,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // NOTE: This uses AnalysisResultsHelper.checkLookupKeyProperty() which has a full suite of tests
     test('parserLookupKey is null results in no propertyIssues for that property. No other declared property has an error so the total valueHostResults = 0', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             parserLookupKey: null,
@@ -446,7 +446,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // same but with undefined
     test('parserLookupKey is undefined results in no propertyIssues for that property. No other declared property has an error so the total valueHostResults = 0', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             parserLookupKey: undefined,
@@ -464,7 +464,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // pass in a parserLookupKey that is unknown, but not null
     test('parserLookupKey is custom without a fallback results in a propertyIssue for that property. No other declared property has an error so the total valueHostResults = 1', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             parserLookupKey: 'custom',
@@ -483,7 +483,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // pass in a parserLookupKey that is unknown, but not null
     test('parserLookupKey is custom but has a LookupKeyFallback that is registered results in a propertyIssue for that property', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             parserLookupKey: 'custom',
@@ -505,7 +505,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
     // register a parser and use its lookupKey. Should not result in a PropertyCAResult
     test('parserLookupKey is known results in no PropertyCAResult for that property. No other declared property has an error so the total valueHostResults = 0', () => {
         const testValueHostConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'testValueHost',
             dataType: LookupKey.Number,
             parserLookupKey: LookupKey.Number,  // expecting to use NumberParser

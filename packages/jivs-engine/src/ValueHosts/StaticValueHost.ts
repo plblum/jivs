@@ -41,7 +41,7 @@ export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, Static
 /**
  * Supports StaticValueHost class. Used when the Config.valueHostType = ValueHostType.Static
  * or when the Type property is null/undefined and there are no ValidatorsValueHostBase-specific
- * properties, like ValidationConfigs or InputValue.
+ * properties, like validationConfigs.
  */
 export class StaticValueHostGenerator extends ValueHostBaseGenerator {
 

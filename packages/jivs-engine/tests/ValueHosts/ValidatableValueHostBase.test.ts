@@ -2228,13 +2228,13 @@ describe('toIValidatableValueHostBase function', () => {
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }
-        getInputValue() {
+        getTextValue() : string | undefined {
             throw new Error("Method not implemented.");
         }
-        setInputValue(value: any, options?: SetValueOptions | undefined): void {
+        setTextValue(textValue: string | undefined, options?: SetValueOptions | undefined): void {
             throw new Error("Method not implemented.");
         }
-        setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
+        setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions | undefined): void {
             throw new Error("Method not implemented.");
         }
         otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
@@ -2275,7 +2275,7 @@ describe('toIValidatableValueHostBase function', () => {
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }
-        requiresInput: boolean = false;
+        required: boolean = false;
         getName(): string {
             throw new Error("Method not implemented.");
         }
@@ -2343,7 +2343,7 @@ describe('toIValidatableValueHostBaseCallbacks function', () => {
     class TestIValidatableValueHostBaseCallbacksImplementation implements IValidatableValueHostBaseCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
-        onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
+        onTextValueChanged(vh: IValidatableValueHostBase, old: any) { }
         onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {

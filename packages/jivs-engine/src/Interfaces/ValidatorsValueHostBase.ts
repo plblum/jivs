@@ -18,7 +18,7 @@ export interface IValidatorsValueHostBase extends IValidatableValueHostBase {
     getValidator(errorCode: string): IValidator | null;
 }
 /**
- * Just the data that is used to describe this input value.
+ * Just the data that is used to describe this ValueHost.
  * It should not contain any supporting functions or services.
  * It should be generatable from JSON, and simply gets typed to ValidatorsValueHostBaseConfig.
  * This provides the backing data for each ValidatorsValueHostBase.

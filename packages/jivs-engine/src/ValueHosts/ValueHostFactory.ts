@@ -124,7 +124,7 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 //  * FieldValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
 //  * which includes generators for both FieldValueHost and PropertyValueHost. 
 //  * The two are very similar and based on the same class, ValidatorsValueHostBase.
-//  * Those are meant for different scenarios: Input for the UI and Property for business logic.
+//  * Those are meant for different scenarios: Field for the UI and Property for business logic.
 //  * By design, this factory knows that when it is asked to generate a PropertyValueHost,
 //  * it switches to the FieldValueHost.
 //  */
@@ -142,7 +142,7 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 
 //     public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
 //         if (this._propertyValueHostGenerator.canCreate(config))
-//             config = { ...config, valueHostType: ValueHostType.Input }; // don't modify the original
+//             config = { ...config, valueHostType: ValueHostType.Field }; // don't modify the original
 //         return super.create(valueHostsManager, config, state);
 //     }
 
@@ -154,7 +154,7 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
 //  * PropertyValueHostFactory is preferred over the default supplied by ValidationServices.valueHostFactory
 //  * which includes generators for both FieldValueHost and PropertyValueHost. 
 //  * The two are very similar and based on the same class, ValidatorsValueHostBase.
-//  * Those are meant for different scenarios: Input for the UI and Property for business logic.
+//  * Those are meant for different scenarios: Field for the UI and Property for business logic.
 //  * By design, this factory knows that when it is asked to generate a FieldValueHost,
 //  * it switches to the PropertyValueHost.
 //  */

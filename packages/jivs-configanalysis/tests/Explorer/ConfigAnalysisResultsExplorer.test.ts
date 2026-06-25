@@ -4015,7 +4015,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.input('NewField', LookupKey.Date, 
+            builder.field('NewField', LookupKey.Date, 
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
                 }
@@ -4041,7 +4041,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.input('NewField', LookupKey.Date,
+            builder.field('NewField', LookupKey.Date,
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
                 }
@@ -4072,7 +4072,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            builder.field('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
             let explorer = analyze(builder);
             explorer.reportToConsole({ severities: [CAIssueSeverity.error, null], features: [CAFeature.l10nProperty], skipChildrenIfParentMismatch: false }, false, true, 2);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
@@ -4096,7 +4096,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            builder.field('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
             let explorer = analyze(builder);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).not.toThrow();
         });
@@ -4112,7 +4112,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 (config) => new LessThanOrEqualValueCondition(config));
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
-            builder.input('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
+            builder.field('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
                 conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
             });
             let explorer = analyze(builder);

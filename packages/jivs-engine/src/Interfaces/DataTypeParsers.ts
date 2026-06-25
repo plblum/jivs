@@ -20,7 +20,7 @@ import { DataTypeResolution } from './DataTypes';
  * All 3 would be registered in the DataTypeParserService, and the first whose support() function
  * returns true will be expected to fully handle the text.
  * 
- * The parser is associated with FieldValueHost.setInputValue specifically. It is supplied
+ * The parser is associated with FieldValueHost.setTextValue specifically. It is supplied
  * on the setValueOptions object's parserDataType or parser properties. When the parserDataType
  * is used, the DataTypeParserService will be used to find the appropriate parser.
  * When not supplied, parsing will try to find a parser whose datatype is the same as the

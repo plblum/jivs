@@ -24,11 +24,11 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../Interfa
  * ```ts
  * let ivh = vm.getValueHost("valuehostname") as IFieldValueHost;
  * if (ivh)
- *    x = ivh.getInputValue();
+ *    x = ivh.getTextValue();
  * ```
  * The improved syntax:
  * ```ts
- * x = vm.vh.input("valuehostname").getInputValue();
+ * x = vm.vh.field("valuehostname").getTextValue();
  * ```
  * A key difference is that getValueHost may return null. The ValueHostAccessor treats
  * unknown valuehosts and those that don't typecast correctly as exceptions.
@@ -92,7 +92,7 @@ export class ValueHostAccessor implements IValueHostAccessor
      * the valueHostName is unknown or not an FieldValueHost.
      * @param valueHostName 
      */
-    public input(valueHostName: ValueHostName): IFieldValueHost
+    public field(valueHostName: ValueHostName): IFieldValueHost
     {
         return this.ensureCorrectValueHost(valueHostName, toIFieldValueHost, 'FieldValueHost');
     }

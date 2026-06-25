@@ -27,8 +27,8 @@ export interface StringConditionBaseConfig extends OneValueConditionBaseConfig {
     /**
      * Removes leading and trailing whitespace before evaluating the string.
      * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
+     * comes from the text value, which is actively being edited.
+     * Your parser that moves data from text to native values is expected
      * to do its own trimming, leaving the DuringEdit = false no need to trim.
      */
     trim?: boolean;    

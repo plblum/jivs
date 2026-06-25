@@ -938,7 +938,7 @@ describe('Validator.validate', () => {
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 enablerConfig: <RequireTextConditionConfig>{
-                // the input value is 'ABC', which causes this condition to return Match
+                // the text value is 'ABC', which causes this condition to return Match
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },
@@ -978,12 +978,12 @@ describe('Validator.validate', () => {
     });
 
     function testDuringEditIsTrue(configChanges: Partial<ValidatorConfig>,
-        inputValue: string, 
+        textValue: string, 
         loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
-        setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
+        setup.valueHost1.setTextValue(textValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({ duringEdit: true})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -1138,7 +1138,7 @@ describe('getValuesForTokens', () => {
                 valueHostName: null
             }
         });
-        setup.valueHost1.setInputValue('Value1');
+        setup.valueHost1.setTextValue('Value1');
         let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
@@ -1170,7 +1170,7 @@ describe('getValuesForTokens', () => {
         });
         (setup.services.conditionFactory as ConditionFactory).register<RangeConditionConfig>(
             ConditionType.RegExp, (config) => new RangeCondition(config));                
-        setup.valueHost1.setInputValue('C');
+        setup.valueHost1.setTextValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();

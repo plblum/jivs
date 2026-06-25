@@ -13,7 +13,7 @@ describe('EmailAddressCondition tests', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
         let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey);
+        builder.field('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
         let vh = vm.getFieldValueHost('Field1')!;
@@ -47,7 +47,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);        
         let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey);
+        builder.field('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
         let vh = vm.getFieldValueHost('Field1')!;
@@ -61,7 +61,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
         let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey).emailAddress();
+        builder.field('Field1', emailAddressLookupKey).emailAddress();
 
         let vm = new ValidationManager(builder);
         let vh = vm.getFieldValueHost('Field1')!;

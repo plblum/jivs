@@ -563,7 +563,7 @@ export function registerDataTypeComparers(dtcs: DataTypeComparerService): void
  * Browser: an input's onchanged event.
  * Server: a form's inputs are posted back as strings.
  * 
- * When you call FieldValueHost.setInputValue("value"), it uses a parser to
+ * When you call FieldValueHost.setTextValue("value"), it uses a parser to
  * convert the string into the native value, available from valueHost.getValue().
  * If parsing fails, getValue returns undefined and the DataTypeCheckCondition
  * used in validation will report an error to the user.
@@ -740,10 +740,10 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
 
 /**
  * Automatically generate Data Type Check conditions - conditions that
- * determine if the Input value can be safely transferred into the native value.
+ * determine if the text value can be safely transferred into the native value.
  * The system using Jivs has the responsibility to make that transfer,
  * often using conversion code, and let Jivs know by passing both
- * Input value and resulting Native value through an FieldValueHost.setValues() function.
+ * Text value and resulting Native value through an FieldValueHost.setValues() function.
  * When the transfer fails, still call setValues() passing 'undefined' for the native value.
  * 
  * By default, all data types use the DataTypeCheckCondition, which simply
@@ -751,7 +751,7 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
  * 
  * Suppose you have a string as a native value. Your transfer code may elect to
  * convert the string without taking any action beyond trimming spaces. 
- * In this case, you may want to create a regular expression to parse the input value
+ * In this case, you may want to create a regular expression to parse the text value
  * and see if the content conforms to the rules.
  * 
  * See \examples\EmailAddressDataType.ts for example.
@@ -819,11 +819,11 @@ export function createConfigMergeServices(vs: ValidationServices): void {
     
     // That function can return one of those rule strings or an actual value.
     // Here's how we used the function to change the value of 'valueHostType' from
-    // 'Property' to 'Input' in the default configuration:
+    // 'Property' to 'Field' in the default configuration:
     // vs.valueHostConfigMergeService.setPropertyConflictRule('valueHostType', 
     //     (source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity) => {
-    //         if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
-    //             return { useValue: ValueHostType.Input };
+    //         if (source.valueHostType === ValueHostType.Field && destination.valueHostType === ValueHostType.Property)
+    //             return { useValue: ValueHostType.Field };
     //         return { useAction: 'nochange' };
     //     });
 

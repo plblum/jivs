@@ -100,7 +100,7 @@ describe('Demonstrate the results from various use cases', () => {
             "config": {
             "label": "Start date",
             "name": "startDate",
-            "valueHostType": "Input",
+            "valueHostType": "Field",
             "validatorConfigs": [
                 {
                 "errorCode": "NumOfDays",
@@ -218,7 +218,7 @@ describe('Demonstrate the results from various use cases', () => {
             "config": {
             "label": "End date",
             "name": "endDate",
-            "valueHostType": "Input",
+            "valueHostType": "Field",
             "validatorConfigs": []
             },
             "validatorResults": []
@@ -263,7 +263,7 @@ describe('Demonstrate the results from various use cases', () => {
             
         // Create a builder with a single valueHost and a single condition
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
-            builder.input('BirthDate', LookupKey.Date, {
+            builder.field('BirthDate', LookupKey.Date, {
                 parserLookupKey: LookupKey.Date
             }).lessThanOrEqualValue(new Date(), {
                 conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
@@ -562,7 +562,7 @@ describe('Demonstrate the results from various use cases', () => {
         // }));
         
         let builder = createConfiguration(services);
-        builder.input('NewField', LookupKey.Date, 
+        builder.field('NewField', LookupKey.Date, 
             {
                 parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
             }
@@ -657,7 +657,7 @@ describe('Demonstrate the results from various use cases', () => {
             });
 
         let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder
-        builder.input('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
+        builder.field('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
         
         let explorer = analyze(builder);
         expect(() => explorer.throwOnErrors(false)).not.toThrow();
@@ -711,7 +711,7 @@ describe('Demonstrate the results from various use cases', () => {
             });
 
         let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder
-        builder.input('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
+        builder.field('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
         
         let explorer = analyze(builder);
         // this will throw an error because 'es' is not registered in the TextLocalizerService

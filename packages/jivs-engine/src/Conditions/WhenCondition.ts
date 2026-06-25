@@ -33,7 +33,7 @@ export interface WhenConditionConfig extends ConditionWithOneChildBaseConfig {
  * Example: Only use requireText when the regular expression pattern is matched
  * against another valuehost
  * ```ts
- * builder.input('fieldname')
+ * builder.field('fieldname')
  *    .when((enabler)=>enabler.regExp('pattern', false, 'anotherValueHost')),
  *          (child)=>child.requireText());
  * ```

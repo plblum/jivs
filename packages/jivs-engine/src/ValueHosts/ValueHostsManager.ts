@@ -3,7 +3,7 @@
  * when working with a model or form. It works together with IValueHostsServices.
  * Since IValueHostsServices doesn't deal with validation services,
  * ValueHostsManager doesn't support ValueHosts inheriting from
- * ValidatableValueHostBase, including Input and Property,
+ * ValidatableValueHostBase, including FieldValueHost,
  * as those are built for validation.
  * IValueHostsServices does handle conditions, so it can be shared with Conditions
  * that need services.
@@ -15,7 +15,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerConfigChangedHandler } from '../Interfaces/ValueHostsManager';
-import { InputValueChangedHandler } from '../Interfaces/FieldValueHost';
+import { TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 import { ValueHostAccessor } from './ValueHostAccessor';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
@@ -37,7 +37,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * when working with a model or form. It works together with IValueHostsServices.
  * Since IValueHostsServices doesn't deal with validation services,
  * ValueHostsManager doesn't support ValueHosts inheriting from
- * ValidatableValueHostBase, including Input and Property,
+ * ValidatableValueHostBase, including FieldValueHost,
  * as those are built for validation.
  * IValueHostsServices does handle conditions, so it can be shared with Conditions
  * that need services.
@@ -67,7 +67,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      *   onInstanceStateChanged: (ValueHostsManager, state)=> { },
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
-     *   onInputValueChanged: (valueHost, oldValue) => { }
+     *   onTextValueChanged: (valueHost, oldValue) => { }
      *   onConfigChanged: (valueHost, valueHostConfig) => { }
      * }
      * ```
@@ -418,7 +418,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * // later when you need to modify vm:
      * let modifier = vm.startModifying();
      * // supply changes to the ValueHostConfigs
-     * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+     * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
      * // merge those changes into the ValueHostManager
      * modifier.apply(); // consider modifier disposed at this point 
      * ```
@@ -442,7 +442,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Retrieves the StaticValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the IStaticValueHost.name property
-     * Returns the instance or null if not found or found a non-input valuehost.
+     * Returns the instance or null if not found or found a non-field valuehost.
      */
     public getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null {
         return toIStaticValueHost(this.getValueHost(valueHostName));
@@ -450,7 +450,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Retrieves the CalcValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the ICalcValueHost.name property
-     * Returns the instance or null if not found or found a non-input valuehost.
+     * Returns the instance or null if not found or found a non-field valuehost.
      */
     public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
         return toICalcValueHost(this.getValueHost(valueHostName));
@@ -555,14 +555,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         return this.resolveCallback<ValueChangedHandler>(this.config.onValueChanged, 'onValueChanged');
     }
     /**
-     * Called when the FieldValueHost's InputValue property has changed.
+     * Called when the FieldValueHost's text value has changed.
      * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual FieldValueHosts.
      * Here, it aggregates all FieldValueHost notifications.
      */
-    public get onInputValueChanged(): InputValueChangedHandler | null {
-        return this.resolveCallback<InputValueChangedHandler>(this.config.onInputValueChanged, 'onInputValueChanged');
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.resolveCallback<TextValueChangedHandler>(this.config.onTextValueChanged, 'onTextValueChanged');
     }
     //#endregion IValueHostsManagerCallbacks
 }

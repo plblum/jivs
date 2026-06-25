@@ -11,7 +11,7 @@ describe('EvenNumberCondition tests', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
         let builder = build(services);
-        builder.input('Field1', LookupKey.Number);
+        builder.field('Field1', LookupKey.Number);
 
         let vm = new ValidationManager(builder);
         let vh = vm.getFieldValueHost('Field1')!;
@@ -45,7 +45,7 @@ describe('EvenNumberCondition tests', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
         let builder = build(services);
-        builder.input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
+        builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
         let vm = new ValidationManager(builder);
         let vh = vm.getFieldValueHost('Field1')!;

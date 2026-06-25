@@ -87,7 +87,7 @@ export enum ValueHostType
 /**
  * Associated with FieldValueHost
  */    
-    Input = 'Input',
+    Field = 'Field',
 //!!!OBSOLETE    
 // /**
 //  * Associated with PropertyValueHost

@@ -12,13 +12,13 @@ import { IFieldValueHost } from "./FieldValueHost";
  * 
  * By default, automatic generation uses the DataTypeCheckCondition.
  * 
- * That condition determines an error when ValueHost.NativeValue is undefined,
- * which is a result of a conversion of InputValue fails.
+ * That condition determines an error when ValueHost.value is undefined,
+ * which is a result of a conversion from text to the native value fails.
  * 
  * There are other ways to check a data type. Strings with a well 
  * defined pattern will often be the same as they were between
- * InputValue and NativeValue, aside from trimming spaces.
- * So the NativeValue is a string that will need to be checked against
+ * text and native value, aside from trimming spaces.
+ * So the ValueHost.value is a string that will need to be checked against
  * a regular expression or some other rule that confirms the string matches requirements.
  * 
  * Thats when you create one of these and register it with

@@ -1,5 +1,5 @@
 /**
- * A ValueHost that supports input validation.
+ * A ValueHost that supports field validation.
  * It is associated with the input field/element itself.
  * It provides:
  * - validate() function which returns Validation Results in the form of a list of IssuesFound.
@@ -12,7 +12,7 @@ import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, SetInputValueOptions } from '../Interfaces/FieldValueHost';
+import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, SetTextValueOptions } from '../Interfaces/FieldValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -26,7 +26,7 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 /**
  * Standard implementation of IFieldValueHost. It owns a list of Validators
  * which support its validate() function.
- * Use ValueHostConfig.valueHostType = "Input" for the ValidationManager to use this class.
+ * Use ValueHostConfig.valueHostType = "Field" for the ValidationManager to use this class.
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
@@ -46,65 +46,74 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
 
     //#region IFieldValueHost
     /**
-     * Exposes the latest value retrieved from the input field/element
-     * exactly as supplied by that input. For example,
-     * an <input type="date"> returns a string, not a date.
-     * Strings are not cleaned up, no trimming applied.
+     * Gets the current text value exactly as last provided.
+     * This is the string representation before parsing into the typed value.
+     * For example, a date field or posted form value is exposed as text, not as a Date.
+     * The text is returned unchanged, with no trimming or other normalization applied.
      */
-    public getInputValue(): any {
-        return this.instanceState.inputValue;
+    public getTextValue(): string | undefined {
+        return this.instanceState.textValue;
     }
 
     /**
-    * Consuming system assigns the same value it assigns to the input field/element.
-    * In HTML, this is typically called by the onchanged event handler.
-    * 
-    * It can also be called by the oninput event handler so long as options.duringEdit=true.
-    * If runs validation when options.validate=true. 
-    * 
-    * When setting the input value, it is important to also set the native value so the
-    * Data Type Check conditions to work. DataTypeCheckCondition itself reports
-    * an error if you set the native value to undefined.
-    * 
-    * To set the native value, you can do it manually, but also consider setting up 
-    * a DataTypeParser on the inputValueOptionConfig.parserLookupKey to do it automatically.
-    * When setup, setInputValue() will run the parser and call setInput() or setInputAsUndefined() for you.
-    * 
-    * @param value
-    * @param options - 
-    * - duringEdit - Set to true when handling an intermediate change activity, such as a keystroke
-    *     changed a textbox but the user remains in the textbox. For example, on the 
-    *     HTMLInputElement.oninput event.
-    *     This will involve only validators that make sense during such an edit.
-    *     Specifically their Condition implements IEvaluateConditionDuringEdits.
-    *     The IEvaluateConditionDuringEdits.evaluateDuringEdit() function is used
-    *     instead of ICondition.evaluate().
-    * - validate - Invoke validation after setting the value.
-    * - reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * - disableParser - When true, do not use the DataTypeParser to convert from input value to native value.
-    * - conversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    *    converting. Provide a string here that is a UI friendly error message. It will
-    *    appear in the Category=Require validator within the {ConversionError} token.
-    *    A Data Type parser will also setup the conversionErrorTokenValue if it reports an error.
-    */
-    public setInputValue(value: any, options?: SetInputValueOptions): void {  
-        this.logger.message(LoggingLevel.Debug, () => `setInputValue(${valueForLog(value)})`);        
+     * Replaces the text value.
+     *
+     * Call when application code updates the text representation of the value.
+     * On the client side, this is typically called from an onchange handler.
+     * On the server side, this is used when incoming data provides text values
+     * rather than native typed values.
+     *
+     * Common server-side examples include:
+     * - posted form values
+     * - query string values
+     * - route values
+     * - API or JSON payloads whose values are represented as strings
+     *
+     * When setting the text value, it is usually important to also set the typed value so that
+     * DataTypeCheckCondition can evaluate correctly. DataTypeCheckCondition itself reports
+     * an error when the typed value is undefined.
+     *
+     * The typed value may be set manually. Alternatively, configure a DataTypeParser through
+     * TextValueOptionConfig.parserLookupKey to resolve it automatically. When configured,
+     * setTextValue() will run the parser and set the typed value for you, including when
+     * parsing fails.
+     *
+     * @param textValue - The text value to store exactly as supplied.
+     * @param options -
+     * duringEdit - Set to true for an intermediate edit activity rather than a completed change.
+     *   For example, on the client side this may be used for an HTMLInputElement.oninput event,
+     *   where the user is still editing. In this mode, only validators intended for in-progress
+     *   edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
+     *   and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
+     *   ICondition.evaluate().
+     * validate - Invoke validation after setting the text value.
+     * reset - Clear validation state, unless validate = true, and set IsChanged to false.
+     * disableParser - When true, do not use the DataTypeParser to resolve the typed value
+     *   from the text value.
+     * conversionErrorTokenValue - When the typed value is undefined because it could not be
+     *   resolved from the text value, provide a user-friendly error message here. It will appear
+     *   in the Category=Require validator within the {ConversionError} token. A DataTypeParser
+     *   may also set conversionErrorTokenValue when it reports an error.
+     * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     */
+    public setTextValue(textValue: string | undefined, options?: SetTextValueOptions): void {  
+        this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
 
         if (!options)
             options = {};
         if (!this.canChangeValueCheck(options))
             return;        
-        if (this.tryParse(value, options))
+        if (this.tryParse(textValue, options))
             return; // determines the native value and redirects to setValues().
 
-        let oldValue: any = this.instanceState.inputValue;
-        let changed = !deepEquals(value, oldValue);
+        let oldValue: any = this.instanceState.textValue;
+        let changed = !deepEquals(textValue, oldValue);
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 valStateChanged = stateToUpdate.status !== ValidationStatus.NeedsValidation;
                 stateToUpdate.status = ValidationStatus.NeedsValidation;
-                stateToUpdate.inputValue = value;
+                stateToUpdate.textValue = textValue;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
             return stateToUpdate;
@@ -122,13 +131,13 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * and options.conversionErrorTokenValue gets set to the parser's reported error info.
      * Supports config.parserDataType and config.parserCreator.
      * 
-     * @param inputValue 
+     * @param textValue 
      * @param options - Set disableParser = true to prevent parsing. When duringEdit=true,
      * parsing is not supported and this function returns false.
      * @returns True used the parser and finished with setValues. No further work is needed.
-     * False means the parser is not used, and setInputValue should continue.
+     * False means the parser is not used, and setTextValue should continue.
      */
-    protected tryParse(inputValue: any, options: SetInputValueOptions): boolean
+    protected tryParse(textValue: any, options: SetTextValueOptions): boolean
     {
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
@@ -147,7 +156,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                 };
             });
 
-            self.setValues(nativeValue, inputValue, options);
+            self.setValues(nativeValue, textValue, options);
         }
         let self = this;
         // not supported in duringEdit mode as we are focused
@@ -155,7 +164,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         if (options.duringEdit === true)
             return false;
         try {
-            if (typeof inputValue === 'string') {
+            if (typeof textValue === 'string') {
                 if (options.disableParser === true) {
                     this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
                     return false;
@@ -167,10 +176,10 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                     let lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
                     let cultureId = this.services.cultureService.activeCultureId;
                     let parser = this.config.parserCreator?.(this);
-                    if (parser && parser.supports(lookupKey!, cultureId, inputValue)) { // in this case, we have to let the parser function deal with
+                    if (parser && parser.supports(lookupKey!, cultureId, textValue)) { // in this case, we have to let the parser function deal with
                         // any fallback behavior and we'll supply a null lookupKey.
                         this.logger.message(LoggingLevel.Info, () => 'Parsing');
-                        let result = parser.parse(inputValue, lookupKey!, cultureId);
+                        let result = parser.parse(textValue, lookupKey!, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
@@ -178,7 +187,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                         return false;
                 
                     if (lookupKey) {
-                        let result = dtps.parse(inputValue, lookupKey, cultureId);
+                        let result = dtps.parse(textValue, lookupKey, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
@@ -197,35 +206,37 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     }
 
     /**
-     * Sets both (native data type) Value and input field/element Value at the same time
+     * Replaces both the typed value and the text value at the same time,
      * and optionally invokes validation.
-     * Use when the consuming system resolves both input and native values
-     * at the same time so there is one state change and attempt to validate.
-     * 
-     * NOTE: The DataTypeParser feature is not used by this function as you have already done
-     * the parsing to establish the native value.
-     * @param nativeValue - Can be undefined to indicate the value could not be resolved
-     * from the input field/element's value, such as inability to convert a string to a date.
-     * All other values, including null and the empty string, are considered real data.
-     * @param inputValue - Can be undefined to indicate there is no value.
-     * All other values, including null and the empty string, are considered real data.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+     * Use when application code resolves both values together so there is
+     * a single state change and validation pass.
+     *
+     * Note: This function does not use the DataTypeParser feature because
+     * the typed value has already been resolved by the caller.
+     *
+     * @param nativeValue - The typed value to store. Use undefined to indicate that the
+     * typed value could not be resolved from the text value, such as when parsing
+     * a date from text fails. All other values, including null and the empty string,
+     * are treated as real data.
+     * @param textValue - The text value to store exactly as supplied.
+     * @param options -
+     *    * validate - Invoke validation after setting the values.
+     *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
+     *    * conversionErrorTokenValue - When the typed value is undefined because it could not be
+     *    *    resolved from the text value, provide a user-friendly error message here. It will
+     *    *    appear in the Category=Require validator within the {ConversionError} token.
+     *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {    
-        this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(inputValue)})`);        
+    public setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions): void {    
+        this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
         options = options ?? {};
         if (!this.canChangeValueCheck(options))
             return;        
         let oldNative: any = this.instanceState.value;
         let nativeChanged = !deepEquals(nativeValue, oldNative);
-        let oldInput: any = this.instanceState.inputValue;
-        let inputChanged = !deepEquals(inputValue, oldInput);
-        let changed = nativeChanged || inputChanged;
+        let oldText = this.instanceState.textValue;
+        let textChanged = !deepEquals(textValue, oldText);
+        let changed = nativeChanged || textChanged;
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -235,7 +246,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;
-                stateToUpdate.inputValue = inputValue;
+                stateToUpdate.textValue = textValue;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
 
@@ -245,7 +256,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(nativeChanged, oldNative, options);
-        this.useOnValueChanged(inputChanged, oldInput, options);
+        this.useOnValueChanged(textChanged, oldText, options);
     }
 
     protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {
@@ -312,7 +323,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * Resolves from the generated Validators by checking the first for
      * Condition.category = Require
      */
-    public get requiresInput(): boolean {
+    public get required(): boolean {
         // by design, Validators are sorted with Require first. So only check the first
         let validators = this.validators();
 
@@ -370,8 +381,8 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
 export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
 {
     let test = source as IFieldValueHost;
-    return (test.getInputValue !== undefined &&
-        test.setInputValue !== undefined &&
+    return (test.getTextValue !== undefined &&
+        test.setTextValue !== undefined &&
         test.setValues !== undefined &&
         test.getParserLookupKey !== undefined &&
         test.getConversionErrorMessage !== undefined);
@@ -380,7 +391,7 @@ export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBa
 export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
-            return config.valueHostType === ValueHostType.Input;
+            return config.valueHostType === ValueHostType.Field;
 
         if ((config as FieldValueHostConfig).validatorConfigs === undefined)
             return false;
@@ -395,7 +406,7 @@ export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
 
         return {
             ...state,
-            inputValue: undefined
+            textValue: undefined
         };
     }
 }

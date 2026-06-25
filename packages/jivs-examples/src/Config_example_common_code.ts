@@ -129,7 +129,7 @@ export function createValidationServices(cultureID: string): ValidationServices 
     });
 
     // enable parsing so HTML change events can pass their raw value into the FieldValueHost
-    // through setInputValue, and the parser converts it to the native value
+    // through setTextValue, and the parser converts it to the native value
 
     let dtps = services.dataTypeParserService as DataTypeParserService;
     dtps.enabled = true;

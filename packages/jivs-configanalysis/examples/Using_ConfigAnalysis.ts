@@ -42,13 +42,13 @@ export function createConfiguration(services?: IValidationServices): ValidationM
     let builder = build(services ?? createValidationServices('en'));
     builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
     builder.calc('diffDays', LookupKey.Integer, differenceBetweenDates);
-    builder.input('startDate', null, { label: 'Start date'})
+    builder.field('startDate', null, { label: 'Start date'})
         .lessThanOrEqual('numOfDays',   // right operand of the comparison
             { valueHostName: 'diffDays' },  // compare to this ValueHost, not 'startDate'
             'Less than {compareTo} days apart',   // our preferred error message
             { errorCode: 'NumOfDays'}   // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
     );
-    builder.input('endDate', null, { label: 'End date' });
+    builder.field('endDate', null, { label: 'End date' });
 
     return builder;
 }

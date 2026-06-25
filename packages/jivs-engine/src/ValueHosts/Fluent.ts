@@ -11,23 +11,19 @@
  * 
  * With the following, assume 'let builder = new ValidationManagerConfigBuilder(vmConfig)'.
  * 
- * The user will start the fluent syntax with builder.input(), builder.property(), 
+ * The user will start the fluent syntax with builder.field(), 
  * builder.static(), or builder.calc().
  * Those will setup the configs for each type of ValueHost
  * taking advantage of intellisense to expose the available properties
  * of the config, which may be a subset of the original.
  * 
- * `builder.input('valueHostName').[chained validators]`
+ * `builder.field('valueHostName').[chained validators]`
  * 
  * With optional parameters:
  * 
- * `builder.input('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
- * 
- * `builder.property('valueHostName').[chained validators]`
+ * `builder.field('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
  * 
  * With optional parameters:
- * 
- * `builder.property('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
  * 
  * `builder.static('valueHostName').[chained functions]`
  * 
@@ -41,13 +37,13 @@
  * ```ts
  * let builder = new ValidationManagerConfigBuilder(services);
  * builder.static('productVisible', LookupKey.Boolean);
- * builder.input('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
- * builder.input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
+ * builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
+ * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
  * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
  * let vm = new ValidationManager(builder);
  * 
  * let modifier = vm.startModifying();
- * modifier.input('price').requireText();   // add this validator
+ * modifier.field('price').requireText();   // add this validator
  * modifier.apply();
  * ```
  * 
@@ -58,18 +54,18 @@
  * class appear to be part of FluentValidatorBuilder and FluentConditionBuilder, classes that connect
  * the conditions to the FieldValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (input()),
- *   PropertyValueHost (property()), StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
+ * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
+ *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorBuilder - Class that supplies Conditions and Validators
- *   to the preceding FieldValueHost. It is returned by builder.input() and property() and each chained object that follows.
+ *   to the preceding FieldValueHost. It is returned by builder.field() and each chained object that follows.
  * 
  * - FluentConditionBuilder - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
  *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
  *   by builder.conditions()
  * 
  * ## Extending this system with your own fluent functions
- * Create two functions to support chaining to builder.input/property() and builder.conditions().
+ * Create two functions to support chaining to builder.field and builder.conditions().
  * They are not exported, as they are used to modify the prototypes of other classes.
  * 
  * Fluent functions should look like this: 
@@ -316,7 +312,7 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
      * For example:
      * ```ts
      * let fluent = new ValueHostsManagerStartFluent(null);
-     * fluent.input('Field1').all(fluent.conditions().required('Field2').required('Field3'));
+     * fluent.field('Field1').all(fluent.conditions().required('Field2').required('Field3'));
      * ```
      * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
      * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
@@ -362,7 +358,7 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
 
 
 /**
- * Starts a fluent chain. Its methods start FieldValueHost (input()),
+ * Starts a fluent chain. Its methods start FieldValueHost (field()),
  * StaticValueHost (static()), and a collection of Conditions (conditions()).
  */
 export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
@@ -404,18 +400,18 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    public input(config: FluentInputValueConfig): FluentValidatorBuilder;
+    public field(config: FluentFieldValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder
+    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder
     {
-        return this.withValidators<FieldValueHostConfig>(ValueHostType.Input, arg1, arg2, parameters);
+        return this.withValidators<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, parameters);
     }    
 
     //!!!OBSOLETE
@@ -449,10 +445,10 @@ export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType
 export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dataType'>;
 
 /**
- * For fluent input() function.
+ * For fluent field() function.
  */
-export type FluentInputValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
-export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
+export type FluentFieldValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
+export type FluentFieldParameters = Omit<FluentFieldValueConfig, 'name' | 'dataType'>;
 
 //!!!OBSOLETE
 // /**
@@ -534,7 +530,7 @@ export interface IFluentValidatorBuilder
 
 /**
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
- * It is returned by ValidationManagerConfigBuilder.input() and each chained object that follows.
+ * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
  * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
@@ -755,7 +751,7 @@ export function finishFluentValidatorBuilder(thisFromCaller: any,
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param valueHostName 
- * Overrides the default valueHostName, which comes from the ValidationManagerConfigBuilder.input().
+ * Overrides the default valueHostName, which comes from the ValidationManagerConfigBuilder.field().
  * Fluent function should supply this as a parameter
  * so long as its ConditionConfig implements OneValueConditionConfig.
  * Since these conditions are children of another, they are more likely to
@@ -855,7 +851,7 @@ export function customRule(conditionCreator: (requester: ValidatorConfig) => ICo
 }
 export class FluentSyntaxRequiredError extends Error
 {
-    constructor(errorMessage: string = 'Call only when chaining with ValidationManagerConfigBuilder.input().')
+    constructor(errorMessage: string = 'Call only when chaining with ValidationManagerConfigBuilder.field().')
     {
         super(errorMessage);
     }

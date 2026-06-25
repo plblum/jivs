@@ -116,13 +116,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         continue;
                     }
                     // synchronous (normal) processing
-                    let inputValResult = potentialIVR as ValidatorValidateResult;
-                    if (inputValResult.skipped)
+                    let fieldValResult = potentialIVR as ValidatorValidateResult;
+                    if (fieldValResult.skipped)
                         continue;
                     validatorsInUse++;
-                    if (inputValResult.issueFound) {
-                        inputValResult.issueFound.doNotSave = true;
-                        switch (inputValResult.issueFound.severity) {
+                    if (fieldValResult.issueFound) {
+                        fieldValResult.issueFound.doNotSave = true;
+                        switch (fieldValResult.issueFound.severity) {
                             case ValidationSeverity.Error:
                                 result.status = ValidationStatus.Invalid;
                                 break;
@@ -133,18 +133,18 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                             case ValidationSeverity.Warning:
                                 if (result.status === ValidationStatus.Undetermined)
                                     result.status = ValidationStatus.Valid;
-                                inputValResult.issueFound.doNotSave = false;
+                                fieldValResult.issueFound.doNotSave = false;
                                 break;
                         }
 
                         if (!result.issuesFound)
                             result.issuesFound = [];
-                        let issueFound = inputValResult.issueFound;
+                        let issueFound = fieldValResult.issueFound;
                         result.issuesFound.push(issueFound);
                             
                     }
                     else if (result.status === ValidationStatus.Undetermined)
-                        if (inputValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
+                        if (fieldValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
                             result.status = ValidationStatus.Valid;    // may be overwritten by a later validator
 
                 }

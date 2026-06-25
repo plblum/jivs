@@ -4,7 +4,7 @@
  */
 
 import { ValueHostsManagerStartFluent } from "./Fluent";
-import { InputValueChangedHandler } from "../Interfaces/FieldValueHost";
+import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
@@ -18,7 +18,7 @@ import { IValueHostsManagerConfigBuilder } from "../Interfaces/ManagerConfigBuil
  * 
  * ```ts
  * let builder = new ValueHostsManagerConfigBuilder(createValidationServices());
- * builder.input('Field1').requireText();
+ * builder.field('Field1').requireText();
  * 
  * let vm = new ValidationManager(builder);
  * ```
@@ -28,7 +28,7 @@ import { IValueHostsManagerConfigBuilder } from "../Interfaces/ManagerConfigBuil
  *      services: createValidationServices(),
  *      valueHostConfigs: [
  *          {
- *              valueHostType: ValueHostType.Input,
+ *              valueHostType: ValueHostType.Field,
  *              name: 'Field1',
  *              validatorConfigs: [
  *                  {
@@ -50,7 +50,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
  * be assigned to vmConfig.valueHostsConfig, and the developer
  * will be modifying those configs and adding their own.
  * If the UI is going to create all ValueHostConfigs, vmConfig.valueHostsConfig
- * can be null or []. The user will use the input(), static(), and calc() functions
+ * can be null or []. The user will use the field(), static(), and calc() functions
  * to populate it.
  */
     constructor(services: IValueHostsServices)
@@ -103,13 +103,13 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onInputValueChanged
+     * @inheritDoc ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
      */
-    public get onInputValueChanged(): InputValueChangedHandler | null {
-        return this.baseConfig.onInputValueChanged ?? null;
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.baseConfig.onTextValueChanged ?? null;
     }
-    public set onInputValueChanged(value: InputValueChangedHandler | null) {
-        this.baseConfig.onInputValueChanged = value;
+    public set onTextValueChanged(value: TextValueChangedHandler | null) {
+        this.baseConfig.onTextValueChanged = value;
     }
 
     /**

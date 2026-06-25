@@ -734,7 +734,7 @@ describe('ValidationManagerConfigAnalysis', () => {
     });    
     // time for a complex configuration that has no errors to report. 
     // We'll use the Builder again.
-    // 2 ValueHostConfigs, each for ValueHostType="Input".
+    // 2 ValueHostConfigs, each for ValueHostType="Field".
     // 1st has a dataType of LookupKey.Number,
     //   a parserKey of LookupKey.Number,
     //   and 2 ValidatorConfigs each with a ConditionConfig: 
@@ -748,7 +748,7 @@ describe('ValidationManagerConfigAnalysis', () => {
     //   ConditionType.RegExp and ConditionConfig.expression of /^\d+$/.
     // It will need parsers and converters to handle 1st.
     // So services must have NumberParser and NumberConverter registered.
-    // Because we are using ValueHostType.Input and validators,
+    // Because we are using ValueHostType.Field and validators,
     // we'll use IValidationServices and ValidationManagerConfigBuilder.
     // Our helper must have registered the DataTypeParserLookupKeyAnalyzer added.
     // Write that test.
@@ -763,12 +763,12 @@ describe('ValidationManagerConfigAnalysis', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
 
         let builder = new ValidationManagerConfigBuilder(services);
-        builder.input('testValueHost1', LookupKey.String, {
+        builder.field('testValueHost1', LookupKey.String, {
             parserLookupKey: LookupKey.Number,
         }).requireText().lessThan('testValueHost2', {
             secondConversionLookupKey: LookupKey.Number,
         });
-        builder.input('testValueHost2', LookupKey.String).regExp(/^\d+$/);
+        builder.field('testValueHost2', LookupKey.String).regExp(/^\d+$/);
 
         let testItem = new ValidationManagerConfigAnalysis();    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
         registerConfigAnalyzers(testItem);

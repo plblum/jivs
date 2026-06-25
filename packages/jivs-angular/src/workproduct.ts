@@ -6,7 +6,7 @@ import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from '
 import { ValidationManagerConfig, IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { SetInputValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { SetTextValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';
@@ -95,19 +95,19 @@ export interface IValueChangeListenerAction {
      * The method attaches event listeners for anything that may be validated.
      * Your listener should get the value from the component and pass it back to Fivase,
      * where it will be validated.
-     * If your component has a value that is a string, use the setInputValueCallback,
-     * which will use FieldValueHost.setInputValue to set the value in Fivase.
+     * If your component has a value that is a string, use the setTextValueCallback,
+     * which will use FieldValueHost.setTextValue to set the value in Fivase.
      * If your component has a value that is not a string, use the setValueCallback,
      * which will use ValueHost.setValue to set the value in Fivase.
      * 
      * @param element - The target DOM element. It could be an input field, a
      * container, etc.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
-     * @param setInputValueCallback - A callback function that hands the input value to Fivase
+     * @param setTextValueCallback - A callback function that hands the input value to Fivase
      * to store in the ValueHost and validate. It is called when the value is a string
      * and needs conversion or a parser to make it a native value.
      * You may setup the parser in the ValueHost, or use your own in this function.
-     * If you handle it here, call both setInputValueCallback and setValueCallback.
+     * If you handle it here, call both setTextValueCallback and setValueCallback.
      * The "duringEdit" parameter is true when the value is being edited, specifically when the 
      * oninput event is triggered. Use false for most other cases.
      * @param setValueCallback - A callback function that hands the value to Fivase to store in the
@@ -116,13 +116,13 @@ export interface IValueChangeListenerAction {
      * the data being validated.
      * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
      * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
-     * to implement the call to ValueHost.setInputValue or ValueHost.setValue instead of using 
+     * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
     listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
-        setInputValueCallback: (inputValue: string, duringEdit: boolean) => void,
+        setTextValueCallback: (textValue: string, duringEdit: boolean) => void,
         setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
         fivaseForm: IFivaseForm
@@ -289,11 +289,11 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * @param element - The target DOM element. It could be an input field, a
      * container, etc.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
-     * @param setInputValueCallback - A callback function that hands the input value to Fivase
+     * @param setTextValueCallback - A callback function that hands the input value to Fivase
      * to store in the ValueHost and validate. It is called when the value is a string
      * and needs conversion or a parser to make it a native value.
      * You may setup the parser in the ValueHost, or use your own in this function.
-     * If you handle it here, call both setInputValueCallback and setValueCallback.
+     * If you handle it here, call both setTextValueCallback and setValueCallback.
      * The "duringEdit" parameter is true when the value is being edited, specifically when the 
      * oninput event is triggered. Use false for most other cases.
      * @param setValueCallback - A callback function that hands the value to Fivase to store in the
@@ -302,13 +302,13 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * the data being validated.
      * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
      * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
-     * to implement the call to ValueHost.setInputValue or ValueHost.setValue instead of using 
+     * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
     public listenForValueChanges(
         element: HTMLElement,
         renderer: Renderer2,
-        setInputValueCallback: (inputValue: string, nativeValue: any, duringEdit: boolean) => void,
+        setTextValueCallback: (textValue: string, nativeValue: any, duringEdit: boolean) => void,
         setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
         fivaseForm: IFivaseForm
@@ -379,8 +379,8 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             // Handle select element validation (only listen for 'change' event)
             renderer.listen(element, 'change', (event: Event) => {
                 const selectValue = (event.target as HTMLSelectElement).value;
-                setInputValueCallback(selectValue, undefined, false);
-          //      fivaseForm.setInputValue(valueHostName, selectValue, { validate: true });
+                setTextValueCallback(selectValue, undefined, false);
+          //      fivaseForm.setTextValue(valueHostName, selectValue, { validate: true });
             });
         }
 
@@ -389,9 +389,9 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
                 fromEvent(element, 'input')
                     .pipe(debounceTime(self.inputEventDebounceTime))  // Wait before handling the event
                     .subscribe((event: Event) => {
-                        const inputValue = (event.target as HTMLInputElement).value;
-                        setInputValueCallback(inputValue, undefined, true);
-                  //      fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit: true });
+                        const textValue = (event.target as HTMLInputElement).value;
+                        setTextValueCallback(textValue, undefined, true);
+                  //      fivaseForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit: true });
                     });
             }
         }
@@ -399,9 +399,9 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
         function setupChangeEventHandler(): void {
             // Handle change event
             renderer.listen(element, 'change', (event: Event) => {
-                const inputValue = (event.target as HTMLInputElement).value;
-                setInputValueCallback(inputValue, undefined, false);
-            //    fivaseForm.setInputValue(valueHostName, inputValue, { validate: true });
+                const textValue = (event.target as HTMLInputElement).value;
+                setTextValueCallback(textValue, undefined, false);
+            //    fivaseForm.setTextValue(valueHostName, textValue, { validate: true });
             });
         }
     }
@@ -695,7 +695,7 @@ export class ShowWhenCorrectedRenderer extends RendererActionBase {
 
 /**
  * Concrete implementation of `IRendererAction` that shows or hides the element based on
- * the ValueHost.requiresInput property. By default, it has no CSS classes assigned to enabledCssClass
+ * the ValueHost.required property. By default, it has no CSS classes assigned to enabledCssClass
  * or disabledCssClass because its focus is visibility.
  * 
  * This targets the ShowWhenRequiredDirective.
@@ -722,7 +722,7 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
-        return vh.requiresInput;
+        return vh.required;
     }
 }
 
@@ -1818,11 +1818,11 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         eventHandler.listenForValueChanges(
             this.getTargetElement(),
             this.renderer,
-            (inputValue: string, duringEdit: boolean) => {
-                this.fivaseForm.setInputValue(valueHostName, inputValue, { validate: true, duringEdit : duringEdit  });
+            (textValue: string, duringEdit: boolean) => {
+                this.fivaseForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit : duringEdit  });
             },
             (nativeValue: any) => {
-                this.fivaseForm.setInputValue(valueHostName, nativeValue, { validate: true });
+                this.fivaseForm.setTextValue(valueHostName, nativeValue, { validate: true });
             },
             valueHostName,
             this.fivaseForm
@@ -1883,10 +1883,10 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
     }
 
     protected initAriaAttributes(): void {
-        // Set aria-required based on the requiresInput field in the ValueHost
+        // Set aria-required based on the required field in the ValueHost
         const valueHost = this.fivaseForm.validationManager.getFieldValueHost(this.valueHostName!);
-        if (valueHost && valueHost.requiresInput) {
-            this.ariaManager.setAriaRequired(); // Set aria-required if requiresInput is true
+        if (valueHost && valueHost.required) {
+            this.ariaManager.setAriaRequired(); // Set aria-required if required is true
         }
 
         // Set aria-errormessage once since it is static
@@ -2088,7 +2088,7 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
 
 /**
  * Directive `showWhenRequired` manages the appearance of an element based on whether the input
- * has a required validator (FieldValueHost.requiresInput) 
+ * has a required validator (FieldValueHost.required) 
  * It shows the element when the input is required and hides otherwise.
  * 
  * 'showWhenRequired' takes the value of the ValueHostName registered with Jivs ValidationManager.
@@ -2484,7 +2484,7 @@ export interface IFivaseForm {
     readonly services: IFivaseServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
-    setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void;
+    setTextValue(valueHostName: string, textValue: string, options?: SetTextValueOptions): void;
 
     subscribeToValidationState(callback: (state: ValidationState) => void): Subscription;
     unsubscribeFromValidationState(subscription: Subscription): void;
@@ -2555,7 +2555,7 @@ export class FivaseForm implements IFivaseForm {
 
     /**
      * Call when a value supported within the ValueHosts has changed. 
-     * Consider using setInputValue instead for FieldValueHosts.
+     * Consider using setTextValue instead for FieldValueHosts.
      * Same as calling `validationManager.setValue(valueHostName, value, options)`.
      * See Fivase documentation for details.
      * @param valueHostName 
@@ -2566,14 +2566,14 @@ export class FivaseForm implements IFivaseForm {
         this.validationManager.vh.input(valueHostName).setValue(value, options);
     }
     /**
-     * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setInputValue(inputValue,options)`.
+     * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setTextValue(textValue,options)`.
      * See Fivase documentation for details.
      * @param valueHostName 
-     * @param inputValue 
+     * @param textValue 
      * @param options 
      */
-    public setInputValue(valueHostName: string, inputValue: string, options?: SetInputValueOptions): void {
-        this.validationManager.vh.input(valueHostName).setInputValue(inputValue, options);
+    public setTextValue(valueHostName: string, textValue: string, options?: SetTextValueOptions): void {
+        this.validationManager.vh.input(valueHostName).setTextValue(textValue, options);
     }
 
     /**

@@ -1,7 +1,7 @@
 /**
- * Base for Conditions that use the value from ValueHost.getInputValue().
+ * Base for Conditions that use the value from ValueHost.getTextValue().
  * Most classes use ValueHost.getValue() (the native value).
- * @module Conditions/AbstractClasses/InputValueConditionBase
+ * @module Conditions/AbstractClasses/TextValueConditionBase
  */
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
@@ -13,18 +13,18 @@ import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 
 /**
- * ConditionConfig to use with InputValueConditionBase
+ * ConditionConfig to use with TextValueConditionBase
  */
-export interface InputValueConditionBaseConfig extends OneValueConditionBaseConfig {
+export interface TextValueConditionBaseConfig extends OneValueConditionBaseConfig {
 
 }
 
 
 /**
- * Abstract class for developing Conditions that use the value from ValueHost.getInputValue().
+ * Abstract class for developing Conditions that use the value from ValueHost.getTextValue().
  * Most classes use ValueHost.getValue() (the native value).
  */
-export abstract class InputValueConditionBase<TConfig extends InputValueConditionBaseConfig>
+export abstract class TextValueConditionBase<TConfig extends TextValueConditionBaseConfig>
     extends OneValueConditionBase<TConfig>
 {
     /**
@@ -40,11 +40,11 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
             this.logger(valueHostsManager.services).error(error);
         }
         let iValueHost = valueHost as unknown as IFieldValueHost;
-        let value = iValueHost.getInputValue();
-        if (value === undefined)
+        let textValue = iValueHost.getTextValue();
+        if (textValue === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        return this.evaluateInputValue(value, iValueHost, valueHostsManager);
+        return this.evaluateTextValue(textValue, iValueHost, valueHostsManager);
     }
-    protected abstract evaluateInputValue(value: any, valueHost: IFieldValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
+    protected abstract evaluateTextValue(textValue: string | undefined, valueHost: IFieldValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 }

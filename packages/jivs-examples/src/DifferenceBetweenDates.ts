@@ -62,7 +62,7 @@ export function configureVMForDifferenceBetweenDates(): IValidationManager {
     // create the 'StartDate' input with two conditions:
     // startDate <= endDate
     // abs(endDate-startDate) < 10
-    builder.input('StartDate', LookupKey.Date, { label: 'Start date' })
+    builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
         .lessThanOrEqual('EndDate', null,
             '{Label} must be less than or equal to {SecondLabel}.',
             { severity: ValidationSeverity.Severe }) // to avoid running the next validator when there is an error
@@ -70,7 +70,7 @@ export function configureVMForDifferenceBetweenDates(): IValidationManager {
             'The two dates must be less than {CompareTo} days apart.');
 
     // create the 'EndDate' input
-    builder.input('EndDate', LookupKey.Date, { label: 'End date' }); 
+    builder.field('EndDate', LookupKey.Date, { label: 'End date' }); 
 
     return new ValidationManager(builder);
 }

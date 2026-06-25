@@ -248,7 +248,7 @@ function finishPartialValidatorsValueHostBaseInstanceState(partialState: Partial
  * These are the default values
  * name: 'Test'
  * Value: undefined
- * InputValue: undefined
+ * TextValue: undefined
  * IssuesFound: null,
  * ValidationStatus: NotAttempted
  * @returns An object with all of the parts that were setup including 
@@ -291,18 +291,18 @@ function setupValidatorsValueHostBaseForValidate(
     partialValidatorsState: Partial<ValidatorsValueHostBaseInstanceState> | null,
     vhGroup?: string | null): ITestSetupConfigWithMocks {
 
-    let inputValueConfig: Partial<ValidatorsValueHostBaseConfig> = {
+    let fieldValueConfig: Partial<ValidatorsValueHostBaseConfig> = {
         validatorConfigs: partialValidatorConfigs ?
             finishPartialValidatorConfigs(partialValidatorConfigs) :
             undefined
     };
     if (vhGroup !== undefined)
-        inputValueConfig.group = vhGroup;
+        fieldValueConfig.group = vhGroup;
 
     let updatedState = finishPartialValidatorsValueHostBaseInstanceState(
         { ...partialValidatorsState });
 
-    return setupValidatorsValueHostBase(inputValueConfig, updatedState);
+    return setupValidatorsValueHostBase(fieldValueConfig, updatedState);
 }
 
 
@@ -395,20 +395,20 @@ describe('ValidatorsValueHostBase.getValidator', () => {
  * For testing ValidatorsValueHostBase.validate (but not the logic of an individual Validator.validate).
  * @param validatorConfigs - Always provide a list of the validatorConfigs in the desired order.
  * If null, no validators are made available to validate
- * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
+ * @param fieldValueState - Use to supply initial TextValue and Value properties. Any property
  * not supplied will be provided.
  * @param expectedValidationStatusCode 
  * @param expectedIssuesFound - This will be matched by Jest's isEqual.
  */
 function testValidateFunctionHasResult(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    inputValueState: Partial<ValidatorsValueHostBaseInstanceState> | null,
+    fieldValueState: Partial<ValidatorsValueHostBaseInstanceState> | null,
     expectedValidationStatusCode: ValidationStatus,
     expectedIssuesFound: Array<IssueFound> | null,
     validationGroupForValueHost?: string | undefined,
     validationGroupForValidateFn?: string | undefined,
     expectedStateChanges: number = 1): ITestSetupConfigWithMocks {
 
-    let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
+    let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState, validationGroupForValueHost);
     setup.services.loggerService.minLevel = LoggingLevel.Debug;
 
     let vrDetails: ValueHostValidateResult | null = null;
@@ -429,18 +429,18 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
  * For testing ValidatorsValueHostBase.validate (but not the logic of an individual Validator.validate).
  * @param validatorConfigs - Always provide a list of the validatorConfigs in the desired order.
  * If null, no validators are made available to validate
- * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
+ * @param fieldValueState - Use to supply initial TextValue and Value properties. Any property
  * not supplied will be provided.
  * @param expectedValidationStatusCode 
  * @param expectedIssuesFound - This will be matched by Jest's isEqual.
  */
 function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    inputValueState: Partial<ValidatorsValueHostBaseInstanceState> | null,
+    fieldValueState: Partial<ValidatorsValueHostBaseInstanceState> | null,
     validationGroupForValueHost?: string | undefined,
     validationGroupForValidateFn?: string | undefined,
     expectedStateChanges: number = 1): ITestSetupConfigWithMocks {
 
-    let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
+    let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState, validationGroupForValueHost);
     setup.services.loggerService.minLevel = LoggingLevel.Debug;
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
@@ -1256,7 +1256,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
                     conditionType: NeverMatchesConditionType2
                 }
             },
-            { // emulate DataTypeCheck because the real condition needs Input Value
+            { // emulate DataTypeCheck because the real condition needs text value
                 conditionConfig: <UserSuppliedResultConditionConfig>{
                     conditionType: UserSuppliedResultConditionType,
                     category: ConditionCategory.DataTypeCheck,
@@ -1282,7 +1282,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
                 }
             },
             
-            { // emulate DataTypeCheck because the real condition needs Input Value
+            { // emulate DataTypeCheck because the real condition needs text value
                 conditionConfig: <UserSuppliedResultConditionConfig>{
                     conditionType: UserSuppliedResultConditionType,
                     category: ConditionCategory.DataTypeCheck,
@@ -1294,7 +1294,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
                     conditionType: NeverMatchesConditionType2
                 }
             },
-            { // emulate RequireText because the real condition needs Input Value
+            { // emulate RequireText because the real condition needs text value
                 conditionConfig: <UserSuppliedResultConditionConfig>{
                     conditionType: UserSuppliedResultConditionType,
                     category: ConditionCategory.Require,
@@ -1623,7 +1623,7 @@ function testValidateFunctionWithPromise(
     });
     let vh = vm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
-    // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState);
+    // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState);
     // setup.validationManager.onValueHostValidationStateChanged = onValidationStateChanged;
 
     let vrDetails: ValueHostValidateResult | null = null;
@@ -2658,7 +2658,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 name: 'Field2',
                 label: 'Label2',
                 validatorConfigs: [{
-                    // emulate RequireText because the real condition needs Input Value
+                    // emulate RequireText because the real condition needs text value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
                         category: ConditionCategory.Require,
@@ -2674,7 +2674,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 label: 'Label3',
 
                 validatorConfigs: [{
-                    // emulate RequireText because the real condition needs Input Value
+                    // emulate RequireText because the real condition needs text value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
                         category: ConditionCategory.Require,
@@ -2834,7 +2834,7 @@ describe('toIValidatorsValueHostBase function', () => {
         private issues: IssueFound[] = [];
         private data: Map<string, ValidTypesForInstanceStateStorage> = new Map();
         private hostValue: any = undefined;
-        private hostInputValue: any = undefined;
+        private hostTextValue: string | undefined = undefined;
         private hostEnabled: boolean = true;
 
         valueHostsManager: IValidationManager = {} as IValidationManager;
@@ -2845,15 +2845,15 @@ describe('toIValidatorsValueHostBase function', () => {
             return true;
         }
 
-        getInputValue() {
-            return this.hostInputValue;
+        getTextValue() : string | undefined {
+            return this.hostTextValue;
         }
-        setInputValue(value: any, options?: SetValueOptions | undefined): void {
-            this.hostInputValue = value;
+        setTextValue(textValue: string | undefined, options?: SetValueOptions | undefined): void {
+            this.hostTextValue = textValue;
         }
-        setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
+        setValues(nativeValue: any, textValue: any, options?: SetValueOptions | undefined): void {
             this.hostValue = nativeValue;
-            this.hostInputValue = inputValue;
+            this.hostTextValue = textValue;
         }
         otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
         }
@@ -2894,7 +2894,7 @@ describe('toIValidatorsValueHostBase function', () => {
         getConversionErrorMessage(): string | null {
             return null;
         }
-        requiresInput: boolean = false;
+        required: boolean = false;
         getName(): string {
             return 'TestHost';
         }

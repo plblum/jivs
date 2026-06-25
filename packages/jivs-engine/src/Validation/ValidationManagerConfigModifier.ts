@@ -9,7 +9,7 @@ import { IValidationManager, ValidationManagerConfig } from "../Interfaces/Valid
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
+import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
 import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -53,7 +53,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder;
 
     /**
      * Fluent format to create a FieldValueHostConfig.
@@ -62,7 +62,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorBuilder;    
+    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): FluentValidatorBuilder;    
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
@@ -70,11 +70,11 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * You can omit the valueHostType property.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(config: FluentInputValueConfig): FluentValidatorBuilder;
+    public field(config: FluentFieldValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: FluentInputParameters | string | null, arg3?: FluentInputParameters): FluentValidatorBuilder {
-        let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Input, arg1, arg2, arg3);        
-        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Input, valueHostName, dataType, propsToUpdate);
+    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: FluentFieldParameters | string | null, arg3?: FluentFieldParameters): FluentValidatorBuilder {
+        let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Field, arg1, arg2, arg3);        
+        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, propsToUpdate);
     }
 //!!!OBSOLETE
     // /**

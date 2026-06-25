@@ -59,7 +59,7 @@ describe('constructor', () => {
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.savedInstanceState).toBeNull();
         expect(testItem.savedValueHostInstanceStates).toBeNull();
-        expect(testItem.onInputValueChanged).toBeNull();
+        expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();
         expect(testItem.onValueChanged).toBeNull();
@@ -76,7 +76,7 @@ describe('constructor', () => {
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.savedInstanceState).toBeNull();
         expect(testItem.savedValueHostInstanceStates).toBeNull();
-        expect(testItem.onInputValueChanged).toBeNull();
+        expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();
         expect(testItem.onValueChanged).toBeNull();
@@ -98,7 +98,7 @@ describe('function build()', () => {
         expect(result.notifyValidationStateChangedDelay).toBeUndefined();
         expect(result.savedInstanceState).toBeUndefined();
         expect(result.savedValueHostInstanceStates).toBeUndefined();
-        expect(result.onInputValueChanged).toBeUndefined();
+        expect(result.onTextValueChanged).toBeUndefined();
         expect(result.onValueHostValidationStateChanged).toBeUndefined();
         expect(result.onValidationStateChanged).toBeUndefined();
         expect(result.onValueChanged).toBeUndefined();
@@ -120,7 +120,7 @@ describe('function build()', () => {
         expect(result.notifyValidationStateChangedDelay).toBeUndefined();
         expect(result.savedInstanceState).toBeUndefined();
         expect(result.savedValueHostInstanceStates).toBeUndefined();
-        expect(result.onInputValueChanged).toBeUndefined();
+        expect(result.onTextValueChanged).toBeUndefined();
         expect(result.onValueHostValidationStateChanged).toBeUndefined();
         expect(result.onValidationStateChanged).toBeUndefined();
         expect(result.onValueChanged).toBeUndefined();
@@ -243,7 +243,7 @@ describe('complete', () => {
         testItem.static('Field1');
         testItem.publicify_addOverride();
         testItem.static('Field1', LookupKey.String, { label: 'Field 1' });
-        testItem.input('Field2').requireText();
+        testItem.field('Field2').requireText();
         let result = testItem.complete();
         expect(result.services).toBe(vmConfig.services);
         expect(result.valueHostConfigs).toEqual([{
@@ -253,7 +253,7 @@ describe('complete', () => {
             label: 'Field 1'
         },
         {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field2',
             validatorConfigs: [{
                 conditionConfig: {
@@ -266,21 +266,21 @@ describe('complete', () => {
     });        
 });
 ensureFluentTestConditions();
-describe('Fluent chaining on build(vmConfig).input', () => {
-    test('build(vmConfig).input: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
+describe('Fluent chaining on build(vmConfig).field', () => {
+    test('build(vmConfig).field: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').testChainRequireText({}, 'Error', {});
+        let testItem = builder.field('Field1').testChainRequireText({}, 'Error', {});
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).input: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
+    test('build(vmConfig).field: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1')
+        let testItem = builder.field('Field1')
             .testChainRequireText({}, 'Error', {})
             .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
@@ -297,7 +297,7 @@ describe('customRule', () => {
     test('Provide a valid function and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').customRule((requester) => {
+        let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
@@ -315,7 +315,7 @@ describe('customRule', () => {
     test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.input('Field1').customRule((requester) => {
+        let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
@@ -345,21 +345,21 @@ describe('favorUIMessages', () => {
         vmConfig.services.textLocalizerService = tls;   // start fresh
 
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText(null, 'RequireMessage',
+        builder.field('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.input('Field2').regExp('\\d', null, null, 'RegExpMessage',
+        builder.field('Field2').regExp('\\d', null, null, 'RegExpMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRegExpMessage',
                 summaryMessagel10n: 'sml10n'
             }
         ).requireText(null, 'Field2Require');
-        builder.input('Field3').requireText(null, null, // has no error message. Must use eml10n, which will result in ''
+        builder.field('Field3').requireText(null, null, // has no error message. Must use eml10n, which will result in ''
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessagel10n: 'sml10n'
@@ -368,7 +368,7 @@ describe('favorUIMessages', () => {
         builder.favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -381,7 +381,7 @@ describe('favorUIMessages', () => {
             }]
         },
         {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field2',
             validatorConfigs: [
                 {
@@ -402,7 +402,7 @@ describe('favorUIMessages', () => {
                 }]
             },
             {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field3',
                 validatorConfigs: [
                     {
@@ -426,14 +426,14 @@ describe('favorUIMessages', () => {
             '*': 'tls-regexp'
         });
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText(null, 'RequireMessage',
+        builder.field('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.input('Field2').regExp('\\d', null, null, 'RegExpMessage',
+        builder.field('Field2').regExp('\\d', null, null, 'RegExpMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRegExpMessage',
@@ -442,7 +442,7 @@ describe('favorUIMessages', () => {
         builder.favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -451,7 +451,7 @@ describe('favorUIMessages', () => {
             }]
         },
         {
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field2',
             validatorConfigs: [
                 {
@@ -477,7 +477,7 @@ describe('favorUIMessages', () => {
             '*': 'tls-required'
         });
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText(null, 'RequireMessage',
+        builder.field('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
@@ -487,7 +487,7 @@ describe('favorUIMessages', () => {
         builder.startUILayerConfig({ favorUIMessages: true});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -505,7 +505,7 @@ describe('favorUIMessages', () => {
             '*': 'tls-required'
         });
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText(null, 'RequireMessage',
+        builder.field('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
@@ -515,7 +515,7 @@ describe('favorUIMessages', () => {
         builder.startUILayerConfig();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -533,7 +533,7 @@ describe('favorUIMessages', () => {
             '*': 'tls-required'
         });
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText(null, 'RequireMessage',
+        builder.field('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
@@ -543,7 +543,7 @@ describe('favorUIMessages', () => {
         builder.startUILayerConfig({ favorUIMessages: false});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -576,7 +576,7 @@ describe('favorUIMessages', () => {
 //         let calcFn = (valueHost: ICalcValueHost, manager: IValueHostsManager) => 0;
 //         builder.calc('Field1', LookupKey.Number, calcFn);
 //         builder.static('Field2');
-//         builder.input('Field3');
+//         builder.field('Field3');
 //         let expectedConfig: Array<ValueHostConfig> = [
 //             <CalcValueHostConfig>{
 //                 valueHostType: ValueHostType.Calc,
@@ -589,7 +589,7 @@ describe('favorUIMessages', () => {
 //                 name: 'Field2'
 //             },
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field3',
 //                 validatorConfigs: []
 //             },
@@ -607,13 +607,13 @@ describe('favorUIMessages', () => {
 //         builder.property('Field2');
 //         let expectedConfig: Array<ValueHostConfig> = [
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field2',
 //                 validatorConfigs: []
 //             },
@@ -634,13 +634,13 @@ describe('favorUIMessages', () => {
 //         builder.property('Field3');
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field2',
 //                 validatorConfigs: []
 //             },
@@ -667,13 +667,13 @@ describe('favorUIMessages', () => {
 //         builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field2',
 //                 validatorConfigs: []
 //             },
@@ -691,13 +691,13 @@ describe('favorUIMessages', () => {
 //         builder.startUILayerConfig({ favorUIMessages: false });
 //         let expectedBaseConfig: Array<ValueHostConfig> = [
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field1',
 //                 dataType: LookupKey.Number,
 //                 validatorConfigs: []
 //             },
 //             <FieldValueHostConfig>{
-//                 valueHostType: ValueHostType.Input,
+//                 valueHostType: ValueHostType.Field,
 //                 name: 'Field2',
 //                 validatorConfigs: []
 //             },
@@ -715,7 +715,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
@@ -729,7 +729,7 @@ describe('combineWithRule', () => {
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
             expect(result).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -753,7 +753,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
@@ -765,7 +765,7 @@ describe('combineWithRule', () => {
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
             expect(result).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -782,7 +782,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
@@ -792,7 +792,7 @@ describe('combineWithRule', () => {
             let overriddenValueHostConfigs = builder.publicify_destinationValueHostConfigs();
             expect(overriddenValueHostConfigs.length).toBe(1);  // valueHostConfig was moved
             expect(overriddenValueHostConfigs[0]).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     conditionConfig: {
@@ -808,7 +808,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
@@ -822,7 +822,7 @@ describe('combineWithRule', () => {
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
             expect(result).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -845,7 +845,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
@@ -859,7 +859,7 @@ describe('combineWithRule', () => {
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
             expect(result).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     errorCode: ConditionType.RequireText,
@@ -882,7 +882,7 @@ describe('combineWithRule', () => {
             let vmConfig = createVMConfig();
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-            builder.input('Field1').requireText();
+            builder.field('Field1').requireText();
             builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
@@ -893,7 +893,7 @@ describe('combineWithRule', () => {
             let overriddenValueHostConfigs = builder.publicify_destinationValueHostConfigs();
             expect(overriddenValueHostConfigs.length).toBe(1);  // valueHostConfig was moved
             expect(overriddenValueHostConfigs[0]).toEqual({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [{
                     conditionConfig: {
@@ -912,7 +912,7 @@ describe('replaceRule', () => {
         let vmConfig = createVMConfig();
 
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText();
+        builder.field('Field1').requireText();
         builder.startUILayerConfig();
         let testItem = builder.replaceRule('Field1', ConditionType.RequireText,
             (replacementBuilder: FluentConditionBuilder) => {
@@ -926,7 +926,7 @@ describe('replaceRule', () => {
         deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
         expect(result).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 errorCode: ConditionType.RequireText,
@@ -942,7 +942,7 @@ describe('replaceRule', () => {
         let vmConfig = createVMConfig();
 
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1').requireText();
+        builder.field('Field1').requireText();
         builder.startUILayerConfig();
         builder.replaceRule('Field1', ConditionType.RequireText,
             <RegExpConditionConfig>{
@@ -955,7 +955,7 @@ describe('replaceRule', () => {
         deleteConditionReplacedSymbol(result.validatorConfigs![0]);
 
         expect(result).toEqual({
-            valueHostType: ValueHostType.Input,
+            valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
                 errorCode: ConditionType.RequireText,

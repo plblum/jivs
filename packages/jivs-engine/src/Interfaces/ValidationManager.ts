@@ -1,6 +1,6 @@
 /**
  * ValidationManager is the central object for using this system.
- * It is where you describe the shape of your inputs and their validation
+ * It is where you describe the shape of your fields and their validation
  * through the Config classes.
  * Once setup, it has a list of ValueHost objects, one for each
  * config that was supplied. Those that are ValidatorsValueHostBases
@@ -149,8 +149,7 @@ export interface IValidationManager extends IValueHostsManager {
     addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean;
 
     /**
-     * Lists all issues found (error messages and supporting info) for a single ValidatorsValueHostBase
-     * so the input field/element can show error messages and adjust its appearance.
+     * Lists all issues found (error messages and supporting info) for a single FieldValueHost.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
@@ -162,7 +161,7 @@ export interface IValidationManager extends IValueHostsManager {
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null;
+    getIssuesForField(valueHostName: ValueHostName): Array<IssueFound> | null;
 
     /**
      * A list of all issues from all ValidatorsValueHostBases optionally for a given group.

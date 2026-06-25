@@ -153,7 +153,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     /**
      * This function attempts to convert a given value to a target lookup key specified by resultLookupKey,
      * potentially through multiple intermediate conversion steps. It operates recursively, attempting
-     * to find a chain of converters that collectively can transform the input value into the desired
+     * to find a chain of converters that collectively can transform the text value into the desired
      * output format. 
      * 
      * Each converter is capable of converting values to one or more output lookup keys,

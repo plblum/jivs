@@ -62,15 +62,20 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     //#region IValidatableValueHostBase
     /**
-      * System consumer assigns the native value to make it available
-      * to most Conditions during validation.
-      * @param value 
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+    * Replaces the typed value and optionally validates.
+    * Call when the typed value was changed directly by consuming code.
+    * @param value - The typed value to store. Use undefined to indicate that the
+    * typed value could not be resolved from the text value, such as when parsing fails.
+    * All other values, including null and the empty string, are treated as real data.
+    * When undefined, IsChanged is still set to true unless options.Reset = true.
+    * @param options -
+    *    * validate - Invoke validation after setting the value.
+    *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
+    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
+    *      provide a user-facing error message here. It will appear in the Category=Require
+    *      validator within the {ConversionError} token.
+    *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
+    *      OnValueChanged property.
     */
     public setValue(value: any, options?: SetValueOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);

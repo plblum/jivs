@@ -62,12 +62,12 @@ import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Valu
  * 
  * Here is the Phase 2 continuation of the above:
  * ```ts
- * builder.input('Field1', LookupKey.Integer, { label: 'Name', labell10n: 'ProductNameLabel', parserLookupKey: LookupKey.Number }).requireText()
+ * builder.field('Field1', LookupKey.Integer, { label: 'Name', labell10n: 'ProductNameLabel', parserLookupKey: LookupKey.Number }).requireText()
  * ```
  * The resulting valueHostConfig will be (* where changes where made)
  * ```ts
  * {
- *   valueHostType: 'Input',    //* upscaled from Property
+ *   valueHostType: 'Field',    //* upscaled from Property
  *   valueHostName: 'Field1',
  *   dataType: 'Integer',       //* upscaled from Number
  *   label: 'Name',     //*
@@ -97,7 +97,7 @@ import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Valu
  * The user controls some of those properties, providing rules of: replace, nochange, delete, and a callback.
  * 
  * There are some properties that are strictly controlled by ConfigMergeService like ValueHostName (cannot change it)
- * and ValueHostType (changes automatically for upscaling Property to Input). Also ValidationConfig, ConditionConfig cannot be 
+ * and ValueHostType (changes automatically for upscaling Property to Field). Also ValidationConfig, ConditionConfig cannot be 
  * specified for replacement. But their children can. 
  * 
  * Conditions -- the validatorConfig.conditionConfig property -- are a special case. 
@@ -257,7 +257,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
 /**
  * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValidationManagerConfigBuilder.
  * It locks only the valueHostName and validatorConfigs.
- * It upscales ValueHostType from Property to Input (but not anything else).
+ * It upscales ValueHostType from Property to Field (but not anything else).
  * It uses the ValidatorConfigResolver to handle all validatorConfigs.
  */
 export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHostConfig>
@@ -284,8 +284,8 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
      */
     protected updateValueHostType(source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
 //!!!OBSOLETE        
-        // if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
-        //     return { useValue: ValueHostType.Input };
+        // if (source.valueHostType === ValueHostType.Field && destination.valueHostType === ValueHostType.Property)
+        //     return { useValue: ValueHostType.Field };
         if (source.valueHostType !== destination.valueHostType)
             this.logger.message(LoggingLevel.Warn, () => `Will not change ValueHostType from ${destination.valueHostType} to ${source.valueHostType}.`);
         return { useAction: 'nochange' };

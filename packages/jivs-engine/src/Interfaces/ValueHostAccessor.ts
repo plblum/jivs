@@ -17,7 +17,7 @@ export interface IValueHostAccessor extends IDisposable
      * the valueHostName is unknown or not an FieldValueHost.
      * @param valueHostName 
      */
-    input(valueHostName: ValueHostName): IFieldValueHost;
+    field(valueHostName: ValueHostName): IFieldValueHost;
     //!!OBSOLETE
     // /**
     //  * Returns the associated PropertyValueHost or throws an error when

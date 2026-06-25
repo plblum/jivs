@@ -204,7 +204,7 @@ describe('ConditionBase class', () => {
     
     });
     describe('convertValueAndLookupKey', () => {
-        test('With null conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+        test('With null conversionLookupKey returns text value and valueLookupKey, with false=false', () => {
             let setup = setupTest();
             let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', null, setup.services);
             expect(result.value).toBe(10);
@@ -216,7 +216,7 @@ describe('ConditionBase class', () => {
             expect(result.failed).toBeFalsy();
         });
 
-        test('With undefined conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+        test('With undefined conversionLookupKey returns text value and valueLookupKey, with false=false', () => {
             let setup = setupTest();
             let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', undefined, setup.services);
             expect(result.value).toBe(10);
@@ -535,7 +535,7 @@ describe('class DataTypeCheckCondition', () => {
     test('DefaultConditionType', () => {
         expect(DataTypeCheckCondition.DefaultConditionType).toBe(ConditionType.DataTypeCheck);
     });
-    test('evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
+    test('evaluate returns Match when text value is not undefined and native Value is not undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -553,7 +553,7 @@ describe('class DataTypeCheckCondition', () => {
         setup.vh.setValues(false, 'NO');
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate returns NoMatch when InputValue is not undefined but native Value is undefined', () => {
+    test('evaluate returns NoMatch when text value is not undefined but native Value is undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -561,12 +561,12 @@ describe('class DataTypeCheckCondition', () => {
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
-        setup.vh.setInputValue('A');    // at this moment, setValue is undefined
+        setup.vh.setTextValue('A');    // at this moment, setValue is undefined
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
         setup.vh.setValues(undefined, '10');
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate returns Undetermined when InputValue is undefined', () => {
+    test('evaluate returns Undetermined when text value is undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -576,7 +576,7 @@ describe('class DataTypeCheckCondition', () => {
         let testItem = new DataTypeCheckCondition(config);
         // at this moment, setValue is undefined
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
-        setup.vh.setValue(10);    // doesn't change InputValue...
+        setup.vh.setValue(10);    // doesn't change text value...
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Using Unknown property', () => {
@@ -1063,27 +1063,6 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
-    test('evaluate returns Undetermined for null, undefined, and non-string types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,
-            valueHostName: 'Property1',
-            expressionAsString: 'ABC'
-        };
-        let testItem = new RegExpCondition(config);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(10);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-    });
-
     test('Config lacks both expression and expressionAsString. Throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -1243,7 +1222,7 @@ describe('class RangeCondition', () => {
             maximum: 'G'
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('B');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('C');
@@ -1274,7 +1253,7 @@ describe('class RangeCondition', () => {
             maximum: 25
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(0);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(-9);
@@ -1303,7 +1282,7 @@ describe('class RangeCondition', () => {
             maximum: new Date(Date.UTC(2000, 5, 30))
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(Date.UTC(2000, 4, 31)));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(new Date(Date.UTC(2000, 5, 1)));
@@ -1329,7 +1308,7 @@ describe('class RangeCondition', () => {
             maximum: 'G'
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('.');   // some ascii before A
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('B');
@@ -1357,7 +1336,7 @@ describe('class RangeCondition', () => {
             maximum: null   // should work like undefined
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('.');   // some ascii before A
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('B');
@@ -1461,7 +1440,7 @@ describe('class RangeCondition', () => {
             conversionLookupKey: LookupKey.Integer
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1.99);  // will round down to 1, below the minimum
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(6.1);   // will round down to 6, below the maximum
@@ -1847,7 +1826,7 @@ describe('class EqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(false);
         vh2.setValue(false);
         expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
@@ -1871,8 +1850,8 @@ describe('class EqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -1932,7 +1911,7 @@ describe('class EqualToCondition', () => {
         };
         let testItem = new EqualToCondition(config);
         vh2.setValue(100);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
@@ -1962,7 +1941,7 @@ describe('class EqualToCondition', () => {
             secondConversionLookupKey: LookupKey.Integer        // converts with Math.trunc
         };
         let testItem = new EqualToCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(100);
         
         vh2.setValue(99.1);
@@ -2104,7 +2083,7 @@ describe('class NotEqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
@@ -2128,8 +2107,8 @@ describe('class NotEqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2317,8 +2296,8 @@ describe('class GreaterThanCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2497,8 +2476,8 @@ describe('class GreaterThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2713,8 +2692,8 @@ describe('class LessThanCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2879,7 +2858,7 @@ describe('class LessThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -2903,8 +2882,8 @@ describe('class LessThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -3298,7 +3277,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: 100
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3318,7 +3297,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: false,
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(false);
@@ -3358,7 +3337,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: 100,
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
@@ -3386,7 +3365,7 @@ describe('class EqualToValueCondition', () => {
             secondConversionLookupKey: LookupKey.Integer
         };
         let testItem = new EqualToValueCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(100);
         expect(testItem.evaluate(vh1, setup.vm)).toBe(ConditionEvaluateResult.Match);
         vh1.setValue(100.2);
@@ -3470,7 +3449,7 @@ describe('class NotEqualToValueCondition', () => {
             secondValue: 100
         };
         let testItem = new NotEqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3490,7 +3469,7 @@ describe('class NotEqualToValueCondition', () => {
             secondValue: false
         };
         let testItem = new NotEqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(false);
@@ -3594,7 +3573,7 @@ describe('class GreaterThanValueCondition', () => {
             secondValue: 100
         };
         let testItem = new GreaterThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3614,7 +3593,7 @@ describe('class GreaterThanValueCondition', () => {
             secondValue: false
         };
         let testItem = new GreaterThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is GT
@@ -3716,7 +3695,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             secondValue: 100
         };
         let testItem = new GreaterThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3736,7 +3715,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             secondValue: false
         };
         let testItem = new GreaterThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is GTE
@@ -3839,7 +3818,7 @@ describe('class LessThanValueCondition', () => {
             secondValue: 100
         };
         let testItem = new LessThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3859,7 +3838,7 @@ describe('class LessThanValueCondition', () => {
             secondValue: false
         };
         let testItem = new LessThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
@@ -3913,7 +3892,7 @@ describe('class LessThanOrEqualValueCondition', () => {
             secondValue: 100
         };
         let testItem = new LessThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3933,7 +3912,7 @@ describe('class LessThanOrEqualValueCondition', () => {
             secondValue: false
         };
         let testItem = new LessThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is LTE
@@ -4052,7 +4031,7 @@ describe('class StringLengthCondition', () => {
             maximum: 5
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('1');
@@ -4084,7 +4063,7 @@ describe('class StringLengthCondition', () => {
             maximum: null
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('1');
@@ -4108,7 +4087,7 @@ describe('class StringLengthCondition', () => {
             maximum: 5
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('1');
@@ -4159,7 +4138,7 @@ describe('class StringLengthCondition', () => {
             trim: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(' ');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(' 1');
@@ -4183,7 +4162,7 @@ describe('class StringLengthCondition', () => {
             // trim: undefined means enabled
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
@@ -4209,7 +4188,7 @@ describe('class StringLengthCondition', () => {
             trim: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.Match);
@@ -4234,7 +4213,7 @@ describe('class StringLengthCondition', () => {
             supportsDuringEdit: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
         expect(testItem.evaluateDuringEdits('12', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
         expect(testItem.evaluateDuringEdits('123456', vh, services)).toBe(ConditionEvaluateResult.Undetermined);              
@@ -5506,7 +5485,7 @@ describe('NumberConditionBase', () => {
             valueHostName: 'Property1'
         };
         let testItem = new TestNumberConditionBase(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5633,7 +5612,7 @@ describe('PositiveCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0.1);
@@ -5659,7 +5638,7 @@ describe('PositiveCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5679,7 +5658,7 @@ describe('PositiveCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
@@ -5723,7 +5702,7 @@ describe('IntegerCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0);
@@ -5751,7 +5730,7 @@ describe('IntegerCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5773,7 +5752,7 @@ describe('IntegerCondition', () => {
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
@@ -5842,7 +5821,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0);
@@ -5877,7 +5856,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);         
         vh.setValue('10');
@@ -5899,7 +5878,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);

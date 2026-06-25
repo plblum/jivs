@@ -7,6 +7,7 @@ import { MockValidationServices } from "../TestSupport/mocks";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 
 enableFluentConditions();
 
@@ -20,10 +21,10 @@ class PersonModelRules extends RulesBase {
         super(services);
     }
     protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
-        builder.input('firstName', LookupKey.String).requireText();
-        builder.input('lastName', LookupKey.String).requireText();
+        builder.field('firstName', LookupKey.String).requireText();
+        builder.field('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {
-            builder.input('age', LookupKey.Integer);
+            builder.field('age', LookupKey.Integer);
         }
     }
 
@@ -40,7 +41,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         let config = rules.configure();
         // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
         config.valueHostConfigs.forEach(vhc => {
-            expect(vhc.valueHostType).toBe('Input');
+            expect(vhc.valueHostType).toBe(ValueHostType.Field); 
             expect(vhc.name).toMatch(/firstName|lastName/);
             let validators = (<FieldValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();
@@ -178,10 +179,10 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().
-            builder.input('firstName', { label: 'First Name' });
-            builder.input('lastName', { label: 'Last Name' });
+            builder.field('firstName', { label: 'First Name' });
+            builder.field('lastName', { label: 'Last Name' });
             if (options?.variantName === 'variant1') {
-                builder.input('age', { label: 'Age' });
+                builder.field('age', { label: 'Age' });
             }
         }
     }
@@ -192,7 +193,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         let config = rules.configure();
         // find 2 fieldValueHostConfigs, each with one validator and the RequiredText condition
         config.valueHostConfigs.forEach(vhc => {
-            expect(vhc.valueHostType).toBe('Input');    // it started as 'Property' but was converted to 'Input' by builder.startUILayerConfig()
+            expect(vhc.valueHostType).toBe(ValueHostType.Field); 
             expect(vhc.name).toMatch(/firstName|lastName/);
             expect(vhc.label).toMatch(/First Name|Last Name/);
             let validators = (<FieldValueHostConfig>vhc).validatorConfigs;

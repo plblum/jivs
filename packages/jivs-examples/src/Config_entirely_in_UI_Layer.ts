@@ -50,14 +50,14 @@ export function configExample(): ValidationManager
     // Step 2: Create all ValueHosts and their validators.
     // We'll omit inline error messages in favor of those we setup in TextLocalizationService,
     // expect in one case (for demo purposes).
-    builder.input('startDate', LookupKey.Date, { label: 'Start date' })
+    builder.field('startDate', LookupKey.Date, { label: 'Start date' })
         .lessThan('endDate')
         .lessThanOrEqual('numOfDays',   // right operand of the comparison
             { valueHostName: 'diffDays' },  // compare to this ValueHost, not 'startDate'
             'Less than {compareTo} days apart',   // our preferred error message
             { errorCode: 'NumOfDays' });   // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
-    builder.input('endDate', LookupKey.Date, { label: 'End date' });
-    builder.input('timeZone', LookupKey.String).regExp(timeZoneRegex, false, null, null, { errorCode: 'TimeZone'})    
+    builder.field('endDate', LookupKey.Date, { label: 'End date' });
+    builder.field('timeZone', LookupKey.String).regExp(timeZoneRegex, false, null, null, { errorCode: 'TimeZone'})    
     builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
     builder.calc('diffDays', LookupKey.Integer, differenceBetweenDates);
 
@@ -78,7 +78,7 @@ export function configExample(): ValidationManager
     // on the TimeZone ValueHost.
     let element: HTMLSelectElement = document.getElementById('timeZonePicker') as HTMLSelectElement;
     element.addEventListener('change', () => {
-        vm.vh.input('timeZone').setInputValue(element.value);
+        vm.vh.field('timeZone').setTextValue(element.value);
     });
     
     return vm;

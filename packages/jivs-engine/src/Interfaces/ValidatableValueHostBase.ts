@@ -12,7 +12,7 @@ import {
 import { IGatherValueHostNames, IValueHostCallbacks, toIValueHost, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
-* Manages a value that may use input validation.
+* Manages a value that may use field validation.
 */
 export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
 
@@ -175,7 +175,7 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
 }
 
 /**
- * Just the data that is used to describe this input value.
+ * Just the data that is used to describe this ValueHost.
  * It should not contain any supporting functions or services.
  * It should be generatable from JSON, and simply gets typed to ValidatableValueHostConfig.
  * This provides the backing data for each ValidatableValueHost.

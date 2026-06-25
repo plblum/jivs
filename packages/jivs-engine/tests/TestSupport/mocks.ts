@@ -6,7 +6,7 @@ import { type IValidationServices } from "../../src/Interfaces/ValidationService
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IFieldValueHost, InputValueChangedHandler, FieldValueHostConfig, FieldValueHostInstanceState } from "../../src/Interfaces/FieldValueHost";
+import { IFieldValueHost, TextValueChangedHandler, FieldValueHostConfig, FieldValueHostInstanceState } from "../../src/Interfaces/FieldValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
@@ -154,7 +154,7 @@ export class MockFieldValueHost extends MockValueHost
     implements IFieldValueHost
 {
 
-    _inputValue: any = undefined;
+    _textValue: string | undefined = undefined;
     _conversionErrorMessage: string | undefined;
     _parserLookupKey: string | null | undefined;
 
@@ -175,16 +175,16 @@ export class MockFieldValueHost extends MockValueHost
             this._conversionErrorMessage = undefined;        
     }
 
-    public getInputValue() {
-        return this._inputValue;
+    public getTextValue() : string | undefined {
+        return this._textValue;
     }
-    setInputValue(value: any, options?: SetValueOptions | undefined): void {
-        this._inputValue = value;
+    setTextValue(value: string | undefined, options?: SetValueOptions | undefined): void {
+        this._textValue = value;
         this._conversionErrorMessage = undefined;
     }
-    setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
+    setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions | undefined): void {
         this.setValue(nativeValue);
-        this.setInputValue(inputValue);
+        this.setTextValue(textValue);
         if (nativeValue === undefined && options && options.conversionErrorTokenValue)
             this._conversionErrorMessage = options.conversionErrorTokenValue;
         else
@@ -242,7 +242,7 @@ export class MockFieldValueHost extends MockValueHost
     {
         return this._parserLookupKey;
     }
-    requiresInput: boolean = false;
+    required: boolean = false;
     
     otherValueHostChangedNotification(valueHostNameThatChanged: string, revalidate: boolean): void {
         // do nothing
@@ -599,13 +599,13 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         return vh;
     }
 
-    public addMockFieldValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockFieldValueHost
+    public addMockFieldValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, textValue?: any, value?: any): MockFieldValueHost
     {
         let vh = new MockFieldValueHost(this, name, dataTypeLookupKey, label);
         this.valueHosts.set(name, vh);
         this.valueHostConfigs.set(name, vh.config);
-        vh._inputValue = inputValue;
-        vh._value = nativeValue;
+        vh._textValue = textValue;
+        vh._value = value;
         return vh;
     }
     public addFieldValueHostWithConfig(config: ValueHostConfig,
@@ -663,7 +663,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         throw new Error("Method not implemented.");
     }
    
-    getIssuesForInput(valueHostName: string): IssueFound[] {
+    getIssuesForField(valueHostName: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }
     getIssuesFound(group?: string | undefined): IssueFound[] {
@@ -719,10 +719,10 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
     }
 
 
-    public get onInputValueChanged(): InputValueChangedHandler | null {
-        return this.config.onInputValueChanged ?? null;
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.config.onTextValueChanged ?? null;
     }    
-    public set onInputValueChanged(fn: InputValueChangedHandler) {
-        this.config.onInputValueChanged = fn;
+    public set onTextValueChanged(fn: TextValueChangedHandler) {
+        this.config.onTextValueChanged = fn;
     }    
 }

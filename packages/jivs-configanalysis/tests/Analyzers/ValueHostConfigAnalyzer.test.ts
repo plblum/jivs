@@ -421,7 +421,7 @@ describe('ValueHostConfigAnalyzer', () => {
         // Two tests: one without any issues, one with issues for every analyzer
         test('should analyze a fully populated FieldValueHostConfig without any issues', () => {
             const testValueHostConfig: FieldValueHostConfig = {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'testValueHost',
                 dataType: LookupKey.Number,
                 label: 'Test',
@@ -459,7 +459,7 @@ describe('ValueHostConfigAnalyzer', () => {
         // same but with issues for each analyzer
         test('should analyze a fully populated FieldValueHostConfig with issues for each analyzer', () => {
             const testValueHostConfig: any ={
-                valueHostType: ' Input ',   // ValueHostTypePropertyAnalyzer
+                valueHostType: ' Field ',   // ValueHostTypePropertyAnalyzer
                 name: ' whitespace ',   // ValueHostNamePropertyAnalyzer
                 dataType: ' Number  ', // DataTypePropertyAnalyzer
                 label: '{Token:bad',    // LabelPropertiesAnalyzer syntax error

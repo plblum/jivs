@@ -25,7 +25,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValueHostsManager, IValueHostsManagerAccessor } from './ValueHostsManager';
+import { IValueHostsManagerAccessor } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
 import { ConditionConfig } from './Conditions';
 /**
@@ -46,34 +46,37 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     getLabel(): string;
 
     /**
-     * Gets the value. It is expected to be in its native data type,
-     * capable of being stored or used without conversion by the caller.
-     * For example, a Date object or Number type.
-     * Returns undefined if the native value could not be resolved
-     * from the input value.
+     * Gets the typed value in its native form,
+     * ready for use by the caller without string conversion.
+     * For example, a Date object or a number.
+     * Returns undefined when the typed value could not be resolved
+     * from the text value.
      */
     getValue(): any;
 
     /**
-     * Replaces the value and optionally validates.
-     * Call when the value was changed in the system consumer.
-     * @param value - Can be undefined to indicate the value could not be resolved
-    * from the input field/element's value, such as inability to convert a string to a date.
-    * All other values, including null and the empty string, are considered real data.
-    * When undefined, IsChanged will still be changed to true unless options.Reset = true.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+    * Replaces the typed value and optionally validates in subclasses
+    * that implement IValidatableValueHostBase. 
+    * Call when the typed value was changed directly by consuming code.
+    * @param value - The typed value to store. Use undefined to indicate that the
+    * typed value could not be resolved from the text value, such as when parsing fails.
+    * All other values, including null and the empty string, are treated as real data.
+    * When undefined, IsChanged is still set to true unless options.Reset = true.
+    * @param options -
+    *    * validate - Invoke validation after setting the value.
+    *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
+    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
+    *      provide a user-facing error message here. It will appear in the Category=Require
+    *      validator within the {ConversionError} token.
+    *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
+    *      OnValueChanged property.
     */
     setValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Identifies that the value is undetermined. For example,
      * the user's input cannot be converted into its native data type
-     * or the input is empty.
+     * or the textbox is empty.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
     * @param options - 
@@ -278,7 +281,7 @@ export interface ValueHostConfig {
     /**
      * Identifies the type of ValueHost that will be created to 
      * support the Config. Can use the enumeration ValueHostType to get these strings.
-     * FieldValueHost - 'Input'
+     * FieldValueHost - 'Field'
      * PropertyValueHost - 'Property'
      * StaticValueHost - 'Static'
      * CalcValueHost - 'Calc'

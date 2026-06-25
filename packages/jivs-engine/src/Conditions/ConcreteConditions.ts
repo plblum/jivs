@@ -20,7 +20,7 @@ import {
 } from '../Interfaces/Conditions';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { StringConditionBaseConfig, StringConditionBase } from './StringConditionBase';
-import { InputValueConditionBase, InputValueConditionBaseConfig } from './InputValueConditionBase';
+import { TextValueConditionBase, TextValueConditionBaseConfig } from './TextValueConditionBase';
 import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsBaseConfig } from './EvaluateChildConditionResultsBase';
 import { RegExpConditionBaseConfig, RegExpConditionBase } from './RegExpConditionBase';
 
@@ -40,24 +40,24 @@ import { ConditionWithOneChildBase, ConditionWithOneChildBaseConfig } from './Co
 /**
  * ConditionConfig for {@link DataTypeCheckCondition}
  */
-export interface DataTypeCheckConditionConfig extends InputValueConditionBaseConfig {
+export interface DataTypeCheckConditionConfig extends TextValueConditionBaseConfig {
 
 }
 
 
 /**
- * Determines if the value of InputValue can be successfully converted to its native data type.
+ * Determines if the text value can be successfully converted to its native data type.
  * Since the actual work of conversion occurs by the consuming system, this really just looks
- * at both values. When InputValue is not undefined while Value is undefined, it reports an error
+ * at both values. When the text value is provided while Value is undefined, it reports an error
  * as the converter could not get a valid value to store in the Value.
  * Supports these tokens:
  * {ConversionError} - Uses the value from IFieldValueHost.getConversionErrorMessage()
  */
-export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeCheckConditionConfig>
+export class DataTypeCheckCondition extends TextValueConditionBase<DataTypeCheckConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
-    protected evaluateInputValue(value: any, valueHost: IFieldValueHost,
+    protected evaluateTextValue(value: any, valueHost: IFieldValueHost,
         valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
@@ -89,8 +89,8 @@ export interface RequireTextConditionConfig extends OneValueConditionBaseConfig 
     /**
      * Removes leading and trailing whitespace before evaluating the string.
      * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
+     * comes from the text value, which is actively being edited.
+     * Your parser that moves data from text to native values is expected
      * to do its own trimming, leaving the DuringEdit = false no need to trim.
      */
     trim?: boolean;    
@@ -111,7 +111,7 @@ export interface RequireTextConditionConfig extends OneValueConditionBaseConfig 
  * It has two evaluation features:
  * - ICondition.evaluate() evaluates the native value. It ignores the trim property.
  * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
- * editing the input. It is invoked by FieldValueHost.setInputValue(option.DuringEdit = true)
+ * editing the input. It is invoked by FieldValueHost.setTextValue(option.DuringEdit = true)
  * and supports the trim property.
  */
 export class RequireTextCondition extends OneValueConditionBase<RequireTextConditionConfig>

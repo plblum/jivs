@@ -8,7 +8,7 @@ import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerC
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentInputParameters, FluentValidatorBuilder, FluentInputValueConfig, ValidationManagerStartFluent, FluentConditionBuilder } from "../ValueHosts/Fluent";
+import { FluentFieldParameters, FluentValidatorBuilder, FluentFieldValueConfig, ValidationManagerStartFluent, FluentConditionBuilder } from "../ValueHosts/Fluent";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { resolveErrorCode } from "../Utilities/Validation";
@@ -60,7 +60,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
@@ -68,7 +68,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
@@ -76,12 +76,12 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * You can omit the valueHostType property.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public input(config: FluentInputValueConfig): FluentValidatorBuilder;
+    public field(config: FluentFieldValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig,
-        arg2?: FluentInputParameters | string | null,
-        arg3?: FluentInputParameters): FluentValidatorBuilder {
-        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Input, arg1, arg2, arg3);
+    public field(arg1: ValueHostName | FluentFieldValueConfig,
+        arg2?: FluentFieldParameters | string | null,
+        arg3?: FluentFieldParameters): FluentValidatorBuilder {
+        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
     }
 
     // /**
@@ -177,7 +177,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     //!!!OBSOLETE
     // /**
     //  * Replaces the valueHostType property value, from 'Property'
-    //  * to 'Input' (no changes to any other case).
+    //  * to 'Field' (no changes to any other case).
     //  * This allows business logic to output in its preferred ValueHostType
     //  * and UI to upscale it to FieldValueHost.
     //  * Only impacts the initial ValueHostConfig, not any overrides.
@@ -187,7 +187,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     //     let changed = false;
     //     this.baseConfig.valueHostConfigs.forEach((vhConfig) => {
     //         if (vhConfig.valueHostType === ValueHostType.Property) {
-    //             vhConfig.valueHostType = ValueHostType.Input;
+    //             vhConfig.valueHostType = ValueHostType.Field;
     //             changed = true;
     //         }
     //     });

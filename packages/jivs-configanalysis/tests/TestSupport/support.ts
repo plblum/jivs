@@ -601,7 +601,7 @@ export function createExtensiveConfigAnalysisResults(): IConfigAnalysisResults {
     // 'ValueHost2' is an input value host with an integer lookup key
     // It has 3 validators. One has an error message.
     // It has a warning message for l10nProperty.
-    let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Input, LookupKey.Integer,
+    let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Field, LookupKey.Integer,
         ['dataType', 'labell10n']);
     let ivhc = vh2Result.config as FieldValueHostConfig;
     ivhc.parserLookupKey = LookupKey.Minutes;

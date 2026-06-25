@@ -59,7 +59,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
     });
     test('null setup parameter throws', () => {
@@ -83,7 +83,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
     });
 
@@ -106,7 +106,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
 
 
@@ -133,7 +133,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
 
         // ensure ValueHost is supporting the Config
@@ -221,7 +221,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
     });
     test('Config and ValueHostInstanceState for 1 ValueHost supplied. Other parameters are null', () => {
@@ -254,7 +254,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
 
 
@@ -292,7 +292,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onInputValueChanged).toBeNull();
+        expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
 
         // ensure ValueHost is supporting the Config and a Value of 10 from State
@@ -308,7 +308,7 @@ describe('constructor and initial property values', () => {
             onValueHostInstanceStateChanged: (valueHost: IValueHost, state: ValueHostInstanceState) => { },
 
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
-            onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { },
+            onTextValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { },
             onConfigChanged: (valueHost, config) => { }
         };
 
@@ -319,7 +319,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValueChanged).not.toBeNull();
-        expect(testItem!.onInputValueChanged).not.toBeNull();
+        expect(testItem!.onTextValueChanged).not.toBeNull();
         expect(testItem!.onConfigChanged).not.toBeNull();
     });
     test('With Builder, Callbacks supplied. Other parameters are null', () => {
@@ -330,7 +330,7 @@ describe('constructor and initial property values', () => {
         builder.onValueHostInstanceStateChanged = (valueHost: IValueHost, state: ValueHostInstanceState) => { };
 
         builder.onValueChanged = (valueHost: IValueHost, oldValue: any) => { };
-        builder.onInputValueChanged = (valueHost: IValidatableValueHostBase, oldValue: any) => { };
+        builder.onTextValueChanged = (valueHost: IValidatableValueHostBase, oldValue: any) => { };
         builder.onConfigChanged = (valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>) => { };
 
 
@@ -341,7 +341,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValueChanged).not.toBeNull();
-        expect(testItem!.onInputValueChanged).not.toBeNull();
+        expect(testItem!.onTextValueChanged).not.toBeNull();
         expect(testItem!.onConfigChanged).not.toBeNull();
     });
 });
@@ -942,7 +942,7 @@ describe('vh', () => {
         expect(() => vhm.vh.calc('X')).toThrow(/unknown/);
         expect(() => vhm.vh.calc('Field1')).toThrow(/CalcValueHost/);
 //!!OBSOLETE        expect(() => vhm.vh.property('Field1')).toThrow(/PropertyValueHost/);
-        expect(() => vhm.vh.input('Field1')).toThrow(/FieldValueHost/);
+        expect(() => vhm.vh.field('Field1')).toThrow(/FieldValueHost/);
     });
 });
 describe('enumerateValueHosts', () => {
@@ -1190,7 +1190,7 @@ describe('toIValueHostsManagerCallbacks function', () => {
         let testItem: IValueHostsManagerCallbacks = {
             onValueChanged: (vh: IValueHost, old: any) => { },
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
-            onInputValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
+            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onInstanceStateChanged: (vm, state) => { }
         };
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
@@ -1208,7 +1208,7 @@ describe('toIValueHostsManagerCallbacks function', () => {
             valueHostConfigs: [],
             onValueChanged: (vh: IValueHost, old: any) => { },
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
-            onInputValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
+            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onInstanceStateChanged: (vm, state) => { }
         });
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
@@ -1219,7 +1219,7 @@ describe('toIValueHostsManagerCallbacks function', () => {
             valueHostConfigs: [],
             onValueChanged: null,
             onValueHostInstanceStateChanged: null,
-            onInputValueChanged: null,
+            onTextValueChanged: null,
             onInstanceStateChanged: null
         });
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);

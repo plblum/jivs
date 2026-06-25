@@ -97,7 +97,7 @@ export enum ValidationStatus {
      */
     NotAttempted,
     /**
-     * Indicates that either Value or InputValue was changed
+     * Indicates that either native value or text value was changed
      * but has yet to be validated.
      */
     NeedsValidation,

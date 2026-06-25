@@ -160,10 +160,10 @@ export interface ConfigAnalysisOptions {
     valueHostsSampleValues?: { [valueHostName: string]: unknown };
 
     /**
-     * Allows the user to help the service find the Input values
+     * Allows the user to help the service find the text values
      * to use when testing the parsers.
      * 
-     * If there is no Input Value for a ValueHost, the analysis will
+     * If there is no text Value for a ValueHost, the analysis will
      * not check its parser for errors.
      */
     fieldValueHostSampleValues?: { [valueHostName: string]: unknown };

@@ -34,8 +34,8 @@
  * let builder = build(services);
  * builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
- * // create the 'StartDate' input with a LessThanCondition
- * builder.input('StartDate', 'Date', { label: 'Start date' })
+ * // create the 'StartDate' field with a LessThanCondition
+ * builder.field('StartDate', 'Date', { label: 'Start date' })
  *  .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
