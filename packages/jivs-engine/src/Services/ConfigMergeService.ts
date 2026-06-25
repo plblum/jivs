@@ -7,21 +7,15 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { AllMatchConditionConfig } from '../Conditions/ConcreteConditions';
-import { ConditionType } from '../Conditions/ConditionTypes';
-import { ConditionConfig } from '../Interfaces/Conditions';
-import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import {
     PropertyConflictRule, MergeIdentity, PropertyConfigMergeServiceHandlerResult,
     IConfigMergeServiceBase, IValueHostConfigMergeService, IValidatorConfigMergeService,
-    ConditionConfigMergeServiceHandler,
-    ConditionConfigMergeServiceAction,
     ConditionConflictIdentifierHandler
 } from '../Interfaces/ConfigMergeService';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../ValueHosts/ManagerConfigBuilderBase';
+import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
  * The ValidationManagerConfig file may be populated in 2 phases:
@@ -39,10 +33,10 @@ import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Valu
  * ```ts
  * let vmConfig: ValidationManagerConfig = { services: services };
  * let builder = build(vmConfig);
- * builder.property('Field1', LookupKey.Number, { label: 'Field 1' }).notNull().greaterThanValue(10);
+ * builder.field('Field1', LookupKey.Number, { label: 'Field 1' }).notNull().greaterThanValue(10);
  * // same as:
  * {
- *   valueHostType: 'Property',
+ *   valueHostType: 'Field',
  *   valueHostName: 'Field1',
  *   dataType: 'Number',
  *   label: 'Field 1',
@@ -67,7 +61,7 @@ import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Valu
  * The resulting valueHostConfig will be (* where changes where made)
  * ```ts
  * {
- *   valueHostType: 'Field',    //* upscaled from Property
+ *   valueHostType: 'Field',  
  *   valueHostName: 'Field1',
  *   dataType: 'Integer',       //* upscaled from Number
  *   label: 'Name',     //*

@@ -57,10 +57,10 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * ## With Business Logic using the builder and UI overrides its settings
  * ```ts
  * let builder = build(createValidatorServices('client'));  // 'client' because the config targets the UI
- * builder.property('Field1', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
+ * builder.field('Field1', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.static('Field2', LookupKey.Date);
- * builder.property('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
- * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
+ * builder.field('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
+ * builder.startUILayerConfig({ favorUIMessages: true });
  * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
  * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
@@ -82,9 +82,8 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * };
  * myBusinessLogicToJivsConverter(vmConfig); // expect 'Field1', 'Field2', and 'Field3' to be generated as shown in the previous case
  * let builder = build(vmConfig);
- * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
- * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
- * // all error messages that were covered by the TextLocalizerService.
+ * builder.startUILayerConfig({ favorUIMessages: true });
+ * // At this point, we've replaced all configured error messages with equivalents from the UI's TextLocalizerService.
  * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
  * builder.field('Field1', null { label: 'Product name' })
  * builder.field('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });

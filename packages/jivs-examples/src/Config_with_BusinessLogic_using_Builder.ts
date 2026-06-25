@@ -148,9 +148,9 @@ export class ReportingBusinessLogicBuilder {
     }
     public populate(): void {
     // Remember to update this when Reporting business logic changes
-        this._builder.property('startDate', LookupKey.Date).lessThan('endDate', null, 'Second date less than first');
-        this._builder.property('endDate', LookupKey.Date);
-        this._builder.property('timeZone', LookupKey.String).regExp(timeZoneRegex, false, null, 'Invalid time zone', { errorCode: 'TimeZone' });
+        this._builder.field('startDate', LookupKey.Date).lessThan('endDate', null, 'Second date less than first');
+        this._builder.field('endDate', LookupKey.Date);
+        this._builder.field('timeZone', LookupKey.String).regExp(timeZoneRegex, false, null, 'Invalid time zone', { errorCode: 'TimeZone' });
     }
 }
 

@@ -8,28 +8,38 @@ import { IDataTypeParser } from "./DataTypeParsers";
 
 
 /**
-* A ValueHost that supports input validation, meaning the value from
-* the user's input, such as from a textbox or <input> tag.
-* 
-* There are two types of values associated with an FieldValueHost:
-* - text value - the value supplied by the input field/element.
-*   It is often a string representation of the native data
-*   and may contain errors preventing its conversion into that native data.
-*   Only a few conditions evaluate the input value, but they are important:
-*   RequireTextCondition, DataTypeCheckCondition and RegExpCondition.
-* - native value - the value that will be stored in the Model.
-*   Date object, number, boolean, and your own object are examples.
-*   When the native type is a string, it is often similar in both input and native values.
-*   The string in the native value may be cleaned up, trimmed, reformatted, etc.
-*   Most Conditions evaluate the native value.
-* 
-* Its up to the system consumer to manage both.
-* - When an input has its value set or changed, also assign it here with setTextValue().
-* - RequireTextCondition, DataTypeCheckCondition and RegExpCondition look at the text value via getTextValue().
-* - The initial native value is assigned with setValue.
-*   The consumer handles converting the input field/element value into its native value
-*   and supplies it with setValue or setValueUndetermined.
-* - Most Conditions look at the native value through getValue.
+ * A ValueHost for validation of a single field-like value. It is the most common ValueHost 
+ * you will use because it works both with user input and with model properties to provide validation.
+ *
+ * On the client side, it supports editing widgets whose values are handled in text form.
+ * On the server side, it supports model properties whose incoming values may also arrive
+ * in text form before being resolved to their typed form.
+ *
+ * Because validation may need to evaluate either representation, an IFieldValueHost tracks:
+ * - text value - the value exactly as supplied in text form
+ * - typed value - the value in its native application form
+ *
+ * The text value may fail to resolve to the typed value. Conditions that inspect text,
+ * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
+ * the text value. Most other Conditions evaluate the typed value.
+ *
+ * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * ```ts
+ * builder.field("firstName", LookupKey.String);
+ * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });
+ * builder.field("Badge number", LookupKey.String)
+ *      .requireText()
+ *      .regExp(/^\d{3}\-\d{2}-[A-D]{4}$/);
+ * ```
+ * If configuring directly from a Config object, use the ValueHostType.Field type and provide a list of ValidatorConfigs.
+ * ```ts
+ * const config: FieldValueHostConfig = <FieldValueHostConfig>{
+ *    valueHostType: ValueHostType.Field,
+ *    name: "firstName",
+ *    dataType: LookupKey.String,
+ * ...and more...
+ * };
+ * ```
 */
 export interface IFieldValueHost extends IValidatorsValueHostBase {
     /**

@@ -1,7 +1,7 @@
 /**
  * CalcValueHost is a specialized ValueHost whose value is calculated
- * when its getValue method is called. You supply a function callback
- * in its CalcValueHostConfig to set it up.
+ * when its getValue method is called. You provide a function callback
+ * which is called to perform the calculation.
  * 
  * Calculations allow you to expand what is available to Conditions
  * without having to create new rules. This class was inspired by this use case:
@@ -14,11 +14,15 @@
  * 
  * CalcValueHost has nifty conversion functions built in, that 
  * can be used to prepare the values it needs, the same way the comparison conditions do.
+ * ```ts
  * let totalDays = vh.convert(value, 'TotalDays'); // 'TotalDays' is a lookup key
+ * ```
  * Internally CalcValueHost uses Jivs' DataTypeConverters and DataTypeIdentifiers
  * to convert the original value into the value demanded by its own dataType property.
  * 
- * Here is pseudo code for configuring the CalcValueHost used in this example.
+ * Here is pseudo code for configuring the CalcValueHost used in this example. It assumes
+ * that you have a builder object, and that is provided so long as you are writing configuration 
+ * code using the ModelRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
  * ```ts
  * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
  * : SimpleValueType
@@ -31,7 +35,6 @@
  * }
  * 
  * // create the CalcValueHostConfig to supply to the ValidationManager
- * let builder = build(services);
  * builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
  * // create the 'StartDate' field with a LessThanCondition

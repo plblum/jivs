@@ -132,7 +132,7 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
     }
 
     /**
-     * Utility for calls to existing static(), field(), calc(), and property() functions
+     * Utility for calls to existing field(), static(), and calc() functions
      * that provide defenses against bad data.
      * @param arg1 
      * @param arg2 

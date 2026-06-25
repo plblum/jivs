@@ -24,20 +24,40 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 
 
 /**
- * Standard implementation of IFieldValueHost. It owns a list of Validators
- * which support its validate() function.
- * Use ValueHostConfig.valueHostType = "Field" for the ValidationManager to use this class.
+ * A ValueHost for validation of a single field-like value. It is the most common ValueHost 
+ * you will use because it works both with user input and with model properties to provide validation.
+ *
+ * On the client side, it supports editing widgets whose values are handled in text form.
+ * On the server side, it supports model properties whose incoming values may also arrive
+ * in text form before being resolved to their typed form.
+ *
+ * Because validation may need to evaluate either representation, an IFieldValueHost tracks:
+ * - text value - the value exactly as supplied in text form
+ * - typed value - the value in its native application form
+ *
+ * The text value may fail to resolve to the typed value. Conditions that inspect text,
+ * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
+ * the text value. Most other Conditions evaluate the typed value.
+ *
+ * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * ```ts
+ * builder.field("firstName", LookupKey.String);
+ * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });
+ * builder.field("Badge number", LookupKey.String)
+ *      .requireText()
+ *      .regExp(/^\d{3}\-\d{2}-[A-D]{4}$/);
+ * ```
  * 
-* Each instance depends on a few things, all passed into the constructor:
-* - valueHostsManager - Typically this is the ValidationManager.
-* - FieldValueHostConfig - The business logic supplies these rules
-*   to implement a ValueHost's name, label, data type, validation rules,
-*   and other business logic metadata.
-* - FieldValueHostInstanceState - InstanceState used by this FieldValueHost including
-    its validators.
-* If the caller changes any of these, discard the instance
-* and create a new one.
- */
+ * If configuring directly from a Config object, use the ValueHostType.Field type and provide a list of ValidatorConfigs.
+ * ```ts
+ * const config: FieldValueHostConfig = <FieldValueHostConfig>{
+ *    valueHostType: ValueHostType.Field,
+ *    name: "firstName",
+ *    dataType: LookupKey.String,
+ * ...and more...
+ * };
+ * ```
+*/
 export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig, FieldValueHostInstanceState>
     implements IFieldValueHost {
     constructor(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
