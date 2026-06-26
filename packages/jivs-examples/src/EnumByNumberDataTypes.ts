@@ -1,3 +1,9 @@
+// Example: Data Types for enumerated types, where the native value is an integer.
+// Shows:
+// - Lookup Key - create one for each enum type
+// - Formatter, converts number to localized text
+// - Parser, converts text to number
+
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
@@ -6,11 +12,6 @@ import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTy
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
-// Example: Data Types for enumerated types, where the native value is an integer.
-// Shows:
-// - Lookup Key - create one for each enum type
-// - Formatter, converts number to localized text
-// - Parser, converts text to number
 
 // We'll demonstrate with this type:
 export enum PhoneType

@@ -60,8 +60,12 @@ export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
 export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
-    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), null, LookupKey.TotalDays);
-    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), null, LookupKey.TotalDays);
+    let totalDays1 = callingValueHost.convert(
+        findValueHosts.getValueHost('startDate')?.getValue(),
+        null, LookupKey.TotalDays);
+    let totalDays2 = callingValueHost.convert(
+        findValueHosts.getValueHost('endDate')?.getValue(),
+        null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
         return undefined;   // can log with findValueHosts.services.logger.log();
     return Math.abs(totalDays2 - totalDays1);

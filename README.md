@@ -10,6 +10,7 @@ avoids the hassle of breaking changes later. --- Peter Blum*
 <details open>
 Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
 
+
 **Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the <dfn title="A single condition that evaluates the incoming data and determines if it is valid or not.">validation rules</dfn> are considered the domain of the business logic, and for projects that use strong OOP patterns like separation of concerns and dependency injection.
 
 With Jivs, the UI knows almost nothing about what needs to be validated. A form just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
@@ -93,7 +94,8 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
   + Calculated - Runs a calculation function whose result is its value.
   
   Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
-  
+
+  In this example, the lessThanOrEqual validator gets its value from NumOfDays, a static value, and DiffDays, a calculated value.
   ```ts
   builder.field('StartDate', LookupKey.Date)
     .lessThan('EndDate')
@@ -166,7 +168,7 @@ builder.field('birthDate', LookupKey.Date)
 We encourage you to add to our list. For example, add a lookup key for "EmailAddress" and attach a regular expression validation rule to it.
     
 ### Customization
-Jivs is designed around the services and factory patterns with dependency injection. Most of its types, whether focused classes or full services are built using interfaces, allowing extension and replacement.
+Jivs is designed around the services and factory patterns. Most of its types, whether focused classes or full services are built using interfaces, allowing extension and replacement.
 
 Jivs accommodates unique usage scenarios through extensive customizability:
 - Formatters: Convert values into the strings shown in error message tokens. For instance, configure error messages to show dates in an abbreviated format rather than a short date format using third party localization library.
@@ -249,28 +251,27 @@ I continue to look at UI frameworks that include input validation tools, and am 
 # Learning Jivs
 [Jivs source code](https://github.com/plblum/jivs) is heavily and meaningfully commented, and it is all available in TypeDoc format at [jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc). Use this section for an orientation.
 
-## Quick terminology overview
-Here are a few terms used.
-- **Validation rule** - A single condition that evaluates the incoming data and determines if it is valid or not. There may be several distinct rules on a single input, such as "requires a value", "must be a date", etc.
+## Terminology
+You may want to create a link to this topic to assist as you delve into the documentation.
+- **Business Logic** – The code dedicated to describing and maintaining your Model. It provides the validation rules for individual properties and to run before saving. Jivs proposes that you code these rules separately from the UI.
 - **Model** - Industry term for an object that represents a specific piece of data. It often has parallels to what you store in a database as a table. In terms of validation, your app will usually collect all of the data from the user and stick it into a Model. Then the Model is run against business logic to ensure its completely valid before it is stored. Related terms: Entity, Record, and Data Transfer Object (DTO).
 - **Property** - A named piece of data found on the Model. Validation is often applied to Properties.
-- **Form** – A group of Inputs that is gathering data from the user. It often has buttons to submit the work when completed (but first, it should use validation!). When using the HTML \<form>, your client side does not intend to gather that data into a Model; instead it posts the form contents to the server for Model formation and validation.
-- **Input** - Refers to the editor, widget, component where the user edits the data. In HTML, \<input>, \<select>, and \<textarea> tags are examples. Validation is often applied to Inputs.
-- **Business Logic** – The code dedicated to describing and maintaining your Model. It provides the validation rules for individual properties and to run before saving. It should be separate from the UI, and Jivs favors that approach.
+- **Input** - Refers to the editor, widget, component where the user edits the data. In HTML, \<input>, \<select>, and \<textarea> tags are examples. Validation is often applied to Inputs.- 
+- **Field** - Properties and Inputs are basically the same concept at a high level. They hold a field value. **Field** refers to this concept.
+- **Form** – A user interface construction that holds a group of Inputs. It often has buttons to submit the work when completed (but first, it should use validation!). When using the HTML \<form>, your client side does not intend to gather that data into a Model; instead it posts the form contents to the server for Model formation and validation.
+- **Condition** - A class that evaluates value(s) against a rule
+to see if those values conform. One or more of these classes are used within a validation rule and other use cases.
+- **Validation rule** - A validator's use of condition classes to evaluate the values and determine validity. There may be several distinct rules on a single input, such as "requires a value", "must be a date", etc.
 - **Validator** – Combines a validation rule with the error message(s) it may return when an issue is found. Some Validators are specific to an Input or Property; those are the domain of Jivs. Business logic may also have Validators that work with the entire Model.
-- **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. InputValueHost and PropertyValueHost represent two types that support validation of their values. However, not all values need actual validation. Some hold data like global values and fields from the Model that won't be edited.
-  > In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
-
-- **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
+- **Input Value** – The raw string data from the Input. It is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
+- **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
+- **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. `FieldValueHost` is associated with Fields, supporting validation as they change. However, not all values need actual validation. `StaticValueHost` holds static data like global values and fields from the Model that won't be edited. `CalcValueHost` determines its value from a calculation.
 - **ValidationManager** – A Jivs object; it is the main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
 You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
-- **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
-- **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
-- **Model Rules**, **ModelRulesBase**, **FormRulesBase** - Model rules describes the business logic rules for validation specific to a Model. You encapsolate those rules in a subclass of `ModelRulesBase`. If you don't have a model, subclass from `FormRulesBase` instead.
-- **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
-- **Builder API** - Tooling to configure the ValueHosts and their Validators used by ValidationManager.
-- **Builder object** - An object supplying the Builder API that is used to configure prior to creating the ValidationManager.
-- **Modifier object** - An object supplying the Builder API that is used to configure after creating the ValidationManager.
+- **Model Rules** - Model rules describes the business logic rules for validation specific to a Model. They are used to configure a ValidationManager. You encapsolate those rules in a subclass of `ModelRulesBase`. If you don't have a model, subclass from `FormRulesBase` instead.
+- **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
+- **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, `ValidationServices`, and connect individual services to it. 
+- **Builder API** - Tooling to configure the `ValueHosts` and their `Validators` used by `ValidationManager`.
 - **Parser** - Code that converts of the Input Value from a string into its Native Value.
 - **Formatter** - Code that converts the Native Value into a localized, user friendly string for display within an error message.
 - **Converter** - Code that converts a Native Value into another value, such as converting a date into the day offset from the start of the year, or making a string all lowercase characters.
@@ -278,11 +279,11 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 ## Where you want to use validation
 
 ### As focus leaves an Input and its value changed
-* Use the onchange event to tell the ValidationManager about the data change and run validation. 
+* Use the onchange event to tell the `ValidationManager` about the data change and run validation. 
   * You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-  * Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.field('name').setInputValue(inputValue, { validate: true });`
+  * Jivs lets you assign a parser to each FieldValueHost. Just use: `validationManager.vh.field('name').setTextValue(inputValue, { validate: true });`
   * If you want to handle parsing elsewhere, use: `validationManager.vh.field('name').setValues(nativeValue, inputValue, { validate: true });`
-* The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
+* The `ValidationManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
 ```ts
@@ -340,7 +341,7 @@ This code sets up the onchange event with built-in parsing:
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
-  vm.vh.field('FirstName').setInputValue(inputValue, { validate: true });
+  vm.vh.field('FirstName').setTextValue(inputValue, { validate: true });
 });
 ```
 This code sets up the onchange event with your own parsing:
@@ -363,7 +364,7 @@ All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  vm.vh.field('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
+  vm.vh.field('FirstName').setTextValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
 
@@ -616,15 +617,15 @@ class PersonModelRules extends ModelRulesBase {
     builder: ValidationManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
-    builder.property('FirstName', LookupKey.String)
+    builder.field('FirstName', LookupKey.String)
       .requireText()
       .stringLength(50);
 
-    builder.property('LastName', LookupKey.String)
+    builder.field('LastName', LookupKey.String)
       .requireText()
       .stringLength(50);
 
-    builder.property('BirthDate', LookupKey.Date)
+    builder.field('BirthDate', LookupKey.Date)
       .notNull();
   }
 }
@@ -647,9 +648,9 @@ const vm = new ValidationManager(config);
 
 A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
 
-The form _must_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface, even if its `adaptToForm()` method is left empty. That step ensures the model's use of `PropertyValueHosts` is switched to `InputValueHosts`.
+The form _should_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface, even if its `adaptToForm()` method is left empty. This ensures that error messages originally written for business logic are replaced by the user interface's own library even before adaptToForm() does its work.
 
-In this example, the form developer subclasses `PersonModelRules` and adds labels for the UI. Inside `adaptToForm()`, the form works with those fields through `input()` so it can apply input-specific configuration.
+In this example, the form developer subclasses `PersonModelRules` and adds labels for the UI.
 
 ```ts
 class PersonEditFormRules
@@ -660,8 +661,10 @@ class PersonEditFormRules
     builder: ValidationManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
-    builder.field('FirstName', null, { label: 'First name' });
-    builder.field('LastName', null, { label: 'Last name' });
+    builder.field('FirstName', null, { label: 'First name' })
+      .stringLength({ errorMessage: 'No more than {maximum} characters. You entered {length}.'});
+    builder.field('LastName', null, { label: 'Last name' })
+      .stringLength({ errorMessage: 'No more than {maximum} characters. You entered {length}.'});
     builder.field('BirthDate', null, { label: 'Birth date' });
   }
 }
@@ -752,17 +755,16 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   [`ValueHost classes`](#valuehosts) – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
-  + `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-  + `PropertyValueHost class` – For properties of a Model, a ValueHost with the power of validation. 
-  + `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
-  
-  >For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
-  code your app is using, and let the validation internally select the right
-  expression by retrieving the country code first.
-  
-  > If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
-    
+  + `FieldValueHost class` – Use with fields (both Inputs from the UI and properties from a model), to provide validation as the value changes. 
   + `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
+  + `StaticValueHost class` – For values that do not need validating, but support validation rules of FieldValueHosts. 
+  
+    >For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
+    code your app is using, and let the validation internally select the right
+    expression by retrieving the country code first.
+    
+    > If you are using a Model, you might also use `StaticValueHost` for all remaining properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+    
 
 -   [`ValidationManager class`](#validationmanager) – The "face" of this API. It represents the fields of your form or model to Jivs through its `ValueHosts`. Your validation-related UI elements will need access to it to do their work. Use it to validate, retrieve validation results, and report additional errors determined by your business logic. It is supported by these types:
     + [`ValidationManagerConfig type`](#configuring-the-validationmanager-the-builder-api) – An object that describes all ValueHosts and their Validators.
@@ -1136,10 +1138,9 @@ builder.field('password').not((childBuilder)=> childBuilder.regExp(/[:|'_]/));
 ## ValueHosts
 Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
-- InputValueHost – For user input. The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
-- PropertyValueHost – For a property on the Model. The value may have validation rules applied.
-- StaticValueHost – The value that is not validated itself, but its value is used in an InputValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
-- CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
+- `FieldValueHost` – For any field that may be validated. (Both UI Inputs and model properties.) It actually keeps two values around when working with a UI: the value fully compatible with the model's property ("native value"), and the value from within the editor ("input value").
+- `StaticValueHost` – The value that is not validated itself, but its value is used in an FieldValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
+- `CalcValueHost` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 These objects are created by the ValidationManager for you, as a result of configuring it. Here is pseudo-code representation of their interfaces (omitting many members).
 ```ts
@@ -1156,24 +1157,17 @@ interface IValueHost {
     saveIntoInstanceState(key, value): void;
     getFromInstanceState(key): undefined | ValidTypesForInstanceStateStorage;
 }
-interface IInputValueHost extends IValueHost
+interface IFieldValueHost extends IValueHost
 {
-    getInputValue(): any;
-    setInputValue(value, options?): void;	// value from the UI's editor
+    getTextValue(): any;
+    setTextValue(value, options?): void;	// value from the UI's editor
     setValues(nativeValue, inputValue, options?): void;	// both values
     
     validate(options): ValueHostValidateResult;
     isValid: boolean;
     getIssueFound(errorCode): IssueFound | null;
     getIssuesFound(group?): IssueFound[];	
-}
-interface IPropertyValueHost extends IValueHost
-{
-    getPropertyName(): string;
-    validate(options): ValueHostValidateResult;
-    isValid: boolean;
-    getIssueFound(errorCode): IssueFound | null;
-    getIssuesFound(group?): IssueFound[];	
+    required: boolean;
 }
 interface IStaticValueHost extends IValueHost
 {
@@ -1203,7 +1197,7 @@ of your model. The code goes into the `configureRules()` method, which is passed
 object to describe your configuration through the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
 #### Example
-Each `property()` adds or modifies a ValueHost of type PropertyValueHost. The method's parameters
+Each `field()` adds or modifies a ValueHost of type FieldValueHost. The method's parameters
 assign properties to the ValueHost. The fluent syntax that follows it are validation rules.
 
 ```ts
@@ -1211,16 +1205,16 @@ export class PersonModelRules extends ModelRulesBase {
   protected configureRules(builder: ConfigBuilder, options?: RulesConfigOptions): void {
 
     // create the First Name ValueHost and its validators
-    builder.property('FirstName', LookupKey.String, { label: 'First name'} )
+    builder.field('FirstName', LookupKey.String, { label: 'First name'} )
       .requireText();
     // create the Last Name ValueHost
-    builder.property('LastName', LookupKey.String, { label: 'Last name'} )
+    builder.field('LastName', LookupKey.String, { label: 'Last name'} )
       .requireText();
   }
 }
 ```
-When consumed by the user interface, we want to use InputValueHost, not PropertyValueHost.
-PersonModelRules class is model oriented, not UI oriented. So the form should subclass
+When consumed by the user interface, we want to leave the business logic untouched,
+and provide form-specific modifications. So the form should subclass
 the model's rules class and implement `IAdaptModelRulesToForm` with at minimum an empty
 `adaptToForm()` method.
 
@@ -1232,12 +1226,13 @@ class PersonEditFormRules
   public adaptToForm(
     builder: ValidationManagerConfigBuilder,
     options?: RulesConfigOptions): void {
-      // just by doing this, you now have converted the model's PropertyValueHosts to InputValueHosts.
+// make changes to labels, error messages, severity, parsers and more
+// add new validation rules or combine UI logic with business logic rules
+// add new ValueHosts
   }
 }
 ```
-
-From there, you can use the builder to further customize, except you now call `builder.field(fieldname)` instead of `builder.property(fieldname)`.
+From there, you can use the builder to further customize.
 ```ts
   public adaptToForm(
     builder: ValidationManagerConfigBuilder,
@@ -1255,11 +1250,11 @@ From there, you can use the builder to further customize, except you now call `b
 
 #### Configuring ValueHosts with the Builder API
 The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has these functions to add ValueHosts by their type. (There are other functions in the [Builder API](#configuring-the-validationmanager-the-builder-api).)
-- `input()` adds or modifies an InputValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
+- `field()` adds or modifies an `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
    
-   input(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
+   field(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
    
-   input(valueHostName, *parameters*?): FluentValidatorBuilder
+   field(valueHostName, *parameters*?): FluentValidatorBuilder
    ```ts
    builder.field('fieldname', LookupKey.Date);
    builder.field('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
@@ -1276,7 +1271,7 @@ The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has t
       group?: null | string | string[];
    }
    ```
-   input(*config*): FluentValidatorBuilder
+   field(*config*): FluentValidatorBuilder
    ```ts
    builder.field({ valueHostName: 'fieldname', dataType: LookupKey.Date,
       label: 'Field name', labell10n: 'FNKey' }).requireText();
@@ -1289,39 +1284,7 @@ The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has t
    ```
  > All members of parameters, config, and arguments are [discussed below](#valuehost-members).
 
-- `property()` adds or modifies a PropertyValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
-   
-   property(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
-   
-   property(valueHostName, *parameters*?): FluentValidatorBuilder
-   ```ts
-   builder.property('fieldname', LookupKey.Date);
-   builder.property('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
-   builder.property('fieldname').requireText();
-   ```
-   ```ts
-   {  // parameters
-      label?: string;
-      labell10n?: null | string;
-      initialValue?: any;   
-      initialEnabled?: boolean;
-      group?: null | string | string[];
-   }
-   ```
-   property(*config*): FluentValidatorBuilder
-   ```ts
-   builder.property({ valueHostName: 'fieldname', dataType: LookupKey.Date,
-      label: 'Field name', labell10n: 'FNKey' }).requireText();
-   ```
-   ```ts
-   {  // config: this plus the above parameters
-      name: string;
-      dataType?: string;
-   }
-   ```
- > All members of parameters, config, and arguments are [discussed below](#valuehost-members).
-
-- `static()` adds or modifies a StaticValueHost configuration. It does not support validators, but it can be chained with other ValueHosts.
+- `static()` adds or modifies a `StaticValueHost` configuration. It does not support validators, but it can be chained with other ValueHosts.
    
    static(valueHostName, dataType?, *parameters*?): ValidationManagerConfigBuilder
    
@@ -1352,7 +1315,7 @@ The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has t
    ```
  > All members of parameters, config, and arguments are [discussed below](#valuehost-members).
 
-- `calc()` adds or modifies a CalcValueHost configuration. It does not support validators, but it can be chained with other ValueHosts. See [Using CalcValueHost](#using-calcvaluehost) for more.
+- `calc()` adds or modifies a `CalcValueHost` configuration. It does not support validators, but it can be chained with other ValueHosts. See [Using CalcValueHost](#using-calcvaluehost) for more.
    
    calc(valueHostName, dataType, calcFn): ValidationManagerConfigBuilder
 
@@ -1384,8 +1347,8 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - initialEnabled - ValueHosts have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the ValidationStatus is Disabled. Use initialValue=false to configure the ValueHost as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](#disabling-a-valuehost) for more.
 - calcFn – Assign the function used by CalcValueHost to determine its value. See [Using CalcValueHost](#using-calcvaluehost).
 - group – Group validation is a tool to group ValueHosts with a specific submit command when validating. If used, create a name for the group and use it on all ValueHosts and calls to validate() that share the group. The name matching is case insensitive.
-- parserLookupKey – When you have [configured parsing](#datatypeparsers) for InputValueHosts, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
-- parserCreator – An alternative to parserLookupKey that provides a function callback to create the parser object. The function has this definition: `(valueHost: IInputValueHost) => IDataTypeParser | null;`
+- parserLookupKey – When you have [configured parsing](#datatypeparsers) for FieldValueHosts, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
+- parserCreator – An alternative to parserLookupKey that provides a function callback to create the parser object. The function has this definition: `(valueHost: IFieldValueHost) => IDataTypeParser | null;`
 
 ### Getting a ValueHost
 Start with a ValidationManager instance. It should already be configured with ValueHosts. Supposing *vm* has that ValidationManager, do this to get a ValueHost:
@@ -1394,16 +1357,13 @@ Start with a ValidationManager instance. It should already be configured with Va
 |----|-----|---------|
 |vm.getValueHost('name')|Base to all ValueHosts|Returns null|
 |vm.getValidatorsValueHost('name')|Base to Validatable ValueHosts|Returns null|
-|vm.getInputValueHost('name')|InputValueHost|Returns null|
-|vm.getPropertyValueHost('name')|PropertyValueHost|Returns null|
+|vm.getTextValueHost('name')|FieldValueHost|Returns null|
 |vm.getStaticValueHost('name')|StaticValueHost|Returns null|
 |vm.getCalcValueHost('name')|CalcValueHost|Returns null|
-|vm.vh.field('name')|InputValueHost|Throws error|
-|vm.vh.power('name')|PropertyValueHost|Throws error|
+|vm.vh.field('name')|FieldValueHost|Throws error|
 |vm.vh.static('name')|StaticValueHost|Throws error|
 |vm.vh.calc('name')|CalcValueHost|Throws error|
 |vm.vh.any('name')|Base to all ValueHosts|Throws error|
-|vm.vh.validators('name')|Base to all ValueHosts that use the Validator class (InputValueHost and PropertyValueHost)|Throws error|
 
 ### Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.
@@ -1412,7 +1372,7 @@ The CalcValueHost takes a function used to calculate its value. The function has
 ```
 Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the ValidationServices on `findValueHosts.services`.
 
-In this example, the function multiplies the value from the InputValueHost 'Count' by 10.
+In this example, the function multiplies the value from the FieldValueHost 'Count' by 10.
 ```ts
 builder.field('Count', LookupKey.Integer);
 builder.calc('TimesTen', LookupKey.Integer, 
@@ -1438,7 +1398,7 @@ ValueHosts can be disabled. Here are their behavior changes when disabled:
     issuesFound: null,
   }
   ```
-- Calls to `setValue()`, `setInputValue()`, and `setValues()` will not make any changes to the values. Use the overrideDisabled option to override this behavior: 
+- Calls to `setValue()`, `setTextValue()`, and `setValues()` will not make any changes to the values. Use the overrideDisabled option to override this behavior: 
   ```ts
    vh.setValue(value, { overrideDisable: true });
   ```
@@ -1591,7 +1551,7 @@ interface IValidationManager {
     
     getValueHost(valueHostName): null | IValueHost;
     getValidatorsValueHost(valueHostName): null | IValidatableValueHostBase;
-    getInputValueHost(valueHostName): null | IInputValueHost;
+    getTextValueHost(valueHostName): null | IFieldValueHost;
     vh: ValueHostAccessor;
 
     validate(options?): ValidationState;
@@ -1612,7 +1572,7 @@ interface IValidationManager {
 The ValidationManager is configured by passing the  `ValidationManagerConfig object` into its constructor. Typically you encapsolate the business rules in a class that inherits from [`ModelRulesBase`](#rules), overriding the `configureRules()` method where you describe each field and its validators with the [Builder API](#configuring-the-validationmanager-the-builder-api).
 
 #### Example
-Each `input()` adds or modifies a ValueHost of type InputValueHost. The method's parameters
+Each `field()` adds or modifies a ValueHost of type FieldValueHost. The method's parameters
 assign properties to the ValueHost. The fluent syntax that follows it are validation rules.
 
 ```ts
@@ -1678,12 +1638,9 @@ class ValidationManagerConfigBuilder {
     notifyValidationStateChangedDelay?: number;
     
 // some of the functions to configure ValueHosts
-    input(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    input(valueHostName, partial config?): FluentValidatorBuilder;
-    input(partial config?): FluentValidatorBuilder;
-    property(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    property(valueHostName, partial config?): FluentValidatorBuilder;
-    property(partial config?): FluentValidatorBuilder;
+    field(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    field(valueHostName, partial config?): FluentValidatorBuilder;
+    field(partial config?): FluentValidatorBuilder;
     static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
     static(valueHostName, partial config?): ValidationManagerConfigBuilder;
     static(partial config?): ValidationManagerConfigBuilder;
@@ -1705,25 +1662,27 @@ Let’s go through these types.
 - `savedInstanceState` and `savedValueHostInstanceStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 - `onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 - `onValueChanged` notifies you when a `ValueHost` had its value changed.
-- `onInputValueChanged` notifies you when an `InputValueHost` had its Input Value changed.
+- `onInputValueChanged` notifies you when an `FieldValueHost` had its Input Value changed.
 - `onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
 -   `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValueHostsManager.
 
-- `input()` adds or modifies an [InputValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
-- `property()` adds or modifies a [PropertyValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
+- `field()` adds or modifies an [FieldValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 - `static()` adds or modifies a [StaticValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 - `calc()` adds or modifies a [CalcValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 
-- `startUILayerConfig(options)` is used when business logic first configures the ValueHosts and their validators.
-  Once done, its time for the UI to make extensions and modifications. First call startUILayerConfig(). It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
-  + favorUIMessages - When true or undefined, remove all error messages supplied by the business logic so long as there is an error message for the same error code registered in the TextLocalizerService. This ensures that TextLocalizerService messages are used, as any error message directly assigned to a validator overrides the TextLocalizerService.
-  + convertPropertyToInput - When true or undefined, PropertyValueHosts that were created by business logic are upgraded to InputValueHosts. Business logic can use PropertyValueHosts for validating models in Jivs. This option allows the same configuration to work with both model and UI validation.
+- `startUILayerConfig(options)` is used to separate business logic rules from the UI modifications.
+
+  Call `startUILayerConfig()` after the business logic rules are finished. It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
+  + favorUIMessages - When true or undefined, remove all error messages supplied by the business logic so long as there is an error message for the same error code registered in the `TextLocalizerService`. This ensures that `TextLocalizerService` messages are used, as any error message directly assigned to a validator overrides the `TextLocalizerService`.
+
+  > When working within a ModelRules class, it automatically calls `startUILayerConfig()` prior to calling your `adaptToForm()` method.
+
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
 - `enabler()` attaches a Condition to the ValueHost that determines if it is enabled or not. See [Disabling a ValueHost](#disabling-a-valuehost).
 
 #### Chaining Validators using the Builder API
-The `builder.field()` and `builder.property()` functions allow appending validators. Just use the name of the validator without the "Condition" suffix, and in camelCase.
+The `builder.field()` function allows appending validators. Just use the name of the validator without the "Condition" suffix, and in camelCase.
 ```ts
 builder.field('StartDate').requireText().regExp(/expression/);
 ```
@@ -1744,7 +1703,7 @@ Sometimes its necessary to change the configuration after creating the Validatio
 You will use the `Modifier object`, which is very similar to the `Builder object`, except it expects to merge your changes with the existing configuration. The `Modifier object` supports the Builder API with a few additions.
 
 1. Call `startModifying()` on the ValidationManager to get the `Modifier object`.
-2. Use the same functions as on build, like `input()`, `static()` and validators attached to `input()`.
+2. Use the same functions as on build, like `field()`, `static()` and validators attached to `field()`.
 3. Call the `apply()` function on the `Modifier object`.
 
 In this example, *vm* is the ValidationManager instance.
@@ -1759,7 +1718,7 @@ modifier.apply();
 
 > Don't use the `Modifier object` to change the data value of a ValueHost. The data value is stateful information, not configuration.
 
-In the previous example, that code will either add or update an existing InputValueHost and its lessThan validator. If you wanted to change only the error messages, here is another syntax with a focus only on changing validator parameters like error messages.
+In the previous example, that code will either add or update an existing FieldValueHost and its lessThan validator. If you wanted to change only the error messages, here is another syntax with a focus only on changing validator parameters like error messages.
 
 ```ts
 let modifier = vm.startModifying();
@@ -1797,12 +1756,9 @@ builder.field('Key', LookupKey.String, { label: 'Start date'} ).all(
 Here's the Builder API on the `Modifier object`:
 ```ts
 class ValidationManagerConfigModifier {
-    input(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    input(valueHostName, partial config?): FluentValidatorBuilder;
-    input(partial config?): FluentValidatorBuilder;
-    property(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    property(valueHostName, partial config?): FluentValidatorBuilder;
-    property(partial config?): FluentValidatorBuilder;
+    field(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    field(valueHostName, partial config?): FluentValidatorBuilder;
+    field(partial config?): FluentValidatorBuilder;
     static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
     static(valueHostName, partial config?): ValidationManagerConfigBuilder;
     static(partial config?): ValidationManagerConfigBuilder;
@@ -1816,13 +1772,12 @@ class ValidationManagerConfigModifier {
 }
 ```
 Let's go through these members:
-- `input()` adds or modifies an [InputValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
-- `property()` adds or modifies a [PropertyValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
+- `field()` adds or modifies an [FieldValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 - `static()` adds or modifies a [StaticValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 - `calc()` adds or modifies a [CalcValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
 - `updateValidator()` is a simplified way to modify properties on a validator, including error message. For the *validator properties* argument, see [Configuring Validators](#configuring-validators).
 
-  `updateValidator('fieldname', ConditionType.RegExp, { errorMessage: 'new message' })` is effectively the same as writing: `input('fieldname').regExp(null, null, 'new message')`.
+  `updateValidator('fieldname', ConditionType.RegExp, { errorMessage: 'new message' })` is effectively the same as writing: `field('fieldname').regExp(null, null, 'new message')`.
 - `addValidatorsTo()` is a simplified way to add a validator without first figuring out the valueHost type. Use it like this: `addValidatorsTo('fieldname').regExp(parameters)`
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
@@ -1851,7 +1806,7 @@ Inside `configure()` Jivs handles several support steps for you:
 
 * Creates the `ValidationManagerConfigBuilder` so your subclass only focuses on `configureRules()`.
 * Runs `configureRules()`. You are expected to override it to define your rules.
-* When `IAdaptModelRulesToForm` is implemented, `configure()` adapts model-oriented `PropertyValueHosts` into `InputValueHosts`, then calls `adaptToForm()` so you can adjust the rules for the form.
+* When `IAdaptModelRulesToForm` is implemented, `configure()` transistions from business logic to UI by calling the builder's `startUILayerConfig()` method, then calls `adaptToForm()` so you can adjust the rules for the form.
 * Optionally runs config analysis.
 * Finalizes the builder into `ValidationManagerConfig`.
 * Optionally caches that config for reuse.
@@ -1882,7 +1837,7 @@ interface RulesConfigOptions {
 ### ModelRulesBase
 
 Subclass `ModelRulesBase` to define validation rules for a model.
-A `ModelRulesBase` class is business-logic-oriented. In its primary use case, it defines `PropertyValueHosts` through `builder.property()` inside `configureRules()`.
+A `ModelRulesBase` class is business-logic-oriented. In its primary use case, it defines `FieldValueHosts` through `builder.field()` inside `configureRules()`.
 When your rules are form-only and there is no business logic model, see `FormRulesBase` below.
 
 ```ts
@@ -1891,8 +1846,8 @@ class PersonModelRules extends ModelRulesBase {
     builder: ValidationManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
-    builder.property('FirstName', LookupKey.String).requireText();
-    builder.property('LastName', LookupKey.String).requireText();
+    builder.field('FirstName', LookupKey.String).requireText();
+    builder.field('LastName', LookupKey.String).requireText();
   }
 }
 ```
@@ -1904,8 +1859,10 @@ When a UI form uses those rules, the form should subclass that model rules class
 
 When a form consumes rules supplied by a `ModelRulesBase` subclass, the form must define its own subclass and implement `IAdaptModelRulesToForm`.
 
-That step adapts the model-oriented configuration for use by the form.
-In practice, it switches the model's use of `PropertyValueHosts` to `InputValueHosts`, allowing the form to apply input-specific configuration through `builder.field()`.
+That step adapts the model-oriented configuration for use by the form. The adaptToForm() method is where you:
+- Replace business logic supplied strings like labels and error messages
+- Extend validation rules on existing value hosts
+- Add your own ValueHosts
 
 ```ts
 class PersonEditFormRules
@@ -1922,13 +1879,13 @@ class PersonEditFormRules
 }
 ```
 
-Implement `IAdaptModelRulesToForm` even when `adaptToForm()` is empty.
+Implement `IAdaptModelRulesToForm` even when `adaptToForm()` will remain empty.
 That empty method is still the signal that the model rules are being adapted for use by the form.
 
 ### FormRulesBase
+Subclass `FormRulesBase` when the form owns its validation rules directly and there is no model rules class to adapt.
 
-Subclass `FormRulesBase` when a form has no business logic model supplying its rules.
-A `FormRulesBase` class is form-oriented and normally defines `InputValueHosts`
+A `FormRulesBase` class is form-oriented and normally defines `FieldValueHosts`
 through `builder.field()` inside `configureRules()`.
 
 ```ts
@@ -1942,9 +1899,6 @@ class DateRangeFormRules extends FormRulesBase {
   }
 }
 ```
-
-Use `FormRulesBase` when the form owns its validation rules directly and there is no model rules class to adapt.
-
 ### Caching
 
 Rules configuration is cached by default.
@@ -2181,7 +2135,7 @@ Also [jivs-engine/src/DataTypes/DataTypeFormatters.ts](https://github.com/plblum
 Convert from the input value into the native value with implementations of `IDataTypeParser`. They can report problems with the input value, and their error can be shown in a validation error message.
 
 Parsers are used:
-* only on InputValueHosts, when calling `InputValueHost.setInputValue()`. 
+* only on FieldValueHosts, when calling `FieldValueHost.setTextValue()`. 
   * In the client-side in response to the onchange event of a form \<input>.
   * In the node.js server that uses Jivs to validate. See [Validation in Node.Js](#using-jivs-on-a-nodejs-server).
 * when the input value is a string (even if the native value is also a string).
@@ -2500,13 +2454,13 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  let valueHost = vm.vh.field('FirstName');	// or vm.getInputValueHost('FirstName')
+  let valueHost = vm.vh.field('FirstName');	// or vm.getTextValueHost('FirstName')
   valueHost.setValues(nativeValue, inputValue);
   valueHost.validate();
 });	
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  let valueHost = vm.vh.field('FirstName');	// or vm.getInputValueHost('FirstName')
-  valueHost.setInputValue(evt.target.value);
+  let valueHost = vm.vh.field('FirstName');	// or vm.getTextValueHost('FirstName')
+  valueHost.setTextValue(evt.target.value);
   valueHost.validate({ duringEdit: true });
 });
 ```
@@ -2523,7 +2477,7 @@ These properties are all related to ValueHost value changes:
 - duringEdit - Set to true when handling oninput events, or any other validation that needs to happen as the user types. Only a few validators will respond, including RequireTextCondition, RegExpCondition, and StringLengthCondition.
 - skipCallback - Set to true if you have a reason to skip the `onValueHostValidationStateChanged callback` normally invoked by `validate()`.
 
-The `setValue()`, `setValues()`, `setInputValue()`, and `setValueToUndefined()` functions all take an *options* parameter to include validation, saving a step:
+The `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` functions all take an *options* parameter to include validation, saving a step:
 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
@@ -2533,7 +2487,7 @@ firstNameFld.attachEventListener('onchange', (evt)=>{
   vm.vh.field('FirstName').setValues(nativeValue, inputValue, { validate: true });
 });	
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  vm.vh.field('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
+  vm.vh.field('FirstName').setTextValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
 Here is the type for the *options* parameter:
@@ -2770,11 +2724,11 @@ All of these actions can change the validation state whether on ValidationManage
 - `clearValidation()`
 - `addExternalIssuesFound()` and `addExternalIssueFound()`
 - `clearExternalIssuesFound()`
-- using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setInputValue()`, `setValueToUndefined()`.
+- using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setTextValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
 
 ## Setting and getting values
-Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (InputValueHost, PropertyValueHost, StaticValueHost, etc).
+Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (FieldValueHost, StaticValueHost, etc).
 
 Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
 
@@ -2827,12 +2781,12 @@ ValueHost is disabled when `isEnabled()` returns false.
 Use case: You may want to initialize a ValueHost with a value that is disabled. See [Disabling a ValueHost](#disabling-a-valuehost).
 - The other two are special cases covered elsewhere.
 
-### Setting values on InputValueHosts
-InputValueHosts have two values: the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setInputValue()`.
+### Setting values on FieldValueHosts
+FieldValueHosts have two values: the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
+As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setTextValue()`.
 ```ts
 setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
-setInputValue(value: any, options?: SetValueOptions): void;
+setTextValue(value: any, options?: SetValueOptions): void;
 ```
 
 Use `setValues()` when initializing the value and as either value has changed. If you cannot determine one of the values, pass in undefined.
@@ -2842,11 +2796,11 @@ lastNameVH.setValues(25, "25");
 // or
 vm.vh.field("Age").setValues(25, "25");
 ```
-Use `setInputValue()` when you have parsers setup, as they will convert and save the native value for you. See [Where you want to use validation](#where-you-want-to-use-validation).
+Use `setTextValue()` when you have parsers setup, as they will convert and save the native value for you. See [Where you want to use validation](#where-you-want-to-use-validation).
 
 Both functions have an options parameter. See the previous section for its definition.
 ### Getting the value
-Use `getValue()` to get the value from any ValueHost. For an InputValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValidationManager, use it there too.
+Use `getValue()` to get the value from any ValueHost. For an FieldValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValidationManager, use it there too.
 ```ts
 getValue(): any;
 ```
@@ -2857,16 +2811,16 @@ let nativeValue = lastNameVH.getValue();
 // or
 let nativeValue = vm.vh.any("LastName").getValue();
 ```
-### Getting the Input value on InputValueHosts
-InputValueHosts have two values, native and input. The `getValue()` function gets its native value. The `getInputValue()` function gets its input value.
+### Getting the Input value on FieldValueHosts
+FieldValueHosts have two values, native and input. The `getValue()` function gets its native value. The `getTextValue()` function gets its input value.
 ```ts
-getInputValue(): any;
+getTextValue(): any;
 ```
 ```ts
 let lastNameVH = vm.getValueHost("LastName");
-let inputValue = lastNameVH.getInputValue();
+let inputValue = lastNameVH.getTextValue();
 // or
-let  inputValue = vm.vh.any("LastName").getInputValue();
+let  inputValue = vm.vh.any("LastName").getTextValue();
 ```
 
 ## Logging
@@ -2955,14 +2909,14 @@ console.debug
   {
   message: 'setValues("", "")',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 console.debug
   {
   message: 'Validating ValueHost "Field1"',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 console.debug
@@ -3005,7 +2959,7 @@ console.log
   message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
   category: 'Result',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 console.debug
@@ -3063,14 +3017,14 @@ console.debug
   {
   message: 'setValues("", "")',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 console.debug
   {
   message: 'Validating ValueHost "Field1"',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 console.log
@@ -3094,7 +3048,7 @@ console.log
   message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
   category: 'Result',
   feature: 'ValueHost',
-  type: 'InputValueHost',
+  type: 'FieldValueHost',
   identity: 'Field1'
   }
 

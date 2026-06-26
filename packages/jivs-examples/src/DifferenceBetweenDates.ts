@@ -11,7 +11,7 @@ import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeCo
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
 import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
@@ -19,22 +19,52 @@ import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/Data
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { RulesConfigOptions } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
+import { FormRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+
+export class DateRangeFormRules extends FormRulesBase {
+    constructor(services: IValidationServices) {
+        super(services);
+    }
+    protected configureRules(builder: ValidationManagerConfigBuilder,
+        options?: RulesConfigOptions): void {
+        builder.field('startDate', LookupKey.Date, { label: 'Start date' })
+            .lessThan('endDate')
+            .lessThanOrEqual('numOfDays',   // right operand of the comparison
+                { valueHostName: 'diffDays' },  // compare to this ValueHost, not 'startDate'
+                'Less than {compareTo} days apart',   // our preferred error message
+                { errorCode: 'NumOfDays' });   // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
+        builder.field('endDate', LookupKey.Date, { label: 'End date' });
+        builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
+        builder.calc('diffDays', LookupKey.Integer, this.differenceBetweenDates);
+    }
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
-function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
-    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
-    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), null, LookupKey.TotalDays);
-    if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
-        return undefined;   // can log with findValueHosts.services.logger.log();
-    return Math.abs(totalDays2 - totalDays1);
-}
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
+        let totalDays1 = callingValueHost.convert(
+            findValueHosts.getValueHost('StartDate')?.getValue(),
+            null, LookupKey.TotalDays);
+        let totalDays2 = callingValueHost.convert(
+            findValueHosts.getValueHost('EndDate')?.getValue(),
+            null, LookupKey.TotalDays);
+        if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
+            return undefined;   // can log with findValueHosts.services.logger.log();
+        return Math.abs(totalDays2 - totalDays1);
+    }    
+}    
 
-// written so you can call this function and use the configured ValidationManager to see
-// what happens when you call validate with different inputs.
-export function configureVMForDifferenceBetweenDates(): IValidationManager {
+// Our starting point is createMinimumValidationServices() 
+// which is a really-stripped down version of createValidationServices() that is in support.ts.
+// Since you will be using createValidationServices(), most of this work is done
+// for you. We're trying to expose you to what it takes to expand the services
+// within this example.
+// @returns 
+function createValidationServicesForThisExample(): IValidationServices {
+    // very stripped down version of createValidationServices() in support.ts
     let services = createMinimalValidationServices('en');
+
     // let's add the supporting tools needed by this example
     // normally you call createValidationServices() which already has this stuff setup
     let convertService = services.dataTypeConverterService as DataTypeConverterService;
@@ -51,28 +81,19 @@ export function configureVMForDifferenceBetweenDates(): IValidationManager {
         (config) => new LessThanValueCondition(config));
     conditionFactory.register<LessThanOrEqualConditionConfig>(ConditionType.LessThanOrEqual,
         (config) => new LessThanOrEqualCondition(config));
+    // This might be the only line you'd customize in your version of createValidationServices()
+    // as it relates to this example.
     services.loggerService.minLevel = LoggingLevel.Debug;
-    
-    // time to configure the ValidationManager
-    let builder = build(services);
+    return services;
+}
 
-    // create the CalcValueHostConfig to supply to the ValidationManager
-    builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
-
-    // create the 'StartDate' input with two conditions:
-    // startDate <= endDate
-    // abs(endDate-startDate) < 10
-    builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
-        .lessThanOrEqual('EndDate', null,
-            '{Label} must be less than or equal to {SecondLabel}.',
-            { severity: ValidationSeverity.Severe }) // to avoid running the next validator when there is an error
-        .lessThanValue(10, { valueHostName: 'DiffDays' },
-            'The two dates must be less than {CompareTo} days apart.');
-
-    // create the 'EndDate' input
-    builder.field('EndDate', LookupKey.Date, { label: 'End date' }); 
-
-    return new ValidationManager(builder);
+// written so you can call this function and use the configured ValidationManager to see
+// what happens when you call validate with different inputs.
+export function configureVMForDifferenceBetweenDates(): IValidationManager {
+    let services = createValidationServicesForThisExample();
+    let rules = new DateRangeFormRules(services);
+    let config = rules.configure();
+    return new ValidationManager(config);
 }
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.

@@ -1,7 +1,7 @@
 
 // Example: Introduce a new Condition class, including support for fluent syntax
-// Our class will require even numbers. There is already a base class for numbers, NumberConditionBase,
-// but we'll ignore it in favor of showing code in the evaluate function.
+// Our class will require even numbers. There is already a base class for numbers, 
+// NumberConditionBase, but we'll ignore it in favor of showing code in the evaluate function.
 
 // Here are the activities for creating a Condition class.
 // 1. Choose a name, usually with the suffix "Condition".

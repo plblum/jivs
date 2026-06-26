@@ -1,11 +1,10 @@
+// Example: Supporting a Date object in a different way than it was intended by
+// implementing IDataTypeConverter. This uses the month and year.
+
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
-
-// Example: Supporting a Date object in a different way than it was intended by
-// implementing IDataTypeConverter. This uses the month and year.
-
 
 export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date object and only need month and year. Assumes UTC
 
