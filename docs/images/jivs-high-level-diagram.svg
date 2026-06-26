@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="640" height="198" viewBox="0 0 640 198" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .layer-title { font: 700 12px Arial, Helvetica, sans-serif; fill: #374151; }
+      .box-title { font: 700 12px Arial, Helvetica, sans-serif; fill: #111827; }
+      .box-subtitle { font: 400 10px Arial, Helvetica, sans-serif; fill: #4b5563; }
+      .arrow-label { font: 600 10px Arial, Helvetica, sans-serif; fill: #374151; }
+    </style>
+    <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#4b5563"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="640" height="198" fill="white"/>
+
+  <!-- UI layer -->
+  <rect x="100" y="0" width="234" height="198" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="114" y="17" class="layer-title">UI Layer</text>
+
+  <!-- Business logic layer -->
+  <rect x="406" y="0" width="234" height="198" rx="8" fill="#fafaf9" stroke="#d6d3d1" stroke-width="2"/>
+  <text x="420" y="17" class="layer-title">Business Logic Layer</text>
+
+  <!-- Textbox -->
+  <rect x="123" y="41" width="144" height="40" rx="6" fill="white" stroke="#94a3b8" stroke-width="2"/>
+  <text x="195" y="57" text-anchor="middle" class="box-title">Textbox</text>
+  <text x="195" y="71" text-anchor="middle" class="box-subtitle">firstname</text>
+
+  <!-- Error display -->
+  <rect x="123" y="121" width="144" height="47" rx="6" fill="white" stroke="#94a3b8" stroke-width="2"/>
+  <text x="195" y="140" text-anchor="middle" class="box-title">Error display</text>
+  <text x="195" y="154" text-anchor="middle" class="box-subtitle">for firstname</text>
+
+  <!-- Jivs -->
+  <rect x="460" y="39" width="130" height="130" rx="8" fill="white" stroke="#6b7280" stroke-width="2.5"/>
+  <text x="525" y="98" text-anchor="middle" class="box-title">Jivs</text>
+  <text x="525" y="112" text-anchor="middle" class="box-subtitle">validates input</text>
+
+  <!-- Arrow: textbox to Jivs -->
+  <line x1="267" y1="61" x2="460" y2="61" stroke="#4b5563" stroke-width="2.25" marker-end="url(#arrowhead)"/>
+  <text x="363.5" y="51" text-anchor="middle" class="arrow-label">sends changed value</text>
+
+  <!-- Arrow: Jivs to error display -->
+  <line x1="460" y1="145" x2="267" y2="145" stroke="#4b5563" stroke-width="2.25" marker-end="url(#arrowhead)"/>
+  <text x="363.5" y="158" text-anchor="middle" class="arrow-label">reports validation result</text>
+</svg>

@@ -34,69 +34,75 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * (although its great if you have to write conversion between your own business logic
  * and Jivs).
  * 
+ * The Builder and Modifier classes provide a fluent API to create the ValueHostConfig objects and add them to the ValidationManagerConfig.
+ * ManagerConfigBuilderBase is the base class for both the Builder and Modifier classes.
+ * 
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
  * There are actually 2 of these, the builder and the modifier. ValueHostsManagerConfigBuilder is used for
  * the initial configuration passed into ValueHostManager/ValidationManager.
  * ValueHostsManagerConfigModifier is used to modify the configuration in an existing ValueHostManager.
  * 
- * Here are two ways to use it. 1) Without business logic 2) with Business logic.
+ * Here are two ways to use it. 
+ * 1) Wrapped in a ModelRulesBase subclass, so that your model has a single source of truth for its validation rules.
+ * 2) Stand-alone.
  * 
- * ## Without Business Logic
+  * ## Using ModelRulesBase
+  * Let's assume that you have a Model with 3 fields, firstname, lastname, and birthdate. 
+  * You want to require that first and last name are not empty, and that the birthdate is a valid date.
  * ```ts
- * let builder = build(createValidatorServices('client'));
- * builder.field('Field1', LookupKey.String).requireText();
- * builder.static('Field2', LookupKey.Date);
- * builder.field('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
+ * export class PersonModelRules extends ModelRulesBase {
+ *  protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *      builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
+ *      builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
+ *      builder.field('birthdate', LookupKey.Date);
+ *   }
+ * }
+ * ```
+ * The Form can consume the same rules, and can add its own. It must subclass the Model's own rules class
+ * and implement the IAdaptModelRulesToForm interface, again using the Builder.
+ * ```ts
+ * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
+ *   adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *      builder.field('birthDate', null, { label: 'Birth date' })
+ *        .lessThan('today');
+ *      builder.static('today', LookupKey.Date, { initialValue: new Date() });
+ *   }
+ * }
+ * ```
+ * Once the ValidationManager is created, you can modify it later using the Modifier.
+ * ```ts
+ * let services = createValidatorServices();
+ * let rules = new PersonEditFormRules(services);
+ * let config = rules.configure();
+ * let vm = new ValidationManager(config);
+ * // later when you need to modify vm:
+ * // in this example, the user's language is changed to French.
+ * let modifier = vm.startModifying();
+ * modifier.field('birthDate', null, { label: 'date de naissance'});   // let's disable the existing validator
+ * modifier.apply(); // consider modifier disposed at this point
+ * ```
+ * ## Without the ModelRulesBase, using the Builder directly.
+ * The code is very similar to that above, except you explicitly create the Builder and add the ValueHostConfigs to it.
+ * In this case, you are likely to be working only on the UI, and can declare all fields at once.
+ * ```ts
+ * let services = createValidatorServices();
+ * let builder = build(services);
+ * builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
+ * builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
+ * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
+ *        .lessThan('today');
+ * builder.static('today', LookupKey.Date, { initialValue: new Date() }
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * // later when you need to modify vm:
+ * // in this example, the user's language is changed to French.
  * let modifier = vm.startModifying();
- * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+ * modifier.field('birthDate', null, { label: 'date de naissance'});   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
  * 
- * ## With Business Logic using the builder and UI overrides its settings
- * ```ts
- * let builder = build(createValidatorServices('client'));  // 'client' because the config targets the UI
- * builder.field('Field1', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
- * builder.static('Field2', LookupKey.Date);
- * builder.field('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
- * builder.startUILayerConfig({ favorUIMessages: true });
- * // At this point, we've converted PropertyValueHosts to FieldValueHosts and discarded 
- * // all error messages that were covered by the TextLocalizerService.
- * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
- * builder.field('Field1', null { label: 'Product name' })
- * builder.field('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
- * 
- * let vm = new ValidationManager(builder); // consider builder disposed at this point
- * // later when you need to modify vm:
- * let modifier = vm.startModifying();
- * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
- * modifier.apply(); // consider modifier disposed at this point
- * ```
- * 
- * ## With Business Logic using its own conversion logic and UI overrides its settings
- * ```ts
- * let vmConfig: ValidationManagerConfig = {
- *   services: createValidatorServices('client');
- *   validatorConfigs: []
- * };
- * myBusinessLogicToJivsConverter(vmConfig); // expect 'Field1', 'Field2', and 'Field3' to be generated as shown in the previous case
- * let builder = build(vmConfig);
- * builder.startUILayerConfig({ favorUIMessages: true });
- * // At this point, we've replaced all configured error messages with equivalents from the UI's TextLocalizerService.
- * builder.field('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
- * builder.field('Field1', null { label: 'Product name' })
- * builder.field('Field3', null, { label: 'Product code', parserLookupKey: 'ProductCode' });
- * 
- * let vm = new ValidationManager(builder); // consider builder disposed at this point
- * // later when you need to modify vm:
- * let modifier = vm.startModifying();
- * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
- * modifier.apply(); // consider modifier disposed at this point
- * ```
  * ## Combining a condition from the UI with the conditions from the business logic
  * This common use case is where the UI wants to add a condition to a Validator 
- * that was created by the business logic. Use the combineConditionWith() 
+ * that was created by the business logic. Use the combineWithRule() 
  * and replaceConditionWith() functions.
  * 
  * The goal is to preserve the condition from the business logic by using it together with 
@@ -125,8 +131,8 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  *   builder.field('Field1', LookupKey.String)
  *     .all((childrenBuilder)=> childrenBuilder.regexp(/^[A-Z]+$/i).stringLength(10));
  * 
- *   // using the combineConditionWith() function
- *   builder.field('Field1').combineConditionWith(
+ *   // using the combineWithRule() function
+ *   builder.field('Field1').combineWithRule(
  *      ConditionType.NotNull, // error code
  *      CombineUsingCondition.All,
  *      (combiningBuilder)=> combiningBuilder.stringLength(10));

@@ -21,6 +21,8 @@ import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
 /**
  * Access point for using ValidationManagerConfigBuilder. It wraps an instance of ValueHostsManagerConfigBuilder
  * and lets you start using its functions, which are often chained.
+ * We recommend that you choose another approach: create your own subclass of ModelRulesBase, 
+ * and use its builder property to configure your ValidationManagerConfig.
  * @returns 
  */
 export function build(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
