@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig_common.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./temp/",  //NOT build folder because we are writing both src and test folders under this, and dont want either to appear in build.
+    "rootDir": "./",
+    "declaration": false,
+    "paths": {
+      "@plblum/jivs-engine": ["../jivs-engine"]
+    }      
+  },
+  "include": [ "src", "types", "tests" ], 
+  "exclude": [ "./*.js", "./*.mjs", "coverage", "docs", "build", "temp"]
+}

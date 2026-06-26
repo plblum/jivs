@@ -119,7 +119,7 @@ export function onValueChangedUsingModifierAPI(vh: IValueHost, oldValue: any) : 
     {
         let vm = vh.valueHostsManager as IValidationManager;
         let modifier = vm.startModifying();
-        modifier.input('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
+        modifier.field('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
         modifier.apply();
     }
 }

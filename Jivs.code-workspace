@@ -14,7 +14,11 @@
 		},
 		{
 			"path": "packages/jivs-angular"
+		},
+		{
+			"path": "packages/jivs-react"
 		}
+
 	],
 	"settings": {
 		/* VSCode will use TSC only on workspaces, not the global level */

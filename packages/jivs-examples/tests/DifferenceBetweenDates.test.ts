@@ -1,5 +1,5 @@
 // Tests run the same cases demonstrated in the example source, ../src/DifferenceBetweenDates
-
+import {jest} from '@jest/globals';
 import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
 import { configureVMForDifferenceBetweenDates } from "../src/DifferenceBetweenDates";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";

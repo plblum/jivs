@@ -97,9 +97,9 @@ export class PersonEditFormRules
     options?: RulesConfigOptions
   ): void {
     builder.field('FirstName', null, { label: 'First name' })
-      .stringLength({ errorMessage: 'No more than {maximum} characters. You entered {length}.'});
+      .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
     builder.field('LastName', null, { label: 'Last name' })
-      .stringLength({ errorMessage: 'No more than {maximum} characters. You entered {length}.'});
+      .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
     builder.field('BirthDate', null, { label: 'Birth date' });
   }
 }
@@ -158,7 +158,7 @@ export function onValueChangedUsingModifierAPI(vh: IValueHost, oldValue: any) : 
     {
         let vm = vh.valueHostsManager as IValidationManager;
         let modifier = vm.startModifying();
-        modifier.input('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
+        modifier.field('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
         modifier.apply();
     }
 }

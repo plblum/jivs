@@ -1,7 +1,7 @@
 import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
 import {
     configExample
-} from '../src/Config_with_BusinessLogic_using_Builder';
+} from '../src/Config_without_a_model';
 
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";

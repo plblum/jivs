@@ -14,7 +14,7 @@ describe('ValidationManager focused', () => {
     test('analyze with a Builder object', () => {
         const services = createServices();
         const builder = new ValidationManagerConfigBuilder(services);
-        builder.input('Field1').requireText();
+        builder.field('Field1').requireText();
 
         const options: ConfigAnalysisOptions = {};
 

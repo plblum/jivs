@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "./build/",
-    "rootDir": "./",
+    "rootDir": "./src/",
     "declaration": false,   
     "paths": {
       "@plblum/jivs-engine": ["../jivs-engine"]

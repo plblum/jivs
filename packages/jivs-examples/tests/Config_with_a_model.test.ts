@@ -1,68 +1,14 @@
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
-import { jest } from '@jest/globals';
-import { PropertyValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/PropertyValueHost';
-import { createValidationServices, timeZoneRegex } from '../src/Config_example_common_code';
+import {jest} from '@jest/globals';
 import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
 import {
-    ReportingBusinessLogicBuilder, 
     configExample
-} from '../src/Config_with_BusinessLogic_using_Builder';
+} from '../src/Config_with_a_model';
 
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { RegExpConditionConfig, LessThanConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 import { StaticValueHost } from '@plblum/jivs-engine/build/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '@plblum/jivs-engine/build/ValueHosts/CalcValueHost';
-
-
-describe('ReportingBusinessLogicBuilder', () => {
-    it('should return correct fields metadata', () => {
-        let builder = build(createValidationServices('en'));
-        const blBuilder = new ReportingBusinessLogicBuilder(builder);
-        blBuilder.populate();
-        let vmConfig = builder.complete();
-        let expectedStartDate: PropertyValueHostConfig = {
-            valueHostType: 'Property',
-            name: 'startDate',
-            dataType: 'Date',
-            validatorConfigs: [
-                {
-                    errorMessage: 'Second date less than first',
-                    conditionConfig: <LessThanConditionConfig>{
-                        conditionType: ConditionType.LessThan,
-                        secondValueHostName: 'endDate'
-
-                    }
-                }
-            ]
-        };
-        let expectedEndDate: PropertyValueHostConfig = {
-            valueHostType: 'Property',
-            name: 'endDate',
-            dataType: 'Date',
-            validatorConfigs: []
-        };
-        let expectedTimeZone: PropertyValueHostConfig = {
-            valueHostType: 'Property',
-            name: 'timeZone',
-            dataType: 'String',
-            validatorConfigs: [
-                {
-                    errorCode: 'TimeZone',
-                    errorMessage: 'Invalid time zone',
-                    conditionConfig: <RegExpConditionConfig>{
-                        conditionType: ConditionType.RegExp,
-                        expression: timeZoneRegex,
-                        ignoreCase: false
-                    }
-                }
-            ]
-        };
-        expect(vmConfig.valueHostConfigs).toEqual([expectedStartDate, expectedEndDate, expectedTimeZone]);
-    });
-});
 
 let originalDocument: any;
 beforeEach(() => {
