@@ -414,7 +414,7 @@ import type {
 } from "@plblum/jivs-engine";
 
 import {
-  MODEL_RULES_CONFIG_ANALYSIS_SERVICE_NAME,
+  CONFIG_ANALYSIS_SERVICE_NAME,
 } from "@plblum/jivs-engine";
 
 import type {

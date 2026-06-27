@@ -15,6 +15,29 @@ Jivs-ConfigAnalysis does the following:
 - For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
+## Problem it solves
+When you code with services and dependency injection, the code becomes very disconnected.
+In classic programming, a ValueHost might have been setup like this:
+
+```ts
+let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
+birthDateVH.parser = new DateParser();
+birthDateVH.formatter = new DateFormatter();
+```
+The parser and formatter were explicitly chosen knowing the data type is LookupKey.Date, and the code is side-by-side with the object they configure.
+
+When services own the Parsers, Formatters, Conditions, etc, you no longer see the configuration going into the ValueHost side-by-side.
+
+```ts
+let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
+// when birthDate needs a parser, it asks ValidationServices to get it one by LookupKey.Date.
+// same for formatter.
+```
+Similar issues arise with regard to error messages, which are expected to be localized
+and potentially looked up from a master list when not directly supplied.
+
+The jivs-configanalysis tool attempts to reconnect the ValueHost to its configuration
+through a report.
 ## Installing Jivs-ConfigAnalysis
 Jivs-ConfigAnalysis targets your testing projects. Install it there and built tests around it. If you need to test within your app at runtime, you can install it there too. Just be sure to disable calls to it when not in use.
 
@@ -51,7 +74,7 @@ let explorer = analyze(config);
 let vm = new ValidationManager(config);
 ```
 ### explorer: ConfigAnalysisResultsExplorer
-*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions.
+*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions that are especially useful within unit tests.
 
 ```ts
 interface IConfigAnalysisResultsExplorer {
