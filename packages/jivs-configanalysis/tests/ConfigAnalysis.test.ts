@@ -35,7 +35,7 @@ import {
     DataTypePropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase,
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
 } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { registerConfigAnalyzers } from "../src/Runner";
+import { ConfigAnalysisService } from '../src/ConfigAnalysisService';
 
 describe('ConfigAnalysisBase class', () => {
     class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
@@ -770,8 +770,8 @@ describe('ValidationManagerConfigAnalysis', () => {
         });
         builder.field('testValueHost2', LookupKey.String).regExp(/^\d+$/);
 
-        let testItem = new ValidationManagerConfigAnalysis();    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
-        registerConfigAnalyzers(testItem);
+
+        let testItem = new ConfigAnalysisService(services);    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();

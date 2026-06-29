@@ -210,6 +210,10 @@ export function installConfigAnalysisService(
   services: IValidationServices,
   service?: IConfigAnalysisService,
 ): IConfigAnalysisService {
+  let existingService = services.getService(CONFIG_ANALYSIS_SERVICE_NAME) as IConfigAnalysisService | null;
+  if (existingService) {
+    return existingService;
+  }
   const instance = service ?? new ConfigAnalysisService(services);
   services.setService(CONFIG_ANALYSIS_SERVICE_NAME, instance);
   return instance;

@@ -14,6 +14,7 @@ import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
 import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
 import { IDataTypeComparerAnalyzer } from "../Types/Analyzers";
 import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from "../Types/Results";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
 /**
  * Handles IDataTypeComparer objects through the DataTypeComparerService.
@@ -164,23 +165,31 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             }
         }
 
-        try {
-            let compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
-            if (compareResult !== ComparersResult.Undetermined) {
-                results.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
-                results.dataExamples = [sampleValue];
-                return results;
+        for (let i = 0; i < 2; i++) {
+            try {
+                if (i === 1) {
+                    // try again using available converters
+                    let conversionResult = this.helper.services.dataTypeConverterService.convertUntilResult(sampleValue, lookupKey, LookupKey.Number);
+                    if (conversionResult.resolvedValue !== undefined)
+                        sampleValue = conversionResult.resolvedValue;
+                }
+                let compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
+                if (compareResult !== ComparersResult.Undetermined) {
+                    results.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
+                    results.dataExamples = [sampleValue];
+                    return results;
+                }
             }
-        }
-        catch (e)
-        {
-            // defaultComparer throws InvalidTypeError(value) for any non-primitive  
-            // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
-            if (!(e instanceof InvalidTypeError))
-            {
-                results.message = (e as Error).message;
-                results.severity = CAIssueSeverity.error;
-                return results;
+            catch (e) {
+                // defaultComparer throws InvalidTypeError(value) for any non-primitive  
+                // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
+                if (!(e instanceof InvalidTypeError)) {
+                    results.message = (e as Error).message;
+                    results.severity = CAIssueSeverity.error;
+                    return results;
+                }
+                // if i == 0, this is the one time the loop will execute again
+                // and it will now try to convert the sampleValue to a primitive value, if possible.
             }
         }
         // none found. We'll report an warning.
