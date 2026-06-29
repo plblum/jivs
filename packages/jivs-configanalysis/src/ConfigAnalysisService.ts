@@ -172,7 +172,7 @@ export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
     super(services);
   }
   public override registerDefaultValueHostPropertyAnalyzers(): void {
-    this.registerValueHostPropertyAnalyzer(new ValueHostTypePropertyAnalyzer()),
+      this.registerValueHostPropertyAnalyzer(new ValueHostTypePropertyAnalyzer()),
       this.registerValueHostPropertyAnalyzer(new ValueHostNamePropertyAnalyzer()),
       this.registerValueHostPropertyAnalyzer(new DataTypePropertyAnalyzer()),
       this.registerValueHostPropertyAnalyzer(new LabelPropertiesAnalyzer()),
@@ -181,12 +181,12 @@ export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
   }
 
   public override registerDefaultValidatorPropertyAnalyzers(): void {
-    this.registerValidatorPropertyAnalyzer(new AllMessagePropertiesConfigPropertyAnalyzer()),
+      this.registerValidatorPropertyAnalyzer(new AllMessagePropertiesConfigPropertyAnalyzer()),
       this.registerValidatorPropertyAnalyzer(new ConditionCreatorConfigPropertyAnalyzer())
   }
 
   public override registerDefaultConditionPropertyAnalyzers(): void {
-    this.registerConditionPropertyAnalyzer(new ConditionTypeConfigPropertyAnalyzer()),
+      this.registerConditionPropertyAnalyzer(new ConditionTypeConfigPropertyAnalyzer()),
       this.registerConditionPropertyAnalyzer(new ConditionWithConversionLookupKeyPropertyAnalyzer()),
       this.registerConditionPropertyAnalyzer(new ConditionCategoryPropertyAnalyzer()),
       this.registerConditionPropertyAnalyzer(new ConditionWithChildrenPropertyAnalyzer()),

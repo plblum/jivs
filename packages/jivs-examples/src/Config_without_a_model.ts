@@ -1,22 +1,20 @@
 /**
-  Example of using the Builder API to create a ValidationManager configuration entirely in the UI Layer.
-  The business logic layer is best practice for defining the rules, but the UI layer can also do it.
+  Example of putting all configuration into the UI layer.
+  No model is used nor is there a business logic layer. 
+
+  ALERT: The business logic layer is best practice for defining the rules, but the UI layer can also do it.
   
-  There are 3 phases to configuration when using UI layer alone:
+  There are 2 phases to configuration when using UI layer alone:
   Phase 1
      Subclass FormRulesBase and consume the Builder API within its configureRules() method.
      This class allows a nice testing experience too, independent of actual UI code.
   Phase 2
      Create the ValidationManager through your FormRulesBase subclass.
      Wire up any callbacks from the ValidationManagerConfig object to your UI layer.
-  Phase 3
+  
+  Additional example:
      While the ValidationManager is running, the UI layer can still change the configuration.
      This phase uses the Modifier API, available from the startModifier() method on the ValidationManager.
- 
-  You will see all phases in this example.
- 
-  Refer to Config_example_common_code.ts for the common code used in this example, including
-  model, services, and the differenceBetweenDates() function.
 
   To accomplish our goal, we will setup the ValidationManager with the following
   ValueHosts and validators:
@@ -46,7 +44,7 @@ import { FormRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
 
 /**
  * Our Forms rules class, which is a subclass of FormRulesBase.
- * This is step 1.
+ * This is Phase 1.
  */
 export class DateRangeFormRules extends FormRulesBase
 {
@@ -80,7 +78,7 @@ export class DateRangeFormRules extends FormRulesBase
     }
 }
 
-export function configExample(): ValidationManager
+export function configUsingDateRangeFormRules(): ValidationManager
 {
     // Step 2: Configure and create the ValidationManager.
     let services = createValidationServices('en');
@@ -91,7 +89,7 @@ export function configExample(): ValidationManager
 
     // at this point, use the ValidationManager to validate your model.
 
-    // Step 3: This is where we use the Modifier API.
+    // Additional example: Use the Modifier API to change the startDate label when the timeZone ValueHost changes.
     // We want to show the current time zone in the start date label.
     // When timeZonePicker's change event fires, we'll pass the input value 
     // to the timeZone ValueHost,

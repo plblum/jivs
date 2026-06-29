@@ -54,10 +54,13 @@
 			  "--experimental-vm-modules"
 			]
 		},		
+		"jestrunner.enableESM": true,
 		"jest.runMode": {
 			"type": "on-demand",
 			"coverage": true			
 		},
+   	 	"jest.jestCommandLine": "node --experimental-vm-modules --disable-warning ExperimentalWarning ../../node_modules/jest/bin/jest.js",
+
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
 		],

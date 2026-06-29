@@ -1,7 +1,6 @@
-import {jest} from '@jest/globals';
-import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
+import { MockDocument, MockHTMLSelectElement } from '../src/Config_example_common_code';
 import {
-    configExample
+    configPersonEditFormRules
 } from '../src/Config_with_a_model';
 
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
@@ -24,37 +23,23 @@ afterEach(() => {
     global.document = originalDocument;
 });
 
-describe('configExample', () => {
+describe('configPersonEditFormRules', () => {
     it('should configure validation manager correctly', () => {
         // Execute configExample
         let vm: ValidationManager;
-        expect(() => vm = configExample()).not.toThrow();
-        let vh1 = vm!.getValueHost('startDate');
-        let vh2 = vm!.getValueHost('endDate');
-        let vh3 = vm!.getValueHost('timeZone');
-        let vh4 = vm!.getValueHost('numOfDays');
-        let vh5 = vm!.getValueHost('diffDays');
+        expect(() => vm = configPersonEditFormRules()).not.toThrow();
+        let vh1 = vm!.getValueHost('FirstName');
+        let vh2 = vm!.getValueHost('LastName');
+        let vh3 = vm!.getValueHost('BirthDate');
         expect(vh1).toBeInstanceOf(FieldValueHost);
-        expect(vh1!.getDataType()).toBe(LookupKey.Date);
-        expect(vh1!.getLabel()).toBe('Start date');
+        expect(vh1!.getDataType()).toBe(LookupKey.String);
+        expect(vh1!.getLabel()).toBe('First name');
         expect(vh2).toBeInstanceOf(FieldValueHost);
-        expect(vh2!.getDataType()).toBe(LookupKey.Date);
-        expect(vh2!.getLabel()).toBe('End date');
+        expect(vh2!.getDataType()).toBe(LookupKey.String);
+        expect(vh2!.getLabel()).toBe('Last name');
         expect(vh3).toBeInstanceOf(FieldValueHost);
-        expect(vh3!.getDataType()).toBe(LookupKey.String);
-        expect(vh4).toBeInstanceOf(StaticValueHost);
-        expect(vh4!.getDataType()).toBe(LookupKey.Integer);
-        expect(vh4!.getValue()).toBe(10);
-        expect(vh5).toBeInstanceOf(CalcValueHost);
-        expect(vh5!.getDataType()).toBe(LookupKey.Integer);
-    });
-    it('call to timeZonePicker.onchange will change the start date to append "UTC+1"', () => {
-        // Execute configExample
-        let vm: ValidationManager;
-        expect(() => vm = configExample()).not.toThrow();
-        let timeZonePicker = global.document.getElementById('timeZonePicker') as unknown as MockHTMLSelectElement;
-        timeZonePicker.onchange({} as Event);
-        let vh1 = vm!.getValueHost('startDate');
-        expect(vh1!.getLabel()).toBe('Start date (UTC+1)');
+        expect(vh3!.getDataType()).toBe(LookupKey.Date);
+        expect(vh3!.getLabel()).toBe('Birth date');
+
     });
 });

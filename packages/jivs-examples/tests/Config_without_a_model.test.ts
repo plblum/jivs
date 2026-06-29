@@ -1,6 +1,6 @@
-import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
+import { MockDocument, MockHTMLSelectElement } from '../src/Config_example_common_code';
 import {
-    configExample
+    configUsingDateRangeFormRules
 } from '../src/Config_without_a_model';
 
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
@@ -28,7 +28,7 @@ describe('configExample', () => {
     it('should configure validation manager correctly', () => {
         // Execute configExample
         let vm: ValidationManager;
-        expect(() => vm = configExample()).not.toThrow();
+        expect(() => vm = configUsingDateRangeFormRules()).not.toThrow();
         let vh1 = vm!.getValueHost('startDate');
         let vh2 = vm!.getValueHost('endDate');
         let vh3 = vm!.getValueHost('timeZone');
@@ -51,7 +51,7 @@ describe('configExample', () => {
     it('call to timeZonePicker.onchange will change the start date to append "UTC+1"', () => {
         // Execute configExample
         let vm: ValidationManager;
-        expect(() => vm = configExample()).not.toThrow();
+        expect(() => vm = configUsingDateRangeFormRules()).not.toThrow();
         let timeZonePicker = global.document.getElementById('timeZonePicker') as unknown as MockHTMLSelectElement;
         timeZonePicker.onchange({} as Event);
         let vh1 = vm!.getValueHost('startDate');

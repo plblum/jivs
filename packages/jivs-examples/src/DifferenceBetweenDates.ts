@@ -3,7 +3,11 @@
 // that compares two values, one is the difference in days between StartDate and EndDate,
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
-import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import {
+    DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition,
+    LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig,
+    LessThanCondition, LessThanConditionConfig
+} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
@@ -29,15 +33,15 @@ export class DateRangeFormRules extends FormRulesBase {
     }
     protected configureRules(builder: ValidationManagerConfigBuilder,
         options?: RulesConfigOptions): void {
-        builder.field('startDate', LookupKey.Date, { label: 'Start date' })
-            .lessThan('endDate')
-            .lessThanOrEqual('numOfDays',   // right operand of the comparison
-                { valueHostName: 'diffDays' },  // compare to this ValueHost, not 'startDate'
+        builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
+            .lessThanOrEqual('EndDate')
+            .lessThan('NumOfDays',   // right operand of the comparison
+                { valueHostName: 'DiffDays' },  // compare to this ValueHost, not 'StartDate'
                 'Less than {compareTo} days apart',   // our preferred error message
                 { errorCode: 'NumOfDays' });   // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
-        builder.field('endDate', LookupKey.Date, { label: 'End date' });
-        builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
-        builder.calc('diffDays', LookupKey.Integer, this.differenceBetweenDates);
+        builder.field('EndDate', LookupKey.Date, { label: 'End date' });
+        builder.static('NumOfDays', LookupKey.Integer, { initialValue: 10 });
+        builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);
     }
 
 // Here's our target function to use with a CalcValueHost. 
@@ -81,6 +85,9 @@ function createValidationServicesForThisExample(): IValidationServices {
         (config) => new LessThanValueCondition(config));
     conditionFactory.register<LessThanOrEqualConditionConfig>(ConditionType.LessThanOrEqual,
         (config) => new LessThanOrEqualCondition(config));
+    conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,
+        (config) => new LessThanCondition(config));
+
     // This might be the only line you'd customize in your version of createValidationServices()
     // as it relates to this example.
     services.loggerService.minLevel = LoggingLevel.Debug;
@@ -101,8 +108,8 @@ function demoSeveralCases(): void {
     let vm = configureVMForDifferenceBetweenDates();
     vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
-    let diffDays = vm.getValueHost('DiffDays')?.getValue();
-    // diffDays = 0
+    let DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    // DiffDays = 0
     let result = vm.validate();
     /* 
     result = {
@@ -111,8 +118,8 @@ function demoSeveralCases(): void {
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
-    // diffDays == 9
+    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    // DiffDays == 9
     result = vm.validate();
     /* 
     result = {
@@ -121,8 +128,8 @@ function demoSeveralCases(): void {
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
-    // diffDays == 10 
+    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    // DiffDays == 10 
     result = vm.validate();
     /* 
     result == {
@@ -134,8 +141,8 @@ function demoSeveralCases(): void {
     */    
 
     vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 12)));    // start > end
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
-    // diffDays == 1 
+    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    // DiffDays == 1 
     result = vm.validate();
     /* 
     result == {

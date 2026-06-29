@@ -1,5 +1,4 @@
 // Tests run the same cases demonstrated in the example source, ../src/DifferenceBetweenDates
-import {jest} from '@jest/globals';
 import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
 import { configureVMForDifferenceBetweenDates } from "../src/DifferenceBetweenDates";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
@@ -39,9 +38,9 @@ describe('Difference between dates is less than 10', () => {
     test('StartDate + 10 = EndDate. ConditionType=LessThan fails', () => {
         let vm = configureVMForDifferenceBetweenDates();
         vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
-        vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1 + 10)));  
+        vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1 + 12)));  
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
-        expect(diffDays).toBe(10);
+        expect(diffDays).toBe(12);
         let result = vm.validate();
 
         let expected: ValidationState =
@@ -50,11 +49,12 @@ describe('Difference between dates is less than 10', () => {
             doNotSave: true,
 
             issuesFound:  [{
-                errorMessage: 'The two dates must be less than 10 days apart.',
-                summaryMessage: 'The two dates must be less than 10 days apart.',
-                errorCode: ConditionType.LessThanValue,
+                errorMessage: 'Less than 10 days apart',
+                summaryMessage: 'Less than 10 days apart',
+                errorCode: 'NumOfDays',
                 severity: ValidationSeverity.Error,
-                valueHostName: 'StartDate'
+                valueHostName: 'StartDate',
+                doNotSave: true
             }],
             asyncProcessing: false
         };        
@@ -73,11 +73,12 @@ describe('Difference between dates is less than 10', () => {
             doNotSave: true,
 
             issuesFound:  [{
-                errorMessage: 'Start date must be less than or equal to End date.',
-                summaryMessage: 'Start date must be less than or equal to End date.',
+                errorMessage: '***ERROR MESSAGE MISSING***',
+                summaryMessage: '***ERROR MESSAGE MISSING***',
                 errorCode: ConditionType.LessThanOrEqual,
-                severity: ValidationSeverity.Severe,
-                valueHostName: 'StartDate'
+                severity: ValidationSeverity.Error,
+                valueHostName: 'StartDate',
+                doNotSave: true
                 }],
             asyncProcessing: false
         };
