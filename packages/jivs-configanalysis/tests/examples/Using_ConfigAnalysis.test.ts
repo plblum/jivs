@@ -720,7 +720,7 @@ describe('Demonstrate the results from various use cases', () => {
         expect(() => explorer.throwOnErrors(false,
             new JsonConsoleConfigAnalysisOutputter())).toThrow();
         /* Console output: 
-        //{
+        {
         "valueHostQueryResults": [
             {
               "path": {
