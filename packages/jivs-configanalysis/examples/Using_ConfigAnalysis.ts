@@ -10,12 +10,12 @@ import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeCo
 import { RulesConfigOptions } from '@plblum/jivs-engine/build/Interfaces/ModelRules';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { installConfigAnalysisService } from '@plblum/jivs-configanalysis/build/ConfigAnalysisService';
 
 import { createValidationServices } from './Config_example_common_code';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
 import { CAIssueSeverity } from '../src/Types/Results';
 import { LoggerConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
+import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
 
 
 /**
