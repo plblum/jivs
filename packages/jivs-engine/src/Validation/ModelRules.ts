@@ -21,7 +21,7 @@
  * @module ValidationManager/ConcreteClasses
  */
 
-import { CONFIG_ANALYSIS_SERVICE_NAME, IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
+import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { assertNotNull } from "../Utilities/ErrorHandling";
@@ -70,7 +70,6 @@ export abstract class RulesBase implements IRules
                 builder.startUILayerConfig();
                 uiRules.adaptToForm(builder, options);
             }
-            this.configAnalysis(builder, options);
 
             config = this.buildConfig(builder, options);
 
@@ -143,28 +142,6 @@ export abstract class RulesBase implements IRules
         return builder.complete();
     }
 
-    /**
-     * Performs the analysis of the configuration. It outputs results usually to the console. Use during non-production situations.
-     * Requires the jivs-configAnalysis module to be installed, the configAnalysisService registered as a service,
-     * and options.configAnalysisOptions is assigned.
-     * @param builder 
-     * @param options 
-     */
-    protected configAnalysis(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
-        if (!(options?.configAnalysisOptions))
-            return;
-        const configAnalysisService = this.services.getService(
-            CONFIG_ANALYSIS_SERVICE_NAME
-        ) as { analyze?: (target: unknown, options?: unknown) => void } | null;
-
-        if (typeof configAnalysisService?.analyze === "function")
-        {
-            configAnalysisService.analyze(
-                builder,
-                options.configAnalysisOptions,
-            );
-        }
-    }
 }
 
 /**

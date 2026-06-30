@@ -1852,7 +1852,6 @@ Use the `options` parameter on `configure()` when you need to influence how the 
 
 ```ts
 interface RulesConfigOptions {
-  configAnalysisOptions?: unknown;
   disableCache?: boolean;
   variantName?: string;
 }
@@ -1860,7 +1859,6 @@ interface RulesConfigOptions {
 
 * `disableCache` - When `true`, disables cache participation for that `configure()` call.
 * `variantName` - Lets the subclass author define named variants of the same rules class, so the class's consumer can request an optional configuration path by name.
-* `configAnalysisOptions` - Enables optional config analysis when the `jivs-configanalysis` module is installed and registered.
 
 ### ModelRulesBase
 
@@ -1946,21 +1944,6 @@ Use the `disableCache: true` option when you do not want a `configure()` call 
 ```ts
 const config = rules.configure({
   disableCache: true,
-});
-```
-
-### Config analysis
-The `jivs-configanalysis` module helps you find any flaws in your configuration, such as a feature requested but not found in the services.
-
-`configure()` runs it when `configAnalysisOptions` is assigned and the config-analysis service has been registered with `ValidationServices`.
-
-Use this during development or testing when you want a report about configuration problems or the final resolved configuration.
-
-```ts
-const config = rules.configure({
-  configAnalysisOptions: {
-    // options defined by jivs-configanalysis
-  },
 });
 ```
 ---

@@ -29,13 +29,6 @@ import { ValidationManagerConfig } from "./ValidationManager";
  */
 export interface RulesConfigOptions {
     /**
-     * Enables config analysis through jivs-configanalysis module when it is not `null` or `undefined`. 
-     * It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
-     * The shape of `configAnalysisOptions` belongs to the installed config-analysis module, 
-     * not to `jivs-engine` which is why it is typed as `unknown`.
-     */
-    configAnalysisOptions?: unknown;
-    /**
      * When `true`, disables caching of the rules configuration. This is useful for testing and debugging.
      */
     disableCache?: boolean;
@@ -43,7 +36,7 @@ export interface RulesConfigOptions {
      * Developer can use this to allow the caller to execute a named variant.
        Its used at the developer's discretion.
      */
-  variantName?: string;
+    variantName?: string;
 }
 
 /**

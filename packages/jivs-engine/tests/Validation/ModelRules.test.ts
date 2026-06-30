@@ -1,6 +1,6 @@
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { RulesBase } from "../../src/Validation/ModelRules";
-import { CONFIG_ANALYSIS_SERVICE_NAME, IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
+import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -106,66 +106,6 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
         });
 
-    });
-    describe('config analysis features - using a mock service', () => {
-        class MockConfigAnalysisService {
-            public analyzeDone: boolean = false;
-
-            public analyze(builder: ValidationManagerConfigBuilder, options?: unknown): void {
-                this.analyzeDone = true;    
-            }
-        }
-        // configAnalysisOptions is supplied but no service exists
-        test('configureRules does not analyze config when no service exists', () => {
-            let services = new MockValidationServices(true, true);
-            let rules = new PersonModelRules(services);
-            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
-            // normal behavior.
-            expect(config.valueHostConfigs.length).toBe(2);
-        });
-        // configAnalysisOptions is supplied and a service exists
-        test('configureRules analyzes config when service exists', () => {
-            let services = new MockValidationServices(true, true);
-            let caService = new MockConfigAnalysisService();
-            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
-            let rules = new PersonModelRules(services);
-            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
-            expect(caService.analyzeDone).toBe(true);
-            expect(config.valueHostConfigs.length).toBe(2);
-        });
-        // configAnalysisOptions is not supplied and a service exists
-        test('configureRules does not analyze config when configAnalysisOptions is not supplied', () => {
-            let services = new MockValidationServices(true, true);
-            let caService = new MockConfigAnalysisService();
-            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
-            let rules = new PersonModelRules(services);
-            let config = rules.configure();
-            expect(caService.analyzeDone).toBe(false);
-            expect(config.valueHostConfigs.length).toBe(2);
-        });
-        // configAnalysisOptions is supplied and a service exists but the service does not implement analyze()
-        test('configureRules does not analyze config when service does not implement analyze()', () => {
-            let services = new MockValidationServices(true, true);
-            let caService = {};
-            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
-            let rules = new PersonModelRules(services);
-            let config = rules.configure({ configAnalysisOptions: { someOption: true } });
-            expect(config.valueHostConfigs.length).toBe(2);
-        });
-
-        // configAnalysis does not run if caching is enabled and the config is cached
-        test('configureRules does not analyze config when caching is enabled and config is cached', () => {
-            let services = new MockValidationServices(true, true);
-            let caService = new MockConfigAnalysisService();
-            services.setService(CONFIG_ANALYSIS_SERVICE_NAME, caService);
-            let rules = new PersonModelRules(services);
-            let config1 = rules.configure({ configAnalysisOptions: { someOption: true } });
-            expect(caService.analyzeDone).toBe(true);
-            caService.analyzeDone = false;
-            let config2 = rules.configure({ configAnalysisOptions: { someOption: true } });
-            expect(caService.analyzeDone).toBe(false);
-            expect(config2).toBe(config1);
-        });
     });
 
 });

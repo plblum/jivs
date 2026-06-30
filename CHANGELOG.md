@@ -10,6 +10,8 @@ and with pending work on the server side story, PropertyValueHost needed to supp
 For the most part, you should be able to rename these builder properties: builder.input() and builder.property() to builder.field().
 - Provide a way for Jivs on the server side to supply its validation IssuesFound to the client. See ValidationManager.fromValidationPayload and toValidationPayload.
 - Revise how external errors are handled. REPLACED setBusinessLogicErrors and its ExternalIssueFound class with addExternalIssuesFound that takes IssueFound.
+- Builder now offers useOnlyTheseModelFields() and disableTheseModelFields() methods to help the UI developer transition into their form
+without including model fields that are not supported in the form.
 
 
 ## 0.19.0
