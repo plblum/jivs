@@ -66,6 +66,26 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
      * @param options 
      */
     startUILayerConfig(options?: BuilderOverrideOptions): void;
+
+    /**
+     * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
+     * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 
+     * This is useful when the business layer has a model with many fields, 
+     * but the UI layer is only going to use a subset of those fields.
+     * @param modelFieldNames - names on ValueHosts already declared. 
+     * All ValueHosts will have their enabled property set to false, except for those in the list.
+     */
+    useOnlyTheseModelFields(modelFieldNames: Array<ValueHostName>): void;
+
+    /**
+     * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
+     * will disable any ValueHostConfigs that are in the list of modelFieldNames.
+     * This is useful when the business layer has a model with many fields, 
+     * but the UI layer is only going to use a subset of those fields.
+     * @param modelFieldNames - names on ValueHosts already declared. 
+     * All ValueHosts will have their enabled property set to false, except for those in the list.
+     */
+    disableTheseModelFields(modelFieldNames: Array<ValueHostName>): void;
 }
 
 export interface IValidationManagerConfigExtensions

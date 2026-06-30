@@ -15,6 +15,7 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
+import { CapturingLogger } from '../../src/Support/CapturingLogger';
 
 
 function createVMConfig(): ValidationManagerConfig {
@@ -557,6 +558,128 @@ describe('favorUIMessages', () => {
         }
         ]);
     });    
+});
+
+describe('useOnlyTheseModelFields', () => {
+    test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with 1 of the 2. Only the one is kept', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);   
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.useOnlyTheseModelFields(['Field1']);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled does not exist
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBeUndefined();
+        // get field2's config and inspect initialEnabled is false
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBe(false);
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(false);
+    });
+    // empty array means keep none
+    test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with empty array. None are kept', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);   
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.useOnlyTheseModelFields([]);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled is false
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBe(false);
+        // get field2's config and inspect initialEnabled is false
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBe(false);
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(false);
+    });
+    // unknown field name is ignored
+    test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with 1 of the 2 and an unknown field. Only the one is kept', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.useOnlyTheseModelFields(['Field1', 'UnknownField']);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled does not exist
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBeUndefined();
+        // get field2's config and inspect initialEnabled is false
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBe(false);
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(true);
+        expect(loggerService.containsLog('UnknownField')).toBe(true);
+        expect(loggerService.containsLog('Field1')).toBe(false);
+    });
+});
+describe('disableTheseModelFields', () => {
+    test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with 1 of the 2. Only the one is disabled', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.disableTheseModelFields(['Field1']);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled is false
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBe(false);
+        // get field2's config and inspect initialEnabled does not exist
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBeUndefined();
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('disableTheseModelFields')).toBe(false);
+
+    });
+    // empty array
+    test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with empty array. None are disabled', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.disableTheseModelFields([]);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled does not exist
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBeUndefined();
+        // get field2's config and inspect initialEnabled does not exist
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBeUndefined();
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('disableTheseModelFields')).toBe(false);
+    });
+    // unknown field name is ignored
+    test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with 1 of the 2 and an unknown field. Only the one is disabled', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        builder.disableTheseModelFields(['Field1', 'UnknownField']);
+        let result = builder.publicify_baseConfig.valueHostConfigs;
+        // get field1's config and inspect initialEnabled is false
+        let field1Config = result.find((vhc) => vhc.name === 'Field1');
+        expect(field1Config).not.toBeUndefined();
+        expect(field1Config!.initialEnabled).toBe(false);
+        // get field2's config and inspect initialEnabled does not exist
+        let field2Config = result.find((vhc) => vhc.name === 'Field2');
+        expect(field2Config).not.toBeUndefined();
+        expect(field2Config!.initialEnabled).toBeUndefined();
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.containsLog('disableTheseModelFields')).toBe(true);
+        expect(loggerService.containsLog('UnknownField')).toBe(true);
+        expect(loggerService.containsLog('Field1')).toBe(false);
+    });
 });
 
 describe('combineWithRule', () => {

@@ -226,7 +226,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     }
 
     /**
-     * Starts a new ValueHostsConfig to collect ValueHostConfigs.
+     * Starts a new ValueHostConfig array to collect ValueHostConfigs.
      * They will be merged into baseConfig at getValueHostsConfig();
      */
     protected addOverride(): void {
@@ -313,7 +313,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     /**
      * Gets a ValueHostConfig with matching name by looking in previous overrides and the baseConfig.
      * Goal is to find a ValueHostConfig that existed prior to creating the Modifier or using addOverride().
-     * @param valueHostName 
+     * @param valueHostName - case sensitive match against existing
      * @param throwWhenNotFound 
      * @returns 
      */

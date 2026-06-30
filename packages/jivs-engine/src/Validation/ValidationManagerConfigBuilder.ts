@@ -16,6 +16,7 @@ import { BuilderOverrideOptions, IValidationManagerConfigBuilder } from "../Inte
 import { toIServicesAccessor } from "../Interfaces/Services";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
+import { LoggingLevel } from "../Interfaces/LoggerService";
 
 
 /**
@@ -85,36 +86,6 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         arg3?: FluentFieldParameters): FluentValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
     }
-
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param dataType - optional and can be null. The value for ValueHost.dataType.
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param valueHostName - the ValueHost name
-    //  * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;
-    // /**
-    //  * Fluent format to create a PropertyValueHostConfig.
-    //  * This is the start of a fluent series. Extend series with validation rules like "required()".
-    //  * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
-    //  * You can omit the valueHostType property.
-    //  * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
-    //  */
-    // public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
-    // // overload resolution
-    // public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, arg3?: FluentPropertyParameters): FluentValidatorBuilder {
-    //     return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
-    // }
     //#endregion validation oriented ValueHost support
 
     /**
@@ -128,6 +99,66 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         this.addOverride();
         if (options?.favorUIMessages !== false)
             this.favorUIMessages();
+    }
+
+    /**
+     * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
+     * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 
+     * This is useful when the business layer has a model with many fields, 
+     * but the UI layer is only going to use a subset of those fields.
+     * @param modelFieldNames - names on ValueHosts already declared. 
+     * All ValueHosts will have their enabled property set to false, except for those in the list.
+     * Empty array disables all ValueHosts. Null or undefined does nothing.
+     */
+    public useOnlyTheseModelFields(modelFieldNames: Array<ValueHostName>): void
+    {
+        // clone the array
+        let notFound: Array<ValueHostName> = modelFieldNames.slice();
+        // uses baseConfig, not destinationValueHostConfigs(), 
+        // because the model's ValueHostConfigs are on baseConfig, not the current override.
+        for (let vhConfig of this.baseConfig.valueHostConfigs) {
+            {
+                const index = notFound.indexOf(vhConfig.name);
+                if (index > -1)
+                    notFound.splice(index, 1);
+                if (!modelFieldNames.includes(vhConfig.name))
+                    vhConfig.initialEnabled = false;
+            }
+        }
+        if (notFound.length > 0) {
+            // log
+            let msg = `useOnlyTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
+            this.logger.message(LoggingLevel.Warn, () => msg);
+        }
+    }
+    
+    /**
+     * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
+     * will disable any ValueHostConfigs that are in the list of modelFieldNames.
+     * This is useful when the business layer has a model with many fields, 
+     * but the UI layer is only going to use a subset of those fields.
+     * @param modelFieldNames - names on ValueHosts already declared. 
+     * All ValueHosts will have their enabled property set to false, except for those in the list.
+     */
+    public disableTheseModelFields(modelFieldNames: Array<ValueHostName>): void
+    {
+        let notFound: Array<ValueHostName> = modelFieldNames.slice();
+        // uses baseConfig, not destinationValueHostConfigs(), 
+        // because the model's ValueHostConfigs are on baseConfig, not the current override.
+        for (let vhConfig of this.baseConfig.valueHostConfigs) {
+            {
+                const index = notFound.indexOf(vhConfig.name);
+                if (index > -1)
+                    notFound.splice(index, 1);
+                if (modelFieldNames.includes(vhConfig.name))
+                    vhConfig.initialEnabled = false;
+            }
+        }
+        if (notFound.length > 0) {
+            // log
+            let msg = `disableTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
+            this.logger.message(LoggingLevel.Warn, () => msg);
+        }
     }
 
     /**
@@ -174,7 +205,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     }
 
     /**
-     * If it finds the validator with the errorcode specified, it will combine the condition with the existing condition
+     * If it finds the validator with the errorcode specified, 
+     * it will combine the condition with the existing condition
      * using a rule supplied or callback to let you create a conditionConfig.
      * If it the validator is not found, it will throw an error and log.
      * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
@@ -226,7 +258,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
 
     /**
      * Replace the condition supplying the replacement conditionConfig directly.
-     * If it finds the validator with the errorcode specified, it will replace the condition with the existing condition.
+     * If it finds the validator with the errorcode specified, 
+     * it will replace the condition with the existing condition.
      * If not, it logs and throws an error.
      * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
      * reflecting the same data as earlier, but now with a modified validator.
@@ -248,7 +281,6 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * passed the builder, where you can build your new conditions.
      * @returns itself for chaining
      */
-
     public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
     public replaceRule(valueHostName: ValueHostName, errorCode: string,
         sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): ValidationManagerConfigBuilder {
