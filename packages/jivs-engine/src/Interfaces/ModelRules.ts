@@ -21,7 +21,7 @@
  * @module Validation/Types/ModelRules
  */
 
-import { ValidationManagerConfigBuilder } from "../Validation/ValidationManagerConfigBuilder";
+import { IValidationManagerUIConfigBuilder } from "./ManagerConfigBuilder";
 import { ValidationManagerConfig } from "./ValidationManager";
 
 /**
@@ -37,6 +37,15 @@ export interface RulesConfigOptions {
        Its used at the developer's discretion.
      */
     variantName?: string;
+
+    /**
+     * Used together with the IAdaptModelRulesToForm.adaptToForm() function
+     * to determine how to transition from the base rules to the form-specific rules.
+     * When true or undefined, delete any error messages supplied by business logic for which
+     * you have a replacement in TextLocalizationService.
+     * If undefined, it defaults to true.
+     */
+    favorUIMessages?: boolean
 }
 
 /**
@@ -56,7 +65,7 @@ export interface IRules {
  * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
  */
 export interface IAdaptModelRulesToForm {
-  adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+  adaptToForm(builder: IValidationManagerUIConfigBuilder, options?: RulesConfigOptions): void;
 }
 
 /**

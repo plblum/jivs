@@ -37,7 +37,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
     constructor(manager: IValidationManager, existingValueHostConfigs: Map<string, ValueHostConfig>) {
         super(manager, existingValueHostConfigs);
     }
-    protected get services(): IValidationServices {
+    public get services(): IValidationServices {
         return this.baseConfig.services;
     }    
     protected createFluent(): ValidationManagerStartFluent

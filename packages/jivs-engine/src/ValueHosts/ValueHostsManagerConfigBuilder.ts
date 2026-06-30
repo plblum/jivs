@@ -5,7 +5,7 @@
 
 import { ValueHostsManagerStartFluent } from "./Fluent";
 import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
-import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../Interfaces/ValueHost";
@@ -55,7 +55,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
  */
     constructor(services: IValueHostsServices)
     constructor(config: T)
-    constructor(arg1: IValueHostsServices | T)
+    constructor(state: BuilderState<T>)
+    constructor(arg1: IValueHostsServices | T | BuilderState<T>)
     {
         super(arg1 as any);
     }

@@ -156,31 +156,51 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     constructor(services: IValueHostsServices)
     constructor(config: T)
-    constructor(arg1: IValueHostsServices | T) {
+    constructor(state: BuilderState<T>)
+    constructor(arg1: IValueHostsServices | T | BuilderState<T>) {
         assertNotNull(arg1);
+        if (arg1 instanceof BuilderState)
+        {
+            this._state = arg1;
+            return;
+        }
         let services = toIServices(arg1) as IValueHostsServices;
         if (services) {
-            this._baseConfig = {
+            this._state = new BuilderState<T>({
                 services: services,
                 valueHostConfigs: []
-            } as unknown as T;
+            } as unknown as T);
         }
         else if (toIServicesAccessor(arg1) && // ensures we have the required 'services' property
             'valueHostConfigs' in arg1) {
-            this._baseConfig = arg1 as T;
-            if (this._baseConfig.valueHostConfigs == null)  // null or undefined
-                this._baseConfig.valueHostConfigs = [];
+            let baseConfig = arg1 as T;
+            if (baseConfig.valueHostConfigs == null)  // null or undefined
+                baseConfig.valueHostConfigs = [];
+            this._state = new BuilderState<T>(baseConfig);
         }
         else
             throw new CodingError('Unexpected parameter value');
     }
     public dispose(): void {
-        this._overriddedValueHostConfigs = undefined!;
-        this._baseConfig = undefined!;
-        (this._logger as any) = undefined!;
+        this._state = undefined!;
+    }
+    protected get state(): BuilderState<T> {
+        return this._state;
+    }
+    private _state!: BuilderState<T>;
+
+    /**
+     * The state is not intended to be used directly. However, 
+     * it is exposed to allow sharing it with other Builder or Modifier instances, 
+     * so that they can edit the same configuration.
+     * This member is not part of the IManagerConfigBuilder interface, and is not intended to be used directly.
+     * @returns 
+     */
+    public handOffState(): BuilderState<T> {
+        return this.state;
     }
 
-    protected get services(): IValueHostsServices {
+    public get services(): IValueHostsServices {
         return this.baseConfig.services;
     }
     
@@ -191,12 +211,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      */
     protected get logger(): LoggerFacade
     {
-        if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
-                'ConfigBuilder', this, null, false)
-        return this._logger;
+        return this.state?.logger ?? undefined;
     }
-    private _logger: LoggerFacade | null = null;
+
     //#endregion logging
 
     /**
@@ -206,9 +223,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * Merging overrides updates this object.
      */
     protected get baseConfig(): T {     
-        return this._baseConfig;
+        return this.state?.baseConfig ?? undefined;
     }
-    private _baseConfig: T;
 
     /**
      * A ValueHostManagerConfig that is getting overridden ValueHost configurations.
@@ -216,12 +232,11 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * They retain a reference to services.
      */
     protected get overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return this._overriddedValueHostConfigs;
+        return this.state?.overriddenValueHostConfigs ?? [];
     }
-    private _overriddedValueHostConfigs: Array<Array<ValueHostConfig>> = [];
 
     protected assertNotDisposed(): void {
-        if (this._baseConfig === undefined)
+        if (this._state === undefined)
             throw new CodingError('Object disposed. Call before complete()');
     }
 
@@ -726,6 +741,25 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     //#endregion utilities for ValidationManager-based subclasses
 
+}
+
+/**
+ * Each private storage field in ManagerConfigBuilderBase is stored here,
+ * so this object can be transferred to companion builders who will do additional work.
+ */
+export class BuilderState<T extends ValueHostsManagerConfig>
+{
+    constructor(baseConfig: T) {
+        this.baseConfig = baseConfig;
+        this.logger = new LoggerFacade(baseConfig.services.loggerService,
+            'ConfigBuilder', this, null, false);
+        this.overriddenValueHostConfigs = [];
+    }
+
+    public logger: LoggerFacade;
+    public baseConfig: T;
+    public overriddenValueHostConfigs!: Array<Array<ValueHostConfig>>;
+    
 }
 
 

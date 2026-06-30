@@ -5,14 +5,18 @@
 
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
-import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
+import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
+import { CombineUsingCondition, ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
 import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
+import { ValidationManagerUIConfigBuilder } from "../Validation/ValidationManagerUIConfigBuilder";
+import { ConditionConfig } from "./Conditions";
+import { ValidationManagerConfigBuilder } from "../Validation/ValidationManagerConfigBuilder";
+import { IValueHostsServices } from "./ValueHostsServices";
 
 
 /**
@@ -23,6 +27,7 @@ import { IValidationManagerCallbacks, ValidationManagerConfig } from "./Validati
 export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
     extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
 {
+    services: IValueHostsServices;
     /**
      * Delivers a complete ValueHostConfig and shuts down this instance.
      * You cannot use the instance after this point.
@@ -57,15 +62,43 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
     extends IValueHostsManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
     IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {
+}
 
+export interface IValidationManagerConfigExtensions
+{
+
+}
+
+/**
+ * Parameter for the overrides function to supply its options.
+ */
+export interface BuilderOverrideOptions
+{
     /**
-     * When working with both business layer and UI layer configurations,
-     * call before starting the UI layer configuration.
-     * It will prepare for merging overlapping configurations and optionally
-     * change some of the configuration already prepared by the business layer.
-     * @param options 
+     * When true, use the favorUIMessages() function to delete
+     * any error messages supplied by business logic for which
+     * you have a replacement in TextLocalizationService.
+     * If undefined, it defaults to true.
      */
-    startUILayerConfig(options?: BuilderOverrideOptions): void;
+    favorUIMessages?: boolean
+}
+
+/** 
+ * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
+ * to override and extend the business layer configuration.
+ * It allows us to isolate methods specific to the UI layer, 
+ * so that the business layer does not have to know about them.
+*/
+export interface IValidationManagerUIConfigBuilder extends IValidationManagerConfigBuilder<ValidationManagerConfig>
+{
+    // /**
+    //  * When working with both business layer and UI layer configurations,
+    //  * call before starting the UI layer configuration.
+    //  * It will prepare for merging overlapping configurations and optionally
+    //  * change some of the configuration already prepared by the business layer.
+    //  * @param options 
+    //  */
+    // startUILayerConfig(options?: BuilderOverrideOptions): void;
 
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
@@ -86,25 +119,85 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
      * All ValueHosts will have their enabled property set to false, except for those in the list.
      */
     disableTheseModelFields(modelFieldNames: Array<ValueHostName>): void;
-}
 
-export interface IValidationManagerConfigExtensions
-{
-
-}
-
-/**
- * Parameter for the overrides function to supply its options.
- */
-export interface BuilderOverrideOptions
-{
     /**
-     * When true, use the favorUIMessages() function to delete
-     * any error messages supplied by business logic for which
-     * you have a replacement in TextLocalizationService.
-     * If undefined, it defaults to true.
+     * If it finds the validator with the errorcode specified, 
+     * it will combine the condition with the existing condition
+     * using a rule supplied or callback to let you create a conditionConfig.
+     * If it the validator is not found, it will throw an error and log.
+     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
+     * reflecting the same data as earlier, but now with a modified validator.
+     * If the ValueHost is on the current override, the existing entry is modified.
+     *
+     * The resulting ValidatorConfig's errorCode will not have changed from the original 
+     * to ensure it aligns with everything depending on the original error code.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param builderFn - A function to create a conditionConfig that will replace the existing. 
+     * You are passed a Builder object, where you can build your new conditions, 
+     * and the existing conditionConfig,
+     * which can be added to a Builder object with the conditionConfig() function.
+     * ```ts
+     * builder.combineWithRule('Field1', 'NotNull', 
+     *   (combiningBuilder, existingConditionConfig)=> {
+     *      combiningBuilder.when(
+     *                  (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
+     *                  (childBuilder)=> childBuilder.conditionConfig(existingConditionConfig));
+     * });
+     * ```
+     * @returns itself for chaining
      */
-    favorUIMessages?: boolean
+    combineWithRule(valueHostName: ValueHostName, errorCode: string,
+        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
+    /**
+     * Uses the combineUsing parameter to determine how to combine the conditions.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param combineUsing 
+     * @param builderFn - A function to create the condition that you want 
+     * to combine with the existing condition.
+     * ```ts
+     * builder.combineWithRule('Field1', 'NotNull', CombineUsingCondition.When, 
+     *    (combiningBuilder)=> combiningBuilder.equalToValue('YES', 'Field2'));
+     * ```
+     */
+    combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
+        builderFn: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+
+    combineWithRule(valueHostName: ValueHostName, errorCode: string,
+        arg3: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg4?: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder;
+
+    /**
+     * Replace the condition supplying the replacement conditionConfig directly.
+     * If it finds the validator with the errorcode specified, 
+     * it will replace the condition with the existing condition.
+     * If not, it logs and throws an error.
+     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
+     * reflecting the same data as earlier, but now with a modified validator.
+     * If the ValueHost is on the current override, the existing entry is modified.
+     *
+     * The resulting ValidatorConfig's errorCode will not have changed from the original 
+     * to ensure it aligns with everything depending on the original error code.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param conditionConfig - provide a complete ConditionConfig as the replacement
+     */
+    replaceRule(valueHostName: ValueHostName, errorCode: string,
+        conditionConfig: ConditionConfig): ValidationManagerConfigBuilder
+    /** 
+     * Replace supplying the replacement condition through a Builder object.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param builderFn
+     * Use a function to create a conditionConfig that will replace the existing. You are
+     * passed the builder, where you can build your new conditions.
+     * @returns itself for chaining
+     */
+    replaceRule(valueHostName: ValueHostName, errorCode: string,
+        builderFn: (replacementBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+    replaceRule(valueHostName: ValueHostName, errorCode: string,
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): ValidationManagerConfigBuilder;
 }
 
 /**
