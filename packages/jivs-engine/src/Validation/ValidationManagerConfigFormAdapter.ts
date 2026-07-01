@@ -2,7 +2,7 @@ import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
-import { BuilderOverrideOptions, IManagerConfigBuilder, IValidationManagerUIConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { BuilderOverrideOptions, IManagerConfigBuilder, IValidationManagerConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";
@@ -12,18 +12,18 @@ import { BuilderState, CombineUsingCondition, ManagerConfigBuilderBase } from ".
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 
 /**
- * Creates a ValidationManagerUIConfigBuilder from a source IManagerConfigBuilder.
+ * Creates a ValidationManagerConfigFormAdapter from a source IManagerConfigBuilder.
  * @param source 
  * @param options 
  * @returns 
  */
-export function createUIBuilder(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IValidationManagerUIConfigBuilder
+export function createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IValidationManagerConfigFormAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
         let state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
-        return new ValidationManagerUIConfigBuilder(state, { favorUIMessages: options?.favorUIMessages });
+        return new ValidationManagerConfigFormAdapter(state, { favorUIMessages: options?.favorUIMessages });
     }
-    throw new CodingError("createUIBuilder() expects a ManagerConfigBuilderBase instance.");
+    throw new CodingError("createFormAdapter() expects a ManagerConfigBuilderBase instance.");
 }
 
 /** 
@@ -32,9 +32,9 @@ export function createUIBuilder(source: IManagerConfigBuilder<any>, options?: Ru
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export class ValidationManagerUIConfigBuilder
+export class ValidationManagerConfigFormAdapter
     extends ValidationManagerConfigBuilder
-    implements IValidationManagerUIConfigBuilder
+    implements IValidationManagerConfigFormAdapter
 {
     /**
      * Opens a new override layer for the UI layer to add or modify ValueHostConfigs.
@@ -92,19 +92,6 @@ export class ValidationManagerUIConfigBuilder
                 });
         }
     }
-
-    // /**
-    //  * When working with both business layer and UI layer configurations,
-    //  * call before starting the UI layer configuration.
-    //  * It will prepare for merging overlapping configurations and optionally
-    //  * change some of the configuration already prepared by the business layer.
-    //  * @param options 
-    //  */
-    // public startUILayerConfig(options?: BuilderOverrideOptions): void {
-    //     this.addOverride();
-    //     if (options?.favorUIMessages !== false)
-    //         this.favorUIMessages();
-    // }
 
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function

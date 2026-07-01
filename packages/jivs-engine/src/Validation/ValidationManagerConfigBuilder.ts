@@ -5,7 +5,7 @@
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
-import { BuilderOverrideOptions, IValidationManagerConfigBuilder, IValidationManagerUIConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { BuilderOverrideOptions, IValidationManagerConfigBuilder, IValidationManagerConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { toIServicesAccessor } from "../Interfaces/Services";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
 import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";

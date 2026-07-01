@@ -13,7 +13,7 @@ import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ValidationManagerUIConfigBuilder } from "../Validation/ValidationManagerUIConfigBuilder";
+import { ValidationManagerConfigFormAdapter } from "../Validation/ValidationManagerConfigFormAdapter";
 import { ConditionConfig } from "./Conditions";
 import { ValidationManagerConfigBuilder } from "../Validation/ValidationManagerConfigBuilder";
 import { IValueHostsServices } from "./ValueHostsServices";
@@ -89,17 +89,8 @@ export interface BuilderOverrideOptions
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export interface IValidationManagerUIConfigBuilder extends IValidationManagerConfigBuilder<ValidationManagerConfig>
+export interface IValidationManagerConfigFormAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig>
 {
-    // /**
-    //  * When working with both business layer and UI layer configurations,
-    //  * call before starting the UI layer configuration.
-    //  * It will prepare for merging overlapping configurations and optionally
-    //  * change some of the configuration already prepared by the business layer.
-    //  * @param options 
-    //  */
-    // startUILayerConfig(options?: BuilderOverrideOptions): void;
-
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
      * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 

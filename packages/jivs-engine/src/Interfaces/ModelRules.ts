@@ -21,7 +21,7 @@
  * @module Validation/Types/ModelRules
  */
 
-import { IValidationManagerUIConfigBuilder } from "./ManagerConfigBuilder";
+import { IValidationManagerConfigFormAdapter } from "./ManagerConfigBuilder";
 import { ValidationManagerConfig } from "./ValidationManager";
 
 /**
@@ -65,7 +65,7 @@ export interface IRules {
  * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
  */
 export interface IAdaptModelRulesToForm {
-  adaptToForm(builder: IValidationManagerUIConfigBuilder, options?: RulesConfigOptions): void;
+  adaptToForm(builder: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void;
 }
 
 /**

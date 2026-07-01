@@ -21,7 +21,7 @@
  * @module ValidationManager/ConcreteClasses
  */
 
-import { IManagerConfigBuilder, IValidationManagerConfigBuilder, IValidationManagerUIConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { IManagerConfigBuilder, IValidationManagerConfigBuilder, IValidationManagerConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
@@ -29,7 +29,7 @@ import { ValueHostsManagerConfig } from "../Interfaces/ValueHostsManager";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
-import { ValidationManagerUIConfigBuilder, createUIBuilder } from "./ValidationManagerUIConfigBuilder";
+import { ValidationManagerConfigFormAdapter, createFormAdapter } from "./ValidationManagerConfigFormAdapter";
 
 /**
  * Core implementation of IRules. It is used to create a ValidationManagerConfig object from any rules built 
@@ -71,9 +71,9 @@ export abstract class RulesBase implements IRules
 
             const uiRules = this as Partial<IAdaptModelRulesToForm>;
             if (typeof uiRules.adaptToForm === "function") {
-            // uiBuilder is updating the same configuration data as builder itself.
-                let uiBuilder = this.createUIBuilder(builder, { favorUIMessages: options?.favorUIMessages });
-                uiRules.adaptToForm(uiBuilder, options);
+            // formAdapter is updating the same configuration data as builder itself.
+                let formAdapter = this.createFormAdapter(builder, { favorUIMessages: options?.favorUIMessages });
+                uiRules.adaptToForm(formAdapter, options);
             }
 
             config = this.buildConfig(builder, options);
@@ -137,9 +137,9 @@ export abstract class RulesBase implements IRules
         return new ValidationManagerConfigBuilder(this.services);
     }
 
-    protected createUIBuilder(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IValidationManagerUIConfigBuilder
+    protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IValidationManagerConfigFormAdapter
     {
-        return createUIBuilder(source, options);
+        return createFormAdapter(source, options);
     }
 
     /**

@@ -46,7 +46,7 @@ import {
 } from '../TestSupport/TestValidatableValueHost';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { createUIBuilder } from '../../src/Validation/ValidationManagerUIConfigBuilder';
+import { createFormAdapter } from '../../src/Validation/ValidationManagerConfigFormAdapter';
 
 
 // Subclass of what we want to test to expose internals to tests
@@ -2944,8 +2944,8 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
         builder.field('Property1').requireText();
 
         // phase 2
-        let uiBuilder = createUIBuilder(builder);
-        uiBuilder.field('Field2').regExp(/\d/);
+        let formAdapter = createFormAdapter(builder);
+        formAdapter.field('Field2').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);
 
@@ -2984,8 +2984,8 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
         let builder = build(services);
         builder.field('Property1').requireText();
         // phase 2
-        let uiBuilder = createUIBuilder(builder);
-        uiBuilder.field('Property1').regExp(/\d/);
+        let formAdapter = createFormAdapter(builder);
+        formAdapter.field('Property1').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);
         // phase 3

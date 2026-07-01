@@ -8,7 +8,7 @@ import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValidationManagerUIConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
+import { IValidationManagerConfigFormAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
 
 enableFluentConditions();
 
@@ -116,7 +116,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         constructor(services: IValidationServices) {
             super(services);
         }
-        adaptToForm(builder: IValidationManagerUIConfigBuilder, options?: RulesConfigOptions): void {
+        adaptToForm(builder: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().
