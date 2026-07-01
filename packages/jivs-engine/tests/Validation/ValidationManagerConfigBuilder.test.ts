@@ -6,7 +6,7 @@ import { ValidationState } from '../../src/Interfaces/Validation';
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '../../src/Interfaces/ValidationManager';
 import { ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { ValidationManagerConfigBuilder, build } from '../../src/Validation/ValidationManagerConfigBuilder';
+import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
 import { FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
 import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
 import { MockValidationServices } from './../TestSupport/mocks';
@@ -83,7 +83,7 @@ describe('function build()', () => {
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
         let services = new MockValidationServices(false, false);
         let testItem: ValidationManagerConfigBuilder;
-        expect(() => testItem = build(services)).not.toThrow();
+        expect(() => testItem = createConfigBuilder(services)).not.toThrow();
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);
@@ -106,7 +106,7 @@ describe('function build()', () => {
             valueHostConfigs: []
         };
         let testItem: ValidationManagerConfigBuilder;
-        expect(() => testItem = build(vmConfig)).not.toThrow();
+        expect(() => testItem = createConfigBuilder(vmConfig)).not.toThrow();
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);   

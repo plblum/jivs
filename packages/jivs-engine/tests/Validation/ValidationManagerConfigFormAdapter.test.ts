@@ -9,7 +9,7 @@ import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
-import { ValidationManagerConfigBuilder, build } from '../../src/Validation/ValidationManagerConfigBuilder';
+import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
 import { ValidationManagerConfigFormAdapter, createFormAdapter } from '../../src/Validation/ValidationManagerConfigFormAdapter';
 import { FluentConditionBuilder, FluentValidatorBuilder } from '../../src/ValueHosts/Fluent';
 import { BuilderState, CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
@@ -87,7 +87,7 @@ describe('constructor', () => {
 
     // confirm constructor uses favorUIMessages option to set favorUIMessagesCount
     test('favorUIMessages option undefined runs favorUIMessages', () => {
-        let builder = build(createVMConfig());
+        let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
         let formAdapter = new Publicify_ValidationManagerConfigFormAdapter(
             builder.handOffState());    // no options
@@ -95,7 +95,7 @@ describe('constructor', () => {
         expect(formAdapter.favorUIMessagesCount).toBe(1);
     });
     test('favorUIMessages option true runs favorUIMessages', () => {
-        let builder = build(createVMConfig());
+        let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
         let formAdapter = new Publicify_ValidationManagerConfigFormAdapter(
             builder.handOffState(), { favorUIMessages: true });       
@@ -103,7 +103,7 @@ describe('constructor', () => {
         expect(formAdapter.favorUIMessagesCount).toBe(1);
     });
     test('favorUIMessages option false does not run favorUIMessages', () => {
-        let builder = build(createVMConfig());
+        let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
         let formAdapter = new Publicify_ValidationManagerConfigFormAdapter(
             builder.handOffState(), { favorUIMessages: false });        
@@ -283,7 +283,7 @@ describe('favorUIMessages', () => {
 describe('useOnlyTheseModelFields', () => {
     test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with 1 of the 2. Only the one is kept', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);
@@ -303,7 +303,7 @@ describe('useOnlyTheseModelFields', () => {
     // empty array means keep none
     test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with empty array. None are kept', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);
@@ -324,7 +324,7 @@ describe('useOnlyTheseModelFields', () => {
     // unknown field name is ignored
     test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with 1 of the 2 and an unknown field. Only the one is kept', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);
@@ -347,7 +347,7 @@ describe('useOnlyTheseModelFields', () => {
 describe('disableTheseModelFields', () => {
     test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with 1 of the 2. Only the one is disabled', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);
@@ -368,7 +368,7 @@ describe('disableTheseModelFields', () => {
     // empty array
     test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with empty array. None are disabled', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);
@@ -388,7 +388,7 @@ describe('disableTheseModelFields', () => {
     // unknown field name is ignored
     test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with 1 of the 2 and an unknown field. Only the one is disabled', () => {
         let vmConfig = createVMConfig();
-        let builder = build(vmConfig);
+        let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
         let formAdapter = createFormAdapter(builder);

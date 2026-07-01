@@ -23,7 +23,7 @@ import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerC
  * and use its builder property to configure your ValidationManagerConfig.
  * @returns 
  */
-export function build(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
+export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
         let services = (arg1 as ValidationManagerConfig).services;
         return services.managerConfigBuilderFactory.create(arg1 as ValidationManagerConfig) as ValidationManagerConfigBuilder;
