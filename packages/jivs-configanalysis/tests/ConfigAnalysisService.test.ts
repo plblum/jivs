@@ -1,4 +1,3 @@
-import { CONFIG_ANALYSIS_SERVICE_NAME } from '@plblum/jivs-engine/build/Interfaces/ModelRules';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
@@ -14,6 +13,7 @@ import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPrope
 import { ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
 import { ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
+import { CONFIG_ANALYSIS_SERVICE_NAME } from '../src/Types/ConfigAnalysisService';
 
 describe('install and getConfigAnalysisService', () => {
     // not installed initially

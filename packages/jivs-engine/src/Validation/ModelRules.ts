@@ -169,7 +169,7 @@ export abstract class RulesBase implements IRules
  * to add any form-specific rules to the model rules. 
  *    ```ts
  *    export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *        adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *        adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
  *            // add form-specific rules and adjustments such as to labels and error messages here
  *        }
  *    }

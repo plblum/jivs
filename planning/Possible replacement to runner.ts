@@ -1,20 +1,7 @@
 // File: packages/jivs-configanalysis/src/ConfigAnalysisService.ts
 
-import type {
-  ValidationManagerConfig,
-  ValidationManagerConfigBuilder,
-  ValidationServices,
-} from "@plblum/jivs-engine";
 
-import {
-  MODEL_RULES_CONFIG_ANALYSIS_SERVICE_NAME,
-} from "@plblum/jivs-engine";
-
-import type {
-  ConfigAnalysisOptions,
-  IConfigAnalysisResultsExplorer,
-} from "./types";
-
+import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/src/Validation/ValidationManagerConfigBuilder";
 import { ConfigAnalysisResultsExplorer } from "./ConfigAnalysisResultsExplorer";
 import { ValidationManagerConfigAnalysis } from "./ValidationManagerConfigAnalysis";
 import { ValueHostsManagerConfigAnalysis } from "./ValueHostsManagerConfigAnalysis";
@@ -22,6 +9,7 @@ import { ConsoleConfigAnalysisOutputter } from "./output/ConsoleConfigAnalysisOu
 import { CAIssueSeverity } from "./results/CAIssueSeverity";
 import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValueHostsManagerConfigBuilder } from '@plblum/jivs-engine/build/ValueHosts/ValueHostsManagerConfigBuilder';
+import { ValidationManagerConfig } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 
 /*
 Why:

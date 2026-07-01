@@ -63,15 +63,9 @@ export interface IRules {
  * It ensures that the form starts with the ModelRules configuration, 
  * and then adds any form-specific rules to it.
  * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
+ * @param adapter - the IValidationManagerConfigFormAdapter that is used to adapt the model configuration
+ * to the form.
  */
 export interface IAdaptModelRulesToForm {
-  adaptToForm(builder: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void;
+  adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void;
 }
-
-/**
- * The name of the service used to analyze the ValidationManagerConfig.
- * This is the only aspect of jivs-configanalysis that jivs-engine needs to know about. 
- * The rest of the config-analysis module is not used by jivs-engine.
- * IValidationService.setService(CONFIG_ANALYSIS_SERVICE_NAME, ...) is used to set the service.
- */
-export const CONFIG_ANALYSIS_SERVICE_NAME = "ConfigAnalysisService";

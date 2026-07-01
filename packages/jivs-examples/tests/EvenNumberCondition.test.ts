@@ -1,4 +1,4 @@
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { createMinimalValidationServices } from "../src/support";
@@ -10,7 +10,7 @@ describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
-        let builder = build(services);
+        let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number);
 
         let vm = new ValidationManager(builder);
@@ -44,7 +44,7 @@ describe('EvenNumberCondition tests', () => {
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
-        let builder = build(services);
+        let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
         let vm = new ValidationManager(builder);

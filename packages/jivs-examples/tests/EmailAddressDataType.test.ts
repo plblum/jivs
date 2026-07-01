@@ -5,14 +5,14 @@ import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Co
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
-        let builder = build(services);
+        let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
@@ -46,7 +46,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
     test('createCondition() function (only supports EmailAddressLookupKey)', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);        
-        let builder = build(services);
+        let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey);
 
         let vm = new ValidationManager(builder);
@@ -60,7 +60,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
     test('Using fluent syntax, demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
-        let builder = build(services);
+        let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey).emailAddress();
 
         let vm = new ValidationManager(builder);

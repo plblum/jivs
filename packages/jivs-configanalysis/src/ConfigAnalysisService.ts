@@ -2,7 +2,7 @@ import { ValidationManagerConfigAnalysis } from "./ConfigAnalysis";
 import { ConsoleConfigAnalysisOutputter } from "./Explorer/Outputters/ConfigAnalysisOutputterClasses";
 import {  IConditionConfigPropertyAnalyzer,  IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from "./Types/Analyzers";
 import { ConfigAnalysisOptions, IConfigAnalysis } from "./Types/ConfigAnalysis";
-import { IConfigAnalysisService } from "./Types/ConfigAnalysisService";
+import { CONFIG_ANALYSIS_SERVICE_NAME, IConfigAnalysisService } from "./Types/ConfigAnalysisService";
 import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
 import { CAIssueSeverity } from "./Types/Results";
 import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
@@ -12,7 +12,6 @@ import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/ValueHosts/M
 import { ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer } from "./Analyzers/ConditionConfigPropertyAnalyzerClasses";
 import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "./Analyzers/ValueHostConfigPropertyAnalyzerClasses";
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "./Analyzers/ValidatorConfigPropertyAnalyzerClasses";
-import { CONFIG_ANALYSIS_SERVICE_NAME } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 
 /**

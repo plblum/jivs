@@ -4,6 +4,13 @@ import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Va
 import type { ConfigAnalysisOptions} from "./ConfigAnalysis";
 import type { IConfigAnalysisResultsExplorer } from "./Explorer";
 
+
+/**
+ * The name of the service used to analyze the ValidationManagerConfig.
+ * IValidationService.setService(CONFIG_ANALYSIS_SERVICE_NAME, ...) is used to set the service.
+ */
+export const CONFIG_ANALYSIS_SERVICE_NAME = "ConfigAnalysisService";
+
 /**
  * Interface for the ConfigAnalysisService, which provides methods 
  * to analyze configurations and register analyzers.

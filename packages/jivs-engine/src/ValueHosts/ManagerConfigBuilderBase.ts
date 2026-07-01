@@ -62,10 +62,10 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * and implement the IAdaptModelRulesToForm interface, again using the Builder.
  * ```ts
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *   adaptToForm(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
- *      builder.field('birthDate', null, { label: 'Birth date' })
+ *   adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
+ *      adapter.field('birthDate', null, { label: 'Birth date' })
  *        .lessThan('today');
- *      builder.static('today', LookupKey.Date, { initialValue: new Date() });
+ *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });
  *   }
  * }
  * ```

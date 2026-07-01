@@ -116,14 +116,14 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         constructor(services: IValidationServices) {
             super(services);
         }
-        adaptToForm(builder: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
+        adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().
-            builder.field('firstName', { label: 'First Name' });
-            builder.field('lastName', { label: 'Last Name' });
+            adapter.field('firstName', { label: 'First Name' });
+            adapter.field('lastName', { label: 'Last Name' });
             if (options?.variantName === 'variant1') {
-                builder.field('age', { label: 'Age' });
+                adapter.field('age', { label: 'Age' });
             }
         }
     }

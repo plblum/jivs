@@ -27,6 +27,7 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { RulesConfigOptions, IAdaptModelRulesToForm } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
 import { ModelRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
+import { IValidationManagerConfigFormAdapter } from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
 
 // The Model
 export class Person {
@@ -67,14 +68,14 @@ export class PersonEditFormRules
     super(services);
   }
   public adaptToForm(
-    builder: ValidationManagerConfigBuilder,
+    adapter: IValidationManagerConfigFormAdapter,
     options?: RulesConfigOptions
   ): void {
-    builder.field('FirstName', null, { label: 'First name' })
+    adapter.field('FirstName', null, { label: 'First name' })
       .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
-    builder.field('LastName', null, { label: 'Last name' })
+    adapter.field('LastName', null, { label: 'Last name' })
       .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
-    builder.field('BirthDate', null, { label: 'Birth date' });
+    adapter.field('BirthDate', null, { label: 'Birth date' });
   }
 }
 
