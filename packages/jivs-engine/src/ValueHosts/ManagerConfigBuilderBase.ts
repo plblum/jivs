@@ -51,7 +51,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
   * You want to require that first and last name are not empty, and that the birthdate is a valid date.
  * ```ts
  * export class PersonModelRules extends ModelRulesBase {
- *  protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *  protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
  *      builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('birthdate', LookupKey.Date);

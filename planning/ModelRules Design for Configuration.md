@@ -81,7 +81,7 @@ abstract class FormRulesBase extends RulesBase {}
 
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigureOptions,
   ): void;
 }
@@ -122,7 +122,7 @@ Example:
 
 ```ts
 class PersonModelRules extends ModelRulesBase {
-  public configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
   {
     // setup rules for Person model using the builder
   }
@@ -141,7 +141,7 @@ Example:
 
 ```ts
 class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
-  public adaptToForm(builder: ValidationManagerConfigBuilder,
+  public adaptToForm(builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions): void {
       // update existing ValueHosts and add any that are Form specific
     }
@@ -160,7 +160,7 @@ Example:
 
 ```ts
 class LoginFormRules extends FormRulesBase {
-  public configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
   {
     // setup rules for Login form using the builder
   }  
@@ -205,7 +205,7 @@ interface IRules {
 ```ts
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void;
 }
@@ -234,7 +234,7 @@ abstract class RulesBase implements IRules {
   ): ValidationManagerConfig;
 
   protected abstract configureRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 
@@ -249,11 +249,11 @@ abstract class RulesBase implements IRules {
   ): ValidationManagerConfigBuilder;
 
   protected buildConfig(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): ValidationManagerConfig;
 
-  protected configAnalysis(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+  protected configAnalysis(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
 
 }
 
@@ -419,7 +419,7 @@ class PersonModelRules extends ModelRulesBase {
   );
 
   protected override configureRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }
@@ -441,7 +441,7 @@ class PersonEditFormRules
   );
 
   public adaptToForm(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }
@@ -458,7 +458,7 @@ class LoginFormRules extends FormRulesBase {
   );
 
   protected override configureRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }

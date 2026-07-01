@@ -22,7 +22,7 @@ import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 
 import { createValidationServices } from "./Config_example_common_code";
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { RulesConfigOptions, IAdaptModelRulesToForm } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
@@ -42,7 +42,7 @@ export class PersonModelRules extends ModelRulesBase {
     super(services);
   }
   protected override configureRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
     builder.field('FirstName', LookupKey.String)

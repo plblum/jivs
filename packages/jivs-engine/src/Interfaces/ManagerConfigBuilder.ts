@@ -58,7 +58,7 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
 /**
  * A builder for preparing ValidationManagerConfig.
  */
-export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig>
+export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
     extends IValueHostsManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
     IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {

@@ -25,13 +25,13 @@ import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
 import { RulesConfigOptions } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
 import { FormRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 
 export class DateRangeFormRules extends FormRulesBase {
     constructor(services: IValidationServices) {
         super(services);
     }
-    protected configureRules(builder: ValidationManagerConfigBuilder,
+    protected configureRules(builder: IValidationManagerConfigBuilder,
         options?: RulesConfigOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
             .lessThanOrEqual('EndDate')

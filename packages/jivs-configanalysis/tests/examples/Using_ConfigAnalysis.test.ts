@@ -5,11 +5,10 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { LessThanOrEqualConditionConfig, LessThanConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { LessThanOrEqualCondition, LessThanCondition, RequireTextCondition, RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { LessThanOrEqualValueConditionConfig, LessThanOrEqualValueCondition } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ModelRulesBase } from '@plblum/jivs-engine/build/Validation/ModelRules';
 import { RulesConfigOptions } from '@plblum/jivs-engine/build/Interfaces/ModelRules';
-
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 import {
     DateRangeFormRules,
     example_hasErrors_report_to_log, example_throwOnErrors,
@@ -19,6 +18,7 @@ import { createMinimalValidationServices } from '../../examples/support';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { CAIssueSeverity, CAFeature } from '../../src/Types/Results';
+
 
 /**
  * ValidationServices without anything registered,
@@ -325,7 +325,7 @@ describe('Demonstrate the results from various use cases', () => {
             constructor(services: IValidationServices) {
                 super(services);
             }
-            protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
                 builder.field('BirthDate', LookupKey.Date, {
                     parserLookupKey: LookupKey.Date
                 }).lessThanOrEqualValue(new Date(), {
@@ -542,7 +542,7 @@ describe('Demonstrate the results from various use cases', () => {
             constructor(services: IValidationServices) {
                 super(services);
             }
-            protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
                 // this lacks a data type, which results in a warning.
                 builder.field('StartDate', null)
             }
@@ -676,7 +676,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IValidationServices) {
             super(services);
         }
-        protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.field('NewField', LookupKey.Date,
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser 
@@ -760,7 +760,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IValidationServices) {
             super(services);
         }
-        protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.static('Field1', 'date');// should be 'Date' or LookupKey.Date
         }
     }
@@ -809,7 +809,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IValidationServices) {
             super(services);
         }
-        protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.field('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
         }
     }

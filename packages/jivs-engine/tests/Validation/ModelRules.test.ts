@@ -8,7 +8,7 @@ import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValidationManagerConfigFormAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
+import { IValidationManagerConfigBuilder, IValidationManagerConfigFormAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
 
 enableFluentConditions();
 
@@ -21,7 +21,7 @@ class PersonModelRules extends RulesBase {
     constructor(services: IValidationServices) {
         super(services);
     }
-    protected configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
         builder.field('firstName', LookupKey.String).requireText();
         builder.field('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {

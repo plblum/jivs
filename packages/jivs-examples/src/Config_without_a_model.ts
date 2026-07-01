@@ -36,7 +36,7 @@ import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/Valid
 import { IValidationManager, } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 
 import { createValidationServices, timeZoneRegex } from "./Config_example_common_code";
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { RulesConfigOptions } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
@@ -51,7 +51,7 @@ export class DateRangeFormRules extends FormRulesBase
     constructor(services: IValidationServices) {
         super(services);
     }
-    protected configureRules(builder: ValidationManagerConfigBuilder,
+    protected configureRules(builder: IValidationManagerConfigBuilder,
         options?: RulesConfigOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('endDate')

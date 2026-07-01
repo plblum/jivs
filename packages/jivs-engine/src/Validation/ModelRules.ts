@@ -25,11 +25,10 @@ import { IManagerConfigBuilder, IValidationManagerConfigBuilder, IValidationMana
 import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { ValueHostsManagerConfig } from "../Interfaces/ValueHostsManager";
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
-import { ValidationManagerConfigFormAdapter, createFormAdapter } from "./ValidationManagerConfigFormAdapter";
+import { createFormAdapter } from "./ValidationManagerConfigFormAdapter";
+
 
 /**
  * Core implementation of IRules. It is used to create a ValidationManagerConfig object from any rules built 
@@ -94,7 +93,7 @@ export abstract class RulesBase implements IRules
      * @param options 
      */
     protected abstract configureRules(
-        builder: ValidationManagerConfigBuilder,
+        builder: IValidationManagerConfigBuilder,
         options?: RulesConfigOptions,
     ): void;
 
@@ -132,7 +131,7 @@ export abstract class RulesBase implements IRules
      * @param options - Available if the subclass needs to customize the builder creation.
      * @returns 
      */    
-    protected createBuilder(options?: RulesConfigOptions): ValidationManagerConfigBuilder
+    protected createBuilder(options?: RulesConfigOptions): IValidationManagerConfigBuilder
     {
         return new ValidationManagerConfigBuilder(this.services);
     }
@@ -147,7 +146,7 @@ export abstract class RulesBase implements IRules
      * @param builder 
      * @param options - Available if the subclass needs to customize the finalization.
      */
-    protected buildConfig(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): ValidationManagerConfig
+    protected buildConfig(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): ValidationManagerConfig
     {
         return builder.complete();
     }
@@ -160,7 +159,7 @@ export abstract class RulesBase implements IRules
  * - Business Logic: implements configureRules() to define the model-oriented rules for a business model.
  *    ```ts
  *    export class PersonModelRules extends ModelRulesBase {
- *        configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *        configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
  *            // add model-oriented rules here
  *        }
  *    }
@@ -187,7 +186,7 @@ export abstract class ModelRulesBase extends RulesBase {
  * It is subclassed to create concrete rules classes for each Form.
  * ```ts
  *    export class PersonEditFormRules extends FormRulesBase {
- *       configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *       configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
  *           // add form-specific rules
  *      }
  *    }

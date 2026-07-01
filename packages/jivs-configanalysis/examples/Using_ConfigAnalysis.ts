@@ -1,7 +1,6 @@
 import { LoggingLevel, LogDetails, LogOptions } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
 import { FormRulesBase } from '@plblum/jivs-engine/build/Validation/ModelRules';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
@@ -16,6 +15,7 @@ import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '.
 import { CAIssueSeverity } from '../src/Types/Results';
 import { LoggerConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 
 
 /**
@@ -72,7 +72,7 @@ export class DateRangeFormRules extends FormRulesBase
     constructor(services: IValidationServices) {
         super(services);
     }
-    protected configureRules(builder: ValidationManagerConfigBuilder,
+    protected configureRules(builder: IValidationManagerConfigBuilder,
         options?: RulesConfigOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('EndDate')

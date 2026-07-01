@@ -322,7 +322,7 @@ class MyModelRules extends ModelRulesBase
   constructor(services: IValidationServices) {
       super(services);
   }
-  protected override configureRules(builder: ValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+  protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
     builder.input('NewField', LookupKey.Date, 
     {
       parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser

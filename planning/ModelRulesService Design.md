@@ -438,13 +438,13 @@ Login
 
 ```ts
 protected configureBusinessRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     params?: ModelRulesConfigureParams
 ): void {
 }
 
 protected configureUIRules(
-    builder: ValidationManagerConfigBuilder,
+    builder: IValidationManagerConfigBuilder,
     params?: ModelRulesConfigureParams
 ): void {
 }
@@ -1080,7 +1080,7 @@ class DateRangeRulesService extends ModelRulesServiceBase {
     }
 
     protected override configureUIRules(
-        builder: ValidationManagerConfigBuilder
+        builder: IValidationManagerConfigBuilder
     ): void {
         builder
             .input("StartDate", LookupKey.Date, { label: "Start date" })
@@ -1312,7 +1312,7 @@ class LoginRulesService
     }
 
     protected override configureUIRules(
-        builder: ValidationManagerConfigBuilder
+        builder: IValidationManagerConfigBuilder
     ): void {
         builder.input("UserName", LookupKey.String).requireText();
         builder.input("Password", LookupKey.String).requireText();
