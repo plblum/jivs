@@ -228,7 +228,7 @@ describe('updateValidator', () => {
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1')
-            .requireText(null, 'OriginalError');
+            .requireText('OriginalError');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         modifier.updateValidator('Field1', ConditionType.RequireText,
@@ -258,7 +258,7 @@ describe('updateValidator', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.field('Field1').requireText(null, 'OriginalError');
+        let testItem = builder.field('Field1').requireText('OriginalError');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
         modifier.updateValidator('Field1', ConditionType.RequireText,
@@ -316,7 +316,7 @@ describe('addValidatorsTo', () => {
         let testItem = builder.field('Field1');
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
-        modifier.addValidatorsTo('Field1').requireText(null, 'RequireMessage');
+        modifier.addValidatorsTo('Field1').requireText('RequireMessage');
         modifier.apply();
 
         expect(vm.getValueHostConfig('Field1')).toEqual({
@@ -378,7 +378,7 @@ describe('addValidatorsTo', () => {
         let testItem = builder.field('Field1').requireText();
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
-        expect(() => modifier.addValidatorsTo('Field1').requireText(null, 'Required')).not.toThrow();
+        expect(() => modifier.addValidatorsTo('Field1').requireText('Required')).not.toThrow();
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Field,
@@ -395,10 +395,10 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.field('Field1').requireText({}, null, { errorCode: 'ERRORCODE' });
+        builder.field('Field1').requireText({ errorCode: 'ERRORCODE' });
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
-        expect(() => modifier.addValidatorsTo('Field1').notNull(null, {
+        expect(() => modifier.addValidatorsTo('Field1').notNull({
             errorCode: 'ERRORCODE',
             errorMessage: 'not null'
             

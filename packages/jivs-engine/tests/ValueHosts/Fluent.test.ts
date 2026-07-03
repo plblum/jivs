@@ -2,7 +2,7 @@ import { MockValidationServices } from './../TestSupport/mocks';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { ConditionConfig } from '../../src/Interfaces/Conditions';
+import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
@@ -10,13 +10,16 @@ import {
     FluentValidatorConfig, FluentValidatorBuilder, FluentFactory, IFluentValidatorBuilder, FluentConditionBuilder, IFluentConditionBuilder,
     finishFluentValidatorBuilder, finishFluentConditionBuilder,
     ValidationManagerStartFluent,
-    ValueHostsManagerStartFluent
+    ValueHostsManagerStartFluent,
+    resolveValidatorOverloadArgs
 } from './../../src/ValueHosts/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
+import { ValidationSeverity } from '../../src/Interfaces/Validation';
+import { DataTypeCheckConditionConfig, RequireTextConditionConfig } from '../../src/Conditions/ConcreteConditions';
 
 class Publicify_ValueHostsManagerStartFluent extends ValueHostsManagerStartFluent { 
     public get publicify_existingValueHostConfigs() {
@@ -144,7 +147,65 @@ describe('FluentValidatorBuilder', () => {
 
     });
 
-    test('add() with all parameters correctly defined', () => {
+    test('add() with error message and summary message stand-alone, empty validatorConfig', () => {
+        let vhConfig: FieldValueHostConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Currency,
+            validatorConfigs: []
+        }
+        let testItem = new FluentValidatorBuilder(vhConfig);
+        let validatorConfig: FluentValidatorConfig = {};
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', 'Summary', validatorConfig)).not.toThrow();
+        expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
+        expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+            conditionConfig: {
+                conditionType: ConditionType.RequireText
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('add() with error message stand-alone, summary parameter null, empty validatorConfig', () => {
+        let vhConfig: FieldValueHostConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Currency,
+            validatorConfigs: []
+        }
+        let testItem = new FluentValidatorBuilder(vhConfig);
+        let validatorConfig: FluentValidatorConfig = {};
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', null, validatorConfig)).not.toThrow();
+        expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
+        expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+            conditionConfig: {
+                conditionType: ConditionType.RequireText
+            },
+            errorMessage: 'Error',
+        });
+    });    
+    test('add() with error message and summary message null, empty validatorConfig', () => {
+        let vhConfig: FieldValueHostConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Currency,
+            validatorConfigs: []
+        }
+        let testItem = new FluentValidatorBuilder(vhConfig);
+        let validatorConfig: FluentValidatorConfig = {};
+        expect(() => testItem.add(ConditionType.RequireText, {}, null, null, validatorConfig)).not.toThrow();
+        expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
+        expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+            conditionConfig: {
+                conditionType: ConditionType.RequireText
+            }
+        });
+    });    
+    // Error and summary are in the validator config alone
+    test('add() with error message and summary message in validatorConfig, and other parameters correctly defined', () => {
         let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
@@ -154,9 +215,10 @@ describe('FluentValidatorBuilder', () => {
         }
         let testItem = new FluentValidatorBuilder(vhConfig);
         let validatorConfig: FluentValidatorConfig = {
+            errorMessage: 'Error',
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, null, null, validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
@@ -181,7 +243,7 @@ describe('FluentValidatorBuilder', () => {
         let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(null, conditionConfig, 'Error', validatorConfig)).not.toThrow();
+        expect(() => testItem.add(null, conditionConfig, 'Error', 'Summary', validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
@@ -191,7 +253,7 @@ describe('FluentValidatorBuilder', () => {
             summaryMessage: 'Summary'
         });
     });
-    test('add() with null for error message and error message already assigned', () => {
+    test('add() with null for error message and summary parameters, but rich content in validatorConfig', () => {
         let vhConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
@@ -201,17 +263,19 @@ describe('FluentValidatorBuilder', () => {
         }
         let testItem = new FluentValidatorBuilder(vhConfig);
         let validatorConfig: FluentValidatorConfig = {
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
+            enabled: false,
+            severity: ValidationSeverity.Warning,
+            errorMessagel10n: 'Key'
         };
-        expect(() => testItem.add(ConditionType.RequireText, {}, null, validatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, null, null, validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
                 conditionType: ConditionType.RequireText
             },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
+            enabled: false,
+            severity: ValidationSeverity.Warning,
+            errorMessagel10n: 'Key'
         });
     });
     test('add() that defines same errorCode twice throws on the second definition', () => {
@@ -226,8 +290,8 @@ describe('FluentValidatorBuilder', () => {
         let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).not.toThrow();
-        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).toThrow('ValueHost name "Field1" with errorCode RequireText already defined.');     
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', 'Summary', validatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', 'Summary', validatorConfig)).toThrow('ValueHost name "Field1" with errorCode RequireText already defined.');     
         
     });    
 });
@@ -645,7 +709,7 @@ describe('FluentFactory', () => {
             }
             parentConfig: FieldValueHostConfig;
             add(conditionType: string, conditionConfig: ConditionConfig | null,
-                errorMessage: string | null, validatorConfig: ValidatorConfig): void {
+                errorMessage: string | null, summaryMessage: string | null, validatorConfig: ValidatorConfig): void {
                 throw new Error('Method not implemented.');
             }
         }
@@ -705,20 +769,20 @@ describe('finishFluentValidatorBuilder ', () => {
         let testItem1 = new FluentValidatorBuilder({ name: '', validatorConfigs: [] }); 
         expect(()=>finishFluentValidatorBuilder(
             testItem1,
-            '', {}, null, null)
+            '', {}, null, null, null)
         ).not.toThrow();
         let testItem2 = new FluentConditionBuilder({ conditionType: '', conditionConfigs: [] });
         expect(()=>finishFluentValidatorBuilder(
             testItem2,
-            '', {}, null, null)
+            '', {}, null, null, null)
         ).toThrow();
         expect(()=>finishFluentValidatorBuilder(
             100,
-            '', {}, null, null)
+            '', {}, null, null, null)
         ).toThrow();       
         expect(()=>finishFluentValidatorBuilder(
             null,
-            '', {}, null, null)
+            '', {}, null, null, null)
         ).toThrow();               
     });
 });
@@ -743,5 +807,149 @@ describe('finishFluentConditionBuilder ', () => {
             null,
             '', {})
         ).toThrow();               
+    });
+});
+
+describe('resolveValidatorOverloadArgs', () => {
+    test('All parameters null, returns correct object', () => {
+        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                null, null);
+        expect(errorMessage).toBeNull();
+        expect(summaryMessage).toBeNull();
+        expect(conditionConfig).toBeUndefined();
+        expect(validatorParameters).toBeUndefined();
+
+    });
+    // with error and summary messages, no conditionConfig or validatorParameters
+    test('error and summary messages, no conditionConfig or validatorParameters, returns correct object', () => {
+        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                'Error', 'Summary');
+        expect(errorMessage).toBe('Error');
+        expect(summaryMessage).toBe('Summary');
+        expect(conditionConfig).toBeUndefined();
+        expect(validatorParameters).toBeUndefined();
+    });
+    // with error message only, as a single parameter
+    test('error message only, as a single parameter, returns correct object', () => {
+        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                'Error');
+        expect(errorMessage).toBe('Error');
+        expect(summaryMessage).toBeNull();
+        expect(conditionConfig).toBeUndefined();
+        expect(validatorParameters).toBeUndefined();
+    });
+    // with error message, summary = null
+    test('error message, summary = null, returns correct object', () => {
+        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                'Error', null);
+        expect(errorMessage).toBe('Error');
+        expect(summaryMessage).toBeNull();
+        expect(conditionConfig).toBeUndefined();
+        expect(validatorParameters).toBeUndefined();
+    });
+    // with error message = null, summary assigned
+    test('error message = null, summary assigned, returns correct object', () => {
+        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                null, 'Summary');
+        expect(errorMessage).toBeNull();
+        expect(summaryMessage).toBe('Summary');
+        expect(conditionConfig).toBeUndefined();
+        expect(validatorParameters).toBeUndefined();
+    });
+    // using object in first parameter
+    test('using object with just validatorParameter values, returns correct validatorParameter and empty conditionconfig', () => {
+        let validatorParameters: Partial<FluentValidatorConfig & DataTypeCheckConditionConfig> = {
+            enabled: false,
+            severity: ValidationSeverity.Warning,
+            errorMessagel10n: 'Key'
+        };
+        let { errorMessage, summaryMessage, conditionConfig: returnedConditionConfig, validatorParameters: returnedValidatorParameters } =  
+            resolveValidatorOverloadArgs<DataTypeCheckConditionConfig>(
+                validatorParameters);
+        expect(errorMessage).toBeUndefined();
+        expect(summaryMessage).toBeUndefined();
+        expect(returnedConditionConfig).toEqual({});
+        expect(returnedValidatorParameters).toEqual(validatorParameters);
+    });
+    // same with condition config properties on RequireTextConditionConfig: trim: true
+    test('using object with just conditionConfig values, returns correct conditionConfig and empty validatorParameter', () => {
+        let validatorParameters: Partial<FluentValidatorConfig & RequireTextConditionConfig> = {
+            trim: true
+        };
+        let { errorMessage, summaryMessage, conditionConfig: returnedConditionConfig, validatorParameters: returnedValidatorParameters } =
+            resolveValidatorOverloadArgs<RequireTextConditionConfig>(
+                validatorParameters);
+        expect(errorMessage).toBeUndefined();
+        expect(summaryMessage).toBeUndefined();
+        expect(returnedConditionConfig).toEqual(validatorParameters);
+        expect(returnedValidatorParameters).toEqual({});
+    });
+
+    // mixture of both validatorParameters having errorMessage and conditionConfig properties on RequireTextConditionConfig: trim: true, enabled: false
+    test('using object with mixture of validatorParameters and conditionConfig values, returns correct conditionConfig and validatorParameter', () => {
+        let mixture: Partial<FluentValidatorConfig & RequireTextConditionConfig> = {
+            trim: true,
+            enabled: false,
+            severity: ValidationSeverity.Warning,
+            errorMessagel10n: 'Key'
+        };
+        let { errorMessage, summaryMessage, conditionConfig: returnedConditionConfig, validatorParameters: returnedValidatorParameters } =
+            resolveValidatorOverloadArgs<RequireTextConditionConfig>(
+                mixture);
+        expect(errorMessage).toBeUndefined();
+        expect(summaryMessage).toBeUndefined();
+        expect(returnedConditionConfig).toEqual({
+            trim: true
+        });
+        expect(returnedValidatorParameters).toEqual({
+            enabled: false,
+            severity: ValidationSeverity.Warning,
+            errorMessagel10n: 'Key'
+        });
+    });
+    // any other test ideas?
+    test('using object with mixture of validatorParameters and conditionConfig values, plus errorMessage and summaryMessage, returns correct conditionConfig and validatorParameter', () => {
+        let mixture: Partial<FluentValidatorConfig & RequireTextConditionConfig> = {
+            trim: true,
+            nullValueResult: ConditionEvaluateResult.Match,
+            errorMessage: 'Error',
+        };
+        let { errorMessage, summaryMessage, conditionConfig: returnedConditionConfig, validatorParameters: returnedValidatorParameters } =
+            resolveValidatorOverloadArgs<RequireTextConditionConfig>(
+                mixture);
+        expect(errorMessage).toBeUndefined();
+        expect(summaryMessage).toBeUndefined();
+        expect(returnedConditionConfig).toEqual({
+            trim: true,
+            nullValueResult: ConditionEvaluateResult.Match
+        });
+        expect(returnedValidatorParameters).toEqual({
+            errorMessage: 'Error'
+        });
+    });
+    // object as first parameter, second parameter is string, second is ignored
+    test('using object with mixture of validatorParameters and conditionConfig values, plus errorMessage and summaryMessage, returns correct conditionConfig and validatorParameter', () => {
+        let mixture: Partial<FluentValidatorConfig & RequireTextConditionConfig> = {
+            trim: true,
+            nullValueResult: ConditionEvaluateResult.Match,
+            errorMessage: 'Error',
+        };
+        let { errorMessage, summaryMessage, conditionConfig: returnedConditionConfig, validatorParameters: returnedValidatorParameters } =
+            resolveValidatorOverloadArgs<RequireTextConditionConfig>(
+                mixture, 'Summary');
+        expect(errorMessage).toBeUndefined();
+        expect(summaryMessage).toBeUndefined();
+        expect(returnedConditionConfig).toEqual({
+            trim: true,
+            nullValueResult: ConditionEvaluateResult.Match
+        });
+        expect(returnedValidatorParameters).toEqual({
+            errorMessage: 'Error'
+        });
     });
 });

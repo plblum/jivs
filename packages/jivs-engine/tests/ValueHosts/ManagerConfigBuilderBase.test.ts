@@ -566,7 +566,7 @@ function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConf
     if (!conditionConfig) {
         conditionConfig = { };
     }
-    return finishFluentValidatorBuilder(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
+    return finishFluentValidatorBuilder(this, ConditionType.RequireText, conditionConfig, errorMessage, null, validatorParameters);
 }
 function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
 ): FluentConditionBuilder {
@@ -584,7 +584,7 @@ function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'condi
 ): FluentValidatorBuilder {
 
     return finishFluentValidatorBuilder(this, ConditionType.RegExp, conditionConfig,
-        errorMessage, validatorParameters);
+        errorMessage, null, validatorParameters);
 }
 function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionBuilder {
 

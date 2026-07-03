@@ -4074,7 +4074,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.field('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
             let explorer = configAnalysisService.analyze(builder);
             explorer.reportToConsole({ severities: [CAIssueSeverity.error, null], features: [CAFeature.l10nProperty], skipChildrenIfParentMismatch: false }, false, true, 2);
@@ -4099,7 +4099,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
             let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 
-            builder.field('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
+            builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
             let explorer = configAnalysisService.analyze(builder);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).not.toThrow();

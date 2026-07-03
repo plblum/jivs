@@ -144,21 +144,23 @@ describe('favorUIMessages', () => {
         let formAdapter = setupPublicifyFormAdapter();
         let tls = new TextLocalizerService();
         formAdapter.services.textLocalizerService = tls;   // start fresh
-        formAdapter.field('Field1').requireText(null, 'RequireMessage',
+        formAdapter.field('Field1').requireText(
             {
+                errorMessage: 'RequireMessage',
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
-                summaryMessagel10n: 'sml10n'
+                summaryMessagel10n: 'sml10n',
             }
         );
-        formAdapter.field('Field2').regExp('\\d', null, null, 'RegExpMessage',
+        formAdapter.field('Field2').regExp('\\d', true,
             {
+                errorMessage: 'RegExpMessage',
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRegExpMessage',
                 summaryMessagel10n: 'sml10n'
             }
-        ).requireText(null, 'Field2Require');
-        formAdapter.field('Field3').requireText(null, null, // has no error message. Must use eml10n, which will result in ''
+        ).requireText('Field2Require');
+        formAdapter.field('Field3').requireText( // has no error message. Must use eml10n, which will result in ''
             {
                 errorMessagel10n: 'eml10n',
                 summaryMessagel10n: 'sml10n'
@@ -187,7 +189,8 @@ describe('favorUIMessages', () => {
                 {
                     conditionConfig: {
                         conditionType: ConditionType.RegExp,
-                        expressionAsString: '\\d'
+                        expressionAsString: '\\d',
+                        ignoreCase: true
                     },
                     errorMessage: 'RegExpMessage',
                     errorMessagel10n: 'eml10n',
@@ -226,19 +229,21 @@ describe('favorUIMessages', () => {
         tls.registerErrorMessage(ConditionType.RegExp, null, {
             '*': 'tls-regexp'
         });
-        formAdapter.field('Field1').requireText(null, 'RequireMessage',
+        formAdapter.field('Field1').requireText(
             {
+                errorMessage: 'RequireMessage',
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }
         );
-        formAdapter.field('Field2').regExp('\\d', null, null, 'RegExpMessage',
+        formAdapter.field('Field2').regExp('\\d', true, 
             {
+                errorMessage: 'RegExpMessage',
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRegExpMessage',
                 summaryMessagel10n: 'sml10n'
-            }).requireText(null, 'Field2Require');
+            }).requireText('Field2Require');
         formAdapter.publicify_favorUIMessages();
         let vmConfig = formAdapter.snapshot();
 
@@ -262,7 +267,8 @@ describe('favorUIMessages', () => {
                 {
                     conditionConfig: {
                         conditionType: ConditionType.RegExp,
-                        expressionAsString: '\\d'
+                        expressionAsString: '\\d',
+                        ignoreCase: true
                     },
                     errorMessage: 'RegExpMessage',
                     errorMessagel10n: 'eml10n',

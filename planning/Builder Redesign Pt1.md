@@ -22,7 +22,7 @@ The parameters supplied are great for initial setup in `ModelRulesBase.configure
 
 ```ts
 adapter.field('FirstName', null, { label: 'First name' })
-  .requireText(null, '{Label} is required.');
+  .requireText('{Label} is required.');
 ```
 
 ### I-03

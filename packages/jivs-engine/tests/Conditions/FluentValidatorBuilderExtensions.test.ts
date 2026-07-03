@@ -1,6 +1,6 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
-import { FluentBuilderBase, FluentValidatorBuilder, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
+import { FluentBuilderBase, FluentValidatorBuilder, FluentValidatorConfig, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import {
@@ -15,6 +15,7 @@ import {
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { MockValidationServices } from '../TestSupport/mocks';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
+import { ValidationSeverity } from '../../src/Interfaces/Validation';
 
 function createFluent(): ValidationManagerStartFluent {
     return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
@@ -31,7 +32,20 @@ function TestFluentValidatorBuilder(testItem: FluentBuilderBase,
     expect(valConfig).toEqual(expectedValConfig);
 }
 
-describe('dataTypeCheck with ValidationManagerStartFluent', () => {
+function createValidatorParamsAllProperties(): FluentValidatorConfig {
+    return <FluentValidatorConfig>
+        {
+            errorMessage: 'Error',
+            summaryMessage: 'Summary',
+            severity: ValidationSeverity.Error,
+            errorCode: 'E001', enabled: true,
+            errorMessagel10n: 'ErrorKey',
+            summaryMessagel10n: 'SummaryKey',
+            validatorType: 'Validator'
+        };
+}
+
+describe('dataTypeCheck as a validator of a field()', () => {
     test('With no parameters creates ValidatorConfig with DataTypeCheckCondition with only type assigned', () => {
 
         let testItem = createFluent().field('Field1').dataTypeCheck();
@@ -51,9 +65,9 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
             errorMessage: 'Error'
         });
     });
+    // both errormessage and summarymessage parameters
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').dataTypeCheck('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().field('Field1').dataTypeCheck('Error', 'Summary' );
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -62,117 +76,343 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
             summaryMessage: 'Summary'
         });
     });
+    // with null for errorMessage, 'summary'
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').dataTypeCheck(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().field('Field1').dataTypeCheck(null, 'Summary' );
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
-            errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
     });
+    // with only null, which should be treated as no parameters, so no errorMessage or summaryMessage
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
-
-        let testItem = createFluent().field('Field1').dataTypeCheck('FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().field('Field1').dataTypeCheck(null);
+        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            conditionConfig: <DataTypeCheckConditionConfig>{
+                conditionType: ConditionType.DataTypeCheck
+            }
+        });
+    });
+    // now focusing on the overload that takes one parameter, which is a FluentValidatorConfig
+    // It has many parameters, and we need to be sure all pass through
+    test('With FluentValidatorConfig with errorMessage and summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        let testItem = createFluent().field('Field1').dataTypeCheck({ errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
-            errorMessage: 'FirstError'
-        });
-    });
-});
-
-describe('regExp with ValidationManagerStartFluent', () => {
-    test('With expression assigned to a string, creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp('\\d');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expressionAsString: '\\d'
-            }
-        });
-    });
-    test('With expression assigned to a RegExp, creates ValidatorConfig with RegExpCondition with type=RegExp and expression assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp(/\d/i);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /\d/i
-            }
-        });
-    });
-    test('With expression and ignoreCase=true creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=true assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp('\\d', true);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expressionAsString: '\\d',
-                ignoreCase: true
-            }
-        });
-    });
-    test('With expression and ignoreCase=false creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=false assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp('\\d', false);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expressionAsString: '\\d',
-                ignoreCase: false
-            }
-        });
-    });
-    test('With only errorMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp(null, null, null, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp
-            },
-            errorMessage: 'Error'
-        });
-    });
-    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp(null, null, null, 'Error', { summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp
-            },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
     });
-    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+    // all properties assigned in FluentValidatorConfig
+    test('With FluentValidatorConfig with all of its properties assigned', () => {
+        let sourceProperties = createValidatorParamsAllProperties();
 
-        let testItem = createFluent().field('Field1').regExp(null, null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp
-            },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
+        let testItem = createFluent().field('Field1').dataTypeCheck(sourceProperties);
+
+        // destProperties is a ValidatorConfig with conditionConfig of type DataTypeCheckConditionConfig, and all other properties from sourceProperties
+        // clone sourceProperties to destProperties, but add conditionConfig with type DataTypeCheckConditionConfig
+        let destProperties: ValidatorConfig = {
+            ...sourceProperties, conditionConfig:
+            {
+                conditionType: ConditionType.DataTypeCheck
+            }
+        };        
+        TestFluentValidatorBuilder(testItem, destProperties);
+
     });
-    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
-
-        let testItem = createFluent().field('Field1').regExp(null, null, null, 'FirstError', { errorMessage: 'SecondError' });
+    // empty object
+    test('With FluentValidatorConfig with no properties assigned', () => {
+        let testItem = createFluent().field('Field1').dataTypeCheck({});
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp
-            },
-            errorMessage: 'FirstError'
+            conditionConfig: <DataTypeCheckConditionConfig>{
+                conditionType: ConditionType.DataTypeCheck
+            }
         });
     });
 });
 
-describe('range with ValidationManagerStartFluent', () => {
+describe('regExp as a validator of a field()', () => {
+    describe('regExp(string) use cases', () => {
+        // regExp(string)
+        test('regExp(string), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
+
+            let testItem = createFluent().field('Field1').regExp('\\d');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d'
+                }
+            });
+        });
+        // regExp(string, true)
+        test('regExp(string, true), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                }
+            });
+        });
+        // regExp(string, false)
+        test('regExp(string, false), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', false);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: false
+                }
+            });
+        });
+        // regExp(string, true, errorMessage)
+        test('regExp(string, true, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, 'Error');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                },
+                errorMessage: 'Error'
+            });
+        });
+        // regExp(string, false, errorMessage)
+        test('regExp(string, false, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', false, 'Error');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: false
+                },
+                errorMessage: 'Error'
+            });
+        });
+        // regExp(string, true, errorMessage, summaryMessage)
+        test('regExp(string, true, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, 'Error', 'Summary');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(string, true, null, summaryMessage)
+        test('regExp(string, true, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, null, 'Summary');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                },
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(string, undefined, string)
+        test('regExp(string, undefined, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', undefined, 'Error');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d'
+                },
+                errorMessage: 'Error'
+            });
+        });
+        // regExp(string, true, null)
+        test('regExp(string, true, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, null);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                }
+            });
+        });
+        // regExp(string, false, null, null)
+        test('regExp(string, false, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', false, null, null);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: false
+                }
+            });
+        });
+        // regExp(string, true, validatorParameters)
+        test('regExp(string, true, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, { errorMessage: 'Error', summaryMessage: 'Summary' });
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(string, false, validatorParameters)
+        test('regExp(string, false, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', false, { errorMessage: 'Error', summaryMessage: 'Summary' });
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: false
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(string, true, {})
+        test('regExp(string, true, {}), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
+            let testItem = createFluent().field('Field1').regExp('\\d', true, {});
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expressionAsString: '\\d',
+                    ignoreCase: true
+                }
+            });
+        });
+    });
+    describe('regExp(RegExp) use cases', () => {
+        // basically the same test cases as regExp(string), but with RegExp instead of string, and ignoreCase is not a parameter, because it is part of the RegExp object
+        // regExp(RegExp)
+        test('regExp(RegExp), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                }
+            });
+        });
+        // regExp(RegExp, errorMessage)
+        test('regExp(RegExp, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/, 'Error');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                },
+                errorMessage: 'Error'
+
+            });
+        });
+        // regExp(RegExp, errorMessage, summaryMessage)
+        test('regExp(RegExp, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/, 'Error', 'Summary');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(RegExp, null, summaryMessage)
+        test('regExp(RegExp, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/, null, 'Summary');
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                },
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(RegExp, null, null)
+        test('regExp(RegExp, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/, null, null);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                }
+            });
+        });
+        // regExp(RegExp, null)
+        test('regExp(RegExp, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/, null);
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                }
+            });
+        });
+        // regExp(RegExp, validatorParameters) with both condition and validator parameters.
+        // for condition parameters, use multiline: true
+        test('regExp(RegExp, validatorParameters) with both condition and validator parameters, creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/,
+                {
+                    errorMessage: 'Error',
+                    summaryMessage: 'Summary',
+                    multiline: true
+                });
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/,
+                    multiline: true
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+        // regExp(RegExp, validatorParameters) with only condition parameters, no validator parameters.
+        test('regExp(RegExp, validatorParameters) with only condition parameters, no validator parameters, creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/,
+                {
+                    multiline: true
+                });
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/,
+                    multiline: true
+                }
+            });
+        });
+        // regExp(RegExp, validatorParameters) with only validator parameters, no condition parameters.
+        test('regExp(RegExp, validatorParameters) with only validator parameters, no condition parameters, creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage + summaryMessage assigned', () => {
+            let testItem = createFluent().field('Field1').regExp(/\d/,
+                {
+                    errorMessage: 'Error',
+                    summaryMessage: 'Summary'
+                });
+            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /\d/
+                },
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
+        });
+
+    });
+});
+
+describe('range as a validator of a field()', () => {
     test('With minimum and maximum, creates ValidatorConfig with RangeCondition with type=Range and minimum assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).range(1, 4);
@@ -250,7 +490,7 @@ describe('range with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('equalToValue with ValidationManagerStartFluent', () => {
+describe('equalToValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1);
@@ -326,7 +566,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('equalTo with ValidationManagerStartFluent', () => {
+describe('equalTo as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').equalTo('Field2');
@@ -408,7 +648,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('notEqualToValue with ValidationManagerStartFluent', () => {
+describe('notEqualToValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1);
@@ -484,7 +724,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('notEqualTo with ValidationManagerStartFluent', () => {
+describe('notEqualTo as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').notEqualTo('Field2');
@@ -565,7 +805,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('lessThanValue with ValidationManagerStartFluent', () => {
+describe('lessThanValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1);
@@ -652,7 +892,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('lessThan with ValidationManagerStartFluent', () => {
+describe('lessThan as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').lessThan('Field2');
@@ -742,7 +982,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
+describe('lessThanOrEqualValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
@@ -828,7 +1068,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
+describe('lessThanOrEqual as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2');
@@ -922,7 +1162,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
 });
 
 
-describe('greaterThanValue with ValidationManagerStartFluent', () => {
+describe('greaterThanValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1);
@@ -1009,7 +1249,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('greaterThan with ValidationManagerStartFluent', () => {
+describe('greaterThan as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').greaterThan('Field2');
@@ -1100,7 +1340,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
+describe('greaterThanOrEqualValue as a validator of a field()', () => {
     test('With secondValue, creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
@@ -1186,7 +1426,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
+describe('greaterThanOrEqual as a validator of a field()', () => {
     test('With secondValueHostName, creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2');
@@ -1278,7 +1518,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('stringLength with ValidationManagerStartFluent', () => {
+describe('stringLength as a validator of a field()', () => {
     test('With maximum, creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4);
@@ -1346,7 +1586,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('requireText with ValidationManagerStartFluent', () => {
+describe('requireText as a validator of a field()', () => {
     test('With no parameters, creates ValidatorConfig with RequireTextCondition with type=RequireText', () => {
 
         let testItem = createFluent().field('Field1').requireText();
@@ -1359,18 +1599,22 @@ describe('requireText with ValidationManagerStartFluent', () => {
 
     test('With nullValueResult=NoMatch assigned, creates ValidatorConfig with RequireTextCondition with type=RequireText, nullValueResult=NoMatch', () => {
 
-        let testItem = createFluent().field('Field1').requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
+        let testItem = createFluent().field('Field1').requireText({
+            nullValueResult: ConditionEvaluateResult.NoMatch,
+            errorMessage: 'Error',
+        });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 nullValueResult: ConditionEvaluateResult.NoMatch
-            }
+            },
+            errorMessage: 'Error'
         });
     });
 
     test('With only errorMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').requireText(null, 'Error');
+        let testItem = createFluent().field('Field1').requireText('Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1378,40 +1622,9 @@ describe('requireText with ValidationManagerStartFluent', () => {
             errorMessage: 'Error'
         });
     });
-    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').requireText(null, 'Error', { summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText
-            },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
-    });
-    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').requireText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText
-            },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
-    });
-    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
-
-        let testItem = createFluent().field('Field1').requireText(null, 'FirstError', { errorMessage: 'SecondError' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText
-            },
-            errorMessage: 'FirstError'
-        });
-    });
 });
-describe('notNull with ValidationManagerStartFluent', () => {
+describe('notNull as a validator of a field()', () => {
     test('With no parameters, creates ValidatorConfig with NotNullCondition with type=NotNull', () => {
 
         let testItem = createFluent().field('Field1').notNull();
@@ -1432,9 +1645,9 @@ describe('notNull with ValidationManagerStartFluent', () => {
             errorMessage: 'Error'
         });
     });
+    // same also with summary message
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-
-        let testItem = createFluent().field('Field1').notNull('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().field('Field1').notNull('Error', 'Summary' );
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1443,30 +1656,21 @@ describe('notNull with ValidationManagerStartFluent', () => {
             summaryMessage: 'Summary'
         });
     });
-    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+    test('Within validatorParameters, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = createFluent().field('Field1').notNull({ errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
-        });
-    });
-    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
-
-        let testItem = createFluent().field('Field1').notNull('FirstError', { errorMessage: 'SecondError' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
-            conditionConfig: <NotNullConditionConfig>{
-                conditionType: ConditionType.NotNull
-            },
-            errorMessage: 'FirstError'
         });
     });
 });
 
-describe('all with ValidationManagerStartFluent', () => {
+describe('all as a validator of a field()', () => {
     test('With empty conditions, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs=[]', () => {
 
         let testItem = createFluent().field('Field1').all((children) => children);
@@ -1567,7 +1771,7 @@ describe('all with ValidationManagerStartFluent', () => {
         expect(() => fluent.field('Field1').all({} as any, 'Error')).toThrow(/Function expected/);
     });    
 });
-describe('any with ValidationManagerStartFluent', () => {
+describe('any as a validator of a field()', () => {
     test('With empty conditions, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs=[]', () => {
 
         let testItem = createFluent().field('Field1').any((children) => children);
@@ -1666,7 +1870,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });        
 });
 
-describe('countMatches with ValidationManagerStartFluent', () => {
+describe('countMatches as a validator of a field()', () => {
     test('With minimum and maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
 
         let testItem = createFluent().field('Field1').countMatches(1, 2, (children) => children);
@@ -1795,7 +1999,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });        
 });
 
-describe('positive with ValidationManagerStartFluent', () => {
+describe('positive as a validator of a field()', () => {
     test('With no parameters, creates ValidatorConfig with PositiveCondition with type=Positive', () => {
 
         let testItem = createFluent().field('Field1').positive();
@@ -1849,7 +2053,7 @@ describe('positive with ValidationManagerStartFluent', () => {
         });
     });
 });
-describe('integer with ValidationManagerStartFluent', () => {
+describe('integer as a validator of a field()', () => {
     test('With no parameters, creates ValidatorConfig with IntegerCondition with type=Integer', () => {
 
         let testItem = createFluent().field('Field1').integer();
@@ -1904,7 +2108,7 @@ describe('integer with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('maxDecimals with ValidationManagerStartFluent', () => {
+describe('maxDecimals as a validator of a field()', () => {
     test('With no parameters, creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals', () => {
 
         let testItem = createFluent().field('Field1').maxDecimals(2);
@@ -1964,7 +2168,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
     });
 });
 
-describe('not with ValidationManagerStartFluent', () => {
+describe('not as a validator of a field()', () => {
     test('With empty condition, creates ValidatorConfig with NotCondition with type=Not and childConditionConfig={}', () => {
 
         let testItem = createFluent().field('Field1').not((children) => children);
@@ -2043,7 +2247,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });    
 });
 
-describe('when with ValidationManagerStartFluent', () => {
+describe('when as a validator of a field()', () => {
     test('With empty condition in both enabler and childCondition, creates ValidatorConfig with WhenCondition with type=When, enablerConfig={} and childConditionConfig={}', () => {
 
         let testItem = createFluent().field('Field1').when(

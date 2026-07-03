@@ -77,7 +77,9 @@ declare module "@plblum/jivs-engine/build/ValueHosts/Fluent"
     export interface FluentValidatorBuilder {
         evenNumber(
             errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder;
+            summaryMessage?: string | null): FluentValidatorBuilder;
+        evenNumber(
+            validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
     }
     export interface FluentConditionBuilder {
         evenNumber(valueHostName?: ValueHostName): FluentConditionBuilder;
@@ -97,14 +99,27 @@ function evenNumberForCondition(valueHostName?: ValueHostName): FluentConditionB
     return finishFluentConditionBuilder(this,
         evenNumberConditionType, _genDCEvenNumber(), valueHostName);
 }
-function evenNumberForValidator(
+
+function evenNumber(
+    validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+function evenNumber(
     errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder {    
+    summaryMessage?: string | null): FluentValidatorBuilder;
+function evenNumber(
+    arg1?: string | null | FluentValidatorConfig,
+    arg2?: string | null): FluentValidatorBuilder {    
+    let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        resolveValidatorOverloadArgs<EvenNumberConditionConfig>(arg1, arg2);
+
     return finishFluentValidatorBuilder(this,
         evenNumberConditionType, _genDCEvenNumber(),
-        errorMessage, validatorParameters);
+        errorMessage, summaryMessage, validatorParameters);
 }
 
-FluentValidatorBuilder.prototype.evenNumber = evenNumberForValidator;
+FluentValidatorBuilder.prototype.evenNumber = evenNumber;
 FluentConditionBuilder.prototype.evenNumber = evenNumberForCondition;
+
+function resolveValidatorOverloadArgs<T>(arg1: string | FluentValidatorConfig | null | undefined, arg2: string | null | undefined): { errorMessage: any; summaryMessage: any; conditionConfig: any; validatorParameters: any; } {
+    throw new Error("Function not implemented.");
+}
 //#endregion fluent syntax

@@ -810,7 +810,7 @@ describe('Demonstrate the results from various use cases', () => {
             super(services);
         }
         protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
-            builder.field('Field1', 'Date').requireText(null, null, { errorMessagel10n: 'RequiredEM' });
+            builder.field('Field1', 'Date').requireText({ errorMessagel10n: 'RequiredEM' });
         }
     }
     test('TextLocalizerService is used for a validator error message', () => {

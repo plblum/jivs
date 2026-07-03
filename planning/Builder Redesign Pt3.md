@@ -271,6 +271,382 @@ Based on the current implementation shape, the main files likely to change are:
 * Not yet implemented broadly
 * Still subject to refinement before code changes begin
 
+**Coding guidance**
+
+This section presents the work in implementation order, with concrete examples.
+
+### 1. Internal helper impact first
+
+Start with the plumbing that all validator-specific work depends on.
+
+#### 1a. `finishFluentValidatorBuilder2`
+
+Add a side-by-side helper that inserts `summaryMessage` immediately after `errorMessage`.
+
+```ts
+export function finishFluentValidatorBuilder2(
+    thisFromCaller: any,
+    conditionType: string | null,
+    conditionConfig: Partial<ConditionConfig>,
+    errorMessage: string | null | undefined,
+    summaryMessage: string | null | undefined,
+    validatorParameters: FluentValidatorConfig | undefined | null
+): FluentValidatorBuilder
+{
+    if (thisFromCaller instanceof FluentValidatorBuilder) {
+        thisFromCaller.add2(
+            conditionType,
+            conditionConfig,
+            errorMessage,
+            summaryMessage,
+            validatorParameters
+        );
+        return thisFromCaller;
+    }
+    throw new FluentSyntaxRequiredError();
+}
+```
+
+#### 1b. `FluentValidatorBuilder.add2`
+
+Add a side-by-side `add2` method that treats `summaryMessage` the same way the current `add(...)` treats `errorMessage`.
+
+```ts
+public add2(
+    conditionType: string | null,
+    conditionConfig: Partial<ConditionConfig> | null,
+    errorMessage: string | null | undefined,
+    summaryMessage: string | null | undefined,
+    validatorConfig: FluentValidatorConfig | undefined | null
+): void
+{
+    let ivDesc: ValidatorConfig = validatorConfig ?
+        { ...validatorConfig as ValidatorConfig } :
+        { conditionConfig: null };
+
+    if (errorMessage != null)
+        ivDesc.errorMessage = errorMessage;
+
+    if (summaryMessage != null)
+        ivDesc.summaryMessage = summaryMessage;
+
+    if (conditionConfig)
+        ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
+
+    if (conditionType && ivDesc.conditionConfig)
+        ivDesc.conditionConfig.conditionType = conditionType;
+
+    let errorCode = resolveErrorCode(ivDesc);
+    if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
+        throw new CodingError(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`);
+
+    this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
+}
+```
+
+#### 1c. Add a narrow helper for the common validator overload pattern
+
+A small shared helper may be introduced to normalize the recurring validator overload pattern.
+
+Its job is intentionally narrow. It only resolves the two validator-side call shapes:
+
+* positional message lane: `errorMessage?`, `summaryMessage?`
+* `ruleConfig` lane
+
+It does **not** attempt to solve child-condition overloads or condition-family-specific logic.
+
+```ts
+interface FluentValidatorOverloadArgs<TConditionConfig> {
+    conditionConfig?: TConditionConfig | null;
+    errorMessage?: string | null;
+    summaryMessage?: string | null;
+    validatorParameters?: FluentValidatorConfig;
+}
+
+function resolveValidatorOverloadArgs<TConditionConfig>(
+    arg2?: string | null | (FluentValidatorConfig & TConditionConfig),
+    arg3?: string | null
+): FluentValidatorOverloadArgs<TConditionConfig> {
+    let conditionConfig: TConditionConfig | null | undefined;
+    let errorMessage: string | null | undefined;
+    let summaryMessage: string | null | undefined;
+    let validatorParameters: FluentValidatorConfig | undefined;
+
+    if (typeof arg2 === 'string' || arg2 === null || arg2 === undefined) {
+        errorMessage = arg2;
+        summaryMessage = arg3;
+    }
+    else if (typeof arg2 === 'object') {
+        conditionConfig = arg2 as unknown as TConditionConfig;
+        validatorParameters = arg2;
+    }
+
+    return {
+        conditionConfig,
+        errorMessage,
+        summaryMessage,
+        validatorParameters
+    };
+}
+```
+
+This helper is optional but recommended because the overload-interception block is strongly structured and will likely repeat across validator families.
+
+#### Why side-by-side helpers are expected
+
+The expectation is that existing validator code remains unchanged and continues to compile.
+
+New validator work for CH-02 should use:
+
+* `finishFluentValidatorBuilder2(...)`
+* `add2(...)`
+
+This allows validator families to be migrated one at a time.
+
+### 2. Worked validator example: `equalToValue`
+
+ `equalToValue` is the preferred example because it shows:
+
+* overloads
+* `summaryMessage`
+* `ruleConfig`
+* `_genDC...`
+
+#### 2a. Add overloads to the interface
+
+Add overloads to `FluentValidatorBuilder` through module augmentation.
+
+```ts
+declare module "./../ValueHosts/Fluent"
+{
+    export interface FluentValidatorBuilder {
+        equalToValue(
+            secondValue: any,
+            errorMessage?: string | null,
+            summaryMessage?: string | null
+        ): FluentValidatorBuilder;
+
+        equalToValue(
+            secondValue: any,
+            ruleConfig: FluentEqualToValueValidatorConfig
+        ): FluentValidatorBuilder;
+    }
+}
+```
+
+#### 2b. Add overloads to the function and intercept overload parameters
+
+Add the matching overloads to the function implementation and intercept the two call shapes.
+
+**Without the helper**
+
+```ts
+function equalToValue(
+    secondValue: any,
+    errorMessage?: string | null,
+    summaryMessage?: string | null
+): FluentValidatorBuilder;
+function equalToValue(
+    secondValue: any,
+    ruleConfig: FluentEqualToValueValidatorConfig
+): FluentValidatorBuilder;
+function equalToValue(
+    secondValue: any,
+    arg2?: string | null | FluentEqualToValueValidatorConfig,
+    arg3?: string | null
+): FluentValidatorBuilder
+{
+    let conditionConfig: FluentEqualToValueConditionConfig | null | undefined;
+    let errorMessage: string | null | undefined;
+    let summaryMessage: string | null | undefined;
+    let validatorParameters: FluentValidatorConfig | undefined;
+
+    if (typeof arg2 === 'string' || arg2 === null || arg2 === undefined) {
+        errorMessage = arg2;
+        summaryMessage = arg3;
+    }
+    else if (typeof arg2 === 'object') {
+        conditionConfig = arg2 as unknown as FluentEqualToValueConditionConfig;
+        validatorParameters = arg2;
+    }
+
+    return finishFluentValidatorBuilder2(
+        this,
+        ConditionType.EqualToValue,
+        _genDCEqualToValue(secondValue, conditionConfig),
+        errorMessage,
+        summaryMessage,
+        validatorParameters
+    );
+}
+```
+
+**With the helper**
+
+```ts
+function equalToValue(
+    secondValue: any,
+    errorMessage?: string | null,
+    summaryMessage?: string | null
+): FluentValidatorBuilder;
+function equalToValue(
+    secondValue: any,
+    ruleConfig: FluentEqualToValueValidatorConfig
+): FluentValidatorBuilder;
+function equalToValue(
+    secondValue: any,
+    arg2?: string | null | FluentEqualToValueValidatorConfig,
+    arg3?: string | null
+): FluentValidatorBuilder
+{
+    const {
+        conditionConfig,
+        errorMessage,
+        summaryMessage,
+        validatorParameters
+    } = resolveValidatorOverloadArgs<FluentEqualToValueConditionConfig>(arg2, arg3);
+
+    return finishFluentValidatorBuilder2(
+        this,
+        ConditionType.EqualToValue,
+        _genDCEqualToValue(secondValue, conditionConfig),
+        errorMessage,
+        summaryMessage,
+        validatorParameters
+    );
+}
+```
+
+This preserves the existing extension-author pattern:
+
+1. collect condition-specific inputs
+2. call `_genDC...`
+3. call `finishFluentValidatorBuilder2(...)`
+
+The helper simply removes repeated overload-interception boilerplate without changing the overall pattern.
+
+#### 2c. Expectations on `_genDCEqualToValue`
+
+`_genDC...` remains the official place to build the final condition config.
+
+The current `equalToValue` version is already close to what is needed:
+
+```ts
+export function _genDCEqualToValue(
+    secondValue: any,
+    conditionConfig?: FluentEqualToValueConditionConfig | null
+): EqualToValueConditionConfig {
+    let condConfig = (conditionConfig ? { ...conditionConfig } : {}) as EqualToValueConditionConfig;
+    if (secondValue != null)
+        condConfig.secondValue = secondValue;
+    return condConfig;
+}
+```
+
+Expectations at this stage:
+
+* `_genDC...` stays condition-specific
+* no broader redesign of `_genDC...` is required yet
+* the validator overload interception may pass the same `ruleConfig` object in two roles:
+
+  * as `validatorParameters: FluentValidatorConfig`
+  * as `conditionConfig: FluentEqualToValueConditionConfig` via cast
+* this works when the validator-specific config type includes the optional condition properties with matching names
+
+#### 2d. Write Jest tests for each parameter pattern
+
+Write tests that cover the full parameter surface for `equalToValue`.
+
+```ts
+test('equalToValue supports positional message lane and ruleConfig lane', () => {
+    let testItem1 = createFluent().field('Field1').equalToValue(10);
+    let testItem2 = createFluent().field('Field1').equalToValue(10, 'Error');
+    let testItem3 = createFluent().field('Field1').equalToValue(10, 'Error', 'Summary');
+    let testItem4 = createFluent().field('Field1').equalToValue(10, null, 'Summary');
+    let testItem5 = createFluent().field('Field1').equalToValue(10, null, null);
+    let testItem6 = createFluent().field('Field1').equalToValue(10, {
+        secondConversionLookupKey: LookupKey.Integer,
+        errorMessage: 'Error',
+        summaryMessage: 'Summary',
+        errorMessagel10n: 'Errorl10n',
+        summaryMessagel10n: 'Summaryl10n',
+        severity: ValidationSeverity.Error,
+        errorCode: 'alt code'
+    });
+
+    TestFluentValidatorBuilder(testItem1, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10
+        }
+    });
+
+    TestFluentValidatorBuilder(testItem2, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10
+        },
+        errorMessage: 'Error'
+    });
+
+    TestFluentValidatorBuilder(testItem3, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10
+        },
+        errorMessage: 'Error',
+        summaryMessage: 'Summary'
+    });
+
+    TestFluentValidatorBuilder(testItem4, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10
+        },
+        summaryMessage: 'Summary'
+    });
+
+    TestFluentValidatorBuilder(testItem5, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10
+        }
+    });
+
+    TestFluentValidatorBuilder(testItem6, <ValidatorConfig>{
+        conditionConfig: <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue,
+            secondValue: 10,
+            secondConversionLookupKey: LookupKey.Integer
+        },
+        errorMessage: 'Error',
+        summaryMessage: 'Summary',
+        errorMessagel10n: 'Errorl10n',
+        summaryMessagel10n: 'Summaryl10n',
+        severity: ValidationSeverity.Error,
+        errorCode: 'alt code'
+    });
+});
+```
+
+### 3. Short implementation notes
+
+* Existing validator code remains unchanged.
+* New validator work can migrate one family at a time.
+* This is why side-by-side helper versions exist.
+* The current extension-author pattern remains central:
+
+  * `_genDC...` does the condition work
+  * `finishFluentValidatorBuilder2(...)` finishes the wiring
+
+### Design constraint
+
+This change depends on **CH-01**.
+
+The overload-based two-lane signature model is only attractive if IntelliSense can surface it clearly while preserving the current extensibility pattern.
+
+Without CH-01, these signatures would likely need to collapse into broader single-signature implementations, reducing much of the usability benefit.
+
 ### CH-03 Formal change direction from KD-04 Proposal C: introduce value source selection before child conditions
 
 This change promotes the child-condition source-selection portion of **KD-04 Proposal C** into a formal change direction.

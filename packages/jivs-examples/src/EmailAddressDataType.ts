@@ -87,8 +87,12 @@ declare module "@plblum/jivs-engine/build/ValueHosts/Fluent"
     export interface FluentValidatorBuilder {
         emailAddress(
             errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder;
+            summaryMessage?: string | null): FluentValidatorBuilder;
+        emailAddress(
+            validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+        
     }
+    
     export interface FluentConditionBuilder {
         emailAddress(valueHostName?: ValueHostName): FluentConditionBuilder;
     }
@@ -107,16 +111,30 @@ function emailAddressForCondition(valueHostName?: ValueHostName): FluentConditio
     return finishFluentConditionBuilder(this,
         emailAddressConditionType, _genDCEmailAddress(), valueHostName);
 }
-function emailAddressForValidator(
+
+
+function emailAddress(
+    validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+function emailAddress(
     errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder {    
+    summaryMessage?: string | null): FluentValidatorBuilder;
+function emailAddress(
+    arg1?: string | null | FluentValidatorConfig,
+    arg2?: string | null): FluentValidatorBuilder {    
+    let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        resolveValidatorOverloadArgs<RegExpConditionConfig>(arg1, arg2);
+
     return finishFluentValidatorBuilder(this,
         emailAddressConditionType, _genDCEmailAddress(),
-        errorMessage, validatorParameters);
+        errorMessage, summaryMessage, validatorParameters);
 }
 
 // Always need this to execute once during app startup
-FluentValidatorBuilder.prototype.emailAddress = emailAddressForValidator;
+FluentValidatorBuilder.prototype.emailAddress = emailAddress;
 FluentConditionBuilder.prototype.emailAddress = emailAddressForCondition;
 
+
+function resolveValidatorOverloadArgs<T>(arg1: string | FluentValidatorConfig | null | undefined, arg2: string | null | undefined): { errorMessage: any; summaryMessage: any; conditionConfig: any; validatorParameters: any; } {
+    throw new Error('Function not implemented.');
+}
 //#endregion fluent syntax

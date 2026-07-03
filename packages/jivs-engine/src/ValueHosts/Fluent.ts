@@ -490,12 +490,15 @@ export interface IFluentValidatorBuilder
      * in conditionConfig, assign them to conditionConfig.
      * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
      * supplied.
+     * @param summaryMessage - optional summary message. Will overwrite any from validatorConfig if
+     * supplied.
      * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
      * will be replaced when conditionConfig is not null.
      */
     add(conditionType: string | null,
         conditionConfig: Partial<ConditionConfig> | null,
         errorMessage: string | null | undefined,
+        summaryMessage: string | null | undefined,
         validatorConfig: FluentValidatorConfig | undefined | null): void;
 }
 
@@ -538,12 +541,15 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
      * in conditionConfig, assign them to conditionConfig.
      * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
      * supplied.
+     * @param summaryMessage - optional summary message. Will overwrite any from validatorConfig if
+     * supplied.
      * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
      * will be replaced when conditionConfig is not null.
      */
     public add(conditionType: string | null,
         conditionConfig: Partial<ConditionConfig> | null,
         errorMessage: string | null | undefined,
+        summaryMessage: string | null | undefined,
         validatorConfig: FluentValidatorConfig | undefined | null): void
     {
         let ivDesc: ValidatorConfig = validatorConfig ?
@@ -551,6 +557,8 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             { conditionConfig: null };
         if (errorMessage != null)   // null or undefined
             ivDesc.errorMessage = errorMessage;
+        if (summaryMessage != null)   // null or undefined
+            ivDesc.summaryMessage = summaryMessage;
 
         if (conditionConfig)
             ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
@@ -705,14 +713,116 @@ export function finishFluentValidatorBuilder(thisFromCaller: any,
     conditionType: string | null,
     conditionConfig: Partial<ConditionConfig>,
     errorMessage: string | null | undefined,
+    summaryMessage: string | null | undefined,
     validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorBuilder
 {
     if (thisFromCaller instanceof FluentValidatorBuilder) {
-        thisFromCaller.add(conditionType, conditionConfig, errorMessage, validatorParameters);
+        thisFromCaller.add(conditionType, conditionConfig, errorMessage, summaryMessage, validatorParameters);
         return thisFromCaller;
     }
     throw new FluentSyntaxRequiredError();
 }
+
+/**
+ * Call from within a fluent function once you have all parameters fully setup.
+ * It will complete the setup.
+ * @param thisFromCaller 
+ * Should be a FluentValidatorBuilder. Fluent function expects to pass its value
+ * of 'this' here. However, its possible self is not FluentValidatorBuilder.
+ * We'll throw an exception here in that case.
+ * @param conditionType 
+ * @param conditionConfig 
+ * @param errorMessage 
+ * @param validatorParameters 
+ * @returns The same instance passed into the first parameter to allow for chaining.
+ */
+export function finishFluentValidatorBuilder_OBSOLETE(thisFromCaller: any, 
+    conditionType: string | null,
+    conditionConfig: Partial<ConditionConfig>,
+    errorMessage: string | null | undefined,
+    validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorBuilder
+{
+    if (thisFromCaller instanceof FluentValidatorBuilder) {
+        thisFromCaller.add(conditionType, conditionConfig, errorMessage, null, validatorParameters);
+        return thisFromCaller;
+    }
+    throw new FluentSyntaxRequiredError();
+}
+
+/**
+ * Return result from resolveValidatorOverloadArgs() to allow for optional parameters in fluent functions.
+ */
+export interface FluentValidatorOverloadArgs<TConditionConfig> {
+    conditionConfig?: TConditionConfig | null;
+    errorMessage?: string | null;
+    summaryMessage?: string | null;
+    validatorParameters?: FluentValidatorConfig;
+}
+
+/**
+ * Overloading validator fluent functions is a bit tricky. This function will resolve the parameters
+ * and return a single object with the results.
+ * It can be used in most functions because the parameters are similar. The only difference is the type of conditionConfig.
+ * @param arg2 
+ * @param arg3 
+ * @returns 
+ */
+export function resolveValidatorOverloadArgs<TConditionConfig extends ConditionConfig>(
+    arg2?: string | null | object,
+    arg3?: string | null
+): FluentValidatorOverloadArgs<TConditionConfig> {
+    let conditionConfig: TConditionConfig | null | undefined;
+    let errorMessage: string | null | undefined;
+    let summaryMessage: string | null | undefined;
+    let validatorParameters: FluentValidatorConfig | undefined;
+
+    if (typeof arg2 === 'string' || arg2 === null || arg2 === undefined) {
+        errorMessage = arg2 ?? null;
+        summaryMessage = arg3 ?? null;
+    }
+    else if (typeof arg2 === 'object') {
+        // arg3 is ignored here
+        conditionConfig = { ...arg2 } as TConditionConfig;
+        for (const prop of Object.keys(conditionConfig as object)) {
+            if (fluentValidatorConfigPropertyNames.includes(prop)) {
+                delete (conditionConfig as any)[prop];
+            }
+        }
+
+        validatorParameters = { ...arg2 };
+        for (const prop of Object.keys(validatorParameters as object)) {
+            if (!fluentValidatorConfigPropertyNames.includes(prop)) {
+                delete (validatorParameters as any)[prop];
+            }
+        }
+     
+    }
+    // any other form will return undefined values, which is acceptable.
+
+    return {
+        conditionConfig,
+        errorMessage,
+        summaryMessage,
+        validatorParameters
+    };
+}
+
+/**
+ * The actual property names on the FluentValidatorConfig interface.
+ */
+const fluentValidatorConfigPropertyNames: Array<string> = [
+    'validatorType',
+    'errorCode',
+    'enabled',
+    'conditionConfig', // not in the official FluentValidatorConfig, but its a typical property of ValidatorConfig
+    'conditionCreator', // ditto
+    'severity',
+    'errorMessage',
+    'summaryMessage',
+    'errorMessagel10n',
+    'summaryMessagel10n',    
+];
+
 /**
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
@@ -815,7 +925,7 @@ export function customRule(conditionCreator: (requester: ValidatorConfig) => ICo
             { conditionConfig: null}; 
         ivConfig.conditionCreator = conditionCreator;
         let self = this as FluentValidatorBuilder;
-        self.add(null, null, errorMessage, ivConfig);
+        self.add(null, null, errorMessage, null /* summary */, ivConfig);
         return self;
     }
     throw new FluentSyntaxRequiredError();

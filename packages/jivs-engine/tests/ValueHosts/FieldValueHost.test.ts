@@ -1556,7 +1556,7 @@ describe('No mocks!', () => {
             category: LoggingCategory.Result,
         });
 
-        builder.field('Field1').requireText(null, 'error');
+        builder.field('Field1').requireText('error');
         let vm = new ValidationManager(builder);
         let vh = vm.vh.field('Field1');
         vh.setValues('', '', { validate: true });   // empty is invalid

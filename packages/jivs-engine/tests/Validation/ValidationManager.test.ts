@@ -360,7 +360,7 @@ describe('startModifying()', () => {
         let testItem = new PublicifiedValidationManager(vmConfig);
 
         let modifier = testItem.startModifying();
-        modifier.field('Field1', null, { label: 'Field 1' }).requireText(null, 'msg');
+        modifier.field('Field1', null, { label: 'Field 1' }).requireText('msg');
         modifier.apply();
 
         let vh1 = testItem.getValueHost('Field1');
@@ -403,7 +403,7 @@ describe('startModifying()', () => {
         expect((vh1 as FieldValueHost).getValidator(ConditionType.RequireText)).toBeNull();
 
         let modifier2 = testItem.startModifying();
-        modifier2.field('Field1', 'TEST', { label: 'Field 1' }).requireText({}, 'Error');
+        modifier2.field('Field1', 'TEST', { label: 'Field 1' }).requireText('Error');
         modifier2.apply();
 
         let vh2 = testItem.getValueHost('Field1');
@@ -2074,7 +2074,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let builder = createConfigBuilder(services);
         builder.onValidationStateChanged = 
             (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let callbackValidationState: ValidationState | null = null;
@@ -2095,7 +2095,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         builder.onValidationStateChanged = 
             (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
 
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
@@ -2112,8 +2112,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     test('validate({ group }) filters issuesFound to that group', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText(null, 'required A');
-        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText(null, 'required B');
+        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
+        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
@@ -2130,8 +2130,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     test('validate({ group }) reflects group specific isValid, doNotSave and asyncProcessing', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText(null, 'required A');
-        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText(null, 'required B');
+        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
+        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
@@ -2155,8 +2155,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     test('validate() excludes disabled hosts from validation and aggregate state', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required 1');
-        builder.field('Field2', LookupKey.String).requireText(null, 'required 2');
+        builder.field('Field1', LookupKey.String).requireText('required 1');
+        builder.field('Field2', LookupKey.String).requireText('required 2');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
@@ -3034,11 +3034,11 @@ describe('Round trip caching of Config and State', () => {
         builder.onInstanceStateChanged = captureManagerStateChanged;
         builder.onValueHostInstanceStateChanged = captureValueHostStateChanged;
 
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         builder.static('Field2');
         let vm = new ValidationManager(builder);
         let modifier = vm.startModifying();
-        modifier.field('Field1').regExp(/^\d*$/, null, null, 'Digits only');    // only digits allowed
+        modifier.field('Field1').regExp(/^\d*$/, 'Digits only');    // only digits allowed
         modifier.static('Field2', LookupKey.Integer);
         modifier.apply();
         vm.getFieldValueHost('Field1')!.setValues('abc', ' abc ');    // saved into state
@@ -3387,7 +3387,7 @@ describe('toValidationPayload()', () => {
     test('returns a serialized single IssueFound[] list for validator-generated issues', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
 
         let testItem = new ValidationManager(builder);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
@@ -3408,7 +3408,7 @@ describe('toValidationPayload()', () => {
     test('includes supplied external issues in the serialized single IssueFound[] list', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
 
         let testItem = new ValidationManager(builder);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
@@ -3432,7 +3432,7 @@ describe('toValidationPayload()', () => {
     test('returns the same visible issue set as getIssuesFound()', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
 
         let testItem = new ValidationManager(builder);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
@@ -3499,7 +3499,7 @@ describe('fromValidationPayload()', () => {
     test('preserves existing validator-managed issues while importing external issues', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let target = new ValidationManager(valConfig);
@@ -3528,7 +3528,7 @@ describe('fromValidationPayload()', () => {
     test('round-trips a field-level validator-generated issue via toValidationPayload(); existing validator overrides external resulting in issueFound from the validator with doNotSave=true', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let source = new ValidationManager(valConfig);
@@ -3576,8 +3576,8 @@ describe('fromValidationPayload()', () => {
     test('imports a server issue for a field missing on the client by routing it to ModelValidatorsValueHost', () => {
         let serverServices = createValidationServicesForTesting();
         let serverBuilder = createConfigBuilder(serverServices);
-        serverBuilder.field('Field1', LookupKey.String).requireText(null, 'required 1');
-        serverBuilder.field('Field2', LookupKey.String).requireText(null, 'required 2');
+        serverBuilder.field('Field1', LookupKey.String).requireText('required 1');
+        serverBuilder.field('Field2', LookupKey.String).requireText('required 2');
         let serverConfig = serverBuilder.complete();
 
         let source = new ValidationManager(serverConfig);
@@ -3589,7 +3589,7 @@ describe('fromValidationPayload()', () => {
 
         let clientServices = createValidationServicesForTesting();
         let clientBuilder = createConfigBuilder(clientServices);
-        clientBuilder.field('Field1', LookupKey.String).requireText(null, 'required 1');
+        clientBuilder.field('Field1', LookupKey.String).requireText('required 1');
         let clientConfig = clientBuilder.complete();
 
         let target = new ValidationManager(clientConfig);
@@ -3613,7 +3613,7 @@ describe('fromValidationPayload()', () => {
     test('keeps imported doNotSave = false when the client has the field but no matching validator to swap with', () => {
         let serverServices = createValidationServicesForTesting();
         let serverBuilder = createConfigBuilder(serverServices);
-        serverBuilder.field('Field1', LookupKey.String).requireText(null, 'required');
+        serverBuilder.field('Field1', LookupKey.String).requireText('required');
         let serverConfig = serverBuilder.complete();
 
         let source = new ValidationManager(serverConfig);
@@ -3692,7 +3692,7 @@ describe('fromValidationPayload()', () => {
     test('imports multiple issues from one payload', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
         let source = new ValidationManager(valConfig);
         source.getFieldValueHost('Field1')!.setValues('', '');
@@ -3738,7 +3738,7 @@ describe('clearExternalIssuesFound()', () => {
     test('does not clear validator-managed issues', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
@@ -3755,7 +3755,7 @@ describe('clearExternalIssuesFound()', () => {
     test('clears external issues while preserving validator-managed issues', () => {
         let services = createValidationServicesForTesting();
         let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText(null, 'required');
+        builder.field('Field1', LookupKey.String).requireText('required');
         let valConfig = builder.complete();
 
         let testItem = new ValidationManager(valConfig);
