@@ -225,6 +225,7 @@ import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHost
 import { isPlainObject } from '../Utilities/Utilities';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IServicesAccessor } from '../Interfaces/Services';
+import { FluentSingleFieldConditionBuilder, FluentMultiFieldConditionBuilder } from './FluentFieldConditionBuilder';
 
 
 /**
@@ -748,7 +749,7 @@ export class FluentConditionBuilder extends FluentBuilderBase implements IFluent
         assertNotNull(conditionConfig, 'conditionConfig');
         if (conditionType)
             conditionConfig.conditionType = conditionType;
-        if (this.valueHostName !== undefined) {
+        if (this.valueHostName != null) {   // null or undefined
             // We don't really know if the conditionConfig instance supports valueHostName,
             // but we can assign it anyway. If it doesn't, it will be ignored.
             // Alt technique not used: Require conditionConfig creators to supply the property explicitly
@@ -799,6 +800,33 @@ export type FluentConditionBuilderHandler = (conditionsBuilder: FluentConditionB
  * Designed to get intellisense assistance as the user sets up the child conditions.
  */
 export type FluentOneConditionBuilderHandler = (conditionsBuilder: FluentOneConditionBuilder) => FluentOneConditionBuilder;
+
+/**
+ * Callback used by conditions that establish child conditions for a single field (subclasses of FluentSingleFieldConditionBuilder).
+ * Expected to be used like this:
+ * ```ts
+ * builder.when(
+ *   (whenBuilder)=>whenBuilder.fieldValue('name').required(),
+ *   (thenBuilder)=>thenBuilder.parentValue().greaterThan(18));
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentSingleFieldConditionBuilderHandler = (conditionBuilder: FluentSingleFieldConditionBuilder) => FluentOneConditionBuilder;
+
+/**
+ * Callback used by conditions that establish child conditions for multiple fields (subclasses of FluentMultiFieldConditionBuilder).
+ * Expected to be used like this:
+ * ```ts
+ * builder.all(
+ *   (childBuilder)=> {
+ *      childBuilder.fieldValue('field1').required(),
+ *      childBuilder.fieldValue('field2').required(),
+ *      childBuilder.fieldValue('field3').required(),
+ * );
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentMultiFieldConditionBuilderHandler = (conditionBuilder: FluentMultiFieldConditionBuilder) => FluentConditionBuilder;
 
 /**
  * Call from within a fluent function once you have all parameters fully setup.

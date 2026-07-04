@@ -979,8 +979,8 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: {
-                    conditionType: ConditionType.RequireText
-                
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'field1'
                 },
                 thenConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
@@ -992,8 +992,8 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
         testFunctionHandlesAllCombining(
             (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                 combiningBuilder.when(
-                    (enablerBuilder) => enablerBuilder.testChainRequireText(),
-                    (childBuilder) => childBuilder.conditionConfig(existingConditionConfig));
+                    (whenBuilder) => whenBuilder.fieldValue('field1').testChainRequireText(),
+                    (thenBuilder) => thenBuilder.conditionConfig(existingConditionConfig));
             },
             expectedConfig);
     });

@@ -1,3 +1,4 @@
+
 /**
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
@@ -6,7 +7,12 @@
  * @module Conditions/Fluent
  */
 
-import { FluentConditionBuilder, FluentConditionBuilderHandler, FluentOneConditionBuilder, FluentOneConditionBuilderHandler, finishFluentConditionBuilder } from "./Fluent";
+import {
+    FluentConditionBuilder, FluentConditionBuilderHandler, FluentOneConditionBuilder,
+    FluentOneConditionBuilderHandler, finishFluentConditionBuilder,
+    FluentSingleFieldConditionBuilderHandler, FluentMultiFieldConditionBuilderHandler
+} from "./Fluent";
+import { FluentSingleFieldConditionBuilder, FluentMultiFieldConditionBuilder } from "./FluentFieldConditionBuilder";
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
@@ -43,8 +49,8 @@ declare module "./../Builder/Fluent"
         not(
             childBuilder: FluentOneConditionBuilderHandler): FluentOneConditionBuilder;
         when(
-            enablerBuilder: FluentOneConditionBuilderHandler,
-            childBuilder: FluentOneConditionBuilderHandler): FluentOneConditionBuilder;
+            enablerBuilder: FluentSingleFieldConditionBuilderHandler,
+            childBuilder: FluentSingleFieldConditionBuilderHandler): FluentOneConditionBuilder;
         
         equalToValue(
             secondValue: any,
@@ -764,25 +770,25 @@ function not(
  * @internal
  */
 export function _genDCWhen(
-    whenBuilder: FluentOneConditionBuilderHandler,
-    thenBuilder: FluentOneConditionBuilderHandler): WhenConditionConfig {
+    whenBuilder: FluentSingleFieldConditionBuilderHandler,
+    thenBuilder: FluentSingleFieldConditionBuilderHandler): WhenConditionConfig {
     assertNotNull(whenBuilder, 'whenBuilder');
     assertFunction(whenBuilder);
     assertNotNull(thenBuilder, 'thenBuilder');
     assertFunction(thenBuilder);
 
-    let fluentEnabler = new FluentOneConditionBuilder(null);
-    whenBuilder(fluentEnabler);
-    let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
+    let fluentWhen = new FluentSingleFieldConditionBuilder(null);
+    let whenCondBuilder = whenBuilder(fluentWhen);
+    let enablerConditionConfig = whenCondBuilder.parentConfig.conditionConfigs[0] ?? {};
 
-    let fluent = new FluentOneConditionBuilder(null);
-    thenBuilder(fluent);
-    let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
+    let fluentThen = new FluentSingleFieldConditionBuilder(null);
+    let thenCondBuilder = thenBuilder(fluentThen);
+    let conditionConfig = thenCondBuilder.parentConfig.conditionConfigs[0] ?? {};
     return { whenToEnableConfig: enablerConditionConfig, thenConfig: conditionConfig } as WhenConditionConfig;
 }
 function when(
-    whenBuilder: FluentOneConditionBuilderHandler,
-    thenBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
+    whenBuilder: FluentSingleFieldConditionBuilderHandler,
+    thenBuilder: FluentSingleFieldConditionBuilderHandler): FluentConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.When, _genDCWhen(whenBuilder, thenBuilder));
 }

@@ -1,4 +1,4 @@
-import { FluentOneConditionBuilder, FluentConditionBuilder } from './../Builder/Fluent';
+import { FluentOneConditionBuilder, FluentConditionBuilder, finishFluentConditionBuilder } from './../Builder/Fluent';
 
 /**
  * When a Validator needs a child condition (like for when, not, all, any, etc.), 
@@ -28,6 +28,8 @@ import { FluentOneConditionBuilder, FluentConditionBuilder } from './../Builder/
 
 import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ValueHostName } from '../DataTypes/BasicTypes';
+import { ConditionConfig } from '../Interfaces/Conditions';
+import { assertNotNull } from '../Utilities/ErrorHandling';
 
 /**
  * Abstract base class for builders that create child conditions for a parent condition.
@@ -75,6 +77,36 @@ export abstract class FluentFieldConditionBuilderBase {
      * @returns A FluentConditionBuilder or FluentOneConditionBuilder for further fluent chaining.
      */
     protected abstract createBuilder(valueHostName: ValueHostName | null): FluentConditionBuilder | FluentOneConditionBuilder;
+
+    /**
+     * A way to drop in a completed conditionConfig into the builder chain. 
+     * In the context of FluentFieldConditionBuilderBase, the conditionConfig is 
+     * expected to have all required properties, including conditionType and valueHostName.
+     * 
+     * So instead of:
+     * ```ts
+     * when((whenBuilder) => {
+     *     whenBuilder.fieldValue('Field1').requireText();
+     * },
+     * (thenBuilder) => {
+     *     thenBuilder.parentValue().regExp(/^abc/);
+     * });
+     * ```
+     * You could do:
+     * ```ts
+     * const whenConfig = { conditionType: ConditionType.RequireText, valueHostName: 'Field1' };
+     * const thenConfig = { conditionType: ConditionType.RegExp, valueHostName: null, regExp: /^abc/ };
+     * when(
+     *  (whenBuilder) => whenBuilder.conditionConfig(whenConfig),
+     *  (thenBuilder) => thenBuilder.conditionConfig(thenConfig));
+     * @param conditionConfig 
+     * @returns 
+     */
+    public conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder {
+        assertNotNull(conditionConfig, 'conditionConfig');
+        assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
+        return finishFluentConditionBuilder(new FluentConditionBuilder(null), conditionConfig.conditionType, conditionConfig);
+    }    
 }    
 
 /**

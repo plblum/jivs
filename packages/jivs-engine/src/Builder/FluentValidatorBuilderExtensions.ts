@@ -10,7 +10,8 @@
 import {
     FluentOneConditionBuilderHandler,
     FluentValidatorBuilder, FluentValidatorConfig, FluentValidatorOverloadArgs, finishFluentValidatorBuilder,
-    resolveValidatorOverloadArgs
+    resolveValidatorOverloadArgs, FluentSingleFieldConditionBuilderHandler,
+    FluentMultiFieldConditionBuilderHandler
 } from "./Fluent";
 import { ConditionType } from "../Conditions/ConditionTypes";
 import { FluentConditionBuilderHandler } from './Fluent';
@@ -298,13 +299,13 @@ declare module "./../Builder/Fluent"
             validatorParameters: FluentNotValidatorConfig): FluentValidatorBuilder;
         
         when(
-            whenBuilder: FluentOneConditionBuilderHandler,
-            thenBuilder: FluentOneConditionBuilderHandler,
+            whenBuilder: FluentSingleFieldConditionBuilderHandler,
+            thenBuilder: FluentSingleFieldConditionBuilderHandler,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;    
         when(
-            whenBuilder: FluentOneConditionBuilderHandler,
-            thenBuilder: FluentOneConditionBuilderHandler,
+            whenBuilder: FluentSingleFieldConditionBuilderHandler,
+            thenBuilder: FluentSingleFieldConditionBuilderHandler,
             validatorParameters: FluentWhenValidatorConfig): FluentValidatorBuilder;    
 
         //#region shorter names for some
@@ -1027,17 +1028,17 @@ function not(
 export type FluentWhenValidatorConfig = FluentValidatorConfig;
 
 function when(
-    whenBuilder: FluentOneConditionBuilderHandler,
-    thenBuilder: FluentOneConditionBuilderHandler,
+    whenBuilder: FluentSingleFieldConditionBuilderHandler,
+    thenBuilder: FluentSingleFieldConditionBuilderHandler,
     errorMessage?: string | null,
     summaryMessage?: string | null): FluentValidatorBuilder;
 function when(
-    whenBuilder: FluentOneConditionBuilderHandler,
-    thenBuilder: FluentOneConditionBuilderHandler,
+    whenBuilder: FluentSingleFieldConditionBuilderHandler,
+    thenBuilder: FluentSingleFieldConditionBuilderHandler,
     validatorParameters: FluentWhenValidatorConfig): FluentValidatorBuilder;    
 function when(
-    whenBuilder: FluentOneConditionBuilderHandler,
-    thenBuilder: FluentOneConditionBuilderHandler,
+    whenBuilder: FluentSingleFieldConditionBuilderHandler,
+    thenBuilder: FluentSingleFieldConditionBuilderHandler,
     arg3?: FluentWhenValidatorConfig | string | null,
     arg4?: string | null): FluentValidatorBuilder {
     let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =

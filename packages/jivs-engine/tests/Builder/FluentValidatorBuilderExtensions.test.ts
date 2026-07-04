@@ -1,6 +1,10 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
-import { FluentBuilderBase, FluentValidatorBuilder, FluentValidatorConfig, ValidationManagerStartFluent } from "../../src/Builder/Fluent";
+import {
+    FluentBuilderBase, FluentValidatorBuilder,
+    FluentValidatorConfig, ValidationManagerStartFluent,
+    FluentConditionBuilder
+} from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import {
@@ -3297,8 +3301,8 @@ describe('when as a validator of a field()', () => {
     test('when((no when), (no then)), creates ValidatorConfig with WhenCondition with type=When, whenToEnableConfig={} and childConditionConfig={}', () => {
 
         let testItem = createFluent().field('Field1').when(
-            (whenBuilder) => whenBuilder,
-            (thenBuilder) => thenBuilder);
+            (whenBuilder) => new FluentConditionBuilder(null),
+            (thenBuilder) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -3311,8 +3315,8 @@ describe('when as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1')
             .when(
-                (whenBuilder) => whenBuilder.regExp(/abc/),
-                (thenBuilder) => thenBuilder.requireText(null, 'F1'));
+                (whenBuilder) => whenBuilder.parentValue().regExp(/abc/),
+                (thenBuilder) => thenBuilder.fieldValue('F1').requireText());
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -3331,8 +3335,8 @@ describe('when as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1')
             .when(
-                (whenBuilder)=> whenBuilder.regExp(/abc/, null, null, 'F2'),
-                (thenBuilder) => thenBuilder.requireText(null, 'F1'),
+                (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
+                (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),
                 'Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
@@ -3356,8 +3360,8 @@ describe('when as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1')
             .when(
-                (whenBuilder)=> whenBuilder.regExp(/abc/, null, null, 'F2'),
-                (thenBuilder) => thenBuilder.requireText(null, 'F1'),   
+                (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
+                (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 'Error', 'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
@@ -3379,8 +3383,8 @@ describe('when as a validator of a field()', () => {
     test('when((cond), (cond), null, summary message) creates ValidatorConfig with WhenCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1')
             .when(
-                (whenBuilder) => whenBuilder.regExp(/abc/, null, null, 'F2'),
-                (thenBuilder) => thenBuilder.requireText(null, 'F1'),
+                (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
+                (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 null, 'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
@@ -3400,8 +3404,9 @@ describe('when as a validator of a field()', () => {
     });
     test('when((0 children), (0 children), { error message, summary message }) creates ValidatorConfig with WhenCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1')
-            .when((whenBuilder)=> whenBuilder,
-                (thenBuilder) => thenBuilder, {
+            .when((whenBuilder)=> new FluentConditionBuilder(null),
+                (thenBuilder) => new FluentConditionBuilder(null),
+            {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
             });
@@ -3418,8 +3423,9 @@ describe('when as a validator of a field()', () => {
     // when((0 children), (0 children), {}) creates ValidatorConfig with WhenCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned
     test('when((0 children), (0 children), {}) creates ValidatorConfig with WhenCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
         let testItem = createFluent().field('Field1')
-            .when((whenBuilder)=> whenBuilder,
-                (thenBuilder) => thenBuilder, {});
+            .when((whenBuilder)=> new FluentConditionBuilder(null),
+                (thenBuilder) => new FluentConditionBuilder(null),
+                {});
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When, 
@@ -3431,8 +3437,9 @@ describe('when as a validator of a field()', () => {
     // when((0 children), (0 children), null) creates ValidatorConfig with WhenCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned
     test('when((0 children), (0 children), null) creates ValidatorConfig with WhenCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
         let testItem = createFluent().field('Field1')
-            .when((whenBuilder)=> whenBuilder,
-                (thenBuilder) => thenBuilder, null);
+            .when((whenBuilder)=> new FluentConditionBuilder(null),
+                (thenBuilder) => new FluentConditionBuilder(null),
+                null);
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{ 
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When, 
@@ -3444,30 +3451,44 @@ describe('when as a validator of a field()', () => {
 
     test('When there are 2 child conditions, throws', () => {
         expect(() => createFluent().field('Field1')
-            .when((whenBuilder)=> whenBuilder,
-                (thenBuilder) => thenBuilder.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+            .when((whenBuilder)=> new FluentConditionBuilder(null),
+                (thenBuilder) => thenBuilder.fieldValue('F1')
+                    .requireText()
+                    .requireText()
+            )).toThrow();
     });    
     test('When there are 2 enabler conditions, throws', () => {
         expect(() => createFluent().field('Field1')
-            .when((whenBuilder)=> whenBuilder.requireText(null, 'F1').requireText(null, 'F2'),
-                (thenBuilder) => thenBuilder)).toThrow();
+            .when(
+                (whenBuilder) => whenBuilder.parentValue()
+                    .requireText()
+                    .requireText(),
+                (thenBuilder) => new FluentConditionBuilder(null))).toThrow();
     });        
     test('Null as the whenToEnable function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.field('Field1').when(null!, (thenBuilder) => thenBuilder,
+        expect(() => fluent.field('Field1').when(null!, (thenBuilder) => new FluentConditionBuilder(null),
             'Error')).toThrow(/whenBuilder/);
     });
     test('Null as the then condition function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.field('Field1').when((whenBuilder)=> whenBuilder, null!,
+        expect(() => fluent.field('Field1').when(
+            (whenBuilder) => new FluentConditionBuilder(null),
+            null!,  // then
             'Error')).toThrow(/thenBuilder/);
     });    
     test('Non-function as the child function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.field('Field1').when((whenBuilder)=> whenBuilder, {} as any, 'Error')).toThrow(/Function expected/);
+        expect(() => fluent.field('Field1').when(
+            (whenBuilder) => new FluentConditionBuilder(null),
+            {} as any,
+            'Error')).toThrow(/Function expected/);
     });    
     test('Non-function as the enabler function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.field('Field1').when({} as any, (thenBuilder) => thenBuilder, 'Error')).toThrow(/Function expected/);
+        expect(() => fluent.field('Field1').when(
+            {} as any,  // when
+            (thenBuilder) => new FluentConditionBuilder(null),
+            'Error')).toThrow(/Function expected/);
     });        
 });
