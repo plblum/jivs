@@ -110,7 +110,7 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;        
         notNull(
-            validatorParameters?: FluentNotNullValidatorConfig): FluentValidatorBuilder;        
+            validatorParameters: FluentNotNullValidatorConfig): FluentValidatorBuilder;        
         
         regExp(
             expression: RegExp,
@@ -183,7 +183,7 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         lessThan(
             secondValueHostName: ValueHostName,
-            validatorParameters?: FluentLessThanValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentLessThanValidatorConfig): FluentValidatorBuilder;
         
         lessThanOrEqualValue(
             secondValue: any,
@@ -207,7 +207,7 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         greaterThanValue(
             secondValue: any,
-            validatorParameters?: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
         
         greaterThan(
             secondValueHostName: ValueHostName,
@@ -247,7 +247,7 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         all(
             conditionsBuilder: FluentConditionBuilderHandler,
-            validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
         
         any(
             conditionsBuilder: FluentConditionBuilderHandler,
@@ -351,7 +351,7 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         lt(
             secondValueHostName: ValueHostName,
-            validatorParameters?: FluentLessThanValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentLessThanValidatorConfig): FluentValidatorBuilder;
         
         lteValue(
             secondValue: any,
@@ -359,7 +359,7 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         lteValue(
             secondValue: any,
-            validatorParameters?: FluentLessThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentLessThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
         
         lte(
             secondValueHostName: ValueHostName,
@@ -367,35 +367,35 @@ declare module "./../ValueHosts/Fluent"
             summaryMessage?: string | null): FluentValidatorBuilder;
         lte(
             secondValueHostName: ValueHostName,
-            validatorParameters?: FluentLessThanOrEqualValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentLessThanOrEqualValidatorConfig): FluentValidatorBuilder;
         gtValue(
             secondValue: any,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;
         gtValue(
             secondValue: any,
-            validatorParameters?: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
         gt(
             secondValueHostName: ValueHostName,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;
         gt(
             secondValueHostName: ValueHostName,
-            validatorParameters?: FluentGreaterThanValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentGreaterThanValidatorConfig): FluentValidatorBuilder;
         gteValue(
             secondValue: any,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;
         gteValue(
             secondValue: any,
-            validatorParameters?: FluentGreaterThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
         gte(
             secondValueHostName: ValueHostName,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;        
         gte(
             secondValueHostName: ValueHostName,
-            validatorParameters?: FluentGreaterThanOrEqualValidatorConfig): FluentValidatorBuilder;        
+            validatorParameters: FluentGreaterThanOrEqualValidatorConfig): FluentValidatorBuilder;        
     //#endregion shorter names for some        
         
     }
@@ -892,7 +892,7 @@ function all(
     summaryMessage?: string | null): FluentValidatorBuilder;
 function all(
     conditionsBuilder: FluentConditionBuilderHandler,
-    validatorParameters?: FluentAllMatchValidatorConfig): FluentValidatorBuilder;
+    validatorParameters: FluentAllMatchValidatorConfig): FluentValidatorBuilder;
 function all(
     conditionsBuilder: FluentConditionBuilderHandler,
     arg2?: FluentAllMatchValidatorConfig | string | null,
@@ -912,7 +912,7 @@ function any(
     summaryMessage?: string | null): FluentValidatorBuilder;
 function any(
     conditionsBuilder: FluentConditionBuilderHandler,
-    validatorParameters?: FluentAnyMatchValidatorConfig): FluentValidatorBuilder;
+    validatorParameters: FluentAnyMatchValidatorConfig): FluentValidatorBuilder;
 function any(
     conditionsBuilder: FluentConditionBuilderHandler,
     arg2?: FluentAnyMatchValidatorConfig | string | null,
@@ -936,7 +936,7 @@ function countMatches(
     minimum: number | null,
     maximum: number | null,
     conditionsBuilder: FluentConditionBuilderHandler,
-    validatorParameters?: FluentCountMatchesValidatorConfig): FluentValidatorBuilder;    
+    validatorParameters: FluentCountMatchesValidatorConfig): FluentValidatorBuilder;    
 function countMatches(
     minimum: number | null,
     maximum: number | null,
@@ -1034,7 +1034,7 @@ function when(
 function when(
     whenBuilder: FluentOneConditionBuilderHandler,
     thenBuilder: FluentOneConditionBuilderHandler,
-    validatorParameters?: FluentWhenValidatorConfig): FluentValidatorBuilder;    
+    validatorParameters: FluentWhenValidatorConfig): FluentValidatorBuilder;    
 function when(
     whenBuilder: FluentOneConditionBuilderHandler,
     thenBuilder: FluentOneConditionBuilderHandler,
