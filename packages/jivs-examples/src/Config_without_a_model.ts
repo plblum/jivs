@@ -55,10 +55,12 @@ export class DateRangeFormRules extends FormRulesBase
         options?: RulesConfigOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('endDate')
-            .lessThanOrEqual('numOfDays',   // right operand of the comparison
-                { valueHostName: 'diffDays' },  // compare to this ValueHost, not 'startDate'
-                'Less than {compareTo} days apart',   // our preferred error message
-                { errorCode: 'NumOfDays' });   // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
+            .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+                {
+                    valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
+                    errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,
+                    errorCode: 'NumOfDays' // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
+                 }); 
         builder.field('endDate', LookupKey.Date, { label: 'End date' });
         builder.field('timeZone', LookupKey.String).regExp(timeZoneRegex, { errorCode: 'TimeZone'})    
         builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });

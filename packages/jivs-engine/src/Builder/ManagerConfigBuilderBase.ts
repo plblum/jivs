@@ -1,13 +1,15 @@
 /**
- * @inheritDoc ValueHosts/AbstractClasses/ManagerConfigBuilderBase!ManagerConfigBuilderBase:class
- * @module ValueHosts/AbstractClasses/ManagerConfigBuilderBase
+ * @inheritDoc Builder/AbstractClasses/ManagerConfigBuilderBase!ManagerConfigBuilderBase:class
+ * @module Builder/AbstractClasses/ManagerConfigBuilderBase
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import {
     FluentAnyValueHostConfig,
-    FluentAnyValueHostParameters, FluentConditionBuilder, FluentStaticParameters, FluentValidatorBuilder, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
+    FluentAnyValueHostParameters, FluentConditionBuilder, FluentStaticParameters, FluentValidatorBuilder,
+    FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters,
+    ValidationManagerStartFluent, ValueHostsManagerStartFluent
 } from './Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
@@ -24,7 +26,7 @@ import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { ValidatorConfig } from '../Interfaces/Validator';
-import { ValueHostsManager } from './ValueHostsManager';
+import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 
 

@@ -1,6 +1,6 @@
 import {  IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from './Analyzers';
 import type { ValidationManagerConfig} from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
+import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
 import type { ConfigAnalysisOptions} from "./ConfigAnalysis";
 import type { IConfigAnalysisResultsExplorer } from "./Explorer";
 

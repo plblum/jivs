@@ -7,8 +7,8 @@ import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-engine/build/ValueHosts/ValueHostsManagerConfigBuilder";
-import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-engine/build/Builder/ValueHostsManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';

@@ -37,8 +37,8 @@ import { ValidatableValueHostBase } from '../../src/ValueHosts/ValidatableValueH
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '../../src/ValueHosts/CalcValueHost';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
-import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
-import { ValidationManagerStartFluent } from '../../src/ValueHosts/Fluent';
+import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { ValidationManagerStartFluent } from '../../src/Builder/Fluent';
 import {
     TestValidatableValueHost,
     addTestValidatableValueHostGeneratorToServices,
@@ -46,7 +46,7 @@ import {
 } from '../TestSupport/TestValidatableValueHost';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { createFormAdapter } from '../../src/Validation/ValidationManagerConfigFormAdapter';
+import { createFormAdapter } from '../../src/Builder/ValidationManagerConfigFormAdapter';
 
 
 // Subclass of what we want to test to expose internals to tests

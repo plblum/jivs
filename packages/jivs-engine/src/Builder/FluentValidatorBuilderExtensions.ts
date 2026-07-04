@@ -3,7 +3,7 @@
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
  * 'this' as FluentValidatorBuilder and return this for the next in the chain.
- * See @link ValueHosts/Fluent
+ * See @link Builder/Fluent
  * @module Conditions/Fluent
  */
 
@@ -11,9 +11,9 @@ import {
     FluentOneConditionBuilderHandler,
     FluentValidatorBuilder, FluentValidatorConfig, FluentValidatorOverloadArgs, finishFluentValidatorBuilder, finishFluentValidatorBuilder_OBSOLETE,
     resolveValidatorOverloadArgs
-} from "../ValueHosts/Fluent";
-import { ConditionType } from "./ConditionTypes";
-import { FluentConditionBuilderHandler } from './../ValueHosts/Fluent';
+} from "./Fluent";
+import { ConditionType } from "../Conditions/ConditionTypes";
+import { FluentConditionBuilderHandler } from './Fluent';
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import {
     FluentEqualToConditionConfig,
@@ -67,11 +67,11 @@ import {
     RequireTextConditionConfig,
     StringLengthConditionConfig
 } from '../Conditions/ConcreteConditions';
-import { NotConditionConfig } from "./NotCondition";
-import { WhenConditionConfig } from "./WhenCondition";
+import { NotConditionConfig } from "../Conditions/NotCondition";
+import { WhenConditionConfig } from "../Conditions/WhenCondition";
 
 // How TypeScript merges functions with the FluentValidatorBuilder class
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentValidatorBuilder {
         /**

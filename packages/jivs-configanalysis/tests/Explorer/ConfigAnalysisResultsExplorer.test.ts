@@ -6,7 +6,7 @@ import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueH
 import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import {

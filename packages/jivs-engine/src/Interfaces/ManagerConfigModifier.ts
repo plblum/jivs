@@ -4,7 +4,7 @@
  */
 
 import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
-import { FluentConditionBuilder } from "../ValueHosts/Fluent";
+import { FluentConditionBuilder } from "../Builder/Fluent";
 import {
     IManagerConfigBuilder, IValueHostsForValueHostsManagerConfig,
     IValueHostsForValidatorManagerConfigBuilder,

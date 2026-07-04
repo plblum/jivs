@@ -6,10 +6,10 @@ import { ValidationState } from '../../src/Interfaces/Validation';
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '../../src/Interfaces/ValidationManager';
 import { ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
-import { FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
-import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
-import { MockValidationServices } from './../TestSupport/mocks';
+import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { FluentValidatorBuilder, customRule } from '../../src/Builder/Fluent';
+import { ensureFluentTestConditions } from './ManagerConfigBuilderBase.test';
+import { MockValidationServices } from '../TestSupport/mocks';
 
 
 function createVMConfig(): ValidationManagerConfig {

@@ -14,7 +14,7 @@ import {
 } from '../Interfaces/ConfigMergeService';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
-import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../ValueHosts/ManagerConfigBuilderBase';
+import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Builder/ManagerConfigBuilderBase';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**

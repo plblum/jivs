@@ -6,11 +6,11 @@
 import { IManagerConfigModifierFactory } from "../Interfaces/ManagerConfigModifierFactory";
 import { IManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../Interfaces/ValueHostsManager";
-import { ValidationManagerConfigModifier } from "../Validation/ValidationManagerConfigModifier";
+import { ValidationManagerConfigModifier } from "../Builder/ValidationManagerConfigModifier";
 import { ServiceWithAccessorBase } from "./ServiceWithAccessorBase";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { IValidationManager } from "../Interfaces/ValidationManager";
-import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
+import { ValueHostsManagerConfigModifier } from "../Builder/ValueHostsManagerConfigModifier";
 
 /**
  * Factory to create the ManagerConfigModifier for ValueHostsManager.

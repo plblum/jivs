@@ -1,4 +1,4 @@
-import { createConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { createMinimalValidationServices } from "../src/support";

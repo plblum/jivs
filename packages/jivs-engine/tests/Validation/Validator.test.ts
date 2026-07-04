@@ -24,15 +24,14 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { createValidationServicesForTesting, registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { AlwaysMatchesCondition, AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { ErrorResponseCondition } from "../../src/Conditions/ConditionBase";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
-import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested

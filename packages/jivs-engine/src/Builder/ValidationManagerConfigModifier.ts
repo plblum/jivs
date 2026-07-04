@@ -9,8 +9,8 @@ import { IValidationManager, ValidationManagerConfig } from "../Interfaces/Valid
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
-import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
+import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from './Fluent';
+import { ValueHostsManagerConfigModifier } from "./ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { resolveErrorCode } from "../Utilities/Validation";
@@ -19,7 +19,7 @@ import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigMod
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ConditionConfig } from "../Interfaces/Conditions";
-import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
+import { CombineUsingCondition } from "./ManagerConfigBuilderBase";
 
 /**
  * Used by ValidationManager.startModifying() function to modify the ValidationManagerConfig.valueHostConfigs array.

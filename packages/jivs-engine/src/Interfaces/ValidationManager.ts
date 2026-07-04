@@ -32,7 +32,7 @@ import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
 import { IValidationServices } from './ValidationServices';
 import { IFieldValueHost } from './FieldValueHost';
-import { ValidationManagerConfigModifier } from '../Validation/ValidationManagerConfigModifier';
+import { ValidationManagerConfigModifier } from '../Builder/ValidationManagerConfigModifier';
 
 /**
  * Interface from which to implement a ValidationManager.

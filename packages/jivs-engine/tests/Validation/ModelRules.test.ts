@@ -1,8 +1,8 @@
-import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { RulesBase } from "../../src/Validation/ModelRules";
 import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
+import { enableFluentConditions } from "../../src/Builder/FluentConditionBuilderExtensions";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";

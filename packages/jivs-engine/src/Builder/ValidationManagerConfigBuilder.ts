@@ -1,6 +1,6 @@
 /**
- * @inheritDoc ValidationManager/ConcreteClasses/ValidationManagerConfigBuilder!ValidationManagerConfigBuilder
- * @module ValidationManager/ConcreteClasses/ValidationManagerConfigBuilder
+ * @inheritDoc Builder/ConcreteClasses/ValidationManagerConfigBuilder!ValidationManagerConfigBuilder
+ * @module Builder/ConcreteClasses/ValidationManagerConfigBuilder
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
@@ -11,9 +11,9 @@ import { ValueHostValidationStateChangedHandler } from "../Interfaces/Validatabl
 import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { FluentFieldParameters, FluentFieldValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from "../ValueHosts/Fluent";
-import { BuilderState } from "../ValueHosts/ManagerConfigBuilderBase";
-import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerConfigBuilder";
+import { FluentFieldParameters, FluentFieldValueConfig, FluentValidatorBuilder, ValidationManagerStartFluent } from "./Fluent";
+import { BuilderState } from "./ManagerConfigBuilderBase";
+import { ValueHostsManagerConfigBuilder } from "./ValueHostsManagerConfigBuilder";
 
 
 /**

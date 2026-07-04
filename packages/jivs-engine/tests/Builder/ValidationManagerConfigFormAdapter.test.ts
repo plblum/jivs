@@ -9,11 +9,11 @@ import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
-import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Validation/ValidationManagerConfigBuilder';
-import { ValidationManagerConfigFormAdapter, createFormAdapter } from '../../src/Validation/ValidationManagerConfigFormAdapter';
-import { FluentConditionBuilder, FluentValidatorBuilder } from '../../src/ValueHosts/Fluent';
-import { BuilderState, CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
-import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
+import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { ValidationManagerConfigFormAdapter, createFormAdapter } from '../../src/Builder/ValidationManagerConfigFormAdapter';
+import { FluentConditionBuilder, FluentValidatorBuilder } from '../../src/Builder/Fluent';
+import { BuilderState, CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/Builder/ManagerConfigBuilderBase';
+import { ensureFluentTestConditions } from './ManagerConfigBuilderBase.test';
 import { MockValidationServices } from '../TestSupport/mocks';
 
 

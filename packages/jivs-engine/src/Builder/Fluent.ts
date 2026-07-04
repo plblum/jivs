@@ -102,7 +102,7 @@
  *         ConditionType.RegExp, valueHostName, _genCDRegExp(expression, ignoreCase, conditionConfig));
  * }
  * 
- * declare module "@plblum/jivs-engine/build/ValueHosts/fluent"
+ * declare module "@plblum/jivs-engine/build/Builder/Fluent"
  * {
  *    export interface FluentValidatorBuilder
  *    {
@@ -122,7 +122,7 @@
  * FluentValidatorBuilder.prototype.regExp = regExp_forValidator;
  * FluentConditionBuilder.prototype.regExp = regExp_forConditions;
  * 
- * @module ValueHosts/Fluent
+ * @module Builder/Fluent
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
@@ -130,7 +130,7 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
-import { IDisposable } from './../Interfaces/General_Purpose';
+import { IDisposable } from '../Interfaces/General_Purpose';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
@@ -139,7 +139,7 @@ import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase';
-import { enableFluent } from '../Conditions/FluentValidatorBuilderExtensions';
+import { enableFluent } from './FluentValidatorBuilderExtensions';
 import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
@@ -460,7 +460,7 @@ export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig' | 'c
  * Those functions will treat their 'this' as FluentBuilderBase
  * and testing this for its subclasses, FluentValidatorBuilder and FluentConditionBuilder.
  * They will call the subclass's add() method to add to its collection.
- * See @link ValueHosts/Fluent
+ * See @link Builder/Fluent
  */
 export abstract class FluentBuilderBase
 {
@@ -510,7 +510,7 @@ export interface IFluentValidatorBuilder
  * by using TypeScript's Declaration Merging:
  * https://www.typescriptlang.org/docs/handbook/declaration-merging.html
  * 
- * See {@link ValueHosts/Fluent | Fluent Overview}
+ * See {@link Builder/Fluent | Fluent Overview}
  */
 export class FluentValidatorBuilder extends FluentBuilderBase implements IFluentValidatorBuilder
 {
@@ -609,7 +609,7 @@ export interface IFluentConditionBuilder
  * by using TypeScript's Declaration Merging:
  * https://www.typescriptlang.org/docs/handbook/declaration-merging.html
  * 
- * See {@link ValueHosts/Fluent | Fluent Overview}
+ * See {@link Builder/Fluent | Fluent Overview}
  */
 export class FluentConditionBuilder extends FluentBuilderBase implements IFluentConditionBuilder
 {
@@ -912,7 +912,7 @@ export class FluentFactory
  * and assigned to the prototype of the FluentValidatorBuilder class.
  * As an EXTENSION FUNCTION, it extends FluentValidatorBuilder, and 
  * REQUIRES 'this' to be an instance of FluentValidatorBuilder.
- * For more on setting up your own fluent function, see @link ValueHosts/Fluent|Fluent.
+ * For more on setting up your own fluent function, see @link Builder/Fluent|Fluent.
  */
 
 export function customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,

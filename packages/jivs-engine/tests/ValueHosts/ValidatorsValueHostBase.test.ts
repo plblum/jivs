@@ -33,11 +33,11 @@ import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
-import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
-import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { FluentValidatorBuilder } from "../../src/Builder/Fluent";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
+import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
 import { IManagerConfigModifier } from "../../src/Interfaces/ManagerConfigModifier";
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
 import { ServiceWithAccessorBase } from "../../src/Services/ServiceWithAccessorBase";

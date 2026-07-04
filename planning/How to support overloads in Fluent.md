@@ -31,7 +31,7 @@ We have fixed this in a prototype using dataTypeCheck on the FluentValidatorBuil
 
 1. Create overloads in the FluentValidatorBuilder in FluentValidatorBuilderExtensions.ts.
     ```ts
-    declare module "./../ValueHosts/Fluent"
+    declare module "./../Builder/Fluent"
     {
         export interface FluentValidatorBuilder {
             /**

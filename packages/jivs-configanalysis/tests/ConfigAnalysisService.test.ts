@@ -1,5 +1,5 @@
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { createServices } from './TestSupport/support';

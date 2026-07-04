@@ -4,8 +4,8 @@ import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
-import { ValueHostsManagerConfigModifier } from "../../src/ValueHosts/ValueHostsManagerConfigModifier";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
+import { ValueHostsManagerConfigModifier } from "../../src/Builder/ValueHostsManagerConfigModifier";
 import { Publicify_ValueHostsManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
 function createVMConfig(): ValueHostsManagerConfig {

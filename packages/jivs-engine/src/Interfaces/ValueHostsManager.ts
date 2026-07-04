@@ -12,7 +12,7 @@ import { IFieldValueHostChangedCallback } from './FieldValueHost';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 import { IDisposable } from './General_Purpose';
-import { ValueHostsManagerConfigModifier } from '../ValueHosts/ValueHostsManagerConfigModifier';
+import { ValueHostsManagerConfigModifier } from '../Builder/ValueHostsManagerConfigModifier';
 import { IValueHostsServices } from './ValueHostsServices';
 
 /**

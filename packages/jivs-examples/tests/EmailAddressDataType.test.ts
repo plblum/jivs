@@ -3,10 +3,10 @@ import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/Conc
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { createConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
 import { createMinimalValidationServices } from '../src/support';
+import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {

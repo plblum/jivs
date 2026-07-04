@@ -1,6 +1,6 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
-import { FluentBuilderBase, FluentValidatorBuilder, FluentValidatorConfig, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
+import { FluentBuilderBase, FluentValidatorBuilder, FluentValidatorConfig, ValidationManagerStartFluent } from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import {

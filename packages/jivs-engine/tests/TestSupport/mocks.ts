@@ -47,7 +47,7 @@ import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../.
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
-import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
+import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
 import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
 import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";

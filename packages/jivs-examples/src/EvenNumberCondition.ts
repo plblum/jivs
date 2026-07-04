@@ -21,8 +21,8 @@ import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import {
     FluentConditionBuilder, FluentValidatorBuilder, FluentValidatorConfig,
-    finishFluentConditionBuilder, finishFluentValidatorBuilder
-} from "@plblum/jivs-engine/build/ValueHosts/Fluent";
+    finishFluentConditionBuilder, finishFluentValidatorBuilder, resolveValidatorOverloadArgs
+} from "@plblum/jivs-engine/build/Builder/Fluent";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
@@ -72,7 +72,7 @@ export function registerEvenNumberCondition(validationServices: IValidationServi
 //#region Fluent syntax
 
 // TypeScript Declaration Merging with FluentValidatorBuilder and FluentConditionBuilder
-declare module "@plblum/jivs-engine/build/ValueHosts/Fluent"
+declare module "@plblum/jivs-engine/build/Builder/Fluent"
 {
     export interface FluentValidatorBuilder {
         evenNumber(
@@ -119,7 +119,4 @@ function evenNumber(
 FluentValidatorBuilder.prototype.evenNumber = evenNumber;
 FluentConditionBuilder.prototype.evenNumber = evenNumberForCondition;
 
-function resolveValidatorOverloadArgs<T>(arg1: string | FluentValidatorConfig | null | undefined, arg2: string | null | undefined): { errorMessage: any; summaryMessage: any; conditionConfig: any; validatorParameters: any; } {
-    throw new Error("Function not implemented.");
-}
 //#endregion fluent syntax

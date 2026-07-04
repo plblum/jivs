@@ -15,8 +15,8 @@ import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
-import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
+import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
+import { ValidationManagerConfigModifier } from '../Builder/ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 

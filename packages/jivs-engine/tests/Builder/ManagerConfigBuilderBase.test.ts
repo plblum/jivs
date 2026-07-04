@@ -1,6 +1,6 @@
 import { RequireTextConditionConfig, RegExpConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
+import { enableFluentConditions } from "../../src/Builder/FluentConditionBuilderExtensions";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
@@ -21,8 +21,9 @@ import {
     finishFluentValidatorBuilder, finishFluentConditionBuilder, ValueHostsManagerStartFluent,
     ValidationManagerStartFluent,
     FluentFieldParameters
-} from "../../src/ValueHosts/Fluent";
-import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
+} from "../../src/Builder/Fluent";
+import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced }
+    from "../../src/Builder/ManagerConfigBuilderBase";
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -591,7 +592,7 @@ function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'cond
     return finishFluentConditionBuilder(this, ConditionType.RegExp, conditionConfig);
 }
 // interface that extends the class FluentValidatorBuilder
-declare module './../../src/ValueHosts/Fluent'
+declare module './../../src/Builder/Fluent'
 {
     export interface FluentValidatorBuilder {
         testChainRequireText(conditionConfig?: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,

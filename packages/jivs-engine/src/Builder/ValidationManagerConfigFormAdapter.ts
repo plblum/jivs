@@ -7,8 +7,8 @@ import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
-import { FluentConditionBuilder } from "../ValueHosts/Fluent";
-import { BuilderState, CombineUsingCondition, ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
+import { FluentConditionBuilder } from "./Fluent";
+import { BuilderState, CombineUsingCondition, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 
 /**

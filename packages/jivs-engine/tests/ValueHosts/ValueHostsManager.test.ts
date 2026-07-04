@@ -18,7 +18,7 @@ import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
-import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 // Subclass of what we want to test to expose internals to tests

@@ -16,7 +16,7 @@ A prototype was created using `dataTypeCheck` on `FluentValidatorBuilderExtensio
 **Prototype overload declarations**
 
 ```ts
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentValidatorBuilder {
         /**
@@ -417,7 +417,7 @@ This allows validator families to be migrated one at a time.
 Add overloads to `FluentValidatorBuilder` through module augmentation.
 
 ```ts
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentValidatorBuilder {
         equalToValue(
@@ -1159,7 +1159,7 @@ function requireText(
 Target direction:
 
 ```ts
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentConditionBuilder {
         requireText(
@@ -1196,7 +1196,7 @@ function equalToValue(
 Target direction:
 
 ```ts
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentConditionBuilder {
         equalToValue(
@@ -1235,7 +1235,7 @@ function equalTo(
 Target direction:
 
 ```ts
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentConditionBuilder {
         equalTo(

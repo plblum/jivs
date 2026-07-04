@@ -1,4 +1,4 @@
-import { MockValidationServices } from './../TestSupport/mocks';
+import { MockValidationServices } from '../TestSupport/mocks';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -12,7 +12,7 @@ import {
     ValidationManagerStartFluent,
     ValueHostsManagerStartFluent,
     resolveValidatorOverloadArgs
-} from './../../src/ValueHosts/Fluent';
+} from './../../src/Builder/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';

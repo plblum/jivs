@@ -1,21 +1,21 @@
 /**
  * Interfaces for a ManagerConfigBuilders
- * @module ValueHosts/Types/ManagerConfigBuilder
+ * @module Builder/Types/ManagerConfigBuilder
  */
 
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
-import { CombineUsingCondition, ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
+import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../Builder/Fluent";
+import { CombineUsingCondition, ManagerConfigBuilderBase } from "../Builder/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
 import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ValidationManagerConfigFormAdapter } from "../Validation/ValidationManagerConfigFormAdapter";
+import { ValidationManagerConfigFormAdapter } from "../Builder/ValidationManagerConfigFormAdapter";
 import { ConditionConfig } from "./Conditions";
-import { ValidationManagerConfigBuilder } from "../Validation/ValidationManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
 import { IValueHostsServices } from "./ValueHostsServices";
 
 

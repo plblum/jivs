@@ -26,8 +26,8 @@ import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interface
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { assertNotNull } from "../Utilities/ErrorHandling";
-import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
-import { createFormAdapter } from "./ValidationManagerConfigFormAdapter";
+import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
+import { createFormAdapter } from "../Builder/ValidationManagerConfigFormAdapter";
 
 
 /**

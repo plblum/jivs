@@ -29,7 +29,7 @@ import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 
 interface ITestSetupConfig {

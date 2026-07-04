@@ -7,10 +7,20 @@ import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
 import { CAIssueSeverity } from "./Types/Results";
 import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import type { ValidationManagerConfig} from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/ValueHosts/ManagerConfigBuilderBase";
-import { ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer } from "./Analyzers/ConditionConfigPropertyAnalyzerClasses";
-import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "./Analyzers/ValueHostConfigPropertyAnalyzerClasses";
+import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
+import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
+import {
+  ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer,
+  ConditionWithChildrenPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer,
+  ConditionWithOneChildPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer,
+  ConditionWithSecondValuePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer
+}
+  from "./Analyzers/ConditionConfigPropertyAnalyzerClasses";
+import {
+  CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
+  ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
+}
+  from "./Analyzers/ValueHostConfigPropertyAnalyzerClasses";
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "./Analyzers/ValidatorConfigPropertyAnalyzerClasses";
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 

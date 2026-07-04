@@ -10,14 +10,14 @@ import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager"
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
-import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
-import { FluentConditionBuilder, FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
-import { CombineUsingCondition, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
+import { FluentConditionBuilder, FluentValidatorBuilder } from "../../src/Builder/Fluent";
+import { CombineUsingCondition, hasConditionBeenReplaced } from "../../src/Builder/ManagerConfigBuilderBase";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { ensureFluentTestConditions } from "../ValueHosts/ManagerConfigBuilderBase.test";
+import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
 
 ensureFluentTestConditions();
 

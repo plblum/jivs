@@ -2,11 +2,11 @@
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
  * 'this' as FluentConditionBuilder and return this for the next in the chain.
- * See @link ValueHosts/Fluent
+ * See @link Builder/Fluent
  * @module Conditions/Fluent
  */
 
-import { FluentConditionBuilder, FluentConditionBuilderHandler, FluentOneConditionBuilder, FluentOneConditionBuilderHandler, finishFluentConditionBuilder } from "../ValueHosts/Fluent";
+import { FluentConditionBuilder, FluentConditionBuilderHandler, FluentOneConditionBuilder, FluentOneConditionBuilderHandler, finishFluentConditionBuilder } from "./Fluent";
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
@@ -15,16 +15,16 @@ import {
     MaxDecimalsConditionConfig, NotEqualToValueConditionConfig, NotEqualToConditionConfig,
     NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
-} from "./ConcreteConditions";
-import { NotConditionConfig, } from "./NotCondition";
-import { WhenConditionConfig,  } from "./WhenCondition";
-import { ConditionType } from "./ConditionTypes";
+} from "../Conditions/ConcreteConditions";
+import { NotConditionConfig, } from "../Conditions/NotCondition";
+import { WhenConditionConfig,  } from "../Conditions/WhenCondition";
+import { ConditionType } from "../Conditions/ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionConfig } from "../Interfaces/Conditions";
 
 // How TypeScript merges functions with the FluentConditionBuilder class
-declare module "./../ValueHosts/Fluent"
+declare module "./../Builder/Fluent"
 {
     export interface FluentConditionBuilder {
         conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder;
