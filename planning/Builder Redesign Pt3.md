@@ -656,12 +656,12 @@ It focuses on introducing a value-source-selection layer before child conditions
 * `parentValue()`
 * `fieldValue(valueHostName)`
 
-It requires introducing new Builder classes, `SingleFieldConditionBuilder` and `MultiFieldConditionBuilder`, with a shared abstract base class `FieldConditionBuilderBase`, to host those methods. These Builders do not actually supply condition methods. That's still left to the output of `parentValue()` and `fieldValue(...)`, which is the existing `FluentConditionBuilder` and `FluentOneConditionBuilder`.
+It requires introducing new Builder classes, `FluentSingleFieldConditionBuilder` and `FluentMultiFieldConditionBuilder`, with a shared abstract base class `FluentFieldConditionBuilderBase`, to host those methods. These Builders do not actually supply condition methods. That's still left to the output of `parentValue()` and `fieldValue(...)`, which is the existing `FluentConditionBuilder` and `FluentOneConditionBuilder`.
 
 **Usage examples**
 
 ```ts
-builder.field('field1').any((subject: MultiFieldConditionBuilder) => {
+builder.field('field1').any((subject: FluentMultiFieldConditionBuilder) => {
    subject.parentValue().equalToValue(10);
    subject.fieldValue('field2').equalToValue(20);
 });
@@ -669,8 +669,8 @@ builder.field('field1').any((subject: MultiFieldConditionBuilder) => {
 
 ```ts
 builder.field('field1').when(
-    (whenSubject: SingleFieldConditionBuilder) => whenSubject.fieldValue('flag').equalToValue(true),
-    (thenSubject: SingleFieldConditionBuilder) => thenSubject.parentValue().requireText()
+    (whenSubject: FluentSingleFieldConditionBuilder) => whenSubject.fieldValue('flag').equalToValue(true),
+    (thenSubject: FluentSingleFieldConditionBuilder) => thenSubject.parentValue().requireText()
 );
 ```
 
@@ -685,21 +685,21 @@ Readability goals:
 
 This section presents the work in implementation order, with concrete code examples.
 
-### 1. Add `SingleFieldConditionBuilder` and `MultiFieldConditionBuilder` with an abstract base class
+### 1. Add `FluentSingleFieldConditionBuilder` and `FluentMultiFieldConditionBuilder` with an abstract base class
 
 Keep these classes narrow. Their purpose is only to choose the source semantics for the next child condition builder.
 
 Introduce an abstract base class with the required `Base` suffix. The public builders are:
 
-* `SingleFieldConditionBuilder`
-* `MultiFieldConditionBuilder`
+* `FluentSingleFieldConditionBuilder`
+* `FluentMultiFieldConditionBuilder`
 
 The constructor parameter order is:
 
 1. `parentConfig` — optional and may be `null`
 
 ```ts
-export abstract class FieldConditionBuilderBase {
+export abstract class FluentFieldConditionBuilderBase {
     public constructor(
         protected readonly parentConfig?: ConditionWithChildrenBaseConfig | null) {
     }
@@ -715,7 +715,7 @@ export abstract class FieldConditionBuilderBase {
     protected abstract createBuilder(valueHostName: ValueHostName | null): FluentConditionBuilder | FluentOneConditionBuilder;
 }
 
-export class SingleFieldConditionBuilder extends FieldConditionBuilderBase {
+export class FluentSingleFieldConditionBuilder extends FluentFieldConditionBuilderBase {
     public constructor(parentConfig?: ConditionWithChildrenBaseConfig | null) {
         super(parentConfig);
     }
@@ -728,7 +728,7 @@ export class SingleFieldConditionBuilder extends FieldConditionBuilderBase {
     }
 }
 
-export class MultiFieldConditionBuilder extends FieldConditionBuilderBase {
+export class FluentMultiFieldConditionBuilder extends FluentFieldConditionBuilderBase {
     public constructor(parentConfig?: ConditionWithChildrenBaseConfig | null) {
         super(parentConfig);
     }
@@ -753,9 +753,9 @@ This keeps the hand-off aligned with the current fluent architecture, where buil
 
 Much of the work is how a parent validator or condition selects `FluentConditionBuilder` or `FluentOneConditionBuilder`.
 
-To support `MultiFieldConditionBuilder`, do **not** introduce a new standalone constructor parameter for `valueHostName`.
+To support `FluentMultiFieldConditionBuilder`, do **not** introduce a new standalone constructor parameter for `valueHostName`.
 
-The builders should continue to receive their connection/configuration through the same first parameter path they already use today. `MultiFieldConditionBuilder` should prepare that config object and pass it into the builder.
+The builders should continue to receive their connection/configuration through the same first parameter path they already use today. `FluentMultiFieldConditionBuilder` should prepare that config object and pass it into the builder.
 
 Representative current construction points that support this direction:
 
@@ -787,12 +787,12 @@ This means the design hand-off should stay config-based:
 
 This keeps source selection with emitted condition config, not with a new public constructor convention.
 
-### 3. Update child-condition generator functions to create `MultiFieldConditionBuilder`
+### 3. Update child-condition generator functions to create `FluentMultiFieldConditionBuilder`
 
 This is where the design really enters the code.
 
 The current pattern creates a condition builder directly inside `_genDCWhen(...)`, `_genDCAny(...)`, and related helpers.
-Those are the places that should now create either a `SingleFieldConditionBuilder` or a `MultiFieldConditionBuilder` instead, depending on the surrounding expectations.
+Those are the places that should now create either a `FluentSingleFieldConditionBuilder` or a `FluentMultiFieldConditionBuilder` instead, depending on the surrounding expectations.
 
 #### Current `when` pattern
 
@@ -844,11 +844,11 @@ export function _genDCWhen(
     assertNotNull(childBuilder, 'childBuilder');
     assertFunction(childBuilder);
 
-    let enablerSubject = new SingleFieldConditionBuilder(null);
+    let enablerSubject = new FluentSingleFieldConditionBuilder(null);
     let fluentEnabler = enablerBuilder(enablerSubject);
     let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
 
-    let childSubject = new SingleFieldConditionBuilder(null);
+    let childSubject = new FluentSingleFieldConditionBuilder(null);
     let fluent = childBuilder(childSubject);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { enablerConfig: enablerConditionConfig, childConditionConfig: conditionConfig } as WhenConditionConfig;
@@ -899,7 +899,7 @@ export function _genDCAny(
     assertNotNull(conditionsBuilder, 'conditionsBuilder');
     assertFunction(conditionsBuilder);
 
-    let subject = new MultiFieldConditionBuilder(null);
+    let subject = new FluentMultiFieldConditionBuilder(null);
     let fluent = conditionsBuilder(subject);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AnyMatchConditionConfig;
@@ -915,16 +915,16 @@ This same conversion pattern should be applied to:
 
 ### 5. Add new handler types
 
-The callback types should reflect that callbacks now receive either a `SingleFieldConditionBuilder` or a `MultiFieldConditionBuilder`, not a condition builder directly.
+The callback types should reflect that callbacks now receive either a `FluentSingleFieldConditionBuilder` or a `FluentMultiFieldConditionBuilder`, not a condition builder directly.
 
 Representative target shape:
 
 ```ts
 type SingleFieldConditionBuilderHandler =
-    (builder: SingleFieldConditionBuilder) => FluentOneConditionBuilder;
+    (builder: FluentSingleFieldConditionBuilder) => FluentOneConditionBuilder;
 
 type MultiFieldConditionBuilderHandler =
-    (builder: MultiFieldConditionBuilder) => FluentConditionBuilder;
+    (builder: FluentMultiFieldConditionBuilder) => FluentConditionBuilder;
 ```
 
 Depending on how strictly you want typing to follow the one-condition vs many-condition split, this may later become two handler types. For now, the main design point is simply that the callback input changes.
@@ -949,7 +949,7 @@ At this stage, do **not** start by redesigning all condition methods.
 
 The first migration target is:
 
-* introduce `MultiFieldConditionBuilder`
+* introduce `FluentMultiFieldConditionBuilder`
 * route child-condition callbacks through it
 * prove that generated condition configs correctly preserve inherited vs explicit source selection
 
@@ -958,8 +958,8 @@ Only after that should condition-method signatures be simplified by removing `va
 ### 8. Short implementation notes
 
 * The names `parentValue()` and `fieldValue(...)` are chosen for readability, not because the builder literally carries runtime values.
-* The preferred public builder names are `SingleFieldConditionBuilder` and `MultiFieldConditionBuilder`.
-* They share an abstract base class `FieldConditionBuilderBase`.
+* The preferred public builder names are `FluentSingleFieldConditionBuilder` and `FluentMultiFieldConditionBuilder`.
+* They share an abstract base class `FluentFieldConditionBuilderBase`.
 * The preferred callback parameter name in docs and examples is `subject`.
 * The core implementation concern is whether generated child condition configs omit or populate `valueHostName`.
 * This change should preserve the existing callback model from KD-01.
@@ -1052,7 +1052,7 @@ subject.fieldValue('field2').equalToValue(20);
 
 This change depends on:
 
-* **CH-03** — source selection must already be handled by `SingleFieldConditionBuilder` / `MultiFieldConditionBuilder`
+* **CH-03** — source selection must already be handled by `FluentSingleFieldConditionBuilder` / `FluentMultiFieldConditionBuilder`
 
 Without CH-03, `valueHostName` would still need to be expressed in condition method signatures.
 
@@ -1281,7 +1281,7 @@ Representative examples:
 ```ts
 test('parentValue equalToValue uses inherited runtime source', () => {
     let testItem = createFluent().field('Field1').any(
-        (subject: MultiFieldConditionBuilder) => subject.parentValue().equalToValue(10)
+        (subject: FluentMultiFieldConditionBuilder) => subject.parentValue().equalToValue(10)
     );
 
     // expectation:
@@ -1293,7 +1293,7 @@ test('parentValue equalToValue uses inherited runtime source', () => {
 ```ts
 test('fieldValue equalToValue writes explicit valueHostName', () => {
     let testItem = createFluent().field('Field1').any(
-        (subject: MultiFieldConditionBuilder) => subject.fieldValue('Field2').equalToValue(20)
+        (subject: FluentMultiFieldConditionBuilder) => subject.fieldValue('Field2').equalToValue(20)
     );
 
     // expectation:
@@ -1305,11 +1305,11 @@ test('fieldValue equalToValue writes explicit valueHostName', () => {
 ```ts
 test('requireText supports no-arg and config parameter forms', () => {
     let testItem1 = createFluent().field('Field1').any(
-        (subject: MultiFieldConditionBuilder) => subject.parentValue().requireText()
+        (subject: FluentMultiFieldConditionBuilder) => subject.parentValue().requireText()
     );
 
     let testItem2 = createFluent().field('Field1').any(
-        (subject: MultiFieldConditionBuilder) => subject.parentValue().requireText({ trim: true })
+        (subject: FluentMultiFieldConditionBuilder) => subject.parentValue().requireText({ trim: true })
     );
 
     // expectations:

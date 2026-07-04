@@ -56,13 +56,75 @@
  * 
  * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
  *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
+ *   ```ts
+ *   let fluent = new ValueHostsManagerStartFluent(null);
+ *   fluent.field('Field1').requireText().regExp('pattern').greaterThanOrEqualValue(0);
+ *   fluent.calc('Field2', LookupKey.Number, calcFn);
+ *   fluent.static('Field3');
+ *   ```
+ * - ValidationManagerConfigBuilder - Wrapper around ValidationManagerStartFluent 
+ *   that is used to create a ValidationManagerConfig. 
+ *   It is the main entry point for the developer to create a ValidationManagerConfig.
+ *   It has wrapper functions around field(), static(), and calc() that call the underlying fluent functions.
+ * 
+ *   ```ts
+ *   let builder = new ValidationManagerConfigBuilder();
+ *   builder.field('Field1').requireText().regExp('pattern').greaterThanOrEqualValue(0);
+ *   builder.calc('Field2', LookupKey.Number, calcFn);
+ *   builder.static('Field3');
+ *   ```
  * 
  * - FluentValidatorBuilder - Class that supplies Conditions and Validators
- *   to the preceding FieldValueHost. It is returned by builder.field() and each chained object that follows.
+ *   to the preceding FieldValueHost. It is returned by fluent.field() and each chained object that follows.
+ *   ```ts
+ *   fluent.field(field name) -> FluentValidatorBuilder
+ *   ```
+ *   It exposes functions specific to each Condition class, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
+ *   ```ts
+ *   fluent.field('Field1').requireText(), regExp(), etc
+ *   ```
+ *   Then the individual condition takes over the fluent chain, returning a FluentValidatorBuilder 
+ *   for the next condition.
  * 
- * - FluentConditionBuilder - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
- *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
- *   by builder.conditions()
+ * - FluentSingleFieldConditionBuilder and FluentMultiFieldConditionBuilder - 
+ *   Starts a fluent sequence to create child conditions for a parent condition or validator. 
+ *   At this point, we need to specify the valueHostName used for the upcoming condition,
+ *   similar to how we specify it in fluent.field().
+ *   ```ts
+ *   childbuilder.fieldValue(valueHostName).condition()
+ *   childbuilder.parentValue().condition()
+ *   ```
+ *   Conditions that support child conditions (like when, not, all, any, etc.) will use these builders 
+ *   to create their child conditions.
+ *   ```ts
+ *   childbuilder.field('Field1').all(
+ *      childBuilder -> FluentMultiFieldConditionBuilder) -> FluentValidatorBuilder
+ *   childbuilder.field('Field1').when(
+ *      whenBuilder -> FluentSingleFieldConditionBuilder,
+ *      thenBuilder -> FluentSingleFieldConditionBuilder) -> FluentValidatorBuilder
+ *   ```
+ *   ```ts
+ *   builder.field('Field1').all(
+ *     (allBuilder : FluentMultiFieldConditionBuilder) => {
+ *         allBuilder.fieldValue('Field2').requireText();
+ *         allBuilder.fieldValue('Field3').requireText();
+ *      });
+ *   builder.field('Field1').when(
+ *      (whenBuilder : FluentSingleFieldConditionBuilder) => 
+ *          whenBuilder.fieldValue('Field2').regExp('pattern'),
+ *     (thenBuilder : FluentSingleFieldConditionBuilder) =>
+ *        thenBuilder.fieldValue('Field3').requireText());
+ *   );
+ *   ```
+ * 
+ * - FluentConditionBuilder - Fluent node that is returned by FluentSingleFieldConditionBuilder and FluentMultiFieldConditionBuilder.
+ *   to specify a condition. It has all available conditions as functions, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
+ *   It inherits the valueHostName from the preceding fieldValue() function.
+ *   The ultimate result is the syntax reading left to right.
+ *     ```ts
+ *     builder.fieldValue('Field1').requireText()
+ *     builder.parentValue().lessThanValue(100)
+ *     ```
  * 
  * ## Extending this system with your own fluent functions
  * Create two functions to support chaining to builder.field and builder.conditions().
@@ -70,57 +132,72 @@
  * 
  * Fluent functions should look like this: 
  * @example
- * export type FluentRegExpConditionConfig = Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
- * 
- * function _genCDRegExp(
- *     expression: RegExp | string, ignoreCase?: boolean | null,
- *     conditionConfig?: FluentRegExpConditionConfig | null): RegExpConditionConfig {
- *     let condConfig: RegExpConditionConfig = (conditionConfig ? { ...conditionConfig } : {}) as RegExpConditionConfig;
- *     if (expression != null)
- *         if (expression instanceof RegExp)
- *             condConfig.expression = expression;
- *         else 
- *             condConfig.expressionAsString = expression;
- *     if (ignoreCase != null)
- *         condConfig.ignoreCase = ignoreCase;
- *     return condConfig as RegExpConditionConfig;
- * }
- * function regExp_forValidator(
- *     expression: RegExp | string, ignoreCase?: boolean | null,
- *     conditionConfig?: FluentRegExpConditionConfig | null,
- *     errorMessage?: string | null,
- *     validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder {
- *     return finishFluentValidatorBuilder(this,
- *         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
- *         errorMessage, validatorParameters);
- * }
- * function regExp_forConditions(
- *     valueHostName: ValueHostName | null,
- *     expression: RegExp | string, ignoreCase?: boolean | null,
- *     conditionConfig?: FluentRegExpConditionConfig | null): FluentConditionBuilder {
- *     return finishFluentConditionBuilder(this,
- *         ConditionType.RegExp, valueHostName, _genCDRegExp(expression, ignoreCase, conditionConfig));
- * }
- * 
- * declare module "@plblum/jivs-engine/build/Builder/Fluent"
- * {
- *    export interface FluentValidatorBuilder
- *    {
- * // same definition as the actual function, except use the name the user should enter in chaining
- *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
- *          conditionConfig?: FluentRegExpConditionConfig | null, 
- *          errorMessage?: string | null, 
- *          validatorParameters : FluentRegExpConditionConfig) : FluentValidatorBuilder
- *    }
- *    export interface FluentConditionBuilder
- *    {
- * // same definition as the actual function, except use the name the user should enter in chaining
- *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
- *          conditionConfig?: FluentRegExpConditionConfig) : FluentConditionBuilder
- *    } 
- * }
- * FluentValidatorBuilder.prototype.regExp = regExp_forValidator;
- * FluentConditionBuilder.prototype.regExp = regExp_forConditions;
+```ts
+export type FluentEqualToConditionConfig = Partial<Omit<EqualToConditionConfig, 'conditionType' | 'category' | 'secondValueHostName'>>;
+// core function to convert source parameters into the final conditionConfig object
+// specific to the condition type.
+export function _genDCEqualTo(
+    secondValueHostName: ValueHostName,
+    conditionConfig?: FluentEqualToConditionConfig | null): EqualToConditionConfig {
+    let condConfig = (conditionConfig ? { ...conditionConfig } : {}) as EqualToConditionConfig;
+    if (secondValueHostName != null)
+        condConfig.secondValueHostName = secondValueHostName;
+    return condConfig;
+}
+// for the FluentConditionBuilder to show its equalTo function.
+function equalTo_ForConditions(
+    secondValueHostName: ValueHostName,
+    conditionConfig?: FluentEqualToConditionConfig | null): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.EqualTo, _genDCEqualTo(secondValueHostName, conditionConfig), valueHostName);
+}
+
+// for the FluentValidatorBuilder to show its equalTo function.
+export type FluentEqualToValidatorConfig = FluentEqualToConditionConfig & FluentValidatorConfig;
+
+function equalTo(
+    secondValueHostName: ValueHostName,
+    errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+function equalTo(
+    secondValueHostName: ValueHostName,
+    validatorParameters: FluentEqualToValidatorConfig): FluentValidatorBuilder;
+function equalTo(
+    secondValueHostName: ValueHostName,
+    args2?: FluentEqualToConditionConfig | string | null,
+    args3?: string | null): FluentValidatorBuilder {
+    let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        resolveValidatorOverloadArgs<EqualToConditionConfig>(args2, args3);
+    
+    return finishFluentValidatorBuilder(this,
+        ConditionType.EqualTo, _genDCEqualTo(secondValueHostName, conditionConfig),
+        errorMessage, summaryMessage, validatorParameters);
+}
+
+ declare module "@plblum/jivs-engine/build/Builder/Fluent"
+ {
+    export interface FluentValidatorBuilder
+    {
+ // overloads for the equalTo function in two formats:
+ // 1. supplies error message + summary message (optionally)
+ // 2. supplies validatorParameters, which can include error message + summary message and more
+        equalTo(
+            secondValueHostName: ValueHostName,
+            errorMessage?: string | null,
+            summaryMessage?: string | null): FluentValidatorBuilder;
+        equalTo(
+            secondValueHostName: ValueHostName,
+            validatorParameters: FluentEqualToValidatorConfig): FluentValidatorBuilder;
+    }
+    export interface FluentConditionBuilder
+    {
+        equalTo(
+            secondValueHostName: ValueHostName,
+            conditionConfig?: FluentEqualToConditionConfig | null): FluentConditionBuilder;
+    } 
+ }
+ FluentValidatorBuilder.prototype.equalTo = equalTo;
+ FluentConditionBuilder.prototype.equalTo = equalTo_ForConditions;
+ ```
  * 
  * @module Builder/Fluent
  * ## Switching to a different condition library
@@ -590,6 +667,13 @@ export interface IFluentConditionBuilder
     parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
+     * The valueHostName to pass to the child conditions by FluentFieldConditionBuilderBase classes.
+     * If assigned, the add method will assign it to the conditionConfig for you.
+     * It may be null, a valid value to pass along. If undefined, add shouldn't take any action.
+     */
+    valueHostName?: ValueHostName | null;
+
+    /**
      * For any implementation of a fluent function that works with FluentConditionBuilder.
      * It takes the parameters passed into that function
      * and assemble the final conditionConfig.
@@ -620,7 +704,7 @@ export class FluentConditionBuilder extends FluentBuilderBase implements IFluent
      * When assigned, that instance gets conditionConfigs populated and 
      * there is no need to get a value from configs property.
      */
-    constructor(parentConfig: ConditionWithChildrenBaseConfig | null)
+    constructor(parentConfig: ConditionWithChildrenBaseConfig | null, parentValueHostName?: ValueHostName | null)
     {
         super();
         if (!parentConfig)
@@ -628,6 +712,7 @@ export class FluentConditionBuilder extends FluentBuilderBase implements IFluent
         if (!parentConfig.conditionConfigs)
             parentConfig.conditionConfigs = [];
         this._parentConfig = parentConfig;
+        this._valueHostName = parentValueHostName;
     }
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
@@ -637,6 +722,17 @@ export class FluentConditionBuilder extends FluentBuilderBase implements IFluent
         return this._parentConfig;
     }
     private readonly _parentConfig: ConditionWithChildrenBaseConfig;
+
+    /**
+     * The valueHostName to pass to the child conditions by FluentFieldConditionBuilderBase classes.
+     * If assigned, the add method will assign it to the conditionConfig for you.
+     * It may be null, a valid value to pass along. If undefined, add shouldn't take any action.
+     */
+    public get valueHostName(): ValueHostName | null | undefined
+    {
+        return this._valueHostName;
+    }
+    private _valueHostName: ValueHostName | null | undefined;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionBuilder.
@@ -652,6 +748,14 @@ export class FluentConditionBuilder extends FluentBuilderBase implements IFluent
         assertNotNull(conditionConfig, 'conditionConfig');
         if (conditionType)
             conditionConfig.conditionType = conditionType;
+        if (this.valueHostName !== undefined) {
+            // We don't really know if the conditionConfig instance supports valueHostName,
+            // but we can assign it anyway. If it doesn't, it will be ignored.
+            // Alt technique not used: Require conditionConfig creators to supply the property explicitly
+            // leaving it null they didn't assign it. That would be a lot of work for the user, and we want to make it easy.
+            if ((<any>conditionConfig)['valueHostName'] == null) // null or undefined
+                (<any>conditionConfig)['valueHostName'] = this.valueHostName;
+        }
         this.parentConfig.conditionConfigs!.push(conditionConfig as ConditionConfig);
     }
 }
@@ -723,31 +827,6 @@ export function finishFluentValidatorBuilder(thisFromCaller: any,
     throw new FluentSyntaxRequiredError();
 }
 
-/**
- * Call from within a fluent function once you have all parameters fully setup.
- * It will complete the setup.
- * @param thisFromCaller 
- * Should be a FluentValidatorBuilder. Fluent function expects to pass its value
- * of 'this' here. However, its possible self is not FluentValidatorBuilder.
- * We'll throw an exception here in that case.
- * @param conditionType 
- * @param conditionConfig 
- * @param errorMessage 
- * @param validatorParameters 
- * @returns The same instance passed into the first parameter to allow for chaining.
- */
-export function finishFluentValidatorBuilder_OBSOLETE(thisFromCaller: any, 
-    conditionType: string | null,
-    conditionConfig: Partial<ConditionConfig>,
-    errorMessage: string | null | undefined,
-    validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorBuilder
-{
-    if (thisFromCaller instanceof FluentValidatorBuilder) {
-        thisFromCaller.add(conditionType, conditionConfig, errorMessage, null, validatorParameters);
-        return thisFromCaller;
-    }
-    throw new FluentSyntaxRequiredError();
-}
 
 /**
  * Return result from resolveValidatorOverloadArgs() to allow for optional parameters in fluent functions.

@@ -9,7 +9,7 @@
 
 import {
     FluentOneConditionBuilderHandler,
-    FluentValidatorBuilder, FluentValidatorConfig, FluentValidatorOverloadArgs, finishFluentValidatorBuilder, finishFluentValidatorBuilder_OBSOLETE,
+    FluentValidatorBuilder, FluentValidatorConfig, FluentValidatorOverloadArgs, finishFluentValidatorBuilder,
     resolveValidatorOverloadArgs
 } from "./Fluent";
 import { ConditionType } from "../Conditions/ConditionTypes";

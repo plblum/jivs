@@ -10,8 +10,7 @@ import { ValueHostName } from "../DataTypes/BasicTypes";
 import { toIDisposable } from "../Interfaces/General_Purpose";
 import { ErrorResponseCondition } from "./ConditionBase";
 import { ConditionType } from "./ConditionTypes";
-import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
-import { valueForLog } from "../Utilities/Utilities";
+import { LoggingLevel } from "../Interfaces/LoggerService";
 
 /**
  * Configuration for WhenCondition
