@@ -915,17 +915,24 @@ export class FluentFactory
  * For more on setting up your own fluent function, see @link Builder/Fluent|Fluent.
  */
 
-export function customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+export function customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
     errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder
+    summaryMessage?: string | null): FluentValidatorBuilder;
+export function customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+    validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+export function customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+    arg1?: FluentValidatorConfig | string | null,
+    arg2?: string | null): FluentValidatorBuilder
 {
     if (this instanceof FluentValidatorBuilder) {
+        let { conditionConfig, errorMessage, summaryMessage, validatorParameters } =
+            resolveValidatorOverloadArgs<ConditionConfig>(arg1, arg2);
         let ivConfig: ValidatorConfig = validatorParameters ?
             { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
             { conditionConfig: null}; 
         ivConfig.conditionCreator = conditionCreator;
         let self = this as FluentValidatorBuilder;
-        self.add(null, null, errorMessage, null /* summary */, ivConfig);
+        self.add(null, null, errorMessage, summaryMessage, ivConfig);
         return self;
     }
     throw new FluentSyntaxRequiredError();
@@ -947,7 +954,9 @@ export declare interface FluentValidatorBuilder
 {
     customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
-        validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder | ValidatorConfig;
+        summaryMessage?: string | null): FluentValidatorBuilder | ValidatorConfig;
+    customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+        validatorParameters: FluentValidatorConfig): FluentValidatorBuilder | ValidatorConfig;
 }
 
 

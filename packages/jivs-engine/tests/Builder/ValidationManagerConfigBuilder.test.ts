@@ -288,16 +288,14 @@ describe('Fluent chaining on build(vmConfig).field', () => {
     });
 });
 describe('customRule', () => {
-    test('Provide a valid function and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+    test('customRule(fn, error message, summary message), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
-            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
-        },
+                return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+            },
             'Error',
-            {
-                summaryMessage: 'Summary'
-            });
+            'Summary');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
@@ -306,7 +304,7 @@ describe('customRule', () => {
         expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
     });
-    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
+    test('customRule(fn), creates a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
@@ -320,14 +318,98 @@ describe('customRule', () => {
         expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
     });
-
-    test('Stand-alone call throws', () => {
-        expect(() => customRule((requester) => {
+    // customRule(fn, error message, null)
+    test('customRule(fn, error message, null), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
+            null);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
+        expect(parentConfig.validatorConfigs!.length).toBe(1);
+        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
+        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
+        expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
+        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+    });
+    // customRule(fn, null, summary message)
+    test('customRule(fn, null, summary message), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.field('Field1').customRule((requester) => {
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+        },
+            null,
+            'Summary');
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
+        expect(parentConfig.validatorConfigs!.length).toBe(1);
+        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
+        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
+        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
+        expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
+    });
+    // customRule(fn, { error message, summary message })
+    test('customRule(fn, { error message, summary message }), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.field('Field1').customRule((requester) => {
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+        },
             {
+                errorMessage: 'Error',
                 summaryMessage: 'Summary'
-            })).toThrow();
+            });
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
+        expect(parentConfig.validatorConfigs!.length).toBe(1);
+        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
+        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
+        expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
+        expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
+    });
+    // customRule(fn, { })
+    test('customRule(fn, { }), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.field('Field1').customRule((requester) => {
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+        },
+            {
+            });
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
+        expect(parentConfig.validatorConfigs!.length).toBe(1);
+        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
+        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
+        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
+        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+    });
+    // customRule(fn, null)
+    test('customRule(fn, null), creates FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.field('Field1').customRule((requester) => {
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+        },
+            null);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
+        expect(parentConfig.validatorConfigs!.length).toBe(1);
+        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
+        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
+        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
+        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+    });
+
+    test('Stand-alone call throws', () => {
+        expect(() => customRule((requester) => {
+                return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
+            },
+            'Error',
+            'Summary')).toThrow();
     });
 });
