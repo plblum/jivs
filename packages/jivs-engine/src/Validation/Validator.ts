@@ -180,7 +180,7 @@ export class Validator implements IValidator {
                 // errors creating these conditions are handled internally
                 // and bad conditions get replaced by ErrorResponseCondition
                 // so we can continue to execute the validation.
-                let { enabler, child } = this._condition.extractConditions(this.validationManager);
+                let { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.validationManager);
                 this._condition = child;
                 this._enabler = enabler;
             }

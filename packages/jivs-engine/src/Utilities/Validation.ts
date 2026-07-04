@@ -25,7 +25,7 @@ export function resolveErrorCode(ivConfig: ValidatorConfig): string
         if (ct === ConditionType.When)
         {
             let whenConfig = ivConfig.conditionConfig as WhenConditionConfig;
-            ct = whenConfig.childConditionConfig?.conditionType;
+            ct = whenConfig.thenConfig?.conditionType;
         }
         if (ct)
             return ct

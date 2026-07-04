@@ -150,7 +150,7 @@ export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<Value
      */
     validatorResults?: Array<ValidatorConfigCAResult>;
     /**
-     * If the condition.enablerConfig is setup, this is its analysis.
+     * If the valueHost.enablerConfig is setup, this is its analysis.
      */
     enablerConditionResult?: ConditionConfigCAResult;
 }

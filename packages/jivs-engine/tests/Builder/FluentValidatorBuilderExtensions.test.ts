@@ -3294,7 +3294,7 @@ describe('not as a validator of a field()', () => {
 });
 
 describe('when as a validator of a field()', () => {
-    test('when((no when), (no then)), creates ValidatorConfig with WhenCondition with type=When, enablerConfig={} and childConditionConfig={}', () => {
+    test('when((no when), (no then)), creates ValidatorConfig with WhenCondition with type=When, whenToEnableConfig={} and childConditionConfig={}', () => {
 
         let testItem = createFluent().field('Field1').when(
             (whenBuilder) => whenBuilder,
@@ -3302,12 +3302,12 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {},
-                childConditionConfig: {}
+                whenToEnableConfig: {},
+                thenConfig: {}
             }
         });
     });
-    test('when((cond), (cond)), creates ValidatorConfig with WhenCondition with type=When and both enablerConfig and childConditionConfigs populated', () => {
+    test('when((cond), (cond)), creates ValidatorConfig with WhenCondition with type=When and both whenToEnableConfig and childConditionConfigs populated', () => {
 
         let testItem = createFluent().field('Field1')
             .when(
@@ -3316,11 +3316,11 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <any>{
+                whenToEnableConfig: <any>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/
                 },
-                childConditionConfig: <any>{
+                thenConfig: <any>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 }
@@ -3337,12 +3337,12 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <any>{
+                whenToEnableConfig: <any>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/,
                     valueHostName: 'F2'
                 },
-                childConditionConfig: <any>{
+                thenConfig: <any>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 }
@@ -3362,12 +3362,12 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <any>{
+                whenToEnableConfig: <any>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/,
                     valueHostName: 'F2'
                 },
-                childConditionConfig: <any>{
+                thenConfig: <any>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 }
@@ -3385,12 +3385,12 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <any>{
+                whenToEnableConfig: <any>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/,
                     valueHostName: 'F2'
                 },
-                childConditionConfig: <any>{
+                thenConfig: <any>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 }
@@ -3408,8 +3408,8 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When, 
-                enablerConfig: {},
-                childConditionConfig: {}
+                whenToEnableConfig: {},
+                thenConfig: {}
             },  
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -3423,8 +3423,8 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When, 
-                enablerConfig: {},
-                childConditionConfig: {}
+                whenToEnableConfig: {},
+                thenConfig: {}
             }
         });
     });
@@ -3436,8 +3436,8 @@ describe('when as a validator of a field()', () => {
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{ 
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When, 
-                enablerConfig: {},
-                childConditionConfig: {}
+                whenToEnableConfig: {},
+                thenConfig: {}
             }
         });
     });
@@ -3452,15 +3452,15 @@ describe('when as a validator of a field()', () => {
             .when((whenBuilder)=> whenBuilder.requireText(null, 'F1').requireText(null, 'F2'),
                 (thenBuilder) => thenBuilder)).toThrow();
     });        
-    test('Null as the enabler function parameter throws', () => {
+    test('Null as the whenToEnable function parameter throws', () => {
         let fluent = createFluent();
         expect(() => fluent.field('Field1').when(null!, (thenBuilder) => thenBuilder,
-            'Error')).toThrow(/enablerBuilder/);
+            'Error')).toThrow(/whenBuilder/);
     });
-    test('Null as the child condition function parameter throws', () => {
+    test('Null as the then condition function parameter throws', () => {
         let fluent = createFluent();
         expect(() => fluent.field('Field1').when((whenBuilder)=> whenBuilder, null!,
-            'Error')).toThrow(/childBuilder/);
+            'Error')).toThrow(/thenBuilder/);
     });    
     test('Non-function as the child function parameter throws', () => {
         let fluent = createFluent();

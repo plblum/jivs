@@ -296,11 +296,11 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <EqualToConditionConfig>{
+                whenToEnableConfig: <EqualToConditionConfig>{
                     conditionType: ConditionType.EqualTo,
                     valueHostName: null
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -317,10 +317,10 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: 'UnknownType'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -336,10 +336,10 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: AlwaysMatchesConditionType
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType:  'UnknownType'
                 }
             }            
@@ -881,11 +881,11 @@ describe('Validator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
+                whenToEnableConfig: <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -896,11 +896,11 @@ describe('Validator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
+                whenToEnableConfig: <RequireTextConditionConfig>{
                     conditionType: IsUndeterminedConditionType,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -936,12 +936,12 @@ describe('Validator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
+                whenToEnableConfig: <RequireTextConditionConfig>{
                 // the text value is 'ABC', which causes this condition to return Match
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }

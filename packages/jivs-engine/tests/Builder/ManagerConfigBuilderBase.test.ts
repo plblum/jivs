@@ -916,11 +916,11 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             errorCode: ConditionType.RegExp,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: ConditionType.RequireText
                 
                 },
-                childConditionConfig: <RegExpConditionConfig>{
+                thenConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/
                 }
@@ -978,11 +978,11 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             errorCode: ConditionType.RegExp,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: ConditionType.RequireText
                 
                 },
-                childConditionConfig: <RegExpConditionConfig>{
+                thenConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/
                 }

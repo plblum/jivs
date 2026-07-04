@@ -764,25 +764,25 @@ function not(
  * @internal
  */
 export function _genDCWhen(
-    enablerBuilder: FluentOneConditionBuilderHandler,
-    childBuilder: FluentOneConditionBuilderHandler): WhenConditionConfig {
-    assertNotNull(enablerBuilder, 'enablerBuilder');
-    assertFunction(enablerBuilder);
-    assertNotNull(childBuilder, 'childBuilder');
-    assertFunction(childBuilder);
+    whenBuilder: FluentOneConditionBuilderHandler,
+    thenBuilder: FluentOneConditionBuilderHandler): WhenConditionConfig {
+    assertNotNull(whenBuilder, 'whenBuilder');
+    assertFunction(whenBuilder);
+    assertNotNull(thenBuilder, 'thenBuilder');
+    assertFunction(thenBuilder);
 
     let fluentEnabler = new FluentOneConditionBuilder(null);
-    enablerBuilder(fluentEnabler);
+    whenBuilder(fluentEnabler);
     let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
 
     let fluent = new FluentOneConditionBuilder(null);
-    childBuilder(fluent);
+    thenBuilder(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
-    return { enablerConfig: enablerConditionConfig, childConditionConfig: conditionConfig } as WhenConditionConfig;
+    return { whenToEnableConfig: enablerConditionConfig, thenConfig: conditionConfig } as WhenConditionConfig;
 }
 function when(
-    enablerBuilder: FluentOneConditionBuilderHandler,
-    childBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
+    whenBuilder: FluentOneConditionBuilderHandler,
+    thenBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
     return finishFluentConditionBuilder(this,
-        ConditionType.When, _genDCWhen(enablerBuilder, childBuilder));
+        ConditionType.When, _genDCWhen(whenBuilder, thenBuilder));
 }

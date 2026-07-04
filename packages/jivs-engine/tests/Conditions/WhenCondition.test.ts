@@ -30,13 +30,13 @@ describe('WhenCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
-        let enablerConfig: WhenConditionConfig = {
+        let whenToEnableConfig: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: resultTypeToConditionType(enablerResult) },
-            childConditionConfig: { conditionType: resultTypeToConditionType(childResult) }
+            whenToEnableConfig: { conditionType: resultTypeToConditionType(enablerResult) },
+            thenConfig: { conditionType: resultTypeToConditionType(childResult) }
         };
 
-        let testItem = new WhenCondition(enablerConfig);
+        let testItem = new WhenCondition(whenToEnableConfig);
         
         expect(testItem.evaluate(null, vm)).toBe(expectedResult);
         expect(testItem.evaluate(vh, vm)).toBe(expectedResult);
@@ -69,8 +69,8 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: 'UnknownType' }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: 'UnknownType' }
         };
 
         let testItem = new WhenCondition(config);
@@ -91,17 +91,17 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: null!
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: null!
         };
 
         let testItem = new WhenCondition(config);
         
         expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
-        expect(logger.findMessage('childConditionConfig: must be assigned to a Condition', LoggingLevel.Error, null)).toBeTruthy();
+        expect(logger.findMessage('thenConfig: must be assigned', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
-    test('with invalid enablerConfig, logs error and evaluate returns undetermined', () => {
+    test('with invalid whenToEnableConfig, logs error and evaluate returns undetermined', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
@@ -112,8 +112,8 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: 'UnknownType' },
-            childConditionConfig: { conditionType: AlwaysMatchesConditionType }
+            whenToEnableConfig: { conditionType: 'UnknownType' },
+            thenConfig: { conditionType: AlwaysMatchesConditionType }
         };
 
         let testItem = new WhenCondition(config);
@@ -122,7 +122,7 @@ describe('WhenCondition', () => {
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });        
-    test('with null enablerConfig, logs error and evaluate returns undetermined', () => {
+    test('with null whenToEnableConfig, logs error and throws', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
@@ -133,14 +133,14 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: null!,
-            childConditionConfig: { conditionType: AlwaysMatchesConditionType }
+            whenToEnableConfig: null!,
+            thenConfig: { conditionType: AlwaysMatchesConditionType }
         };
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('enablerConfig: must be assigned to a Condition', LoggingLevel.Warn, LoggingCategory.Configuration)).toBeTruthy();
+        expect(() => testItem.evaluate(null, vm)).toThrow(CodingError);
+        expect(logger.findMessage('whenToEnableConfig: must be assigned', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
 
     });    
 
@@ -153,8 +153,8 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: {
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: {
                 conditionType: EvaluatesAsPromiseConditionType
             }
         };
@@ -172,21 +172,21 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType }
         };
 
         let testItem = new WhenCondition(config);
         let result = testItem.extractConditions(vm);
-        expect(result.enabler.conditionType).toBe(AlwaysMatchesConditionType);
-        expect(result.child.conditionType).toBe(NeverMatchesConditionType);
+        expect(result.whenToEnableCondition.conditionType).toBe(AlwaysMatchesConditionType);
+        expect(result.thenCondition.conditionType).toBe(NeverMatchesConditionType);
     });
 
     test('conditionType is child condition value', () => {
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
         expect(testItem.conditionType).toBe(NeverMatchesConditionType);
@@ -195,8 +195,8 @@ describe('WhenCondition', () => {
     test('category is Children', () => {
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Children);
@@ -204,8 +204,8 @@ describe('WhenCondition', () => {
     test('category is overridden', () => {
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType },
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType },
             category: ConditionCategory.Contents
         };
         let testItem = new WhenCondition(config);
@@ -218,11 +218,11 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig:   <RequireTextConditionConfig>{
+            whenToEnableConfig:   <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 valueHostName: 'Field2'
             },
-            childConditionConfig: 
+            thenConfig: 
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
@@ -241,11 +241,11 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig:   <RequireTextConditionConfig>{
+            whenToEnableConfig:   <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 valueHostName: 'Field1'
             },
-            childConditionConfig: 
+            thenConfig: 
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
@@ -264,8 +264,8 @@ describe('WhenCondition', () => {
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig:   { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: 
+            whenToEnableConfig:   { conditionType: AlwaysMatchesConditionType },
+            thenConfig: 
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
@@ -285,8 +285,8 @@ describe('WhenCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
         testItem.evaluate(null, vm);    // ensures conditions are created
@@ -301,8 +301,8 @@ describe('WhenCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: DisposableConditionType },
-            childConditionConfig: { conditionType: NeverMatchesConditionType }
+            whenToEnableConfig: { conditionType: DisposableConditionType },
+            thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
         testItem.evaluate(null, vm);    // ensures conditions are created
@@ -318,8 +318,8 @@ describe('WhenCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            enablerConfig: { conditionType: AlwaysMatchesConditionType },
-            childConditionConfig: { conditionType: DisposableConditionType }
+            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
+            thenConfig: { conditionType: DisposableConditionType }
         };
         let testItem = new WhenCondition(config);
         testItem.evaluate(null, vm);    // ensures conditions are created

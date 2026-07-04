@@ -169,6 +169,21 @@ export class CapturingLogger extends LoggerServiceBase
         }
         return null;
     }
+
+    public toConsole(): void {
+        for (let capture of this.captured) {
+            let msg = `[${LoggingLevel[capture.level]}] ${capture.message}`;
+            if (capture.type)
+                msg += ` [type: ${capture.typeAsString}]`;
+            if (capture.feature)
+                msg += ` [feature: ${capture.feature}]`;
+            if (capture.identity)
+                msg += ` [identity: ${capture.identity}]`;
+            if (capture.data)
+                msg += ` [data: ${JSON.stringify(capture.data)}]`;
+            console.log(msg);
+        }
+    }
 }
 
 export interface CapturedLogDetails extends LogDetails

@@ -583,11 +583,11 @@ describe('combineWithRule', () => {
                     errorCode: ConditionType.RequireText,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
-                        enablerConfig: <RegExpConditionConfig>{
+                        whenToEnableConfig: <RegExpConditionConfig>{
                                 conditionType: ConditionType.RegExp,
                                 expression: /abc/               
                         },
-                        childConditionConfig : {
+                        thenConfig : {
                                 conditionType: ConditionType.RequireText
                             }
                             

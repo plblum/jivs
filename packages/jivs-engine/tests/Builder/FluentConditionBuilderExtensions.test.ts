@@ -1191,31 +1191,31 @@ describe('not on conditions', () => {
 
 
 describe('when on conditions', () => {
-    test('With empty enabler and child conditions, creates WhenConditionConfig with type=When, enablerConfig={} and childConditionConfig={}', () => {
+    test('With empty enabler and child conditions, creates WhenConditionConfig with type=When, whenToEnableConfig={} and thenConfig={}', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().when(
-            (enablerBuilder) => enablerBuilder,
+            (whenBuilder) => whenBuilder,
             (childBuilder) => childBuilder);
         TestFluentConditionBuilder(testItem, <WhenConditionConfig>{
             conditionType: ConditionType.When,
-            enablerConfig: {},
-            childConditionConfig: {}
+            whenToEnableConfig: {},
+            thenConfig: {}
            });
     });
     test('With child condition setup with requireText and enabler with regexp, creates WhenConditionConfig with type=When and conditionConfigs populated', () => {
 
         let testItem = createFluent().conditions()
-            .when((enablerBuilder)=> enablerBuilder.regExp(/abc/, null, null, 'F2'),
+            .when((whenBuilder)=> whenBuilder.regExp(/abc/, null, null, 'F2'),
                 (childBuilder) => childBuilder.requireText(null, 'F1'));
             TestFluentConditionBuilder(testItem, <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <any>{
+                whenToEnableConfig: <any>{
                     conditionType: ConditionType.RegExp,
                     expression: /abc/,
                     valueHostName: 'F2'
                 },
-                childConditionConfig: <any>{
+                thenConfig: <any>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 }
@@ -1223,28 +1223,28 @@ describe('when on conditions', () => {
     });    
     test('When there are 2 child conditions, throws', () => {
         expect(() => createFluent().conditions()
-            .when((enablerBuilder)=>enablerBuilder,
+            .when((whenBuilder)=>whenBuilder,
                 (childBuilder) => childBuilder.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
     });    
     test('When there are 2 enabler conditions, throws', () => {
         expect(() => createFluent().conditions()
-            .when((enablerBuilder)=>enablerBuilder.requireText(null, 'F1').requireText(null, 'F2'),
+            .when((whenBuilder)=>whenBuilder.requireText(null, 'F1').requireText(null, 'F2'),
                 (childBuilder) => childBuilder)).toThrow();
     });        
-    test('Null as the child condition function parameter throws', () => {
+    test('Null as the thenCondition function parameter throws', () => {
         let fluent = createFluent();
-        expect(()=> fluent.conditions().when((enablerBuilder)=>enablerBuilder, null!)).toThrow(/childBuilder/);
+        expect(()=> fluent.conditions().when((whenBuilder)=>whenBuilder, null!)).toThrow(/thenBuilder/);
     });
     test('Null as the enabler condition function parameter throws', () => {
         let fluent = createFluent();
-        expect(()=> fluent.conditions().when(null!, (childBuilder) => childBuilder)).toThrow(/enablerBuilder/);
+        expect(()=> fluent.conditions().when(null!, (thenBuilder) => thenBuilder)).toThrow(/whenBuilder/);
     });    
     test('Non-function as the child function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.conditions().when((enablerBuilder) => enablerBuilder, {} as any)).toThrow(/Function expected/);
+        expect(() => fluent.conditions().when((whenBuilder) => whenBuilder, {} as any)).toThrow(/Function expected/);
     });    
     test('Non-function as the enabler function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.conditions().when({} as any, (childBuilder) => childBuilder)).toThrow(/Function expected/);
+        expect(() => fluent.conditions().when({} as any, (thenBuilder) => thenBuilder)).toThrow(/Function expected/);
     });        
 });

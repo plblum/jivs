@@ -138,13 +138,17 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     /**
      * Utility to create a condition to use as a child condition.
      * It uses the conditionFactory. If the factory throws an exception, it logs the error
-     * and returns a condition that always returns Undetermined to allow execution to continue.
+     * and returns ErrorResponseCondition that always returns Undetermined to allow execution to continue.
+     * Always check for ErrorResponseCondition and assign it to the instance field anyway, 
+     * but then call throwInvalidPropertyData() to log and throw an exception.
      * @param config 
      * @param services 
-     * @returns 
+     * @returns Condition created including ErrorResponseCondition if it could not be created.
      */
     protected generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
 
+        if (!config)
+            return new ErrorResponseCondition(new CodingError('ConditionConfig is unassigned.'));
         try
         {
             return services.conditionFactory.create(config);
@@ -154,11 +158,10 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
             let err = ensureError(e);
             this.logger(services).error(err);
 
-            return new ErrorResponseCondition();
+            return new ErrorResponseCondition(e as Error);
         }
             // expect exceptions here for invalid Configs
     }
-
 
     /**
      * Converts the given value and lookup key using the provided conversion lookup key.
@@ -276,7 +279,6 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         const msg = 'lacks value to evaluate';
         this.logInvalidPropertyData(propertyName, msg, services);
     }
-
 }
 
 /** 
@@ -285,8 +287,15 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
 */
 export class ErrorResponseCondition implements ICondition
 {
+    constructor(error?: Error) {
+        this.error = error;
+    }
     public readonly conditionType: string = ConditionType.Unknown;
     public readonly category: ConditionCategory = ConditionCategory.Undetermined;
+    /**
+     * Exposes the exception that caused this condition to be created.
+     */
+    public readonly error?: Error;
     public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
     }

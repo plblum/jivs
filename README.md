@@ -966,12 +966,12 @@ Here are the Condition-building functions of the Builder API:
  
   ```ts
   builder.field('fieldname').when(
-     (enablerBuilder) => enablerBuilder.equalTo(true, null, 'anotherFieldName'),
-     (childBuilder) => childBuilder.regExp(/[ABC]/);
+     (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
+     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/);
   builder.field('fieldname').when(
-     (enablerBuilder) => enablerBuilder.equalTo(true, null, 'anotherFieldName'),
-     (childBuilder) => childBuilder.regExp(/[ABC]/, 
-        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
+     (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
+     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/),
+        { errorMessage: 'Omit these letters: ABC', severity: ValidatorSeverity.Severe });
   ```
   For more, see [Using the WhenCondition](#using-the-whencondition-to-enable-another-condition).
 
@@ -1122,17 +1122,22 @@ Example: RequireText is only enabled if 'CheckBox1' has a value
 ...
 builder.field('CheckBox1', LookupKey.String);
 builder.field('TextBox1', LookupKey.String)
-   .when((enablerBuilder)=>enablerBuilder.requireText(null, 'CheckBox1'),
-         (childBuilder)=>childBuilder.requireText());
+   .when((whenBuilder)=> whenBuilder.fieldValue('CheckBox1').requireText(),
+         (thenBuilder)=> thenBuilder.parentValue().requireText());
 ```
 Example: Regular expression for postal code depends on culture ID
 ```ts
 builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
 builder.field('PostalCode')
-   .when((enablerBuilder)=> enablerBuilder.equalTo('US'), (childBuilder)=>childBuilder.regExp(/^\d{5}(\s\d{4})?$/))
-   .when((enablerBuilder)=> enablerBuilder.equalTo('CA'), (childBuilder)=>childBuilder.regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
-   .when((enablerBuilder)=> enablerBuilder.equalTo('MX'), (childBuilder)=>childBuilder.regExp(/^\d{5}$/));
-
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('US'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('CA'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('MX'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}$/));
 ```
 
 ### Using the NotCondition to reverse the result of another condition
