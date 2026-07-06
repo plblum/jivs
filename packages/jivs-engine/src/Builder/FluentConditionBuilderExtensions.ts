@@ -47,7 +47,7 @@ declare module "./../Builder/Fluent"
             minimum: any, maximum: any,
             valueHostName?: ValueHostName): FluentConditionBuilder;
         not(
-            childBuilder: FluentOneConditionBuilderHandler): FluentOneConditionBuilder;
+            childBuilder: FluentSingleFieldConditionBuilderHandler): FluentOneConditionBuilder;
         when(
             enablerBuilder: FluentSingleFieldConditionBuilderHandler,
             childBuilder: FluentSingleFieldConditionBuilderHandler): FluentOneConditionBuilder;
@@ -106,12 +106,12 @@ declare module "./../Builder/Fluent"
             conditionConfig?: FluentStringLengthConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionBuilder;
         all(
-            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder;
         any(
-            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder;
         countMatches(
             minimum: number | null, maximum: number | null,
-            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder;
         
         positive(
             valueHostName?: ValueHostName): FluentConditionBuilder;
@@ -634,17 +634,20 @@ function stringLength(
  * @internal
  */
 export function _genDCAll(
-    conditionsBuilder: FluentConditionBuilderHandler): AllMatchConditionConfig {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): AllMatchConditionConfig {
     assertNotNull(conditionsBuilder, 'conditionsBuilder');
     assertFunction(conditionsBuilder);
-    
-    let fluent = new FluentConditionBuilder(null);
-    conditionsBuilder(fluent);
-    let conditionConfigs = fluent.parentConfig.conditionConfigs;
+    let thisConfig: AllMatchConditionConfig = {
+        conditionType: ConditionType.All,
+        conditionConfigs: []
+    };
+    let fluentBuilder = new FluentMultiFieldConditionBuilder(thisConfig);
+    conditionsBuilder(fluentBuilder);
+    let conditionConfigs = thisConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AllMatchConditionConfig;
 }
 function all(
-    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.All, _genDCAll(conditionsBuilder));
 }
@@ -654,17 +657,21 @@ function all(
  * @internal
  */
 export function _genDCAny(
-    conditionsBuilder: FluentConditionBuilderHandler): AnyMatchConditionConfig {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): AnyMatchConditionConfig {
     assertNotNull(conditionsBuilder, 'conditionsBuilder');
     assertFunction(conditionsBuilder);
     
-    let fluent = new FluentConditionBuilder(null);
-    conditionsBuilder(fluent);
-    let conditionConfigs = fluent.parentConfig.conditionConfigs;
+    let thisConfig: AnyMatchConditionConfig = {
+        conditionType: ConditionType.Any,
+        conditionConfigs: []
+    };
+    let fluentBuilder = new FluentMultiFieldConditionBuilder(thisConfig);
+    conditionsBuilder(fluentBuilder);
+    let conditionConfigs = thisConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AnyMatchConditionConfig;
 }
 function any(
-    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.Any,  _genDCAny(conditionsBuilder));
 }
@@ -677,13 +684,17 @@ function any(
 export function _genDCCountMatches(
     minimum: number | null,
     maximum: number | null,
-    conditionsBuilder: FluentConditionBuilderHandler): CountMatchesConditionConfig {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): CountMatchesConditionConfig {
     assertNotNull(conditionsBuilder, 'conditionsBuilder');
     assertFunction(conditionsBuilder);
     
-    let fluent = new FluentConditionBuilder(null);
-    conditionsBuilder(fluent);
-    let conditionConfigs = fluent.parentConfig.conditionConfigs;
+    let thisConfig: CountMatchesConditionConfig = {
+        conditionType: ConditionType.CountMatches,
+        conditionConfigs: []
+    };
+    let fluentBuilder = new FluentMultiFieldConditionBuilder(thisConfig);
+    conditionsBuilder(fluentBuilder);
+    let conditionConfigs = thisConfig.conditionConfigs;
 
     let condConfig: CountMatchesConditionConfig =
         { conditionConfigs: conditionConfigs } as CountMatchesConditionConfig;
@@ -696,7 +707,7 @@ export function _genDCCountMatches(
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditionsBuilder));
 }
@@ -749,17 +760,17 @@ function maxDecimals(maxDecimals: number,
  * @internal
  */
 export function _genDCNot(
-    childBuilder: FluentOneConditionBuilderHandler): NotConditionConfig {
+    childBuilder: FluentSingleFieldConditionBuilderHandler): NotConditionConfig {
     assertNotNull(childBuilder, 'childBuilder');
     assertFunction(childBuilder);
     
-    let fluent = new FluentOneConditionBuilder(null);
-    childBuilder(fluent);
-    let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
+    let fluentNot = new FluentSingleFieldConditionBuilder(null);
+    let fluentChild = childBuilder(fluentNot);
+    let conditionConfig = fluentChild.parentConfig.conditionConfigs[0] ?? {};
     return { childConditionConfig: conditionConfig } as NotConditionConfig;
 }
 function not(
-    childBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
+    childBuilder: FluentSingleFieldConditionBuilderHandler): FluentOneConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.Not, _genDCNot(childBuilder));
 }
@@ -788,7 +799,7 @@ export function _genDCWhen(
 }
 function when(
     whenBuilder: FluentSingleFieldConditionBuilderHandler,
-    thenBuilder: FluentSingleFieldConditionBuilderHandler): FluentConditionBuilder {
+    thenBuilder: FluentSingleFieldConditionBuilderHandler): FluentOneConditionBuilder {
     return finishFluentConditionBuilder(this,
         ConditionType.When, _genDCWhen(whenBuilder, thenBuilder));
 }

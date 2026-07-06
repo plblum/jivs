@@ -987,7 +987,8 @@ describe('all on conditions', () => {
     test('With empty conditions, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs=[]', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().all((children) => children);
+        let testItem = fluent.conditions().all(
+            (children) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -996,7 +997,11 @@ describe('all on conditions', () => {
     test('With conditions setup with requireText and regExp, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs populated with both conditions', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().all(
+            (children) => {
+                children.fieldValue('F1').requireText();
+                return children.fieldValue('F2').requireText();
+            });
         TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -1014,7 +1019,8 @@ describe('any on conditions', () => {
     test('With empty conditions, creates AnyMatchConditionConfig with type=AnyMatch and conditionConfigs=[]', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().any((children) => children);
+        let testItem = fluent.conditions().any(
+            (children) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -1023,7 +1029,11 @@ describe('any on conditions', () => {
     test('With conditions setup with requireText and regExp, creates AnyMatchConditionConfig with type=AnyMatch and conditionConfigs populated with both conditions', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().any(
+            (children) => {
+                children.fieldValue('F1').requireText();
+                return children.fieldValue('F2').requireText();
+            });
         TestFluentConditionBuilder(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -1042,7 +1052,8 @@ describe('countMatches on conditions', () => {
     test('With minimum and maximum assigned and empty conditions, creates CountMatchesMatchConditionConfig with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().countMatches(1, 2, (children) => children);
+        let testItem = fluent.conditions().countMatches(1, 2,
+            (children) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -1053,7 +1064,8 @@ describe('countMatches on conditions', () => {
     test('With minimum assigned and empty conditions, creates CountMatchesMatchConditionConfig with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().countMatches(1, null, (children) => children);
+        let testItem = fluent.conditions().countMatches(1, null,
+            (children) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -1063,7 +1075,8 @@ describe('countMatches on conditions', () => {
     test('With maximum assigned and empty conditions, creates CountMatchesMatchConditionConfig with type=CountMatchesMatch, maximum, and conditionConfigs=[]', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().countMatches(null, 2, (children) => children);
+        let testItem = fluent.conditions().countMatches(null, 2,
+            (children) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 maximum: 2,
@@ -1073,7 +1086,11 @@ describe('countMatches on conditions', () => {
     test('With conditions setup with requireText and regExp, creates CountMatchesMatchConditionConfig with type=CountMatchesMatch and conditionConfigs populated with both conditions', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().countMatches(0, 2,
+            (children) => {
+                children.fieldValue('F1').requireText();
+                return children.fieldValue('F2').requireText();
+            });
         TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 0,
@@ -1157,7 +1174,7 @@ describe('not on conditions', () => {
     test('With empty condition, creates NotConditionConfig with type=Not and childConditionConfig={}', () => {
         let fluent = createFluent();
 
-        let testItem = fluent.conditions().not((childBuilder) => childBuilder);
+        let testItem = fluent.conditions().not((childBuilder) => new FluentConditionBuilder(null));
         TestFluentConditionBuilder(testItem, <NotConditionConfig>{
                 conditionType: ConditionType.Not,
             childConditionConfig: {}
@@ -1166,7 +1183,7 @@ describe('not on conditions', () => {
     test('With condition setup with requireText, creates NotConditionConfig with type=Not and conditionConfigs populatedn', () => {
 
         let testItem = createFluent().conditions()
-            .not((childBuilder) => childBuilder.requireText(null, 'F1'));
+            .not((childBuilder) => childBuilder.fieldValue('F1').requireText());
             TestFluentConditionBuilder(testItem, <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -1177,7 +1194,9 @@ describe('not on conditions', () => {
     });    
     test('When there are 2 child conditions, throws', () => {
         expect(() => createFluent().conditions()
-            .not((childBuilder) => childBuilder.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+            .not((childBuilder) => childBuilder.fieldValue('F1')
+                .requireText()
+                .requireText())).toThrow();
     });    
     test('Null as the function parameter throws', () => {
         let fluent = createFluent();;

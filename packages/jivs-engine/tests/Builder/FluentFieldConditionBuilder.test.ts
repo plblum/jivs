@@ -2,6 +2,7 @@ import { FluentSingleFieldConditionBuilder, FluentMultiFieldConditionBuilder } f
 import { FluentOneConditionBuilder, FluentConditionBuilder } from '../../src/Builder/Fluent';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ConditionWithChildrenBaseConfig } from "../../src/Conditions/ConditionWithChildrenBase";
+import { RequireTextConditionConfig } from '../../src/Conditions/ConcreteConditions';
 
 describe('FluentSingleFieldConditionBuilder tests', () => {
     test('constructor sets parentConfig', () => {
@@ -65,4 +66,40 @@ describe('FluentMultiFieldConditionBuilder tests', () => {
         expect(result).toBeInstanceOf(FluentConditionBuilder);
         expect(result.valueHostName).toBe(valueHostName);
     }); 
+});
+describe('conditionConfig method tests', () => {
+    test('Returns FluentConditionBuilder with specified conditionConfig in parentConfig', () => {
+        const conditionConfig = { conditionType: ConditionType.RequireText, valueHostName: 'Field1' };
+        const expectedParentConfig: ConditionWithChildrenBaseConfig = {
+            conditionType: 'TBD',
+            conditionConfigs: [<RequireTextConditionConfig>{
+                conditionType: ConditionType.RequireText,
+                valueHostName: 'Field1'
+            }]
+        };        
+        const builder = new FluentSingleFieldConditionBuilder(null);
+        const result = builder.conditionConfig(conditionConfig);
+        expect(result).toBeInstanceOf(FluentConditionBuilder);
+        expect(result.parentConfig).toEqual(expectedParentConfig);
+    });
+    test('conditionConfig with valid config returns FluentConditionBuilde with parent', () => {
+        const parentConfig: ConditionWithChildrenBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        };
+        const conditionConfig = { conditionType: ConditionType.RequireText, valueHostName: 'Field1' };
+        const expectedParentConfig: ConditionWithChildrenBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: [<RequireTextConditionConfig>{
+                conditionType: ConditionType.RequireText,
+                valueHostName: 'Field1'
+            }]
+        };
+
+        const builder = new FluentSingleFieldConditionBuilder(parentConfig);
+        const result = builder.conditionConfig(conditionConfig);
+        expect(result).toBeInstanceOf(FluentConditionBuilder);
+        expect(result.parentConfig).toEqual(expectedParentConfig);
+
+    });    
 });

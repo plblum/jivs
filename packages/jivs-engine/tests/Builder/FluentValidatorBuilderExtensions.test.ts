@@ -3,7 +3,7 @@ import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import {
     FluentBuilderBase, FluentValidatorBuilder,
     FluentValidatorConfig, ValidationManagerStartFluent,
-    FluentConditionBuilder
+    FluentConditionBuilder, FluentOneConditionBuilder
 } from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
@@ -2598,7 +2598,8 @@ describe('notNull as a validator of a field()', () => {
 describe('all as a validator of a field()', () => {
     test('With empty conditions, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs=[]', () => {
 
-        let testItem = createFluent().field('Field1').all((children) => children);
+        let testItem = createFluent().field('Field1').all(
+            (children) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -2609,7 +2610,11 @@ describe('all as a validator of a field()', () => {
     test('all((2 children), creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs populated with both conditions', () => {
 
         let testItem = createFluent().field('Field1')
-            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+            .all(
+                (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -2628,7 +2633,11 @@ describe('all as a validator of a field()', () => {
     test('all((2 children), "Error"), and errorMessage assigned creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1')
-            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+            .all((children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
+                'Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -2647,8 +2656,13 @@ describe('all as a validator of a field()', () => {
     test('all((2 children), "Error", "Summary" ), creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1')
-            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'),
-                'Error', 'Summary' );
+            .all(
+                (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
+                'Error',
+                'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -2667,7 +2681,9 @@ describe('all as a validator of a field()', () => {
     });
     test('all((2 children), null, summary), creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').all((children) => children, null,
+        let testItem = createFluent().field('Field1').all(
+            (children) => new FluentConditionBuilder(null),
+            null,
             'Summary' );
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
@@ -2679,7 +2695,8 @@ describe('all as a validator of a field()', () => {
     });
     test('all((0 children), { errorMessage, summaryMessage }), creates ValidatorConfig with AllMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = createFluent().field('Field1').all((children) => children,
+        let testItem = createFluent().field('Field1').all(
+            (children) => new FluentConditionBuilder(null),
             {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
@@ -2705,7 +2722,8 @@ describe('all as a validator of a field()', () => {
 describe('any as a validator of a field()', () => {
     test('With empty conditions, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs=[]', () => {
 
-        let testItem = createFluent().field('Field1').any((children) => children);
+        let testItem = createFluent().field('Field1').any(
+            (children) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -2715,10 +2733,11 @@ describe('any as a validator of a field()', () => {
     });
     test('any((2 children)), creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = createFluent().field('Field1').any((children) =>
-            children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'));
+        let testItem = createFluent().field('Field1').any(
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -2736,10 +2755,11 @@ describe('any as a validator of a field()', () => {
 
     test('any((2 children), errormessage), and errorMessage assigned creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').any((children) =>
-            children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'),
+        let testItem = createFluent().field('Field1').any(
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
             'Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
@@ -2758,11 +2778,13 @@ describe('any as a validator of a field()', () => {
     });
     test('any((2 children), error message, summary message) creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').any((children) =>
-            children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'),
-            'Error', 'Summary' );
+        let testItem = createFluent().field('Field1').any(
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
+            'Error',
+            'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -2781,8 +2803,10 @@ describe('any as a validator of a field()', () => {
     });
     test('any((0 children), null, summary message), parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = createFluent().field('Field1').any((children) => children,
-            null, 'Summary');
+        let testItem = createFluent().field('Field1').any(
+            (children) => new FluentConditionBuilder(null),
+            null,
+            'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -2793,10 +2817,12 @@ describe('any as a validator of a field()', () => {
     });
     test('any((0 children), { error message, summary message }), creates ValidatorConfig with AnyMatchCondition with only type assigned.', () => {
 
-        let testItem = createFluent().field('Field1').any((children) => children, {
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
+        let testItem = createFluent().field('Field1').any(
+            (children) => new FluentConditionBuilder(null),
+            {
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -2820,7 +2846,7 @@ describe('countMatches as a validator of a field()', () => {
     test('countMatches(1, 2, (0 children)), creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
 
         let testItem = createFluent().field('Field1').countMatches(1, 2,
-            (children) => children);
+            (children) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2832,7 +2858,7 @@ describe('countMatches as a validator of a field()', () => {
     });
     test('countMatches(1, null, (0 children)), creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
         let testItem = createFluent().field('Field1').countMatches(1, null,
-            (children) => children);
+            (children) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2843,7 +2869,8 @@ describe('countMatches as a validator of a field()', () => {
     });
     test('countMatches(null, 2, (0 children)), creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionConfigs=[]', () => {
 
-        let testItem = createFluent().field('Field1').countMatches(null, 2, (children) => children);
+        let testItem = createFluent().field('Field1').countMatches(null, 2,
+            (children) => new FluentConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2855,9 +2882,11 @@ describe('countMatches as a validator of a field()', () => {
     test('countMatches(0, 2, (2 children)), creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch and conditionConfigs populated with both conditions', () => {
 
         let testItem = createFluent().field('Field1').countMatches(0, 2,
-            (children) => children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'));
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                });
+
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2877,9 +2906,10 @@ describe('countMatches as a validator of a field()', () => {
 
     test('countMatches(1, 4, (2 children), error message), creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').countMatches(1, 4,
-            (children) => children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'),
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
             'Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
@@ -2900,10 +2930,12 @@ describe('countMatches as a validator of a field()', () => {
     });
     test('countMatches(1, 2, (2 children), error message, summary message) creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').countMatches(1, 2,
-            (children) => children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'),
-            'Error', 'Summary');
+            (children) => {
+                    children.fieldValue('F1').requireText();
+                    return children.fieldValue('F2').requireText();
+                },
+            'Error',
+            'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2923,10 +2955,12 @@ describe('countMatches as a validator of a field()', () => {
         });
     });
     test('countMatches(1, 4, (0 children), { error message, summary error }), creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        let testItem = createFluent().field('Field1').countMatches(1, 2, (children) => children, {
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
+        let testItem = createFluent().field('Field1').countMatches(1, 2,
+            (children) => new FluentConditionBuilder(null),
+            {
+                errorMessage: 'Error',
+                summaryMessage: 'Summary'
+            });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -2940,7 +2974,7 @@ describe('countMatches as a validator of a field()', () => {
     });
     test('countMatches(1, 2, (0 children), {}), creates ValidatorConfig with CountMatchesMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
         let testItem = createFluent().field('Field1').countMatches(1, 2,
-            (children) => children, 
+            (children) => new FluentConditionBuilder(null), 
             {});
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
@@ -3202,7 +3236,8 @@ describe('maxDecimals as a validator of a field()', () => {
 
 describe('not as a validator of a field()', () => {
     test('not((0 children)), creates ValidatorConfig with NotCondition with type=Not and childConditionConfig={}', () => {
-        let testItem = createFluent().field('Field1').not((children) => children);
+        let testItem = createFluent().field('Field1').not(
+            (children) => new FluentOneConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3212,7 +3247,7 @@ describe('not as a validator of a field()', () => {
     });
     test('not((1 child)), creates ValidatorConfig with NotCondition with type=Not and conditionConfigs populated', () => {
         let testItem = createFluent().field('Field1')
-            .not((children) => children.requireText(null, 'F1'));
+            .not((children) => children.fieldValue('F1').requireText());
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3225,7 +3260,9 @@ describe('not as a validator of a field()', () => {
     });
     test('not((1 child), error message) creates ValidatorConfig with NotCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1')
-            .not((children) => children.requireText(null, 'F1'), 'Error' );
+            .not(
+                (children) => children.fieldValue('F1').requireText(),
+                'Error');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3239,7 +3276,10 @@ describe('not as a validator of a field()', () => {
     });
     test('not((1 child), error message, summary message) creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1')
-            .not((children) => children.requireText(null, 'F1'), 'Error', 'Summary' );
+            .not(
+                (children) => children.fieldValue('F1').requireText(),
+                'Error',
+                'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3254,7 +3294,9 @@ describe('not as a validator of a field()', () => {
     });
     test('not((1 child), null, summary message) creates ValidatorConfig with NotCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1')
-            .not((children) => children.requireText(null, 'F1'), null, 'Summary' );
+            .not((children) => children.fieldValue('F1').requireText(),
+                null,
+                'Summary');
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3270,7 +3312,9 @@ describe('not as a validator of a field()', () => {
     test('not((0 children), { errormessage, summarymessage }) creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent()
-            .field('Field1').not((children) => children, { errorMessage: 'Error', summaryMessage: 'Summary' });
+            .field('Field1').not(
+                (children) => new FluentOneConditionBuilder(null),
+                { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -3283,9 +3327,9 @@ describe('not as a validator of a field()', () => {
 
     test('When there are 2 child conditions, throws', () => {
         expect(() => createFluent().field('Field1')
-            .not((children) => children
-                .requireText(null, 'F1')
-                .requireText(null, 'F2'))).toThrow();
+            .not((children) => children.fieldValue('F1')
+                .requireText()
+                .requireText())).toThrow();
     });    
     test('Null as the function parameter throws', () => {
         let fluent = createFluent();
@@ -3301,8 +3345,8 @@ describe('when as a validator of a field()', () => {
     test('when((no when), (no then)), creates ValidatorConfig with WhenCondition with type=When, whenToEnableConfig={} and childConditionConfig={}', () => {
 
         let testItem = createFluent().field('Field1').when(
-            (whenBuilder) => new FluentConditionBuilder(null),
-            (thenBuilder) => new FluentConditionBuilder(null));
+            (whenBuilder) => new FluentOneConditionBuilder(null),
+            (thenBuilder) => new FluentOneConditionBuilder(null));
         TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,

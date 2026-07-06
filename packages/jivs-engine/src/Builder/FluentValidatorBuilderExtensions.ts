@@ -243,31 +243,31 @@ declare module "./../Builder/Fluent"
             validatorParameters: FluentStringLengthValidatorConfig): FluentValidatorBuilder;
         
         all(
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;
         all(
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
         
         any(
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;        
         any(
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             validatorParameters: FluentAnyMatchValidatorConfig): FluentValidatorBuilder;   
 
         countMatches(
             minimum: number | null,
             maximum: number | null,
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;      
         countMatches(
             minimum: number | null,
             maximum: number | null,
-            conditionsBuilder: FluentConditionBuilderHandler,
+            conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
             validatorParameters: FluentCountMatchesValidatorConfig): FluentValidatorBuilder;  
         
         positive(
@@ -291,11 +291,11 @@ declare module "./../Builder/Fluent"
             validatorParameters: FluentMaxDecimalsValidatorConfig): FluentValidatorBuilder;           
         
         not(
-            childBuilder: FluentOneConditionBuilderHandler,
+            childBuilder: FluentSingleFieldConditionBuilderHandler,
             errorMessage?: string | null,
             summaryMessage?: string | null): FluentValidatorBuilder;
         not(
-            childBuilder: FluentOneConditionBuilderHandler,
+            childBuilder: FluentSingleFieldConditionBuilderHandler,
             validatorParameters: FluentNotValidatorConfig): FluentValidatorBuilder;
         
         when(
@@ -888,14 +888,14 @@ function stringLength(
 export type FluentAllMatchValidatorConfig = FluentValidatorConfig;
 
 function all(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     errorMessage?: string | null,
     summaryMessage?: string | null): FluentValidatorBuilder;
 function all(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     validatorParameters: FluentAllMatchValidatorConfig): FluentValidatorBuilder;
 function all(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     arg2?: FluentAllMatchValidatorConfig | string | null,
     arg3?: string | null): FluentValidatorBuilder {
     let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
@@ -908,14 +908,14 @@ function all(
 export type FluentAnyMatchValidatorConfig = FluentValidatorConfig;
 
 function any(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     errorMessage?: string | null,
     summaryMessage?: string | null): FluentValidatorBuilder;
 function any(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     validatorParameters: FluentAnyMatchValidatorConfig): FluentValidatorBuilder;
 function any(
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     arg2?: FluentAnyMatchValidatorConfig | string | null,
     arg3?: string | null): FluentValidatorBuilder {
     let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
@@ -930,18 +930,18 @@ export type FluentCountMatchesValidatorConfig = FluentValidatorConfig;
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     errorMessage?: string | null,
     summaryMessage?: string | null): FluentValidatorBuilder;
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     validatorParameters: FluentCountMatchesValidatorConfig): FluentValidatorBuilder;    
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditionsBuilder: FluentConditionBuilderHandler,
+    conditionsBuilder: FluentMultiFieldConditionBuilderHandler,
     arg4?: FluentCountMatchesValidatorConfig | string | null,
     arg5?: string | null): FluentValidatorBuilder {
     let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
@@ -1008,14 +1008,14 @@ function maxDecimals(
 export type FluentNotValidatorConfig = FluentValidatorConfig;
 
 function not(
-    childBuilder: FluentOneConditionBuilderHandler,
+    childBuilder: FluentSingleFieldConditionBuilderHandler,
     errorMessage?: string | null,
     summaryMessage?: string | null): FluentValidatorBuilder;
 function not(
-    childBuilder: FluentOneConditionBuilderHandler,
+    childBuilder: FluentSingleFieldConditionBuilderHandler,
     validatorParameters: FluentNotValidatorConfig): FluentValidatorBuilder;
 function not(
-    childBuilder: FluentOneConditionBuilderHandler,
+    childBuilder: FluentSingleFieldConditionBuilderHandler,
     arg2?: FluentNotValidatorConfig | string | null,
     arg3?: string | null): FluentValidatorBuilder {
     let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =

@@ -105,7 +105,13 @@ export abstract class FluentFieldConditionBuilderBase {
     public conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder {
         assertNotNull(conditionConfig, 'conditionConfig');
         assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
-        return finishFluentConditionBuilder(new FluentConditionBuilder(null), conditionConfig.conditionType, conditionConfig);
+
+        let condBuilder = new FluentConditionBuilder(
+            this.parentConfig ? { ...this.parentConfig } : null
+        );
+        return finishFluentConditionBuilder(condBuilder, conditionConfig.conditionType, conditionConfig);
+    
+
     }    
 }    
 
