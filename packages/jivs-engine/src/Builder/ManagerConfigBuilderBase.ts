@@ -613,19 +613,19 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 case CombineUsingCondition.All:
                     fn = (replacementBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                         replacementBuilder.all(
-                            (childrenBuilder) => {
-                                childrenBuilder.conditionConfig(existingConditionConfig);
-                                return childrenBuilder.conditionConfig(newConditionConfig);
-                            });
+                            (childrenBuilder) => [
+                                childrenBuilder.conditionConfig(existingConditionConfig),
+                                childrenBuilder.conditionConfig(newConditionConfig)
+                            ]);
                     };
                     break;
                 case CombineUsingCondition.Any:
                     fn = (replacementBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                         replacementBuilder.any(
-                            (childrenBuilder) => {
-                                childrenBuilder.conditionConfig(existingConditionConfig);
-                                return childrenBuilder.conditionConfig(newConditionConfig)
-                            });
+                            (childrenBuilder) => [
+                                childrenBuilder.conditionConfig(existingConditionConfig),
+                                childrenBuilder.conditionConfig(newConditionConfig)
+                            ]);
                     };
                     break;
 

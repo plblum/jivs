@@ -427,7 +427,7 @@ describe('combineWithRule', () => {
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) =>
-                        childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/));
+                        [childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/)]);
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);

@@ -8,11 +8,12 @@ import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
     FluentValidatorConfig, FluentValidatorBuilder, FluentFactory, IFluentValidatorBuilder, FluentConditionBuilder, IFluentConditionBuilder,
-    finishFluentValidatorBuilder, finishFluentConditionBuilder,
+    finishFluentValidatorBuilder, finishFluentConditionBuilder, 
     ValidationManagerStartFluent,
     ValueHostsManagerStartFluent,
     resolveValidatorOverloadArgs
 } from './../../src/Builder/Fluent';
+import { FluentFieldConditionBuilderBase } from './../../src/Builder/FluentFieldConditionBuilder';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
@@ -597,16 +598,16 @@ describe('withValidators()', () => {
 describe('conditions', () => {
     test('Undefined parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let testItem = createFluent().conditions();
-        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
-        expect(testItem.parentConfig).toEqual({
+        expect(testItem).toBeInstanceOf(FluentFieldConditionBuilderBase);
+        expect(testItem.getConfig()).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
     });
     test('null parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let testItem = createFluent().conditions(null!);
-        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
-        expect(testItem.parentConfig).toEqual({
+        expect(testItem).toBeInstanceOf(FluentFieldConditionBuilderBase);
+        expect(testItem.getConfig()).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
@@ -617,8 +618,8 @@ describe('conditions', () => {
             conditionConfigs: []
         }
         let testItem = createFluent().conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
-        expect(testItem.parentConfig).toEqual({
+        expect(testItem).toBeInstanceOf(FluentFieldConditionBuilderBase);
+        expect(testItem.getConfig()).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
         });
@@ -629,8 +630,8 @@ describe('conditions', () => {
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
         let testItem = createFluent().conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
-        expect(testItem.parentConfig).toEqual({
+        expect(testItem).toBeInstanceOf(FluentFieldConditionBuilderBase);
+        expect(testItem.getConfig()).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
         });

@@ -105,10 +105,10 @@
  *   ```
  *   ```ts
  *   builder.field('Field1').all(
- *     (allBuilder : FluentMultiFieldConditionBuilder) => {
- *         allBuilder.fieldValue('Field2').requireText();
- *         allBuilder.fieldValue('Field3').requireText();
- *      });
+ *     (allBuilder : FluentMultiFieldConditionBuilder) => [
+ *         allBuilder.fieldValue('Field2').requireText(),
+ *         allBuilder.fieldValue('Field3').requireText()
+ *      ]);
  *   builder.field('Field1').when(
  *      (whenBuilder : FluentSingleFieldConditionBuilder) => 
  *          whenBuilder.fieldValue('Field2').regExp('pattern'),
@@ -390,7 +390,8 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
      * For example:
      * ```ts
      * let fluent = new ValueHostsManagerStartFluent(null);
-     * fluent.field('Field1').all(fluent.conditions().required('Field2').required('Field3'));
+     * fluent.field('Field1').all([
+     *  fluent.conditions().required('Field2').required('Field3'));
      * ```
      * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
      * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
@@ -399,10 +400,13 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
     */
-    public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionBuilder
+    public conditions(config?: ConditionWithChildrenBaseConfig): FluentMultiFieldConditionBuilder
     {
-        let Builder = new FluentConditionBuilder(config ?? null);
-        return Builder;
+        config = config ?? { conditionType: 'TBD', conditionConfigs: [] };
+        if (config.conditionConfigs == null) // null or undefined
+            config.conditionConfigs = [];
+        let builder = new FluentMultiFieldConditionBuilder(config ?? null);
+        return builder;
     }   
     
     /**
@@ -818,15 +822,17 @@ export type FluentSingleFieldConditionBuilderHandler = (conditionBuilder: Fluent
  * Expected to be used like this:
  * ```ts
  * builder.all(
- *   (childBuilder)=> {
- *      childBuilder.fieldValue('field1').required(),
- *      childBuilder.fieldValue('field2').required(),
- *      childBuilder.fieldValue('field3').required(),
+ *   (childBuilder)=> [
+ *      childBuilder.fieldValue('field1').requireText(),
+ *      childBuilder.fieldValue('field2').requireText(),
+ *      childBuilder.fieldValue('field3').requireText()
+ *  ]
  * );
  * ```
  * Designed to get intellisense assistance as the user sets up the child conditions.
  */
-export type FluentMultiFieldConditionBuilderHandler = (conditionBuilder: FluentMultiFieldConditionBuilder) => FluentConditionBuilder;
+export type FluentMultiFieldConditionBuilderHandler = (conditionBuilder: FluentMultiFieldConditionBuilder) =>
+    Array<FluentConditionBuilder>; 
 
 /**
  * Call from within a fluent function once you have all parameters fully setup.

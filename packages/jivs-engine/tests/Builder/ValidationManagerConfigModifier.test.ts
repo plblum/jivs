@@ -433,7 +433,7 @@ describe('combineWithRule', () => {
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) =>
-                        childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/));
+                        [childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/)]);
                 }
             );
             modifier.apply();   

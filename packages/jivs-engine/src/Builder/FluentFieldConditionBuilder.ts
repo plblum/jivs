@@ -1,5 +1,3 @@
-import { FluentOneConditionBuilder, FluentConditionBuilder, finishFluentConditionBuilder } from './../Builder/Fluent';
-
 /**
  * When a Validator needs a child condition (like for when, not, all, any, etc.), 
  * these builders are the first fluent node that is used to create the child condition. 
@@ -23,6 +21,34 @@ import { FluentOneConditionBuilder, FluentConditionBuilder, finishFluentConditio
  * - FluentMultiFieldConditionBuilder: inherits FluentFieldConditionBuilderBase to return the next fluent node
  * as a FluentMultiConditionBuilder, which is the next fluent node in the chain.
  * 
+ * Within the FluentFieldConditionBuilders, you can use another when, not, all, any, countMatches, etc. 
+ * to create child conditions. These do not require the fieldValue or parentValue functions, 
+ * as its their children that will determine the valueHostName for the child condition.
+ * 
+ * Thus FluentFieldConditionBuilderBase offers a version of when, note, all, any, countMatches, etc. 
+ * that is used to create child conditions for the parent condition without needing to specify the valueHostName.
+ * 
+ * ```ts
+ * when((whenBuilder) => {
+ *     whenBuilder.fieldValue('Field1').requireText();
+ * },
+ * (thenBuilder) => { // skips fieldValue and parentValue on thenBuilder.
+ *     thenBuilder.when((whenBuilder) => {
+ *         whenBuilder.fieldValue('Field2').requireText();
+ *     });
+ * });
+ * ```
+ * ```ts
+ * // using all
+ * all((childrenBuilder) => {
+ *     childrenBuilder.fieldValue('Field1').requireText();
+ *     childrenBuilder.any((childrenBuilder2) => { // skips fieldValue and parentValue on childrenBuilder.
+ *         childrenBuilder2.fieldValue('Field2').requireText();
+ *         childrenBuilder2.fieldValue('Field3').requireText();
+ *     });
+ * });
+ * ```
+ * 
  * @module ValueHosts/Types/FieldConditionBuilder
  */
 
@@ -30,6 +56,16 @@ import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChil
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { assertNotNull } from '../Utilities/ErrorHandling';
+import {
+    FluentOneConditionBuilder, FluentConditionBuilder,
+    finishFluentConditionBuilder, FluentMultiFieldConditionBuilderHandler,
+    FluentSingleFieldConditionBuilderHandler
+} from './../Builder/Fluent';
+import {
+    _genDCAll, _genDCAny, _genDCCountMatches,
+    _genDCWhen, _genDCNot,
+    enableFluentConditions
+ } from './../Builder/FluentConditionBuilderExtensions';
 
 /**
  * Abstract base class for builders that create child conditions for a parent condition.
@@ -44,8 +80,17 @@ export abstract class FluentFieldConditionBuilderBase {
      * the child conditions will be attached by the conditions added to the builder returned by this class.
      * Leave it null if not using that feature.
      */
-    public constructor(
-        protected readonly parentConfig?: ConditionWithChildrenBaseConfig | null) {
+    public constructor(parentConfig?: ConditionConfig | null) {
+        this._parentConfig = parentConfig;
+        enableFluentConditions();
+    }
+    protected get parentConfig(): ConditionConfig | null | undefined {
+        return this._parentConfig;
+    }
+
+    private _parentConfig?: ConditionConfig | null;
+    public getConfig(): ConditionConfig | null {
+        return this.parentConfig ? { ...this.parentConfig } : null;
     }
 
     /**
@@ -106,13 +151,117 @@ export abstract class FluentFieldConditionBuilderBase {
         assertNotNull(conditionConfig, 'conditionConfig');
         assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
 
-        let condBuilder = new FluentConditionBuilder(
-            this.parentConfig ? { ...this.parentConfig } : null
-        );
+        let parentConfig: ConditionWithChildrenBaseConfig | null = null;
+        if (this.parentConfig) {
+            parentConfig = { ...this.parentConfig } as unknown as ConditionWithChildrenBaseConfig;
+        }
+        let condBuilder = new FluentConditionBuilder(parentConfig);
         return finishFluentConditionBuilder(condBuilder, conditionConfig.conditionType, conditionConfig);
-    
-
     }    
+
+    /**
+     * Creates a child condition that requires all of the child conditions to be true.
+     * Same as on FluentConditionBuilder, but does not require a valueHostName through
+     * the fieldValue or parentValue functions, as it is assumed that the child conditions 
+     * will determine their own valueHostName.
+     * None-the-less, it is valid to use fieldValue or parentValue on the children, if desired.
+     * ```ts
+     * parentConditionBuilder.all((allBuilder) => []);
+     * // vs the unnecessary fieldValue:
+     * parentConditionBuilder.fieldValue('Field1').all((allBuilder) => []);
+     * ```
+     * @param conditionsBuilder 
+     * @returns 
+     */
+    public all(conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
+        return new FluentConditionBuilder(_genDCAll(conditionsBuilder));
+    }
+
+    /**
+     * Creates a child condition that requires any of the child conditions to be true.
+     * Same as on FluentConditionBuilder, but does not require a valueHostName through
+     * the fieldValue or parentValue functions, as it is assumed that the child conditions 
+     * will determine their own valueHostName.
+     * None-the-less, it is valid to use fieldValue or parentValue on the children, if desired.
+     * ```ts
+     * parentConditionBuilder.any((anyBuilder) => []);
+     * // vs the unnecessary fieldValue:
+     * parentConditionBuilder.fieldValue('Field1').any((anyBuilder) => []);
+     * ```
+     * @param conditionsBuilder 
+     * @returns 
+     */
+    public any(conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
+        return new FluentConditionBuilder(_genDCAny(conditionsBuilder)); 
+    }
+
+    /**
+     * Creates a child condition that requires a count of the child conditions to be true, 
+     * within the specified minimum and maximum range.
+     * Same as on FluentConditionBuilder, but does not require a valueHostName through
+     * the fieldValue or parentValue functions, as it is assumed that the child conditions 
+     * will determine their own valueHostName.
+     * None-the-less, it is valid to use fieldValue or parentValue on the children, if desired.
+     * ```ts
+     * parentConditionBuilder.countMatches(1, 3, (countBuilder) => []);
+     * // vs the unnecessary fieldValue:
+     * parentConditionBuilder.fieldValue('Field1').countMatches(1, 3, (countBuilder) => []);
+     * ```
+     * @param conditionsBuilder 
+     * @returns 
+     */
+    public countMatches(
+        minimum: number | null,
+        maximum: number | null,
+        conditionsBuilder: FluentMultiFieldConditionBuilderHandler): FluentConditionBuilder {
+        return new FluentConditionBuilder(_genDCCountMatches(minimum, maximum, conditionsBuilder)); 
+    }    
+
+    /**
+     * Determine if the child condition is used based on the evaluation of the whenToEnable condition.
+     * Same as on FluentConditionBuilder, but does not require a valueHostName through
+     * the fieldValue or parentValue functions, as it is assumed that the child conditions.
+     * 
+     * None-the-less, it is valid to use fieldValue or parentValue on the whenToEnable condition, if desired.
+     * 
+     * Example:
+     * ```ts
+     * parentConditionBuilder.when(
+     *    (whenBuilder) => whenBuilder.fieldValue('Field1').requireText(),
+     *   (thenBuilder) => thenBuilder.fieldValue('Field2').regExp(/^abc/));
+     * // vs the unnecessary fieldValue:
+     * parentConditionBuilder.fieldValue('Field1').when(
+     *    (whenBuilder) => whenBuilder.fieldValue('Field1').requireText(),
+     *   (thenBuilder) => thenBuilder.fieldValue('Field2').regExp(/^abc/));
+     * ```
+     * 
+     * @param whenBuilder - The builder for the whenToEnable condition, which determines if the child condition is evaluated.
+     * @param thenBuilder - The builder for the child condition that is evaluated if the whenToEnable condition matches.
+     */
+    public when(
+        whenBuilder: FluentSingleFieldConditionBuilderHandler,
+        thenBuilder: FluentSingleFieldConditionBuilderHandler): void {
+        this._parentConfig = _genDCWhen(whenBuilder, thenBuilder);
+    }
+
+    /**
+     * Creates a child condition that negates the evaluation of the child condition.
+     * Same as on FluentConditionBuilder, but does not require a valueHostName through
+     * the fieldValue or parentValue functions, as it is assumed that the child conditions
+     * will determine their own valueHostName.
+     * None-the-less, it is valid to use fieldValue or parentValue on the child, if desired.
+     * ```ts
+     * parentConditionBuilder.not((notBuilder) => []);
+     * // vs the unnecessary fieldValue:
+     * parentConditionBuilder.fieldValue('Field1').not((notBuilder) => []);
+     * ```
+     * @param childBuilder 
+     */
+    public not(
+        childBuilder: FluentSingleFieldConditionBuilderHandler): void {
+        this._parentConfig = _genDCNot(childBuilder);
+    }
+
 }    
 
 /**
@@ -124,7 +273,7 @@ export abstract class FluentFieldConditionBuilderBase {
 export class FluentSingleFieldConditionBuilder extends FluentFieldConditionBuilderBase {
     protected createBuilder(valueHostName: ValueHostName | null): FluentOneConditionBuilder {
         const config = this.parentConfig ? { ...this.parentConfig } : null; // clone
-        return new FluentOneConditionBuilder(config, valueHostName);
+        return new FluentOneConditionBuilder(config as ConditionWithChildrenBaseConfig, valueHostName);
     }
 }
 
@@ -136,6 +285,6 @@ export class FluentSingleFieldConditionBuilder extends FluentFieldConditionBuild
 export class FluentMultiFieldConditionBuilder extends FluentFieldConditionBuilderBase {
     protected createBuilder(valueHostName: ValueHostName | null): FluentConditionBuilder {
         const config = this.parentConfig ? { ...this.parentConfig } : null; // clone
-        return new FluentConditionBuilder(config, valueHostName);
+        return new FluentConditionBuilder(config as ConditionWithChildrenBaseConfig, valueHostName);
     }
 }

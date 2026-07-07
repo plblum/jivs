@@ -899,11 +899,13 @@ The Builder API assigns conditionType, category, and secondValue (to new Date())
 Let's cover all of the Condition-building functions of the [`Builder API`](#configuring-the-validationmanager-the-builder-api). Before listing them, be aware of these elements of the Builder API syntax.
 
 ```ts
-builder.field('field').conditionName(required parameters, { condition properties }?, errorMessage?, { validator properties}? );
+builder.field('field').conditionName(required parameters, errorMessage?, summaryMessage? );
+builder.field('field').conditionName(required parameters, { validator properties} );
+
 modifier.field('field').conditionName(required parameters, { condition properties }?);
 ```
 - The *condition properties* argument is an object with any properties offered by the Condition's configuration that are not elsewher. It is omitted if the rest of the function parameters cover those properties. Each function below shows its condition properties object.
-- The *validator properties* argument that takes this object:
+- The *validator properties* argument blends the condition properties with:
   ```ts
   {
       errorCode?: string;
@@ -967,7 +969,7 @@ Here are the Condition-building functions of the Builder API:
   ```ts
   builder.field('fieldname').when(
      (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
-     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/);
+     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/);  // uses the value from 'fieldname'
   builder.field('fieldname').when(
      (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
      (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/),
@@ -1036,51 +1038,62 @@ Here are the Condition-building functions of the Builder API:
   For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
-  builder.field('fieldname').all(
-     (childrenBuilder) => childrenBuilder
-       .requireText(null, 'fieldname2')
-       .requireText(null, 'fieldname3'));
-  builder.field('fieldname').all(
-     (childrenBuilder) => childrenBuilder
-        .requireText(null, 'fieldname2')
-        .requireText(null, 'fieldname3'), 
-        'At least one is required', { severity: ValidatorSeverity.Severe });
+  builder.field('fieldname1').all(
+     (childrenBuilder) => [
+        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
+        childrenBuilder.fieldValue('fieldname2').requireText()
+    ]);
+    // with error messages
+  builder.field('fieldname1').all(
+     (childrenBuilder) => [
+        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
+        childrenBuilder.fieldValue('fieldname2').requireText()
+    ],
+    'Assign all fields values',
+    'Assign all fields within the {label} group.');
   ```
 - any(*children builder function*, errorMessage?, {*validator properties*}?)
 
   For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
-  builder.field('fieldname').any(
-     (childrenBuilder) => childrenBuilder
-       .requireText(null, 'fieldname2')
-       .requireText(null, 'fieldname3'));
-  builder.field('fieldname').any(
-     (childrenBuilder) => childrenBuilder
-        .requireText(null, 'fieldname2')
-        .requireText(null, 'fieldname3'), 
-        'At least one is required', { severity: ValidatorSeverity.Severe });
+  builder.field('fieldname1').any(
+     (childrenBuilder) => [
+        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
+        childrenBuilder.fieldValue('fieldname2').requireText()
+    ]);
+  builder.field('fieldname1').any(
+     (childrenBuilder) => [
+        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
+        childrenBuilder.fieldValue('fieldname2').requireText()
+    ]
+     , 
+    'At least one is required',
+    'At least one requires a valeu within the {label} group.');
   ```
 
 - countMatches(minimum, maximum, *children builder function*, errorMessage?, {*validator properties*}?)
 
   For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
   ```ts
-  builder.field('fieldname').countMatches(
+  builder.field('fieldname1').countMatches(
       1, 2, 
-      (childrenBuilder) => childrenBuilder
-         .requireText(null, 'fieldname2')
-         .requireText(null, 'fieldname3')
-         .requireText(null, 'fieldname4'));
-  builder.field('fieldname').any(
+     (childrenBuilder) => [
+        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
+        childrenBuilder.fieldValue('fieldname2').requireText(),
+        childrenBuilder.fieldValue('fieldname3').requireText()
+      ]);
+  builder.field('fieldname1').any(
       2, 4, 
-      (childrenBuilder) => childrenBuilder
-         .requireText(null, 'fieldname2')
-         .requireText(null, 'fieldname3')
-         .requireText(null, 'fieldname4')
-         .requireText(null, 'fieldname5')
-         .requireText(null, 'fieldname6'), 
-         'Between 2 and 4 are required.', { severity: ValidatorSeverity.Severe });
+      (childrenBuilder) => [
+        childrenBuilder.fieldValue('fieldname2').requireText(),
+        childrenBuilder.fieldValue('fieldname3').requireText(),
+        childrenBuilder.fieldValue('fieldname4').requireText(),
+        childrenBuilder.fieldValue('fieldname5').requireText(),
+        childrenBuilder.fieldValue('fieldname6').requireText()
+      ],
+      'Between 2 and 4 are required.',
+      'Between 2 and 4 values are required within the {label} group.');
   ```
 
 - positive(errorMessage?, {*validator properties*}?)
@@ -1123,7 +1136,7 @@ Example: RequireText is only enabled if 'CheckBox1' has a value
 builder.field('CheckBox1', LookupKey.String);
 builder.field('TextBox1', LookupKey.String)
    .when((whenBuilder)=> whenBuilder.fieldValue('CheckBox1').requireText(),
-         (thenBuilder)=> thenBuilder.parentValue().requireText());
+         (thenBuilder)=> thenBuilder.parentValue().requireText());  // parentValue = uses the value of TextBox1
 ```
 Example: Regular expression for postal code depends on culture ID
 ```ts
@@ -1131,7 +1144,7 @@ builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
 builder.field('PostalCode')
    .when(
       (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('US'), 
-      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))  // parentValue = uses the value of PostalCode
    .when(
       (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('CA'), 
       (thenBuilder)=> thenBuilder.parentValue().regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
@@ -1145,7 +1158,9 @@ The NotCondition hosts another condition and reverses its evaluation result, fro
 
 Example: Illegal characters in a string using RegExpCondition
 ```ts
-builder.field('password').not((childBuilder)=> childBuilder.regExp(/[:|'_]/));
+builder.field('password').not(
+  (childBuilder)=> childBuilder.parentValue().regExp(/[:|'_]/));  // parentValue uses the value from 'password'
+  // use fieldValue(field name) if you want to specify a different field's value
 ```
 
 <a name="valuehosts"></a>
@@ -1772,7 +1787,10 @@ The result would be the same as if business logic had initially done this:
 
 ```ts
 builder.field('Key', LookupKey.String, { label: 'Start date'} ).all(
-  (childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
+  (childrenBuilder)=> [
+      childrenBuilder.parentValue().regExp(/^[\d[ABCD_]+$/),
+      childrenBuilder.parentValue().stringLength(10)
+    ]);
 ```
 #### The Modifier object
 Here's the Builder API on the `Modifier object`:
