@@ -553,10 +553,31 @@ export abstract class FluentBuilderBase
 }
 
 /**
+ * Provides Builders with a common way to allow their child conditions to be attached to their parent condition.
+ */
+export interface IBuilderUsingConditions
+{
+    /**
+     * A builder that expects a condition to be attached to it is passed to the 
+     * child builder that creates the child's config.
+     * When the child builder is done, it calls this function to attach the child config to the parent.
+     * @param childConfig 
+     */
+    attachChildConfig(childConfig: object): void;
+
+    /**
+     * Exposes the parent config that is being built. 
+     * Assigned to builders.
+     */
+    getConfig(): object | undefined;    
+}
+
+
+/**
  * Use this when using alternative conditions, as you will need to provide substitutes
  * for each fluent function. Your class should be registered with FluentFactory.
  */
-export interface IFluentValidatorBuilder
+export interface IFluentValidatorBuilder    // !!! PENDING: Implement IBuilderUsingConditions
 {
     /**
      * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.

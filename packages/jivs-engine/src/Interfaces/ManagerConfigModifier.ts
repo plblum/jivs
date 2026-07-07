@@ -3,8 +3,6 @@
  * @module ValueHosts/Types/ManagerConfigModifier
  */
 
-import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
-import { FluentConditionBuilder } from "../Builder/Fluent";
 import {
     IManagerConfigBuilder, IValueHostsForValueHostsManagerConfig,
     IValueHostsForValidatorManagerConfigBuilder,

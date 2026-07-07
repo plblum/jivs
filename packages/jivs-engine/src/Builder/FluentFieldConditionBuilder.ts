@@ -1,8 +1,13 @@
 /**
  * When a Validator needs a child condition (like for when, not, all, any, etc.), 
- * these builders are the first fluent node that is used to create the child condition. 
- * The parent creates one of these builders to determine the valuehostName used
+ * there are two fluent steps:
+ * 1. Use FluentFieldConditionBuilders to define the source field for the value
+ * assigned to valueHostName of the condition.
+ * 2. Use FluentConditionBuilder to create the ConditionConfig specific to that condition.
+ * 
+ * The parent creates a FluentFieldConditionBuilder to supply the valuehostName used
  * within the condition itself as its valueHostName property.
+ * 
  * The design is very lightweight, simply here to ensure that how you read code is
  * "source valuehostname" -> child condition rules applied to it.
  * 
@@ -21,12 +26,12 @@
  * - FluentMultiFieldConditionBuilder: inherits FluentFieldConditionBuilderBase to return the next fluent node
  * as a FluentMultiConditionBuilder, which is the next fluent node in the chain.
  * 
- * Within the FluentFieldConditionBuilders, you can use another when, not, all, any, countMatches, etc. 
- * to create child conditions. These do not require the fieldValue or parentValue functions, 
- * as its their children that will determine the valueHostName for the child condition.
- * 
- * Thus FluentFieldConditionBuilderBase offers a version of when, note, all, any, countMatches, etc. 
- * that is used to create child conditions for the parent condition without needing to specify the valueHostName.
+ * Any Condition that needs a child condition (like when, not, all, any, countMatches, etc.) 
+ * always supplies a FluentFieldConditionBuilder. However, there are several condition types
+ * that are themselves hosts of children, and they don't need to identify a valuehostname for themselves.
+ * As a result, WhenCondition, NotCondition, AllCondition, AnyCondition, and CountMatchesCondition 
+ * all appear within FluentFieldConditionBuilderBase to skip the step of calling fieldValue() or parentValue() 
+ * for the child condition, as it is assumed that the child conditions will determine their own valueHostName.
  * 
  * ```ts
  * when((whenBuilder) => {

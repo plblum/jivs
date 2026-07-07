@@ -1,8 +1,41 @@
 
 /**
- * Implements a fluent syntax to chain together conditions quickly.
- * Each condition gets its own function that expects to have
- * 'this' as FluentConditionBuilder and return this for the next in the chain.
+ * When creating conditions without a validator, there are two fluent steps.
+ * 1. Use FluentFieldConditionBuilders to define the source field for the value
+ * assigned to valueHostName of the condition.
+ * 2. Use FluentConditionBuilder to create the ConditionConfig specific to that condition.
+ * 
+ * FluentConditionBuilder is not intended to be chained to start another condition.
+ * Expect one condition definition, terminated. 
+ * 
+ * So none of this:
+ * parentBuilder.fieldValue('fieldName').requireText().regExp('pattern');
+ * 
+ * Just this:
+ * parentBuilder.fieldValue('fieldName').requireText();
+ * ParentBuilder.fieldValue('fieldName').regExp('pattern');
+ * 
+ * The reason is that these are always contained within a parent condition that supports children.
+ * - AnyCondition, AllCondition, and CountMatchesCondition simply expect an array of single conditions.
+ * - WhenCondition is evaluating a single condition in its whenToEnableCondition and thenCondition.
+ * - NotCondition is evaluating a single condition in its childCondition.
+ * If they happen to need complex logic for a child, they can use a child like any, all and countMatches themselves.
+ * 
+ * This builder's only task is to create a ConditionConfig for a single condition, and then 
+ * return to the parent builder to continue building the parent condition.
+ * The parent builder must be supplied into the constructor of the FluentConditionBuilder. 
+ * It has a single method, attachConfig(), that the child condition builder calls to attach the child condition to the parent condition.
+ * 
+ * Most conditions will use a common pattern, where attachConfig simply assigns itself to a placeholder.
+ * AllCondition, AnyCondition, and CountMatchesCondition still do that, despite having an array of child conditionconfigs
+ * because its returning AllConditionConfig, AnyConditionConfig, and CountMatchesConditionConfig.
+ * 
+ * However, whenCondition and NotCondition are a bit different. 
+ * WhenCondition has two child conditions, the whenToEnableCondition and the thenCondition.
+ * It will have separate builders for each, knowing which one is being built, and will assign the child condition to the correct property.
+ * NotCondition has a single child condition, assigned to childConditionConfig property, which is a different
+ * destination than the default attachConfig() function.
+ * 
  * See @link Builder/Fluent
  * @module Conditions/Fluent
  */
@@ -33,6 +66,8 @@ import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateC
 // How TypeScript merges functions with the FluentConditionBuilder class
 declare module "./../Builder/Fluent"
 {
+    // REMINDER: Conditions do not support chaining of fluent functions,
+    // and is expected to return void.
     export interface FluentConditionBuilder {
         conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder;
         dataTypeCheck(): FluentConditionBuilder;
