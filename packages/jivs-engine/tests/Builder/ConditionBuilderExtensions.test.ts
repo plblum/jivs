@@ -1,6 +1,6 @@
 import { MockValidationServices } from '../TestSupport/mocks';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { FluentConditionBuilder, ValidationManagerStartFluent, IBuilderUsingConditions }
+import { FluentConditionBuilder, ValidationManagerStartFluent, IBuilderConfigHost }
     from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
@@ -14,12 +14,12 @@ import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { ConditionWithChildrenBaseConfig } from '../../src/Conditions/ConditionWithChildrenBase';
 import { StartConditionBuilder } from '../../src/Builder/ConditionBuilder_classes';
-import { enableFluentConditions } from '../../src/Builder/ConditionBuilderExtensions';
+import { enableConditionBuilderExtensions } from '../../src/Builder/ConditionBuilderExtensions';
 
-class TestParentBuilder implements IBuilderUsingConditions {
+class TestParentBuilder implements IBuilderConfigHost {
     public childConfig: object | undefined;
     
-    attachChildConfig(childConfig: object): void {
+    setConfig(childConfig: object): void {
         this.childConfig = childConfig;
     }
     getConfig(): object | undefined {
@@ -46,7 +46,7 @@ class TestParentBuilder implements IBuilderUsingConditions {
 
 // create pre test code with this: enableFluentConditions()
 beforeAll(() => {
-    enableFluentConditions();
+    enableConditionBuilderExtensions();
 });
 // describe('conditionConfig', () => {
 //     test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
@@ -1586,38 +1586,48 @@ describe('maxDecimals on conditions', () => {
 });
 
 
-// describe('all on conditions', () => {
-//     test('With empty conditions, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs=[]', () => {
-//         let parentBuilder = new TestParentBuilder();
+describe('all on conditions', () => {
+    test('With empty conditions, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs=[]', () => {
+        let parentBuilder = new TestParentBuilder();
+        let starterBuilder = new StartConditionBuilder(parentBuilder);
 
-//         starterBuilder.parentValue().all(
-//             (children) => []);
-//         TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
-//                 conditionType: ConditionType.All,
-//                 conditionConfigs: []
-//            });
-//     });
-//     test('With conditions setup with requireText and regExp, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs populated with both conditions', () => {
-//         let parentBuilder = new TestParentBuilder();
+        starterBuilder.all(
+            (children) => []);
+        let expectedCondConfig = {
+                conditionType: ConditionType.All,
+                conditionConfigs: []
+           };
+        let starterConfig = starterBuilder.getConfig();
+        expect(starterConfig).toEqual(expectedCondConfig);
+        let parentConfig = parentBuilder.getConfig();
+        expect(parentConfig).toEqual(expectedCondConfig);
+    });
+    // test('With conditions setup with requireText and regExp, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs populated with both conditions', () => {
+    //     let parentBuilder = new TestParentBuilder();
+    //     let starterBuilder = new StartConditionBuilder(parentBuilder);
 
-//         starterBuilder.parentValue().all(
-//             (children) => [
-//                 children.fieldValue('F1').requireText(),
-//                 children.fieldValue('F2').requireText()
-//             ]);
-//         TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
-//                 conditionType: ConditionType.All,
-//                 conditionConfigs: [<any>{
-//                     conditionType: ConditionType.RequireText,
-//                     valueHostName: 'F1'
-//                 },
-//                 {
-//                     conditionType: ConditionType.RequireText,
-//                     valueHostName: 'F2'
-//                 }]
-//             });
-//     });
-// });
+    //     starterBuilder.all(
+    //         (children) => [
+    //             children.fieldValue('F1').requireText(),
+    //             children.fieldValue('F2').requireText()
+    //         ]);
+    //     let expectedCondConfig = {
+    //             conditionType: ConditionType.All,
+    //             conditionConfigs: [<any>{
+    //                 conditionType: ConditionType.RequireText,
+    //                 valueHostName: 'F1'
+    //             },
+    //             {
+    //                 conditionType: ConditionType.RequireText,
+    //                 valueHostName: 'F2'
+    //             }]
+    //         };
+    //     let starterConfig = starterBuilder.getConfig();
+    //     expect(starterConfig).toEqual(expectedCondConfig);
+    //     let parentConfig = parentBuilder.getConfig();
+    //     expect(parentConfig).toEqual(expectedCondConfig);
+    // });
+});
 // describe('any on conditions', () => {
 //     test('With empty conditions, creates AnyMatchConditionConfig with type=AnyMatch and conditionConfigs=[]', () => {
 //         let parentBuilder = new TestParentBuilder();

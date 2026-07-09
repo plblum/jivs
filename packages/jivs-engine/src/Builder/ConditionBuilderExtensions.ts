@@ -68,7 +68,7 @@
         function range(
             minimum: any, maximum: any): void {
             let config = _genCDRange(minimum, maximum);
-            this.attachChildConfig(config);
+            this.setConfig(config);
         }
         ```        
  * 4. Wire up the ConditionBuilder prototype using your interface function names to your implementation functions.
@@ -207,16 +207,15 @@ declare module "./../Builder/ConditionBuilder_classes"
 }
 
 /**
- * Initialization code that is called by enableFluent(), but safe to call repeatedly.
+ * Initialization code that is called by enableConditionBuilderExtensions(), but safe to call repeatedly.
  * @remarks
  * Inside of a function to allow apps that don't use these fluent classes
  * to avoid any time setting up something not used.
  */
-export function enableFluentConditions(): void {
+export function enableConditionBuilderExtensions(): void {
     if (typeof ConditionBuilder.prototype.dataTypeCheck === 'function')
         return;
     // How JavaScript sees the functions added to the ConditionBuilder class
-    ConditionBuilder.prototype.conditionConfig = conditionConfig;
     ConditionBuilder.prototype.dataTypeCheck = dataTypeCheck;
     ConditionBuilder.prototype.requireText = requireText;
     ConditionBuilder.prototype.notNull = notNull;
@@ -239,6 +238,7 @@ export function enableFluentConditions(): void {
     ConditionBuilder.prototype.integer = integer;
     ConditionBuilder.prototype.maxDecimals = maxDecimals;
 /*    
+    ConditionBuilder.prototype.conditionConfig = conditionConfig;
     ConditionBuilder.prototype.not = not;
     ConditionBuilder.prototype.when = when;
     ConditionBuilder.prototype.all = all;
@@ -267,9 +267,7 @@ export function enableFluentConditions(): void {
  * @returns 
  */
 function conditionConfig(conditionConfig: ConditionConfig): void {
-    assertNotNull(conditionConfig, 'conditionConfig');
-    assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
-    this.attachChildConfig(conditionConfig);
+    this.setConfig(conditionConfig);
 }
 
 /**
@@ -280,10 +278,10 @@ function conditionConfig(conditionConfig: ConditionConfig): void {
 export function _genCDDataTypeCheck(): DataTypeCheckConditionConfig {
     return { conditionType: ConditionType.DataTypeCheck } as DataTypeCheckConditionConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function dataTypeCheck(): void {
     let config = _genCDDataTypeCheck();
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 
@@ -300,10 +298,10 @@ export function _genDCRequireText(
         condConfig.conditionType = ConditionType.RequireText;
     return condConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function requireText(conditionConfig?: OptionalRequireTextConditionParams): void {
     let config = _genDCRequireText(conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -314,10 +312,10 @@ function requireText(conditionConfig?: OptionalRequireTextConditionParams): void
 export function _genDCNotNull(): NotNullConditionConfig {
     return { conditionType: ConditionType.NotNull } as NotNullConditionConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function notNull(): void {
     let config = _genDCNotNull();
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'expressionAsString' | 'expression' | 'ignoreCase'>>;
@@ -342,12 +340,12 @@ export function _genCDRegExp(
     return condConfig as RegExpConditionConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function regExp(
     expression: RegExp | string, ignoreCase?: boolean | null,
     conditionConfig?: OptionalRegExpConditionParams): void {
     let config = _genCDRegExp(expression, ignoreCase, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -364,12 +362,12 @@ export function _genCDRange(
         condConfig.maximum = maximum;
     return condConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function range(
     minimum: any, maximum: any,
     valueHostName?: ValueHostName): void {
     let config = _genCDRange(minimum, maximum);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalEqualToValueConditionParams = Partial<Omit<EqualToValueConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValue'>>;
@@ -390,12 +388,12 @@ export function _genDCEqualToValue(
         condConfig.secondValue = secondValue;
     return condConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function equalToValue(
     secondValue: any,
     conditionConfig?: OptionalEqualToValueConditionParams): void {
     let config = _genDCEqualToValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalEqualToConditionParams = Partial<Omit<EqualToConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValueHostName'>>;
@@ -415,12 +413,12 @@ export function _genDCEqualTo(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function equalTo(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalEqualToConditionParams): void {
     let config = _genDCEqualTo(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalNotEqualToValueConditionParams = Partial<Omit<NotEqualToValueConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValue'>>;
@@ -441,12 +439,12 @@ export function _genDCNotEqualToValue(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function notEqualToValue(
     secondValue: any,
     conditionConfig?: OptionalNotEqualToValueConditionParams): void {
     let config = _genDCNotEqualToValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalNotEqualToConditionParams = Partial<Omit<NotEqualToConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValueHostName'>>;
@@ -467,12 +465,12 @@ export function _genDCNotEqualTo(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function notEqualTo(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalNotEqualToConditionParams): void {
     let config = _genDCNotEqualTo(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValue'>>;
@@ -497,7 +495,7 @@ function lessThanValue(
     secondValue: any,
     conditionConfig?: OptionalLessThanValueConditionParams): void {
     let config = _genDCLessThanValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalLessThanConditionParams = Partial<Omit<LessThanConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValueHostName'>>;
@@ -518,12 +516,12 @@ export function _genDCLessThan(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function lessThan(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalLessThanConditionParams): void {
     let config = _genDCLessThan(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalLessThanOrEqualValueConditionParams = Partial<Omit<LessThanValueConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValue'>>;
@@ -543,12 +541,12 @@ export function _genDCLessThanOrEqualValue(
         condConfig.secondValue = secondValue;
     return condConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function lessThanOrEqualValue(
     secondValue: any,
     conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void {
     let config = _genDCLessThanOrEqualValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalLessThanOrEqualConditionParams = Partial<Omit<LessThanConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValueHostName'>>;
@@ -573,7 +571,7 @@ function lessThanOrEqual(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalLessThanOrEqualConditionParams): void {
     let config = _genDCLessThanOrEqual(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalGreaterThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'secondValue' >>;
@@ -597,12 +595,12 @@ export function _genDCGreaterThanValue(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function greaterThanValue(
     secondValue: any,
     conditionConfig?: OptionalGreaterThanValueConditionParams): void {
     let config = _genDCGreaterThanValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -621,12 +619,12 @@ export function _genDCGreaterThan(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function greaterThan(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalGreaterThanConditionParams): void {
     let config = _genDCGreaterThan(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -644,12 +642,12 @@ export function _genDCGreaterThanOrEqualValue(
         condConfig.secondValue = secondValue;
     return condConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function greaterThanOrEqualValue(
     secondValue: any,
     conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void {
     let config = _genDCGreaterThanOrEqualValue(secondValue, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -668,12 +666,12 @@ export function _genDCGreaterThanOrEqual(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function greaterThanOrEqual(
     secondValueHostName: ValueHostName,
     conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void {
     let config = _genDCGreaterThanOrEqual(secondValueHostName, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 export type OptionalStringLengthConditionParams = Partial<Omit<StringLengthConditionConfig, 'conditionType'  | 'valueHostName' | 'category' | 'maximum'>>;
@@ -693,12 +691,12 @@ export function _genDCStringLength(
     return condConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function stringLength(
     maximum: number | null,
     conditionConfig?: OptionalStringLengthConditionParams): void {
     let config = _genDCStringLength(maximum, conditionConfig);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -709,10 +707,10 @@ function stringLength(
 export function _genDCPositive(): PositiveConditionConfig {
     return { conditionType: ConditionType.Positive } as PositiveConditionConfig;
 }
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function positive(): void {
     let config = _genDCPositive();
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -724,10 +722,10 @@ export function _genDCInteger(): IntegerConditionConfig {
     return { conditionType: ConditionType.Integer } as IntegerConditionConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function integer(): void {
     let config = _genDCInteger();
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 /**
@@ -742,10 +740,10 @@ export function _genDCMaxDecimals(maxDecimals: number): MaxDecimalsConditionConf
     } as MaxDecimalsConditionConfig;
 }
 
-// Becomes a method of ConditionBuilder through enableFluentConditions()
+// Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 function maxDecimals(maxDecimals: number): void {
     let config = _genDCMaxDecimals(maxDecimals);
-    this.attachChildConfig(config);
+    this.setConfig(config);
 }
 
 // /**
@@ -766,11 +764,11 @@ function maxDecimals(maxDecimals: number): void {
 //         childConditionConfig: conditionConfig
 //      } as NotConditionConfig;
 // }
-// // Becomes a method of ConditionBuilder through enableFluentConditions()
+// // Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 // function not(
 //     childBuilder: NotConditionChildBuilderHandler): void {
 //     let config = _genDCNot(childBuilder);
-//     this.attachChildConfig(config);
+//     this.setConfig(config);
 // }
 
 // /**
@@ -799,12 +797,12 @@ function maxDecimals(maxDecimals: number): void {
 //         thenConfig: conditionConfig
 //     } as WhenConditionConfig;
 // }
-// // Becomes a method of ConditionBuilder through enableFluentConditions()
+// // Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 // function when(
 //     whenBuilder: WhenToEnableBuilderHandler,
 //     thenBuilder: ThenBuilderHandler): void {
 //     let config = _genDCWhen(whenBuilder, thenBuilder);
-//     this.attachChildConfig(config);
+//     this.setConfig(config);
 // }
 
 // /**
@@ -843,11 +841,11 @@ function maxDecimals(maxDecimals: number): void {
 //     return getChildConfigs<AllMatchConditionConfig>(conditionsBuilder, ConditionType.All);;
 // }
 
-// // Becomes a method of ConditionBuilder through enableFluentConditions()
+// // Becomes a method of ConditionBuilder through enableConditionBuilderExtensions()
 // function all(
 //     conditionsBuilder: ConditionBuilderHandler): void {
 //     let config = _genDCAll(conditionsBuilder);
-//     this.attachChildConfig(config);
+//     this.setConfig(config);
 // }
 // /**
 //  * Common code to setup AnyMatchConditionConfig for support within
@@ -861,7 +859,7 @@ function maxDecimals(maxDecimals: number): void {
 // function any(
 //     conditionsBuilder: ConditionBuilderHandler): void {
 //     let config = _genDCAny(conditionsBuilder);
-//     this.attachChildConfig(config);
+//     this.setConfig(config);
 // }
 // /**
 //  * Common code to setup CountMatchesConditionConfig for support within
@@ -884,5 +882,5 @@ function maxDecimals(maxDecimals: number): void {
 //     maximum: number | null,
 //     conditionsBuilder: ConditionBuilderHandler): void {
 //     let config = _genDCCountMatches(minimum, maximum, conditionsBuilder);
-//     this.attachChildConfig(config);
+//     this.setConfig(config);
 // }

@@ -87,28 +87,27 @@
  *      ```
  * 
  * # Types defined here
- * - IConditionBuilder: The interface for the condition builder. Expresses these key methods:
- *      + getConfig(): ConditionConfig - returns the condition config object that was built.
- *      + attachChildConfig(): void - Used by the child builder to supply its condition config to the parent builder.
- * - ConditionBuilderBase: The base implementation of IConditionBuilder interface. 
- *   Its attachChildConfig and getConfig methods are abstract. It's constructor takes a parent builder that implements
- *   IConditionBuilder which is used by attachChildConfig and getConfig.
- * - ConditionBuilder: The concrete implementation of IConditionBuilder interface. 
- *   It is used by almost every condition, where WhenCondition and NotCondition are the exceptions. 
- *   It implements the attachChildConfig and getConfig methods, treating the value of attachChildConfig
- *   as the whole condition config object for the parent builder.
- * - NotConditionChildBuilder: Supports the childConditionConfig property on NotCondition, 
- *   by setting up attachChildConfig to assign the supplied condition to 
- *   NotConditionConfig.childConditionConfig property.
- * - WhenToEnableBuilder: Supports the whenToEnableConfig property on WhenCondition, 
- *   by setting up attachChildConfig to assign the supplied condition to 
- * WhenConditionConfig.whenToEnableConfig property.
- * - ThenBuilder: Supports the thenConfig property on WhenCondition,
- *   by setting up attachChildConfig to assign the supplied condition to 
- *   WhenConditionConfig.thenConfig property.
- * - StartConditionBuilder: The first part of the fluent syntax. Its parent could be either a FluentValidatorBuilder 
- *   or a ConditionBuilder. In either case, it calls upon the parent Builder's attachChildConfig method
- *   to supply the condition config object that is the second part of the fluent syntax. 
+ * * IConditionBuilder: The interface for the condition builder. It implements IBuilderConfigHost, 
+ *      which allows the builder to attach child condition configs to parent builders.
+ * 
+ * * ConditionBuilderBase: The base implementation of IConditionBuilder interface. 
+ *   Its setConfig() and getConfig() methods are abstract. It's constructor takes a parent builder that implements
+ *   IConditionBuilder which is used by setConfig.
+ *   This class has the following methods built in: 
+ *   conditionConfig(), all(), any(), countMatches(), not(), when().
+ * 
+ * * ConditionBuilder: Extends ConditionBuilderBase and is intended to be used by 
+ *   all functions that create a condition config object.
+ *   It has all conditions declared as its methods, each doing its own thing to create
+ *   its condition object and attach it to the parent builder.
+ *   This class is intended for expansion through prototypes, allowing the user to create
+ *   new conditions and add them to the ConditionBuilder class. 
+ *   See the ConditionBuilderExtensions.ts file for examples.
+ * 
+ * * StartConditionBuilder: The first part of the fluent syntax, used to identify the 
+ *   source value host name for conditions that require it.
+ *   Its parent could be either a FluentValidatorBuilder or a ConditionBuilder. 
+ *   It inherits from ConditionBuilderBase, and has the following methods:
  * 
  *   It supplies these methods to start:
  *      + parentValue(): Identifies the source value host name as the parent by omitting 
@@ -116,182 +115,212 @@
  *          Its up to the condition at runtime to resolve the parent value host name.
  *      + fieldValue(valueHostName: string): Identifies the source value host name as the supplied valueHostName
  *          by setting config.valueHostName property to the supplied valueHostName.
- *      + all, any, countMatches: Configures AllCondition, AnyCondition, and CountMatchesCondition respectively, 
- *          without requiring the unnecessary value host name.
- *      + not: Configures NotCondition, without requiring the unnecessary value host name.
- *      + when: Configures WhenCondition, without requiring the unnecessary value host name.
- *      + conditionConfig: Takes a fully formed condition config object, and passes it to the parent builder's attachChildConfig method.
- *        Allows the user to bypass the fluent syntax and supply a fully formed condition config object.
+ *      + all, any, countMatches, when, not, conditionConfig: These methods are inherited from ConditionBuilderBase, 
+ *          and are used to create the child condition config.
  */
 
+import { ConditionType } from "../Conditions/ConditionTypes";
+import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { NotConditionConfig } from "../Conditions/NotCondition";
 import { OneValueConditionBaseConfig } from "../Conditions/OneValueConditionBase";
 import { WhenConditionConfig } from "../Conditions/WhenCondition";
 import { ConditionConfig } from "../Interfaces/Conditions";
-import { IBuilderUsingConditions } from "./Fluent";
+import { assertNotNull } from "../Utilities/ErrorHandling";
+import { IBuilderConfigHost } from "./Fluent";
+import { CountMatchesConditionConfig } from "../Conditions/ConcreteConditions";
 
 /**
  * Interface for condition builders.
- * Extends IBuilderUsingConditions to allow attaching child condition configs to parent builders.
  */
-export interface IConditionBuilder extends IBuilderUsingConditions {
+export interface IConditionBuilder extends IBuilderConfigHost {
     /**
-     * A builder that expects a condition to be attached to it is passed to the 
-     * child builder that creates the child's config.
-     * When the child builder is done, it calls this function to attach the child config to the parent.
-     * @param childConfig 
+     * Called by a condition's Builder function after assembling its config, to deposit
+     * the result into this builder so the parent function can retrieve it.
+     * @param config - The completed config object.
      */
-    attachChildConfig(childConfig: ConditionConfig): void;
+    setConfig(config: ConditionConfig): void;
 
     /**
-     * Exposes the parent config that is being built. 
-     * Assigned to builders.
+     * Called by the parent function after the child callback has run, to retrieve
+     * the deposited config and wire it into the appropriate property of the parent's config.
      */
     getConfig(): ConditionConfig | undefined;   
 }
 
 /**
  * Base class for condition builders.
- * Implements the IConditionBuilder interface and provides common functionality for attaching child configs.
+ * Provides abstract definitions for IConditionBuilder methods, and a constructor that takes a parent builder.
+ * It also provides the following methods to create child condition configs:
+ * conditionConfig(), all(), any(), countMatches(), not(), when().
  */
 export abstract class ConditionBuilderBase implements IConditionBuilder {
-    constructor (parentBuilder: IBuilderUsingConditions) {
+    constructor (parentBuilder: IBuilderConfigHost) {
         this._parentBuilder = parentBuilder;
     }
 
-    protected get parentBuilder(): IBuilderUsingConditions {
+    protected get parentBuilder(): IBuilderConfigHost {
         return this._parentBuilder;
     }
-    private _parentBuilder: IBuilderUsingConditions;
+    private _parentBuilder: IBuilderConfigHost;
 
-    public abstract attachChildConfig(childConfig: ConditionConfig): void;
+    public abstract setConfig(config: ConditionConfig): void;
 
     public abstract getConfig(): ConditionConfig | undefined;
+
+    /**
+     * Inverts the match result of the child condition config.
+     * When child matches, the parent will not match, and vice versa.
+     * When the child is undetermined, the parent will be undetermined.
+     * @param callback 
+     */
+    public not(callback: ConditionBuilderHandler): void {
+        assertNotNull(callback, 'callback');
+        let childBuilder = new StartConditionBuilder(this);
+        let childConfig = callback(childBuilder);
+        assertNotNull(childConfig, 'childConfig');
+        let notConfig: NotConditionConfig = {
+            conditionType: ConditionType.Not,
+            childConditionConfig: childConfig!
+        };
+        this.setConfig(notConfig);
+    }
+
+    /**
+     * Executes a condition only when another condition is satisfied.
+     * When the "when" condition is satisfied, the "then" condition is evaluated.
+     * When the "when" condition is not satisfied, the "then" condition is not evaluated,
+     * @param whenToEnable -
+     * @param thenCallback 
+     */
+    public when(whenToEnableCallback: ConditionBuilderHandler, thenCallback: ConditionBuilderHandler): void {
+        assertNotNull(whenToEnableCallback, 'whenToEnableCallback');
+        assertNotNull(thenCallback, 'thenCallback');
+        let whenBuilder = new StartConditionBuilder(this);
+        let whenConfig = whenToEnableCallback(whenBuilder);
+        assertNotNull(whenConfig, 'whenToEnableConfig');
+        let thenBuilder = new StartConditionBuilder(this);
+        let thenConfig = thenCallback(thenBuilder);
+        assertNotNull(thenConfig, 'thenConfig');
+        let whenConditionConfig: WhenConditionConfig = {
+            conditionType: ConditionType.When,
+            whenToEnableConfig: whenConfig!,
+            thenConfig: thenConfig!
+        };
+        this.setConfig(whenConditionConfig);
+    }
+
+    /**
+     * Main worker for conditions that have children: AllCondition, AnyCondition, CountMatchesCondition.
+     * @param conditionType 
+     * @param childrenCallback 
+     * @returns 
+     */
+    protected arrayOfChildren(conditionType: ConditionType,
+        childrenCallback: ConditionWithChildrenBuilderHandler): ConditionWithChildrenBaseConfig {
+        assertNotNull(childrenCallback, 'childrenCallback');
+        // We'll actually use another builder to build the child configs
+        // and deposit them into the parent builder's config.
+
+        let childBuilder = new StartConditionWithChildrenBuilder(this, conditionType);
+        childrenCallback(childBuilder);
+        // while callback returns an array, it we want the results assigned to 
+        // ConditionWithChildrenBuilder's childConfig array.
+        let config = childBuilder.getConfig() as ConditionWithChildrenBaseConfig;
+        if (this.parentBuilder instanceof StartConditionBuilder) {
+            // if this is a StartConditionBuilder, we need to set the config to the parent builder
+            this.parentBuilder.setConfig(config);
+        }
+        else
+            this.setConfig(config);
+        return config;  // to allow caller to establish additional properties, such as minimum and maximum for CountMatchesCondition
+    }
+
+    /**
+     * Considers a match to be when all child conditions match. If any child does not match, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param callback 
+     */
+    public all(callback: ConditionWithChildrenBuilderHandler): void {
+        this.arrayOfChildren(ConditionType.All, callback);
+    }
+
+    /**
+     * Considers a match to be when any child condition matches. 
+     * If all child conditions do not match, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param callback 
+     */
+    public any(callback: ConditionWithChildrenBuilderHandler): void {
+        this.arrayOfChildren(ConditionType.Any, callback);
+    }
+
+    /**
+     * Considers a match to be when a specified number of child conditions match.
+     * If the number of matching child conditions is less than the minimum, the parent does not match.
+     * If the number of matching child conditions is more than the maximum, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param minimum 
+     * @param maximum 
+     * @param callback 
+     */
+    public countMatches(minimum: number | null, maximum: number | null,
+        callback: ConditionWithChildrenBuilderHandler): void {
+        let conditionWithChildren =
+            this.arrayOfChildren(ConditionType.CountMatches, callback) as CountMatchesConditionConfig;
+        if (minimum !== null) {
+            conditionWithChildren.minimum = minimum;
+        }
+        if (maximum !== null) {
+            conditionWithChildren.maximum = maximum;
+        }
+        this.setConfig(conditionWithChildren);
+    }
+    //!!!PENDING: Support for conditionConfig, all, any, countMatches, not, when
 }
 
 /**
- * Concrete implementation of the IConditionBuilder interface.
- * Used by most conditions to manage child condition configs.
- * Its condition config is fully supplied by attaching a child config,
- * stored in the childConfig field, and returned by getConfig method.
+ * This class is intended to be used by all functions that create a condition config object.
+ * It has all conditions declared as its methods, each doing its own thing to create
+ * its condition object and attach it to the parent builder.
+ * 
+ * This class is intended for expansion through prototypes, allowing the user to create
+ * new conditions and add them to the ConditionBuilder class. 
+ * See the ConditionBuilderExtensions.ts file for examples.
+ * 
+ * ```ts
+ * ConditionBuilder.prototype.myNewCondition = function constructor;
+ * ```
  */
 export class ConditionBuilder extends ConditionBuilderBase {
-    constructor (parentBuilder: IBuilderUsingConditions) {
+    constructor (parentBuilder: IBuilderConfigHost) {
         super(parentBuilder);
     }
-    protected childConfig?: ConditionConfig;
+    private _config?: ConditionConfig;
 
-    public attachChildConfig(childConfig: ConditionConfig): void {
-        this.childConfig = childConfig;
-        this.parentBuilder.attachChildConfig(childConfig);
-    }
-
-    public getConfig(): ConditionConfig | undefined {
-        return this.childConfig;
-    }
-}
-
-/**
- * While the NotCondition itself will use the ConditionBuilder, its condition building function,
- * _genDCNot creates this to get the child condition config to assign to its
- * NotConditionConfig.childConditionConfig property. 
- * 
- * This class handles retrieing the config and assigning it to parentBuilder.getConfig().childConditionConfig
- * ```ts
- * const config: NotConditionConfig = {
- *    conditionType: ConditionType.Not,
- *    childConditionConfig: { ... child Config 1 ...}   << here
- * };
- * ```
- */
-export class NotConditionChildBuilder extends ConditionBuilderBase {
-    constructor (parentBuilder: IBuilderUsingConditions) {
-        super(parentBuilder);
-    }
-    protected childConfig?: ConditionConfig;
-
-    public attachChildConfig(childConfig: ConditionConfig): void {
-        this.childConfig = childConfig;
-        let notConfig = this.parentBuilder.getConfig() as NotConditionConfig | undefined;
-        if (notConfig) {
-            notConfig.childConditionConfig = childConfig;
+    public setConfig(config: ConditionConfig): void {
+        assertNotNull(config, "config");
+        assertNotNull(config.conditionType, "config.conditionType");
+        this._config = config;
+        if (this.parentBuilder instanceof StartConditionBuilder) {
+            // if this is a StartConditionBuilder, we need to set the config to the parent builder
+            this.parentBuilder.setConfig(config);
         }
     }
 
     public getConfig(): ConditionConfig | undefined {
-        return this.childConfig;
-    }
-}
-
-/**
- * While the WhenCondition itself will use the ConditionBuilder, its condition building function,
- * _genDCWhen creates this to get the child condition config to assign to its
- * WhenConditionConfig.whenToEnableConfig property.
- * 
- * This class handles retrieing the config and assigning it to parentBuilder.getConfig().whenToEnableConfig
- * ```ts
- * const config: WhenConditionConfig = {
- *      conditionType: ConditionType.When,
- *      whenToEnableConfig: { ... child Config 1 ...}, << here
- *      thenConfig: { ... child Config 2 ...}
- * }
- * ```
- */
-export class WhenToEnableBuilder extends ConditionBuilderBase {
-    constructor(parentBuilder: IBuilderUsingConditions) {
-        super(parentBuilder);
-    }
-    protected childConfig?: ConditionConfig;
-
-    public attachChildConfig(childConfig: ConditionConfig): void {
-        this.childConfig = childConfig;
-        let whenConfig = this.parentBuilder.getConfig() as WhenConditionConfig | undefined;
-        if (whenConfig) {
-            whenConfig.whenToEnableConfig = childConfig;
-        }
-    }
-    public getConfig(): ConditionConfig | undefined {
-        return this.childConfig;
-    }
-}
-
-/**
- * While the WhenCondition itself will use the ConditionBuilder, its condition building function,
- * _genDCWhen creates this to get the child condition config to assign to its
- * WhenConditionConfig.thenConfig property.
- * 
- * This class handles retrieing the config and assigning it to parentBuilder.getConfig().thenConfig
- * ```ts
- * const config: WhenConditionConfig = {
- *      conditionType: ConditionType.When,
- *      whenToEnableConfig: { ... child Config 1 ...},
- *      thenConfig: { ... child Config 2 ...} << here
- * }
- * ```
- */
-export class ThenBuilder extends ConditionBuilderBase {
-    constructor(parentBuilder: IBuilderUsingConditions) {
-        super(parentBuilder);
-    }
-    protected childConfig?: ConditionConfig;
-
-    public attachChildConfig(childConfig: ConditionConfig): void {
-        this.childConfig = childConfig;
-        let whenConfig = this.parentBuilder.getConfig() as WhenConditionConfig | undefined;
-        if (whenConfig) {
-            whenConfig.thenConfig = childConfig;
-        }
-    }
-    public getConfig(): ConditionConfig | undefined {
-        return this.childConfig;
+        return this._config;
     }
 }
 
 export class StartConditionBuilder extends ConditionBuilderBase {
-    constructor(parentBuilder: IBuilderUsingConditions) {
+    constructor(parentBuilder: IBuilderConfigHost) {
         super(parentBuilder);
     }
-    protected childConfig?: ConditionConfig;
+
+    protected config?: ConditionConfig;
 
     /**
      * When assigned, it is copied to the child condition config's valueHostName property, 
@@ -300,41 +329,85 @@ export class StartConditionBuilder extends ConditionBuilderBase {
     protected valueHostName?: string;
 
     /**
-     * Will assign the childConfig.valueHostName property to the valueHostName property of this builder, if it is defined.
-     * Will pass up the childConfig to the parent builder's attachChildConfig method.
-     * @param childConfig 
+     * Will assign the config.valueHostName property to the valueHostName property of this builder, 
+     * if it is defined, unless it was already assigned by the child.
+     * Will pass up the config to the parent builder's setConfig method.
+     * @param config 
      */
-    public attachChildConfig(childConfig: ConditionConfig): void {
-        this.childConfig = childConfig;
+    public setConfig(config: ConditionConfig): void {
+        this.config = config;
         if (this.valueHostName) {
             // there is no real way to check because this object is generic.
             // So we assign the valueHostName property to all configs.
-            let oneValueConfig = childConfig as OneValueConditionBaseConfig;
-            oneValueConfig.valueHostName = this.valueHostName;
+            let oneValueConfig = config as OneValueConditionBaseConfig;
+            if (oneValueConfig.valueHostName == null) // null/undefined
+                oneValueConfig.valueHostName = this.valueHostName;
         }
-        this.parentBuilder.attachChildConfig(childConfig);
+        this.parentBuilder.setConfig(config);
     }
     public getConfig(): ConditionConfig | undefined {
-        return this.childConfig;
+        return this.config;
     }
 
+    /**
+     * Starts building a condition that uses the parent value host as its source.
+     * 
+     * Hands off the next part to a new ConditionBuilder, 
+     * where the user can select the actual condition to build.
+     * setConfig() will not assign a valueHostName property to the child condition config, 
+     * which means the parent value host is used.
+     * @returns 
+     */
     public parentValue(): ConditionBuilder {
         this.valueHostName = undefined;
         return new ConditionBuilder(this);
     }
 
+    /**
+     * Starts building a condition that uses the supplied valueHostName as its source.
+     * 
+     * Hands off the next part to a new ConditionBuilder, 
+     * where the user can select the actual condition to build.
+     * setConfig() will later bind the valueHostName to the child condition config's valueHostName property.
+     * @param valueHostName 
+     * @returns 
+     */
     public fieldValue(valueHostName: string): ConditionBuilder {
         this.valueHostName = valueHostName;
         return new ConditionBuilder(this);
     }
-
-    // pending: conditionConfig, all, any, countMatches, not, when
 }   
 
-export type ConditionBuilderHandler = (conditionsBuilder: ConditionBuilder) => void;
+/**
+ * Starter these conditions: AllCondition, AnyCondition, CountMatchesCondition.
+ * These conditions have an array of child condition configs that are supplied through an array.
+ * Each child in created by its own ConditionBuilder and passed up to this one.
+ * 
+ * It works a bit differently than the usual, by taking on the task of creating
+ * the actual ConditionWithChildrenBaseConfig object, and through setConfig(),
+ * adding each child config to the array, which is the conditionConfigs property of the ConditionWithChildrenBaseConfig.
+ * 
+ * Each call to setConfig() will add a child config to the array.
+ * It fully creates the ConditionWithChildrenBaseConfig object, which is returned by getConfig()
+ */
+export class StartConditionWithChildrenBuilder extends StartConditionBuilder {
 
-export type NotConditionChildBuilderHandler = (notConditionBuilder: NotConditionChildBuilder) => void;
+    constructor(parentBuilder: IBuilderConfigHost, conditionType: ConditionType) {
+        super(parentBuilder);
+        super.setConfig({
+            conditionType: conditionType,
+            conditionConfigs: []
+        } as ConditionWithChildrenBaseConfig);          
+    }
 
-export type WhenToEnableBuilderHandler = (whenToEnableBuilder: WhenToEnableBuilder) => void;
+    public setConfig(config: ConditionConfig): void {
+        assertNotNull(config, "config");
+        assertNotNull(config.conditionType, "config.conditionType");
+        (<ConditionWithChildrenBaseConfig>this.getConfig())?.conditionConfigs.push(config);
+        this.parentBuilder.setConfig(this.getConfig()!);
+    }
+}
 
-export type ThenBuilderHandler = (thenBuilder: ThenBuilder) => void;
+export type ConditionBuilderHandler = (conditionsBuilder: StartConditionBuilder) => ConditionConfig;
+export type ConditionWithChildrenBuilderHandler =
+    (conditionsBuilder: StartConditionWithChildrenBuilder) => void;
