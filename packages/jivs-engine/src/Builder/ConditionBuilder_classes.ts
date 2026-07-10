@@ -98,7 +98,7 @@
  * 
  * * ConditionBuilder: Extends ConditionBuilderBase and is intended to be used by 
  *   all functions that create a condition config object.
- *   It has all conditions declared as its methods, each doing its own thing to create
+ *   It has all Jivs-supplied conditions declared as its methods, each doing its own thing to create
  *   its condition object and attach it to the parent builder.
  *   This class is intended for expansion through prototypes, allowing the user to create
  *   new conditions and add them to the ConditionBuilder class. 
@@ -117,6 +117,10 @@
  *          by setting config.valueHostName property to the supplied valueHostName.
  *      + all, any, countMatches, when, not, conditionConfig: These methods are inherited from ConditionBuilderBase, 
  *          and are used to create the child condition config.
+ * * StartConditionWithChildrenBuilder: Extends StartConditionBuilder and is used by AllCondition, AnyCondition, 
+ *    and other conditions that can have child conditions. It fully creates the condition config.
+ *    It gathers all child condition configs and attaches them to the parent condition config
+ *    through its setConfig method.
  */
 
 import { ConditionType } from "../Conditions/ConditionTypes";
@@ -404,28 +408,6 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
 
 }
 
-/**
- * This class is intended to be used by all functions that create a condition config object.
- * It has all conditions declared as its methods, each doing its own thing to create
- * its condition object and attach it to the parent builder.
- * 
- * This class is intended for expansion through prototypes, allowing the user to create
- * new conditions and add them to the ConditionBuilder class. 
- * See the ConditionBuilderExtensions.ts file for examples.
- * 
- * ```ts
- * ConditionBuilder.prototype.myNewCondition = function constructor;
- * ```
- */
-export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig>
-    extends ConditionBuilderBase<TConfig> {
-    constructor(parentBuilder: IBuilderConfigHost<object>, 
-        completed?: CompleteConfigBuilderHandler<TConfig>
-    ) {
-        super(parentBuilder, completed);
-    }
-}
-
 export class StartConditionBuilder extends ConditionBuilderBase<ConditionConfig> {
     constructor(parentBuilder: IBuilderConfigHost<object>,
         completed?: CompleteConfigBuilderHandler<ConditionConfig>
@@ -593,3 +575,25 @@ export class StartConditionWithOneChildBuilder extends StartConditionBuilder {
 export type ConditionBuilderHandler = (conditionsBuilder: StartConditionBuilder) => void;
 export type ConditionWithChildrenBuilderHandler =
     (conditionsBuilder: StartConditionWithChildrenBuilder) => void;
+
+/**
+ * This class is intended to be used by all functions that create a condition config object.
+ * It has all Jivs-supplied conditions declared as its methods, each doing its own thing to create
+ * its condition object and attach it to the parent builder.
+ * 
+ * This class is intended for expansion through prototypes, allowing the user to create
+ * new conditions and add them to the ConditionBuilder class. 
+ * See the ConditionBuilderExtensions.ts file for examples.
+ * 
+ * ```ts
+ * ConditionBuilder.prototype.myNewCondition = function constructor;
+ * ```
+ */
+export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig>
+    extends ConditionBuilderBase<TConfig> {
+    constructor(parentBuilder: IBuilderConfigHost<object>, 
+        completed?: CompleteConfigBuilderHandler<TConfig>
+    ) {
+        super(parentBuilder, completed);
+    }
+}

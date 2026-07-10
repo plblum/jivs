@@ -101,7 +101,7 @@ declare module "./../Builder/ConditionBuilder_classes"
     // REMINDER: Conditions do not support chaining of fluent functions,
     // and is expected to return void.
     export interface ConditionBuilder {
-        conditionConfig(conditionConfig: ConditionConfig): void;
+//        conditionConfig(conditionConfig: ConditionConfig): void;
         dataTypeCheck(): void;
         requireText(
             conditionConfig?: OptionalRequireTextConditionParams): void;

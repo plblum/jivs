@@ -1,9 +1,14 @@
+import { ValidationManagerStartFluent } from './../../src/Builder/Fluent';
 import { enableConditionBuilderExtensions } from '../../src/Builder/ConditionBuilderExtensions';
 import { StartConditionBuilder } from '../../src/Builder/ConditionBuilder_classes';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { MockValidationServices } from '../TestSupport/mocks';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
+import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
+import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
     constructor() {
@@ -25,65 +30,11 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
 }
 
 
-// function TestFluentConditionBuilder(testItem: FluentConditionBuilder,
-//     expectedCondConfig: ConditionConfig) {
-
-//     expect(testItem).toBeInstanceOf(FluentConditionBuilder);
-//     let typedTextItem = testItem as FluentConditionBuilder;
-//     let parentConfig = typedTextItem.parentConfig as ConditionWithChildrenBaseConfig;
-//     expect(parentConfig.conditionConfigs).not.toBeNull();
-//     expect(parentConfig.conditionConfigs!.length).toBe(1);
-//     let condConfig = parentConfig.conditionConfigs![0];
-//     expect(condConfig).toEqual(expectedCondConfig);
-// }
-
-// function createFluent(): ValidationManagerStartFluent {
-//     return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-// }
-
 // create pre test code with this: enableFluentConditions()
 beforeAll(() => {
     enableConditionBuilderExtensions();
 });
-// describe('conditionConfig', () => {
-//     test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
-//         const conditionConfig: RegExpConditionConfig = {
-//             conditionType: ConditionType.RegExp,
-//             expression: /\d/i,
-//             valueHostName: null
-//         };
-//         let parentBuilder = new TestParentBuilder();
-//         let starterBuilder = new StartConditionBuilder(parentBuilder);
-//         starterBuilder.conditionConfig(conditionConfig);
-//         TestFluentConditionBuilder(testItem, conditionConfig);
-//     });
-//     test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
-//         const conditionConfig: AllMatchConditionConfig = {
-//             conditionType: ConditionType.All,
-//             conditionConfigs: [
-//                 <EqualToValueConditionConfig>{
-//                     conditionType: ConditionType.EqualToValue,
-//                     secondValue: 1
-//                 },
-//                 <EqualToValueConditionConfig>{
-//                     conditionType: ConditionType.EqualToValue,
-//                     secondValue: 2
-//                 }
-//             ]
-//         };
-//         let parentBuilder = new TestParentBuilder();
-//         starterBuilder.conditionConfig(conditionConfig);
-//         TestFluentConditionBuilder(testItem, conditionConfig);
-//     });    
-//     test('With null parameter, throws error', () => {
-//         let parentBuilder = new TestParentBuilder();
-//         expect(() => fluent.conditions().conditionConfig(null!)).toThrow(/conditionConfig/);
-//     });
-//     test('With object missing conditionType property, throws error', () => {
-//         let parentBuilder = new TestParentBuilder();
-//         expect(() => fluent.conditions().conditionConfig({} as any)).toThrow(/conditionConfig.conditionType/);
-//     });    
-// });
+
 
 describe('dataTypeCheck on conditions', () => {
     test('with fieldValue assigned, creates DataTypeCheckConditionConfig with type=DataTypeCheck and valueHostName assigned', () => {
@@ -110,6 +61,35 @@ describe('dataTypeCheck on conditions', () => {
         expect(starterConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
+    });
+    // checking from the validator starting point, using when with this condition type in the thenBuilder
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().dataTypeCheck()
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.DataTypeCheck
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
     });
 });
 
@@ -204,6 +184,36 @@ describe('regExp on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().regExp('\\d', true)
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.RegExp,
+                            expressionAsString: '\\d',
+                            ignoreCase: true
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('range on conditions', () => {
@@ -267,7 +277,36 @@ describe('range on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().range(1, 4)
+        );
 
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.Range,
+                            minimum: 1,
+                            maximum: 4
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });
 });
 
 describe('equalToValue on conditions', () => {
@@ -335,6 +374,36 @@ describe('equalToValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 3
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('equalTo on conditions', () => {
     test('With secondValueHostName assigned, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () => {
@@ -403,6 +472,35 @@ describe('equalTo on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().equalTo('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.EqualTo,
+                            valueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('notEqualToValue on conditions', () => {
@@ -468,6 +566,36 @@ describe('notEqualToValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.NotEqualToValue,
+                            secondValue: 1
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('notEqualTo on conditions', () => {
     test('With secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () => {
@@ -532,6 +660,35 @@ describe('notEqualTo on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().notEqualTo('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.NotEqualTo,
+                            valueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('lessThanValue on conditions', () => {
@@ -598,6 +755,35 @@ describe('lessThanValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.LessThanValue,
+                            secondValue: 'A'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('lessThan on conditions', () => {
     test('With secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
@@ -694,6 +880,35 @@ describe('lessThan on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().lessThan('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.LessThan,
+                            secondValueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('lessThanOrEqualValue on conditions', () => {
     test('With secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
@@ -804,6 +1019,35 @@ describe('lessThanOrEqualValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.LessThanOrEqualValue,
+                            secondValue: 'B'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('lessThanOrEqual on conditions', () => {
     test('With secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
@@ -900,6 +1144,35 @@ describe('lessThanOrEqual on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.LessThanOrEqual,
+                            secondValueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 
@@ -1012,6 +1285,35 @@ describe('greaterThanValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.GreaterThanValue,
+                            secondValueHostName: 'C'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('greaterThan on conditions', () => {
@@ -1121,6 +1423,35 @@ describe('greaterThan on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().greaterThan('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.GreaterThan,
+                            secondValueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('greaterThanOrEqualValue on conditions', () => {
     test('With secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
@@ -1228,6 +1559,35 @@ describe('greaterThanOrEqualValue on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.GreaterThanOrEqualValue,
+                            secondValue: 'D'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('greaterThanOrEqual on conditions', () => {
     test('With secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
@@ -1337,6 +1697,35 @@ describe('greaterThanOrEqual on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqual('F3')
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.GreaterThanOrEqual,
+                            secondValueHostName: 'F3'
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('stringLength on conditions', () => {
@@ -1399,6 +1788,36 @@ describe('stringLength on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().stringLength(4)
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.StringLength,
+                            maximum: 4
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 
 describe('requireText on conditions', () => {
@@ -1460,6 +1879,34 @@ describe('requireText on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().requireText()
+        );
+
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.RequireText
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });    
 });
 describe('notNull on conditions', () => {
     test('With no parameters, creates NotNullConditionConfig with type=NotNull assigned', () => {
@@ -1489,7 +1936,34 @@ describe('notNull on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().notNull()
+        );
 
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.NotNull
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });
 });
 
 describe('positive on conditions', () => {
@@ -1519,7 +1993,34 @@ describe('positive on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().positive()
+        );
 
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.Positive
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });
 });
 describe('integer on conditions', () => {
     test('With no parameters, creates IntegerConditionConfig with type=Integer assigned', () => {
@@ -1549,7 +2050,34 @@ describe('integer on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().integer()
+        );
 
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.Integer
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });
 });
 describe('maxDecimals on conditions', () => {
     test('With no parameters, creates MaxDecimalsConditionConfig with type=MaxDecimals assigned', () => {
@@ -1581,7 +2109,35 @@ describe('maxDecimals on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+    test('using when with this condition type in the thenBuilder', () => {
+        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+        let fieldFluent =  startFluent.field('myField').when(
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (thenBuilder) => thenBuilder.parentValue().maxDecimals(2)
+        );
 
+        let expectedConfig = <FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'myField',
+            validatorConfigs: [
+                {
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        whenToEnableConfig: {
+                            conditionType: ConditionType.EqualToValue,
+                            secondValue: 1,
+                            valueHostName: 'F2'
+                        },
+                        thenConfig: {
+                            conditionType: ConditionType.MaxDecimals,
+                            maxDecimals: 2
+                        }
+                    }
+                }
+            ]
+        };
+        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+    });
 });
 
 
@@ -1761,6 +2317,7 @@ describe('all on conditions', () => {
         expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
+
 });
 
 describe('any on conditions', () => {
@@ -2460,4 +3017,33 @@ describe('when on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
 
+});
+
+describe('conditionConfig', () => {
+    test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
+        const conditionConfig = {
+            conditionType: ConditionType.RegExp,
+            expression: /\d/i,
+            valueHostName: null
+        };
+        let parentBuilder = new TestParentBuilder();
+        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        starterBuilder.conditionConfig(conditionConfig);
+
+        let expectedCondConfig = conditionConfig;
+        expect(starterBuilder.getConfig()).toEqual(expectedCondConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+        expect(parentBuilder.getConfig()).toBeUndefined();
+    });
+ 
+    test('With null parameter, throws error', () => {
+        let parentBuilder = new TestParentBuilder();
+        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        expect(() => starterBuilder.conditionConfig(null!)).toThrow(/config/);
+    });
+    test('With object missing conditionType property, throws error', () => {
+        let parentBuilder = new TestParentBuilder();
+        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        expect(() => starterBuilder.conditionConfig({} as any)).toThrow(/config.conditionType/);
+    });    
 });
