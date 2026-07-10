@@ -79,21 +79,20 @@
  */
 
 import {
-    AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
-    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-    MaxDecimalsConditionConfig, NotEqualToValueConditionConfig, NotEqualToConditionConfig,
-    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
+    DataTypeCheckConditionConfig,
+    EqualToConditionConfig, EqualToValueConditionConfig,
+    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
+    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
+    LessThanConditionConfig, LessThanOrEqualConditionConfig,
+    LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+    PositiveConditionConfig, IntegerConditionConfig, MaxDecimalsConditionConfig,
+    NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
 } from "../Conditions/ConcreteConditions";
-import { NotConditionConfig, } from "../Conditions/NotCondition";
-import { WhenConditionConfig,  } from "../Conditions/WhenCondition";
 import { ConditionType } from "../Conditions/ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionConfig } from "../Interfaces/Conditions";
-import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
 import { ConditionBuilder } from "./ConditionBuilder_classes";
 
 // How TypeScript merges functions with the ConditionBuilder class

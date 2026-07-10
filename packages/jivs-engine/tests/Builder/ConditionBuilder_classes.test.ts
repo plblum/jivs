@@ -1,18 +1,26 @@
-import { IBuilderConfigHost } from "../../src/Builder/Fluent";
 import {
     ConditionBuilder,
     StartConditionBuilder
-}
-    from "../../src/Builder/ConditionBuilder_classes";
-import { EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig } from "../../src/Conditions/ConcreteConditions";
+} from "../../src/Builder/ConditionBuilder_classes";
+import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Builder/Fluent";
+import {
+    EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
+ }
+    from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { NotConditionConfig } from "../../src/Conditions/NotCondition";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { enableConditionBuilderExtensions } from "../../src/Builder/ConditionBuilderExtensions";
+import { ConditionConfig } from "../../src/Interfaces/Conditions";
 
 
-class TestParentBuilder implements IBuilderConfigHost {
+class TestParentBuilder implements IBuilderConfigHost<object> {
+    constructor() {
+        this.completed = (config: object, source: IBuilderConfigHost<object>) => {
+            this.completedConfig = config;
+        };
+    }
     public childConfig: object | undefined;
+    public completedConfig?: object | undefined;
     
     setConfig(childConfig: object): void {
         this.childConfig = childConfig;
@@ -20,7 +28,10 @@ class TestParentBuilder implements IBuilderConfigHost {
     getConfig(): object | undefined {
         return this.childConfig;
     }
+
+    completed?: CompleteConfigBuilderHandler<object>;
 }
+
 
 describe('ConditionBuilder', () => {
     // using expects syntax
@@ -53,24 +64,19 @@ describe('ConditionBuilder', () => {
 });
 
 describe('StartConditionBuilder', () => {
-    class Publicify_StartConditionBuilder extends StartConditionBuilder {
-        public get publicify_ValueHostName(): string | undefined {
-            return this.valueHostName;
-        }
-    }
     describe('parentValue()', () => {
         test('returns a new ConditionBuilder with its own valueHostName property undefined', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             expect(conditionBuilder).toBeInstanceOf(ConditionBuilder);
             expect((conditionBuilder as any).valueHostName).toBeUndefined();
-            expect(startBuilder.publicify_ValueHostName).toBeUndefined();
+            expect(startBuilder.valueHostName).toBeUndefined();
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
         test('causes setConfig to leave the childConfig.valueHostName property unassigned; parentBuilder gets config', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             let childConfig = {
                 conditionType: ConditionType.RequireText
@@ -85,17 +91,19 @@ describe('StartConditionBuilder', () => {
             };
             expect(conditionBuilder.getConfig()).toEqual(childConfig);
             expect(startBuilder.getConfig()).toEqual(expectedParentConfig);
-            expect(parentConfig).toEqual(expectedParentConfig);
-            expect((parentConfig as any).valueHostName).toBeUndefined();
+            expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+            expect((parentBuilder.completedConfig as any).valueHostName).toBeUndefined();
+            // the parentBuilder.setConfig is not called as the children use completed to notify
+            expect(parentBuilder.childConfig).toBeUndefined();
         });
         // same but valueHostName is null in child
         test('causes setConfig to leave the childConfig.valueHostName alone when its assigned', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             let childConfig = {
                 conditionType: ConditionType.RequireText,
-                valueHostName: 'Field1'
+                valueHostName: 'myField'
             };
             conditionBuilder.setConfig(childConfig);
             // by design parent must retrieve the child config from the parentBuilder, so we can check that it is correct
@@ -104,18 +112,20 @@ describe('StartConditionBuilder', () => {
             let parentConfig = parentBuilder.getConfig();
             const expectedParentConfig = {
                 conditionType: ConditionType.RequireText,
-                valueHostName: 'Field1'
+                valueHostName: 'myField'
             };
             expect(conditionBuilder.getConfig()).toEqual(childConfig);
             expect(startBuilder.getConfig()).toEqual(expectedParentConfig);
-            expect(parentConfig).toEqual(expectedParentConfig);
-            expect((parentConfig as any).valueHostName).toEqual('Field1');
+            expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+            expect((parentBuilder.completedConfig as any).valueHostName).toEqual('myField');
+            // the parentBuilder.setConfig is not called as the children use completed to notify
+            expect(parentBuilder.childConfig).toBeUndefined();
         });
     });
     describe('fieldValue()', () => {
         test('returns a new ConditionBuilder with its own valueHostName property assigned to the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText
@@ -131,12 +141,14 @@ describe('StartConditionBuilder', () => {
             };
             expect(conditionBuilder.getConfig()).toEqual(childConfig);
             expect(startBuilder.getConfig()).toEqual(expectedParentConfig);
-            expect(parentConfig).toEqual(expectedParentConfig);
-            expect((parentConfig as any).valueHostName).toEqual('myField');
+            expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+            expect((parentBuilder.completedConfig as any).valueHostName).toEqual('myField');
+            // the parentBuilder.setConfig is not called as the children use completed to notify
+            expect(parentBuilder.childConfig).toBeUndefined();
         });
         test('when the child has valueHostName assigned, setConfig should not overwrite it with the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText,
@@ -153,13 +165,15 @@ describe('StartConditionBuilder', () => {
             };
             expect(conditionBuilder.getConfig()).toEqual(childConfig);
             expect(startBuilder.getConfig()).toEqual(expectedParentConfig);
-            expect(startBuilder.publicify_ValueHostName).toEqual('myField');
-            expect(parentConfig).toEqual(expectedParentConfig);
-            expect((parentConfig as any).valueHostName).toEqual('childField');
+            expect(startBuilder.valueHostName).toEqual('myField');
+            expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+            expect((parentBuilder.completedConfig as any).valueHostName).toEqual('childField');
+            // the parentBuilder.setConfig is not called as the children use completed to notify
+            expect(parentBuilder.childConfig).toBeUndefined();
         });
         test('when the child has valueHostName assigned to null, setConfig should overwrite it with the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new Publicify_StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText,
@@ -175,29 +189,42 @@ describe('StartConditionBuilder', () => {
             };
             expect(conditionBuilder.getConfig()).toEqual(childConfig);
             expect(startBuilder.getConfig()).toEqual(expectedParentConfig);
-            expect(startBuilder.publicify_ValueHostName).toEqual('myField');
-            expect(parentConfig).toEqual(expectedParentConfig);
-            expect((parentConfig as any).valueHostName).toEqual('myField');
+            expect(startBuilder.valueHostName).toEqual('myField');
+            expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+            expect((parentBuilder.completedConfig as any).valueHostName).toEqual('myField');
+            // the parentBuilder.setConfig is not called as the children use completed to notify
+            expect(parentBuilder.childConfig).toBeUndefined();
         });
     });
 });
 
+/**
+ * Gives a distinct naming in the variables so we know its not
+ * one of those used within the when and not code.
+ */
+class TopLevelStartConditionBuilder extends StartConditionBuilder {
+    constructor(parentBuilder: IBuilderConfigHost<object>,
+        completed?: CompleteConfigBuilderHandler<ConditionConfig>
+    ) {
+        super(parentBuilder, completed);
+    }
+}
 describe('when()', () => {
     test('creates a WhenConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new TopLevelStartConditionBuilder(parentBuilder);
         startBuilder.when(
             (whenBuilder) =>
                 // normally the whenBuilder would be used to create a child condition config, but for this test we can just return a config directly
-                <EqualToValueConditionConfig>{
+                whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 5
-                },
-            (thenBuilder) => <RequireTextConditionConfig>{
+                }),
+            (thenBuilder) =>
+                thenBuilder.conditionConfig(<RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText
-            });
+                }));
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig: WhenConditionConfig = {
             conditionType: ConditionType.When,
             whenToEnableConfig: <EqualToValueConditionConfig>{
@@ -208,8 +235,11 @@ describe('when()', () => {
                 conditionType: ConditionType.RequireText
             }
         };
-        expect(parentConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect((parentBuilder.completedConfig as any).valueHostName).toBeUndefined();
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();        
     });
     // null first parameter throws
     test('when() throws when first parameter is null', () => {
@@ -218,9 +248,9 @@ describe('when()', () => {
         expect(() => {
             startBuilder.when(
                 null!,
-                (thenBuilder) => <RequireTextConditionConfig>{
+                (thenBuilder) => thenBuilder.conditionConfig(<RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText
-                });
+                }));
         }).toThrow('whenToEnableCallback required');
     });
     // null second parameter throws
@@ -229,10 +259,10 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         expect(() => {
             startBuilder.when(
-                (whenBuilder) => <EqualToValueConditionConfig>{
+                (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 5
-                },
+                }),
                 null!);
         }).toThrow('thenCallback required');
     });
@@ -243,9 +273,9 @@ describe('when()', () => {
         expect(() => {
             startBuilder.when(
                 (whenBuilder) => null!,
-                (thenBuilder) => <RequireTextConditionConfig>{
+                (thenBuilder) => thenBuilder.conditionConfig(<RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText
-                });
+                }));
         }).toThrow('whenToEnableConfig required');
     });
     // then config is null
@@ -254,10 +284,10 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         expect(() => {
             startBuilder.when(
-                (whenBuilder) => <EqualToValueConditionConfig>{
+                (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 5
-                },
+                }),
                 (thenBuilder) => null!);
         }).toThrow('thenConfig required');
     });
@@ -267,13 +297,14 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.when(
-            (whenBuilder) => <EqualToValueConditionConfig>{
+            (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 5
-            },
-            (thenBuilder) => <RequireTextConditionConfig>{
+            }),
+            (thenBuilder) => thenBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
-            }); 
+            }));
+
         // because we didn't use a function to create the child configs and use setConfig,
         // we have to do it here;
         startBuilder.setConfig(conditionBuilder.getConfig()!);
@@ -293,7 +324,10 @@ describe('when()', () => {
         };
         expect(conditionConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect((parentBuilder.completedConfig as any).valueHostName).toBeUndefined();
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // using startBuilder.fieldValue().when() to show when comes from ConditionBuilder
     test('startBuilder.fieldValue().when() creates a WhenConditionConfig and assigns it to the parent builder', () => {
@@ -301,13 +335,16 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.when(
-            (whenBuilder) => <EqualToValueConditionConfig>{
+            (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 5
-            },
-            (thenBuilder) => <RequireTextConditionConfig>{
+                // will inherit valuehostName='myField'
+            }),
+            (thenBuilder) => thenBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
-            });
+                // will inherit valuehostName='myField'
+            }));
+
         // because we didn't use a function to create the child configs and use setConfig,
         // we have to do it here;
         startBuilder.setConfig(conditionBuilder.getConfig()!);
@@ -321,14 +358,19 @@ describe('when()', () => {
             whenToEnableConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 5,
+                valueHostName: 'myField'
             },
             thenConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText
+                conditionType: ConditionType.RequireText,
+                valueHostName: 'myField'
             }
         };
         expect(conditionConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect((parentBuilder.completedConfig as any).valueHostName).toEqual('myField');
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
 });
 
@@ -337,15 +379,11 @@ describe('not()', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.not(
-            (notBuilder) => <RequireTextConditionConfig>{
+            (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
-            });
-        // because we didn't use a function to create the child configs and use setConfig,
-        // we have to do it here;
-        startBuilder.setConfig(startBuilder.getConfig()!);
+            }));
 
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig: NotConditionConfig = {
             conditionType: ConditionType.Not,
             childConditionConfig: <RequireTextConditionConfig>{
@@ -353,23 +391,22 @@ describe('not()', () => {
             }
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect((parentBuilder.completedConfig as any).valueHostName).toBeUndefined();
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // with valuehost in child
     test('creates a NotConditionConfig with child valueHostName and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.not(
-            (notBuilder) => <RequireTextConditionConfig>{
+            (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 valueHostName: 'childField'
-            });
-        // because we didn't use a function to create the child configs and use setConfig,
-        // we have to do it here;
-        startBuilder.setConfig(startBuilder.getConfig()!);
+            }));
 
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig: NotConditionConfig = {
             conditionType: ConditionType.Not,
             childConditionConfig: <RequireTextConditionConfig>{
@@ -378,7 +415,9 @@ describe('not()', () => {
             }
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // starterBuilder.parentValue.not
     test('startBuilder.parentValue().not() creates a NotConditionConfig and assigns it to the parent builder', () => {
@@ -386,14 +425,11 @@ describe('not()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.not(
-            (notBuilder) => <RequireTextConditionConfig>{
+            (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
-            });
-        // because we didn't use a function to create the child configs and use setConfig,
-        // we have to do it here;
-        startBuilder.setConfig(conditionBuilder.getConfig()!);
+            }));
+
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig: NotConditionConfig = {
             conditionType: ConditionType.Not,
             childConditionConfig: <RequireTextConditionConfig>{
@@ -401,31 +437,32 @@ describe('not()', () => {
             }
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
-    test('startBuilder.fieldValue().not() creates a NotConditionConfig and assigns it to the parent builder', () => {
+    test('startBuilder.fieldValue().not() creates a NotConditionConfig and assigns it to the parent builder. The child of not get valuesHostName passed through', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.not(
-            (notBuilder) => <RequireTextConditionConfig>{
+            (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
-            });
-        // because we didn't use a function to create the child configs and use setConfig,
-        // we have to do it here;
-        startBuilder.setConfig(conditionBuilder.getConfig()!);
+            }));
+
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.Not,
             valueHostName: 'myField',   // even though it does not exist as a property on the NotConditionConfig
             childConditionConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText
-                // notice it does not have valueHostName: 'myField' here. Only updates immediate children
+                conditionType: ConditionType.RequireText,
+                valueHostName: 'myField' // startConditionBuilder is supplied the child too
             }
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
 });
 
@@ -436,20 +473,13 @@ describe('all()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.all(
             (allBuilder) => {
-                let a = [
-                    { // not using setConfig, but it should even though this happens to work
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    allBuilder.setConfig(cond);
-                }
-                return a;
-                
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
             });
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
+
         const expectedParentConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: [
@@ -460,7 +490,9 @@ describe('all()', () => {
             ]
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // 3 child conditions
     test('creates an AllConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
@@ -468,29 +500,22 @@ describe('all()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.all(
             (allBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    },
-                    {
-                        conditionType: ConditionType.EqualToValue,
-                        secondValue: 5
-                    },
-                    {
-                        valueHostName: 'F2',
-                        conditionType: ConditionType.Range,
-                        minimum: 1,
-                        maximum: 10
-                    }
-                ];
-                for (let cond of a) {
-                    allBuilder.setConfig(cond);
-                }
-                return a;
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+                allBuilder.conditionConfig(<RangeConditionConfig>{
+                    conditionType: ConditionType.Range,
+                    minimum: 1,
+                    maximum: 10,
+                    valueHostName: 'F2'
+                });
             });
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: [
@@ -511,7 +536,42 @@ describe('all()', () => {
             ]
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
+    test('Child condition uses the valueHostName from fieldValue if not already set', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.all(
+            (allBuilder) => {
+                allBuilder.fieldValue('NotUsed').conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+            });
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5,
+                    valueHostName: 'Field2'
+                }
+            ]
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // empty array
     test('creates an AllConditionConfig with no child conditions and assigns it to the parent builder', () => {
@@ -519,17 +579,16 @@ describe('all()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.all(
             (allBuilder) => {
-                return [];
             }
         );
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // null callback throws
     test('all() throws when callback is null', () => {
@@ -547,21 +606,14 @@ describe('all()', () => {
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.all(
             (allBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    allBuilder.setConfig(cond);
-                }
-                return a;
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
             }
         );
         let conditionConfig = conditionBuilder.getConfig();
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: [
@@ -573,7 +625,8 @@ describe('all()', () => {
         };
         expect(conditionConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // startBuilder.fieldValue().all() to show all comes from ConditionBuilder
     test('startBuilder.fieldValue().all() creates an AllConditionConfig and assigns it to the parent builder', () => {
@@ -582,21 +635,18 @@ describe('all()', () => {
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.all(
             (allBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    allBuilder.setConfig(cond);
-                }
-                return a;
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText
+                    // will inherit myField
+                });
             }
         );
-        let conditionConfig = conditionBuilder.getConfig();
+
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.All,
             valueHostName: 'myField',   // even though it does not exist as a property on the AllConditionConfig
@@ -604,12 +654,17 @@ describe('all()', () => {
                 {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'myField'
                 }
             ]
         };
-        expect(conditionConfig).toEqual(expectedParentConfig);
+
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
 });
 
@@ -619,21 +674,14 @@ describe('any()', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.any(
-            (anyBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    anyBuilder.setConfig(cond);
-                }
-                return a;
-            
+            (allBuilder) => {
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
             });
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
+
         const expectedParentConfig = {
             conditionType: ConditionType.Any,
             conditionConfigs: [
@@ -644,37 +692,32 @@ describe('any()', () => {
             ]
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        // the parentBuilder.setConfig is not called as the children use completed to notify
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // 3 child conditions
     test('creates an AnyConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.any(
-            (anyBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    },
-                    {
-                        conditionType: ConditionType.EqualToValue,
-                        secondValue: 5
-                    },
-                    {
-                        valueHostName: 'F2',
-                        conditionType: ConditionType.Range,
-                        minimum: 1,
-                        maximum: 10
-                    }
-                ];
-                for (let cond of a) {
-                    anyBuilder.setConfig(cond);
-                }
-                return a;
+            (allBuilder) => {
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+                allBuilder.conditionConfig(<RangeConditionConfig>{
+                    conditionType: ConditionType.Range,
+                    minimum: 1,
+                    maximum: 10,
+                    valueHostName: 'F2'
+                });
             });
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.Any,
             conditionConfigs: [
@@ -692,25 +735,63 @@ describe('any()', () => {
                     maximum: 10,
                     valueHostName: 'F2'
                 }
-            ]   
+            ]
         };
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
+    test('Child condition uses the valueHostName from fieldValue if not already set', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.any(
+            (allBuilder) => {
+                allBuilder.fieldValue('NotUsed').conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+            });
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.Any,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5,
+                    valueHostName: 'Field2'
+                }
+            ]
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // empty array
     test('creates an AnyConditionConfig with no child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         startBuilder.any(
-            (anyBuilder) => []
+            (allBuilder) => {
+            }
         );
+        let startBuilderConfig = startBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.Any,
             conditionConfigs: []
         };
-        const parentConfig = parentBuilder.getConfig();
-        expect(parentConfig).toEqual(expectedParentConfig);
-    }); 
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
     // null callback throws
     test('any() throws when callback is null', () => {
         let parentBuilder = new TestParentBuilder();
@@ -726,22 +807,15 @@ describe('any()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.any(
-            (anyBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];  
-                for (let cond of a) {
-                    anyBuilder.setConfig(cond);
-                }
-                return a;
+            (allBuilder) => {
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
             }
         );
         let conditionConfig = conditionBuilder.getConfig();
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.Any,
             conditionConfigs: [
@@ -753,7 +827,8 @@ describe('any()', () => {
         };
         expect(conditionConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // startBuilder.fieldValue().any() to show any comes from ConditionBuilder
     test('startBuilder.fieldValue().any() creates an AnyConditionConfig and assigns it to the parent builder', () => {
@@ -761,25 +836,207 @@ describe('any()', () => {
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.any(
-            (anyBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    anyBuilder.setConfig(cond);
+            (allBuilder) => {
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                allBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText
+                    // will inherit myField
+                });
+            }
+        );
+
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.Any,
+            valueHostName: 'myField',   // even though it does not exist as a property on the AnyConditionConfig
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'myField'
                 }
-                return a;
+            ]
+        };
+
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+});
+
+
+
+describe('countMatches()', () => {
+    // with 1 child condition
+    test('creates a CountMatchesConditionConfig with 1 child condition and assigns it to the parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            1, 3,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+            });
+        let startBuilderConfig = startBuilder.getConfig();
+
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            maximum: 3,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+            ]
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // 3 child conditions
+    test('creates an CountMatchesConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            1, 3,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                countMatchesBuilder.conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+                countMatchesBuilder.conditionConfig(<RangeConditionConfig>{
+                    conditionType: ConditionType.Range,
+                    minimum: 1,
+                    maximum: 10,
+                    valueHostName: 'F2'
+                });
+            });
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            maximum: 3,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                },
+                {
+                    conditionType: ConditionType.Range,
+                    minimum: 1,
+                    maximum: 10,
+                    valueHostName: 'F2'
+                }
+            ]
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
+    test('Child condition uses the valueHostName from fieldValue if not already set', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            1, 3,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.fieldValue('NotUsed').conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                countMatchesBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5
+                });
+            });
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            maximum: 3,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.EqualToValue,
+                    secondValue: 5,
+                    valueHostName: 'Field2'
+                }
+            ]
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // empty array
+    test('creates an CountMatchesConditionConfig with no child conditions and assigns it to the parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            1, 3,
+            (countMatchesBuilder) => {
+            }
+        );
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            maximum: 3,
+            conditionConfigs: []
+        };
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // null ccountMatchesback throws
+    test('countMatches() throws when ccountMatchesback is null', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        expect(() => {
+            startBuilder.countMatches(1, 3, null!);
+        }).toThrow('childrenCallback required');
+    });
+
+    // starterBuilder.parentValue().countMatches() to show countMatches comes from ConditionBuilder
+    test('startBuilder.parentValue().countMatches() creates an CountMatchesConditionConfig and assigns it to the parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let conditionBuilder = startBuilder.parentValue();
+        conditionBuilder.countMatches(
+            1, 3,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
             }
         );
         let conditionConfig = conditionBuilder.getConfig();
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
-            conditionType: ConditionType.Any,
-            valueHostName: 'myField',   // even though it does not exist as a property on the AnyConditionConfig
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            maximum: 3,
             conditionConfigs: [
                 {
                     conditionType: ConditionType.RequireText,
@@ -789,142 +1046,29 @@ describe('any()', () => {
         };
         expect(conditionConfig).toEqual(expectedParentConfig);
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
-    });
-});
-
-describe('countMatches()', () => {
-    test('creates a CountMatchesConditionConfig and assigns it to the parent builder', () => {
-        let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
-        startBuilder.countMatches(1, 3,
-            (countMatchesBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    countMatchesBuilder.setConfig(cond);
-                }
-                return a;
-            }
-        );
-        let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
-        const expectedParentConfig = {
-            conditionType: ConditionType.CountMatches,
-            minimum: 1,
-            maximum: 3,
-            conditionConfigs: [
-                {
-                    conditionType: ConditionType.RequireText,
-                    valueHostName: 'F1'
-                }
-            ]
-        };
-        expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
-    });
-    // focus on the minimum and maximum properties with null on one or the other.
-    // Use empty array for child conditions to keep it simple.
-    test('creates a CountMatchesConditionConfig with null minimum and assigns it to the parent builder', () => {
-        let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
-        startBuilder.countMatches(null, 3,
-            (countMatchesBuilder) => []
-        );
-        let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
-        const expectedParentConfig = {
-            conditionType: ConditionType.CountMatches,
-            maximum: 3,
-            conditionConfigs: []
-        };
-        expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
-    });
-    test('creates a CountMatchesConditionConfig with null maximum and assigns it to the parent builder', () => {
-        let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
-        startBuilder.countMatches(1, null,
-            (countMatchesBuilder) => []
-        );
-        let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
-        const expectedParentConfig = {
-            conditionType: ConditionType.CountMatches,
-            minimum: 1,
-            conditionConfigs: []
-        };
-        expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
-    });
-    // null callback throws
-    test('countMatches() throws when callback is null', () => {
-        let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
-        expect(() => {
-            startBuilder.countMatches(1, 3, null!);
-        }).toThrow();
-    });
-    // starterBuilder.parentValue().countMatches() to show countMatches comes from ConditionBuilder
-    test('startBuilder.parentValue().countMatches() creates a CountMatchesConditionConfig and assigns it to the parent builder', () => {
-        let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
-        let conditionBuilder = startBuilder.parentValue();
-        conditionBuilder.countMatches(1, 3,
-            (countMatchesBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    countMatchesBuilder.setConfig(cond);
-                }
-                return a;
-            }
-        );
-        let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
-        const expectedParentConfig = {
-            conditionType: ConditionType.CountMatches,
-            minimum: 1,
-            maximum: 3,
-            conditionConfigs: [
-                {
-                    conditionType: ConditionType.RequireText,
-                    valueHostName: 'F1'
-                }
-            ]
-        };
-        expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
     // startBuilder.fieldValue().countMatches() to show countMatches comes from ConditionBuilder
-    test('startBuilder.fieldValue().countMatches() creates a CountMatchesConditionConfig and assigns it to the parent builder', () => {
+    test('startBuilder.fieldValue().countMatches() creates an CountMatchesConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
         let startBuilder = new StartConditionBuilder(parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
-        conditionBuilder.countMatches(1, 3,
+        conditionBuilder.countMatches(
+            1, 3,
             (countMatchesBuilder) => {
-                let a = [
-                    {
-                        conditionType: ConditionType.RequireText,
-                        valueHostName: 'F1'
-                    }
-                ];
-                for (let cond of a) {
-                    countMatchesBuilder.setConfig(cond);
-                }
-                return a;
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText
+                    // will inherit myField
+                });
             }
         );
+
         let startBuilderConfig = startBuilder.getConfig();
-        let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig = {
             conditionType: ConditionType.CountMatches,
             minimum: 1,
@@ -934,10 +1078,77 @@ describe('countMatches()', () => {
                 {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
+                },
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'myField'
                 }
             ]
         };
+
         expect(startBuilderConfig).toEqual(expectedParentConfig);
-        expect(parentConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // minimum = null, it is not in the config
+    test('startBuilder.countMatches() with minimum = null does not include minimum in the config', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            null, 3,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+            }
+        );
+
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            maximum: 3,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+            ]
+        };
+
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
+    });
+    // maximum = null, it is not in the config
+    test('startBuilder.countMatches() with maximum = null does not include maximum in the config', () => {
+        let parentBuilder = new TestParentBuilder();
+        let startBuilder = new StartConditionBuilder(parentBuilder);
+        startBuilder.countMatches(
+            1, null,
+            (countMatchesBuilder) => {
+                countMatchesBuilder.conditionConfig(<RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                });
+            }
+        );
+
+        let startBuilderConfig = startBuilder.getConfig();
+        const expectedParentConfig = {
+            conditionType: ConditionType.CountMatches,
+            minimum: 1,
+            conditionConfigs: [
+                {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+            ]
+        };
+
+        expect(startBuilderConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.completedConfig).toEqual(expectedParentConfig);
+        expect(parentBuilder.childConfig).toBeUndefined();
     });
 });
+

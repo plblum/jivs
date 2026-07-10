@@ -589,21 +589,56 @@ export abstract class FluentBuilderBase
  * this.setConfig(config);
  * ```
  */
-export interface IBuilderConfigHost
+export interface IBuilderConfigHost<TConfig extends object, TOptions extends object = object>
 {
     /**
      * Called by a config object-building function after assembling its config, to deposit
      * the result into this builder so the parent function can retrieve it.
      * @param config - The completed config object.
+     * @param options - Optional additional options for handling the config.
      */
-    setConfig(config: object): void;
+    setConfig(config: TConfig, options?: TOptions): void;
 
     /**
      * Called by the parent function after the child callback has run, to retrieve
      * the deposited config and wire it into the appropriate property of the parent's config.
      */
-    getConfig(): object | undefined;
+    getConfig(): TConfig | undefined;
+
+    /**
+     * Supporting functions finish up by calling the setConfig method.
+     * If this callback is assigned to the parent builder, setConfig will be called 
+     * automatically when the child is completed
+     * allowing it to hook up the child into its own config.
+     * 
+     * ```ts
+     * public not(notBuilder: StartConditionBuilderHandler): void { ... }
+     * {
+     *      let notConfig: NotConditionConfig = {
+     *          conditionType: ConditionType.Not,
+     *          childConditionConfig: null! // pending the notBuilder results
+     *      };
+     *      let startBuilder = new StartConditionBuilder(this,
+     *         (childConfig: ConditionConfig, source: IConditionBuilder) => 
+     *             notConfig.childConditionConfig = childConfig;
+     *         }
+     *      );
+     *      this.setConfig(notConfig);
+     * }
+     * public setConfig(config: ConditionConfig): void
+     * {
+     *      this._config = config;
+     * // bubble up
+     *      if (this.parentBuilder?.completed) {
+     *          this.parentBuilder.completed(config, this);
+     *      }
+     * }
+     * ```
+     */
+    completed?: CompleteConfigBuilderHandler<TConfig>;    
 }
+
+export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TConfig, source: IBuilderConfigHost<TConfig>) => void;
 
 
 /**
