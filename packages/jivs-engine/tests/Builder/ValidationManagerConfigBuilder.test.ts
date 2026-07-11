@@ -1,3 +1,4 @@
+import { FluentValidatorBuilder } from './../../src/Builder/FluentValidatorBuilder';
 import { RegExpConditionConfig, RequireTextCondition } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -7,8 +8,6 @@ import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceS
 import { ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
-import { FluentValidatorBuilder, customRule } from '../../src/Builder/Fluent';
-import { ensureFluentTestConditions } from './ManagerConfigBuilderBase.test';
 import { MockValidationServices } from '../TestSupport/mocks';
 
 
@@ -28,16 +27,16 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     }
     public publicify_destinationValueHostConfigs(): Array<ValueHostConfig>
     {
-        return super.destinationValueHostConfigs();
+        return this.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValidationManagerConfig
     {
-        return super.baseConfig;
+        return this.baseConfig;
     }
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -259,12 +258,12 @@ describe('complete', () => {
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });        
 });
-ensureFluentTestConditions();
+
 describe('Fluent chaining on build(vmConfig).field', () => {
     test('build(vmConfig).field: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
-        let testItem = builder.field('Field1').testChainRequireText({}, 'Error', {});
+        let testItem = builder.field('Field1').requireText('Error');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
@@ -275,8 +274,8 @@ describe('Fluent chaining on build(vmConfig).field', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1')
-            .testChainRequireText({}, 'Error', {})
-            .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
+            .requireText('Error')
+            .regExp('\\d', true, 'Error2');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
@@ -403,13 +402,5 @@ describe('customRule', () => {
         expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
-    });
-
-    test('Stand-alone call throws', () => {
-        expect(() => customRule((requester) => {
-                return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
-            },
-            'Error',
-            'Summary')).toThrow();
     });
 });

@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManagerConfigBuilder
  */
 
-import { ValueHostsManagerStartFluent } from "./Fluent";
+import { ValueHostsManagerStartFluent } from "./StartFluent_classes";
 import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";

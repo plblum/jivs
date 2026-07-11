@@ -5,7 +5,8 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManagerConfigModifier
  */
 
-import { FluentStaticParameters, ValueHostsManagerStartFluent } from "./Fluent";
+import { FluentStaticParameters } from "./Fluent";
+import { ValueHostsManagerStartFluent } from "./StartFluent_classes"
 import { IValueHostsManager, ValueHostsManagerConfig } from "../Interfaces/ValueHostsManager";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";

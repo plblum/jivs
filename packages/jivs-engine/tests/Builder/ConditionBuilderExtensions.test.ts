@@ -1,5 +1,4 @@
-import { ValidationManagerStartFluent } from './../../src/Builder/Fluent';
-import { enableConditionBuilderExtensions } from '../../src/Builder/ConditionBuilderExtensions';
+import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
 import { StartConditionBuilder } from '../../src/Builder/ConditionBuilder_classes';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Builder/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
@@ -32,7 +31,7 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
 
 // create pre test code with this: enableFluentConditions()
 beforeAll(() => {
-    enableConditionBuilderExtensions();
+ //   enableConditionBuilderExtensions();
 });
 
 
@@ -493,7 +492,7 @@ describe('equalTo on conditions', () => {
                         },
                         thenConfig: {
                             conditionType: ConditionType.EqualTo,
-                            valueHostName: 'F3'
+                            secondValueHostName: 'F3'
                         }
                     }
                 }
@@ -681,7 +680,7 @@ describe('notEqualTo on conditions', () => {
                         },
                         thenConfig: {
                             conditionType: ConditionType.NotEqualTo,
-                            valueHostName: 'F3'
+                            secondValueHostName: 'F3'
                         }
                     }
                 }
@@ -1306,7 +1305,7 @@ describe('greaterThanValue on conditions', () => {
                         },
                         thenConfig: {
                             conditionType: ConditionType.GreaterThanValue,
-                            secondValueHostName: 'C'
+                            secondValue: 'C'
                         }
                     }
                 }

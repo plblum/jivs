@@ -1,3 +1,4 @@
+import { StartConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
 import { RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
@@ -11,10 +12,10 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { ValidationManagerConfigFormAdapter, createFormAdapter } from '../../src/Builder/ValidationManagerConfigFormAdapter';
-import { FluentConditionBuilder, FluentValidatorBuilder } from '../../src/Builder/Fluent';
 import { BuilderState, CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/Builder/ManagerConfigBuilderBase';
-import { ensureFluentTestConditions } from './ManagerConfigBuilderBase.test';
+
 import { MockValidationServices } from '../TestSupport/mocks';
+import { FluentValidatorBuilder } from '../../src/Builder/FluentValidatorBuilder';
 
 
 function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
@@ -36,18 +37,18 @@ class Publicify_ValidationManagerConfigFormAdapter extends ValidationManagerConf
         super(state, options);
     }
     public publicify_destinationValueHostConfigs(): Array<ValueHostConfig> {
-        return super.destinationValueHostConfigs();
+        return this.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValidationManagerConfig {
-        return super.baseConfig;
+        return this.baseConfig;
     }
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void {
-        super.addOverride();
+        this.addOverride();
     }
     protected override favorUIMessages(): void {
         super.favorUIMessages();
@@ -112,11 +113,10 @@ describe('constructor', () => {
 
 });
 
-ensureFluentTestConditions();
 describe('Fluent chaining on build(vmConfig).field', () => {
     test('build(vmConfig).field: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
         let formAdapter = setupPublicifyFormAdapter();
-        let testItem = formAdapter.field('Field1').testChainRequireText({}, 'Error', {});
+        let testItem = formAdapter.field('Field1').requireText('Error');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
@@ -126,8 +126,8 @@ describe('Fluent chaining on build(vmConfig).field', () => {
     test('build(vmConfig).field: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
         let formAdapter = setupPublicifyFormAdapter();
         let testItem = formAdapter.field('Field1')
-            .testChainRequireText({}, 'Error', {})
-            .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
+            .requireText('Error')
+            .regExp('\\d', true, 'Error2');
         expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
@@ -425,9 +425,11 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.all((childrenBuilder) =>
-                        [childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/)]);
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.all((childrenBuilder) => {
+                        childrenBuilder.conditionConfig(existingConditionConfig);
+                        childrenBuilder.parentValue().regExp(/abc/) 
+                    });
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
@@ -463,8 +465,8 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
 
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             let result = formAdapter.publicify_destinationValueHostConfigs()[0] as FieldValueHostConfig;
@@ -491,7 +493,7 @@ describe('combineWithRule', () => {
             let formAdapter = setupPublicifyFormAdapter();
             formAdapter.field('Field1').requireText();
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     ;
                 }
             );
@@ -516,8 +518,8 @@ describe('combineWithRule', () => {
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: FluentConditionBuilder) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
@@ -551,8 +553,8 @@ describe('combineWithRule', () => {
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
-                (combiningBuilder: FluentConditionBuilder) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
@@ -585,7 +587,7 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: FluentConditionBuilder) => {
+                (combiningBuilder: StartConditionBuilder) => {
                     ;
                 }
             );
@@ -612,8 +614,8 @@ describe('replaceRule', () => {
         formAdapter.field('Field1').requireText();
 
         let testItem = formAdapter.replaceRule('Field1', ConditionType.RequireText,
-            (replacementBuilder: FluentConditionBuilder) => {
-                replacementBuilder.regExp(/abc/);
+            (replacementBuilder: StartConditionBuilder) => {
+                replacementBuilder.parentValue().regExp(/abc/);
             }
         );
         expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);

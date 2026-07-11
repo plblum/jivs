@@ -5,8 +5,6 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { FluentConditionBuilder } from "../../src/Builder/Fluent";
-import { enableFluentConditions } from "../../src/Builder/FluentConditionBuilderExtensions";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 
@@ -55,15 +53,7 @@ describe('ConditionFactory.create', () => {
 
     });    
 });
-describe('enableFluentConditions', () => {
-    test('First call works and second call does not throw', () => {
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeUndefined();
-        enableFluentConditions();
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
-        expect(() => enableFluentConditions()).not.toThrow();
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
-    });
-});
+
 describe('dispose()', () => {
     test('using functions after dispose throw TypeError', () => {
         let factory = new ConditionFactory();

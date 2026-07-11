@@ -1,3 +1,4 @@
+import { StartConditionBuilder } from './ConditionBuilder_classes';
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
@@ -7,7 +8,6 @@ import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
-import { FluentConditionBuilder } from "./Fluent";
 import { BuilderState, CombineUsingCondition, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 
@@ -182,7 +182,7 @@ export class ValidationManagerConfigFormAdapter
      * @returns itself for chaining
      */
     public combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
+        builderFn: (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
     /**
      * Uses the combineUsing parameter to determine how to combine the conditions.
      * @param valueHostName 
@@ -196,11 +196,11 @@ export class ValidationManagerConfigFormAdapter
      * ```
      */
     public combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-        builderFn: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+        builderFn: (combiningBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder
 
     public combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        arg3: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg4?: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder {
+        arg3: CombineUsingCondition | ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg4?: (combiningBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder {
         let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
         this.combineWithValidatorConfig(vc, arg3, arg4);
         return this;
@@ -231,9 +231,9 @@ export class ValidationManagerConfigFormAdapter
      * passed the builder, where you can build your new conditions.
      * @returns itself for chaining
      */
-    public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+    public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder
     public replaceRule(valueHostName: ValueHostName, errorCode: string,
-        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): ValidationManagerConfigBuilder {
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: StartConditionBuilder) => void)): ValidationManagerConfigBuilder {
         let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
         this.replaceConditionWith(vc, sourceOfConditionConfig);
         return this;

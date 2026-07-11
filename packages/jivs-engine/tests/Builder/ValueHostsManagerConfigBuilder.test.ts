@@ -3,11 +3,6 @@ import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/I
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
-
-
-ensureFluentTestConditions();
-
 
 function createVMConfig(): ValueHostsManagerConfig {
     let vmConfig: ValueHostsManagerConfig = {
@@ -19,11 +14,11 @@ function createVMConfig(): ValueHostsManagerConfig {
 class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBuilder
 {
     public get publicify_baseConfig(): ValueHostsManagerConfig {
-        return super.baseConfig;
+        return this.baseConfig;
     }
 
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 }
 describe('instance state properties', () => {

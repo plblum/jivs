@@ -36,9 +36,8 @@ import { deepClone } from '../../src/Utilities/Utilities';
 import { ValidatableValueHostBase } from '../../src/ValueHosts/ValidatableValueHostBase';
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '../../src/ValueHosts/CalcValueHost';
-import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
-import { ValidationManagerStartFluent } from '../../src/Builder/Fluent';
+import { ValidationManagerStartFluent } from '../../src/Builder/StartFluent_classes';
 import {
     TestValidatableValueHost,
     addTestValidatableValueHostGeneratorToServices,

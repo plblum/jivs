@@ -5,7 +5,7 @@
 
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentConditionBuilder, FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../Builder/Fluent";
+import { FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters } from "../Builder/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase } from "../Builder/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
@@ -13,10 +13,11 @@ import { StaticValueHostConfig } from "./StaticValueHost";
 import { ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ValidationManagerConfigFormAdapter } from "../Builder/ValidationManagerConfigFormAdapter";
 import { ConditionConfig } from "./Conditions";
 import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
 import { IValueHostsServices } from "./ValueHostsServices";
+import { FluentValidatorBuilder } from "../Builder/FluentValidatorBuilder"
+import { StartConditionBuilder } from './../Builder/ConditionBuilder_classes';
 
 
 /**
@@ -139,7 +140,7 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * @returns itself for chaining
      */
     combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
+        builderFn: (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
     /**
      * Uses the combineUsing parameter to determine how to combine the conditions.
      * @param valueHostName 
@@ -153,11 +154,11 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * ```
      */
     combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-        builderFn: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+        builderFn: (combiningBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder
 
     combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        arg3: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg4?: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder;
+        arg3: CombineUsingCondition | ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg4?: (combiningBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder;
 
     /**
      * Replace the condition supplying the replacement conditionConfig directly.
@@ -186,9 +187,9 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * @returns itself for chaining
      */
     replaceRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (replacementBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
+        builderFn: (replacementBuilder: StartConditionBuilder) => void): ValidationManagerConfigBuilder
     replaceRule(valueHostName: ValueHostName, errorCode: string,
-        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): ValidationManagerConfigBuilder;
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: StartConditionBuilder) => void)): ValidationManagerConfigBuilder;
 }
 
 /**

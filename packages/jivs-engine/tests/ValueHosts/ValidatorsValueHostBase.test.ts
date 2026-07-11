@@ -34,7 +34,7 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { FluentValidatorBuilder } from "../../src/Builder/Fluent";
+import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";

@@ -2,15 +2,12 @@ import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationMana
 import { RulesBase } from "../../src/Validation/ModelRules";
 import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { enableFluentConditions } from "../../src/Builder/FluentConditionBuilderExtensions";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValidationManagerConfigBuilder, IValidationManagerConfigFormAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
-
-enableFluentConditions();
 
 class Person
 {

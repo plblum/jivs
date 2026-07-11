@@ -1,6 +1,9 @@
-import { RequireTextConditionConfig, RegExpConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig } from "../../src/Conditions/ConcreteConditions";
+import { StartConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
+import {
+    RequireTextConditionConfig, RegExpConditionConfig,
+    AllMatchConditionConfig, AnyMatchConditionConfig
+} from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { enableFluentConditions } from "../../src/Builder/FluentConditionBuilderExtensions";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
@@ -17,17 +20,16 @@ import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interface
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
-    FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
-    finishFluentValidatorBuilder, finishFluentConditionBuilder, ValueHostsManagerStartFluent,
-    ValidationManagerStartFluent,
-    FluentFieldParameters
-} from "../../src/Builder/Fluent";
+    ValueHostsManagerStartFluent,
+    ValidationManagerStartFluent
+} from "../../src/Builder/StartFluent_classes";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced }
     from "../../src/Builder/ManagerConfigBuilderBase";
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -45,21 +47,21 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
 
     public get publicify_services(): IValueHostsServices
     {   
-        return super.services;
+        return this.services;
     }
 
     public publicify_destinationValueHostConfigs(): Array<ValueHostConfig>
     {
-        return super.destinationValueHostConfigs();
+        return this.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValueHostsManagerConfig
     {
-        return super.baseConfig;
+        return this.baseConfig;
     }
     public get publicify_overrideValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -83,41 +85,41 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
 
     public publicify_combineWithValidatorConfig(
         destinationOfCondition: ValidatorConfig,
-        arg2: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg3?: (combiningBuilder: FluentConditionBuilder) => void): void
+        arg2: CombineUsingCondition | ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg3?: (combiningBuilder: StartConditionBuilder) => void): void
     {
         super.combineWithValidatorConfig(destinationOfCondition, arg2, arg3);
     }
 
-    public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: FluentConditionBuilder) => void)): void
+    public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void)): void
     {
         super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
     }    
 
     public get publicify_services(): IValueHostsServices
     {   
-        return super.services;
+        return this.services;
     }
 
     public publicify_destinationValueHostConfigs(): Array<ValueHostConfig>
     {
-        return super.destinationValueHostConfigs();
+        return this.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValueHostsManagerConfig
     {
-        return super.baseConfig;
+        return this.baseConfig;
     }
     public get publicify_overrideValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
     {
         super.addOverride();
     }
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder {
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): FluentValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
     }
 }
@@ -556,88 +558,21 @@ describe('build(vmConfig).calc', () => {
     });
 });
 
-
-// Test cases for creating fluent functions...
- // Each condition gets its own function that expects to have
- // 'this' as FluentValidatorBuilder and return this for the next in the chain.
-function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
-    errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig
-): FluentValidatorBuilder {
-    if (!conditionConfig) {
-        conditionConfig = { };
-    }
-    return finishFluentValidatorBuilder(this, ConditionType.RequireText, conditionConfig, errorMessage, null, validatorParameters);
-}
-function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
-): FluentConditionBuilder {
-    if (!conditionConfig) {
-        conditionConfig = { };
-    }
-
-    return finishFluentConditionBuilder(this, ConditionType.RequireText, conditionConfig);
-
-}
-
-function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
-    errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig
-): FluentValidatorBuilder {
-
-    return finishFluentValidatorBuilder(this, ConditionType.RegExp, conditionConfig,
-        errorMessage, null, validatorParameters);
-}
-function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionBuilder {
-
-    return finishFluentConditionBuilder(this, ConditionType.RegExp, conditionConfig);
-}
-// interface that extends the class FluentValidatorBuilder
-declare module './../../src/Builder/Fluent'
-{
-    export interface FluentValidatorBuilder {
-        testChainRequireText(conditionConfig?: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
-            errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig
-        ): FluentValidatorBuilder;
-        testChainRegExp(conditionConfig?: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
-            errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig
-        ): FluentValidatorBuilder;
-    }
-    export interface FluentConditionBuilder {
-        testChainRequireText(conditionConfig?:
-            Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
-        ): FluentConditionBuilder;
-        testChainRegExp(conditionConfig?:
-            Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>
-        ): FluentConditionBuilder;
-    }
-}
-
-export function ensureFluentTestConditions(): void {
-    //  Make JavaScript associate the function with the class.
-    FluentValidatorBuilder.prototype.testChainRequireText = testChainRequireText_Val;
-    FluentValidatorBuilder.prototype.testChainRegExp = testChainRegExp_Val;
-    FluentConditionBuilder.prototype.testChainRequireText = testChainRequireText_Cond;
-    FluentConditionBuilder.prototype.testChainRegExp = testChainRegExp_Cond;
-}
-
 describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
     function setup(includeOverrideData: boolean): TestValidationManagerConfigBuilderBase {
-        ensureFluentTestConditions();
         let vmConfig = createVMConfig();
 
         let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
 
         builder.field('Field1');
-        builder.field('Field2').testChainRegExp({ expression: /abc/ });
-        builder.field('Field3').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRegExp({ expression: /def/ }, null, { errorCode: 'RegExp1' });
+        builder.field('Field2').regExp(/abc/);
+        builder.field('Field3').requireText({ errorCode: 'RequireText1' }).regExp(/def/, { errorCode: 'RegExp1' });
         // same as Field3 to show it always gets the first found
-        builder.field('Field4').testChainRequireText({}, null, { errorCode: 'RequireText1' }).testChainRequireText({}, null, { errorCode: 'RequireText2' });
+        builder.field('Field4').requireText({ errorCode: 'RequireText1' }).requireText({ errorCode: 'RequireText2' });
         if (includeOverrideData) {
             builder.publicify_addOverride();
-            builder.field('Field1').testChainRequireText();
-            builder.field('Field2').testChainRegExp({ expression: /abc_alt/ }, null, { errorCode: 'RegExp1_alt' });
+            builder.field('Field1').requireText();
+            builder.field('Field2').regExp(/abc_alt/, { errorCode: 'RegExp1_alt' });
         }
         return builder;
     }
@@ -851,15 +786,13 @@ describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
     });
     test('The errorCode is unknown throws when different validator on valuehost', () => {
-        ensureFluentTestConditions();
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1').testChainRequireText();
+        testItem.field('Field1').requireText();
         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
     });    
     test('The errorCode is null throws', () => {
-        ensureFluentTestConditions();
         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1').testChainRequireText();
+        testItem.field('Field1').requireText();
         expect(()=> testItem.publicify_setupValueHostToCombine('Field1', null!)).toThrow(/errorCode/);       
     });
 });
@@ -869,8 +802,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
     function testCombineUsing(combineUsing: CombineUsingCondition,
         expectedValidatorConfig: ValidatorConfig
     ) { 
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -882,17 +813,15 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
 
         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
             combineUsing,
-            (combiningBuilder: FluentConditionBuilder) => combiningBuilder.testChainRequireText())).not.toThrow();  
+            (combiningBuilder: StartConditionBuilder) => combiningBuilder.parentValue().requireText())).not.toThrow();  
        
         expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
         deleteConditionReplacedSymbol(destinationConfig);
         expect(destinationConfig).toEqual(expectedValidatorConfig);        
     }
-    function testFunctionHandlesAllCombining(fn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void,
+    function testFunctionHandlesAllCombining(fn: (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void,
         expectedValidatorConfig: ValidatorConfig
     ) { 
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -990,9 +919,9 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
         };
 
         testFunctionHandlesAllCombining(
-            (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+            (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                 combiningBuilder.when(
-                    (whenBuilder) => whenBuilder.fieldValue('field1').testChainRequireText(),
+                    (whenBuilder) => whenBuilder.fieldValue('field1').requireText(),
                     (thenBuilder) => thenBuilder.conditionConfig(existingConditionConfig));
             },
             expectedConfig);
@@ -1059,8 +988,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
 
     });        
     test('arg1 parameter null', () => {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
 
@@ -1068,8 +995,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             () => { })).toThrow(/destinationOfCondition/);          
     });    
     test('arg2 parameter null throws', () => {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -1083,8 +1008,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             null!)).toThrow();          
     });
     test('In 2 parameter form, no parameter has a function throws', () => {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -1098,8 +1021,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             10 as any)).toThrow(/Invalid parameters/);          
     });    
     test('In 3 parameter form, no parameter has a function throws', () => {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -1114,8 +1035,6 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             10 as any)).toThrow(/Invalid parameters/);          
     });        
     test('In 3 parameter form, arg2 is not a number or function throws', () => {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -1133,11 +1052,9 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
 });
 
 describe('replaceConditionWith', () => {
-    function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: FluentConditionBuilder) => void),
+    function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void),
         expectedValidatorConfig: ValidatorConfig
     ) { 
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
         let destinationConfig: ValidatorConfig = {
@@ -1164,8 +1081,8 @@ describe('replaceConditionWith', () => {
         };
 
         testFunctionHandlesReplacement(
-            (replacementBuilder: FluentConditionBuilder) => {
-                replacementBuilder.testChainRegExp({ expression: /abc/ });
+            (replacementBuilder: StartConditionBuilder) => {
+                replacementBuilder.parentValue().regExp(/abc/);
             },
             expectedConfig);       
     });
@@ -1259,8 +1176,6 @@ describe('enabler', () => {
         builder: TestValidationManagerConfigBuilderBase,
         vmConfig: ValidationManagerConfig
     } {
-        ensureFluentTestConditions();
-        enableFluentConditions();
         let vmConfig = createVMConfig();
         vmConfig.services.loggerService.minLevel = LoggingLevel.Debug;
         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
@@ -1269,7 +1184,7 @@ describe('enabler', () => {
         return { builder: testItem, vmConfig: vmConfig };
     }
     function testEnablerAssignment(setup: { builder: TestValidationManagerConfigBuilderBase, vmConfig: ValidationManagerConfig },
-        sourceOfConditionConfig: ConditionConfig | ((builder: FluentConditionBuilder) => void),
+        sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void),
         expectedEnablerConfig: ConditionConfig | undefined, logContent: string
     ): void {
 
@@ -1308,13 +1223,13 @@ describe('enabler', () => {
             conditionType: ConditionType.RegExp,
             expression: /abc/
         };
-        testEnablerAssignment(setup, (builder)=> builder.regExp(/abc/), expectedConfig, 'Adding enabler to ValueHost "Field1"');
+        testEnablerAssignment(setup, (builder)=> builder.parentValue().regExp(/abc/), expectedConfig, 'Adding enabler to ValueHost "Field1"');
 
         setup.builder.publicify_addOverride();
         const replacementConfig = <RequireTextConditionConfig>{
             conditionType: ConditionType.RequireText
         };
-        testEnablerAssignment(setup, (builder)=> builder.requireText(), replacementConfig, 'Replacing enabler on ValueHost "Field1"');
+        testEnablerAssignment(setup, (builder)=> builder.parentValue().requireText(), replacementConfig, 'Replacing enabler on ValueHost "Field1"');
     });    
     test('With 1st parameter null, throw', () => {
         let setup = setupEnablerAssignment();

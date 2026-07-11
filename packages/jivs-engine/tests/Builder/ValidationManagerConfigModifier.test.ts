@@ -12,14 +12,12 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
-import { FluentConditionBuilder, FluentValidatorBuilder } from "../../src/Builder/Fluent";
 import { CombineUsingCondition, hasConditionBeenReplaced } from "../../src/Builder/ManagerConfigBuilderBase";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
-
-ensureFluentTestConditions();
+import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
+import { StartConditionBuilder } from "../../src/Builder/ConditionBuilder_classes";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -39,18 +37,18 @@ class Publicify_ValidationManagerConfigModifier extends ValidationManagerConfigM
         super(manager, manager.publicify_valueHostConfigs);
     }
     public publicify_destinationValueHostConfigs(): Array<ValueHostConfig> {
-        return super.destinationValueHostConfigs();
+        return this.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValidationManagerConfig {
-        return super.baseConfig;
+        return this.baseConfig;
     }
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return super.overriddenValueHostConfigs;
+        return this.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void {
-        super.addOverride();
+        this.addOverride();
     }
 
 }
@@ -431,9 +429,11 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.all((childrenBuilder) =>
-                        [childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/)]);
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.all((childrenBuilder) => {
+                        childrenBuilder.conditionConfig(existingConditionConfig);
+                        childrenBuilder.parentValue().regExp(/abc/);
+                    });
                 }
             );
             modifier.apply();   
@@ -470,8 +470,8 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             modifier.apply();        
@@ -500,7 +500,7 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                 }
             );
             modifier.apply();        
@@ -529,8 +529,8 @@ describe('combineWithRule', () => {
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: FluentConditionBuilder) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             modifier.apply();    
@@ -567,8 +567,8 @@ describe('combineWithRule', () => {
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
-                (combiningBuilder: FluentConditionBuilder) => {
-                    combiningBuilder.regExp(/abc/);
+                (combiningBuilder: StartConditionBuilder) => {
+                    combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
             modifier.apply();
@@ -605,7 +605,7 @@ describe('combineWithRule', () => {
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: FluentConditionBuilder) => {
+                (combiningBuilder: StartConditionBuilder) => {
                 }
             );
             modifier.apply();        
@@ -636,8 +636,8 @@ describe('replaceRule', () => {
         let modifier = vm.startModifying();
 
         let testItem = modifier.replaceRule('Field1', ConditionType.RequireText,
-            (replacementBuilder: FluentConditionBuilder) => {
-                replacementBuilder.regExp(/abc/);
+            (replacementBuilder: StartConditionBuilder) => {
+                replacementBuilder.parentValue().regExp(/abc/);
             }
         );
         modifier.apply();        
