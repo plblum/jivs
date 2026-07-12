@@ -11,6 +11,7 @@ import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IDataTypeParserService } from './DataTypeParserService';
 import { IValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from './CachingService';
+import { IFluentFactory } from './FluentFactory';
 
 /**
  * Full interface representation of ValidationServices.
@@ -52,6 +53,11 @@ export interface IValidationServices extends IValueHostsServices {
      * Factory for generating Validator.
      */
     validatorFactory: IValidatorFactory;
+
+    /**
+     * Factory for creating FluentValidatorBuilder and ConditionBuilder instances.
+     */
+    fluentFactory: IFluentFactory;
 
     /**
      * Service for caching data.
@@ -134,6 +140,11 @@ export enum ServiceName {
      * IValidatorFactory
      */
     validatorFactory = 'ValidatorFactory',
+
+    /**
+     * IFluentFactory
+     */
+    fluentFactory = 'FluentFactory',
 
     /**
      * IManagerConfigBuilderFactory

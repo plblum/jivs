@@ -26,6 +26,8 @@ import { ValidationManagerConfigModifierFactory } from './ManagerConfigModifierF
 import { ValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from '../Interfaces/CachingService';
 import { CachingService } from './CachingService';
+import { IFluentFactory } from '../Interfaces/FluentFactory';
+import { FluentFactory } from './FluentFactory';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -128,11 +130,30 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
         }
         return service;
     }
-    public set validatorFactory(factory: ValidatorFactory) {
+    public set validatorFactory(factory: IValidatorFactory) {
         this.setService(ServiceName.validatorFactory, factory);
     }
 
-    //#endregion ValidatorFactory     
+    //#endregion ValidatorFactory
+
+    //#region FluentFactory    
+    /**
+     * The FluentFactory to use.
+     * It supplies a default if not setup by the user.
+     */
+    public get fluentFactory(): IFluentFactory {
+        let service = this.getService<IFluentFactory>(ServiceName.fluentFactory);
+        if (!service) {
+            service = new FluentFactory();
+            this.setService(ServiceName.fluentFactory, service);
+        }
+        return service;
+    }
+    public set fluentFactory(factory: IFluentFactory) {
+        this.setService(ServiceName.fluentFactory, factory);
+    }
+
+    //#endregion FluentFactory       
 
     protected defaultManagerConfigBuilderFactory(): IManagerConfigBuilderFactory {
         return new ValidationManagerConfigBuilderFactory();

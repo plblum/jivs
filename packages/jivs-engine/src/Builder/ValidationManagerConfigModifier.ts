@@ -231,7 +231,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
             validatorConfigs: []
         };
         this.applyConfig(replacementVHConfig);
-        return new FluentValidatorBuilder(replacementVHConfig);
+        return this.services.fluentFactory.createFluentValidatorBuilder(replacementVHConfig);
     }
 
 }

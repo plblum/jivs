@@ -28,17 +28,17 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
+let services: MockValidationServices;
 
-// create pre test code with this: enableFluentConditions()
 beforeAll(() => {
- //   enableConditionBuilderExtensions();
+    services = new MockValidationServices(true, false);
 });
 
 
 describe('dataTypeCheck on conditions', () => {
     test('with fieldValue assigned, creates DataTypeCheckConditionConfig with type=DataTypeCheck and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.fieldValue('Field1').dataTypeCheck();
         let expectedCondConfig = {
             conditionType: ConditionType.DataTypeCheck,
@@ -51,7 +51,7 @@ describe('dataTypeCheck on conditions', () => {
     });
     test('with parentValue() used, creates DataTypeCheckConditionConfig with type=DataTypeCheck and valueHostName unassigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().dataTypeCheck();
         let expectedCondConfig = {
             conditionType: ConditionType.DataTypeCheck
@@ -95,7 +95,7 @@ describe('dataTypeCheck on conditions', () => {
 describe('regExp on conditions', () => {
     test('With expression assigned to a string, creates RegExpConditionConfig with type=RegExp and expressionAsString assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().regExp('\\d');
         let expectedCondConfig = {
@@ -109,7 +109,7 @@ describe('regExp on conditions', () => {
     });
     test('With expression assigned to a string and condDesc={}, creates RegExpConditionConfig with type=RegExp and expressionAsString assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').regExp('\\d', true, {});
         let expectedCondConfig = {
@@ -125,7 +125,7 @@ describe('regExp on conditions', () => {
     });
     test('With ValueHostName assigned and expression assigned to a string, creates RegExpConditionConfig with type=RegExp and expressionAsString assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field2').regExp('\\d');
         let expectedCondConfig = {
@@ -140,7 +140,7 @@ describe('regExp on conditions', () => {
     });
     test('With expression assigned to a RegExp, creates RegExpConditionConfig with type=RegExp and expression assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().regExp(/\d/i);
         let expectedCondConfig = {
@@ -155,7 +155,7 @@ describe('regExp on conditions', () => {
     test('With expression and ignoreCase=true creates RegExpConditionConfig with type=RegExp, expressionAsString, and ignoreCase=true assigned', () => {
         let parentBuilder = new TestParentBuilder();
 
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().regExp('\\d', true);
         let expectedCondConfig = {
@@ -170,7 +170,7 @@ describe('regExp on conditions', () => {
     });
     test('With expression and ignoreCase=false creates RegExpConditionConfig with type=RegExp, expressionAsString, and ignoreCase=false assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().regExp('\\d', false);
         let expectedCondConfig = {
@@ -218,7 +218,7 @@ describe('regExp on conditions', () => {
 describe('range on conditions', () => {
     test('With minimum and maximum assigned, creates RangeConditionConfig with type=Range, minimum and maximum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().range(1, 4);
         let expectedCondConfig = {
             conditionType: ConditionType.Range,
@@ -232,7 +232,7 @@ describe('range on conditions', () => {
     });
     test('With ValueHostName, minimum and maximum assigned, creates RangeConditionConfig with type=Range, minimum, maximum, and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field2').range(1, 4);
         let expectedCondConfig = {
@@ -250,7 +250,7 @@ describe('range on conditions', () => {
 
     test('With minimum assigned and maximum=null, creates RangeConditionConfig with type=Range, minimum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().range(1, null);
         let expectedCondConfig = {
@@ -264,7 +264,7 @@ describe('range on conditions', () => {
     });
     test('With maximum assigned and minimum=null, creates RangeConditionConfig with type=Range, maximum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().range(null, 4);
         let expectedCondConfig = {
@@ -311,7 +311,7 @@ describe('range on conditions', () => {
 describe('equalToValue on conditions', () => {
     test('With secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().equalToValue(1);
         let expectedCondConfig = {
             conditionType: ConditionType.EqualToValue,
@@ -324,7 +324,7 @@ describe('equalToValue on conditions', () => {
     });
     test('With secondValue assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().equalToValue(1, {});
         let expectedCondConfig = {
@@ -338,7 +338,7 @@ describe('equalToValue on conditions', () => {
     });
     test('With ValueHostName and secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field2').equalToValue(1);
         let expectedCondConfig = {
@@ -355,7 +355,7 @@ describe('equalToValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().equalToValue(1,
             {
@@ -407,7 +407,7 @@ describe('equalToValue on conditions', () => {
 describe('equalTo on conditions', () => {
     test('With secondValueHostName assigned, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().equalTo('Field2');
         let expectedCondConfig = {
             conditionType: ConditionType.EqualTo,
@@ -420,7 +420,7 @@ describe('equalTo on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().equalTo('Field2', {});
         let expectedCondConfig = {
@@ -434,7 +434,7 @@ describe('equalTo on conditions', () => {
     });
     test('With valueHostName and secondValueHostName, creates EqualToConditionConfig with type=EqualTo, valueHostName and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').equalTo('Field2');
         let expectedCondConfig = {
@@ -452,7 +452,7 @@ describe('equalTo on conditions', () => {
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates EqualToConditionConfig with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().equalTo('Field2',
             {
@@ -505,7 +505,7 @@ describe('equalTo on conditions', () => {
 describe('notEqualToValue on conditions', () => {
     test('With secondValue assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().notEqualToValue(1);
         let expectedCondConfig = {
             conditionType: ConditionType.NotEqualToValue,
@@ -518,7 +518,7 @@ describe('notEqualToValue on conditions', () => {
     });
     test('With secondValue assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().notEqualToValue(1, {});
         let expectedCondConfig = {
@@ -532,7 +532,7 @@ describe('notEqualToValue on conditions', () => {
     });
     test('With valueHostName and secondValue assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').notEqualToValue(1);
         let expectedCondConfig = {
@@ -548,7 +548,7 @@ describe('notEqualToValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().notEqualToValue(1, {
             conversionLookupKey: LookupKey.Integer,
@@ -599,7 +599,7 @@ describe('notEqualToValue on conditions', () => {
 describe('notEqualTo on conditions', () => {
     test('With secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().notEqualTo('Field2');
         let expectedCondConfig = {
             conditionType: ConditionType.NotEqualTo,
@@ -612,7 +612,7 @@ describe('notEqualTo on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().notEqualTo('Field2', {});
         let expectedCondConfig = {
@@ -626,7 +626,7 @@ describe('notEqualTo on conditions', () => {
     });
     test('With valueHostName and secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').notEqualTo('Field2');
         let expectedCondConfig = {
@@ -642,7 +642,7 @@ describe('notEqualTo on conditions', () => {
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates NotEqualToConditionConfig with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().notEqualTo('Field2', {
             conversionLookupKey: LookupKey.Integer,
@@ -693,7 +693,7 @@ describe('notEqualTo on conditions', () => {
 describe('lessThanValue on conditions', () => {
     test('With secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().lessThanValue(1);
         let expectedCondConfig = {
             conditionType: ConditionType.LessThanValue,
@@ -707,7 +707,7 @@ describe('lessThanValue on conditions', () => {
 
     test('With valueHostName and secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lessThanValue(1);
         let expectedCondConfig = {
@@ -722,7 +722,7 @@ describe('lessThanValue on conditions', () => {
     });
     test('Shorthand version "ltValue" With secondValue, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().ltValue(1);
         let expectedCondConfig = {
@@ -737,7 +737,7 @@ describe('lessThanValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanValue(1, {
             conversionLookupKey: LookupKey.Integer,
@@ -787,7 +787,7 @@ describe('lessThanValue on conditions', () => {
 describe('lessThan on conditions', () => {
     test('With secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThan('Field2');
         let expectedCondConfig = {
@@ -801,7 +801,7 @@ describe('lessThan on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThan('Field2', {});
         let expectedCondConfig = {
@@ -815,7 +815,7 @@ describe('lessThan on conditions', () => {
     });
     test('With valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lessThan('Field2');
         let expectedCondConfig = {
@@ -831,7 +831,7 @@ describe('lessThan on conditions', () => {
 
     test('Shorthand version "lt" with secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lt('Field2');
         let expectedCondConfig = {
@@ -845,7 +845,7 @@ describe('lessThan on conditions', () => {
     });
     test('Shorthand version "lt" with valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lt('Field2');
         let expectedCondConfig = {
@@ -862,7 +862,7 @@ describe('lessThan on conditions', () => {
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates LessThanConditionConfig with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThan('Field2', {
             conversionLookupKey: LookupKey.Integer,
@@ -912,7 +912,7 @@ describe('lessThan on conditions', () => {
 describe('lessThanOrEqualValue on conditions', () => {
     test('With secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().lessThanOrEqualValue(1);
         let expectedCondConfig = {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -925,7 +925,7 @@ describe('lessThanOrEqualValue on conditions', () => {
     });
     test('With secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanOrEqualValue(1, {});
         let expectedCondConfig = {
@@ -940,7 +940,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
     test('With valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lessThanOrEqualValue(1);
         let expectedCondConfig = {
@@ -956,7 +956,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
     test('Shorthand version "lteValue" with secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lteValue(1);
         let expectedCondConfig = {
@@ -971,7 +971,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
     test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lteValue(1, {});
         let expectedCondConfig = {
@@ -985,7 +985,7 @@ describe('lessThanOrEqualValue on conditions', () => {
     });
     test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lteValue(1);
         let expectedCondConfig = {
@@ -1001,7 +1001,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanOrEqualValue(1, {
             conversionLookupKey: LookupKey.Integer,
@@ -1051,7 +1051,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 describe('lessThanOrEqual on conditions', () => {
     test('With secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanOrEqual('Field2');
         let expectedCondConfig = {
@@ -1065,7 +1065,7 @@ describe('lessThanOrEqual on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanOrEqual('Field2', {});
         let expectedCondConfig = {
@@ -1079,7 +1079,7 @@ describe('lessThanOrEqual on conditions', () => {
     });
     test('With valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lessThanOrEqual('Field2');
         let expectedCondConfig = {
@@ -1095,7 +1095,7 @@ describe('lessThanOrEqual on conditions', () => {
 
     test('Shorthand version "lte" with secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lte('Field2');
         let expectedCondConfig = {
@@ -1109,7 +1109,7 @@ describe('lessThanOrEqual on conditions', () => {
     });
     test('Shorthand version "lte" with valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').lte('Field2');
         let expectedCondConfig = {
@@ -1125,7 +1125,7 @@ describe('lessThanOrEqual on conditions', () => {
 
     test('With secondValueHostName, and secondConversionLookupKey assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().lessThanOrEqual('Field2',
             {
@@ -1178,7 +1178,7 @@ describe('lessThanOrEqual on conditions', () => {
 describe('greaterThanValue on conditions', () => {
     test('With secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanValue(1);
         let expectedCondConfig = {
@@ -1192,7 +1192,7 @@ describe('greaterThanValue on conditions', () => {
     });
     test('With secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanValue(1, {});
         let expectedCondConfig = {
@@ -1206,7 +1206,7 @@ describe('greaterThanValue on conditions', () => {
     });
     test('With valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').greaterThanValue(1);
         let expectedCondConfig = {
@@ -1222,7 +1222,7 @@ describe('greaterThanValue on conditions', () => {
 
     test('Shorthand version "gtValue" with secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gtValue(1);
         let expectedCondConfig = {
@@ -1236,7 +1236,7 @@ describe('greaterThanValue on conditions', () => {
     });
     test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gtValue(1, {});
         let expectedCondConfig = {
@@ -1250,7 +1250,7 @@ describe('greaterThanValue on conditions', () => {
     });
     test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').gtValue(1);
         let expectedCondConfig = {
@@ -1266,7 +1266,7 @@ describe('greaterThanValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanValue(1,
             {
@@ -1318,7 +1318,7 @@ describe('greaterThanValue on conditions', () => {
 describe('greaterThan on conditions', () => {
     test('With secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThan('Field2');
         let expectedCondConfig = {
@@ -1332,7 +1332,7 @@ describe('greaterThan on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThan('Field2', {});
         let expectedCondConfig = {
@@ -1346,7 +1346,7 @@ describe('greaterThan on conditions', () => {
     });
     test('With valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').greaterThan('Field2');
         let expectedCondConfig = {
@@ -1361,7 +1361,7 @@ describe('greaterThan on conditions', () => {
     });
     test('Shorthand version "gt" with secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gt('Field2');
         let expectedCondConfig = {
@@ -1375,7 +1375,7 @@ describe('greaterThan on conditions', () => {
     });
     test('Shorthand version "gt" with secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gt('Field2', {});
         let expectedCondConfig = {
@@ -1389,7 +1389,7 @@ describe('greaterThan on conditions', () => {
     });
     test('Shorthand version "gt" with valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').gt('Field2');
         let expectedCondConfig = {
@@ -1405,7 +1405,7 @@ describe('greaterThan on conditions', () => {
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanConditionConfig with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThan('Field2', {
             conversionLookupKey: LookupKey.Integer,
@@ -1455,7 +1455,7 @@ describe('greaterThan on conditions', () => {
 describe('greaterThanOrEqualValue on conditions', () => {
     test('With secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().greaterThanOrEqualValue(1);
         let expectedCondConfig = {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -1468,7 +1468,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
     });
     test('With secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanOrEqualValue(1, {});
         let expectedCondConfig = {
@@ -1482,7 +1482,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
     });
     test('With valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').greaterThanOrEqualValue(1);
         let expectedCondConfig = {
@@ -1497,7 +1497,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
     });
     test('Shorthand version "gteValue" with secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gteValue(1);
         let expectedCondConfig = {
@@ -1511,7 +1511,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
     });
     test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gteValue(1, {});
         let expectedCondConfig = {
@@ -1525,7 +1525,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
     });
     test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').gteValue(1);
         let expectedCondConfig = {
@@ -1541,7 +1541,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
     test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanOrEqualValue(1, {
             conversionLookupKey: LookupKey.Integer,
@@ -1591,7 +1591,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 describe('greaterThanOrEqual on conditions', () => {
     test('With secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().greaterThanOrEqual('Field2');
         let expectedCondConfig = {
             conditionType: ConditionType.GreaterThanOrEqual,
@@ -1604,7 +1604,7 @@ describe('greaterThanOrEqual on conditions', () => {
     });
     test('With secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanOrEqual('Field2', {});
         let expectedCondConfig = {
@@ -1619,7 +1619,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
     test('With valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName,  and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').greaterThanOrEqual('Field2');
         let expectedCondConfig = {
@@ -1635,7 +1635,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
     test('Shorthand version "gte" with secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gte('Field2');
         let expectedCondConfig = {
@@ -1649,7 +1649,7 @@ describe('greaterThanOrEqual on conditions', () => {
     });
     test('Shorthand version "gte" with secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().gte('Field2', {});
         let expectedCondConfig = {
@@ -1663,7 +1663,7 @@ describe('greaterThanOrEqual on conditions', () => {
     });
     test('Shorthand version "gte" with valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').gte('Field2');
         let expectedCondConfig = {
@@ -1679,7 +1679,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().greaterThanOrEqual('Field2', {
             conversionLookupKey: LookupKey.Integer,
@@ -1730,7 +1730,7 @@ describe('greaterThanOrEqual on conditions', () => {
 describe('stringLength on conditions', () => {
     test('With maximum assigned, creates StringLengthConditionConfig with type=StringLength and maximum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().stringLength(4);
         let expectedCondConfig = {
@@ -1744,7 +1744,7 @@ describe('stringLength on conditions', () => {
     });
     test('With maximum assigned and condDesc={}, creates StringLengthConditionConfig with type=StringLength and maximum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().stringLength(4, {});
         let expectedCondConfig = {
@@ -1758,7 +1758,7 @@ describe('stringLength on conditions', () => {
     });
     test('With valueHostName and maximum assigned, creates StringLengthConditionConfig with type=StringLength, valueHostName, and maximum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').stringLength(4);
         let expectedCondConfig = {
@@ -1774,7 +1774,7 @@ describe('stringLength on conditions', () => {
 
     test('With minimum and maximum assigned, creates StringLengthConditionConfig with type=StringLength, minimum assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().stringLength(4, { minimum: 1 });
         let expectedCondConfig = {
@@ -1822,7 +1822,7 @@ describe('stringLength on conditions', () => {
 describe('requireText on conditions', () => {
     test('With no parameters, creates RequireTextConditionConfig with type=RequireText', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().requireText();
         let expectedCondConfig = {
@@ -1836,7 +1836,7 @@ describe('requireText on conditions', () => {
 
     test('With condDesc={}, creates RequireTextConditionConfig with type=RequireText', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().requireText({});
         let expectedCondConfig = {
@@ -1849,7 +1849,7 @@ describe('requireText on conditions', () => {
     });
     test('With valueHostName assigned, creates RequireTextConditionConfig with type=RequireText and valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').requireText();
         let expectedCondConfig = {
@@ -1864,7 +1864,7 @@ describe('requireText on conditions', () => {
 
     test('With nullValueResult=NoMatch assigned, creates RequireTextConditionConfig with type=RequireText, nullValueResult=NoMatch assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().requireText({
             nullValueResult: ConditionEvaluateResult.NoMatch
@@ -1910,7 +1910,7 @@ describe('requireText on conditions', () => {
 describe('notNull on conditions', () => {
     test('With no parameters, creates NotNullConditionConfig with type=NotNull assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().notNull();
         let expectedCondConfig = {
@@ -1923,7 +1923,7 @@ describe('notNull on conditions', () => {
     });
     test('With valueHostName assigned, creates NotNullConditionConfig with type=NotNull and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').notNull();
         let expectedCondConfig = {
@@ -1968,7 +1968,7 @@ describe('notNull on conditions', () => {
 describe('positive on conditions', () => {
     test('With no parameters, creates PositiveConditionConfig with type=Positive assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().positive();
         let expectedCondConfig = {
             conditionType: ConditionType.Positive
@@ -1980,7 +1980,7 @@ describe('positive on conditions', () => {
     });
     test('With valueHostName assigned, creates PositiveConditionConfig with type=Positive and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').positive();
         let expectedCondConfig = {
@@ -2024,7 +2024,7 @@ describe('positive on conditions', () => {
 describe('integer on conditions', () => {
     test('With no parameters, creates IntegerConditionConfig with type=Integer assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().integer();
         let expectedCondConfig = {
@@ -2037,7 +2037,7 @@ describe('integer on conditions', () => {
     });
     test('With valueHostName assigned, creates IntegerConditionConfig with type=Integer and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').integer();
         let expectedCondConfig = {
@@ -2081,7 +2081,7 @@ describe('integer on conditions', () => {
 describe('maxDecimals on conditions', () => {
     test('With no parameters, creates MaxDecimalsConditionConfig with type=MaxDecimals assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.parentValue().maxDecimals(2);
         let expectedCondConfig = {
@@ -2095,7 +2095,7 @@ describe('maxDecimals on conditions', () => {
     });
     test('With valueHostName assigned, creates MaxDecimalsConditionConfig with type=MaxDecimals and valueHostName assigned', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('Field1').maxDecimals(1);
         let expectedCondConfig = {
@@ -2143,7 +2143,7 @@ describe('maxDecimals on conditions', () => {
 describe('all on conditions', () => {
     test('With empty conditions, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs=[]', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.all(
             (children) => { });
@@ -2159,7 +2159,7 @@ describe('all on conditions', () => {
     });
     test('With conditions setup with requireText and regExp, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs populated with both conditions', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.all(
             (children) => {
@@ -2185,7 +2185,7 @@ describe('all on conditions', () => {
 
     test('all() nests child all()', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.all(
             (children) => {
@@ -2212,7 +2212,7 @@ describe('all on conditions', () => {
 
     test('With starterBuilder.fieldValue("myField").all, 1 child without its own valueHostName inherits the valueHostName from the starterBuilder', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').all(
             (children) => {
@@ -2237,7 +2237,7 @@ describe('all on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").all, 1 child with its own valueHostName does not inherit valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').all(
             (children) => {
@@ -2259,7 +2259,7 @@ describe('all on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").all, 1 child using parentValue will lack valueHostName in config', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').all(
             (children) => {
@@ -2281,7 +2281,7 @@ describe('all on conditions', () => {
 
     test('Complex nested alls', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.all(
             (children) => {
@@ -2322,7 +2322,7 @@ describe('all on conditions', () => {
 describe('any on conditions', () => {
     test('With empty conditions, creates AnyMatchConditionConfig with type=AnyMatch and conditionConfigs=[]', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.any(
             (children) => { });
@@ -2338,7 +2338,7 @@ describe('any on conditions', () => {
     });
     test('With conditions setup with requireText and regExp, creates AnyMatchConditionConfig with type=AnyMatch and conditionConfigs populated with both conditions', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.any(
             (children) => {
@@ -2364,7 +2364,7 @@ describe('any on conditions', () => {
 
     test('any() nests child any()', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.any(
             (children) => {
@@ -2391,7 +2391,7 @@ describe('any on conditions', () => {
 
     test('With starterBuilder.fieldValue("myField").any, 1 child without its own valueHostName inherits the valueHostName from the starterBuilder', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').any(
             (children) => {
@@ -2416,7 +2416,7 @@ describe('any on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").any, 1 child with its own valueHostName does not inherit valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').any(
             (children) => {
@@ -2438,7 +2438,7 @@ describe('any on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").any, 1 child using parentValue will lack valueHostName in config', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').any(
             (children) => {
@@ -2460,7 +2460,7 @@ describe('any on conditions', () => {
 
     test('Complex nested anys', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.any(
             (children) => {
@@ -2500,7 +2500,7 @@ describe('any on conditions', () => {
 describe('countMatches on conditions', () => {
     test('With empty conditions, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs=[]', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             1, 4,
@@ -2519,7 +2519,7 @@ describe('countMatches on conditions', () => {
     });
     test('With conditions setup with requireText and regExp, creates AllMatchConditionConfig with type=AllMatch and conditionConfigs populated with both conditions', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             1, 4,
@@ -2548,7 +2548,7 @@ describe('countMatches on conditions', () => {
 
     test('countMatches() nests child countMatches()', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             1, 4,
@@ -2580,7 +2580,7 @@ describe('countMatches on conditions', () => {
 
     test('With starterBuilder.fieldValue("myField").countMatches, 1 child without its own valueHostName inherits the valueHostName from the starterBuilder', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').countMatches(
             1, 4,
@@ -2608,7 +2608,7 @@ describe('countMatches on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").countMatches, 1 child with its own valueHostName does not inherit valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').countMatches(
             1, 4,
@@ -2633,7 +2633,7 @@ describe('countMatches on conditions', () => {
     });
     test('With starterBuilder.fieldValue("myField").countMatches, 1 child using parentValue will lack valueHostName in config', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.fieldValue('myField').countMatches(
             1, 4,
@@ -2658,7 +2658,7 @@ describe('countMatches on conditions', () => {
 
     test('Complex nested countMatches', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             1, 4,
@@ -2703,7 +2703,7 @@ describe('countMatches on conditions', () => {
     // min=null, max=4, 1 child, minimum not in generated config
     test('min=null, max=4, 1 child, minimum not in generated config', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             null, 4,
@@ -2725,7 +2725,7 @@ describe('countMatches on conditions', () => {
     });
     test('min=1, max=null, 1 child, maximum not in generated config', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.countMatches(
             1, null,
@@ -2752,7 +2752,7 @@ describe('not on conditions', () => {
 
     test('With condition setup with requireText, creates NotConditionConfig with type=Not and conditionConfigs populatedn', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.not((childBuilder) => childBuilder.fieldValue('F1').requireText());
 
         let expectedCondConfig = {
@@ -2769,7 +2769,7 @@ describe('not on conditions', () => {
     });
     test('When there are 2 child conditions, throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.not((childBuilder) => {
             childBuilder.fieldValue('F1').requireText();
             childBuilder.parentValue().requireText();
@@ -2778,23 +2778,23 @@ describe('not on conditions', () => {
     });
     test('Null as the function parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.not(null!)).toThrow(/notCallback/);
     });
     test('Non-function as the function parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.not({} as any)).toThrow(/Function expected/);
     });
     test('Null returned by the notCallback throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.not((childBuilder) => null!)).toThrow(/childConditionConfig/);
     });    
     // starterBuilder.fieldValue('myField').not impacts child
     test('starterBuilder.fieldValue("myField").not applies the field value to the child condition', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.fieldValue('myField').not((childBuilder) =>
             childBuilder.conditionConfig({
                 conditionType: ConditionType.RequireText
@@ -2820,7 +2820,7 @@ describe('not on conditions', () => {
 describe('when on conditions', () => {
     test('Simple case with whenBuilder and thenBuilder contributing', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F2').regExp(/abc/),
@@ -2845,7 +2845,7 @@ describe('when on conditions', () => {
     // both have childBuilder.fieldValue()
     test('whenBuilder.fieldValue(F2), thenBuilder.fieldValue(F1)', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
         starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F2').regExp(/abc/),
@@ -2871,7 +2871,7 @@ describe('when on conditions', () => {
 
     test('When there are 2 child conditions on thenBuilder, throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F2').regExp(/abc/),
             (thenBuilder) => {
@@ -2882,7 +2882,7 @@ describe('when on conditions', () => {
     });
     test('When there are 2 child conditions on whenBuilder, throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder) => {
                 whenBuilder.fieldValue('F2').regExp(/abc/);
@@ -2893,7 +2893,7 @@ describe('when on conditions', () => {
     });
     test('Null as the whenCallback parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             null!,
             (thenBuilder) => thenBuilder.fieldValue('F1').requireText()
@@ -2901,7 +2901,7 @@ describe('when on conditions', () => {
     });
     test('Null as the thenCallback parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F1').requireText(),
             null!
@@ -2909,7 +2909,7 @@ describe('when on conditions', () => {
     });
     test('Null as the whenCallback parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder)=> null!,
             (thenBuilder) => thenBuilder.fieldValue('F1').requireText()
@@ -2917,7 +2917,7 @@ describe('when on conditions', () => {
     });
     test('Null returned by thenCallback throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F1').requireText(),
             (thenBuilder) => null!
@@ -2925,7 +2925,7 @@ describe('when on conditions', () => {
     });
     test('Non-function as the whenCallback parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             {} as any,
             (thenBuilder) => thenBuilder.fieldValue('F1').requireText()
@@ -2933,7 +2933,7 @@ describe('when on conditions', () => {
     });
     test('Non-function as the thenCallback parameter throws', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.when(
             (whenBuilder) => whenBuilder.fieldValue('F1').requireText(),
             {} as any
@@ -2942,7 +2942,7 @@ describe('when on conditions', () => {
 
     test('starterBuilder.fieldValue("myField").when inherited by child that lacks valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.fieldValue('myField').when(
             (whenBuilder) => whenBuilder.conditionConfig({
                 conditionType: ConditionType.RequireText
@@ -2968,7 +2968,7 @@ describe('when on conditions', () => {
     });
     test('starterBuilder.fieldValue("myField").when not inherited by child that has valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.fieldValue('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F1').requireText(),
             (thenBuilder) => thenBuilder.fieldValue('F2').requireText()
@@ -2993,7 +2993,7 @@ describe('when on conditions', () => {
     // starter.parentValue().when, no inheritance
     test('starterBuilder.parentValue().when provides no valueHostName to child that lacks valueHostName', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.parentValue().when(
             (whenBuilder) => whenBuilder.conditionConfig({
                 conditionType: ConditionType.RequireText
@@ -3026,7 +3026,7 @@ describe('conditionConfig', () => {
             valueHostName: null
         };
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         starterBuilder.conditionConfig(conditionConfig);
 
         let expectedCondConfig = conditionConfig;
@@ -3037,12 +3037,12 @@ describe('conditionConfig', () => {
  
     test('With null parameter, throws error', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.conditionConfig(null!)).toThrow(/config/);
     });
     test('With object missing conditionType property, throws error', () => {
         let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(parentBuilder);
+        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => starterBuilder.conditionConfig({} as any)).toThrow(/config.conditionType/);
     });    
 });

@@ -1,7 +1,7 @@
 import { FluentDataTypeCheckValidatorConfig } from './../../build/Builder/FluentValidatorBuilder';
 import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
 import { ConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
-import { FluentValidatorConfig, FluentBuilderBase } from './../../build/Builder/Fluent';
+import { FluentValidatorConfig, IBuilderConfigHost } from './../../build/Builder/Fluent';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig } from '../../src/Conditions/ConcreteConditions';
@@ -45,31 +45,40 @@ function createVMConfig(): FieldValueHostConfig
     };
 }
 
+let services: MockValidationServices;
+beforeAll(() => {
+    services = new MockValidationServices(false, false);
+});
+
 describe('FluentValidatorBuilder', () => {
     describe('constructor', () => {
         test('constructor with vhConfig sets up vhConfig property', () => {
             let vhConfig = createVMConfig();
-            let testItem = new FluentValidatorBuilder(vhConfig);
+            let testItem = new FluentValidatorBuilder(services, vhConfig);
             expect(testItem.parentConfig).toBe(vhConfig);
         });
         test('constructor with vhConfig that has validatorConfig=null sets up vhConfig property with empty validatorConfig array', () => {
             let vhConfig = createVMConfig();
             vhConfig.validatorConfigs = null;
 
-            let testItem = new FluentValidatorBuilder(vhConfig);
+            let testItem = new FluentValidatorBuilder(services, vhConfig);
             expect(testItem.parentConfig).toBeDefined();
             expect(testItem.parentConfig.validatorConfigs).toEqual([]);
         });
-        test('constructor with null in first parameter throws', () => {
-            expect(() => new FluentValidatorBuilder(null!)).toThrow('parentConfig');
+        test('constructor with services=null throws', () => {
+            let vhConfig = createVMConfig();
+            expect(() => new FluentValidatorBuilder(null!, vhConfig)).toThrow('services');
+        });
+        test('constructor with config= null throws', () => {
+            expect(() => new FluentValidatorBuilder(services, null!)).toThrow('parentConfig');
         });
     });
     describe('finish()', () => {
         test('with error message and summary message stand-alone, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).not.toThrow();
@@ -85,8 +94,8 @@ describe('FluentValidatorBuilder', () => {
         test('with error message stand-alone, summary parameter null, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', null, validatorConfig)).not.toThrow();
@@ -101,8 +110,8 @@ describe('FluentValidatorBuilder', () => {
         test('with error message and summary message null, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
             expect(() => testItem.publicify_finish(conditionBuilder, null, null, validatorConfig)).not.toThrow();
@@ -117,8 +126,8 @@ describe('FluentValidatorBuilder', () => {
         test('with error message and summary message in validatorConfig, and other parameters correctly defined', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
                 errorMessage: 'Error',
@@ -136,7 +145,7 @@ describe('FluentValidatorBuilder', () => {
         });
         test('with validatorConfig.conditionCreator assigned', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
                 errorMessage: 'Error',
@@ -155,8 +164,8 @@ describe('FluentValidatorBuilder', () => {
         test('with null for error message and summary parameters, but rich content in validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
                 enabled: false,
@@ -177,8 +186,8 @@ describe('FluentValidatorBuilder', () => {
         test('defines same errorCode twice throws on the second definition', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
-            let conditionBuilder = new ConditionBuilder(testItem);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
                 summaryMessage: 'Summary'
@@ -190,7 +199,7 @@ describe('FluentValidatorBuilder', () => {
 
         test('validatorConfig.conditionCreator = null and conditionBuilder = null throws', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
                 errorMessage: 'Error',
@@ -205,7 +214,7 @@ describe('FluentValidatorBuilder', () => {
 
         test('All parameters null, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -219,7 +228,7 @@ describe('FluentValidatorBuilder', () => {
         // with error and summary messages, no conditionConfig or validatorParameters
         test('error and summary messages, no conditionConfig or validatorParameters, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -232,7 +241,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message only, as a single parameter
         test('error message only, as a single parameter, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -245,7 +254,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message, summary = null
         test('error message, summary = null, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -258,7 +267,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message = null, summary assigned
         test('error message = null, summary assigned, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -276,7 +285,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessagel10n: 'Key'
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -292,7 +301,7 @@ describe('FluentValidatorBuilder', () => {
                 trim: true
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -312,7 +321,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessagel10n: 'Key'
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -336,7 +345,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessage: 'Error',
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -359,7 +368,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessage: 'Error',
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(vhConfig);
+            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -380,7 +389,7 @@ describe('FluentValidatorBuilder', () => {
 function createFluent(): ValidationManagerStartFluent {
     return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
 }
-function TestFluentValidatorBuilder(testItem: FluentBuilderBase,
+function TestFluentValidatorBuilder(testItem: IBuilderConfigHost<any>,
     expectedValConfig: ValidatorConfig) {
 
     expect(testItem).toBeInstanceOf(FluentValidatorBuilder);

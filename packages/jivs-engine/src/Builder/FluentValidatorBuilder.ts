@@ -18,7 +18,7 @@ import { ValidatorConfig } from "../Interfaces/Validator";
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
 import { ConditionBuilder } from './ConditionBuilder_classes';
-import { FluentBuilderBase, FluentValidatorConfig, IBuilderConfigHost } from './Fluent';
+import { FluentValidatorConfig, IBuilderConfigHost, CompleteConfigBuilderHandler } from './Fluent';
 import {
     ConditionBuilderHandler,
     ConditionWithChildrenBuilderHandler,
@@ -42,6 +42,7 @@ from './ConditionBuilder_classes'
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { NotConditionConfig } from "../Conditions/NotCondition";
 import { WhenConditionConfig } from "../Conditions/WhenCondition";
+import { IValidationServices } from "../Interfaces/ValidationServices";
 
 /**
  * Use this when using alternative conditions, as you will need to provide substitutes
@@ -62,14 +63,26 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
  * 
  * See {@link Builder/Fluent | Fluent Overview}
  */
-export class FluentValidatorBuilder extends FluentBuilderBase implements IFluentValidatorBuilder {
-    constructor(parentConfig: FieldValueHostConfig) {
-        super();
+export class FluentValidatorBuilder implements IFluentValidatorBuilder {
+    /**
+     * Constructor
+     * @param parentConfig - Config object from the parent to host this validator.
+     */
+    constructor(services: IValidationServices,
+        parentConfig: FieldValueHostConfig) {
+        assertNotNull(services, 'services');
         assertNotNull(parentConfig, 'parentConfig');
+        this._services = services;
         if (!parentConfig.validatorConfigs)
             parentConfig.validatorConfigs = [];
         this._parentConfig = parentConfig;
     }
+
+    protected get services(): IValidationServices
+    {
+        return this._services;
+    }
+    private _services: IValidationServices;
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
@@ -184,6 +197,16 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
     }
 
     /**
+     * Creates the ConditionBuilder used by each Fluent validator function
+     * using the one defined in FluentFactory on ValidationServices.
+     * @returns 
+     */
+    protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): ConditionBuilder
+    {
+        return this.services.fluentFactory.createConditionBuilder(this, completed);
+    }
+
+    /**
      * The fluent function that allows the user to supply a conditionCreator function
      * instead of setting up a condition through a config.
      */
@@ -237,7 +260,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty   
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<DataTypeCheckConditionConfig>(arg1, arg2);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.dataTypeCheck();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -274,7 +297,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg2?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RequireTextConditionConfig>(arg1, arg2);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.requireText(conditionConfig as RequireTextConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -314,7 +337,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty  
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotNullConditionConfig>(arg1, arg2);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notNull();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -374,7 +397,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg2, arg3 as string | null);
 
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
@@ -382,7 +405,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             // expression, validatorParameters
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg2 as FluentRegExpValidatorConfig);
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
@@ -392,7 +415,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
                 // string expression, ignoreCase, error message, summary message
                 let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-                let conditionBuilder = new ConditionBuilder(this);
+                let conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
                         
@@ -401,7 +424,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
                 // string expression, ignoreCase, validatorParameters
                 let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-                let conditionBuilder = new ConditionBuilder(this);
+                let conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
@@ -409,7 +432,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
                 // string expression, ignoreCase, null for error message, summary message
                 let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string);
-                let conditionBuilder = new ConditionBuilder(this);
+                let conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
@@ -418,7 +441,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
                 // string expression, ignoreCase
                 let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-                let conditionBuilder = new ConditionBuilder(this);
+                let conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
@@ -427,7 +450,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             // expression, undefined, validatorParameters
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
@@ -435,7 +458,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             // RegExp expression, null for error message, string for summary message
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(null, arg3 as string | null);
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
@@ -443,7 +466,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             // string expression, ignoreCase = undefined, errorMessage = null, summaryMessage
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(null, arg4 as string | null);
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
@@ -451,14 +474,14 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
             // expression, null for ignoreCase, error message or null, summary message or null
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-            let conditionBuilder = new ConditionBuilder(this);
+            let conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         // fall-thru
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         
@@ -505,7 +528,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg4?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RangeConditionConfig>(arg3, arg4);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.range(minimum, maximum);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -558,7 +581,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.equalToValue(secondValue, conditionConfig as EqualToValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -610,7 +633,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
         
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.equalTo(secondValueHostName, conditionConfig as EqualToConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -663,7 +686,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToValueConditionConfig>(args2, args3);
         
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notEqualToValue(secondValue, conditionConfig as NotEqualToValueConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -714,7 +737,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         args3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notEqualTo(secondValueHostName, conditionConfig as NotEqualToConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -764,7 +787,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         args3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanValue(secondValue, conditionConfig as LessThanValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -816,7 +839,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         args3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThan(secondValueHostName, conditionConfig as LessThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -867,7 +890,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanOrEqualValue(secondValue, conditionConfig as LessThanOrEqualValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -919,7 +942,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanOrEqual(secondValueHostName, conditionConfig as LessThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -971,7 +994,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         args3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanValue(secondValue, conditionConfig as GreaterThanValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1022,7 +1045,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         args3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThan(secondValueHostName, conditionConfig as GreaterThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1072,7 +1095,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanOrEqualValue(secondValue, conditionConfig as GreaterThanOrEqualValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1125,7 +1148,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanOrEqual(secondValueHostName, conditionConfig as GreaterThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1174,7 +1197,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<StringLengthConditionConfig>(arg2, arg3);
         
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.stringLength(maximum, conditionConfig as StringLengthConditionConfig);
 
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
@@ -1221,7 +1244,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg2?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<PositiveConditionConfig>(arg1, arg2);   
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.positive();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1263,7 +1286,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg2?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<IntegerConditionConfig>(arg1, arg2);       
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.integer();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1298,7 +1321,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<MaxDecimalsConditionConfig>(arg2, arg3); 
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.maxDecimals(maxDecimals);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1317,7 +1340,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.not(childBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1339,7 +1362,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg4?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<WhenConditionConfig>(arg3, arg4);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.when(whenBuilder, thenBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1358,7 +1381,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AllMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.all(conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1377,7 +1400,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg3?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AnyMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.any(conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1401,7 +1424,7 @@ export class FluentValidatorBuilder extends FluentBuilderBase implements IFluent
         arg5?: string | null): FluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<CountMatchesConditionConfig>(arg4, arg5);
-        let conditionBuilder = new ConditionBuilder(this);
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.countMatches(minimum, maximum, conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);

@@ -11,6 +11,8 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { NotConditionConfig } from "../../src/Conditions/NotCondition";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { MockValidationServices } from "../TestSupport/mocks";
 
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
@@ -32,12 +34,18 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
+let services: MockValidationServices;
+
+beforeAll(() => {
+    services = new MockValidationServices(true, false); 
+});
+
 
 describe('ConditionBuilder', () => {
     // using expects syntax
     test('ConditionBuilder attaches child RequireTextConditionConfig to its builder; no impact on parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let conditionBuilder = new ConditionBuilder(parentBuilder);
+        let conditionBuilder = new ConditionBuilder(services, parentBuilder);
         let childConfig: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
             valueHostName: null
@@ -50,7 +58,7 @@ describe('ConditionBuilder', () => {
     // try RangeConditionConfig, which has a secondValue property, to ensure that the builder can handle configs with additional properties
     test('ConditionBuilder attaches child RangeConditionConfig to its builder; no impact on parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let conditionBuilder = new ConditionBuilder(parentBuilder);
+        let conditionBuilder = new ConditionBuilder(services, parentBuilder);
         let childConfig: RangeConditionConfig = {
             conditionType: ConditionType.Range,
             valueHostName: null,
@@ -67,7 +75,7 @@ describe('StartConditionBuilder', () => {
     describe('parentValue()', () => {
         test('returns a new ConditionBuilder with its own valueHostName property undefined', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             expect(conditionBuilder).toBeInstanceOf(ConditionBuilder);
             expect((conditionBuilder as any).valueHostName).toBeUndefined();
@@ -76,7 +84,7 @@ describe('StartConditionBuilder', () => {
         });
         test('causes setConfig to leave the childConfig.valueHostName property unassigned; parentBuilder gets config', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             let childConfig = {
                 conditionType: ConditionType.RequireText
@@ -99,7 +107,7 @@ describe('StartConditionBuilder', () => {
         // same but valueHostName is null in child
         test('causes setConfig to leave the childConfig.valueHostName alone when its assigned', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.parentValue();
             let childConfig = {
                 conditionType: ConditionType.RequireText,
@@ -125,7 +133,7 @@ describe('StartConditionBuilder', () => {
     describe('fieldValue()', () => {
         test('returns a new ConditionBuilder with its own valueHostName property assigned to the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText
@@ -148,7 +156,7 @@ describe('StartConditionBuilder', () => {
         });
         test('when the child has valueHostName assigned, setConfig should not overwrite it with the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText,
@@ -173,7 +181,7 @@ describe('StartConditionBuilder', () => {
         });
         test('when the child has valueHostName assigned to null, setConfig should overwrite it with the supplied field name', () => {
             let parentBuilder = new TestParentBuilder();
-            let startBuilder = new StartConditionBuilder(parentBuilder);
+            let startBuilder = new StartConditionBuilder(services, parentBuilder);
             let conditionBuilder = startBuilder.fieldValue('myField');
             let childConfig = {
                 conditionType: ConditionType.RequireText,
@@ -203,16 +211,17 @@ describe('StartConditionBuilder', () => {
  * one of those used within the when and not code.
  */
 class TopLevelStartConditionBuilder extends StartConditionBuilder {
-    constructor(parentBuilder: IBuilderConfigHost<object>,
+    constructor(
+        services: IValidationServices, parentBuilder: IBuilderConfigHost<object>,
         completed?: CompleteConfigBuilderHandler<ConditionConfig>
     ) {
-        super(parentBuilder, completed);
+        super(services, parentBuilder, completed);
     }
 }
 describe('when()', () => {
     test('creates a WhenConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new TopLevelStartConditionBuilder(parentBuilder);
+        let startBuilder = new TopLevelStartConditionBuilder(services, parentBuilder);
         startBuilder.when(
             (whenBuilder) =>
                 // normally the whenBuilder would be used to create a child condition config, but for this test we can just return a config directly
@@ -244,7 +253,7 @@ describe('when()', () => {
     // null first parameter throws
     test('when() throws when first parameter is null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
                 null!,
@@ -256,7 +265,7 @@ describe('when()', () => {
     // null second parameter throws
     test('when() throws when second parameter is null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
                 (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
@@ -269,7 +278,7 @@ describe('when()', () => {
     // when config is null
     test('when() throws when whenToEnableCallback returns null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
                 (whenBuilder) => null!,
@@ -281,7 +290,7 @@ describe('when()', () => {
     // then config is null
     test('when() throws when thenCallback returns null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
                 (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
@@ -294,7 +303,7 @@ describe('when()', () => {
     // startBuilder.parentValue().when() to show when comes from ConditionBuilder
     test('startBuilder.parentValue().when() creates a WhenConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.when(
             (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
@@ -332,7 +341,7 @@ describe('when()', () => {
     // using startBuilder.fieldValue().when() to show when comes from ConditionBuilder
     test('startBuilder.fieldValue().when() creates a WhenConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.when(
             (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
@@ -377,7 +386,7 @@ describe('when()', () => {
 describe('not()', () => {
     test('creates a NotConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.not(
             (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -399,7 +408,7 @@ describe('not()', () => {
     // with valuehost in child
     test('creates a NotConditionConfig with child valueHostName and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.not(
             (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -422,7 +431,7 @@ describe('not()', () => {
     // starterBuilder.parentValue.not
     test('startBuilder.parentValue().not() creates a NotConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.not(
             (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -443,7 +452,7 @@ describe('not()', () => {
     });
     test('startBuilder.fieldValue().not() creates a NotConditionConfig and assigns it to the parent builder. The child of not get valuesHostName passed through', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.not(
             (notBuilder) => notBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -470,7 +479,7 @@ describe('all()', () => {
     // with 1 child condition
     test('creates an AllConditionConfig with 1 child condition and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.all(
             (allBuilder) => {
                 allBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -497,7 +506,7 @@ describe('all()', () => {
     // 3 child conditions
     test('creates an AllConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.all(
             (allBuilder) => {
                 allBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -542,7 +551,7 @@ describe('all()', () => {
     // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
     test('Child condition uses the valueHostName from fieldValue if not already set', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.all(
             (allBuilder) => {
                 allBuilder.fieldValue('NotUsed').conditionConfig(<RequireTextConditionConfig>{
@@ -576,7 +585,7 @@ describe('all()', () => {
     // empty array
     test('creates an AllConditionConfig with no child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.all(
             (allBuilder) => {
             }
@@ -593,7 +602,7 @@ describe('all()', () => {
     // null callback throws
     test('all() throws when callback is null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.all(null!);
         }).toThrow('childrenCallback required');
@@ -602,7 +611,7 @@ describe('all()', () => {
     // starterBuilder.parentValue().all() to show all comes from ConditionBuilder
     test('startBuilder.parentValue().all() creates an AllConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.all(
             (allBuilder) => {
@@ -631,7 +640,7 @@ describe('all()', () => {
     // startBuilder.fieldValue().all() to show all comes from ConditionBuilder
     test('startBuilder.fieldValue().all() creates an AllConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.all(
             (allBuilder) => {
@@ -672,7 +681,7 @@ describe('any()', () => {
     // with 1 child condition
     test('creates an AnyConditionConfig with 1 child condition and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.any(
             (allBuilder) => {
                 allBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -699,7 +708,7 @@ describe('any()', () => {
     // 3 child conditions
     test('creates an AnyConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.any(
             (allBuilder) => {
                 allBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -744,7 +753,7 @@ describe('any()', () => {
     // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
     test('Child condition uses the valueHostName from fieldValue if not already set', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.any(
             (allBuilder) => {
                 allBuilder.fieldValue('NotUsed').conditionConfig(<RequireTextConditionConfig>{
@@ -778,7 +787,7 @@ describe('any()', () => {
     // empty array
     test('creates an AnyConditionConfig with no child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.any(
             (allBuilder) => {
             }
@@ -795,7 +804,7 @@ describe('any()', () => {
     // null callback throws
     test('any() throws when callback is null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.any(null!);
         }).toThrow('childrenCallback required');
@@ -804,7 +813,7 @@ describe('any()', () => {
     // starterBuilder.parentValue().any() to show any comes from ConditionBuilder
     test('startBuilder.parentValue().any() creates an AnyConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.any(
             (allBuilder) => {
@@ -833,7 +842,7 @@ describe('any()', () => {
     // startBuilder.fieldValue().any() to show any comes from ConditionBuilder
     test('startBuilder.fieldValue().any() creates an AnyConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.any(
             (allBuilder) => {
@@ -876,7 +885,7 @@ describe('countMatches()', () => {
     // with 1 child condition
     test('creates a CountMatchesConditionConfig with 1 child condition and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             1, 3,
             (countMatchesBuilder) => {
@@ -906,7 +915,7 @@ describe('countMatches()', () => {
     // 3 child conditions
     test('creates an CountMatchesConditionConfig with 3 child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             1, 3,
             (countMatchesBuilder) => {
@@ -954,7 +963,7 @@ describe('countMatches()', () => {
     // same but use fieldValue in each child to define the valuehostname instead of using the predefined property
     test('Child condition uses the valueHostName from fieldValue if not already set', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             1, 3,
             (countMatchesBuilder) => {
@@ -991,7 +1000,7 @@ describe('countMatches()', () => {
     // empty array
     test('creates an CountMatchesConditionConfig with no child conditions and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             1, 3,
             (countMatchesBuilder) => {
@@ -1011,7 +1020,7 @@ describe('countMatches()', () => {
     // null ccountMatchesback throws
     test('countMatches() throws when ccountMatchesback is null', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.countMatches(1, 3, null!);
         }).toThrow('childrenCallback required');
@@ -1020,7 +1029,7 @@ describe('countMatches()', () => {
     // starterBuilder.parentValue().countMatches() to show countMatches comes from ConditionBuilder
     test('startBuilder.parentValue().countMatches() creates an CountMatchesConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.countMatches(
             1, 3,
@@ -1052,7 +1061,7 @@ describe('countMatches()', () => {
     // startBuilder.fieldValue().countMatches() to show countMatches comes from ConditionBuilder
     test('startBuilder.fieldValue().countMatches() creates an CountMatchesConditionConfig and assigns it to the parent builder', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.countMatches(
             1, 3,
@@ -1093,7 +1102,7 @@ describe('countMatches()', () => {
     // minimum = null, it is not in the config
     test('startBuilder.countMatches() with minimum = null does not include minimum in the config', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             null, 3,
             (countMatchesBuilder) => {
@@ -1123,7 +1132,7 @@ describe('countMatches()', () => {
     // maximum = null, it is not in the config
     test('startBuilder.countMatches() with maximum = null does not include maximum in the config', () => {
         let parentBuilder = new TestParentBuilder();
-        let startBuilder = new StartConditionBuilder(parentBuilder);
+        let startBuilder = new StartConditionBuilder(services, parentBuilder);
         startBuilder.countMatches(
             1, null,
             (countMatchesBuilder) => {

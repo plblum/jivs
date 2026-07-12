@@ -88,6 +88,7 @@ import {
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
+import { FluentFactory } from '@plblum/jivs-engine/build/Services/FluentFactory';
 
 /**
  * Creates and configures the ValidationServices object for your app.
@@ -176,6 +177,18 @@ export function createValidationServices(activeCultureId: string,
     let vhf = new ValueHostFactory();
     registerStandardValueHostGenerators(vhf);
     vs.valueHostFactory = vhf;
+
+    // --- FluentFactory -------------------------------------------
+    let ff = new FluentFactory();
+    vs.fluentFactory = ff;
+/*  // Adding custom conditions to FluentValidatorBuilder and ConditionBuilder
+    ff.setFluentValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
+        return new YourFluentValidatorBuilder(vs, parentConfig);
+    });
+    ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
+        return new YourConditionBuilder(parentBuilder, completed);
+    });
+*/
 
     return vs;
 }

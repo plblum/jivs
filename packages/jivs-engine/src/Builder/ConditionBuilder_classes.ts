@@ -48,7 +48,7 @@
  * 
  * The cases for b, c, and d are used within the Fluent validator syntax.
  * ```ts
- * const valBuilder = new FluentValidatorBuilder();
+ * const valBuilder = new FluentValidatorBuilder(services, parentConfig);
  * valBuilder.field("Field1")
  *       .requireText()
  *       .any((childBuilder)=>{  // here's the child builder
@@ -59,7 +59,7 @@
  * ```
  * They are also used a child to b, c, and d.
  * ```ts
- * const condBuilder = new ConditionBuilder();
+ * const condBuilder = new ConditionBuilder(services, parentBuilder);
  * condBuilder.all((childBuilder)=>{ // here's the child builder
  *      childBuilder.parentValue().equalTo("Value1");
  *      childBuilder.parentValue().equalTo("Value2");
@@ -133,6 +133,7 @@ import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
 import { IBuilderConfigHost, CompleteConfigBuilderHandler } from "./Fluent";
 import { CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig } from "../Conditions/ConcreteConditions";
 import { ValueHostName } from "../DataTypes/BasicTypes";
+import { IValidationServices } from "../Interfaces/ValidationServices";
 
 /**
  * Interface for condition builders.
@@ -184,11 +185,20 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
      * );
      * ```
      */
-    constructor(parentBuilder: IBuilderConfigHost<object> | null, // intentionally not <ConditionConfig> because the parent might not be creating a condition config
+    constructor(services: IValidationServices,
+        parentBuilder: IBuilderConfigHost<object> | null, // intentionally not <ConditionConfig> because the parent might not be creating a condition config
         completed?: CompleteConfigBuilderHandler<TConfig>) {
+        assertNotNull(services, 'services');
+        this._services = services;
         this._parentBuilder = parentBuilder;
         this._completed = completed;
     }
+
+    protected get services(): IValidationServices
+    {
+        return this._services;
+    }
+    private _services: IValidationServices;
 
     protected get parentBuilder(): IBuilderConfigHost<object> | null {
         return this._parentBuilder;
@@ -263,7 +273,9 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
             conditionType: ConditionType.Not,
             childConditionConfig: null! // updated in the callback of the child builder
         };
-        let childBuilder = new StartConditionWithOneChildBuilder(this as IBuilderConfigHost<object>,
+        let childBuilder = new StartConditionWithOneChildBuilder(
+            this.services,
+            this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: IConditionBuilder) => {
                 notConfig.childConditionConfig = childConfig;
             }
@@ -292,7 +304,9 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
             whenToEnableConfig: null!,  // pending completion of whenBuilder
             thenConfig: null!   // pending completion of thenBuilder
         };        
-        let whenBuilder = new StartConditionWithOneChildBuilder(this as IBuilderConfigHost<object>,
+        let whenBuilder = new StartConditionWithOneChildBuilder(
+            this.services,
+            this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: IConditionBuilder) => {
                 whenConditionConfig.whenToEnableConfig = childConfig;
             }
@@ -300,7 +314,9 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         whenToEnableCallback(whenBuilder);
         assertNotNull(whenConditionConfig.whenToEnableConfig, 'whenToEnableConfig');
 
-        let thenBuilder = new StartConditionWithOneChildBuilder(this as IBuilderConfigHost<object>,
+        let thenBuilder = new StartConditionWithOneChildBuilder(
+            this.services,
+            this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: IConditionBuilder) => {
                 whenConditionConfig.thenConfig = childConfig;
             }
@@ -327,6 +343,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         // and deposit them into the parent builder's config.
 
         let childBuilder = new StartConditionWithChildrenBuilder(
+            this.services,
             this as IBuilderConfigHost<object>, conditionType);
         // pass down inherited valueHostName from parent builder if available
         if (this.parentBuilder instanceof StartConditionBuilder && 
@@ -411,10 +428,11 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
 }
 
 export class StartConditionBuilder extends ConditionBuilderBase<ConditionConfig> {
-    constructor(parentBuilder: IBuilderConfigHost<object> | null,
+    constructor(services: IValidationServices,
+        parentBuilder: IBuilderConfigHost<object> | null,
         completed?: CompleteConfigBuilderHandler<ConditionConfig>
     ) {
-        super(parentBuilder,
+        super(services, parentBuilder,
             (config: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => {
                 this.setConfig(config, { bubbleUp: true }); 
             }
@@ -471,7 +489,7 @@ export class StartConditionBuilder extends ConditionBuilderBase<ConditionConfig>
      */
     public parentValue(): ConditionBuilder {
         this._valueHostName = undefined;
-        return new ConditionBuilder(this as IBuilderConfigHost<object>,
+        return this.services.fluentFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
             (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) =>
                 this.setConfig(childCondition, { bubbleUp: true, applyValueHostName: false })
         );
@@ -488,7 +506,7 @@ export class StartConditionBuilder extends ConditionBuilderBase<ConditionConfig>
      */
     public fieldValue(valueHostName: string): ConditionBuilder {
         this._valueHostName = valueHostName;
-        return new ConditionBuilder(this as IBuilderConfigHost<object>,
+        return this.services.fluentFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
             (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) =>
                 this.setConfig(childCondition, 
                     { bubbleUp: true, applyValueHostName: true }
@@ -516,10 +534,11 @@ export class StartConditionBuilder extends ConditionBuilderBase<ConditionConfig>
  */
 export class StartConditionWithChildrenBuilder extends StartConditionBuilder {
 
-    constructor(parentBuilder: IBuilderConfigHost<object>,
+    constructor(services: IValidationServices,
+        parentBuilder: IBuilderConfigHost<object>,
         conditionType: ConditionType
         /*completed?: CompleteConfigBuilderHandler<ConditionConfig>*/) {
-        super(parentBuilder /*, completed */);
+        super(services, parentBuilder /*, completed */);
         super.setConfig({
             conditionType: conditionType,
             conditionConfigs: []
@@ -616,10 +635,11 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * This is usually consumed by calling parentBuilder to use the child
      * builder's config.
      */
-    constructor(parentBuilder: IBuilderConfigHost<object>, 
+    constructor(services: IValidationServices,
+        parentBuilder: IBuilderConfigHost<object>, 
         completed?: CompleteConfigBuilderHandler<TConfig>
     ) {
-        super(parentBuilder, completed);
+        super(services, parentBuilder, completed);
     }
 
     /**
@@ -1058,29 +1078,52 @@ export type OptionalRequireTextConditionParams = Partial<Omit<RequireTextConditi
     'conditionType' | 'valueHostName' | 'category'>>;
 export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'expressionAsString' | 'expression' | 'ignoreCase'>>;
+
+// Note about valueHostName.
+// The valuehostname property normally gets automatically populated based on the context in which the condition is used.
+// However, the comparison conditions that compare to a second valuehostName may
+// require explicit specification of the valuehostName property.
+// As a result, you see /*'valueHostName' |*/ in the definitions below.
+// ```ts
+//  protected configureRules(builder: IValidationManagerConfigBuilder,
+//      options?: RulesConfigOptions): void {
+//      builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
+//          .lessThan('EndDate')
+//          .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+//              {
+//                  valueHostName: 'DiffDays',  // <<< HERE: compare to this valueHost, not StartDate
+//                  errorMessage: 'Less than {compareTo} days apart', 
+//                  errorCode: 'NumOfDays' 
+//               });  
+//      builder.field('EndDate', LookupKey.Date, { label: 'End date' });
+//      builder.static('NumOfDays', LookupKey.Integer, { initialValue: 10 });
+//      builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);        
+//  }
+// ```
+
 export type OptionalEqualToValueConditionParams = Partial<Omit<EqualToValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalEqualToConditionParams = Partial<Omit<EqualToConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalNotEqualToValueConditionParams = Partial<Omit<NotEqualToValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalNotEqualToConditionParams = Partial<Omit<NotEqualToConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalLessThanConditionParams = Partial<Omit<LessThanConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalLessThanOrEqualValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalLessThanOrEqualConditionParams = Partial<Omit<LessThanConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalGreaterThanValueConditionParams = Partial<Omit<GreaterThanValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalGreaterThanConditionParams = Partial<Omit<GreaterThanConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalGreaterThanOrEqualValueConditionParams = Partial<Omit<GreaterThanOrEqualValueConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
 export type OptionalGreaterThanOrEqualConditionParams = Partial<Omit<GreaterThanOrEqualConditionConfig,
-    'conditionType' | 'valueHostName' | 'category' | 'secondValueHostName'>>;
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
 export type OptionalStringLengthConditionParams = Partial<Omit<StringLengthConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'maximum'>>;

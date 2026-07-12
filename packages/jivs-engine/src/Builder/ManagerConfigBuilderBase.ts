@@ -30,6 +30,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { ValueHostsManagerStartFluent, ValidationManagerStartFluent } from "./StartFluent_classes";
 import { StartConditionBuilder } from './ConditionBuilder_classes';
 import { FluentValidatorBuilder } from "./FluentValidatorBuilder";
+import { IValidationServices } from '../Interfaces/ValidationServices';
 
 /**
  * The ValueHostConfig object configures one ValueHost and its validators. 
@@ -515,7 +516,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         
         if (typeof sourceOfConditionConfig === 'function') {
             let vhConfig = getValueHostConfig();
-            let builder = new StartConditionBuilder(null);
+            let builder = new StartConditionBuilder(this.services as IValidationServices, null);
             sourceOfConditionConfig(builder);
             let addedConfig = builder.getConfig();
             if (addedConfig)
@@ -589,7 +590,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         let errorCode = resolveErrorCode(destinationOfCondition);
 //        const missingConditionMsg = `Builder function did not create a conditionConfig for error code "${errorCode}". Existing condition remains.`;
 
-        let builder = new StartConditionBuilder(null);
+        let builder = new StartConditionBuilder(this.services as IValidationServices, null);
         let fn: ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void) | null = null;
 
         if (typeof arg2 === 'function') {
@@ -597,7 +598,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         }
 
         else if (typeof arg3 === 'function' && typeof arg2 === 'number') {
-            let newConfigBuilder = new StartConditionBuilder(null);
+            let newConfigBuilder = new StartConditionBuilder(this.services as IValidationServices, null);
             arg3(newConfigBuilder);
             let newConditionConfig = newConfigBuilder.getConfig();
             if (!this.confirmConfigWasAdded(newConditionConfig))

@@ -19,6 +19,7 @@ import {
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters,
     FluentValidatorConfig, FluentStaticParameters, FluentFieldParameters
 } from "./Fluent"
+import { IValidationServices } from "../Interfaces/ValidationServices";
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
@@ -246,6 +247,11 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
         super(existingValueHostConfigs, services);
     }
 
+    public get services(): IValidationServices
+    {
+        return super.services as IValidationServices;
+    }    
+
     /**
      * Use with any ValueHost with Validators that is does not have direct supporting functions here.
      * @param valueHostType 
@@ -262,7 +268,7 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
         let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
         if (!config.validatorConfigs)
             config.validatorConfigs = [];
-        return new FluentValidatorBuilder(config);
+        return this.services.fluentFactory.createFluentValidatorBuilder(config);
     }    
 
 
