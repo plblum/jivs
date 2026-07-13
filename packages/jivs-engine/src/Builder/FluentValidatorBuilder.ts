@@ -150,10 +150,9 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     }
 
     /**
-     * For any implementation of a fluent condition function that works with FluentValidationRule.
-     * It takes the parameters passed into that function (conditionConfig and validatorConfig)
-     * and assemble the final ValidatorConfig, which it adds to the FieldValueHostConfig.
-     * @param conditionType - When not null, this will be assigned to conditionConfig for you.
+     * Finishes the creation of a Validator's condition. Each condition function within this Builder
+     * only has to prepare the parameters, then call this to add the condition config
+     * and get back the same FluentValidatorBuilder for chaining.
      * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
@@ -207,8 +206,26 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     }
 
     /**
-     * The fluent function that allows the user to supply a conditionCreator function
-     * instead of setting up a condition through a config.
+     * Lets you create the condition instance itself into the Builder instead of
+     * using the existing FluentValidatorBuilder validators.
+     * 
+     * It takes a function where you return the condition instance.
+     * (requester: ValidatorConfig) => ICondition | null
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').customRule((requester)=>{
+     *  return new DataTypeCheckCondition();
+     * });
+     * ```
+     * 
+     * ```ts
+     * customRule(conditionCreatorHandler);
+     * customRule(conditionCreatorHandler, 'Error message', 'Summary message');
+     * customRule(conditionCreatorHandler, null, 'Summary message');
+     * customRule(conditionCreatorHandler, { errorMessage: 'Error message'});
+     * ```
+    
      */
     public customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
@@ -269,7 +286,10 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     /**
       * Adds a RequireText condition to the fluent validator builder.
       * RequireText ensures that the value being validated is not empty.
-      * The value must be a string or it evaluates as Undetermined.
+      * The value must be a string or null or it evaluates as Undetermined.
+      * When evaluating against null, set its nullValueResult parameter to determine
+      * whether the condition should evaluate as NoMatch, Match, or Undetermined.
+      * If not supplied, null is treated as NoMatch.
       * @param errorMessage 
       * The error message "template" that will appear on screen when the condition is NoMatch.
       * It can use tokens, which are resolved with current data at the time of validation.
@@ -308,7 +328,10 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * Adds a NotNull condition to the fluent validator builder.
      * NotNull ensures that the value being validated is not null.
      * The value can be of any type.
-     * This condition is useful for ensuring that required fields are not left empty.
+     * This condition is useful for ensuring that required fields are not left null.
+     * If the value is a string and you want to ensure both not null and a non-empty string,
+     * use requireText instead.
+     * 
      * Example usage:
      * ```ts
      * notNull();
@@ -588,7 +611,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     }
 
     /**
-     * Same as equalToValue
+     * Alias for equalToValue
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
@@ -606,6 +629,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.equalToValue_common(secondValue, arg2, arg3)
     }
 
+    /**
+     * Adds a validator that ensures the value is equal to the second value host.
+     * 
+     * @example
+     * ```ts
+     * equalTo('fieldname2');
+     * equalTo('fieldname2', "Value must be {value}.");
+     * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
+     * equalTo('fieldname2', {
+     *      errorMessage: "Value must be same as {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public equalTo(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -658,7 +703,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.equalTo_common(secondValueHostName, args2, args3);
     }
 
-
+    /**
+     * Adds a validator that ensures the value is not equal to the specified second value.
+     * 
+     * @example
+     * ```ts
+     * notEqualToValue(42);
+     * notEqualToValue(42, "Value must not be {Value}.");
+     * notEqualToValue(42, "Value must not be 42.", "Summary message");
+     * notEqualToValue(42, {
+     *      errorMessage: "Value must not be 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */
     public notEqualToValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -712,6 +778,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.notEqualToValue_common(secondValue, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is not equal to the second value host.
+     * 
+     * @example
+     * ```ts
+     * notEqualTo('fieldname2');
+     * notEqualTo('fieldname2', "Value must not be equal to {value}.");
+     * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
+     * notEqualTo('fieldname2', {
+     *      errorMessage: "Value must not be same as {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */
     public notEqualTo(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -761,6 +849,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.notEqualTo_common(secondValueHostName, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is less than the specified second value.
+     * 
+     * @example
+     * ```ts
+     * lessThanValue(42);
+     * lessThanValue(42, "Value must be less than {value}.");
+     * lessThanValue(42, "Value must be less than 42.", "Summary message");
+     * lessThanValue(42, {
+     *      errorMessage: "Value must be less than 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public lessThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -812,6 +922,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.lessThanValue_common(secondValue, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is less than the second value host.
+     * 
+     * @example
+     * ```ts
+     * lessThan('fieldname2');
+     * lessThan('fieldname2', "Value must be less than {value}.");
+     * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
+     * lessThan('fieldname2', {
+     *      errorMessage: "Value must be less than {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public lessThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
@@ -865,6 +997,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.lessThan_common(secondValueHostName, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is less than or equal to the specified second value.
+     * 
+     * @example
+     * ```ts
+     * lessThanOrEqualValue(42);
+     * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
+     * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
+     * lessThanOrEqualValue(42, {
+     *      errorMessage: "Value must be less than or equal to 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public lessThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -914,7 +1068,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
-
+    /**
+     * Adds a validator that ensures the value is less than or equal to the second value host.
+     * 
+     * @example
+     * ```ts
+     * lessThanOrEqual('fieldname2');
+     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
+     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
+     * lessThanOrEqual('fieldname2', {
+     *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
@@ -968,7 +1143,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
-
+    /**
+     * Adds a validator that ensures the value is greater than the specified second value.
+     * 
+     * @example
+     * ```ts
+     * greaterThanValue(42);
+     * greaterThanValue(42, "Value must be greater than {value}.");
+     * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
+     * greaterThanValue(42, {
+     *      errorMessage: "Value must be greater than 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */
     public greaterThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -1019,6 +1215,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.greaterThanValue_common(secondValue, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is greater than the second value host.
+     * 
+     * @example
+     * ```ts
+     * greaterThan('fieldname2');
+     * greaterThan('fieldname2', "Value must be greater than {value}.");
+     * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
+     * greaterThan('fieldname2', {
+     *      errorMessage: "Value must be greater than {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public greaterThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
@@ -1070,6 +1288,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.greaterThan_common(secondValueHostName, args2, args3);
     }
 
+    /**
+     * Adds a validator that ensures the value is greater than or equal to the specified second value.
+     * 
+     * @example
+     * ```ts
+     * greaterThanOrEqualValue(42);
+     * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
+     * greaterThanOrEqualValue(42, {
+     *      errorMessage: "Value must be greater than or equal to 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public greaterThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
@@ -1120,7 +1360,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
-
+    /**
+     * Adds a validator that ensures the value is greater than or equal to the second value host.
+     * 
+     * @example
+     * ```ts
+     * greaterThanOrEqual('fieldname2');
+     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
+     * greaterThanOrEqual('fieldname2', {
+     *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
@@ -1168,7 +1429,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
-
+    /**
+     * Adds a validator that ensures the text length is within limits.
+     * 
+     * @example
+     * ```ts
+     * stringLength(10);
+     * stringLength(10, "Text has exceeded  {maximum} characters.");
+     * stringLength(10, "Text has exceeded  {maximum} characters.", "Summary message");
+     * stringLength(10, {
+     *      errorMessage: "Text has exceeded  {maximum} characters.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param maximum - The maximum length allowed for the string.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public stringLength(
         maximum: number | null,
         errorMessage?: string | null,
@@ -1221,7 +1503,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         arg3?: string | null): FluentValidatorBuilder {
         return this.stringLength_common(maximum, arg2, arg3);
     }
-
+    /**
+     * Adds a validator that ensures the value is 0 or higher.
+     * It returns Undetermined if the value is not a number.
+     * 
+     * @example
+     * ```ts
+     * positive();
+     * positive("Value must be 0 or higher.");
+     * positive("Value must be 0 or higher.", "Summary message");
+     * positive({
+     *      errorMessage: "Value must be 0 or higher.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public positive(
         errorMessage?: string | null,
         summaryMessage?: string | null): FluentValidatorBuilder;
@@ -1265,6 +1568,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.positive_common(arg1, arg2);
     }
 
+    /**
+     * Adds a validator that ensures the value is an integer.
+     * It requires a numeric value, or it evaluates as Undetermined.
+     * 
+     * @example
+     * ```ts
+     * integer();
+     * integer("Value must be an integer.");
+     * integer("Value must be an integer.", "Summary message");
+     * integer({
+     *      errorMessage: "Value must be an integer.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public integer(
         errorMessage?: string | null,
         summaryMessage?: string | null): FluentValidatorBuilder;
@@ -1308,6 +1633,29 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.integer_common(arg1, arg2);
     }
 
+    /**
+     * Adds a validator that ensures the number of decimal places is limited to the specified maximum.
+     * The value must be a number or it will be evaluated as Undetermined.
+     * 
+     * @example
+     * ```ts
+     * maxDecimals(2);
+     * maxDecimals(2, "Value has too many decimal places.");
+     * maxDecimals(2, "Value has too many decimal places.", "Summary message");
+     * maxDecimals(2, {
+     *      errorMessage: "Value has too many decimal places.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param maxDecimals - The maximum number of decimal places allowed for the number.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public maxDecimals(
         maxDecimals: number,
         errorMessage?: string | null,
@@ -1326,7 +1674,38 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
-
+    /**
+     * Builds a validator around a condition and negates the validation result
+     * of the condition. When the condition result is NoMatch, the overall validation will pass, and vice versa.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').not(
+     *     (childBuilder) =>
+     *         childBuilder.parentValue().requireText()
+     * )
+     * ```
+     * 
+     * ```ts
+     * not(childBuilderHandler);
+     * not(childBuilderHandler, 
+     *      "Error message", "Summary message");
+     * not(childBuilderHandler, 
+     *      {
+     *          errorMessage: "Error message", 
+     *          summaryMessage: "Summary message" 
+     *      });
+     * ```
+     *
+     * @param childBuilderHandler - The condition builder handler that defines the child condition to be negated.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */    
     public not(
         childBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
@@ -1346,6 +1725,58 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
             errorMessage, summaryMessage, validatorParameters);
     }
 
+    /**
+     * Builds a validator that must only be evaluated based on another condition.
+     * Consider this a "when" -> "then" process, where the condition to evaluate
+     * is the "then" part.
+     * 
+     * @example
+     * ```ts
+     * when(
+     *      (whenToEnableBuilder) => 
+     *          whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *      (thenBuilder) =>
+     *          thenBuilder.parentValue().requireText()
+     *  )
+     * ```
+     * 
+     * ```ts
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText()
+     * );
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText(),
+     *     'error message', 'summary message'
+     * );
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText(),
+     *     { 
+     *         errorMessage: 'error message',
+     *         summaryMessage: 'summary message',
+     *     });	
+     * ```
+     *
+     * @param WhenToEnableBuilderHandler - The handler function that defines the condition 
+     * under which the validator should be evaluated.
+     * @param ThenBuilderHandler - The handler function that defines the validation logic 
+     * to be executed when the WhenToEnable condition is met.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
@@ -1368,6 +1799,55 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
             errorMessage, summaryMessage, validatorParameters);
     }
     
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when all child conditions are satisfied.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').all((childBuilder)=>{
+     *     childBuilder.parentValue().requireText();
+     *     childBuilder.fieldValue('fieldname2').requireText(parameters);
+     *     childBuilder.fieldValue('fieldname2').regExp('^[A-D]');
+     *     childBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childBuilder.any((grandchildBuilder)=> {
+     *         grandchildBuilder.fieldValue('fieldname10').requireText();
+     *         grandchildBuilder.fieldValue('fieldname11').requireText();
+     *     })
+     * });
+     * ```
+     * 
+     * ```ts
+     * all(childBuilderHandler);
+     * all(childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * all(childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     *
+     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */        
     public all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
@@ -1387,6 +1867,49 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
             errorMessage, summaryMessage, validatorParameters);
     }
 
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when any of the child conditions are satisfied.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').any((childBuilder)=>{
+     *    childBuilder.fieldValue('fieldname3').requireText();
+     *    childBuilder.fieldValue('fieldname4').requireText();
+     * });
+     * ```
+     * 
+     * ```ts
+     * any(childBuilderHandler);
+     * any(childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * any(childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     *
+     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */
     public any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
@@ -1405,6 +1928,58 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
+
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when a specified number of child conditions are satisfied. You supply
+     * a minimum and maximum number of child conditions that must be satisfied 
+     * for the validator to evaluate as a match.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').countMatches(2, 4,
+     * (childBuilder)=>{
+     *    childBuilder.fieldValue('fieldname1').requireText();
+     *    childBuilder.fieldValue('fieldname2').requireText();
+     *    childBuilder.fieldValue('fieldname3').requireText();
+     *    childBuilder.fieldValue('fieldname4').requireText();
+     *    childBuilder.fieldValue('fieldname5').requireText();
+     *    childBuilder.fieldValue('fieldname6').requireText();
+     * });
+     * ```
+     * 
+     * ```ts
+     * countMatches(minimum, maximum, childBuilderHandler);
+     * countMatches(minimum, maximum, childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * countMatches(minimum, maximum, childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     * @param minimum - The minimum number of matches required. If null, there is no minimum.
+     * @param maximum - The maximum number of matches allowed. If null, there is no maximum.
+     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     */            
     public countMatches(
         minimum: number | null,
         maximum: number | null,

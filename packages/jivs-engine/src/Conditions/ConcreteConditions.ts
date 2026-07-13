@@ -269,13 +269,13 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
 export interface RangeConditionConfig extends OneValueConditionBaseConfig, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like LessThanOrEqualConditon.
+     * When undefined or null, no minimum.
      */
     minimum: any;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like GreaterThanOrEqualConditon.
+     * When undefined or null, no maximum.
      */
     maximum: any;
 }
@@ -640,21 +640,19 @@ export class LessThanOrEqualValueCondition extends CompareToValueConditionBase<L
 
 
 
-
-
 /**
  * ConditionConfig for {@link StringLengthCondition}
  */
 export interface StringLengthConditionConfig extends StringConditionBaseConfig {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like LessThanOrEqualConditon.
+     * When undefined or null, no minimum
      */
     minimum?: number | null;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like GreaterThanOrEqualConditon.
+     * When undefined or null, no maximum.
      */
     maximum?: number | null;
 }

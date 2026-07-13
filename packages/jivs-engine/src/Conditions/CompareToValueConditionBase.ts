@@ -18,7 +18,7 @@ import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase'
  */
 export interface CompareToValueConditionBaseConfig extends OneValueConditionBaseConfig, SupportsDataTypeConverter {
     /**
-     * Native data type representing the minimum of the range.
+     * Native data type representing the right operand of the comparison
      */
     secondValue?: any;
 

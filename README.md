@@ -816,6 +816,884 @@ Topics:
 - [Testing your work](#testing-your-work)
 
 ## Conditions - the validation rules
+A validator is the combination of two classes: 
+1. The *Condition* which is the rule that evaluates the data, determining validity.
+2. The *Validator* which hosts the error messages and one Condition object. It contains the validate() function
+that uses the Condition to determine validity and interacts with the containing ValueHost and ValidationManager, who deliver the results to the UI.
+
+To emphasize this separation, let's see how our configuration objects look:
+```ts
+let compareVal: ValidatorConfig = {
+  errorMessage: 'Error message',
+  summaryMessage: 'Summary message',
+  severity: ValidationSeverity.Error,
+  conditionConfig: <EqualToValueConditionConfig>{
+    conditionType: ConditionType.EqualToValue,
+    secondValue: 20
+  }
+}
+```
+While you can build configurations with configuration objects, why not use the Builder's syntax to better convey what you are trying to do.
+```ts
+builder.field('FieldName1').equalToValue(2, 'Error message', 'Summary message');
+```
+The Builder flattens the validator and condition, as the parameters for equalToValue are a combination of condition (secondValue) and validator (errorMessage and summaryMessage).
+
+### Intro to configuring Validators with the Builder
+Let's cover all of the Condition-building functions of the [`Builder API`](#configuring-the-validationmanager-the-builder-api). Before listing them, be aware of these elements of the Builder API syntax.
+
+```ts
+builder.field('field').conditionName(required parameters, errorMessage?, summaryMessage? );
+builder.field('field').conditionName(required parameters, { validator properties } );
+
+modifier.field('field').conditionName(required parameters, { condition properties }?);
+```
+- The *condition properties* argument is an object with any properties offered by the Condition's configuration that are not elsewhere. It is omitted if the rest of the function parameters cover those properties. Each function below shows its condition properties object.
+- The *validator properties* argument blends the condition properties with:
+  ```ts
+  {
+      // note: 'null' is used to remove the value from an earlier version of the config
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+  }
+  ```
+  For details, see [Configuring Validators](#configuring-validators).
+
+Here are the Condition-building functions of the Builder API:
+- [RequireText](#condition-requiretext)
+- [NotNull](#condition-notnull)
+- [RegExp](#condition-regexp)
+- [Range](#condition-range)
+- [EqualToValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [NotEqualToValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [LessThanValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [LessThanOrEqualToValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [GreaterThanValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [GreaterThanOrEqualToValue](#conditions-comparing-two-values-where-second-value-is-specified)
+- [EqualTo](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [NotEqualTo](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [LessThan](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [LessThanOrEqualTo](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [GreaterThan](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [GreaterThanOrEqualTo](#conditions-comparing-two-values-where-the-second-value-comes-from-another-field)
+- [StringLength](#condition-stringlength)
+- [DataTypeCheck](#condition-datatypecheck)
+- [Positive](#condition-positive)
+- [Integer](#condition-integer)
+- [MaxDecimals](#condition-maxdecimals)
+- [All](#conditions-all-any-countmatches)
+- [Any](#conditions-all-any-countmatches)
+- [CountMatches](#conditions-all-any-countmatches)
+- [When](#condition-when---using-one-condition-to-enable-another)
+- [Not](#condition-not---negate-the-result)
+- [CustomRule](#condition-customrule---you-create-the-condition-on-demand)
+
+### Condition: RequireText
+Use when the value is a string. Reports an error when the string is empty or null.
+This validator will run when validating with `validateOptions.duringEdit = true`.
+```ts
+requireText(errorMessage?, summaryMessage?);
+requireText({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        trim?: boolean; 
+        nullValueResult?: ConditionEvaluateResult; 
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').requireText();
+builder.field('fieldname').requireText('error message', 'summary message')
+builder.field('fieldname').requireText({ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+```
+Condition class: `RequireTextCondition`
+
+Condition config:
+```ts
+interface RequireTextConditionConfig = {
+    conditionType: ConditionType.RequireText;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    trim?: boolean; // trims whitespace before validating. Defaults to true
+    nullValueResult?: ConditionEvaluateResult;  // Determines how null is evaluated. Defaults to ConditionEvaluateResult.NoMatch
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
+}
+```
+### Condition: NotNull
+Evaluates the native value to ensure it is not null. This is another type of "required" condition.
+The RequireText condition also handles null, but targets string native values which also may have
+an empty string to report an error.
+```ts
+notNull(errorMessage?, summaryMessage?);
+notNull({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').notNull();
+builder.field('fieldname').notNull('error message', 'summary message')
+builder.field('fieldname').notNull({ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: `NotNullCondition`
+
+Condition config:
+```ts
+interface NotNullConditionConfig = {
+    conditionType: ConditionType.NotNull;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+### Condition: RegExp
+Evaluates the native value, which must be a string, against a regular expression.
+This validator will run when validating with `validateOptions.duringEdit = true`.
+```ts
+regExp(expression as string, ignoreCase as boolean?, errorMessage?, summaryMessage?);
+regExp(expression as RegExp object, errorMessage?, summaryMessage?);
+regExp(expression as string, ignoreCase as boolean?, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        trim?: boolean; 
+        multiline?: boolean; 
+        supportsDuringEdit?: boolean;
+    }
+);
+regExp(expression as RegExp, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        trim?: boolean; 
+        multiline?: boolean; 
+        supportsDuringEdit?: boolean;
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').regExp('^\\d*$');
+builder.field('fieldname').regExp('hello', true);   // ignores case
+builder.field('fieldname').regExp('^\\d*$', null, 'error message', 'summary message')
+builder.field('fieldname').regExp('^\\d*$', null, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+builder.field('fieldname').regExp(/^\d*$/);
+builder.field('fieldname').regExp(/hello/i);   // ignores case
+builder.field('fieldname').regExp(/^\d*$/, 'error message', 'summary message')
+builder.field('fieldname').regExp(/^\d*$/, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+```
+Condition class: `RegExpCondition`
+
+Condition config:
+```ts
+interface RegExpConditionConfig = {
+    conditionType: ConditionType.RegExp;
+    category: ConditionCategory.Contents;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    trim?: boolean; // Removes leading and trailing whitespace before evaluating the string. Defaults to true
+    multiline?: boolean;  // Determines how null is evaluated. Defaults to ConditionEvaluateResult.NoMatch
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
+}
+```
+### Condition: Range
+Compare the native datatype value against two other values to ensure it is with the range established. The minimum and maximum are included in the range.
+```ts
+range(minimum, maximum, errorMessage?, summaryMessage?);
+range(minimum, maximum, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label} {Value} {Minimum} {Maximum}`
+
+**Examples**
+```ts
+builder.field('fieldname').range(1, 5);
+builder.field('fieldname').range(1, 5, 'error message', 'summary message')
+builder.field('fieldname').range(1, 5, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+```
+Condition class: `RangeCondition`
+
+Condition config:
+```ts
+interface RangeConditionConfig = {
+    conditionType: ConditionType.Comparison;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    minimum: any,   // greater than or equal to. When undefined/null, no minimum.
+    maximum: any    // less than or equal to. When undefined/null, no maximum.
+}
+```
+### Conditions: Comparing two values where second value is specified
+Compare two values. There are many comparison conditions:
+- `equalToValue(value)` or `eqValue(value)`
+- `notEqualToValue(value)` or `neqValue(value)`
+- `lessThanValue(value)` or `ltValue(value)`
+- `lessThanOrEqualValue(value)` or `lteValue(value)`
+- `greaterThanValue(value)` or `gtValue(value)`
+- `greaterThanOrEqualValue(value)` or `gteValue(value)`
+```ts
+equalToValue(value, errorMessage?, summaryMessage?);
+equalToValue(value, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        secondConversionLookupKey?: string | null; 
+    }
+);
+```
+Error message tokens: `{Label} {Value} {CompareTo}`
+
+**Examples**
+```ts
+builder.field('fieldname').equalToValue(1);
+builder.field('fieldname').equalToValue(1, 'error message', 'summary message')
+builder.field('fieldname').equalToValue(1, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+```
+Condition class: `EqualToValueCondition`, `NotEqualToValueCondition`, `LessThanValueCondition`, `LessThanOrEqualValueCondition`, `GreaterThanValueCondition`, `GreaterThanOrEqualValueCondition`.
+
+Condition config:
+```ts
+interface CompareToValueConditionBaseConfig = {
+    conditionType: ConditionType.[EqualToValue, NotEqualToValue, etc];
+    category: ConditionCategory.Comparison;
+    valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
+    secondValue?: any;  // right operand.
+    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts secondValue into another type prior to evaluation
+}
+```
+### Conditions: Comparing two values where the second value comes from another field
+Compare two values. There are many comparison conditions:
+- `equalTo(valueHostName)` or `eq(valueHostName)`
+- `notEqualTo(valueHostName)` or `neq(valueHostName)`
+- `lessThan(valueHostName)` or `lt(valueHostName)`
+- `lessThanOrEqual(valueHostName)` or `lte(valueHostName)`
+- `greaterThan(valueHostName)` or `gt(valueHostName)`
+- `greaterThanOrEqual(valueHostName)` or `gte(valueHostName)`
+```ts
+equalTo(valueHostName, errorMessage?, summaryMessage?);
+equalTo(valueHostName, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        secondConversionLookupKey?: string | null; 
+    }
+);
+```
+Error message tokens: `{Label} {SecondLabel} {Value} {CompareTo}`
+
+**Examples**
+```ts
+builder.field('fieldname').equalTo('Fieldname2');
+builder.field('fieldname').equalTo('Fieldname2', 'error message', 'summary message')
+builder.field('fieldname').equalTo('Fieldname2', 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message' 
+});	
+```
+Condition class: `EqualToCondition`, `NotEqualToCondition`, `LessThanCondition`, `LessThanOrEqualCondition`, `GreaterThanCondition`, `GreaterThanOrEqualCondition`.
+
+Condition config:
+```ts
+interface CompareToSecondValueHostConditionBaseConfig = {
+    conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
+    category: ConditionCategory.Comparison;
+    valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
+    secondValueHostName: string;  // right operand value comes from this valueHost 
+    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts right operand value into another type prior to evaluation
+}
+```
+### Condition: StringLength
+Evaluates the length of a string in characters (after trimming if Trim is true).
+While its normal to apply a maximum, you can also set a minimum in the validator parameters.
+```ts
+stringLength(maximum, errorMessage?, summaryMessage?);
+stringLength(maximum,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    // condition properties
+        minimum?: number | null;
+    }
+);
+len(maximum, errorMessage?, summaryMessage?)
+len(maximum, { validator parameters including minimum })
+```
+Error message tokens: `{Label} {Value} {Maximum} {Minimum} {Length}`
+
+**Examples**
+```ts
+builder.field('fieldname').stringLength(100);
+builder.field('fieldname').len(100);
+builder.field('fieldname').stringLength(100, 'error message', 'summary message')
+builder.field('fieldname').stringLength(100, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message',
+  minimum: 2
+});	
+```
+Condition class: `StringLengthCondition`
+
+Condition config:
+```ts
+interface StringLengthConditionConfig = {
+    conditionType: ConditionType.StringLength;
+    category: ConditionCategory.Comparison;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    minimum?: number | null;   // greater than or equal to. When undefined/null, no minimum.
+    maximum?: number | null;   // less than or equal to. When undefined/null, no maximum.
+    trim?: boolean; // trims whitespace before validating. Defaults to true
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.duringEdit is true.
+}
+```
+### Condition: Positive
+Evaluates a number to confirm it is 0 or higher.
+```ts
+positive(errorMessage?, summaryMessage?);
+positive({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+pos(errorMessage?, summaryMessage?)
+pos({ validator parameters })
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').positive();
+builder.field('fieldname').pos();
+builder.field('fieldname').positive('error message', 'summary message')
+builder.field('fieldname').positive(
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message'
+});	
+```
+Condition class: `PositiveCondition`
+
+Condition config:
+```ts
+interface PositiveConditionConfig = {
+    conditionType: ConditionType.Positive;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+### Condition: Integer
+Evaluates a number to confirm it is a whole number.
+```ts
+integer(errorMessage?, summaryMessage?);
+integer({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+int(errorMessage?, summaryMessage?)
+int({ validator parameters })
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').integer();
+builder.field('fieldname').int();
+builder.field('fieldname').integer('error message', 'summary message')
+builder.field('fieldname').integer(
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message'
+});	
+```
+Condition class: `IntegerCondition`
+
+Condition config:
+```ts
+interface IntegerConditionConfig = {
+    conditionType: ConditionType.Integer;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+### Condition: MaxDecimals
+Evaluates a number to confirm it does not exceed the specified number of decimal digits.
+```ts
+maxDecimals(maxDecimals, errorMessage?, summaryMessage?);
+maxDecimals(maxDecimals, { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').maxDecimals(2);
+builder.field('fieldname').maxDecimals(2, 'error message', 'summary message')
+builder.field('fieldname').maxDecimals(2, 
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message'
+});	
+```
+Condition class: `MaxDecimalsCondition`
+
+Condition config:
+```ts
+interface MaxDecimalsConditionConfig = {
+    conditionType: ConditionType.MaxDecimals;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    maxDecimals: number;    // Maximum number of decimal places allowed.
+}
+```
+### Condition: DataTypeCheck
+Added automatically for most data types that require conversion/parsing from a string
+into another data type or a well formatted string.
+```ts
+dataTypeCheck(errorMessage?, summaryMessage?);
+dataTypeCheck({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').dataTypeCheck();
+builder.field('fieldname').dataTypeCheck('error message', 'summary message')
+builder.field('fieldname').dataTypeCheck({ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: `DataTypeCheckCondition`
+
+Condition config:
+```ts
+interface DataTypeCheckConditionConfig = {
+    conditionType: ConditionType.RequireText;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+### Conditions: Combining others with all, any, and countMatches
+Complex logic is often the result of using boolean expressions against existing conditions. These three conditions can evaluate two or more conditions together to determine a single result. 
+- `all()` - the AllMatchesCondition requires that all child conditions evaluate as a match to be considered valid. Think of this as an "AND" operator.
+- `any()` - the AnyMatchesCondition requires that at least one child condition evaluates as a match to be considered valid.
+- `countMatches()` - the CountMatchesCondition sets a minimum and/or maximum number of children that evaluate as a match to be considered valid.
+
+You might also use these to bury several conditions under a single error message.
+
+#### Requirements for children of all, any, and countMatches
+Let's focus on the structure of setting up children using all() as an example:
+```ts
+builder.field('fieldname').all((childBuilder)=>{
+    childBuilder.parentValue().requireText();
+    childBuilder.fieldValue('fieldname2').requireText(parameters);
+    childBuilder.fieldValue('fieldname2').regExp('^[A-D]');
+    childBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+    childBuilder.any((grandchildBuilder)=> {
+        grandchildBuilder.fieldValue('fieldname10').requireText();
+        grandchildBuilder.fieldValue('fieldname11').requireText();
+    })
+});
+```
+`childBuilder` is a builder designed for children. It has only these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `when()` employs the `WhenCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+
+#### Conditions: All, Any, CountMatches
+```ts
+all(childBuilderHandler);
+all(childBuilderHandler,
+    errorMessage?, summaryMessage?);
+all(childBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    // condition properties:
+        treatUndeterminedAs?: ConditionEvaluateResult;
+    }
+);
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').all((childBuilder) => {
+    childBuilder.parentValue().requireText();
+    childBuilder.fieldValue('fieldname2').requireText();
+    childBuilder.fieldValue('fieldname3').requireText();
+});
+builder.field('fieldname').any((childBuilder) => {
+        childBuilder.parentValue().requireText();
+        childBuilder.fieldValue('fieldname2').requireText();
+        childBuilder.fieldValue('fieldname3').requireText();
+    },
+    'error message', 'summary message')
+builder.field('fieldname').countMatches(1, 2, (childBuilder) => {
+    childBuilder.parentValue().requireText();
+    childBuilder.fieldValue('fieldname2').requireText();
+    childBuilder.fieldValue('fieldname3').requireText();
+},
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message',
+  errorCode: 'AllRequired' // user override optional
+});	
+```
+Condition class: `AllMatchCondition`, `AnyMatchCondition`, `CountMatchesCondition`.
+
+Condition config:
+```ts
+interface EvaluateChildConditionResultsBaseConfig = {
+    conditionType: ConditionType.[All, Any, CountMatches];
+    category: ConditionCategory.Children;
+    treatUndeterminedAs?: ConditionEvaluateResult; // When a child condition evaluates as Undetermined, this indicates how to handle it.Defaults to Undetermined.
+}
+```
+### Condition: When - using one condition to enable another
+When you have a condition that shouldn't be evaluated until another condition is met, use the WhenCondition. Think of this as "when"->"then" logic.
+
+Suppose that you have a textbox and a nearby checkbox that is used to enable/disable the textbox. Since a disabled textbox should not be validated, we use the When condition.
+```ts
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText()
+)
+```
+`whenToEnableBuilder` and `thenBuilder` are builders designed to add a single child. They have these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `when()` employs the `WhenCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+```ts
+when(whenToEnableBuilderHandler, thenBuilderHandler);
+when(whenToEnableBuilderHandler, thenBuilderHandler,
+    errorMessage?, summaryMessage?);
+when(whenToEnableBuilderHandler, thenBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText()
+);
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText(),
+    'error message', 'summary message'
+);
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText(),
+    { 
+        errorMessage: 'error message',
+        summaryMessage: 'summary message',
+    });	
+```
+Condition class: `WhenCondition`
+
+Condition config:
+```ts
+interface WhenConditionConfig = {
+    conditionType: ConditionType.When;
+    category: ConditionCategory.Children;
+    whenToEnableConfig: ConditionConfig; // configures the condition that enables the Then config
+    thenConfig: ConditionConfig;    // configures the condition intended to run when enabled
+}
+```
+#### More examples
+Regular expression for postal code depends on culture ID
+```ts
+builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
+builder.field('PostalCode')
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('US'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))  // parentValue = uses the value of PostalCode
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('CA'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when(
+      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('MX'), 
+      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}$/));
+```
+
+### Condition: Not - negate the result
+Negates the result of a single child condition. Does nothing if the child condition
+results in Undetermined.
+```ts
+builder.field('fieldname').not(
+    (childBuilder) =>
+        childBuilder.parentValue().requireText()
+)
+```
+`childBuilder` is a builder designed to add a single child. It has these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `not()` employs the `NotCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+```ts
+not(childBuilderHandler);
+not(childBuilderHandler,
+    errorMessage?, summaryMessage?);
+not(childBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText()
+);
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText(),
+    'error message', 'summary message'
+);
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText(),
+    { 
+        errorMessage: 'error message',
+        summaryMessage: 'summary message',
+        errorCode: 'invert'  // optional. Allows multiple not conditions in the same validator
+    });	
+```
+Condition class: `NotCondition`
+
+Condition config:
+```ts
+interface NotConditionConfig = {
+    conditionType: ConditionType.Not;
+    category: ConditionCategory.Children;
+    childConditionConfig: ConditionConfig; // configures the child condition
+```
+#### More Examples
+Illegal characters in a string using RegExpCondition
+```ts
+builder.field('password').not(
+  (childBuilder)=> childBuilder.parentValue().regExp(/[:|'_]/));  // parentValue uses the value from 'password'
+  // use fieldValue(field name) if you want to specify a different field's value
+```
+### Condition: CustomRule - you create the condition on demand
+If you want to create the actual condition object and drop it into the Builder, use customRule().
+It takes a function where you return the condition instance.
+```ts
+ (requestor: ValidatorConfig)=> ICondition | null
+``` 
+For more on customRule, see [Custom conditions](#one-off-conditions).
+
+> Its often better to create a Condition class, so it can be reused, tested, and work itself into the Builder syntax. See [Creating your own Conditions](#creating-your-own-conditions)
+```ts
+customRule(requestHandler);
+customRule(requestHandler,
+    errorMessage?, summaryMessage?);
+customRule(requestHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    }
+);
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').customRule((requestor)=> {    
+    return new RegExpCondition({ expression: /^\d{7}$/ });
+});
+```
+### Deep Dive: The Conditions internal types
+
+You build validation rules using the `Condition` concept. A `Condition` simply packages a function to evaluate data together with a few other properties. Here is its interface:
+```ts
+interface ICondition {
+    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    category: ConditionCategory;
+    conditionType: string;
+}
+```
+The `evaluate() function` entirely handles the validation rule, and returns a result of `Match`, `NoMatch`, or `Undetermined`.
+<details>
+<summary>Expand for details on the results.</summary>
+
+- `Match` – Data conformed to the rule
+- `NoMatch` – Data violated the rule
+- `Undetermined` – Data wasn’t appropriate for evaluation. Example: an empty textbox’s value isn’t ready for a “Compare the input’s date value to Today”. There needs to be text representing a date first.
+</details>
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the `ICondition interface` to package up a validation rule, and `ConditionConfig type` to inform the `Condition` class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.
 
 ### Separation of concerns: Input Validation vs Business Logic validation
@@ -842,25 +1720,7 @@ The UI developer provides these UI-specific elements:
 Someone will code all of those business logic validation rules in a way that Jivs can consume them. Whether it’s done by the UI developer or not, this new code should be separate from the UI code. (And unit tested.) This will likely be the most code you need to write to work with Jivs (or any validation system).
 </details>
 
-### Configuring a validation rule in Jivs
-
 You build validation rules using the `Condition` concept. A `Condition` simply packages a function to evaluate data together with a few other properties. Here is its interface:
-```ts
-interface ICondition {
-    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
-    category: ConditionCategory;
-    conditionType: string;
-}
-```
-The `evaluate() function` entirely handles the validation rule, and returns a result of `Match`, `NoMatch`, or `Undetermined`.
-<details>
-<summary>Expand for details on the results.</summary>
-
-- `Match` – Data conformed to the rule
-- `NoMatch` – Data violated the rule
-- `Undetermined` – Data wasn’t appropriate for evaluation. Example: an empty textbox’s value isn’t ready for a “Compare the input’s date value to Today”. There needs to be text representing a date first.
-</details>
-
 Jivs provides numerous `Condition classes`. 
 <details>
 <summary>Expand to see just a few.</summary>
@@ -880,11 +1740,11 @@ The `EqualToValueCondition` is the right Condition for the job.  Here are the pr
 ```ts
 interface EqualToValueConditionConfig {
     conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualToValue
-    valueHostName: null | string;
+    valueHostName?: null | string; // leave null/undefined to inherit ValueHost.name.
     secondValue?: any;
     conversionLookupKey?: null | string;
     secondConversionLookupKey?: null | string;
-    category?: ConditionCategory;
+    category?: ConditionCategory; // ConditionCategory.Comparison
 }
 ```
 >Where's an error message property? A `Condition` is just part of a Validator. The `Validator class` connects your Condition to its error message.
@@ -895,273 +1755,6 @@ builder.field('SignedOnDate').equalToValue(new Date(), "Enter today's date", { c
 ```
 The Builder API assigns conditionType, category, and secondValue (to new Date()). We're using the conversionLookupKey here to ensure that the value of new Date() is just the date part.
 
-#### All Condition configurations
-Let's cover all of the Condition-building functions of the [`Builder API`](#configuring-the-validationmanager-the-builder-api). Before listing them, be aware of these elements of the Builder API syntax.
-
-```ts
-builder.field('field').conditionName(required parameters, errorMessage?, summaryMessage? );
-builder.field('field').conditionName(required parameters, { validator properties} );
-
-modifier.field('field').conditionName(required parameters, { condition properties }?);
-```
-- The *condition properties* argument is an object with any properties offered by the Condition's configuration that are not elsewher. It is omitted if the rest of the function parameters cover those properties. Each function below shows its condition properties object.
-- The *validator properties* argument blends the condition properties with:
-  ```ts
-  {
-      errorCode?: string;
-      
-      // note: 'null' is used to remove the value from an earlier version of the config
-      errorMessage?: null | string | ((host) => string);
-      errorMessagel10n?: null | string;
-      summaryMessage?: null | string | ((host) => string);
-      summaryMessagel10n?: null | string;
-      
-      severity?: ValidationSeverity | ((host) => ValidationSeverity);
-      enabled?: boolean | ((host) => boolean);
-  }
-  ```
-  For details, see [Configuring Validators](#configuring-validators).
-
-Here are the Condition-building functions of the Builder API:
-- dataTypeCheck(errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').dataTypeCheck();
-  ```
-- requireText({*condition properties*}?, errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').requireText();
-  builder.field('fieldname').requireText({ nullValueResult: ConditionEvaluateResult.Undetermined });	
-  ```
-  
-  ```ts
-  { // condition parameters
-     trim?: boolean;
-     nullValueResult?: ConditionEvaluateResult;
-     valueHostName: null | string;
-  }
-  ```
-- notNull(errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').notNull();
-  ```
-  
-- regExp(expression, ignoreCase?, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').regExp(/^\w*$/i);
-  ```
-  ```ts
-  { // condition parameters
-     multiline?: boolean;
-     trim?: boolean;
-     valueHostName: null | string;
-     supportsDuringEdit?: boolean;
-  }
-  ```
-
-- range(minimum, maximum, errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').range(5, 100);
-  ```
-- when(*enabler builder function*, *child builder function*, errorMessage?, {*validator properties*}?)
-
-  For both *enabler builder function* and *child builder function*, pass a function that uses its one parameter to attach the child condition.
- 
-  ```ts
-  builder.field('fieldname').when(
-     (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
-     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/);  // uses the value from 'fieldname'
-  builder.field('fieldname').when(
-     (whenBuilder) => whenBuilder.fieldValue('anotherFieldName').equalTo(true),
-     (thenBuilder) => thenBuilder.parentValue().regExp(/[ABC]/),
-        { errorMessage: 'Omit these letters: ABC', severity: ValidatorSeverity.Severe });
-  ```
-  For more, see [Using the WhenCondition](#using-the-whencondition-to-enable-another-condition).
-
-- not(*child builder function*, errorMessage?, {*validator properties*}?)
-
-  For *child builder function*, pass a function that uses its one parameter to attach the child condition.
- 
-  ```ts
-  builder.field('fieldname').not(
-     (childBuilder) => childBuilder.regExp(/[ABC]/);
-  builder.field('fieldname').not(
-     (childBuilder) => childBuilder.regExp(/[ABC]/, 
-        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
-  ```
-  For more, see [Using the NotCondition](#using-the-notcondition-to-reverse-the-results-of-another-condition).
-- equalToValue(secondValue, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-  - same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`
-  - also can use these aliases: `ltValue`, `lteValue`, `gtValue`, `gteValue`
-  ```ts
-  builder.field('fieldname').equalToValue(10);
-  builder.field('fieldname').lessThanValue(10);
-  builder.field('fieldname').ltValue(10);
-  ```
-  ```ts
-  { // condition parameters
-     valueHostName: null | string;
-     conversionLookupKey?: null | string; // for first valuehost
-     secondValue?: any;
-     secondConversionLookupKey?: null | string;
-  }
-  ```
-- equalTo(secondValueHostName, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-  - same for `notEqualTo`, `lessThan`, `lessThanOrEqual`, `greaterThan`, `greaterThanOrEqual`
-  - also can use these aliases: `lt`, `lte`, `gt`, `gte`
-  ```ts
-  builder.field('fieldname').equalTo('fieldname2');
-  builder.field('fieldname').lessThan('fieldname2');
-  builder.field('fieldname').lt('fieldname2');
-  ```
-  ```ts
-  { // condition parameters
-     valueHostName: null | string;
-     conversionLookupKey?: null | string; // for first valuehost
-     secondConversionLookupKey?: null | string;
-  }
-  ```
-- stringLength(maximum, {*condition properties*}?, errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').stringLength(100);
-  builder.field('fieldname').stringLength(100, { minimum: 2 });
-  ```
-  ```ts
-  { // condition parameters
-     minimum?: null | number;
-     trim?: boolean;
-     valueHostName: null | string;
-     supportsDuringEdit?: boolean;
-  }
-  ```
-- all(*children builder function*, errorMessage?, {*validator properties*}?)
-
-  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
- 
-  ```ts
-  builder.field('fieldname1').all(
-     (childrenBuilder) => [
-        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
-        childrenBuilder.fieldValue('fieldname2').requireText()
-    ]);
-    // with error messages
-  builder.field('fieldname1').all(
-     (childrenBuilder) => [
-        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
-        childrenBuilder.fieldValue('fieldname2').requireText()
-    ],
-    'Assign all fields values',
-    'Assign all fields within the {label} group.');
-  ```
-- any(*children builder function*, errorMessage?, {*validator properties*}?)
-
-  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
- 
-  ```ts
-  builder.field('fieldname1').any(
-     (childrenBuilder) => [
-        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
-        childrenBuilder.fieldValue('fieldname2').requireText()
-    ]);
-  builder.field('fieldname1').any(
-     (childrenBuilder) => [
-        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
-        childrenBuilder.fieldValue('fieldname2').requireText()
-    ]
-     , 
-    'At least one is required',
-    'At least one requires a valeu within the {label} group.');
-  ```
-
-- countMatches(minimum, maximum, *children builder function*, errorMessage?, {*validator properties*}?)
-
-  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
-  ```ts
-  builder.field('fieldname1').countMatches(
-      1, 2, 
-     (childrenBuilder) => [
-        childrenBuilder.parentValue().requireText(),  // inherits value from 'fieldname1'
-        childrenBuilder.fieldValue('fieldname2').requireText(),
-        childrenBuilder.fieldValue('fieldname3').requireText()
-      ]);
-  builder.field('fieldname1').any(
-      2, 4, 
-      (childrenBuilder) => [
-        childrenBuilder.fieldValue('fieldname2').requireText(),
-        childrenBuilder.fieldValue('fieldname3').requireText(),
-        childrenBuilder.fieldValue('fieldname4').requireText(),
-        childrenBuilder.fieldValue('fieldname5').requireText(),
-        childrenBuilder.fieldValue('fieldname6').requireText()
-      ],
-      'Between 2 and 4 are required.',
-      'Between 2 and 4 values are required within the {label} group.');
-  ```
-
-- positive(errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').positive();
-  ```
- 
-- integer(errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').integer();
-  ```
-  
-- maxDecimals(maxDecimals, errorMessage?, {*validator properties*}?)
-  ```ts
-  builder.field('fieldname').maxDecimals(2);
-  ```
-
-- customRule(conditionCreator, errorMessage?, {*validator properties*}?)
-
-  Use this to supply a function that will return a Condition in the conditionCreator parameter. It has the syntax:
- `(requestor: ValidatorConfig)=> ICondition | null`
-  ```ts
-  builder.field('fieldname').customRule((requestor)=> {    
-      return new RegExpCondition({ expression: /^\d{7}$/ });
-  });
-  ```
- 
- For more on customRule, see [Custom conditions](#one-off-conditions).
-
-**See also: [Creating your own Conditions](#creating-your-own-conditions)**
-
-### Using the WhenCondition to enable another condition
-The WhenCondition makes a decision on whether another condition can evaluate or not. Use it to enable or disable a condition based on a condition.
-
-Example: RequireText is only enabled if 'CheckBox1' has a value
-```ts
-<input type='checkbox' name='CheckBox1' value='marked' />
-<input type='text' name='TextBox1' />
-...
-builder.field('CheckBox1', LookupKey.String);
-builder.field('TextBox1', LookupKey.String)
-   .when((whenBuilder)=> whenBuilder.fieldValue('CheckBox1').requireText(),
-         (thenBuilder)=> thenBuilder.parentValue().requireText());  // parentValue = uses the value of TextBox1
-```
-Example: Regular expression for postal code depends on culture ID
-```ts
-builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
-builder.field('PostalCode')
-   .when(
-      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('US'), 
-      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))  // parentValue = uses the value of PostalCode
-   .when(
-      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('CA'), 
-      (thenBuilder)=> thenBuilder.parentValue().regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
-   .when(
-      (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('MX'), 
-      (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}$/));
-```
-
-### Using the NotCondition to reverse the result of another condition
-The NotCondition hosts another condition and reverses its evaluation result, from Match to NoMatch and NoMatch to Match. If the child condition results in Undetermined, so does NotCondition.
-
-Example: Illegal characters in a string using RegExpCondition
-```ts
-builder.field('password').not(
-  (childBuilder)=> childBuilder.parentValue().regExp(/[:|'_]/));  // parentValue uses the value from 'password'
-  // use fieldValue(field name) if you want to specify a different field's value
-```
 
 <a name="valuehosts"></a>
 ## ValueHosts
