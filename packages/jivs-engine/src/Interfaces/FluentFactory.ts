@@ -3,10 +3,10 @@
  */
 
 import { IServiceWithAccessor } from './Services';
-import { ConditionBuilder } from '../Builder/ConditionBuilder_classes';
+import { ConditionBuilder } from "../Builder/ConditionBuilder";
 import { FluentValidatorBuilder } from '../Builder/FluentValidatorBuilder';
 import { ConditionConfig } from './Conditions';
-import { IBuilderConfigHost, CompleteConfigBuilderHandler, IConditionBuilder, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder } from './ManagerConfigBuilder';
+import { IBuilderConfigHost, CompleteConfigBuilderHandler, IConditionBuilder, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder } from './ChildBuilders';
 import { FieldValueHostConfig } from './FieldValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
 

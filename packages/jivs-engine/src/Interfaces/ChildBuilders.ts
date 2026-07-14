@@ -1,195 +1,130 @@
+/**
+ * Provides types for the builders for validator and condition configuration.
+ * 
+ * - IBuilderConfigHost: Interface for builders that host child config objects.
+ * - IFluentValidatorBuilder: Interface for builders that create validator configs.
+ * - IStartConditionBuilder: Interface for the starting point of condition builders.
+ * - IStartConditionWithChildrenBuilder: Interface for the starting point of condition builders that can have child conditions.
+ * - IStartConditionWithOneChildBuilder: Interface for the starting point of condition builders that can have exactly one child condition.
+ * - IConditionBuilder: Interface for builders that create condition configs.
+ * 
+ *  @module Interface/ConditionBuilders
+ */
+
+
 import {
-    AllMatchConditionConfig, AnyMatchConditionConfig,
-    CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, EqualToValueConditionConfig,
-    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
-    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
-    IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig,
-    LessThanValueConditionConfig, MaxDecimalsConditionConfig,
-    NotEqualToConditionConfig, NotEqualToValueConditionConfig,
-    NotNullConditionConfig, PositiveConditionConfig,
-    RangeConditionConfig, RegExpConditionConfig,
-    RequireTextConditionConfig, StringLengthConditionConfig
-} from "../Conditions/ConcreteConditions";
-import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
-import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
-import { ValidatorConfig } from "../Interfaces/Validator";
-import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { resolveErrorCode } from "../Utilities/Validation";
-import { ConditionBuilder } from "./ConditionBuilder";
-import { FluentValidatorConfig } from './Fluent';
-import {
-    IBuilderConfigHost, CompleteConfigBuilderHandler, IFluentValidatorBuilder,
-    IConditionBuilder, ConditionWithChildrenBuilderHandler,
-    ConditionBuilderHandler, FluentAllMatchValidatorConfig,
-    FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
-    FluentDataTypeCheckValidatorConfig, FluentEqualToValidatorConfig,
-    FluentEqualToValueValidatorConfig, FluentGreaterThanOrEqualValidatorConfig,
-    FluentGreaterThanOrEqualValueValidatorConfig, FluentGreaterThanValidatorConfig,
-    FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig,
-    FluentLessThanOrEqualValidatorConfig, FluentLessThanOrEqualValueValidatorConfig,
-    FluentLessThanValidatorConfig, FluentLessThanValueValidatorConfig,
-    FluentMaxDecimalsValidatorConfig, FluentNotEqualToValidatorConfig,
-    FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig,
-    FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
-    FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig,
-    FluentStringLengthValidatorConfig, FluentWhenValidatorConfig
-} from "../Interfaces/ChildBuilders";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { NotConditionConfig } from "../Conditions/NotCondition";
-import { WhenConditionConfig } from "../Conditions/WhenCondition";
-import { IValidationServices } from "../Interfaces/ValidationServices";
+    EqualToValueConditionConfig, EqualToConditionConfig, NotEqualToValueConditionConfig,
+    NotEqualToConditionConfig, LessThanValueConditionConfig, LessThanConditionConfig,
+    GreaterThanValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualValueConditionConfig,
+    GreaterThanOrEqualConditionConfig, StringLengthConditionConfig,
+    RequireTextConditionConfig, RegExpConditionConfig
+} from '../Conditions/ConcreteConditions';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { FluentValidatorConfig } from './../Builder/Fluent';
+import { ConditionConfig, ICondition } from './Conditions';
+import { FieldValueHostConfig } from './FieldValueHost';
+import { ValidatorConfig } from './Validator';
 
 
 /**
- * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
- * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
+ * The protocol that connects a child config-building function to its parent.
+ * This interface is therefore both a deposit point (for the child function) and a
+ * pickup point (for the parent function that created the child builder).
  * 
- * See {@link Builder/Fluent | Fluent Overview}
+ * Use case 1: The config object does not contain any child configs. 
+ * 1. Parent builder creates a child builder and hands it to a user callback.
+ *  (The 'this' property in the callbackis the parent builder)
+ * 2. The user callback assembles its config and deposits it here via setConfig().
+ * 3. After the callback returns, the parent builder calls getConfig() to retrieve.
+ *
+ * Use case 2: The config object contains one or more child configs. 
+ * 1. Parent builder creates a child builder and hands it to a user callback.
+ *  (The 'this' property in the callback is the parent builder)
+ * 2. The user callback assembles its config.
+ *      a. For each child config, it creates a child builder and hands it to a user callback.
+ *      b. Each child callback assembles its config and deposits it here via setConfig().
+ *      c. After each child callback returns, the parent callback calls getConfig() to retrieve.
+ *      d. The resulting child config is assigned to the appropriate property of the parent config.
+ * 3. Finished config is passed to the parent Builder thorugh setConfig().
+ * 4. After the parent callback returns, the parent builder calls getConfig() to retrieve.
+ * 
+ * Example with "Not"
+ * 1. A parent builder's not() function is called.
+ * 2. not() function creates a ConditionBuilder and hands it to a user callback.
+ * 3. The user has selected the lessThan() function, which creates a LessThanConditionConfig and deposits it here via setConfig().
+ * 4. After the callback returns, not() calls getConfig() to retrieve the LessThanConditionConfig
+ * 5. not() function creates a NotConditionConfig and 
+ *      assigns the LessThanConditionConfig to its childConditionConfig property.
+ * ```ts
+ * let config = <NotConditionConfig>{
+ *    conditionType: ConditionType.Not,
+ *    childConditionConfig: childBuilder.getConfig() as LessThanConditionConfig
+ * };
+ * this.setConfig(config);
+ * ```
  */
-export class FluentValidatorBuilder implements IFluentValidatorBuilder {
+export interface IBuilderConfigHost<TConfig extends object, TOptions extends object = object>
+{
     /**
-     * Constructor
-     * @param parentConfig - Config object from the parent to host this validator.
+     * Called by a config object-building function after assembling its config, to deposit
+     * the result into this builder so the parent function can retrieve it.
+     * @param config - The completed config object.
+     * @param options - Optional additional options for handling the config.
      */
-    constructor(services: IValidationServices,
-        parentConfig: FieldValueHostConfig) {
-        assertNotNull(services, 'services');
-        assertNotNull(parentConfig, 'parentConfig');
-        this._services = services;
-        if (!parentConfig.validatorConfigs)
-            parentConfig.validatorConfigs = [];
-        this._parentConfig = parentConfig;
-    }
-
-    protected get services(): IValidationServices
-    {
-        return this._services;
-    }
-    private _services: IValidationServices;
-    /**
-     * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
-     */
-    public get parentConfig(): FieldValueHostConfig {
-        return this._parentConfig;
-    }
-    private readonly _parentConfig: FieldValueHostConfig;
-
-    private _config?: object;
-
-    public setConfig(config: object, options?: object): IFluentValidatorBuilder {
-        this._config = config;
-        return this;
-    }
-    public getConfig(): object | undefined {
-        return this._config;
-    }
+    setConfig(config: TConfig, options?: TOptions): void;
 
     /**
-     * Overloading validator fluent functions is a bit tricky. This function will resolve the parameters
-     * and return a single object with the results.
-     * It can be used in most functions because the parameters are similar. The only difference is the type of conditionConfig.
-     * @param arg2 
-     * @param arg3 
-     * @returns 
+     * Called by the parent function after the child callback has run, to retrieve
+     * the deposited config and wire it into the appropriate property of the parent's config.
      */
-    protected resolveOverloadArgs<TConditionConfig extends ConditionConfig>(
-        arg2?: string | null | object,
-        arg3?: string | null
-    ): FluentOverloadArgs<TConditionConfig> {
-        let conditionConfig: TConditionConfig | null | undefined;
-        let errorMessage: string | null | undefined;
-        let summaryMessage: string | null | undefined;
-        let validatorParameters: FluentValidatorConfig | undefined;
-
-        if (typeof arg2 === 'string' || arg2 === null || arg2 === undefined) {
-            errorMessage = arg2 ?? null;
-            summaryMessage = arg3 ?? null;
-        }
-        else if (typeof arg2 === 'object') {
-            // arg3 is ignored here
-            conditionConfig = { ...arg2 } as TConditionConfig;
-            for (const prop of Object.keys(conditionConfig as object)) {
-                if (fluentValidatorConfigPropertyNames.includes(prop)) {
-                    delete (conditionConfig as any)[prop];
-                }
-            }
-
-            validatorParameters = { ...arg2 };
-            for (const prop of Object.keys(validatorParameters as object)) {
-                if (!fluentValidatorConfigPropertyNames.includes(prop)) {
-                    delete (validatorParameters as any)[prop];
-                }
-            }
-        
-        }
-        // any other form will return undefined values, which is acceptable.
-
-        return {
-            conditionConfig,
-            errorMessage,
-            summaryMessage,
-            validatorParameters
-        };
-    }
+    getConfig(): TConfig | undefined;
 
     /**
-     * Finishes the creation of a Validator's condition. Each condition function within this Builder
-     * only has to prepare the parameters, then call this to add the condition config
-     * and get back the same FluentValidatorBuilder for chaining.
-     * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
-     * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
-     * in conditionConfig, assign them to conditionConfig.
-     * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
-     * supplied.
-     * @param summaryMessage - optional summary message. Will overwrite any from validatorConfig if
-     * supplied.
-     * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
-     * will be replaced when conditionConfig is not null.
-     * @returns The current instance of ValidatorBuilder to allow for method chaining.
+     * Supporting functions finish up by calling the setConfig method.
+     * If this callback is assigned to the parent builder, setConfig will be called 
+     * automatically when the child is completed
+     * allowing it to hook up the child into its own config.
+     * 
+     * ```ts
+     * public not(notBuilder: StartConditionBuilderHandler): void { ... }
+     * {
+     *      let notConfig: NotConditionConfig = {
+     *          conditionType: ConditionType.Not,
+     *          childConditionConfig: null! // pending the notBuilder results
+     *      };
+     *      let startBuilder = new StartConditionBuilder(this,
+     *         (childConfig: ConditionConfig, source: IConditionBuilder) => 
+     *             notConfig.childConditionConfig = childConfig;
+     *         }
+     *      );
+     *      this.setConfig(notConfig);
+     * }
+     * public setConfig(config: ConditionConfig): void
+     * {
+     *      this._config = config;
+     * // bubble up
+     *      if (this.parentBuilder?.completed) {
+     *          this.parentBuilder.completed(config, this);
+     *      }
+     * }
+     * ```
      */
-    protected finish(conditionBuilder: IConditionBuilder | null,
-        errorMessage: string | null | undefined,
-        summaryMessage: string | null | undefined,
-        validatorConfig: FluentValidatorConfig | undefined | null): IFluentValidatorBuilder {
-        let ivDesc: ValidatorConfig = validatorConfig ?
-            { ...validatorConfig as ValidatorConfig } :
-            { conditionConfig: null };
-        if (errorMessage != null)   // null or undefined
-            ivDesc.errorMessage = errorMessage;
-        if (summaryMessage != null)   // null or undefined
-            ivDesc.summaryMessage = summaryMessage;
+    completed?: CompleteConfigBuilderHandler<TConfig>;    
+}
 
-        if (conditionBuilder !== null) {
-            let conditionConfig = conditionBuilder.getConfig();
-            assertNotNull(conditionConfig);
-            assertNotNull(conditionConfig?.conditionType);
-            if (conditionConfig)
-                ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
-        }
-        else if (ivDesc.conditionCreator == null)   // null or undefined
-            throw new CodingError(`ValidatorConfig must have either a conditionConfig or a conditionCreator.`);
+export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TConfig, source: IBuilderConfigHost<TConfig>) => void;
 
-        // prevent duplicate errorcodes
-        let errorCode = resolveErrorCode(ivDesc);
-        if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
-            throw new CodingError(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`);
 
-        this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
-        return this;    // chain!
-    }
-
+/**
+ * Use this when using alternative conditions, as you will need to provide substitutes
+ * for each fluent function. Your class should be registered with FluentFactory.
+ */
+export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
+{
     /**
-     * Creates the ConditionBuilder used by each Fluent validator function
-     * using the one defined in FluentFactory on ValidationServices.
-     * @returns 
+     * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
      */
-    protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder
-    {
-        return this.services.fluentFactory.createConditionBuilder(this, completed);
-    }
-
+    parentConfig: FieldValueHostConfig;    
     /**
      * Lets you create the condition instance itself into the Builder instead of
      * using the existing FluentValidatorBuilder validators.
@@ -212,23 +147,11 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * ```
     
      */
-    public customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+    customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
+    customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
-    public customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
-        arg1?: FluentValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        let { conditionConfig, errorMessage, summaryMessage, validatorParameters } =
-            this.resolveOverloadArgs<ConditionConfig>(arg1, arg2);
-        let ivConfig: ValidatorConfig = validatorParameters ?
-            { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
-            { conditionConfig: null };
-        ivConfig.conditionCreator = conditionCreator;
-        this.finish(null, errorMessage, summaryMessage, ivConfig);
-        return this;
-    }
 
     /**
      * Adds a DataTypeCheck condition to the fluent validator builder.
@@ -251,22 +174,11 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * dataTypeCheck({ errorMessage: 'Error message'});
      * ```
      */
-    public dataTypeCheck(
+    dataTypeCheck(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public dataTypeCheck(
+    dataTypeCheck(
         validatorParameters: FluentDataTypeCheckValidatorConfig): IFluentValidatorBuilder;
-    public dataTypeCheck(
-        arg1?: FluentDataTypeCheckValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty   
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<DataTypeCheckConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.dataTypeCheck();
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
       * Adds a RequireText condition to the fluent validator builder.
@@ -292,23 +204,11 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
       * requireText({ errorMessage: 'Error message'});
       * ```
       */
-    public requireText(
+    requireText(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public requireText(
+    requireText(
         validatorParameters: FluentRequireTextValidatorConfig): IFluentValidatorBuilder;
-    public requireText(
-        arg1?: string | null | FluentRequireTextValidatorConfig,
-        arg2?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<RequireTextConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.requireText(conditionConfig as RequireTextConditionConfig);
-        
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-
     /**
      * Adds a NotNull condition to the fluent validator builder.
      * NotNull ensures that the value being validated is not null.
@@ -334,22 +234,11 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
-    public notNull(
+    notNull(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public notNull(
+    notNull(
         validatorParameters: FluentNotNullValidatorConfig): IFluentValidatorBuilder;
-    public notNull(
-        arg1?: string | null | FluentNotNullValidatorConfig,
-        arg2?: string | null): IFluentValidatorBuilder {
-        // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty  
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotNullConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.notNull();
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Adds a RegExp condition to the fluent validator builder.
@@ -378,123 +267,22 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
-    public regExp(
+    regExp(
         expression: RegExp,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public regExp(
+    regExp(
         expression: string,
         ignoreCase?: boolean,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public regExp(
+    regExp(
         expression: RegExp,
         validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
-    public regExp(
+    regExp(
         expression: string,
         ignoreCase: boolean,
         validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
-    public regExp(
-        expression: RegExp | string, // can be either a RegExp or a string, but if string, then ignoreCase is needed
-        arg2?: string | boolean | FluentRegExpValidatorConfig | null,
-        arg3?: string | null | FluentRegExpValidatorConfig,
-        arg4?: string | null | FluentRegExpValidatorConfig): IFluentValidatorBuilder {
-        if (arg2 && typeof arg2 === 'string') { // then both arg2 and arg3 are errorMessage and summaryMessage
-
-            // expression, error message, summary message
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(arg2, arg3 as string | null);
-
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        else if (arg2 && typeof arg2 === 'object') { // then arg2 is validatorParameters
-            // expression, validatorParameters
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(arg2 as FluentRegExpValidatorConfig);
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        else if (typeof arg2 === 'boolean') { // then arg2 is ignoreCase
-            let ignoreCase = arg2 as boolean;
-            if (arg3 && typeof arg3 === 'string') { // then both arg3 and arg4 are errorMessage and summaryMessage
-                // string expression, ignoreCase, error message, summary message
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                    this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-                let conditionBuilder = this.createConditionBuilder();
-                conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
-                return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-                        
-            }
-            else if (arg3 && typeof arg3 === 'object') { // then arg3 is validatorParameters
-                // string expression, ignoreCase, validatorParameters
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                    this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-                let conditionBuilder = this.createConditionBuilder();
-                conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
-                return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-            }
-            if (arg4 && typeof arg4 === 'string') { // because arg3 is null as a placeholder for errormessage
-                // string expression, ignoreCase, null for error message, summary message
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                    this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string);
-                let conditionBuilder = this.createConditionBuilder();
-                conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
-                return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-            }
-                
-            else {
-                // string expression, ignoreCase
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                    this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-                let conditionBuilder = this.createConditionBuilder();
-                conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
-                return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-            }
-        }
-        else if (arg3 && typeof arg3 === 'object') { // then arg3 is validatorParameters and arg2 is likely undefined
-            // expression, undefined, validatorParameters
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        else if (expression instanceof RegExp && arg2 == null && (typeof arg3 === 'string') && arg4 == null) { // then arg2 is error message = null and arg3 is summaryMessage and arg4 is unused
-            // RegExp expression, null for error message, string for summary message
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(null, arg3 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        else if (typeof expression === 'string' && arg3 == null && (typeof arg4 === 'string')) { // then arg2 is ignoreCase = undefined, arg3 is errorMessage = null and arg4 is summaryMessage
-            // string expression, ignoreCase = undefined, errorMessage = null, summaryMessage
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(null, arg4 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        else if (arg2 == null && (typeof arg3 === 'string' || typeof arg4 === 'string')) { // then arg2 is null, arg3 is errorMessage and arg4 is summaryMessage
-            // expression, null for ignoreCase, error message or null, summary message or null
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-                this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
-            conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-            return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        }
-        // fall-thru
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
-        return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-        
-    }
-
 
     /**
      * Adds a range condition to the validator.
@@ -520,27 +308,15 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
-    public range(
+    range(
         minimum: any,
         maximum: any,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public range(
+    range(
         minimum: any,
         maximum: any,
         validatorParameters: FluentRangeValidatorConfig): IFluentValidatorBuilder;
-
-    public range(
-        minimum: any, maximum: any,
-        arg3?: string | null | FluentRangeValidatorConfig,
-        arg4?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<RangeConditionConfig>(arg3, arg4);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.range(minimum, maximum);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Adds a validator that ensures the value is equal to the specified second value.
@@ -564,36 +340,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */
-    public equalToValue(
+    equalToValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public equalToValue(
+    equalToValue(
         secondValue: any,
         validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
-    public equalToValue(
-        secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.equalToValue_common(secondValue, arg2, arg3);
-    }
-    /**
-     * Allows several aliases to setup equalToValue
-     * @param secondValue 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected equalToValue_common(
-        secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<EqualToValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.equalToValue(secondValue, conditionConfig as EqualToValueConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for equalToValue
@@ -601,18 +353,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public eqValue(
+    eqValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public eqValue(
+    eqValue(
         secondValue: any,
         validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
-    public eqValue(
-        secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.equalToValue_common(secondValue, arg2, arg3)
-    }
 
     /**
      * Adds a validator that ensures the value is equal to the second value host.
@@ -636,57 +382,25 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public equalTo(
+    equalTo(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public equalTo(
+    equalTo(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
-    public equalTo(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.equalTo_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows several aliases setup equalTo
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected equalTo_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
-        
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.equalTo(secondValueHostName, conditionConfig as EqualToConditionConfig);
-        
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+
     /**
      * Alias for equalTo
      * @param secondValueHostName 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public eq(
+    eq(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public eq(
+    eq(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
-    public eq(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.equalTo_common(secondValueHostName, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
@@ -710,39 +424,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */
-    public notEqualToValue(
+    notEqualToValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public notEqualToValue(
+    notEqualToValue(
         secondValue: any,
         validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
-    public notEqualToValue(
-        secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.notEqualToValue_common(secondValue, args2, args3);
-    }
-    /**
-     * Allows aliases to setup notEqualToValue
-     * @param secondValue 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected notEqualToValue_common(
-        secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): IFluentValidatorBuilder {
-        
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotEqualToValueConditionConfig>(args2, args3);
-        
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.notEqualToValue(secondValue, conditionConfig as NotEqualToValueConditionConfig);
-        
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for notEqualToValue
@@ -750,18 +437,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public neqValue(
+    neqValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public neqValue(
+    neqValue(
         secondValue: any,
         validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
-    public neqValue(
-        secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.notEqualToValue_common(secondValue, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is not equal to the second value host.
@@ -785,54 +466,25 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */
-    public notEqualTo(
+    notEqualTo(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public notEqualTo(
+    notEqualTo(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
-    public notEqualTo(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.notEqualTo_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows aliases to setup notEqualTo
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected notEqualTo_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.notEqualTo(secondValueHostName, conditionConfig as NotEqualToConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+
     /**
      * Alias for notEqualTo
      * @param secondValueHostName 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public neq(
+    neq(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public neq(
+    neq(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
-    public neq(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.notEqualTo_common(secondValueHostName, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is less than the specified second value.
@@ -856,37 +508,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public lessThanValue(
+    lessThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lessThanValue(
+    lessThanValue(
         secondValue: any,
         validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
-    public lessThanValue(
-        secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanValue_common(secondValue, args2, args3);
-    }
-
-    /**
-     * Allows aliases to setup lessThanValue
-     * @param secondValue 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected lessThanValue_common(
-        secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanValue(secondValue, conditionConfig as LessThanValueConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for lessThanValue
@@ -894,18 +521,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public ltValue(
+    ltValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public ltValue(
+    ltValue(
         secondValue: any,
         validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
-    public ltValue(
-        secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanValue_common(secondValue, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is less than the second value host.
@@ -929,38 +550,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public lessThan(
+    lessThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lessThan(
+    lessThan(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
-    public lessThan(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.lessThan_common(secondValueHostName, args2, args3);
-    }
-
-    /**
-     * Allows aliases to setup lessThan
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected lessThan_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThan(secondValueHostName, conditionConfig as LessThanConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for lessThan
@@ -968,19 +564,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public lt(
+    lt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lt(
+    lt(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
-    public lt(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.lessThan_common(secondValueHostName, args2, args3);
-    }
+
 
     /**
      * Adds a validator that ensures the value is less than or equal to the specified second value.
@@ -1004,54 +595,25 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public lessThanOrEqualValue(
+    lessThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lessThanOrEqualValue(
+    lessThanOrEqualValue(
         secondValue: any,
         validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
-    public lessThanOrEqualValue(
-        secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
-    }
-    /**
-     * Allows aliases to setup lessThanOrEqualValue
-     * @param secondValue 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected lessThanOrEqualValue_common(
-        secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanOrEqualValue(secondValue, conditionConfig as LessThanOrEqualValueConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+
     /**
      * Alias for lessThanOrEqualValue
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public lteValue(
+    lteValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lteValue(
+    lteValue(
         secondValue: any,
         validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
-    public lteValue(
-        secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
-    }
 
     /**
      * Adds a validator that ensures the value is less than or equal to the second value host.
@@ -1075,38 +637,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public lessThanOrEqual(
+    lessThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lessThanOrEqual(
+    lessThanOrEqual(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
-    public lessThanOrEqual(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
-
-    /**
-     * Allows aliases to setup lessThanOrEqual
-     * @param secondValueHostName 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected lessThanOrEqual_common(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanOrEqual(secondValueHostName, conditionConfig as LessThanOrEqualConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for lessThanOrEqual
@@ -1114,19 +651,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public lte(
+    lte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public lte(
+    lte(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
-    public lte(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
+
 
     /**
      * Adds a validator that ensures the value is greater than the specified second value.
@@ -1150,36 +682,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */
-    public greaterThanValue(
+    greaterThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public greaterThanValue(
+    greaterThanValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
-    public greaterThanValue(
-        secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanValue_common(secondValue, args2, args3);
-    }
-    /**
-     * Allows aliases to setup greaterThanValue
-     * @param secondValue 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected greaterThanValue_common(
-        secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanValue(secondValue, conditionConfig as GreaterThanValueConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for greaterThanValue
@@ -1187,18 +695,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public gtValue(
+    gtValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public gtValue(
+    gtValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
-    public gtValue(
-        secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanValue_common(secondValue, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is greater than the second value host.
@@ -1222,56 +724,27 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public greaterThan(
+    greaterThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public greaterThan(
+    greaterThan(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
-    public greaterThan(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThan_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows aliases to setup greaterThan
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected greaterThan_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThan(secondValueHostName, conditionConfig as GreaterThanConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+
     /**
      * Alias for greaterThan
      * @param secondValueHostName 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public gt(
+    gt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public gt(
+    gt(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
-    public gt(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThan_common(secondValueHostName, args2, args3);
-    }
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
@@ -1295,36 +768,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public greaterThanOrEqualValue(
+    greaterThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public greaterThanOrEqualValue(
+    greaterThanOrEqualValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
-    public greaterThanOrEqualValue(
-        secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
-    }
-    /**
-     * Allows aliases to setup greaterThanOrEqualValue
-     * @param secondValue 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected greaterThanOrEqualValue_common(
-        secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanOrEqualValue(secondValue, conditionConfig as GreaterThanOrEqualValueConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Alias for greaterThanOrEqualValue
@@ -1332,18 +781,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public gteValue(
+    gteValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
-    public gteValue(
+    gteValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
-    public gteValue(
-        secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
-    }
+
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the second value host.
@@ -1367,52 +811,21 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public greaterThanOrEqual(
+    greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public greaterThanOrEqual(
+    greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
-    public greaterThanOrEqual(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
 
-    /**
-     * Allows aliases to setup greaterThanOrEqual
-     * @param secondValueHostName 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected greaterThanOrEqual_common(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanOrEqual(secondValueHostName, conditionConfig as GreaterThanOrEqualConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-
-    public gte(
+    gte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public gte(
+    gte(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
-    public gte(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
 
     /**
      * Adds a validator that ensures the text length is within limits.
@@ -1436,58 +849,28 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public stringLength(
+    stringLength(
         maximum: number | null,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public stringLength(
+    stringLength(
         maximum: number | null,
         validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
-    public stringLength(
-        maximum: number | null,
-        arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.stringLength_common(maximum, arg2, arg3);
-    }
 
-    /**
-     * Allows for aliases to setup stringLength
-     * @param maximum 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected stringLength_common(
-        maximum: number | null,
-        arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<StringLengthConditionConfig>(arg2, arg3);
-        
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.stringLength(maximum, conditionConfig as StringLengthConditionConfig);
-
-        return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
-    }
     /**
      * Alias for stringLength
      * @param maximum 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public len(
+    len(
         maximum: number | null,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public len(
+    len(
         maximum: number | null,
         validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
-    public len(
-        maximum: number | null,
-        arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        return this.stringLength_common(maximum, arg2, arg3);
-    }
+
     /**
      * Adds a validator that ensures the value is 0 or higher.
      * It returns Undetermined if the value is not a number.
@@ -1510,48 +893,22 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public positive(
+    positive(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public positive(
+    positive(
         validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
-    public positive(
-        arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        return this.positive_common(arg1, arg2);
-    }
 
-    /**
-     * Allows aliases to setup positive
-     * @param arg1 
-     * @param arg2 
-     * @returns 
-     */
-    protected positive_common(
-        arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<PositiveConditionConfig>(arg1, arg2);   
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.positive();
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }    
     /**
      * Alias for positive
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public pos(
+    pos(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public pos(
+    pos(
         validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
-    public pos(
-        arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        return this.positive_common(arg1, arg2);
-    }
 
     /**
      * Adds a validator that ensures the value is an integer.
@@ -1575,48 +932,21 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public integer(
+    integer(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public integer(
+    integer(
         validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
-    public integer(
-        arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        return this.integer_common(arg1, arg2);
-    }
-    /**
-     * Allows aliases to setup integer
-     * @param arg1 
-     * @param arg2 
-     * @returns 
-     */
-    protected integer_common(
-        arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<IntegerConditionConfig>(arg1, arg2);       
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.integer();
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-
     /**
      * Alias for integer
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public int(
+    int(
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public int(
+    int(
         validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
-    public int(
-        arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): IFluentValidatorBuilder {
-        return this.integer_common(arg1, arg2);
-    }
 
     /**
      * Adds a validator that ensures the number of decimal places is limited to the specified maximum.
@@ -1641,24 +971,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public maxDecimals(
+    maxDecimals(
         maxDecimals: number,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public maxDecimals(
+    maxDecimals(
         maxDecimals: number,
         validatorParameters: FluentMaxDecimalsValidatorConfig): IFluentValidatorBuilder;
-    public maxDecimals(
-        maxDecimals: number,
-        arg2?: FluentMaxDecimalsValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<MaxDecimalsConditionConfig>(arg2, arg3); 
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.maxDecimals(maxDecimals);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+
     /**
      * Builds a validator around a condition and negates the validation result
      * of the condition. When the condition result is NoMatch, the overall validation will pass, and vice versa.
@@ -1691,24 +1011,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */    
-    public not(
+    not(
         childBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public not(
+    not(
         childBuilder: ConditionBuilderHandler,
         validatorParameters: FluentNotValidatorConfig): IFluentValidatorBuilder;
-    public not(
-        childBuilder: ConditionBuilderHandler,
-        arg2?: FluentNotValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.not(childBuilder);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Builds a validator that must only be evaluated based on another condition.
@@ -1762,27 +1071,15 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public when(
+    when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public when(
+    when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
         validatorParameters: FluentWhenValidatorConfig): IFluentValidatorBuilder;    
-    public when(
-        whenBuilder: ConditionBuilderHandler,
-        thenBuilder: ConditionBuilderHandler,
-        arg3?: FluentWhenValidatorConfig | string | null,
-        arg4?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<WhenConditionConfig>(arg3, arg4);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.when(whenBuilder, thenBuilder);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
     
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1833,24 +1130,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */        
-    public all(
+    all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public all(
+    all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAllMatchValidatorConfig): IFluentValidatorBuilder;
-    public all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        arg2?: FluentAllMatchValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<AllMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.all(conditionsBuilder);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1895,24 +1181,13 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */
-    public any(
+    any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public any(
+    any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAnyMatchValidatorConfig): IFluentValidatorBuilder;
-    public any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        arg2?: FluentAnyMatchValidatorConfig | string | null,
-        arg3?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<AnyMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.any(conditionsBuilder);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
 
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1965,57 +1240,512 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of FluentValidatorBuilder for method chaining.
      */            
-    public countMatches(
+    countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IFluentValidatorBuilder;
-    public countMatches(
+    countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentCountMatchesValidatorConfig): IFluentValidatorBuilder;    
-    public countMatches(
-        minimum: number | null,
-        maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        arg4?: FluentCountMatchesValidatorConfig | string | null,
-        arg5?: string | null): IFluentValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<CountMatchesConditionConfig>(arg4, arg5);
-        let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.countMatches(minimum, maximum, conditionsBuilder);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-
 }
+
+export type OptionalRequireTextConditionParams = Partial<Omit<RequireTextConditionConfig,
+    'conditionType' | 'valueHostName' | 'category'>>;
+export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'expressionAsString' | 'expression' | 'ignoreCase'>>;
+
+// Note about valueHostName.
+// The valuehostname property normally gets automatically populated based on the context in which the condition is used.
+// However, the comparison conditions that compare to a second valuehostName may
+// require explicit specification of the valuehostName property.
+// As a result, you see /*'valueHostName' |*/ in the definitions below.
+// ```ts
+//  protected configureRules(builder: IValidationManagerConfigBuilder,
+//      options?: RulesConfigOptions): void {
+//      builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
+//          .lessThan('EndDate')
+//          .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+//              {
+//                  valueHostName: 'DiffDays',  // <<< HERE: compare to this valueHost, not StartDate
+//                  errorMessage: 'Less than {compareTo} days apart',
+//                  errorCode: 'NumOfDays'
+//               });
+//      builder.field('EndDate', LookupKey.Date, { label: 'End date' });
+//      builder.static('NumOfDays', LookupKey.Integer, { initialValue: 10 });
+//      builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);
+//  }
+// ```
+export type OptionalEqualToValueConditionParams = Partial<Omit<EqualToValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalEqualToConditionParams = Partial<Omit<EqualToConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalNotEqualToValueConditionParams = Partial<Omit<NotEqualToValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalNotEqualToConditionParams = Partial<Omit<NotEqualToConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalLessThanConditionParams = Partial<Omit<LessThanConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalLessThanOrEqualValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalLessThanOrEqualConditionParams = Partial<Omit<LessThanConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalGreaterThanValueConditionParams = Partial<Omit<GreaterThanValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalGreaterThanConditionParams = Partial<Omit<GreaterThanConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalGreaterThanOrEqualValueConditionParams = Partial<Omit<GreaterThanOrEqualValueConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'secondValue'>>;
+export type OptionalGreaterThanOrEqualConditionParams = Partial<Omit<GreaterThanOrEqualConditionConfig,
+    'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+export type OptionalStringLengthConditionParams = Partial<Omit<StringLengthConditionConfig,
+    'conditionType' | 'valueHostName' | 'category' | 'maximum'>>;
+
+export type FluentDataTypeCheckValidatorConfig = FluentValidatorConfig;
+export type FluentRequireTextValidatorConfig = FluentValidatorConfig & OptionalRequireTextConditionParams;
+export type FluentNotNullValidatorConfig = FluentValidatorConfig;
+export type FluentRegExpValidatorConfig = FluentValidatorConfig & OptionalRegExpConditionParams;
+export type FluentRangeValidatorConfig = FluentValidatorConfig;
+export type FluentEqualToValueValidatorConfig = OptionalEqualToValueConditionParams & FluentValidatorConfig;
+export type FluentEqualToValidatorConfig = OptionalEqualToConditionParams & FluentValidatorConfig;
+export type FluentNotEqualToValueValidatorConfig = OptionalNotEqualToValueConditionParams & FluentValidatorConfig;
+export type FluentNotEqualToValidatorConfig = OptionalNotEqualToConditionParams & FluentValidatorConfig;
+export type FluentLessThanValueValidatorConfig = OptionalLessThanValueConditionParams & FluentValidatorConfig;
+export type FluentLessThanValidatorConfig = OptionalLessThanConditionParams & FluentValidatorConfig;
+export type FluentLessThanOrEqualValueValidatorConfig = OptionalLessThanOrEqualValueConditionParams & FluentValidatorConfig;
+export type FluentLessThanOrEqualValidatorConfig = OptionalLessThanOrEqualConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanValueValidatorConfig = OptionalGreaterThanValueConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanValidatorConfig = OptionalGreaterThanConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanOrEqualValueValidatorConfig = OptionalGreaterThanOrEqualValueConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanOrEqualValidatorConfig = OptionalGreaterThanOrEqualConditionParams & FluentValidatorConfig;
+export type FluentStringLengthValidatorConfig = OptionalStringLengthConditionParams & FluentValidatorConfig;
+export type FluentPositiveValidatorConfig = FluentValidatorConfig;
+export type FluentIntegerValidatorConfig = FluentValidatorConfig;
+export type FluentMaxDecimalsValidatorConfig = FluentValidatorConfig;
+export type FluentNotValidatorConfig = FluentValidatorConfig;
+export type FluentWhenValidatorConfig = FluentValidatorConfig;
+export type FluentAllMatchValidatorConfig = FluentValidatorConfig;
+export type FluentAnyMatchValidatorConfig = FluentValidatorConfig;
+export type FluentCountMatchesValidatorConfig = FluentValidatorConfig;
+
+/**
+ * Interface for condition builders.
+ */
+export interface IConditionBuilderBase<TConfig extends ConditionConfig = ConditionConfig,
+    TOptions extends SetConfigOptions = SetConfigOptions>
+    extends IBuilderConfigHost<TConfig, TOptions> {
+    /**
+     * Inverts the match result of the child condition config.
+     * When child matches, the parent will not match, and vice versa.
+     * When the child is undetermined, the parent will be undetermined.
+     * @param notCallback 
+     */
+    not(notCallback: ConditionBuilderHandler): void;
+
+    /**
+     * Executes a condition only when another condition is satisfied.
+     * When the "when" condition is satisfied, the "then" condition is evaluated.
+     * When the "when" condition is not satisfied, the "then" condition is not evaluated,
+     * @param whenToEnable -
+     * @param thenCallback 
+     */
+    when(whenToEnableCallback: ConditionBuilderHandler, thenCallback: ConditionBuilderHandler): void;
+
+    /**
+     * Considers a match to be when all child conditions match. If any child does not match, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param callback 
+     */
+    all(callback: ConditionWithChildrenBuilderHandler): void;
+
+    /**
+     * Considers a match to be when any child condition matches. 
+     * If all child conditions do not match, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param callback 
+     */
+    any(callback: ConditionWithChildrenBuilderHandler): void;
+
+    /**
+     * Considers a match to be when a specified number of child conditions match.
+     * If the number of matching child conditions is less than the minimum, the parent does not match.
+     * If the number of matching child conditions is more than the maximum, the parent does not match.
+     * If any child is undetermined, the parent ignores it.
+     * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
+     * @param minimum 
+     * @param maximum 
+     * @param callback 
+     */
+    countMatches(minimum: number | null, maximum: number | null,
+        callback: ConditionWithChildrenBuilderHandler): void;
     
-
-
-/**
- * Return result from resolveValidatorOverloadArgs() to allow for optional parameters in fluent functions.
- */
-export interface FluentOverloadArgs<TConditionConfig> {
-    conditionConfig?: TConditionConfig | null;
-    errorMessage?: string | null;
-    summaryMessage?: string | null;
-    validatorParameters?: FluentValidatorConfig;
+    /**
+     * Provides a way to supply a complete condition config object directly to the builder.
+     * The supplied object must have its conditionType and all required properties for that condition type.
+     * 
+     * ```ts
+     * builder.conditionConfig(<RangeConditionConfig>{
+     *     conditionType: ConditionType.Range,
+     *     minimum: 1,
+     *     maximum: 5
+     * });
+     * ```
+     * @param config 
+     */
+    conditionConfig(config: ConditionConfig): void;
+    
 }
 
 /**
- * The actual property names on the FluentValidatorConfig interface.
+ * The condition builder that supplies all of the condition methods.
+ * Each time we add a condition to Jivs, add it here too.
  */
-const fluentValidatorConfigPropertyNames: Array<string> = [
-    'validatorType',
-    'errorCode',
-    'enabled',
-    'conditionConfig', // not in the official FluentValidatorConfig, but its a typical property of ValidatorConfig
-    'conditionCreator', // ditto
-    'severity',
-    'errorMessage',
-    'summaryMessage',
-    'errorMessagel10n',
-    'summaryMessagel10n',    
-];
+export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionConfig>
+    extends IConditionBuilderBase<TConfig> {
+    /**
+     * Creates a configuration for DataTypeCheckCondition.
+     */
+    dataTypeCheck(): void;
+
+    /**
+     * Creates a configuration for the RequireTextCondition.
+     * @param conditionConfig - Optional configuration parameters for the RequireText condition.
+     */
+    requireText(conditionConfig?: OptionalRequireTextConditionParams): void;
+
+    /**
+     * Creates a configuration for the NotNullCondition.
+     */
+    notNull(): void;
+
+    /**
+     * Creates a configuration for the RegExpCondition.
+     * @param expression - The regular expression to match against.
+     * @param ignoreCase - Whether to ignore case when matching the regular expression.
+     * @param conditionConfig - Optional configuration parameters for the RegExp condition.
+     */
+    regExp(
+        expression: RegExp | string, ignoreCase?: boolean | null,
+        conditionConfig?: OptionalRegExpConditionParams): void;
+
+    /**
+     * Creates a configuration for the RangeCondition.
+     * @param minimum - The minimum value for the range.
+     * @param maximum - The maximum value for the range.
+     */
+    range(minimum: any, maximum: any): void;
+
+    /**
+     * Creates a configuration for the EqualToValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     */
+    equalToValue(
+        secondValue: any,
+        conditionConfig?: OptionalEqualToValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the EqualToValueCondition using an alias to equalToValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     */
+    eqValue(secondValue: any, conditionConfig?: OptionalEqualToValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the EqualToCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
+     */
+    equalTo(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalEqualToConditionParams): void;
+    /**
+     * Creates a configuration for the EqualToCondition using an alias to equalTo()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
+     */
+    eq(secondValueHostName: ValueHostName, conditionConfig?: OptionalEqualToConditionParams): void;
+
+    /**
+     * Creates a configuration for the NotEqualToValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     */
+    notEqualToValue(
+        secondValue: any,
+        conditionConfig?: OptionalNotEqualToValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the NotEqualToValueCondition using an alias to notEqualToValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     */
+    neqValue(secondValue: any, conditionConfig?: OptionalNotEqualToValueConditionParams): void;
+    /**
+     * Creates a configuration for the NotEqualToCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
+     */
+    notEqualTo(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalNotEqualToConditionParams): void;
+
+    /**
+     * Creates a configuration for the NotEqualToCondition using an alias to notEqualTo()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
+     */
+    neq(secondValueHostName: ValueHostName, conditionConfig?: OptionalNotEqualToConditionParams): void;
+    /**
+     * Creates a configuration for the LessThanValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
+     */
+    lessThanValue(
+        secondValue: any,
+        conditionConfig?: OptionalLessThanValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanValueCondition using an alias to lessThanValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
+     */
+    ltValue(secondValue: any, conditionConfig?: OptionalLessThanValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThan condition.
+     */
+    lessThan(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalLessThanConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanCondition using an alias to lessThan()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThan condition.
+     */
+    lt(secondValueHostName: ValueHostName, conditionConfig?: OptionalLessThanConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanOrEqualValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
+     */
+    lessThanOrEqualValue(
+        secondValue: any,
+        conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanOrEqualValueCondition using an alias to lessThanOrEqualValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
+     */
+    lteValue(secondValue: any, conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void;
+    /**
+     * Creates a configuration for the LessThanOrEqualCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
+     */
+    lessThanOrEqual(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalLessThanOrEqualConditionParams): void;
+
+    /**
+     * Creates a configuration for the LessThanOrEqualCondition using an alias to lessThanOrEqual()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
+     */
+    lte(secondValueHostName: ValueHostName, conditionConfig?: OptionalLessThanOrEqualConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
+     */
+    greaterThanValue(
+        secondValue: any,
+        conditionConfig?: OptionalGreaterThanValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanValueCondition using an alias to greaterThanValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
+     */
+    gtValue(secondValue: any, conditionConfig?: OptionalGreaterThanValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
+     */
+    greaterThan(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalGreaterThanConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanCondition using an alias to greaterThan()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
+     */
+    gt(secondValueHostName: ValueHostName, conditionConfig?: OptionalGreaterThanConditionParams): void;
+    /**
+     * Creates a configuration for the GreaterThanOrEqualValueCondition.
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
+     */
+    greaterThanOrEqualValue(
+        secondValue: any,
+        conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanOrEqualValueCondition using an alias to greaterThanOrEqualValue()
+     * @param secondValue - The value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
+     */
+    gteValue(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void;
+    
+    /**
+     * Creates configuration for the GreaterThanOrEqualCondition.
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
+     */
+    greaterThanOrEqual(
+        secondValueHostName: ValueHostName,
+        conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
+
+    /**
+     * Creates a configuration for the GreaterThanOrEqualCondition using an alias to greaterThanOrEqual()
+     * @param secondValueHostName - The host name of the second value to compare against.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
+     */
+    gte(secondValueHostName: ValueHostName, conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
+
+    /**
+     * Creates a configuration for the StringLengthCondition.
+     * @param maximum - The maximum length of the string.
+     * @param conditionConfig - Optional configuration parameters for the StringLength condition.
+     */
+    stringLength(
+        maximum: number | null,
+        conditionConfig?: OptionalStringLengthConditionParams): void;
+
+    /**
+     * Creates a configuration for the StringLengthCondition using an alias to stringLength()
+     * @param maximum - The maximum length of the string.
+     * @param conditionConfig - Optional configuration parameters for the StringLength condition.
+     */
+    len(maximum: number | null, conditionConfig?: OptionalStringLengthConditionParams): void;
+
+    /**
+     * Creates a configuration for the PositiveCondition.
+     * This condition checks if a value is positive.
+     */
+    positive(): void;
+
+    /**
+     * Creates a configuration for the IntegerCondition.
+     * This condition checks if a value is an integer.
+     */
+    integer(): void;
+
+    /**
+     * Creates a configuration for the MaxDecimalsCondition.
+     * This condition checks if a value has no more than the specified number of decimal places.
+     * @param maxDecimals - The maximum number of decimal places allowed.
+     */
+    maxDecimals(maxDecimals: number): void;
+}
+
+/**
+ * The starting point for building a condition, where you identify the valueHostName for the condition
+ * prior to selecting the actual condition to apply to it.
+ */
+export interface IStartConditionBuilder extends IConditionBuilderBase<ConditionConfig> {
+
+    /**
+     * When assigned, it is copied to the child condition config's valueHostName property, 
+     * which is used by conditions that require a value host name.
+     */
+    valueHostName?: ValueHostName;
+    /**
+     * Starts building a condition that uses the parent value host as its source.
+     * 
+     * Hands off the next part to a new ConditionBuilder, 
+     * where the user can select the actual condition to build.
+     * setConfig() will not assign a valueHostName property to the child condition config, 
+     * which means the parent value host is used.
+     * @returns 
+     */
+    parentValue(): IConditionBuilder;
+
+    /**
+     * Starts building a condition that uses the supplied valueHostName as its source.
+     * 
+     * Hands off the next part to a new ConditionBuilder, 
+     * where the user can select the actual condition to build.
+     * setConfig() will later bind the valueHostName to the child condition config's valueHostName property.
+     * @param valueHostName 
+     * @returns 
+     */
+    fieldValue(valueHostName: string): IConditionBuilder;
+
+}
+
+/**
+ * Starter these conditions: AllCondition, AnyCondition, CountMatchesCondition.
+ * These conditions have an array of child condition configs that are supplied through an array.
+ * Each child in created by its own ConditionBuilder and passed up to this one.
+ * 
+ * It works a bit differently than the usual, by taking on the task of creating
+ * the actual ConditionWithChildrenBaseConfig object, and through setConfig(),
+ * adding each child config to the array, 
+ * which is the conditionConfigs property of the ConditionWithChildrenBaseConfig.
+ * 
+ * Each call to setConfig() will add a child config to the array.
+ * It fully creates the ConditionWithChildrenBaseConfig object, which is returned by getConfig().
+ * 
+ * It does not offer a completed callback to the parent builder because each
+ * call to its setConfig() handles the addition of a child config,
+ * and the parent builder will only receive the fully constructed configuration when appropriate.
+ */
+export interface IStartConditionWithChildrenBuilder extends IStartConditionBuilder {
+}
+
+/**
+ * Builder that allows only one child condition.
+ * Used by Not and WhenConditions.
+ */
+export interface IStartConditionWithOneChildBuilder extends IStartConditionBuilder {
+}
+
+
+/**
+ * Allows a child to create its own condition, through the supplied StartConditionBuilder.
+ * The caller gets the result when the child code calls its builder's setConfig().
+ */
+export type ConditionBuilderHandler = (conditionsBuilder: IStartConditionBuilder) => void;
+export type ConditionWithChildrenBuilderHandler =
+    (conditionsBuilder: IStartConditionWithChildrenBuilder) => void;
+
+export interface SetConfigOptions {
+    /**
+     * When true or undefined, the parent's completed callback will be invoked.
+     * When false, the parent's completed callback will not be invoked.
+     */
+    bubbleUp?: boolean;
+    /**
+     * When true or undefined, the value host name will be applied to the condition config
+     * if not already assigned.
+     */
+    applyValueHostName?: boolean;
+}
+

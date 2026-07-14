@@ -1,4 +1,3 @@
-import { StartConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
 import {
     RequireTextConditionConfig, RegExpConditionConfig,
     AllMatchConditionConfig, AnyMatchConditionConfig
@@ -29,7 +28,7 @@ import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplace
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
-import { IFluentValidatorBuilder } from '../../src/Interfaces/ManagerConfigBuilder';
+import { IFluentValidatorBuilder, IStartConditionBuilder } from '../../src/Interfaces/ChildBuilders';
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -85,13 +84,13 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
 
     public publicify_combineWithValidatorConfig(
         destinationOfCondition: ValidatorConfig,
-        arg2: CombineUsingCondition | ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg3?: (combiningBuilder: StartConditionBuilder) => void): void
+        arg2: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg3?: (combiningBuilder: IStartConditionBuilder) => void): void
     {
         super.combineWithValidatorConfig(destinationOfCondition, arg2, arg3);
     }
 
-    public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void)): void
+    public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void)): void
     {
         super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
     }    
@@ -813,13 +812,13 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
 
         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
             combineUsing,
-            (combiningBuilder: StartConditionBuilder) => combiningBuilder.parentValue().requireText())).not.toThrow();  
+            (combiningBuilder: IStartConditionBuilder) => combiningBuilder.parentValue().requireText())).not.toThrow();  
        
         expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
         deleteConditionReplacedSymbol(destinationConfig);
         expect(destinationConfig).toEqual(expectedValidatorConfig);        
     }
-    function testFunctionHandlesAllCombining(fn: (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void,
+    function testFunctionHandlesAllCombining(fn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void,
         expectedValidatorConfig: ValidatorConfig
     ) { 
         let vmConfig = createVMConfig();
@@ -919,7 +918,7 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
         };
 
         testFunctionHandlesAllCombining(
-            (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+            (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                 combiningBuilder.when(
                     (whenBuilder) => whenBuilder.fieldValue('field1').requireText(),
                     (thenBuilder) => thenBuilder.conditionConfig(existingConditionConfig));
@@ -1052,7 +1051,7 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
 });
 
 describe('replaceConditionWith', () => {
-    function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void),
+    function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void),
         expectedValidatorConfig: ValidatorConfig
     ) { 
         let vmConfig = createVMConfig();
@@ -1081,7 +1080,7 @@ describe('replaceConditionWith', () => {
         };
 
         testFunctionHandlesReplacement(
-            (replacementBuilder: StartConditionBuilder) => {
+            (replacementBuilder: IStartConditionBuilder) => {
                 replacementBuilder.parentValue().regExp(/abc/);
             },
             expectedConfig);       
@@ -1184,7 +1183,7 @@ describe('enabler', () => {
         return { builder: testItem, vmConfig: vmConfig };
     }
     function testEnablerAssignment(setup: { builder: TestValidationManagerConfigBuilderBase, vmConfig: ValidationManagerConfig },
-        sourceOfConditionConfig: ConditionConfig | ((builder: StartConditionBuilder) => void),
+        sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void),
         expectedEnablerConfig: ConditionConfig | undefined, logContent: string
     ): void {
 

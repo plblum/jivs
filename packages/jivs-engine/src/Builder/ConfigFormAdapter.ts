@@ -81,9 +81,10 @@
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
  *     .replaceWith((newCondBuilder)=> {});// removes existing, adds new one
  * ``` 
+ * @module Builder/ConfigFormAdapter
  */
 
-import { StartConditionBuilder } from './ConditionBuilder_classes';
+import { StartConditionBuilder } from "./StartConditionBuilder";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";

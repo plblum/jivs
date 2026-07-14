@@ -1,9 +1,17 @@
 import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
-import { ConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
+import { ConditionBuilder } from './../../src/Builder/ConditionBuilder';
 import { FluentValidatorConfig } from './../../src/Builder/Fluent';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, 
+    DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, 
+    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, 
+    GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, 
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, 
+    MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, 
+    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, 
+    RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig } 
+from '../../src/Conditions/ConcreteConditions';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
@@ -13,7 +21,7 @@ import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/C
 import { NotConditionConfig } from '../../src/Conditions/NotCondition';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { MockValidationServices } from '../TestSupport/mocks';
-import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IFluentValidatorBuilder } from '../../src/Interfaces/ManagerConfigBuilder';
+import { IBuilderConfigHost, IFluentValidatorBuilder, FluentDataTypeCheckValidatorConfig } from '../../src/Interfaces/ChildBuilders'
 
 
 class Publicify_FluentValidatorBuilder extends FluentValidatorBuilder

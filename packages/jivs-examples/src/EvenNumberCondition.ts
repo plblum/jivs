@@ -25,7 +25,7 @@ import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { FluentValidatorBuilder } from "@plblum/jivs-engine/build/Builder/FluentValidatorBuilder";
-import { ConditionBuilder } from "@plblum/jivs-engine/build/Builder/ConditionBuilder_classes";
+import { ConditionBuilder } from "@plblum/jivs-engine/build/Builder/ConditionBuilder";
 import { FluentValidatorConfig } from "@plblum/jivs-engine/build/Builder/Fluent";
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler,

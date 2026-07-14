@@ -17,7 +17,7 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
-import { StartConditionBuilder } from "../../src/Builder/ConditionBuilder_classes";
+import { IStartConditionBuilder } from "../../src/Interfaces/ChildBuilders";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -429,7 +429,7 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) => {
                         childrenBuilder.conditionConfig(existingConditionConfig);
                         childrenBuilder.parentValue().regExp(/abc/);
@@ -470,7 +470,7 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -500,7 +500,7 @@ describe('combineWithRule', () => {
             let modifier = vm.startModifying();
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                 }
             );
             modifier.apply();        
@@ -529,7 +529,7 @@ describe('combineWithRule', () => {
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -567,7 +567,7 @@ describe('combineWithRule', () => {
 
             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -605,7 +605,7 @@ describe('combineWithRule', () => {
 
             modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                 }
             );
             modifier.apply();        
@@ -636,7 +636,7 @@ describe('replaceRule', () => {
         let modifier = vm.startModifying();
 
         let testItem = modifier.replaceRule('Field1', ConditionType.RequireText,
-            (replacementBuilder: StartConditionBuilder) => {
+            (replacementBuilder: IStartConditionBuilder) => {
                 replacementBuilder.parentValue().regExp(/abc/);
             }
         );

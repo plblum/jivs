@@ -1,4 +1,4 @@
-import { IStartConditionBuilder } from './../../src/Interfaces/ManagerConfigBuilder';
+import { IStartConditionBuilder } from './../../src/Interfaces/ChildBuilders';
 import { RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';

@@ -1,8 +1,10 @@
 import {
-    ConditionBuilder,
     StartConditionBuilder
-} from "../../src/Builder/ConditionBuilder_classes";
-import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ManagerConfigBuilder";
+} from "../../src/Builder/StartConditionBuilder";
+import {
+    ConditionBuilder
+} from "../../src/Builder/ConditionBuilder";
+import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
 import {
     EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
  }

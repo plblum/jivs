@@ -20,7 +20,8 @@ import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { deepClone, isPlainObject } from '../Utilities/Utilities';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { IFluentValidatorBuilder, IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { IFluentValidatorBuilder, IStartConditionBuilder } from '../Interfaces/ChildBuilders';
+import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -28,8 +29,7 @@ import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { ValueHostsManagerStartFluent, ValidationManagerStartFluent } from "./StartFluent_classes";
-import { StartConditionBuilder } from './ConditionBuilder_classes';
-import { FluentValidatorBuilder } from "./FluentValidatorBuilder";
+import { StartConditionBuilder } from "./StartConditionBuilder";
 import { IValidationServices } from '../Interfaces/ValidationServices';
 
 /**
@@ -481,9 +481,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param valueHostName 
      * @param builderFn - A function that will build the conditionConfig with the Builder API
      */
-    public enabler(valueHostName: ValueHostName, builderFn: ((enablerBuilder: StartConditionBuilder) => void)): ManagerConfigBuilderBase<T>
+    public enabler(valueHostName: ValueHostName, builderFn: ((enablerBuilder: IStartConditionBuilder) => void)): ManagerConfigBuilderBase<T>
 
-    public enabler(valueHostName: ValueHostName, sourceOfConditionConfig: ConditionConfig | ((enablerBuilder: StartConditionBuilder) => void)): ManagerConfigBuilderBase<T> {
+    public enabler(valueHostName: ValueHostName, sourceOfConditionConfig: ConditionConfig | ((enablerBuilder: IStartConditionBuilder) => void)): ManagerConfigBuilderBase<T> {
         function getValueHostConfig(): ValueHostConfig
         {
             // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.
@@ -581,8 +581,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      */
     protected combineWithValidatorConfig(
         destinationOfCondition: ValidatorConfig,
-        arg2: CombineUsingCondition | ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg3?: (combiningBuilder: StartConditionBuilder) => void): void {
+        arg2: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg3?: (combiningBuilder: IStartConditionBuilder) => void): void {
         this.assertNotDisposed();
         assertNotNull(destinationOfCondition, 'destinationOfCondition');
         assertNotNull(arg2);
@@ -591,7 +591,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 //        const missingConditionMsg = `Builder function did not create a conditionConfig for error code "${errorCode}". Existing condition remains.`;
 
         let builder = new StartConditionBuilder(this.services as IValidationServices, null);
-        let fn: ((combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => void) | null = null;
+        let fn: ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void) | null = null;
 
         if (typeof arg2 === 'function') {
             fn = arg2;
@@ -605,14 +605,14 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 return;
             switch (arg2 as CombineUsingCondition) {
                 case CombineUsingCondition.When:
-                    fn = (replacementBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    fn = (replacementBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                         replacementBuilder.when(
                             (whenBuilder) => whenBuilder.conditionConfig(newConditionConfig!),
                             (existingConfigBuilder) => existingConfigBuilder.conditionConfig(existingConditionConfig));
                     };
                     break;
                 case CombineUsingCondition.All:
-                    fn = (replacementBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    fn = (replacementBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                         replacementBuilder.all(
                             (childrenBuilder) => [
                                 childrenBuilder.conditionConfig(existingConditionConfig),
@@ -621,7 +621,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                     };
                     break;
                 case CombineUsingCondition.Any:
-                    fn = (replacementBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    fn = (replacementBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                         replacementBuilder.any(
                             (childrenBuilder) => [
                                 childrenBuilder.conditionConfig(existingConditionConfig),
@@ -676,7 +676,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      *   passed the builder, where you can build your new conditions.
      * - provide a complete ConditionConfig as the replacement
      */
-    protected replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: StartConditionBuilder) => void)): void {
+    protected replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: IStartConditionBuilder) => void)): void {
         this.assertNotDisposed();
         assertNotNull(destinationOfCondition, 'destinationOfCondition');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');  

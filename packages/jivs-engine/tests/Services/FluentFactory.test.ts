@@ -1,5 +1,5 @@
-import { IBuilderConfigHost, CompleteConfigBuilderHandler } from './../../src/Interfaces/ManagerConfigBuilder';
-import { ConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
+import { IBuilderConfigHost, CompleteConfigBuilderHandler } from './../../src/Interfaces/ChildBuilders';
+import { ConditionBuilder } from './../../src/Builder/ConditionBuilder';
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { FluentFactory } from "../../src/Services/FluentFactory";
 import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";

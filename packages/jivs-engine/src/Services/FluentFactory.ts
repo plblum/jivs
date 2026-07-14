@@ -2,7 +2,7 @@
  * @module DataTypes/Types
  */
 
-import { ConditionBuilder } from '../Builder/ConditionBuilder_classes';
+import { ConditionBuilder } from "../Builder/ConditionBuilder";
 import { FluentValidatorBuilder } from '../Builder/FluentValidatorBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { FieldValueHostConfig } from '../Interfaces/FieldValueHost';
@@ -12,9 +12,10 @@ import {
     CompleteConfigBuilderHandler, IBuilderConfigHost, IConditionBuilder,
     IFluentValidatorBuilder, IStartConditionBuilder,
     IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder
-} from '../Interfaces/ManagerConfigBuilder';
-import { StartConditionBuilder, StartConditionWithChildrenBuilder, StartConditionWithOneChildBuilder }
-    from './../Builder/ConditionBuilder_classes';
+} from '../Interfaces/ChildBuilders';
+import { StartConditionBuilder } from "../Builder/StartConditionBuilder";
+import { StartConditionWithChildrenBuilder } from "../Builder/StartConditionWithChildrenBuilder";
+import { StartConditionWithOneChildBuilder } from "../Builder/StartConditionWithOneChildBuilder";
 import { ConditionType } from '../Conditions/ConditionTypes';
 
 /**

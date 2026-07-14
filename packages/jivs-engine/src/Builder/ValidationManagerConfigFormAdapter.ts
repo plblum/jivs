@@ -5,8 +5,9 @@ import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
 import {
     BuilderOverrideOptions, IManagerConfigBuilder, 
-    IValidationManagerConfigFormAdapter, IStartConditionBuilder } 
+    IValidationManagerConfigFormAdapter } 
 from "../Interfaces/ManagerConfigBuilder";
+import { IStartConditionBuilder } from "../Interfaces/ChildBuilders"
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";

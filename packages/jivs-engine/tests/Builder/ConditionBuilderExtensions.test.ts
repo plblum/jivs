@@ -1,6 +1,6 @@
 import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
-import { StartConditionBuilder } from '../../src/Builder/ConditionBuilder_classes';
-import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ManagerConfigBuilder";
+import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
+import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
