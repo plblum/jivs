@@ -12,8 +12,8 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { ValidationManagerConfigFormAdapter, createFormAdapter } from '../../src/Builder/ValidationManagerConfigFormAdapter';
-import { BuilderState, CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/Builder/ManagerConfigBuilderBase';
-
+import { BuilderState, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/Builder/ManagerConfigBuilderBase';
+import { CombineUsingCondition } from "../../src/Interfaces/ManagerConfigBuilder";
 import { MockValidationServices } from '../TestSupport/mocks';
 import { FluentValidatorBuilder } from '../../src/Builder/FluentValidatorBuilder';
 

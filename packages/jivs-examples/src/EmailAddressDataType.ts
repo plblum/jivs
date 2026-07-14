@@ -11,7 +11,7 @@ import { FluentValidatorConfig } from "@plblum/jivs-engine/build/Builder/Fluent"
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler, IFluentValidatorBuilder,
     IConditionBuilder
- } from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
+ } from "@plblum/jivs-engine/build/Interfaces/ChildBuilders";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 
 
@@ -119,7 +119,7 @@ export class EmailAddressFluentValidatorBuilder
 
 // TypeScript Declaration Merging with FluentValidatorBuilder and ConditionBuilder
 // This gives you intellisense and strong typing without heavy lifting
-declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
+declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
 {
     export interface IFluentValidatorBuilder {
         emailAddress(
@@ -129,7 +129,7 @@ declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
             validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
     }
 }
-declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
+declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
 {
     export interface IConditionBuilder {
         emailAddress(): void;

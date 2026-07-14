@@ -12,7 +12,7 @@ import { ValueHostValidationStateChangedHandler } from "../Interfaces/Validatabl
 import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { FluentFieldParameters, FluentFieldValueConfig } from "./Fluent";
+import { FluentFieldParameters, FluentFieldValueConfig } from "../Interfaces/Fluent";
 import { BuilderState } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfigBuilder } from "./ValueHostsManagerConfigBuilder";
 import { ValidationManagerStartFluent } from "./StartFluent_classes"

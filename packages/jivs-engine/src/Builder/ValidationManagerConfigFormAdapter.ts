@@ -12,7 +12,8 @@ import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
-import { BuilderState, CombineUsingCondition, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+import { CombineUsingCondition } from "../Interfaces/ManagerConfigBuilder";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 
 /**

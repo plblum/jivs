@@ -18,7 +18,7 @@ import { ValidatorConfig } from "../Interfaces/Validator";
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
 import { ConditionBuilder } from "./ConditionBuilder";
-import { FluentValidatorConfig } from './Fluent';
+import { FluentValidatorConfig } from '../Interfaces/Fluent';
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler, IFluentValidatorBuilder,
     IConditionBuilder, ConditionWithChildrenBuilderHandler,

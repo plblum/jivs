@@ -191,12 +191,14 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
-import { CalcValueHostConfig } from '../Interfaces/CalcValueHost';
-import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
-import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
-import { ValidatorConfig } from '../Interfaces/Validator';
-import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { ValueHostConfig } from '../Interfaces/ValueHost';
+import { CalcValueHostConfig } from './CalcValueHost';
+import { FieldValueHostConfig } from "./FieldValueHost";
+import { StaticValueHostConfig } from "./StaticValueHost";
+import { ValidatorConfig } from './Validator';
+import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
+import { ValueHostConfig } from './ValueHost';
+
+
 export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'conditionType' | 'enablerConfig' >;
 export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dataType'>;
 

@@ -5,7 +5,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManagerConfigModifier
  */
 
-import { FluentStaticParameters } from "./Fluent";
+import { FluentStaticParameters } from "../Interfaces/Fluent";
 import { ValueHostsManagerStartFluent } from "./StartFluent_classes"
 import { IValueHostsManager, ValueHostsManagerConfig } from "../Interfaces/ValueHostsManager";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
@@ -17,6 +17,7 @@ import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { deepClone, isPlainObject } from "../Utilities/Utilities";
 import { IManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
+import { IManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 
 /**
  * Used by ValueHostManager.startModifying() function to modify the ValueHostsManagerConfig.valueHostConfigs array.
@@ -165,7 +166,7 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
      * @param arg3 
      * @returns 
      */
-    public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): ManagerConfigBuilderBase<T> {
+    public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): IManagerConfigBuilder<T> {
         let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Static, arg1, arg2, arg3);
         return super.static(valueHostName, dataType, propsToUpdate);
     }
@@ -177,7 +178,7 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
      * @param calcFn 
      * @returns 
      */
-    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ManagerConfigBuilderBase<T> {
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T> {
         if (isPlainObject(arg1) && 'name' in (arg1 as CalcValueHostConfig))
         {
             let valueHostName = (arg1 as CalcValueHostConfig).name;

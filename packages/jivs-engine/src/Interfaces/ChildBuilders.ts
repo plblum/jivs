@@ -20,7 +20,7 @@ import {
     RequireTextConditionConfig, RegExpConditionConfig
 } from '../Conditions/ConcreteConditions';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { FluentValidatorConfig } from './../Builder/Fluent';
+import { FluentValidatorConfig } from './Fluent';
 import { ConditionConfig, ICondition } from './Conditions';
 import { FieldValueHostConfig } from './FieldValueHost';
 import { ValidatorConfig } from './Validator';

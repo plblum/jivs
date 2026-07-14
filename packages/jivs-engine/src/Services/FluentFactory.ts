@@ -17,6 +17,7 @@ import { StartConditionBuilder } from "../Builder/StartConditionBuilder";
 import { StartConditionWithChildrenBuilder } from "../Builder/StartConditionWithChildrenBuilder";
 import { StartConditionWithOneChildBuilder } from "../Builder/StartConditionWithOneChildBuilder";
 import { ConditionType } from '../Conditions/ConditionTypes';
+import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
 
 /**
  * Base interface to provide a factory that supplies:
@@ -103,7 +104,7 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
      * Its parameter is used by the constructor's parameter.
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    public createFluentValidatorBuilder(parentConfig: FieldValueHostConfig): IFluentValidatorBuilder
+    public createFluentValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IFluentValidatorBuilder
     {
         return this._fluentValidatorBuilderCreator(parentConfig);
     }

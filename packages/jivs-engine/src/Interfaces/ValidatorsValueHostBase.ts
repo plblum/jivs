@@ -2,7 +2,13 @@
  * @module ValueHosts/Types/ValidatorsValueHostBase
  */
 import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
+import {
+    IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
+    ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
+    toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks
+} from "./ValidatableValueHostBase";
+import { ValueHostConfig } from "./ValueHost";
+import { ValueHostType } from "./ValueHostFactory";
 
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
@@ -39,6 +45,18 @@ export interface ValidatorsValueHostBaseConfig extends ValidatableValueHostBaseC
      * such as parser error converting "abc" to number.
      */
     validatorConfigs: Array<ValidatorConfig> | null;
+}
+
+
+/**
+ * Determines if the given ValueHostConfig represents a ValidatableValueHost.
+ * @param source 
+ * @returns 
+ */
+export function isValidatableValueHostConfig(source: ValueHostConfig): boolean
+{
+    return source.valueHostType! === ValueHostType.Field ||
+        (source as ValidatorsValueHostBaseConfig).validatorConfigs !== undefined;
 }
 
 /**

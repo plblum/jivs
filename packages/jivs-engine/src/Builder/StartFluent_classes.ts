@@ -20,7 +20,7 @@ import {
     FluentStaticParameters,
     FluentStaticValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from "./Fluent";
+} from "../Interfaces/Fluent";
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),

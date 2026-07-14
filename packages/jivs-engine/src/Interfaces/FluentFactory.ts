@@ -3,12 +3,15 @@
  */
 
 import { IServiceWithAccessor } from './Services';
-import { ConditionBuilder } from "../Builder/ConditionBuilder";
-import { FluentValidatorBuilder } from '../Builder/FluentValidatorBuilder';
 import { ConditionConfig } from './Conditions';
-import { IBuilderConfigHost, CompleteConfigBuilderHandler, IConditionBuilder, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder } from './ChildBuilders';
+import {
+    IBuilderConfigHost, CompleteConfigBuilderHandler, IConditionBuilder,
+    IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder,
+    IStartConditionWithOneChildBuilder
+} from './ChildBuilders';
 import { FieldValueHostConfig } from './FieldValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
+import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
 
 /**
  * Base interface to provide a factory that supplies:
@@ -58,7 +61,7 @@ export interface IFluentFactory extends IServiceWithAccessor
      * Its parameter is used by the constructor's parameter.
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    createFluentValidatorBuilder(parentConfig: FieldValueHostConfig): IFluentValidatorBuilder;
+    createFluentValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IFluentValidatorBuilder;
 
     /**
      * Creates the instance of ConditionBuilder.

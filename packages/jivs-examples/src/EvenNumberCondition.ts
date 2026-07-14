@@ -30,7 +30,7 @@ import { FluentValidatorConfig } from "@plblum/jivs-engine/build/Builder/Fluent"
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler,
     IFluentValidatorBuilder, IConditionBuilder
-} from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
+} from "@plblum/jivs-engine/build/Interfaces/ChildBuilders";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
@@ -121,7 +121,7 @@ export class EvenNumberFluentValidatorBuilder
 
 // TypeScript Declaration Merging with FluentValidatorBuilder and ConditionBuilder
 // This gives you intellisense and strong typing without heavy lifting
-declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
+declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
 {
     export interface IFluentValidatorBuilder {
         evenNumber(
@@ -131,7 +131,7 @@ declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
             validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
     }
 }
-declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
+declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
 {
     export interface IConditionBuilder {
         evenNumber(): void;

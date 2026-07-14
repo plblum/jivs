@@ -132,11 +132,12 @@ import { ConditionConfig } from "../Interfaces/Conditions";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler, SetConfigOptions,
-    IConditionBuilderBase, ConditionBuilderHandler, ConditionWithChildrenBuilderHandler
+    IConditionBuilderBase, ConditionBuilderHandler, ConditionWithChildrenBuilderHandler,
+    IStartConditionBuilder
 } from "../Interfaces/ChildBuilders";
 import { CountMatchesConditionConfig } from "../Conditions/ConcreteConditions";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { StartConditionBuilder } from "./StartConditionBuilder";
+import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
 
 /**
  * Base class for condition builders.
@@ -146,6 +147,7 @@ import { StartConditionBuilder } from "./StartConditionBuilder";
  */
 export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = ConditionConfig,
     TOptions extends SetConfigOptions = SetConfigOptions>
+    extends BuilderConfigHostBase<TConfig, TOptions>
     implements IConditionBuilderBase<TConfig, TOptions> {
     /**
      * Constructor for the condition builder base class.
@@ -169,76 +171,15 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
     constructor(services: IValidationServices,
         parentBuilder: IBuilderConfigHost<object> | null, // intentionally not <ConditionConfig> because the parent might not be creating a condition config
         completed?: CompleteConfigBuilderHandler<TConfig>) {
-        assertNotNull(services, 'services');
-        this._services = services;
-        this._parentBuilder = parentBuilder;
-        this._completed = completed;
+        super(services, parentBuilder, completed);
     }
 
-    protected get services(): IValidationServices
-    {
-        return this._services;
-    }
-    private _services: IValidationServices;
-
-    protected get parentBuilder(): IBuilderConfigHost<object> | null {
-        return this._parentBuilder;
-    }
-    private _parentBuilder: IBuilderConfigHost<object> | null;
-
-    /**
-     * Supporting functions finish up by calling the setConfig method.
-     * If this callback is assigned to the parent builder, setConfig will be called 
-     * automatically when the child is completed
-     * allowing it to hook up the child into its own config.
-     * 
-     * ```ts
-     * public not(notBuilder: StartConditionBuilderHandler): void { ... }
-     * {
-     *      let notConfig: NotConditionConfig = {
-     *          conditionType: ConditionType.Not,
-     *          childConditionConfig: null! // pending the notBuilder results
-     *      };
-     *      let startBuilder = new StartConditionBuilder(this,
-     *         (childConfig: ConditionConfig, source: IConditionBuilder) => 
-     *             notConfig.childConditionConfig = childConfig;
-     *         }
-     *      );
-     *      this.setConfig(notConfig);
-     * }
-     * public setConfig(config: ConditionConfig, options?: SetConfigOptions): void
-     * {
-     *      this._config = config;
-     * // bubble up
-     *      let bubbleUp = !options || options.bubbleUp != false;
-     *      if (bubbleUp && this.parentBuilder?.completed) {
-     *          this.parentBuilder.completed(config, this);
-     *      }
-     * }
-     * ```
-     */
-    public get completed(): CompleteConfigBuilderHandler<TConfig> | undefined {
-        return this._completed;
-    }
-    private _completed?: CompleteConfigBuilderHandler<TConfig>;
-
-    private _config?: TConfig;
-
-    public setConfig(config: TConfig, options?: TOptions): void {
-        assertNotNull(config, "config");
-        assertNotNull(config.conditionType, "config.conditionType");
-
-        this._config = config;
-        let bubbleUp = !options || options.bubbleUp != false;
-        if (bubbleUp && this.parentBuilder?.completed) {
-            this.parentBuilder.completed?.(config, this as IBuilderConfigHost<object>);
+    override setConfig(config: TConfig, options?: TOptions): void {
+        if (config) {
+            assertNotNull(config.conditionType, 'config.conditionType');
         }
-
+        super.setConfig(config, options);
     }
-
-    public getConfig(): TConfig | undefined {
-        return this._config;
-    }    
 
     /**
      * Inverts the match result of the child condition config.
@@ -323,9 +264,8 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
             this as IBuilderConfigHost<object>,
             conditionType);
         // pass down inherited valueHostName from parent builder if available
-        if (this.parentBuilder instanceof StartConditionBuilder && 
-            this.parentBuilder.valueHostName) {
-            childBuilder.fieldValue(this.parentBuilder.valueHostName);
+        if ((<IStartConditionBuilder>this.parentBuilder).valueHostName) {
+            childBuilder.fieldValue((<IStartConditionBuilder>this.parentBuilder).valueHostName!);
         }
         // StartConditionWithChildrenBuilder is building the full config for the conditiontype.
         // it is gathering all child conditions into its own config via internal completed callbacks.

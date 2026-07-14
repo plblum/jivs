@@ -11,7 +11,7 @@ import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHost
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import {
     FluentFieldParameters, FluentFieldValueConfig
-} from './Fluent';
+} from '../Interfaces/Fluent';
 import { StartConditionBuilder } from "./StartConditionBuilder";
 import { ValueHostsManagerConfigModifier } from "./ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
@@ -22,7 +22,7 @@ import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigMod
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ConditionConfig } from "../Interfaces/Conditions";
-import { CombineUsingCondition } from "./ManagerConfigBuilderBase";
+import { CombineUsingCondition } from "../Interfaces/ManagerConfigBuilder";
 import { ValidationManagerStartFluent } from "./StartFluent_classes";
 import { IFluentValidatorBuilder, IStartConditionBuilder } from "../Interfaces/ChildBuilders";
 

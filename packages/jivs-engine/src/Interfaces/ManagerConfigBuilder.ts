@@ -4,34 +4,16 @@
  */
 
 
-import { FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorConfig } from "../Builder/Fluent";
-import { CombineUsingCondition, ManagerConfigBuilderBase } from "../Builder/ManagerConfigBuilderBase";
-import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
-import {
-    EqualToConditionConfig,
-    EqualToValueConditionConfig,
-    GreaterThanConditionConfig,
-    GreaterThanOrEqualConditionConfig,
-    GreaterThanOrEqualValueConditionConfig,
-    GreaterThanValueConditionConfig,
-    LessThanConditionConfig,
-    LessThanValueConditionConfig,
-    NotEqualToConditionConfig,
-    NotEqualToValueConditionConfig,
-    RegExpConditionConfig,
-    RequireTextConditionConfig,
-    StringLengthConditionConfig
-} from "../Conditions/ConcreteConditions";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { CalcValueHostConfig, CalculationHandler } from "./CalcValueHost";
-import { IStartConditionBuilder, IFluentValidatorBuilder } from "./ChildBuilders";
-import { ConditionConfig, ICondition } from "./Conditions";
+import { IStartConditionBuilder, IFluentValidatorBuilder, IBuilderConfigHost } from "./ChildBuilders";
+import { ConditionConfig } from "./Conditions";
 import { FieldValueHostConfig } from "./FieldValueHost";
+import { FluentStaticParameters, FluentFieldParameters, FluentFieldValueConfig, FluentValidatorConfig } from "./Fluent";
 import { IDisposable } from "./General_Purpose";
 import { StaticValueHostConfig } from "./StaticValueHost";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
-import { ValidatorConfig } from "./Validator";
-import { ValueHostInstanceState } from "./ValueHost";
+import { ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import { IValueHostsServices } from "./ValueHostsServices";
 
@@ -51,6 +33,11 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
      * @returns 
      */
     complete(): T;
+    /**
+     * Creates the same output as complete() but does not modify the baseConfig
+     * allowing it to be called multiple times.
+     */
+    snapshot(): T;
 }
 
 /**
@@ -158,7 +145,7 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * @returns itself for chaining
      */
     combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
+        builderFn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void): IValidationManagerConfigBuilder;
     /**
      * Uses the combineUsing parameter to determine how to combine the conditions.
      * @param valueHostName 
@@ -172,11 +159,11 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * ```
      */
     combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-        builderFn: (combiningBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder
+        builderFn: (combiningBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder
 
     combineWithRule(valueHostName: ValueHostName, errorCode: string,
         arg3: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg4?: (combiningBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder;
+        arg4?: (combiningBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder;
 
     /**
      * Replace the condition supplying the replacement conditionConfig directly.
@@ -194,7 +181,7 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * @param conditionConfig - provide a complete ConditionConfig as the replacement
      */
     replaceRule(valueHostName: ValueHostName, errorCode: string,
-        conditionConfig: ConditionConfig): ValidationManagerConfigBuilder
+        conditionConfig: ConditionConfig): IValidationManagerConfigBuilder
     /** 
      * Replace supplying the replacement condition through a Builder object.
      * @param valueHostName 
@@ -205,9 +192,19 @@ export interface IValidationManagerConfigFormAdapter extends IValidationManagerC
      * @returns itself for chaining
      */
     replaceRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (replacementBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder
+        builderFn: (replacementBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder
     replaceRule(valueHostName: ValueHostName, errorCode: string,
-        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: IStartConditionBuilder) => void)): ValidationManagerConfigBuilder;
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: IStartConditionBuilder) => void)): IValidationManagerConfigBuilder;
+}
+
+
+/**
+ * Supports combineConditionWith to direct how conditions are combined.
+ */
+export enum CombineUsingCondition {
+    When,
+    All,
+    Any
 }
 
 /**
@@ -223,7 +220,7 @@ export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManag
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */
-    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ManagerConfigBuilderBase<T>;
+    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): IManagerConfigBuilder<T>;
 
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -232,7 +229,7 @@ export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManag
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */    
-    static(valueHostName: ValueHostName, parameters: FluentStaticParameters): ManagerConfigBuilderBase<T>;    
+    static(valueHostName: ValueHostName, parameters: FluentStaticParameters): IManagerConfigBuilder<T>;    
 
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -241,10 +238,10 @@ export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManag
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
+    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): IManagerConfigBuilder<T>;
 
     // overload resolution
-    static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, parameters?: FluentStaticParameters): ManagerConfigBuilderBase<T>;
+    static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, parameters?: FluentStaticParameters): IManagerConfigBuilder<T>;
 
     /**
      * Fluent format to create a CalcValueHostConfig.
@@ -254,7 +251,7 @@ export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManag
      * @param calcFn - required. Function callback.
      * @returns Same instance for chaining.
      */
-    calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): ManagerConfigBuilderBase<T>;
+    calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): IManagerConfigBuilder<T>;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -262,9 +259,9 @@ export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManag
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
+    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): IManagerConfigBuilder<T>;
     // overload resolution
-    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ManagerConfigBuilderBase<T>;
+    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T>;
 
 }
 
@@ -349,9 +346,9 @@ export interface IConfigFormAdapter extends IValidationManagerConfigBuilder<Vali
      * It also omits the dataType property which is a special case for changes.
      * @param valueHostName - the name of the ValueHost to modify.
      * @param adjustments - the adjustments to apply to the ValueHostConfig.
-     * @returns The IModifyValidatorBuilder for further modifications.
+     * @returns The IModifyFieldBuilder for further modifications.
      */
-    modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyValidatorBuilder;
+    modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
 
     /**
      * Modifies the configuration of a specific ValueHost by applying the given adjustments.
@@ -362,9 +359,9 @@ export interface IConfigFormAdapter extends IValidationManagerConfigBuilder<Vali
      * @param dataType - the data type of the ValueHost to modify. It must support falling back to the 
      * original dataType. (However, if the original is not supplied, it is used without verification.)
      * @param adjustments - the adjustments to apply to the ValueHostConfig.
-     * @returns The IModifyValidatorBuilder for further modifications.
+     * @returns The IModifyFieldBuilder for further modifications.
      */
-    modify(valueHostName: ValueHostName, dataType: string, adjustments?: AdapterValueHostConfig): IModifyValidatorBuilder;    
+    modify(valueHostName: ValueHostName, dataType: string, adjustments?: AdapterValueHostConfig): IModifyFieldBuilder;    
 }
 
 export type AdapterValueHostConfig = Omit<FieldValueHostConfig, 'validatorConfigs' | 'name' | 'dataType'>;
@@ -372,7 +369,7 @@ export type AdapterValueHostConfig = Omit<FieldValueHostConfig, 'validatorConfig
 /**
  * Builder that is chained from IConfigFormAdapter to modify individual fields.
  */
-export interface IModifyFieldBuilder
+export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
 {
     /**
      * Identifies an existing validator to modify. Returns the IModifyValidatorBuilder for further modifications.
@@ -437,15 +434,11 @@ export interface IModifyValidatorBuilder
     when(builderCallback: (whenToEnableBuilder: IStartConditionBuilder) => ConditionConfig): void;
 
     /**
-     * Use this to replace the existing validator with a new condition.
-     * Use this very carefully as you are abandoning the official business logic of an existing validator.
-     * If your goal is to turn off the existing validator, consider when() for selective enabling
-     * or set the validator's enabled property to false.
-     * The new condition is defined using a StartConditionBuilder and returns a ConditionConfig.
-     * @param builderCallback - A callback function that receives a new StartConditionBuilder and 
-     * returns a ConditionConfig representing the new condition that will replace the existing validator.
+     * If the validator must not run, it can be disabled. It is preferred
+     * that you combine another condition with this one instead of simply disabling it.
+     * Use all(), any(), or when() to combine conditions instead of simply disabling the validator.
      */
-    replaceWith(builderCallback: (replacementBuilder: IStartConditionBuilder) => ConditionConfig): void;
+    disable(): void;
 
 }
 //#endregion ConfigFormAdapter

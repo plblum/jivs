@@ -1,6 +1,6 @@
 import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
 import { ConditionBuilder } from './../../src/Builder/ConditionBuilder';
-import { FluentValidatorConfig } from './../../src/Builder/Fluent';
+import { FluentValidatorConfig } from './../../src/Interfaces/Fluent';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, 

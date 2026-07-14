@@ -9,7 +9,7 @@ import {
     FluentAnyValueHostConfig,
     FluentAnyValueHostParameters, FluentStaticParameters,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from './Fluent';
+} from '../Interfaces/Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
@@ -21,7 +21,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { deepClone, isPlainObject } from '../Utilities/Utilities';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IFluentValidatorBuilder, IStartConditionBuilder } from '../Interfaces/ChildBuilders';
-import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { CombineUsingCondition, IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -217,7 +217,21 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     {
         return this.state?.logger ?? undefined;
     }
-
+    /**
+     * Captures an error in the configuration and throws an exception
+     * if the message is an instance of Error.
+     * Always writes to the console and to the logger.
+     * @param message - The error message to report.
+     * @param throwsError - If true, an exception will be thrown after reporting the error.
+     */
+    protected reportError(message: string | Error): void {
+        let msg = message instanceof Error ? message.message : message;
+        console.error(msg);
+        this.logger.message(LoggingLevel.Error, ()=> msg);
+        if (message instanceof Error) {
+            throw message;
+        }
+    }
     //#endregion logging
 
     /**
@@ -372,7 +386,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         valueHostType: ValueHostType,
         arg1: ValueHostName | Partial<TVHConfig>,
         arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): ManagerConfigBuilderBase<T> {
+        arg3?: Partial<TVHConfig>): IManagerConfigBuilder<T> {
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent();
         let vhConfig = fluent.withoutValidators<TVHConfig>(valueHostType,
@@ -391,7 +405,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */
-    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ManagerConfigBuilderBase<T>;
+    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): IManagerConfigBuilder<T>;
 
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -400,7 +414,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */
-    public static(valueHostName: ValueHostName, parameters: FluentStaticParameters): ManagerConfigBuilderBase<T>;
+    public static(valueHostName: ValueHostName, parameters: FluentStaticParameters): IManagerConfigBuilder<T>;
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -408,9 +422,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    public static(config: Omit<StaticValueHostConfig, 'valueHostType' | 'enablerConfig'>): ManagerConfigBuilderBase<T>;
+    public static(config: Omit<StaticValueHostConfig, 'valueHostType' | 'enablerConfig'>): IManagerConfigBuilder<T>;
     // overload resolution
-    public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): ManagerConfigBuilderBase<T> {
+    public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): IManagerConfigBuilder<T> {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         return this.addValueHost<StaticValueHostConfig>(ValueHostType.Static, arg1, arg2, arg3);
@@ -424,7 +438,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param calcFn - required. Function callback.
      * @returns Same instance for chaining.
      */
-    public calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): ManagerConfigBuilderBase<T>;
+    public calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): IManagerConfigBuilder<T>;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -432,9 +446,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    public calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
+    public calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): IManagerConfigBuilder<T>;
     // overload resolution
-    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ManagerConfigBuilderBase<T> {
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T> {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent();
@@ -475,15 +489,15 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param valueHostName 
      * @param conditionConfig - An actual conditionConfig
      */
-    public enabler(valueHostName: ValueHostName, conditionConfig: ConditionConfig): ManagerConfigBuilderBase<T> 
+    public enabler(valueHostName: ValueHostName, conditionConfig: ConditionConfig): IManagerConfigBuilder<T> 
     /**
      * Using the Builder API
      * @param valueHostName 
      * @param builderFn - A function that will build the conditionConfig with the Builder API
      */
-    public enabler(valueHostName: ValueHostName, builderFn: ((enablerBuilder: IStartConditionBuilder) => void)): ManagerConfigBuilderBase<T>
+    public enabler(valueHostName: ValueHostName, builderFn: ((enablerBuilder: IStartConditionBuilder) => void)): IManagerConfigBuilder<T>
 
-    public enabler(valueHostName: ValueHostName, sourceOfConditionConfig: ConditionConfig | ((enablerBuilder: IStartConditionBuilder) => void)): ManagerConfigBuilderBase<T> {
+    public enabler(valueHostName: ValueHostName, sourceOfConditionConfig: ConditionConfig | ((enablerBuilder: IStartConditionBuilder) => void)): IManagerConfigBuilder<T> {
         function getValueHostConfig(): ValueHostConfig
         {
             // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.
@@ -499,8 +513,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 return vhToClone;
             }
             let error = new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
-            self.logger.error(error);
-            throw error;
+            self.reportError(error); // throws
+            throw error;    // only here to stop Typescript from demanding a return type
         }
         function attachEnablerCondition(vhConfig: ValueHostConfig, enabler: ConditionConfig): void {
             let replace = vhConfig.enablerConfig != null;   // null or undefined
@@ -512,7 +526,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         this.assertNotDisposed();
         assertNotNull(valueHostName, 'valueHostName');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');
-        this.logger.message(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
+        self.logger.message(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
         
         if (typeof sourceOfConditionConfig === 'function') {
             let vhConfig = getValueHostConfig();
@@ -528,11 +542,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         }
         else
         {
-            let error = new CodingError('Invalid parameters');
-            this.logger.error(error);
-            throw error;
+            self.reportError(new CodingError('Invalid parameters'));    // throws
         }
-        return this;
+        return self;
 
     }
     //#region utilities for ValidationManager-based subclasses
@@ -644,9 +656,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
             return;
         }
-        let error = new CodingError('Invalid parameters.');
-        this.logger.error(error);
-        throw error;
+        
+        this.reportError(new Error('Invalid parameters.')); // throws
     }
 
     protected confirmConfigWasAdded(config: ConditionConfig | undefined): boolean
@@ -695,9 +706,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         }
 
         else {
-            let error = new CodingError('Invalid parameters');
-            this.logger.error(error);
-            throw error;
+            this.reportError(new Error('Invalid parameters')); // throws
         }
 
     }
@@ -740,8 +749,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             `ValueHost name "${valueHostName}" is not defined.`;
 
         let error = new CodingError(msg);
-        this.logger.error(error);
-        throw error;
+        this.reportError(error); // throws
+        throw error; // only here to satisfy TypeScript's control flow analysis
     }
 
     //#endregion utilities for ValidationManager-based subclasses
@@ -767,15 +776,6 @@ export class BuilderState<T extends ValueHostsManagerConfig>
     
 }
 
-
-/**
- * Supports combineConditionWith to direct how conditions are combined.
- */
-export enum CombineUsingCondition {
-    When,
-    All,
-    Any
-}
 
 /**
  * This value is used as a special property of a ValidatorConfig to indicate that the conditionConfig

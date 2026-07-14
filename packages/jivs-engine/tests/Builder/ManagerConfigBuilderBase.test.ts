@@ -22,8 +22,9 @@ import {
     ValueHostsManagerStartFluent,
     ValidationManagerStartFluent
 } from "../../src/Builder/StartFluent_classes";
-import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced }
+import { ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced }
     from "../../src/Builder/ManagerConfigBuilderBase";
+import { CombineUsingCondition } from "../../src/Interfaces/ManagerConfigBuilder";
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
