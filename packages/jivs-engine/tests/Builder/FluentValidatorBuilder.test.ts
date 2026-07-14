@@ -1,7 +1,6 @@
-import { FluentDataTypeCheckValidatorConfig } from './../../build/Builder/FluentValidatorBuilder';
 import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
 import { ConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
-import { FluentValidatorConfig, IBuilderConfigHost } from './../../build/Builder/Fluent';
+import { FluentValidatorConfig } from './../../src/Builder/Fluent';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig } from '../../src/Conditions/ConcreteConditions';
@@ -14,6 +13,7 @@ import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/C
 import { NotConditionConfig } from '../../src/Conditions/NotCondition';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { MockValidationServices } from '../TestSupport/mocks';
+import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IFluentValidatorBuilder } from '../../src/Interfaces/ManagerConfigBuilder';
 
 
 class Publicify_FluentValidatorBuilder extends FluentValidatorBuilder
@@ -21,7 +21,7 @@ class Publicify_FluentValidatorBuilder extends FluentValidatorBuilder
     public publicify_finish(conditionBuilder: ConditionBuilder | null,
         errorMessage: string | null | undefined,
         summaryMessage: string | null | undefined,
-        validatorConfig: FluentValidatorConfig | undefined | null): FluentValidatorBuilder
+        validatorConfig: FluentValidatorConfig | undefined | null): IFluentValidatorBuilder
     {
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorConfig as any);
     }

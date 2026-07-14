@@ -48,9 +48,9 @@ adapter.field('Email', LookupKey.EmailAddress, { label: 'Email address' });
 
 ### I-05
 
-The syntax of conditions that have child conditions, such as `any`, `all`, and `countMatches`, needs review.
+The syntax of Form Adapter's `combineWithRule`, `replaceRule`, and `enabler` needs review.
 
-The syntax of Form Adapter's `combineWithRule`, `replaceRule`, and `enabler` also needs review.
+RESOLVED: The syntax of conditions that have child conditions, such as `any`, `all`, and `countMatches`, needs review. 
 
 The syntax of the `WhenCondition` has similar concerns.
 
@@ -65,6 +65,8 @@ builder.field('Field1').any(
 ```
 
 ### I-06
+
+RESOLVED
 
 Child conditions still need a `valueHostName` parameter. Some also need another parameter for `secondValueHostName`, such as `LessThanCondition`.
 
@@ -107,6 +109,8 @@ builder.field('Score').ltValue(100);
 
 ### I-09
 
+RESOLVED
+
 Some condition fluent methods offer a convenience parameter for `errorMessage`, while closely related message properties remain buried in the trailing validator-properties object.
 
 For example, `errorMessage` is promoted into a positional parameter, but `errorMessagel10n`, `summaryMessage`, and `summaryMessagel10n` remain in the last parameter object.
@@ -123,6 +127,8 @@ adapter.field('FirstName')
 ```
 
 ### I-10
+
+RESOLVED
 
 For `when(enabler, childCondition)`, review parameter naming.
 
@@ -167,6 +173,8 @@ adapter.combineWithRule(
 ```
 
 ### I-12
+
+RESOLVED: Replaced prototype with subclassing and Factory to create the user's subclass.
 
 Fluent extension methods are implemented through prototype assignment to support end-user extensibility.
 

@@ -20,7 +20,7 @@ import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { deepClone, isPlainObject } from '../Utilities/Utilities';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { IFluentValidatorBuilder, IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -552,7 +552,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         valueHostType: ValueHostType | string,
         arg1: Partial<TVHConfig> | ValueHostName,
         arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): FluentValidatorBuilder {
+        arg3?: Partial<TVHConfig>): IFluentValidatorBuilder {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent() as ValidationManagerStartFluent;

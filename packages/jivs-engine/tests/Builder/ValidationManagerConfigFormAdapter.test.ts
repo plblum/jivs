@@ -1,4 +1,4 @@
-import { StartConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
+import { IStartConditionBuilder } from './../../src/Interfaces/ManagerConfigBuilder';
 import { RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
@@ -425,7 +425,7 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) => {
                         childrenBuilder.conditionConfig(existingConditionConfig);
                         childrenBuilder.parentValue().regExp(/abc/) 
@@ -465,7 +465,7 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
 
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -493,7 +493,7 @@ describe('combineWithRule', () => {
             let formAdapter = setupPublicifyFormAdapter();
             formAdapter.field('Field1').requireText();
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: StartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     ;
                 }
             );
@@ -518,7 +518,7 @@ describe('combineWithRule', () => {
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -553,7 +553,7 @@ describe('combineWithRule', () => {
 
             let testItem = formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                     combiningBuilder.parentValue().regExp(/abc/);
                 }
             );
@@ -587,7 +587,7 @@ describe('combineWithRule', () => {
             formAdapter.field('Field1').requireText();
             formAdapter.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
-                (combiningBuilder: StartConditionBuilder) => {
+                (combiningBuilder: IStartConditionBuilder) => {
                     ;
                 }
             );
@@ -614,7 +614,7 @@ describe('replaceRule', () => {
         formAdapter.field('Field1').requireText();
 
         let testItem = formAdapter.replaceRule('Field1', ConditionType.RequireText,
-            (replacementBuilder: StartConditionBuilder) => {
+            (replacementBuilder: IStartConditionBuilder) => {
                 replacementBuilder.parentValue().regExp(/abc/);
             }
         );

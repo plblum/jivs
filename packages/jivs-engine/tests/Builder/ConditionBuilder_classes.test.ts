@@ -2,7 +2,7 @@ import {
     ConditionBuilder,
     StartConditionBuilder
 } from "../../src/Builder/ConditionBuilder_classes";
-import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Builder/Fluent";
+import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ManagerConfigBuilder";
 import {
     EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
  }

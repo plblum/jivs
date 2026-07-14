@@ -26,7 +26,11 @@ import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHo
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { FluentValidatorBuilder } from "@plblum/jivs-engine/build/Builder/FluentValidatorBuilder";
 import { ConditionBuilder } from "@plblum/jivs-engine/build/Builder/ConditionBuilder_classes";
-import { IBuilderConfigHost, CompleteConfigBuilderHandler, FluentValidatorConfig } from "@plblum/jivs-engine/build/Builder/Fluent";
+import { FluentValidatorConfig } from "@plblum/jivs-engine/build/Builder/Fluent";
+import {
+    IBuilderConfigHost, CompleteConfigBuilderHandler,
+    IFluentValidatorBuilder, IConditionBuilder
+} from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
@@ -64,10 +68,18 @@ export class EvenNumberCondition extends OneValueConditionBase<EvenNumberConditi
     }
 }
 
+// export interface IEvenNumberConditionBuilder extends IConditionBuilder {
+
+//     evenNumber(): void;
+// }
+
 
 //#region Fluent syntax
 // Fluent: Subclass ConditionBuilder and add your condition functions.
-export class CustomConditionBuilder extends ConditionBuilder {
+export class EvenNumberConditionBuilder
+    extends ConditionBuilder
+ //   implements IEvenNumberConditionBuilder
+{
 
     public evenNumber(): void {
         let config: Partial<EvenNumberConditionConfig> =
@@ -77,21 +89,30 @@ export class CustomConditionBuilder extends ConditionBuilder {
         this.setConfig(config as any);
     }
 }
-
+// export interface IEvenNumberFluentValidatorBuilder extends IFluentValidatorBuilder {
+//     evenNumber(
+//         errorMessage?: string | null,
+//         summaryMessage?: string | null): IFluentValidatorBuilder;
+//     evenNumber(
+//         validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
+// }
 // Fluent: Subclass FluentValidatorBuilder and add your validator functions. This requires 2 overloads.
 
-export class CustomFluentValidatorBuilder extends FluentValidatorBuilder {
+export class EvenNumberFluentValidatorBuilder
+    extends FluentValidatorBuilder
+//    implements IEvenNumberFluentValidatorBuilder
+{
     public evenNumber(
         errorMessage?: string | null, 
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public evenNumber(
-        validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
     public evenNumber(
         arg2?: FluentValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EvenNumberConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder() as CustomConditionBuilder;
+        let conditionBuilder = this.createConditionBuilder();
         conditionBuilder.evenNumber();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -100,19 +121,19 @@ export class CustomFluentValidatorBuilder extends FluentValidatorBuilder {
 
 // TypeScript Declaration Merging with FluentValidatorBuilder and ConditionBuilder
 // This gives you intellisense and strong typing without heavy lifting
-declare module "@plblum/jivs-engine/build/Builder/FluentValidatorBuilder"
+declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
 {
-    export interface FluentValidatorBuilder {
+    export interface IFluentValidatorBuilder {
         evenNumber(
             errorMessage?: string | null,
-            summaryMessage?: string | null): FluentValidatorBuilder;
+            summaryMessage?: string | null): IFluentValidatorBuilder;
         evenNumber(
-            validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+            validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
     }
 }
-declare module "@plblum/jivs-engine/build/Builder/ConditionBuilder_classes"
+declare module "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder"
 {
-    export interface ConditionBuilder {
+    export interface IConditionBuilder {
         evenNumber(): void;
     }
 }
@@ -128,10 +149,10 @@ export function registerEvenNumberCondition(validationServices: IValidationServi
     // Adding custom conditions to FluentValidatorBuilder and ConditionBuilder
     let ff = validationServices.fluentFactory;
     ff.setFluentValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
-        return new CustomFluentValidatorBuilder(validationServices, parentConfig);
+        return new EvenNumberFluentValidatorBuilder(validationServices, parentConfig) as unknown as IFluentValidatorBuilder;
     });
     ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
-        return new CustomConditionBuilder(validationServices, parentBuilder, completed);
+        return new EvenNumberConditionBuilder(validationServices, parentBuilder, completed) as unknown as IConditionBuilder;
     });        
 }
 

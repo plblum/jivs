@@ -29,7 +29,7 @@ import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplace
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
-import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
+import { IFluentValidatorBuilder } from '../../src/Interfaces/ManagerConfigBuilder';
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -119,7 +119,7 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     {
         super.addOverride();
     }
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): FluentValidatorBuilder {
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): IFluentValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
     }
 }

@@ -1,4 +1,4 @@
-import { IBuilderConfigHost, CompleteConfigBuilderHandler } from './../../src/Builder/Fluent';
+import { IBuilderConfigHost, CompleteConfigBuilderHandler } from './../../src/Interfaces/ManagerConfigBuilder';
 import { ConditionBuilder } from './../../src/Builder/ConditionBuilder_classes';
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { FluentFactory } from "../../src/Services/FluentFactory";

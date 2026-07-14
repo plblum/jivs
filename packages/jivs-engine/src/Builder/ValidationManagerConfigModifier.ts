@@ -24,14 +24,15 @@ import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { CombineUsingCondition } from "./ManagerConfigBuilderBase";
 import { ValidationManagerStartFluent } from "./StartFluent_classes";
-import { FluentValidatorBuilder } from "./FluentValidatorBuilder";
+import { IFluentValidatorBuilder } from "../Interfaces/ManagerConfigBuilder";
 
 /**
  * Used by ValidationManager.startModifying() function to modify the ValidationManagerConfig.valueHostConfigs array.
  * It does not change the original until you call its apply() function.
  * It makes changes through ValidationManager.addOrMergeValueHost().
  */
-export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModifier<ValidationManagerConfig>
+export class ValidationManagerConfigModifier
+    extends ValueHostsManagerConfigModifier<ValidationManagerConfig>
     implements IValidationManagerConfigModifier<ValidationManagerConfig>
 {
     /**
@@ -58,7 +59,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IFluentValidatorBuilder;
 
     /**
      * Fluent format to create a FieldValueHostConfig.
@@ -67,7 +68,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): FluentValidatorBuilder;    
+    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): IFluentValidatorBuilder;    
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
@@ -75,9 +76,9 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * You can omit the valueHostType property.
      * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(config: FluentFieldValueConfig): FluentValidatorBuilder;
+    public field(config: FluentFieldValueConfig): IFluentValidatorBuilder;
     // overload resolution
-    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: FluentFieldParameters | string | null, arg3?: FluentFieldParameters): FluentValidatorBuilder {
+    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: FluentFieldParameters | string | null, arg3?: FluentFieldParameters): IFluentValidatorBuilder {
         let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Field, arg1, arg2, arg3);        
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, propsToUpdate);
     }
@@ -216,7 +217,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @param valueHostName 
      * @returns 
      */
-    public addValidatorsTo(valueHostName: ValueHostName): FluentValidatorBuilder {
+    public addValidatorsTo(valueHostName: ValueHostName): IFluentValidatorBuilder {
         assertNotNull(valueHostName, 'valueHostName');  
         let existingVHConfig = this.getExistingValueHostConfig(valueHostName, true)! as ValidatorsValueHostBaseConfig;
         if (existingVHConfig['validatorConfigs'] === undefined)

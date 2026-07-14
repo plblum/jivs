@@ -18,10 +18,9 @@ import { ValidatorConfig } from "../Interfaces/Validator";
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
 import { ConditionBuilder } from './ConditionBuilder_classes';
-import { FluentValidatorConfig, IBuilderConfigHost, CompleteConfigBuilderHandler } from './Fluent';
+import { FluentValidatorConfig } from './Fluent';
+import { IBuilderConfigHost, CompleteConfigBuilderHandler, IFluentValidatorBuilder, IConditionBuilder, ConditionWithChildrenBuilderHandler, ConditionBuilderHandler, FluentAllMatchValidatorConfig, FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig, FluentDataTypeCheckValidatorConfig, FluentEqualToValidatorConfig, FluentEqualToValueValidatorConfig, FluentGreaterThanOrEqualValidatorConfig, FluentGreaterThanOrEqualValueValidatorConfig, FluentGreaterThanValidatorConfig, FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig, FluentLessThanOrEqualValidatorConfig, FluentLessThanOrEqualValueValidatorConfig, FluentLessThanValidatorConfig, FluentLessThanValueValidatorConfig, FluentMaxDecimalsValidatorConfig, FluentNotEqualToValidatorConfig, FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig, FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig, FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig, FluentStringLengthValidatorConfig, FluentWhenValidatorConfig } from "../Interfaces/ManagerConfigBuilder";
 import {
-    ConditionBuilderHandler,
-    ConditionWithChildrenBuilderHandler,
     OptionalRequireTextConditionParams,
     OptionalRegExpConditionParams,
     OptionalEqualToValueConditionParams,
@@ -38,24 +37,12 @@ import {
     OptionalGreaterThanOrEqualValueConditionParams,
     OptionalStringLengthConditionParams,
 }
-from './ConditionBuilder_classes'
+from '../Interfaces/ManagerConfigBuilder'
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { NotConditionConfig } from "../Conditions/NotCondition";
 import { WhenConditionConfig } from "../Conditions/WhenCondition";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 
-/**
- * Use this when using alternative conditions, as you will need to provide substitutes
- * for each fluent function. Your class should be registered with FluentFactory.
- */
-export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
-{
-    /**
-     * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
-     */
-    parentConfig: FieldValueHostConfig;    
-
-}
 
 /**
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
@@ -93,7 +80,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
 
     private _config?: object;
 
-    public setConfig(config: object, options?: object): FluentValidatorBuilder {
+    public setConfig(config: object, options?: object): IFluentValidatorBuilder {
         this._config = config;
         return this;
     }
@@ -164,10 +151,10 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * will be replaced when conditionConfig is not null.
      * @returns The current instance of ValidatorBuilder to allow for method chaining.
      */
-    protected finish(conditionBuilder: ConditionBuilder | null,
+    protected finish(conditionBuilder: IConditionBuilder | null,
         errorMessage: string | null | undefined,
         summaryMessage: string | null | undefined,
-        validatorConfig: FluentValidatorConfig | undefined | null): FluentValidatorBuilder {
+        validatorConfig: FluentValidatorConfig | undefined | null): IFluentValidatorBuilder {
         let ivDesc: ValidatorConfig = validatorConfig ?
             { ...validatorConfig as ValidatorConfig } :
             { conditionConfig: null };
@@ -200,7 +187,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      * using the one defined in FluentFactory on ValidationServices.
      * @returns 
      */
-    protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): ConditionBuilder
+    protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder
     {
         return this.services.fluentFactory.createConditionBuilder(this, completed);
     }
@@ -229,12 +216,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
-        validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
     public customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         arg1?: FluentValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         let { conditionConfig, errorMessage, summaryMessage, validatorParameters } =
             this.resolveOverloadArgs<ConditionConfig>(arg1, arg2);
         let ivConfig: ValidatorConfig = validatorParameters ?
@@ -268,12 +255,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public dataTypeCheck(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public dataTypeCheck(
-        validatorParameters: FluentDataTypeCheckValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentDataTypeCheckValidatorConfig): IFluentValidatorBuilder;
     public dataTypeCheck(
         arg1?: FluentDataTypeCheckValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty   
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<DataTypeCheckConditionConfig>(arg1, arg2);
@@ -309,12 +296,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
       */
     public requireText(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public requireText(
-        validatorParameters: FluentRequireTextValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentRequireTextValidatorConfig): IFluentValidatorBuilder;
     public requireText(
         arg1?: string | null | FluentRequireTextValidatorConfig,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RequireTextConditionConfig>(arg1, arg2);
         let conditionBuilder = this.createConditionBuilder();
@@ -351,12 +338,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public notNull(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public notNull(
-        validatorParameters: FluentNotNullValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotNullValidatorConfig): IFluentValidatorBuilder;
     public notNull(
         arg1?: string | null | FluentNotNullValidatorConfig,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty  
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotNullConditionConfig>(arg1, arg2);
@@ -396,24 +383,24 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public regExp(
         expression: RegExp,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public regExp(
         expression: string,
         ignoreCase?: boolean,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public regExp(
         expression: RegExp,
-        validatorParameters: FluentRegExpValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
     public regExp(
         expression: string,
         ignoreCase: boolean,
-        validatorParameters: FluentRegExpValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
     public regExp(
         expression: RegExp | string, // can be either a RegExp or a string, but if string, then ignoreCase is needed
         arg2?: string | boolean | FluentRegExpValidatorConfig | null,
         arg3?: string | null | FluentRegExpValidatorConfig,
-        arg4?: string | null | FluentRegExpValidatorConfig): FluentValidatorBuilder {
+        arg4?: string | null | FluentRegExpValidatorConfig): IFluentValidatorBuilder {
         if (arg2 && typeof arg2 === 'string') { // then both arg2 and arg3 are errorMessage and summaryMessage
 
             // expression, error message, summary message
@@ -539,16 +526,16 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         minimum: any,
         maximum: any,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public range(
         minimum: any,
         maximum: any,
-        validatorParameters: FluentRangeValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentRangeValidatorConfig): IFluentValidatorBuilder;
 
     public range(
         minimum: any, maximum: any,
         arg3?: string | null | FluentRangeValidatorConfig,
-        arg4?: string | null): FluentValidatorBuilder {
+        arg4?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RangeConditionConfig>(arg3, arg4);
         let conditionBuilder = this.createConditionBuilder();
@@ -581,14 +568,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public equalToValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public equalToValue(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
     public equalToValue(
         secondValue: any,
         arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.equalToValue_common(secondValue, arg2, arg3);
     }
     /**
@@ -601,7 +588,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected equalToValue_common(
         secondValue: any,
         arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToValueConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -618,14 +605,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public eqValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public eqValue(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
     public eqValue(
         secondValue: any,
         arg2?: FluentEqualToValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.equalToValue_common(secondValue, arg2, arg3)
     }
 
@@ -653,14 +640,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */    
     public equalTo(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public equalTo(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
     public equalTo(
         secondValueHostName: ValueHostName,
         args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.equalTo_common(secondValueHostName, args2, args3);
     }
     /**
@@ -673,7 +660,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected equalTo_common(
         secondValueHostName: ValueHostName,
         args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
@@ -692,14 +679,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public eq(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public eq(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
     public eq(
         secondValueHostName: ValueHostName,
         args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.equalTo_common(secondValueHostName, args2, args3);
     }
 
@@ -727,14 +714,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public notEqualToValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public notEqualToValue(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
     public notEqualToValue(
         secondValue: any,
         args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.notEqualToValue_common(secondValue, args2, args3);
     }
     /**
@@ -747,7 +734,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected notEqualToValue_common(
         secondValue: any,
         args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToValueConditionConfig>(args2, args3);
@@ -767,14 +754,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public neqValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public neqValue(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
     public neqValue(
         secondValue: any,
         args2?: FluentNotEqualToValueValidatorConfig | null | string,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.notEqualToValue_common(secondValue, args2, args3);
     }
 
@@ -802,14 +789,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public notEqualTo(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public notEqualTo(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
     public notEqualTo(
         secondValueHostName: ValueHostName,
         args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.notEqualTo_common(secondValueHostName, args2, args3);
     }
     /**
@@ -822,7 +809,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected notEqualTo_common(
         secondValueHostName: ValueHostName,
         args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
         let conditionBuilder = this.createConditionBuilder();
@@ -838,14 +825,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public neq(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public neq(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
     public neq(
         secondValueHostName: ValueHostName,
         args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.notEqualTo_common(secondValueHostName, args2, args3);
     }
 
@@ -873,14 +860,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */    
     public lessThanValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public lessThanValue(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
     public lessThanValue(
         secondValue: any,
         args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.lessThanValue_common(secondValue, args2, args3);
     }
 
@@ -894,7 +881,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected lessThanValue_common(
         secondValue: any,
         args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanValueConditionConfig>(args2, args3);
         let conditionBuilder = this.createConditionBuilder();
@@ -911,14 +898,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public ltValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public ltValue(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
     public ltValue(
         secondValue: any,
         args2?: FluentLessThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.lessThanValue_common(secondValue, args2, args3);
     }
 
@@ -947,14 +934,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public lessThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public lessThan(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
     public lessThan(
         secondValueHostName: ValueHostName,
         args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.lessThan_common(secondValueHostName, args2, args3);
     }
 
@@ -968,7 +955,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected lessThan_common(
         secondValueHostName: ValueHostName,
         args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
         let conditionBuilder = this.createConditionBuilder();
@@ -986,14 +973,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public lt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public lt(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
     public lt(
         secondValueHostName: ValueHostName,
         args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.lessThan_common(secondValueHostName, args2, args3);
     }
 
@@ -1021,14 +1008,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */    
     public lessThanOrEqualValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public lessThanOrEqualValue(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
     public lessThanOrEqualValue(
         secondValue: any,
         arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
     }
     /**
@@ -1041,7 +1028,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected lessThanOrEqualValue_common(
         secondValue: any,
         arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualValueConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1057,14 +1044,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public lteValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public lteValue(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
     public lteValue(
         secondValue: any,
         arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
@@ -1093,14 +1080,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
@@ -1114,7 +1101,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected lessThanOrEqual_common(
         secondValueHostName: ValueHostName,
         arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1132,14 +1119,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public lte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public lte(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
     public lte(
         secondValueHostName: ValueHostName,
         arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
@@ -1167,14 +1154,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public greaterThanValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public greaterThanValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
     public greaterThanValue(
         secondValue: any,
         args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanValue_common(secondValue, args2, args3);
     }
     /**
@@ -1187,7 +1174,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected greaterThanValue_common(
         secondValue: any,
         args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanValueConditionConfig>(args2, args3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1204,14 +1191,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public gtValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public gtValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
     public gtValue(
         secondValue: any,
         args2?: FluentGreaterThanValueValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanValue_common(secondValue, args2, args3);
     }
 
@@ -1240,14 +1227,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public greaterThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public greaterThan(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
     public greaterThan(
         secondValueHostName: ValueHostName,
         args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.greaterThan_common(secondValueHostName, args2, args3);
     }
     /**
@@ -1260,7 +1247,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected greaterThan_common(
         secondValueHostName: ValueHostName,
         args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1277,14 +1264,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public gt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public gt(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
     public gt(
         secondValueHostName: ValueHostName,
         args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): FluentValidatorBuilder {
+        args3?: string | null): IFluentValidatorBuilder {
         return this.greaterThan_common(secondValueHostName, args2, args3);
     }
 
@@ -1312,14 +1299,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */    
     public greaterThanOrEqualValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public greaterThanOrEqualValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
     public greaterThanOrEqualValue(
         secondValue: any,
         arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
     }
     /**
@@ -1332,7 +1319,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected greaterThanOrEqualValue_common(
         secondValue: any,
         arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualValueConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1349,14 +1336,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public gteValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): FluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
     public gteValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
     public gteValue(
         secondValue: any,
         arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
@@ -1385,14 +1372,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
@@ -1406,7 +1393,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected greaterThanOrEqual_common(
         secondValueHostName: ValueHostName,
         arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1418,14 +1405,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public gte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public gte(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
     public gte(
         secondValueHostName: ValueHostName,
         arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
     }
 
@@ -1454,14 +1441,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public stringLength(
         maximum: number | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public stringLength(
         maximum: number | null,
-        validatorParameters: FluentStringLengthValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
     public stringLength(
         maximum: number | null,
         arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.stringLength_common(maximum, arg2, arg3);
     }
 
@@ -1475,7 +1462,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     protected stringLength_common(
         maximum: number | null,
         arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<StringLengthConditionConfig>(arg2, arg3);
         
@@ -1493,14 +1480,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public len(
         maximum: number | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public len(
         maximum: number | null,
-        validatorParameters: FluentStringLengthValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
     public len(
         maximum: number | null,
         arg2?: FluentStringLengthValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         return this.stringLength_common(maximum, arg2, arg3);
     }
     /**
@@ -1527,12 +1514,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */    
     public positive(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public positive(
-        validatorParameters: FluentPositiveValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
     public positive(
         arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         return this.positive_common(arg1, arg2);
     }
 
@@ -1544,7 +1531,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     protected positive_common(
         arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<PositiveConditionConfig>(arg1, arg2);   
         let conditionBuilder = this.createConditionBuilder();
@@ -1559,12 +1546,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public pos(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public pos(
-        validatorParameters: FluentPositiveValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
     public pos(
         arg1?: FluentPositiveValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         return this.positive_common(arg1, arg2);
     }
 
@@ -1592,12 +1579,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */        
     public integer(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public integer(
-        validatorParameters: FluentIntegerValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
     public integer(
         arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         return this.integer_common(arg1, arg2);
     }
     /**
@@ -1608,7 +1595,7 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     protected integer_common(
         arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<IntegerConditionConfig>(arg1, arg2);       
         let conditionBuilder = this.createConditionBuilder();
@@ -1624,12 +1611,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
      */
     public int(
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public int(
-        validatorParameters: FluentIntegerValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
     public int(
         arg1?: FluentIntegerValidatorConfig | string | null,
-        arg2?: string | null): FluentValidatorBuilder {
+        arg2?: string | null): IFluentValidatorBuilder {
         return this.integer_common(arg1, arg2);
     }
 
@@ -1659,14 +1646,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public maxDecimals(
         maxDecimals: number,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public maxDecimals(
         maxDecimals: number,
-        validatorParameters: FluentMaxDecimalsValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentMaxDecimalsValidatorConfig): IFluentValidatorBuilder;
     public maxDecimals(
         maxDecimals: number,
         arg2?: FluentMaxDecimalsValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<MaxDecimalsConditionConfig>(arg2, arg3); 
         let conditionBuilder = this.createConditionBuilder();
@@ -1709,14 +1696,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public not(
         childBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public not(
         childBuilder: ConditionBuilderHandler,
-        validatorParameters: FluentNotValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentNotValidatorConfig): IFluentValidatorBuilder;
     public not(
         childBuilder: ConditionBuilderHandler,
         arg2?: FluentNotValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1781,16 +1768,16 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
-        validatorParameters: FluentWhenValidatorConfig): FluentValidatorBuilder;    
+        validatorParameters: FluentWhenValidatorConfig): IFluentValidatorBuilder;    
     public when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
         arg3?: FluentWhenValidatorConfig | string | null,
-        arg4?: string | null): FluentValidatorBuilder {
+        arg4?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<WhenConditionConfig>(arg3, arg4);
         let conditionBuilder = this.createConditionBuilder();
@@ -1851,14 +1838,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentAllMatchValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentAllMatchValidatorConfig): IFluentValidatorBuilder;
     public all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAllMatchValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AllMatchConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1913,14 +1900,14 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
     public any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentAnyMatchValidatorConfig): FluentValidatorBuilder;
+        validatorParameters: FluentAnyMatchValidatorConfig): IFluentValidatorBuilder;
     public any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAnyMatchValidatorConfig | string | null,
-        arg3?: string | null): FluentValidatorBuilder {
+        arg3?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AnyMatchConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -1985,18 +1972,18 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): FluentValidatorBuilder;
+        summaryMessage?: string | null): IFluentValidatorBuilder;
     public countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentCountMatchesValidatorConfig): FluentValidatorBuilder;    
+        validatorParameters: FluentCountMatchesValidatorConfig): IFluentValidatorBuilder;    
     public countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg4?: FluentCountMatchesValidatorConfig | string | null,
-        arg5?: string | null): FluentValidatorBuilder {
+        arg5?: string | null): IFluentValidatorBuilder {
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<CountMatchesConditionConfig>(arg4, arg5);
         let conditionBuilder = this.createConditionBuilder();
@@ -2007,35 +1994,6 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
 
 }
     
-
-
-export type FluentDataTypeCheckValidatorConfig = FluentValidatorConfig;
-export type FluentRequireTextValidatorConfig = FluentValidatorConfig & OptionalRequireTextConditionParams;
-export type FluentNotNullValidatorConfig = FluentValidatorConfig;
-export type FluentRegExpValidatorConfig = FluentValidatorConfig & OptionalRegExpConditionParams;
-export type FluentRangeValidatorConfig = FluentValidatorConfig;
-export type FluentEqualToValueValidatorConfig = OptionalEqualToValueConditionParams & FluentValidatorConfig;
-export type FluentEqualToValidatorConfig = OptionalEqualToConditionParams & FluentValidatorConfig;
-export type FluentNotEqualToValueValidatorConfig = OptionalNotEqualToValueConditionParams & FluentValidatorConfig;
-export type FluentNotEqualToValidatorConfig = OptionalNotEqualToConditionParams & FluentValidatorConfig;
-export type FluentLessThanValueValidatorConfig = OptionalLessThanValueConditionParams & FluentValidatorConfig;
-export type FluentLessThanValidatorConfig = OptionalLessThanConditionParams & FluentValidatorConfig;
-export type FluentLessThanOrEqualValueValidatorConfig = OptionalLessThanOrEqualValueConditionParams & FluentValidatorConfig;
-export type FluentLessThanOrEqualValidatorConfig = OptionalLessThanOrEqualConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanValueValidatorConfig = OptionalGreaterThanValueConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanValidatorConfig = OptionalGreaterThanConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanOrEqualValueValidatorConfig = OptionalGreaterThanOrEqualValueConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanOrEqualValidatorConfig = OptionalGreaterThanOrEqualConditionParams & FluentValidatorConfig;
-export type FluentStringLengthValidatorConfig = OptionalStringLengthConditionParams & FluentValidatorConfig;
-export type FluentPositiveValidatorConfig = FluentValidatorConfig;
-export type FluentIntegerValidatorConfig = FluentValidatorConfig;
-export type FluentMaxDecimalsValidatorConfig = FluentValidatorConfig;
-export type FluentNotValidatorConfig = FluentValidatorConfig;
-export type FluentWhenValidatorConfig = FluentValidatorConfig;
-export type FluentAllMatchValidatorConfig = FluentValidatorConfig;
-export type FluentAnyMatchValidatorConfig = FluentValidatorConfig;
-export type FluentCountMatchesValidatorConfig = FluentValidatorConfig;
-
 
 
 /**

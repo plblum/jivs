@@ -151,14 +151,14 @@
  *          public emailAddress(
  *              allowMultiple: boolean,
  *              errorMessage?: string | null, 
- *              summaryMessage?: string | null): FluentValidatorBuilder;
+ *              summaryMessage?: string | null): IFluentValidatorBuilder;
  *          public emailAddress(
  *              allowMultiple: boolean,
- *              validatorParameters: FluentValidatorConfig): FluentValidatorBuilder;
+ *              validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
  *          public emailAddress(
  *              allowMultiple: boolean,
  *              arg2?: FluentValidatorConfig | string | null,
- *              arg3?: string | null): FluentValidatorBuilder {
+ *              arg3?: string | null): IFluentValidatorBuilder {
  *              let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
  *                  this.resolveOverloadArgs<EmailAddressConditionConfig>(arg2, arg3);
  *              let conditionBuilder = new YourConditionBuilder(this);
@@ -229,90 +229,3 @@ export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBas
  */
 export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig' | 'conditionCreator'>;
 
-/**
- * The protocol that connects a child config-building function to its parent.
- * This interface is therefore both a deposit point (for the child function) and a
- * pickup point (for the parent function that created the child builder).
- * 
- * Use case 1: The config object does not contain any child configs. 
- * 1. Parent builder creates a child builder and hands it to a user callback.
- *  (The 'this' property in the callbackis the parent builder)
- * 2. The user callback assembles its config and deposits it here via setConfig().
- * 3. After the callback returns, the parent builder calls getConfig() to retrieve.
- *
- * Use case 2: The config object contains one or more child configs. 
- * 1. Parent builder creates a child builder and hands it to a user callback.
- *  (The 'this' property in the callback is the parent builder)
- * 2. The user callback assembles its config.
- *      a. For each child config, it creates a child builder and hands it to a user callback.
- *      b. Each child callback assembles its config and deposits it here via setConfig().
- *      c. After each child callback returns, the parent callback calls getConfig() to retrieve.
- *      d. The resulting child config is assigned to the appropriate property of the parent config.
- * 3. Finished config is passed to the parent Builder thorugh setConfig().
- * 4. After the parent callback returns, the parent builder calls getConfig() to retrieve.
- * 
- * Example with "Not"
- * 1. A parent builder's not() function is called.
- * 2. not() function creates a ConditionBuilder and hands it to a user callback.
- * 3. The user has selected the lessThan() function, which creates a LessThanConditionConfig and deposits it here via setConfig().
- * 4. After the callback returns, not() calls getConfig() to retrieve the LessThanConditionConfig
- * 5. not() function creates a NotConditionConfig and 
- *      assigns the LessThanConditionConfig to its childConditionConfig property.
- * ```ts
- * let config = <NotConditionConfig>{
- *    conditionType: ConditionType.Not,
- *    childConditionConfig: childBuilder.getConfig() as LessThanConditionConfig
- * };
- * this.setConfig(config);
- * ```
- */
-export interface IBuilderConfigHost<TConfig extends object, TOptions extends object = object>
-{
-    /**
-     * Called by a config object-building function after assembling its config, to deposit
-     * the result into this builder so the parent function can retrieve it.
-     * @param config - The completed config object.
-     * @param options - Optional additional options for handling the config.
-     */
-    setConfig(config: TConfig, options?: TOptions): void;
-
-    /**
-     * Called by the parent function after the child callback has run, to retrieve
-     * the deposited config and wire it into the appropriate property of the parent's config.
-     */
-    getConfig(): TConfig | undefined;
-
-    /**
-     * Supporting functions finish up by calling the setConfig method.
-     * If this callback is assigned to the parent builder, setConfig will be called 
-     * automatically when the child is completed
-     * allowing it to hook up the child into its own config.
-     * 
-     * ```ts
-     * public not(notBuilder: StartConditionBuilderHandler): void { ... }
-     * {
-     *      let notConfig: NotConditionConfig = {
-     *          conditionType: ConditionType.Not,
-     *          childConditionConfig: null! // pending the notBuilder results
-     *      };
-     *      let startBuilder = new StartConditionBuilder(this,
-     *         (childConfig: ConditionConfig, source: IConditionBuilder) => 
-     *             notConfig.childConditionConfig = childConfig;
-     *         }
-     *      );
-     *      this.setConfig(notConfig);
-     * }
-     * public setConfig(config: ConditionConfig): void
-     * {
-     *      this._config = config;
-     * // bubble up
-     *      if (this.parentBuilder?.completed) {
-     *          this.parentBuilder.completed(config, this);
-     *      }
-     * }
-     * ```
-     */
-    completed?: CompleteConfigBuilderHandler<TConfig>;    
-}
-
-export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TConfig, source: IBuilderConfigHost<TConfig>) => void;

@@ -1,12 +1,94 @@
+/**
+ * The ConfigFormAdapter is used together with ModuleRule classes that implement 
+ * IAdaptModelRulesToForm to adapt the configuration already established according
+ * to the business logic within ModuleRules.configureRules().
+ * 
+ * Our goal is to protect business logic from forms own needs, due to separation of concerns.
+ * To make this work, the form developer will use IAdaptModelRulesToForm.adaptToForm()
+ * with this ConfigFormAdapter class. ConfigFormAdapter is designed to allow these kinds of modifications:
+ * 1. Add entirely new ValueHosts, field(), static() and calc(), using the standard syntax
+ *    built into the ValidationManagerConfigBuilder. However, if those functions are used
+ *    on existing valuehosts, it is an error.
+ * 2. Modify existing ValueHost own properties through the modify(valueHostName) method.
+ *    It does not change validators, and only allows changing the data type if the introduced
+ *    data type has a fallback to the existing data type. (Currency falls back to Number)
+ *    It only supports safe changes that do not break the existing data type compatibility.
+ *    modify() returns the ModifyFieldBuilder class to chain further modifications.
+ * 3. Modify existing Validator own properties through the ModifyFieldBuilder.validator(validatorName) method.
+ *    This allows changing the error messages, errorcode, severity, and enabled state,
+ *    but not any condition specific rules.
+ *    validator() returns the ModifyValidatorBuilder class to chain further modifications.
+ * 4. Combine the form's condition with an existing validator's condition using
+ *    the ModifyValidatorBuilder.all(), any(), and when() methods. This allows the form's condition
+ *    to be combined with the existing validator's condition, enabling more complex validation logic.
+ * 5. Explicitly replace an existing validator's condition using the ModifyValidatorBuilder.replaceWith() method.
+ *    While frowned upon, this provides high visibility to the action.
+ * 6. Add another validator to an existing ValueHost using the usual validator syntax found on
+ *    ModifyValidatorBuilder with IModifyFieldBuilder.addValidator()
+ * 
+ * # Syntax examples
+ * 
+ * Modifying the valueHost itself.
+ * ```ts
+ * adapter.modify('fieldValue', { label: 'Field Label' })
+ * adapter.modify('fieldValue', datatype, { enabled: false })
+ * ```
+ * Changing the error message and other validator metadata.
+ * ```ts
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText, { 
+ *     errorMessage: 'Error message', 
+ *     summaryMessage: 'Summary message' })
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText, errorMessage, summaryMessage)
+ * ```
+ * Combine existing with new using AllMatchesCondition.
+ * ```ts
+ * // Create AllMatchesCondiiton with (existing AND new).
+ * // Requires an errorcode because we've built a new condition rule
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText)
+ *     .and(errorCode, (newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(10));
+ * ```
+ * Same as:
+ * ```ts
+ * <AllMatchesCondition>{
+ *     conditionType: ConditionType.All,
+ *     errorCode: errorCode,
+ *     childConditionConfigs: [
+ *         <RequireTextCondition>{
+ *             conditionType: ConditionType.RequireText,
+ *         },
+ *         <EqualToCondition>{
+ *             conditionType: ConditionType.EqualTo,
+ *             valueHostName: 'field1',
+ *             secondValue: 10
+ *         }
+ *     ]
+ * }
+ * ```
+ * Combine existing with new using AnyMatchesCondition.
+ * ```ts
+ * // creates AnyMatchesCondiiton with (existing OR new).
+ * // Requires an errorcode because we've built a new condition rule
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText)
+ *     .or(errorCode, (newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(10));
+ * ```
+ * Use the WhenCondition to conditionally apply a new validation rule based on a custom condition.
+ * ```ts
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText)
+ *     .when((newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(true));
+ * ```
+ * Entirely replace an existing validator's condition.
+ * ```ts
+ * adapter.modify('fieldValue').validator(ConditionType.RequireText)
+ *     .replaceWith((newCondBuilder)=> {});// removes existing, adds new one
+ * ``` 
+ */
 
+import { StartConditionBuilder } from './ConditionBuilder_classes';
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
-import {
-    BuilderOverrideOptions, IManagerConfigBuilder, 
-    IValidationManagerConfigFormAdapter, IStartConditionBuilder } 
-from "../Interfaces/ManagerConfigBuilder";
+import { AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter, IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder, IValidationManagerConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError } from "../Utilities/ErrorHandling";
@@ -20,11 +102,11 @@ import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder
  * @param options 
  * @returns 
  */
-export function createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IValidationManagerConfigFormAdapter
+export function createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IConfigFormAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
         let state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
-        return new ValidationManagerConfigFormAdapter(state, { favorUIMessages: options?.favorUIMessages });
+        return new ConfigFormAdapter(state, { favorUIMessages: options?.favorUIMessages });
     }
     throw new CodingError("createFormAdapter() expects a ManagerConfigBuilderBase instance.");
 }
@@ -35,9 +117,9 @@ export function createFormAdapter(source: IManagerConfigBuilder<any>, options?: 
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export class ValidationManagerConfigFormAdapter
+export class ConfigFormAdapter
     extends ValidationManagerConfigBuilder
-    implements IValidationManagerConfigFormAdapter
+    implements IConfigFormAdapter
 {
     /**
      * Opens a new override layer for the UI layer to add or modify ValueHostConfigs.
@@ -51,6 +133,12 @@ export class ValidationManagerConfigFormAdapter
         this.addOverride();
         if (!options || options.favorUIMessages !== false)
             this.favorUIMessages();        
+    }
+    modify(valueHostName: string): IModifyFieldBuilder;
+    modify(valueHostName: string, adjustments: AdapterValueHostConfig): IModifyValidatorBuilder;
+    modify(valueHostName: string, dataType: string, adjustments?: AdapterValueHostConfig | undefined): IModifyValidatorBuilder;
+    modify(valueHostName: unknown, dataType?: unknown, adjustments?: unknown): import("../Interfaces/ManagerConfigBuilder").IModifyFieldBuilder | import("../Interfaces/ManagerConfigBuilder").IModifyValidatorBuilder {
+        throw new Error('Method not implemented.');
     }
 
     /**
@@ -154,93 +242,6 @@ export class ValidationManagerConfigFormAdapter
             let msg = `disableTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
             this.logger.message(LoggingLevel.Warn, () => msg);
         }
-    }
-
-
-    /**
-     * If it finds the validator with the errorcode specified, 
-     * it will combine the condition with the existing condition
-     * using a rule supplied or callback to let you create a conditionConfig.
-     * If it the validator is not found, it will throw an error and log.
-     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
-     * reflecting the same data as earlier, but now with a modified validator.
-     * If the ValueHost is on the current override, the existing entry is modified.
-     *
-     * The resulting ValidatorConfig's errorCode will not have changed from the original 
-     * to ensure it aligns with everything depending on the original error code.
-     * @param valueHostName 
-     * @param errorCode 
-     * @param builderFn - A function to create a conditionConfig that will replace the existing. 
-     * You are passed a Builder object, where you can build your new conditions, 
-     * and the existing conditionConfig,
-     * which can be added to a Builder object with the conditionConfig() function.
-     * ```ts
-     * builder.combineWithRule('Field1', 'NotNull', 
-     *   (combiningBuilder, existingConditionConfig)=> {
-     *      combiningBuilder.when(
-     *                  (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
-     *                  (childBuilder)=> childBuilder.conditionConfig(existingConditionConfig));
-     * });
-     * ```
-     * @returns itself for chaining
-     */
-    public combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
-    /**
-     * Uses the combineUsing parameter to determine how to combine the conditions.
-     * @param valueHostName 
-     * @param errorCode 
-     * @param combineUsing 
-     * @param builderFn - A function to create the condition that you want 
-     * to combine with the existing condition.
-     * ```ts
-     * builder.combineWithRule('Field1', 'NotNull', CombineUsingCondition.When, 
-     *    (combiningBuilder)=> combiningBuilder.equalToValue('YES', 'Field2'));
-     * ```
-     */
-    public combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-        builderFn: (combiningBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder
-
-    public combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        arg3: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg4?: (combiningBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder {
-        let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
-        this.combineWithValidatorConfig(vc, arg3, arg4);
-        return this;
-    }
-
-    /**
-     * Replace the condition supplying the replacement conditionConfig directly.
-     * If it finds the validator with the errorcode specified, 
-     * it will replace the condition with the existing condition.
-     * If not, it logs and throws an error.
-     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
-     * reflecting the same data as earlier, but now with a modified validator.
-     * If the ValueHost is on the current override, the existing entry is modified.
-     *
-     * The resulting ValidatorConfig's errorCode will not have changed from the original 
-     * to ensure it aligns with everything depending on the original error code.
-     * @param valueHostName 
-     * @param errorCode 
-     * @param conditionConfig - provide a complete ConditionConfig as the replacement
-     */
-    public replaceRule(valueHostName: ValueHostName, errorCode: string, conditionConfig: ConditionConfig): ValidationManagerConfigBuilder
-    /** 
-     * Replace supplying the replacement condition through a Builder object.
-     * @param valueHostName 
-     * @param errorCode 
-     * @param builderFn
-     * Use a function to create a conditionConfig that will replace the existing. You are
-     * passed the builder, where you can build your new conditions.
-     * @returns itself for chaining
-     */
-    public replaceRule(valueHostName: ValueHostName, errorCode: string, 
-        builderFn: (replacementBuilder: IStartConditionBuilder) => void): ValidationManagerConfigBuilder
-    public replaceRule(valueHostName: ValueHostName, errorCode: string,
-        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: IStartConditionBuilder) => void)): ValidationManagerConfigBuilder {
-        let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
-        this.replaceConditionWith(vc, sourceOfConditionConfig);
-        return this;
     }
 
 }    
