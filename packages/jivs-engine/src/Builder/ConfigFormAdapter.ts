@@ -1,3 +1,4 @@
+import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 /**
  * The ConfigFormAdapter is used together with ModuleRule classes that implement 
  * IAdaptModelRulesToForm to adapt the configuration already established according
@@ -19,7 +20,7 @@
  *    but not any condition specific rules.
  *    validator() returns the ModifyValidatorBuilder class to chain further modifications.
  * 4. Combine the form's condition with an existing validator's condition using
- *    the ModifyValidatorBuilder.all(), any(), and when() methods. This allows the form's condition
+ *    the ModifyValidatorBuilder.all(), any(), and whenToEnable() methods. This allows the form's condition
  *    to be combined with the existing validator's condition, enabling more complex validation logic.
  * 5. Disable an existing validator using the ModifyValidatorBuilder.disable() method.
  *    While frowned upon, this provides high visibility to the action.
@@ -86,18 +87,19 @@
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
+import { ValidatableValueHostBaseConfig } from "../Interfaces/ValidatableValueHostBase";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
-import { AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter, IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder, IValidationManagerConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
+import { AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter, IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder } from "../Interfaces/ManagerConfigBuilder";
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
 import { resolveErrorCode } from "../Utilities/Validation";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder, IStartConditionBuilder } from "../Interfaces/ChildBuilders";
+import { CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithOneChildBuilder } from "../Interfaces/ChildBuilders";
 import { BuilderConfigHostBase } from "../Builder/BuilderConfigHostBase";
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatorConfig } from '../Interfaces/Validator';
@@ -107,12 +109,12 @@ import { WhenConditionConfig } from '../Conditions/WhenCondition';
 import { FluentValidatorConfig } from "../Interfaces/Fluent";
 
 /**
- * Creates a ValidationManagerConfigFormAdapter from a source IManagerConfigBuilder.
+ * Creates a ConfigFormAdapter from a source IManagerConfigBuilder.
  * @param source 
  * @param options 
  * @returns 
  */
-export function createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IConfigFormAdapter
+export function createConfigFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IConfigFormAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
         let state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
@@ -247,6 +249,38 @@ export class ConfigFormAdapter
             this.logger.message(LoggingLevel.Warn, () => msg);
         }
     }
+    /**
+     * Applies the validation group name to all valuehosts identified. 
+     * This is useful alternative to assigning each valuehost individually to a group.
+     * It will overwrite any existing group name. 
+     * If you create a valuehost later, you can assign it like this:
+     * ```ts
+     * adapter.field('newfield', { group: 'groupname' });
+     * ```
+     * @param groupName - validation group name. Same name used in 
+     * ValidationManager.validate(groupName) to validate all valuehosts in the group.
+     * @param valueHostNames - names on ValueHosts already declared.
+     */
+    public assignToGroup(groupName: string, valueHostNames: Array<ValueHostName>): void
+    {
+        assertNotNull(groupName, 'groupName');
+        assertNotNull(valueHostNames, 'valueHostNames');
+        let notFound: Array<ValueHostName> = valueHostNames.slice();
+        // uses baseConfig, not destinationValueHostConfigs()
+        // because the model's ValueHostConfigs are on baseConfig, not the current override.
+        for (let valueHostName of valueHostNames) {
+            let vhConfig = this.getExistingValueHostConfig(valueHostName, false); 
+            if (vhConfig) {
+                if (isValidatableValueHostConfig(vhConfig))
+                    (<ValidatableValueHostBaseConfig>vhConfig).group = groupName;
+                else
+                    this.logger.message(LoggingLevel.Warn, () => `assignToGroup specified name is not a validatable ValueHost: ${valueHostName}`);
+            }
+            else {
+                this.logger.message(LoggingLevel.Warn, () => `assignToGroup specified name not already registered: ${valueHostName}`);
+            }
+        }
+    }
 
    /**
      * Modifies the configuration of a specific ValueHost by exposing its IModifyFieldBuilder
@@ -265,6 +299,19 @@ export class ConfigFormAdapter
      * @returns The IModifyValidatorBuilder for further modifications.
      */
     public modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
+    
+    /**
+     * Modifies the configuration of a specific ValueHost by applying the given adjustments.
+     * Applies the specified adjustments to the ValueHostConfig.
+     * This does not modify anything that must be retained from business logic itself.
+     * It contains the dataType property which is a special case for changes.
+     * @param valueHostName - the name of the ValueHost to modify.
+     * @param dataType - the data type of the ValueHost to modify. It must support falling back to the 
+     * original dataType. (However, if the original is not supplied, it is used without verification.)
+     * @param adjustments - the adjustments to apply to the ValueHostConfig.
+     * @returns The IModifyFieldBuilder for further modifications.
+     */
+    public modify(valueHostName: ValueHostName, dataType: string, adjustments?: AdapterValueHostConfig): IModifyFieldBuilder;    
 
     /**
      * Modifies the configuration of a specific ValueHost by applying the given adjustments.
@@ -316,29 +363,35 @@ export class ConfigFormAdapter
         }
         valueHostConfig.dataType = dataType;
     }
+    /**
+     * Assigns properties on existingConfig from adjustments, except for those in donotReplaceTheseProperties.
+     * This strategy allows the user to supply properties not formally defined in AdapterValueHostConfig,
+     * but they added to their own ValueHostConfigs.
+     * @param existingConfig 
+     * @param adjustments 
+     */
     protected mergeConfigs(existingConfig: ValueHostConfig, adjustments: AdapterValueHostConfig): void
     {
-        // go through safeReplacementProperties and copy values from adjustments to existingConfig
-        for (const prop of ConfigFormAdapter.safeReplacementProperties) {
-            if (prop in adjustments) { // supports values of null
-                // does not attempt to verify the data is valid or consistent with existingConfig
-                (existingConfig as any)[prop] = (adjustments as any)[prop];
+        // go through all properties in adjustments and copy them to existingConfig,
+        // except for those in donotReplaceTheseProperties. 
+        // Those skipped are logged.
+        for (const prop in adjustments) {
+            if (ConfigFormAdapter.doNotReplaceTheseValueHostProperties.includes(prop)) {
+                // log that this property was skipped
+                this.logger.message(LoggingLevel.Warn, ()=> `Skipped property "${prop}" as it is protected.`);
             }
+            else 
+                 (existingConfig as any)[prop] = (adjustments as any)[prop];
         }
     }
-    // These are property names on AdapterValueHostConfig only.
-    // They represent properties that can be safely replaced without affecting the core business logic.
-    // Combines values from FieldValueHostConfig, ValidatorsValueHostConfig, ValidatableValueHostConfig,
-    // and ValueHostConfig.
-    static readonly safeReplacementProperties = [
-        'label',
-        'labell10n',
-        'initialEnabled',
-        'enablerConfig',
-        'group',
-        'parserLookupKey',
-        'parserCreator',
-        'propertyName'
+    // These property names are on ValueHostConfig and children that 
+    // the modify() + mergeConfigs() methods are not allowed to change. 
+    // They are considered essential to the business logic and should not be overridden by the UI layer.
+    static readonly doNotReplaceTheseValueHostProperties = [
+        'name',
+        'valueHostType',
+        'dataType',
+        'validatorConfigs',
     ];
 }    
 
@@ -384,15 +437,48 @@ export class ModifyFieldBuilder
         }
         let existingValidator: ValidatorConfig | undefined;
         if (config.validatorConfigs && config.validatorConfigs.length > 0)
-            existingValidator = config.validatorConfigs.find(v => v.errorCode === conditionType);
+            existingValidator = config.validatorConfigs.find(v => conditionType === resolveErrorCode(v));
         if (!existingValidator) {
             this.reportError(new Error(`Validator with conditionType/errorCode '${conditionType}' does not exist.`));
+        }
+        if (arg2) {
+            this.mergeConfigs(existingValidator!, arg2);
         }
 
         // Return the IModifyValidatorBuilder for the found validator.
         return new ModifyValidatorBuilder(this.services, this as any, existingValidator!);
 
     }
+
+    /**
+     * Transfers properties from adjustments to existingConfig, except for those in doNotReplaceTheseValidatorProperties.
+     * This strategy allows the user to supply properties not formally defined in FluentValidatorConfig,
+     * but they added to their own ValidatorConfigs.
+     * @param existingConfig 
+     * @param adjustments 
+     */
+    protected mergeConfigs(existingConfig: ValidatorConfig, adjustments: FluentValidatorConfig): void
+    {
+        // go through all properties in adjustments and copy them to existingConfig,
+        // except for those in donotReplaceTheseProperties. 
+        // Those skipped are logged.
+        for (const prop in adjustments) {
+            if (ModifyFieldBuilder.doNotReplaceTheseValidatorProperties.includes(prop)) {
+                // log that this property was skipped
+                this.logger.message(LoggingLevel.Warn, ()=> `Skipped property "${prop}" as it is protected.`);
+            }
+            else 
+                 (existingConfig as any)[prop] = (adjustments as any)[prop];
+        }
+    }
+
+    // These property names are on ValueHostConfig and children that 
+    // the modify() + mergeConfigs() methods are not allowed to change. 
+    // They are considered essential to the business logic and should not be overridden by the UI layer.
+    static readonly doNotReplaceTheseValidatorProperties = [
+        'conditionConfig',
+        'conditionCreator',
+    ];
 
     /**
      * Adds a new validator to the current ValueHost.
@@ -416,6 +502,41 @@ export class ModifyFieldBuilder
         }
 
         return this.services.fluentFactory.createFluentValidatorBuilder(config);
+    }
+
+    /**
+     * Establishes the condition that must be met for the ValueHost to be enabled. It is a fluent format that returns a ConditionBuilder
+     * that can be used to build the conditionConfig. The resulting conditionConfig is attached to the ValueHost as its enabler.
+     * If called on a ValueHost already with an enabler, it will replace the existing enabler.
+     * ```ts
+     * builder.whenToEnable((childBuilder)=>
+     *  childBuilder.fieldName('Field2').equalToValue('YES'));
+     * builder.whenToEnable((childBuilder)=>
+     *  childBuilder.conditionConfig(existingConditionConfig));
+     * builder.whenToEnable(handler).any validator can be chained
+     * ```
+     * Sets this value:
+     * ```ts
+     * valueHostConfig.enablerConfig = conditionConfig;
+     * ```
+     * @param callback - A function that receives a IStartConditionWithOneChildBuilder and returns a ConditionConfig.
+     * @returns The IModifyFieldBuilder for further modifications.
+     */
+    public whenToEnable(callback: (builder: IStartConditionWithOneChildBuilder) => void): IModifyFieldBuilder
+    {
+        assertFunction(callback);
+        
+        let vhConfig = this.getConfig()! as ValidatableValueHostBaseConfig;
+        let startBuilder = new StartConditionWithOneChildBuilder(
+            this.services as IValidationServices,
+            null,
+            (conditionConfig) => {
+            if (conditionConfig)
+                vhConfig.enablerConfig = conditionConfig;
+        });
+        callback(startBuilder);
+        return this;
+
     }
 }
 
@@ -442,33 +563,36 @@ export class ModifyValidatorBuilder
      * with a new condition using an AND logic.
      * Reworks an existing validator placing its condition as a child of AllMatchesCondition
      * together with one you supply.
-     * @param errorCode - The error code associated with the new condition. While it can be the same
+     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
      * Can be an empty string to retain the original error code of the existing validator.
      * This is especially useful when the existing validator is AllMatchesCondition
      * because we are just adding a new condition to the existing AllMatchesCondition.
-     * @param builderCallback - A callback function that receives a new StartConditionBuilder and 
-     * returns a ConditionConfig representing the new condition to be combined with the existing one.
+     * @param builderCallback - A callback function that receives a new StartConditionBuilder.
+     * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public all(errorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => ConditionConfig): void
+    public all(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
-        this.replaceChildren(ConditionType.All, errorCode, builderCallback);
+        this.replaceChildren(ConditionType.All, newErrorCode, builderCallback);
     }
     /**
      * Use this method when you want to combine the existing validator condition 
      * with a new condition using an OR logic.
      * Reworks an existing validator placing its condition as a child of AnyMatchesCondition
      * together with one you supply.
-     * @param errorCode - The error code associated with the new condition. While it can be the same
+     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
-     * @param builderCallback - A callback function that receives a new StartConditionBuilder and 
-     * returns a ConditionConfig representing the new condition to be combined with the existing one.
+     * Can be an empty string to retain the original error code of the existing validator.
+     * This is especially useful when the existing validator is AllMatchesCondition
+     * because we are just adding a new condition to the existing AllMatchesCondition.
+     * @param builderCallback - A callback function that receives a new StartConditionBuilder.
+     * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public any(errorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => ConditionConfig): void
+    public any(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
-        this.replaceChildren(ConditionType.Any, errorCode, builderCallback);
+        this.replaceChildren(ConditionType.Any, newErrorCode, builderCallback);
     }
 
     /**
@@ -482,14 +606,19 @@ export class ModifyValidatorBuilder
      * @param builderCallback 
      * @returns 
      */
-    protected replaceChildren(conditionType: ConditionType, errorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => ConditionConfig): void
+    protected replaceChildren(conditionType: ConditionType, errorCode: string,
+        builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
+        assertFunction(builderCallback);
         let existingValidator = this.getConfig()!;
         let existingCondition = existingValidator.conditionConfig;
         if (!existingCondition)
             this.reportError(new Error('Existing condition is null or undefined.')); // throws
         let startBuilder = this.services.fluentFactory.createStartConditionBuilder(this as any);
-        let newCondition = builderCallback(startBuilder);
+        builderCallback(startBuilder);
+        let newCondition = startBuilder.getConfig()!;
+        if (!newCondition)
+            this.reportError(new Error('Child builder was not used to define a Condition.')); // throws
         let originalErrorCode = resolveErrorCode(existingValidator);
         if (originalErrorCode === conditionType) {
             // Logic to combine the existing condition with the new one using AND logic
@@ -512,21 +641,25 @@ export class ModifyValidatorBuilder
         existingValidator.conditionConfig = combinedCondition;        
     }
     /**
-     * Use this method to specify a condition that must be met for the existing validator to be applied.
+     * Use this method to specify a condition that must be met for the existing validator to be evaluated.
      * It replaces the existing validator with a WhenCondition where your new condition is
      * the whenToEnableCondition and the existing condition is the thenCondition.
      * The whenToEnableCondition is defined using a StartConditionBuilder and returns a ConditionConfig.
-     * @param builderCallback - A callback function that receives a new StartConditionBuilder and 
-     * returns a ConditionConfig representing the condition to be checked before applying the existing validator.
+     * @param builderCallback - A callback function that receives a new StartConditionBuilder.
+     * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public when(builderCallback: (whenToEnableBuilder: IStartConditionBuilder) => ConditionConfig): void
+    public whenToEnable(builderCallback: (whenToEnableBuilder: IStartConditionWithOneChildBuilder) => void): void
     {
         let existingValidator = this.getConfig()!;
         let thenConfig = existingValidator.conditionConfig;
         if (!thenConfig)
             this.reportError(new Error('Existing condition is null or undefined.'));    // throws
-        let startBuilder = this.services.fluentFactory.createStartConditionBuilder(this as any);
-        let whenToEnableConfig = builderCallback(startBuilder);
+        let startBuilder = this.services.fluentFactory.createStartConditionWithOneChildBuilder(this as any);
+        builderCallback(startBuilder);
+        let whenToEnableConfig = startBuilder.getConfig()!;
+        if (!whenToEnableConfig)
+            this.reportError(new Error('Child builder was not used to define a Condition.')); // throws
+
         existingValidator.conditionConfig = <WhenConditionConfig>{
             conditionType: ConditionType.When,
             whenToEnableConfig: whenToEnableConfig,
@@ -537,7 +670,7 @@ export class ModifyValidatorBuilder
         /**
      * If the validator must not run, it can be disabled. It is preferred
      * that you combine another condition with this one instead of simply disabling it.
-     * Use all(), any(), or when() to combine conditions instead of simply disabling the validator.
+     * Use all(), any(), or whenToEnable() to combine conditions instead of simply disabling the validator.
      */
     public disable(): void
     {

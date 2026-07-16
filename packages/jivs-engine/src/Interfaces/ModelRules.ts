@@ -21,7 +21,7 @@
  * @module Validation/Types/ModelRules
  */
 
-import { IValidationManagerConfigFormAdapter } from "./ManagerConfigBuilder";
+import { IConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { ValidationManagerConfig } from "./ValidationManager";
 
 /**
@@ -63,9 +63,9 @@ export interface IRules {
  * It ensures that the form starts with the ModelRules configuration, 
  * and then adds any form-specific rules to it.
  * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
- * @param adapter - the IValidationManagerConfigFormAdapter that is used to adapt the model configuration
+ * @param adapter - the IConfigFormAdapter that is used to adapt the model configuration
  * to the form.
  */
 export interface IAdaptModelRulesToForm {
-  adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void;
+  adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void;
 }

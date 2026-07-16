@@ -1,3 +1,4 @@
+import { StartConditionWithOneChildBuilder } from './../../src/Builder/StartConditionWithOneChildBuilder';
 import {
     RequireTextConditionConfig, RegExpConditionConfig,
     AllMatchConditionConfig, AnyMatchConditionConfig
@@ -24,7 +25,6 @@ import {
 } from "../../src/Builder/StartFluent_classes";
 import { ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced }
     from "../../src/Builder/ManagerConfigBuilderBase";
-import { CombineUsingCondition } from "../../src/Interfaces/ManagerConfigBuilder";
 
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -83,18 +83,18 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
         return super.setupValueHostToCombine(valueHostName, errorCode);
     }
 
-    public publicify_combineWithValidatorConfig(
-        destinationOfCondition: ValidatorConfig,
-        arg2: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg3?: (combiningBuilder: IStartConditionBuilder) => void): void
-    {
-        super.combineWithValidatorConfig(destinationOfCondition, arg2, arg3);
-    }
+    // public publicify_combineWithValidatorConfig(
+    //     destinationOfCondition: ValidatorConfig,
+    //     arg2: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+    //     arg3?: (combiningBuilder: IStartConditionBuilder) => void): void
+    // {
+    //     super.combineWithValidatorConfig(destinationOfCondition, arg2, arg3);
+    // }
 
-    public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void)): void
-    {
-        super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
-    }    
+    // public publicify_replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void)): void
+    // {
+    //     super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
+    // }    
 
     public get publicify_services(): IValueHostsServices
     {   
@@ -122,6 +122,11 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): IFluentValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
     }
+
+    public publicify_getExistingValueHostConfig(valueHostName: string, throwWhenNotFound: boolean): ValueHostConfig | null {
+        return this.getExistingValueHostConfig(valueHostName, throwWhenNotFound);
+    }
+
 }
 
 describe('ManagerConfigBuilderBase constructor', () => {
@@ -797,456 +802,535 @@ describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
     });
 });
 
-describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
-    // existing condition is RegExp. New condition is RequireText
-    function testCombineUsing(combineUsing: CombineUsingCondition,
-        expectedValidatorConfig: ValidatorConfig
-    ) { 
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+// describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
+//     // existing condition is RegExp. New condition is RequireText
+//     function testCombineUsing(combineUsing: CombineUsingCondition,
+//         expectedValidatorConfig: ValidatorConfig
+//     ) {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            combineUsing,
-            (combiningBuilder: IStartConditionBuilder) => combiningBuilder.parentValue().requireText())).not.toThrow();  
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             combineUsing,
+//             (combiningBuilder: IStartConditionBuilder) => combiningBuilder.parentValue().requireText())).not.toThrow();
        
-        expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
-        deleteConditionReplacedSymbol(destinationConfig);
-        expect(destinationConfig).toEqual(expectedValidatorConfig);        
-    }
-    function testFunctionHandlesAllCombining(fn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void,
-        expectedValidatorConfig: ValidatorConfig
-    ) { 
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
+//         deleteConditionReplacedSymbol(destinationConfig);
+//         expect(destinationConfig).toEqual(expectedValidatorConfig);
+//     }
+//     function testFunctionHandlesAllCombining(fn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void,
+//         expectedValidatorConfig: ValidatorConfig
+//     ) {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            fn)).not.toThrow();  
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             fn)).not.toThrow();
        
-        expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
-        deleteConditionReplacedSymbol(destinationConfig);
-        expect(destinationConfig).toEqual(expectedValidatorConfig);        
-    }    
+//         expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
+//         deleteConditionReplacedSymbol(destinationConfig);
+//         expect(destinationConfig).toEqual(expectedValidatorConfig);
+//     }
 
-    test('CombineUsing=When', () => {
+//     test('CombineUsing=When', () => {
 
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <WhenConditionConfig>{
-                conditionType: ConditionType.When,
-                whenToEnableConfig: {
-                    conditionType: ConditionType.RequireText
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <WhenConditionConfig>{
+//                 conditionType: ConditionType.When,
+//                 whenToEnableConfig: {
+//                     conditionType: ConditionType.RequireText
                 
-                },
-                thenConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
-            }
-        };
+//                 },
+//                 thenConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
+//             }
+//         };
 
-        testCombineUsing(CombineUsingCondition.When, expectedConfig);
-    });
-    test('CombineUsing=All', () => {
+//         testCombineUsing(CombineUsingCondition.When, expectedConfig);
+//     });
+//     test('CombineUsing=All', () => {
 
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <AllMatchConditionConfig>{
-                conditionType: ConditionType.All,
-                conditionConfigs: [
-                    <RegExpConditionConfig>{
-                        conditionType: ConditionType.RegExp,
-                        expression: /abc/
-                    },
-                    {
-                        conditionType: ConditionType.RequireText
-                    }
-                ]
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <AllMatchConditionConfig>{
+//                 conditionType: ConditionType.All,
+//                 conditionConfigs: [
+//                     <RegExpConditionConfig>{
+//                         conditionType: ConditionType.RegExp,
+//                         expression: /abc/
+//                     },
+//                     {
+//                         conditionType: ConditionType.RequireText
+//                     }
+//                 ]
 
-            }
-        };
+//             }
+//         };
 
-        testCombineUsing(CombineUsingCondition.All, expectedConfig);
-    });    
-    test('CombineUsing=Any', () => {
+//         testCombineUsing(CombineUsingCondition.All, expectedConfig);
+//     });
+//     test('CombineUsing=Any', () => {
 
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <AnyMatchConditionConfig>{
-                conditionType: ConditionType.Any,
-                conditionConfigs: [
-                    <RegExpConditionConfig>{
-                        conditionType: ConditionType.RegExp,
-                        expression: /abc/
-                    },
-                    {
-                        conditionType: ConditionType.RequireText
-                    }
-                ]
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <AnyMatchConditionConfig>{
+//                 conditionType: ConditionType.Any,
+//                 conditionConfigs: [
+//                     <RegExpConditionConfig>{
+//                         conditionType: ConditionType.RegExp,
+//                         expression: /abc/
+//                     },
+//                     {
+//                         conditionType: ConditionType.RequireText
+//                     }
+//                 ]
 
-            }
-        };
+//             }
+//         };
 
-        testCombineUsing(CombineUsingCondition.Any, expectedConfig);
-    });        
+//         testCombineUsing(CombineUsingCondition.Any, expectedConfig);
+//     });
 
-    test('Function to combine', () => {
+//     test('Function to combine', () => {
 
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <WhenConditionConfig>{
-                conditionType: ConditionType.When,
-                whenToEnableConfig: {
-                    conditionType: ConditionType.RequireText,
-                    valueHostName: 'field1'
-                },
-                thenConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
-            }
-        };
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <WhenConditionConfig>{
+//                 conditionType: ConditionType.When,
+//                 whenToEnableConfig: {
+//                     conditionType: ConditionType.RequireText,
+//                     valueHostName: 'field1'
+//                 },
+//                 thenConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
+//             }
+//         };
 
-        testFunctionHandlesAllCombining(
-            (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                combiningBuilder.when(
-                    (whenBuilder) => whenBuilder.fieldValue('field1').requireText(),
-                    (thenBuilder) => thenBuilder.conditionConfig(existingConditionConfig));
-            },
-            expectedConfig);
-    });
-    test('2 parameter function to combine does not provide any replacement makes no change but logs', () => {
-        const destinationConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         testFunctionHandlesAllCombining(
+//             (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+//                 combiningBuilder.when(
+//                     (whenBuilder) => whenBuilder.fieldValue('field1').requireText(),
+//                     (thenBuilder) => thenBuilder.conditionConfig(existingConditionConfig));
+//             },
+//             expectedConfig);
+//     });
+//     test('2 parameter function to combine does not provide any replacement makes no change but logs', () => {
+//         const destinationConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         };
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
+//         };
 
-        let vmConfig = createVMConfig();
-        let logger = vmConfig.services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
+//         let vmConfig = createVMConfig();
+//         let logger = vmConfig.services.loggerService as CapturingLogger;
+//         logger.minLevel = LoggingLevel.Debug;
 
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            (combiningBuilder) => { })).not.toThrow();          
-        expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             (combiningBuilder) => { })).not.toThrow();
+//         expect(destinationConfig).toEqual(expectedConfig);
+//         expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
 
-    });    
-    test('3 parameter function to combine does not provide any replacement makes no change but logs', () => {
-        const destinationConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//     });
+//     test('3 parameter function to combine does not provide any replacement makes no change but logs', () => {
+//         const destinationConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         };
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
+//         };
 
-        let vmConfig = createVMConfig();
-        let logger = vmConfig.services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
+//         let vmConfig = createVMConfig();
+//         let logger = vmConfig.services.loggerService as CapturingLogger;
+//         logger.minLevel = LoggingLevel.Debug;
 
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
 
-        expect(() => testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            CombineUsingCondition.All,
-            (combiningBuilder) => { })).not.toThrow();          
-        expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
+//         expect(() => testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             CombineUsingCondition.All,
+//             (combiningBuilder) => { })).not.toThrow();
+//         expect(destinationConfig).toEqual(expectedConfig);
+//         expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
 
-    });        
-    test('arg1 parameter null', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//     });
+//     test('arg1 parameter null', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(null!,
-            () => { })).toThrow(/destinationOfCondition/);          
-    });    
-    test('arg2 parameter null throws', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(null!,
+//             () => { })).toThrow(/destinationOfCondition/);
+//     });
+//     test('arg2 parameter null throws', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            null!)).toThrow();          
-    });
-    test('In 2 parameter form, no parameter has a function throws', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             null!)).toThrow();
+//     });
+//     test('In 2 parameter form, no parameter has a function throws', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            10 as any)).toThrow(/Invalid parameters/);          
-    });    
-    test('In 3 parameter form, no parameter has a function throws', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             10 as any)).toThrow(/Invalid parameters/);
+//     });
+//     test('In 3 parameter form, no parameter has a function throws', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            CombineUsingCondition.All,
-            10 as any)).toThrow(/Invalid parameters/);          
-    });        
-    test('In 3 parameter form, arg2 is not a number or function throws', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             CombineUsingCondition.All,
+//             10 as any)).toThrow(/Invalid parameters/);
+//     });
+//     test('In 3 parameter form, arg2 is not a number or function throws', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
-            'invalidinput' as any,
-            10 as any)).toThrow(/Invalid parameters/);          
-    });            
+//         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
+//             'invalidinput' as any,
+//             10 as any)).toThrow(/Invalid parameters/);
+//     });
 
-});
+// });
 
-describe('replaceConditionWith', () => {
-    function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void),
-        expectedValidatorConfig: ValidatorConfig
-    ) { 
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+// describe('replaceConditionWith', () => {
+//     function testFunctionHandlesReplacement(sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void),
+//         expectedValidatorConfig: ValidatorConfig
+//     ) {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_replaceConditionWith(destinationConfig,
-            sourceOfConditionConfig)).not.toThrow();  
+//         expect(()=> testItem.publicify_replaceConditionWith(destinationConfig,
+//             sourceOfConditionConfig)).not.toThrow();
        
-        expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
-        deleteConditionReplacedSymbol(destinationConfig);
-        expect(destinationConfig).toEqual(expectedValidatorConfig);        
-    }        
-    test('function with actual conditionConfig', () => {
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };
+//         expect(hasConditionBeenReplaced(destinationConfig)).toBe(true);
+//         deleteConditionReplacedSymbol(destinationConfig);
+//         expect(destinationConfig).toEqual(expectedValidatorConfig);
+//     }
+//     test('function with actual conditionConfig', () => {
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        testFunctionHandlesReplacement(
-            (replacementBuilder: IStartConditionBuilder) => {
-                replacementBuilder.parentValue().regExp(/abc/);
-            },
-            expectedConfig);       
-    });
-    test('function with callback to create conditionConfig', () => {
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/,
-                valueHostName: null
-            }
-        };
-        const sourceConfig: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,
-            expression: /abc/,
-            valueHostName: null
-        };
+//         testFunctionHandlesReplacement(
+//             (replacementBuilder: IStartConditionBuilder) => {
+//                 replacementBuilder.parentValue().regExp(/abc/);
+//             },
+//             expectedConfig);
+//     });
+//     test('function with callback to create conditionConfig', () => {
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/,
+//                 valueHostName: null
+//             }
+//         };
+//         const sourceConfig: RegExpConditionConfig = {
+//             conditionType: ConditionType.RegExp,
+//             expression: /abc/,
+//             valueHostName: null
+//         };
 
-        testFunctionHandlesReplacement(
-            sourceConfig,
-            expectedConfig);               
-    });
-    test('With invalid 2nd parameter type, throw', () => {
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         testFunctionHandlesReplacement(
+//             sourceConfig,
+//             expectedConfig);
+//     });
+//     test('With invalid 2nd parameter type, throw', () => {
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_replaceConditionWith(destinationConfig,
-            10 as any)).toThrow(/Invalid parameters/);              
-    });
-    test('With 1st parameter null, throw', () => {
+//         expect(()=> testItem.publicify_replaceConditionWith(destinationConfig,
+//             10 as any)).toThrow(/Invalid parameters/);
+//     });
+//     test('With 1st parameter null, throw', () => {
 
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
 
 
-        expect(()=> testItem.publicify_replaceConditionWith(null!,
-            { conditionType: 'x '})).toThrow(/destinationOfCondition/);              
-    });    
-    test('With 2nd parameter null, throw', () => {
+//         expect(()=> testItem.publicify_replaceConditionWith(null!,
+//             { conditionType: 'x '})).toThrow(/destinationOfCondition/);
+//     });
+//     test('With 2nd parameter null, throw', () => {
 
-        let vmConfig = createVMConfig();
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        let destinationConfig: ValidatorConfig = {
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        };        
+//         let vmConfig = createVMConfig();
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let destinationConfig: ValidatorConfig = {
+//             conditionConfig: <RegExpConditionConfig>{
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         };
 
-        expect(()=> testItem.publicify_replaceConditionWith(destinationConfig, null!)).toThrow(/sourceOfConditionConfig/);              
-    });        
-    test('When function does not provide a replacement, no change and log', () => {
-        const destinationConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         expect(()=> testItem.publicify_replaceConditionWith(destinationConfig, null!)).toThrow(/sourceOfConditionConfig/);
+//     });
+//     test('When function does not provide a replacement, no change and log', () => {
+//         const destinationConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
-        const expectedConfig: ValidatorConfig = {
-            errorCode: ConditionType.RegExp,
-            conditionConfig: <RegExpConditionConfig>{
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         };
+//         const expectedConfig: ValidatorConfig = {
+//             errorCode: ConditionType.RegExp,
+//             conditionConfig: <RegExpConditionConfig>{
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
             
-        };
+//         };
 
+//         let vmConfig = createVMConfig();
+//         let logger = vmConfig.services.loggerService as CapturingLogger;
+//         logger.minLevel = LoggingLevel.Debug;
+
+//         let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+
+//         expect(() => testItem.publicify_replaceConditionWith(destinationConfig,
+//             (replacementBuilder) => { })).not.toThrow();
+//         expect(destinationConfig).toEqual(expectedConfig);
+//         expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
+
+//     });
+// });
+
+describe('whenToEnable', ()=> {
+    // existing valueHostName returns the StartConditionWithOneChildBuilder
+    test('With a known valueHostName, returns the same instance', () => {
         let vmConfig = createVMConfig();
         let logger = vmConfig.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-
-        expect(() => testItem.publicify_replaceConditionWith(destinationConfig,
-            (replacementBuilder) => { })).not.toThrow();          
-        expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
-
-    });            
-});
-describe('enabler', () => {
-    function setupEnablerAssignment( ): {
-        builder: TestValidationManagerConfigBuilderBase,
-        vmConfig: ValidationManagerConfig
-    } {
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        let result = builder.whenToEnable('Field1', (builder)=>builder.parentValue().requireText());
+        expect(result).toBe(builder);
+        // check log for the message about adding the enabler to the valueHost
+        expect(logger.findMessage('whenToEnable', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // same but call addOverride() first
+    test('With a known valueHostName and addOverride() called, returns the StartConditionWithOneChildBuilder', () => {
         let vmConfig = createVMConfig();
-        vmConfig.services.loggerService.minLevel = LoggingLevel.Debug;
-        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
-        testItem.static('Field1');
-
-        return { builder: testItem, vmConfig: vmConfig };
-    }
-    function testEnablerAssignment(setup: { builder: TestValidationManagerConfigBuilderBase, vmConfig: ValidationManagerConfig },
-        sourceOfConditionConfig: ConditionConfig | ((builder: IStartConditionBuilder) => void),
-        expectedEnablerConfig: ConditionConfig | undefined, logContent: string
-    ): void {
-
-        let valueHostConfig: ValueHostConfig = {
-            valueHostType: ValueHostType.Static,
-            name: 'Field1'
-        };
-        if (expectedEnablerConfig) 
-            valueHostConfig.enablerConfig = expectedEnablerConfig;
-
-        expect(() => setup.builder.enabler('Field1', sourceOfConditionConfig as any)).not.toThrow();        
-
-        expect(setup.vmConfig.valueHostConfigs[0]).toEqual(valueHostConfig);
-        let logger = setup.vmConfig.services.loggerService as CapturingLogger;
-        expect(logger.findMessage(logContent, null, null)).toBeTruthy();
-    }
-
-    test('Actual conditionConfig and then replace it to see difference in logging', () => {
-        let setup = setupEnablerAssignment();
-        const expectedConfig = <RegExpConditionConfig>{
-            conditionType: ConditionType.RegExp,
-            expression: /abc/
-        };
-        testEnablerAssignment(setup, expectedConfig, expectedConfig, 'Adding enabler to ValueHost "Field1"');
-
-        setup.builder.publicify_addOverride();
-        const replacementConfig = <RequireTextConditionConfig>{
-            conditionType: ConditionType.RequireText
-        };
-        testEnablerAssignment(setup, replacementConfig, replacementConfig, 'Replacing enabler on ValueHost "Field1"');
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.publicify_addOverride();
+        let result = builder.whenToEnable('Field1', (builder)=>builder.parentValue().requireText());
+        expect(result).toBe(builder);
     });
-
-    test('builder function and then replace it to see difference in logging', () => {
-        let setup = setupEnablerAssignment();
-        const expectedConfig = <RegExpConditionConfig>{
-            conditionType: ConditionType.RegExp,
-            expression: /abc/
+    test('With an unknown valueHostName, throws', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        expect(() => builder.whenToEnable('Field2', (builder)=>builder)).toThrow(/not defined/);
+    });
+    // build with fluent RequireText condition
+    test('With a known valueHostName and child using parentValue().requireText(), updates enablerConfig', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.whenToEnable('Field1', 
+            (builder)=>builder.parentValue().requireText());
+        let expectedConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            validatorConfigs: [],
+            enablerConfig: {
+                conditionType: ConditionType.RequireText
+            }
         };
-        testEnablerAssignment(setup, (builder)=> builder.parentValue().regExp(/abc/), expectedConfig, 'Adding enabler to ValueHost "Field1"');
-
-        setup.builder.publicify_addOverride();
-        const replacementConfig = <RequireTextConditionConfig>{
-            conditionType: ConditionType.RequireText
+        expect(vmConfig.valueHostConfigs[0]).toEqual(expectedConfig);   
+    });
+    test('With a known valueHostName and child using fieldValue().requireText(), updates enablerConfig', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.whenToEnable('Field1', 
+            (builder)=>builder.fieldValue('Field2').requireText());
+        let expectedConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            validatorConfigs: [],
+            enablerConfig: {
+                conditionType: ConditionType.RequireText,
+                valueHostName: 'Field2'
+            }
         };
-        testEnablerAssignment(setup, (builder)=> builder.parentValue().requireText(), replacementConfig, 'Replacing enabler on ValueHost "Field1"');
-    });    
-    test('With 1st parameter null, throw', () => {
-        let setup = setupEnablerAssignment();
-        expect(() => setup.builder.enabler(null!, { conditionType: 'x ' })).toThrow(/valueHostName/);
+        expect(vmConfig.valueHostConfigs[0]).toEqual(expectedConfig);   
     });
-    test('With 2nd parameter null, throw', () => {
-        let setup = setupEnablerAssignment();
-        expect(() => setup.builder.enabler('Field1', null!)).toThrow(/sourceOfConditionConfig/);
+    // same using conditionConfig to supply a predefined config
+    test('With a known valueHostName and child using conditionConfig(), updates enablerConfig', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.whenToEnable('Field1', 
+            (builder)=>builder.conditionConfig({
+                conditionType: ConditionType.RequireText
+            }));
+        let expectedConfig = {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            validatorConfigs: [],
+            enablerConfig: {
+                conditionType: ConditionType.RequireText
+            }
+        };
+        expect(vmConfig.valueHostConfigs[0]).toEqual(expectedConfig);   
     });
-    test('With 2nd parameter not a function or object, throw', () => {      
-        let setup = setupEnablerAssignment();
-        expect(() => setup.builder.enabler('Field1', 10 as any)).toThrow(/Invalid parameters/);
+    // when the child function does not add to its builder, there is no condition to use. Throws
+    test('With a known valueHostName and child does not add to builder, throws', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        expect(() => builder.whenToEnable('Field1', 
+            (childBuilder)=>childBuilder)).toThrow(/Child builder/);
     });
-    test('With unknown valueHost, throw', () => {
-        let setup = setupEnablerAssignment();
-        expect(() => setup.builder.enabler('Field2', { conditionType: 'x ' })).toThrow(/not defined/);
-        let logger = setup.vmConfig.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('not defined', null, null)).toBeTruthy();
+});
+
+describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfig()', () => {
+    test('With a known valueHostName, returns the ValueHostConfig', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.field('Field2');
+        builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
+        let result1 = builder.publicify_getExistingValueHostConfig('Field1', true);
+        expect(result1).toBeTruthy();
+        expect(result1!.name).toEqual('Field1');
+        let result2 = builder.publicify_getExistingValueHostConfig('Field2', true);
+        expect(result2).toBeTruthy();
+        expect(result2!.name).toEqual('Field2');
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.findMessage('ValueHost name "Field2" is not defined')).toBeFalsy();
+
+    });
+    // not found and throwWhenNotFound = true, throws
+    test('With an unknown valueHostName and throwWhenNotFound=true, throws', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.field('Field2');
+        builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
+        expect(() => builder.publicify_getExistingValueHostConfig('Field3', true)).toThrow(/not defined/);
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
+
+    }); 
+    // not found and throwWhenNotFound = false, returns null
+    test('With an unknown valueHostName and throwWhenNotFound=false, returns null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.field('Field2');
+        builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
+        let result = builder.publicify_getExistingValueHostConfig('Field3', false);
+        expect(result).toBeNull();
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
+
+    });
+    // when addOverride is not used and throwWhenNotFound = true, throws because the valueHostConfig is not in the overriddenValueHostConfigs array
+    test('With a known valueHostName but addOverride not used and throwWhenNotFound=true, throws', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.field('Field2');
+        expect(() => builder.publicify_getExistingValueHostConfig('Field1', true)).toThrow(/not defined/);
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
+
+    });
+    // when addOverride is not used and throwWhenNotFound = false, returns null because the valueHostConfig is not in the overriddenValueHostConfigs array
+    test('With a known valueHostName but addOverride not used and throwWhenNotFound=false, returns null', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        builder.field('Field1');
+        builder.field('Field2');
+        let result = builder.publicify_getExistingValueHostConfig('Field1', false);
+        expect(result).toBeNull();
+        let loggerService = vmConfig.services.loggerService as CapturingLogger;
+        expect(loggerService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
+
     });
 });

@@ -421,10 +421,6 @@ export function registerConditions(cf: ConditionFactory): void
         cf.register<NotConditionConfig>
             (ConditionType.Not, (config) => new NotCondition(config));
         
-        cf.register<AllMatchConditionConfig>
-            (ConditionType.And, (config) => new AllMatchCondition(config));
-        cf.register<AnyMatchConditionConfig>
-            (ConditionType.Or, (config) => new AnyMatchCondition(config));
         cf.register<CountMatchesConditionConfig>
             (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
         cf.register<NotNullConditionConfig>(

@@ -40,6 +40,8 @@ import { ValueHostName } from "../DataTypes/BasicTypes";
 import { NotConditionConfig } from "../Conditions/NotCondition";
 import { WhenConditionConfig } from "../Conditions/WhenCondition";
 import { IValidationServices } from "../Interfaces/ValidationServices";
+import { ValidatableValueHostBaseConfig } from "../Interfaces/ValidatableValueHostBase";
+import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
 
 
 /**
@@ -48,26 +50,23 @@ import { IValidationServices } from "../Interfaces/ValidationServices";
  * 
  * See {@link Builder/Fluent | Fluent Overview}
  */
-export class FluentValidatorBuilder implements IFluentValidatorBuilder {
+export class FluentValidatorBuilder
+    extends BuilderConfigHostBase<object>
+    implements IFluentValidatorBuilder {
     /**
      * Constructor
      * @param parentConfig - Config object from the parent to host this validator.
      */
     constructor(services: IValidationServices,
-        parentConfig: FieldValueHostConfig) {
-        assertNotNull(services, 'services');
+        parentConfig: FieldValueHostConfig,
+        completed?: CompleteConfigBuilderHandler<object>) {
+        super(services, null, completed);
         assertNotNull(parentConfig, 'parentConfig');
-        this._services = services;
         if (!parentConfig.validatorConfigs)
             parentConfig.validatorConfigs = [];
         this._parentConfig = parentConfig;
     }
 
-    protected get services(): IValidationServices
-    {
-        return this._services;
-    }
-    private _services: IValidationServices;
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
@@ -75,16 +74,6 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
         return this._parentConfig;
     }
     private readonly _parentConfig: FieldValueHostConfig;
-
-    private _config?: object;
-
-    public setConfig(config: object, options?: object): IFluentValidatorBuilder {
-        this._config = config;
-        return this;
-    }
-    public getConfig(): object | undefined {
-        return this._config;
-    }
 
     /**
      * Overloading validator fluent functions is a bit tricky. This function will resolve the parameters
@@ -169,12 +158,12 @@ export class FluentValidatorBuilder implements IFluentValidatorBuilder {
                 ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
         }
         else if (ivDesc.conditionCreator == null)   // null or undefined
-            throw new CodingError(`ValidatorConfig must have either a conditionConfig or a conditionCreator.`);
+            this.reportError(new Error(`ValidatorConfig must have either a conditionConfig or a conditionCreator.`));   // throws
 
         // prevent duplicate errorcodes
         let errorCode = resolveErrorCode(ivDesc);
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
-            throw new CodingError(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`);
+            this.reportError(new Error(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`));    // throws
 
         this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
         return this;    // chain!

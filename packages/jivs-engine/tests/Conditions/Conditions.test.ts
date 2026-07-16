@@ -4367,7 +4367,7 @@ describe('class StringLengthCondition', () => {
 
 describe('class AllMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(AllMatchCondition.DefaultConditionType).toBe(ConditionType.And);
+        expect(AllMatchCondition.DefaultConditionType).toBe(ConditionType.All);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
@@ -4375,7 +4375,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -4387,7 +4387,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4401,7 +4401,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4424,7 +4424,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             }]
@@ -4438,7 +4438,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4461,7 +4461,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             },
@@ -4484,7 +4484,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             }]
@@ -4498,7 +4498,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4514,7 +4514,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4530,7 +4530,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
             }],
@@ -4545,7 +4545,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             },
@@ -4569,7 +4569,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: ConditionType.RequireText,
                 // valueHostName omitted meaning it must use parent ValueHost
@@ -4621,7 +4621,7 @@ describe('class AllMatchCondition', () => {
     });
     test('category is Children', () => {
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -4629,7 +4629,7 @@ describe('class AllMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -4641,7 +4641,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let condition = new AllMatchCondition(config);
@@ -4654,7 +4654,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4683,7 +4683,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4711,7 +4711,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4739,7 +4739,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 { conditionType: AlwaysMatchesConditionType },
                 { conditionType: NeverMatchesConditionType }
@@ -4756,7 +4756,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4772,7 +4772,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: DisposableConditionType
             }]
@@ -4786,7 +4786,7 @@ describe('class AllMatchCondition', () => {
 });
 describe('class AnyMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(AnyMatchCondition.DefaultConditionType).toBe(ConditionType.Or);
+        expect(AnyMatchCondition.DefaultConditionType).toBe(ConditionType.Any);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
@@ -4794,7 +4794,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -4806,7 +4806,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4820,7 +4820,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4843,7 +4843,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             }]
@@ -4857,7 +4857,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4880,7 +4880,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4904,7 +4904,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             },
@@ -4927,7 +4927,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             }]
@@ -4941,7 +4941,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4957,7 +4957,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4973,7 +4973,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
             }],
@@ -4988,7 +4988,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             },
@@ -5025,7 +5025,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -5033,7 +5033,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -5045,7 +5045,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let condition = new AnyMatchCondition(config);
@@ -5058,7 +5058,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -5087,7 +5087,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -5115,7 +5115,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,

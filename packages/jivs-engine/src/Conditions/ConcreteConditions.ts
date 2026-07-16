@@ -730,7 +730,7 @@ export interface AllMatchConditionConfig extends EvaluateChildConditionResultsBa
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionConfig>
 {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.All; }
     
     protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         for (let condition of conditions)
@@ -759,7 +759,7 @@ export interface AnyMatchConditionConfig extends EvaluateChildConditionResultsBa
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionConfig>
 {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.Any; }
 
     protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         let countMatches = 0;

@@ -71,7 +71,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
       export class PersonFormEditorRules 
         extends PersonModelRules 
         implements IAdaptModelRulesToForm {
-        protected adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void {
+        protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void {
           // apply some properties to the fields and validators
           adapter.field('firstName', {label: 'First Name'}).requireText({ errorMessage: '{Label} is required.'});
           adapter.field('lastName', {label: 'Last Name'}).requireText({ errorMessage: '{Label} is required.'});
@@ -653,7 +653,7 @@ const vm = new ValidationManager(config);
 A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
 
 The form _should_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface. Use its `adaptToForm()` method to further extend
-the configuration to reflect the needs of your form. `adaptToForm()` passes you a formAdapter (`IValidationManagerConfigFormAdapter`) which is really just a Builder
+the configuration to reflect the needs of your form. `adaptToForm()` passes you a formAdapter (`IConfigFormAdapter`) which is really just a Builder
 with additional methods designed to update the fields supplied in the model.
 
 In this example, the form developer subclasses `PersonModelRules` and adds labels for the UI.
@@ -664,7 +664,7 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
   public adaptToForm(
-    adapter: IValidationManagerConfigFormAdapter,
+    adapter: IConfigFormAdapter,
     options?: RulesConfigOptions
   ): void {
     adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
@@ -1846,7 +1846,7 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
   public adaptToForm(
-    adapter: IValidationManagerConfigFormAdapter,
+    adapter: IConfigFormAdapter,
     options?: RulesConfigOptions): void {
 // make changes to labels, error messages, severity, parsers and more
 // add new validation rules or combine UI logic with business logic rules
@@ -1858,7 +1858,7 @@ From there, you can use the _form adapter_ to further customize. The form adapte
 a builder, with a few new methods designed around the adaption process.
 ```ts
   public adaptToForm(
-    adapter: IValidationManagerConfigFormAdapter,
+    adapter: IConfigFormAdapter,
     options?: RulesConfigOptions): void {
     adapter.useOnlyTheseModelFields('FirstName', 'LastName'); // your form will not be editing any other fields on the model
     adapter.field('FirstName', null, { label: 'First name' });
@@ -2297,7 +2297,7 @@ Let’s go through these types.
   This is useful when the business layer has a model with many fields, 
   but the UI layer is only going to use a subset of those fields.
   ```ts
-  protected adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void
+  protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
   {
     adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // all others are disabled
   }
@@ -2306,7 +2306,7 @@ Let’s go through these types.
   This is useful when the business layer has a model with many fields, 
   but the UI layer is only going to use a subset of those fields.
   ```ts
-  protected adaptToForm(adapter: IValidationManagerConfigFormAdapter, options?: RulesConfigOptions): void
+  protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
   {
     adapter.disableTheseModelFields(['BirthDate', 'Suffix']); // all others remain enabled
   }
@@ -2510,7 +2510,7 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
   public adaptToForm(
-    adapter: IValidationManagerConfigFormAdapter,
+    adapter: IConfigFormAdapter,
     options?: RulesConfigOptions
   ): void {
     adapter.useOnlyTheseModelFields(['FirstName', 'LastName']);

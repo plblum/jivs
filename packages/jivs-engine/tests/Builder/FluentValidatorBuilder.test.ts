@@ -22,6 +22,7 @@ import { NotConditionConfig } from '../../src/Conditions/NotCondition';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { MockValidationServices } from '../TestSupport/mocks';
 import { IBuilderConfigHost, IFluentValidatorBuilder, FluentDataTypeCheckValidatorConfig } from '../../src/Interfaces/ChildBuilders'
+import { CapturingLogger } from '../../src/Support/CapturingLogger';
 
 
 class Publicify_FluentValidatorBuilder extends FluentValidatorBuilder
@@ -202,6 +203,9 @@ describe('FluentValidatorBuilder', () => {
             };
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).not.toThrow();
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).toThrow('ValueHost name "Field1" with errorCode RequireText already defined.');
+            // check logs for the same error
+            let logService = services.loggerService as CapturingLogger;
+            expect(logService.findMessage('ValueHost name "Field1" with errorCode RequireText already defined.')).toBeTruthy();
         
         });
 
@@ -216,6 +220,9 @@ describe('FluentValidatorBuilder', () => {
             };
             expect(() => testItem.publicify_finish(null, 'Error', 'Summary',
                 validatorConfig as FluentValidatorConfig)).toThrow(/conditionConfig or a conditionCreator/);
+            let logService = services.loggerService as CapturingLogger;
+            expect(logService.findMessage('conditionConfig or a conditionCreator')).toBeTruthy();
+            
         });
     });
     describe('resolveOverloadArgs()', ()=> {

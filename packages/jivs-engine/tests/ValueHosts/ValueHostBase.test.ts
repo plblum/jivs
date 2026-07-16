@@ -48,15 +48,15 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
         return this.instanceState;
     }
     public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        super.logger.log(level, gatherFn);
+        this.logger.log(level, gatherFn);
     }
 
     public publicify_logMessage(level: LoggingLevel, messageFn: () => string): void {
-        super.logger.message(level, messageFn);
+        this.logger.message(level, messageFn);
 
     }
     public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
-        super.logger.error(error, gatherFn);
+        this.logger.error(error, gatherFn);
     }
 
 }
@@ -790,7 +790,7 @@ describe('isEnabled and related enabled', () => {
 
 
         if (enablerConfig !== undefined)
-            builder.enabler('Field1', enablerConfig);
+            builder.whenToEnable('Field1', (childBuilder)=> childBuilder.conditionConfig(enablerConfig));
 
         let state: IPublicifiedValueHostInstanceState = {
             name: 'Field1',

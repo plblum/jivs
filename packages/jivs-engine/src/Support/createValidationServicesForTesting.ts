@@ -230,10 +230,6 @@ export function registerAllConditions(cf: IConditionFactory): void
     cf.register<StringLengthConditionConfig>
         (ConditionType.StringLength, (config) => new StringLengthCondition(config));
     cf.register<AllMatchConditionConfig>
-        (ConditionType.And, (config) => new AllMatchCondition(config));
-    cf.register<AnyMatchConditionConfig>
-        (ConditionType.Or, (config) => new AnyMatchCondition(config));
-    cf.register<AllMatchConditionConfig>
         (ConditionType.All, (config) => new AllMatchCondition(config));
     cf.register<AnyMatchConditionConfig>
         (ConditionType.Any, (config) => new AnyMatchCondition(config));

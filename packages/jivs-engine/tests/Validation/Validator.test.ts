@@ -468,8 +468,8 @@ describe('Validator.severity', () => {
         checkDefaultSeverity(ConditionType.GreaterThanOrEqual);
         checkDefaultSeverity(ConditionType.LessThan);
         checkDefaultSeverity(ConditionType.LessThanOrEqual);
-        checkDefaultSeverity(ConditionType.And);
-        checkDefaultSeverity(ConditionType.Or);
+        checkDefaultSeverity(ConditionType.All);
+        checkDefaultSeverity(ConditionType.Any);
         checkDefaultSeverity(ConditionType.CountMatches);
 
     });
@@ -486,7 +486,7 @@ describe('Validator.severity', () => {
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                conditionType: ConditionType.And
+                conditionType: ConditionType.All
             },
             severity: undefined
         });

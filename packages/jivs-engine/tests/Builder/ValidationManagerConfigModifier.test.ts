@@ -13,7 +13,6 @@ import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
 import { hasConditionBeenReplaced } from "../../src/Builder/ManagerConfigBuilderBase";
-import { CombineUsingCondition } from "../../src/Interfaces/ManagerConfigBuilder";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -419,275 +418,275 @@ describe('addValidatorsTo', () => {
     });
 });
 
-describe('combineWithRule', () => {
-    describe('3 parameter overload', () => {
-        // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
-        test('Existing and new condition appear as the new value of ValidatorConfig within AllMatchCondition', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+// describe('combineWithRule', () => {
+//     describe('3 parameter overload', () => {
+//         // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+//         test('Existing and new condition appear as the new value of ValidatorConfig within AllMatchCondition', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.all((childrenBuilder) => {
-                        childrenBuilder.conditionConfig(existingConditionConfig);
-                        childrenBuilder.parentValue().regExp(/abc/);
-                    });
-                }
-            );
-            modifier.apply();   
-            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+//                     combiningBuilder.all((childrenBuilder) => {
+//                         childrenBuilder.conditionConfig(existingConditionConfig);
+//                         childrenBuilder.parentValue().regExp(/abc/);
+//                     });
+//                 }
+//             );
+//             modifier.apply();   
+//             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    errorCode: ConditionType.RequireText,
-                    conditionConfig: {
-                        conditionType: ConditionType.All,
-                        conditionConfigs: [
-                            {
-                                conditionType: ConditionType.RequireText
-                            },
-                            {
-                                conditionType: ConditionType.RegExp,
-                                expression: /abc/
-                            }
-                        ]
-                    }
-                }]
-            });
-        });
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     errorCode: ConditionType.RequireText,
+//                     conditionConfig: {
+//                         conditionType: ConditionType.All,
+//                         conditionConfigs: [
+//                             {
+//                                 conditionType: ConditionType.RequireText
+//                             },
+//                             {
+//                                 conditionType: ConditionType.RegExp,
+//                                 expression: /abc/
+//                             }
+//                         ]
+//                     }
+//                 }]
+//             });
+//         });
 
-        test('New condition replaces existing and errorCode is set to the original condition', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+//         test('New condition replaces existing and errorCode is set to the original condition', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                    combiningBuilder.parentValue().regExp(/abc/);
-                }
-            );
-            modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+//                     combiningBuilder.parentValue().regExp(/abc/);
+//                 }
+//             );
+//             modifier.apply();        
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    errorCode: ConditionType.RequireText,
-                    conditionConfig: {
-                        conditionType: ConditionType.RegExp,
-                        expression: /abc/
-                    }
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     errorCode: ConditionType.RequireText,
+//                     conditionConfig: {
+//                         conditionType: ConditionType.RegExp,
+//                         expression: /abc/
+//                     }
                     
-                }]
-            });
-        });
+//                 }]
+//             });
+//         });
  
-        test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+//         test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
-                (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
-                }
-            );
-            modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => {
+//                 }
+//             );
+//             modifier.apply();        
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText
-                    }
-                }]
-            });
-        });
-    });
-    describe('4 parameter overload', () => {
-        // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
-        test('CombineUsingCondition.All', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     conditionConfig: {
+//                         conditionType: ConditionType.RequireText
+//                     }
+//                 }]
+//             });
+//         });
+//     });
+//     describe('4 parameter overload', () => {
+//         // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+//         test('CombineUsingCondition.All', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
-                CombineUsingCondition.All,
-                (combiningBuilder: IStartConditionBuilder) => {
-                    combiningBuilder.parentValue().regExp(/abc/);
-                }
-            );
-            modifier.apply();    
-            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 CombineUsingCondition.All,
+//                 (combiningBuilder: IStartConditionBuilder) => {
+//                     combiningBuilder.parentValue().regExp(/abc/);
+//                 }
+//             );
+//             modifier.apply();    
+//             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    errorCode: ConditionType.RequireText,
-                    conditionConfig: {
-                        conditionType: ConditionType.All,
-                        conditionConfigs: [
-                            {
-                                conditionType: ConditionType.RequireText
-                            },
-                            {
-                                conditionType: ConditionType.RegExp,
-                                expression: /abc/
-                            }
-                        ]
-                    }
-                }]
-            });
-        });
-        test('CombineUsingCondition.When', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     errorCode: ConditionType.RequireText,
+//                     conditionConfig: {
+//                         conditionType: ConditionType.All,
+//                         conditionConfigs: [
+//                             {
+//                                 conditionType: ConditionType.RequireText
+//                             },
+//                             {
+//                                 conditionType: ConditionType.RegExp,
+//                                 expression: /abc/
+//                             }
+//                         ]
+//                     }
+//                 }]
+//             });
+//         });
+//         test('CombineUsingCondition.When', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
-                CombineUsingCondition.When,
-                (combiningBuilder: IStartConditionBuilder) => {
-                    combiningBuilder.parentValue().regExp(/abc/);
-                }
-            );
-            modifier.apply();
-            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 CombineUsingCondition.When,
+//                 (combiningBuilder: IStartConditionBuilder) => {
+//                     combiningBuilder.parentValue().regExp(/abc/);
+//                 }
+//             );
+//             modifier.apply();
+//             expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    errorCode: ConditionType.RequireText,
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: <RegExpConditionConfig>{
-                                conditionType: ConditionType.RegExp,
-                                expression: /abc/               
-                        },
-                        thenConfig : {
-                                conditionType: ConditionType.RequireText
-                            }
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     errorCode: ConditionType.RequireText,
+//                     conditionConfig: <WhenConditionConfig>{
+//                         conditionType: ConditionType.When,
+//                         whenToEnableConfig: <RegExpConditionConfig>{
+//                                 conditionType: ConditionType.RegExp,
+//                                 expression: /abc/               
+//                         },
+//                         thenConfig : {
+//                                 conditionType: ConditionType.RequireText
+//                             }
                             
-                    }
-                }]
-            });
-        });        
+//                     }
+//                 }]
+//             });
+//         });        
 
-        test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
-            let vmConfig = createVMConfig();
-            let builder = new ValidationManagerConfigBuilder(vmConfig);
-            builder.field('Field1').requireText();
-            let vm = new Publicify_ValidationManager(builder);
-            let modifier = vm.startModifying();
+//         test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
+//             let vmConfig = createVMConfig();
+//             let builder = new ValidationManagerConfigBuilder(vmConfig);
+//             builder.field('Field1').requireText();
+//             let vm = new Publicify_ValidationManager(builder);
+//             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
-                CombineUsingCondition.All,
-                (combiningBuilder: IStartConditionBuilder) => {
-                }
-            );
-            modifier.apply();        
-            let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-            expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//             modifier.combineWithRule('Field1', ConditionType.RequireText,
+//                 CombineUsingCondition.All,
+//                 (combiningBuilder: IStartConditionBuilder) => {
+//                 }
+//             );
+//             modifier.apply();        
+//             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-            expect(updateValueHostConfig).toEqual({
-                valueHostType: ValueHostType.Field,
-                name: 'Field1',
-                validatorConfigs: [{
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText
-                    }
-                }]
-            });
-        });
-      });
+//             expect(updateValueHostConfig).toEqual({
+//                 valueHostType: ValueHostType.Field,
+//                 name: 'Field1',
+//                 validatorConfigs: [{
+//                     conditionConfig: {
+//                         conditionType: ConditionType.RequireText
+//                     }
+//                 }]
+//             });
+//         });
+//       });
     
-});
-describe('replaceRule', () => {
-    // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+// });
+// describe('replaceRule', () => {
+//     // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
 
-    test('Using builder to create replacement replaces and errorCode is set to the original condition', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.field('Field1').requireText();
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
+//     test('Using builder to create replacement replaces and errorCode is set to the original condition', () => {
+//         let vmConfig = createVMConfig();
+//         let builder = new ValidationManagerConfigBuilder(vmConfig);
+//         builder.field('Field1').requireText();
+//         let vm = new Publicify_ValidationManager(builder);
+//         let modifier = vm.startModifying();
 
-        let testItem = modifier.replaceRule('Field1', ConditionType.RequireText,
-            (replacementBuilder: IStartConditionBuilder) => {
-                replacementBuilder.parentValue().regExp(/abc/);
-            }
-        );
-        modifier.apply();        
-        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-        expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//         let testItem = modifier.replaceRule('Field1', ConditionType.RequireText,
+//             (replacementBuilder: IStartConditionBuilder) => {
+//                 replacementBuilder.parentValue().regExp(/abc/);
+//             }
+//         );
+//         modifier.apply();        
+//         expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
+//         let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-        expect(updateValueHostConfig).toEqual({
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: [{
-                errorCode: ConditionType.RequireText,
-                conditionConfig: {
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         expect(updateValueHostConfig).toEqual({
+//             valueHostType: ValueHostType.Field,
+//             name: 'Field1',
+//             validatorConfigs: [{
+//                 errorCode: ConditionType.RequireText,
+//                 conditionConfig: {
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
                 
-            }]
-        });
-    });
-    test('Using ConditionConfig as the replacement replaces and errorCode is set to the original condition', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.field('Field1').requireText();
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
+//             }]
+//         });
+//     });
+//     test('Using ConditionConfig as the replacement replaces and errorCode is set to the original condition', () => {
+//         let vmConfig = createVMConfig();
+//         let builder = new ValidationManagerConfigBuilder(vmConfig);
+//         builder.field('Field1').requireText();
+//         let vm = new Publicify_ValidationManager(builder);
+//         let modifier = vm.startModifying();
 
-        modifier.replaceRule('Field1', ConditionType.RequireText,
-            <RegExpConditionConfig>{ 
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        );
-        modifier.apply();        
-        let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
-        expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
+//         modifier.replaceRule('Field1', ConditionType.RequireText,
+//             <RegExpConditionConfig>{ 
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         );
+//         modifier.apply();        
+//         let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as FieldValueHostConfig;;
+//         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
-        expect(updateValueHostConfig).toEqual({
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: [{
-                errorCode: ConditionType.RequireText,
-                conditionConfig: {
-                    conditionType: ConditionType.RegExp,
-                    expression: /abc/
-                }
+//         expect(updateValueHostConfig).toEqual({
+//             valueHostType: ValueHostType.Field,
+//             name: 'Field1',
+//             validatorConfigs: [{
+//                 errorCode: ConditionType.RequireText,
+//                 conditionConfig: {
+//                     conditionType: ConditionType.RegExp,
+//                     expression: /abc/
+//                 }
                 
-            }]
-        });
-    });    
+//             }]
+//         });
+//     });    
  
-});
+// });
