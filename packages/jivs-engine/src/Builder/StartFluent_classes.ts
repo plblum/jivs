@@ -1,3 +1,7 @@
+/**
+ *  @module Builder/ConcreteClasses/ValidationManagerStartFluent
+ */
+
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { CalculationHandler, CalcValueHostConfig } from "../Interfaces/CalcValueHost";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";

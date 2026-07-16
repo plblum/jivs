@@ -1,6 +1,7 @@
 /**
- *  * @module Builder/ConditionBuilders
- */
+ *  @module Builder/ConcreteClasses/ConditionBuilder
+*/
+
 import { ConditionType } from "../Conditions/ConditionTypes";
 import { ConditionConfig } from "../Interfaces/Conditions";
 import {
@@ -14,7 +15,15 @@ import {
     OptionalNotEqualToValueConditionParams, OptionalRegExpConditionParams,
     OptionalRequireTextConditionParams, OptionalStringLengthConditionParams
 } from "../Interfaces/ChildBuilders";
-import { DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig } from "../Conditions/ConcreteConditions";
+import {
+    DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig,
+    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
+    GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+    MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
+    RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
+} from "../Conditions/ConcreteConditions";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ConditionBuilderBase } from "./ConditionBuilderBase";

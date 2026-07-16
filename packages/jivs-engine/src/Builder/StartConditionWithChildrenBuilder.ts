@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConditionBuilder
+ *  @module Builder/ConcreteClasses/StartConditionWithChildrenBuilder
 */
 
 import { ConditionType } from "../Conditions/ConditionTypes";

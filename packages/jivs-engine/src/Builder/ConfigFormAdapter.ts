@@ -1,4 +1,3 @@
-import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 /**
  * The ConfigFormAdapter is used together with ModuleRule classes that implement 
  * IAdaptModelRulesToForm to adapt the configuration already established according
@@ -20,7 +19,7 @@ import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildB
  *    but not any condition specific rules.
  *    validator() returns the ModifyValidatorBuilder class to chain further modifications.
  * 4. Combine the form's condition with an existing validator's condition using
- *    the ModifyValidatorBuilder.all(), any(), and whenToEnable() methods. This allows the form's condition
+ *    the ModifyValidatorBuilder.and(), or(), and whenToEnable() methods. This allows the form's condition
  *    to be combined with the existing validator's condition, enabling more complex validation logic.
  * 5. Disable an existing validator using the ModifyValidatorBuilder.disable() method.
  *    While frowned upon, this provides high visibility to the action.
@@ -82,15 +81,17 @@ import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildB
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
  *     .disable();
  * ``` 
- * @module Builder/ConfigFormAdapter
+ * @module Builder/ConcreteClasses/ConfigFormAdapter
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { ConditionConfig } from "../Interfaces/Conditions";
 import { ValidatableValueHostBaseConfig } from "../Interfaces/ValidatableValueHostBase";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
-import { AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter, IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder } from "../Interfaces/ManagerConfigBuilder";
+import {
+    AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter,
+    IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
+} from "../Interfaces/ManagerConfigBuilder";
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { CodingError, assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
@@ -99,7 +100,10 @@ import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBa
 import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithOneChildBuilder } from "../Interfaces/ChildBuilders";
+import {
+    CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder,
+    IStartConditionBuilder, IStartConditionWithOneChildBuilder
+} from "../Interfaces/ChildBuilders";
 import { BuilderConfigHostBase } from "../Builder/BuilderConfigHostBase";
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatorConfig } from '../Interfaces/Validator';
@@ -107,6 +111,7 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
 import { WhenConditionConfig } from '../Conditions/WhenCondition';
 import { FluentValidatorConfig } from "../Interfaces/Fluent";
+import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 
 /**
  * Creates a ConfigFormAdapter from a source IManagerConfigBuilder.
@@ -563,6 +568,12 @@ export class ModifyValidatorBuilder
      * with a new condition using an AND logic.
      * Reworks an existing validator placing its condition as a child of AllMatchesCondition
      * together with one you supply.
+     * While it uses the AllMatchesconditon, its syntax uses 'and' to be more intuitive.
+     * ```ts
+     * builder.validator(ConditionType.RequireText).and('customErrorCode', 
+     *  (newCondBuilder)=>
+     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     * ```
      * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
@@ -572,7 +583,7 @@ export class ModifyValidatorBuilder
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public all(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
+    public and(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
         this.replaceChildren(ConditionType.All, newErrorCode, builderCallback);
     }
@@ -581,6 +592,12 @@ export class ModifyValidatorBuilder
      * with a new condition using an OR logic.
      * Reworks an existing validator placing its condition as a child of AnyMatchesCondition
      * together with one you supply.
+     * While it uses the AnyMatchesconditon, its syntax uses 'or' to be more intuitive.
+     * ```ts
+     * builder.validator(ConditionType.RequireText).or('customErrorCode', 
+     *  (newCondBuilder)=>
+     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     * ```
      * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
@@ -590,13 +607,13 @@ export class ModifyValidatorBuilder
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public any(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
+    public or(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
         this.replaceChildren(ConditionType.Any, newErrorCode, builderCallback);
     }
 
     /**
-     * Worker for all/any condition combination.
+     * Worker for and/or condition combination.
      * Combines the existing condition with a new one based on the specified condition type (AND/OR).
      * If the existing condition already matches the specified condition type, it will add the new condition as a child.
      * Otherwise, it will create a new All/AnyMatchCondition with the existing and new conditions as children
@@ -670,7 +687,7 @@ export class ModifyValidatorBuilder
         /**
      * If the validator must not run, it can be disabled. It is preferred
      * that you combine another condition with this one instead of simply disabling it.
-     * Use all(), any(), or whenToEnable() to combine conditions instead of simply disabling the validator.
+     * Use and(), or(), or whenToEnable() to combine conditions instead of simply disabling the validator.
      */
     public disable(): void
     {

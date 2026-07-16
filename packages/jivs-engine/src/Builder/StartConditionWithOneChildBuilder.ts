@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConditionBuilder
+ *  @module Builder/ConcreteClasses/StartConditionWithOneChildBuilder
  */
 import { ConditionConfig } from "../Interfaces/Conditions";
 import { SetConfigOptions, IStartConditionWithOneChildBuilder } from "../Interfaces/ChildBuilders";

@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConditionBuilder
+ *  @module Builder/ConcreteClasses/StartConditionBuilder
  */
 
 import { OneValueConditionBaseConfig } from "../Conditions/OneValueConditionBase";

@@ -1389,7 +1389,7 @@ describe('ModifyValidatorBuilder class', () => {
             }).toThrow(/existingValidator/);
         })
     });
-    describe('all()', () => {
+    describe('and()', () => {
         // these tests expect to combine an existing validator's condition with another
         // by replacing the validator with AndMatchesCondition for existing AND new.
         test('existing validator is RequireText, add AndMatchesCondition with a new condition. Returns a ModifyValidatorBuilder correctly configured', () => {
@@ -1400,7 +1400,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.all('ErrorCode2', (childBuilder) =>
+            result.and('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
                 errorCode: 'ErrorCode2',
@@ -1426,7 +1426,7 @@ describe('ModifyValidatorBuilder class', () => {
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.all('ErrorCode2', null!);
+                result.and('ErrorCode2', null!);
             }).toThrow(/Function expected/);
         });
         test('second parameter does not modify the builder, so it does not create the new condition. Throws', () => {
@@ -1438,7 +1438,7 @@ describe('ModifyValidatorBuilder class', () => {
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.all('ErrorCode2', (childBuilder) => childBuilder);
+                result.and('ErrorCode2', (childBuilder) => childBuilder);
             }).toThrow(/Child builder/);
         });        
         // special case: validatorConfig.conditionConfig = null throws
@@ -1452,7 +1452,7 @@ describe('ModifyValidatorBuilder class', () => {
             existingValidator.conditionConfig = null!;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.all('ErrorCode2', (childBuilder) =>
+                result.and('ErrorCode2', (childBuilder) =>
                     childBuilder.parentValue().dataTypeCheck());
             }).toThrow(/condition is null/);
         });
@@ -1468,7 +1468,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.all('ErrorCode2', (childBuilder) =>
+            result.and('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
                 errorCode: 'ErrorCode2',
@@ -1502,7 +1502,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.all('ErrorCode2', (childBuilder) =>
+            result.and('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
@@ -1540,7 +1540,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.all('', (childBuilder) =>
+            result.and('', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
@@ -1563,7 +1563,7 @@ describe('ModifyValidatorBuilder class', () => {
             });
         });
     });
-    describe('any()', () => {
+    describe('or()', () => {
         // these tests expect to combine an existing validator's condition with another
         // by replacing the validator with AndMatchesCondition for existing AND new.
         test('existing validator is RequireText, add AndMatchesCondition with a new condition. Returns a ModifyValidatorBuilder correctly configured', () => {
@@ -1574,7 +1574,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.any('ErrorCode2', (childBuilder) =>
+            result.or('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
                 errorCode: 'ErrorCode2',
@@ -1600,7 +1600,7 @@ describe('ModifyValidatorBuilder class', () => {
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.any('ErrorCode2', null!);
+                result.or('ErrorCode2', null!);
             }).toThrow(/Function expected/);
         });
         // second parameter does not modify the builder, so it does not create the new condition. Throws
@@ -1613,7 +1613,7 @@ describe('ModifyValidatorBuilder class', () => {
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.any('ErrorCode2', (childBuilder) => childBuilder);
+                result.or('ErrorCode2', (childBuilder) => childBuilder);
             }).toThrow(/Child builder/);
         });
         // special case: validatorConfig.conditionConfig = null throws
@@ -1627,7 +1627,7 @@ describe('ModifyValidatorBuilder class', () => {
             existingValidator.conditionConfig = null!;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
-                result.any('ErrorCode2', (childBuilder) =>
+                result.or('ErrorCode2', (childBuilder) =>
                     childBuilder.parentValue().dataTypeCheck());
             }).toThrow(/condition is null/);
         });
@@ -1643,7 +1643,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.any('ErrorCode2', (childBuilder) =>
+            result.or('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
                 errorCode: 'ErrorCode2',
@@ -1677,7 +1677,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.any('ErrorCode2', (childBuilder) =>
+            result.or('ErrorCode2', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
@@ -1715,7 +1715,7 @@ describe('ModifyValidatorBuilder class', () => {
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-            result.any('', (childBuilder) =>
+            result.or('', (childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
             expect(result.getConfig()).toEqual(<ValidatorConfig>{

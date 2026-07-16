@@ -190,3 +190,5 @@ creates
 * Document using ValidationManager on the server side to take in raw strings from a form, parse, validate.
 * Add ValidationManager.setModelToValues - new method to go through ValueHosts, getting the property name and if found in the supplied model, using setValue on it.
 * Add ValidationManager.updateModelWithValues - new method that takes a supplied Model and overwrites its properties that exist in FieldValueHosts.
+
+* Discard the Modify Builder process or limit its scope due to infrequent need.

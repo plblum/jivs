@@ -6,10 +6,9 @@
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { CalcValueHostConfig, CalculationHandler } from "./CalcValueHost";
-import { IStartConditionBuilder, IFluentValidatorBuilder, IBuilderConfigHost, IConditionBuilder, IStartConditionWithOneChildBuilder } from "./ChildBuilders";
-import { ConditionConfig } from "./Conditions";
+import { IBuilderConfigHost, IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithOneChildBuilder } from "./ChildBuilders";
 import { FieldValueHostConfig } from "./FieldValueHost";
-import { FluentStaticParameters, FluentFieldParameters, FluentFieldValueConfig, FluentValidatorConfig } from "./Fluent";
+import { FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorConfig } from "./Fluent";
 import { IDisposable } from "./General_Purpose";
 import { StaticValueHostConfig } from "./StaticValueHost";
 import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
@@ -109,126 +108,6 @@ export interface BuilderOverrideOptions
      */
     favorUIMessages?: boolean
 }
-
-
-// /** 
-//  * OBSOLETE!
-//  * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
-//  * to override and extend the business layer configuration.
-//  * It allows us to isolate methods specific to the UI layer, 
-//  * so that the business layer does not have to know about them.
-// */
-// export interface IValidationManagerConfigFormAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig>
-// {
-//     /**
-//      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
-//      * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 
-//      * This is useful when the business layer has a model with many fields, 
-//      * but the UI layer is only going to use a subset of those fields.
-//      * @param modelFieldNames - names on ValueHosts already declared. 
-//      * All ValueHosts will have their enabled property set to false, except for those in the list.
-//      */
-//     useOnlyTheseModelFields(modelFieldNames: Array<ValueHostName>): void;
-
-//     /**
-//      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
-//      * will disable any ValueHostConfigs that are in the list of modelFieldNames.
-//      * This is useful when the business layer has a model with many fields, 
-//      * but the UI layer is only going to use a subset of those fields.
-//      * @param modelFieldNames - names on ValueHosts already declared. 
-//      * All ValueHosts will have their enabled property set to false, except for those in the list.
-//      */
-//     disableTheseModelFields(modelFieldNames: Array<ValueHostName>): void;
-
-//     /**
-//      * If it finds the validator with the errorcode specified, 
-//      * it will combine the condition with the existing condition
-//      * using a rule supplied or callback to let you create a conditionConfig.
-//      * If it the validator is not found, it will throw an error and log.
-//      * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
-//      * reflecting the same data as earlier, but now with a modified validator.
-//      * If the ValueHost is on the current override, the existing entry is modified.
-//      *
-//      * The resulting ValidatorConfig's errorCode will not have changed from the original 
-//      * to ensure it aligns with everything depending on the original error code.
-//      * @param valueHostName 
-//      * @param errorCode 
-//      * @param builderFn - A function to create a conditionConfig that will replace the existing. 
-//      * You are passed a Builder object, where you can build your new conditions, 
-//      * and the existing conditionConfig,
-//      * which can be added to a Builder object with the conditionConfig() function.
-//      * ```ts
-//      * builder.combineWithRule('Field1', 'NotNull', 
-//      *   (combiningBuilder, existingConditionConfig)=> {
-//      *      combiningBuilder.when(
-//      *                  (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
-//      *                  (childBuilder)=> childBuilder.conditionConfig(existingConditionConfig));
-//      * });
-//      * ```
-//      * @returns itself for chaining
-//      */
-//     combineWithRule(valueHostName: ValueHostName, errorCode: string,
-//         builderFn: (combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void): IValidationManagerConfigBuilder;
-//     /**
-//      * Uses the combineUsing parameter to determine how to combine the conditions.
-//      * @param valueHostName 
-//      * @param errorCode 
-//      * @param combineUsing 
-//      * @param builderFn - A function to create the condition that you want 
-//      * to combine with the existing condition.
-//      * ```ts
-//      * builder.combineWithRule('Field1', 'NotNull', CombineUsingCondition.When, 
-//      *    (combiningBuilder)=> combiningBuilder.equalToValue('YES', 'Field2'));
-//      * ```
-//      */
-//     combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-//         builderFn: (combiningBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder
-
-//     combineWithRule(valueHostName: ValueHostName, errorCode: string,
-//         arg3: CombineUsingCondition | ((combiningBuilder: IStartConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-//         arg4?: (combiningBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder;
-
-//     /**
-//      * Replace the condition supplying the replacement conditionConfig directly.
-//      * If it finds the validator with the errorcode specified, 
-//      * it will replace the condition with the existing condition.
-//      * If not, it logs and throws an error.
-//      * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
-//      * reflecting the same data as earlier, but now with a modified validator.
-//      * If the ValueHost is on the current override, the existing entry is modified.
-//      *
-//      * The resulting ValidatorConfig's errorCode will not have changed from the original 
-//      * to ensure it aligns with everything depending on the original error code.
-//      * @param valueHostName 
-//      * @param errorCode 
-//      * @param conditionConfig - provide a complete ConditionConfig as the replacement
-//      */
-//     replaceRule(valueHostName: ValueHostName, errorCode: string,
-//         conditionConfig: ConditionConfig): IValidationManagerConfigBuilder
-//     /** 
-//      * Replace supplying the replacement condition through a Builder object.
-//      * @param valueHostName 
-//      * @param errorCode 
-//      * @param builderFn
-//      * Use a function to create a conditionConfig that will replace the existing. You are
-//      * passed the builder, where you can build your new conditions.
-//      * @returns itself for chaining
-//      */
-//     replaceRule(valueHostName: ValueHostName, errorCode: string,
-//         builderFn: (replacementBuilder: IStartConditionBuilder) => void): IValidationManagerConfigBuilder
-//     replaceRule(valueHostName: ValueHostName, errorCode: string,
-//         sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: IStartConditionBuilder) => void)): IValidationManagerConfigBuilder;
-// }
-
-
-// /**
-//  * Supports combineConditionWith to direct how conditions are combined.
-//  */
-// export enum CombineUsingCondition {
-//     When,
-//     All,
-//     Any
-// }
 
 /**
  * Provides value host creation functions for ValueHostsManagerConfigBuilder.
@@ -455,6 +334,12 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      * with a new condition using an AND logic.
      * Reworks an existing validator placing its condition as a child of AllMatchesCondition
      * together with one you supply.
+     * While it uses the AllMatchesconditon, its syntax uses 'and' to be more intuitive.
+     * ```ts
+     * builder.validator(ConditionType.RequireText).and('customErrorCode', 
+     *  (newCondBuilder)=>
+     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     * ```
      * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
@@ -464,12 +349,19 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    all(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
+    and(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
+
     /**
      * Use this method when you want to combine the existing validator condition 
      * with a new condition using an OR logic.
      * Reworks an existing validator placing its condition as a child of AnyMatchesCondition
      * together with one you supply.
+     * While it uses the AnyMatchesconditon, its syntax uses 'or' to be more intuitive.
+     * ```ts
+     * builder.validator(ConditionType.RequireText).or('customErrorCode', 
+     *  (newCondBuilder)=>
+     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     * ```
      * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
      * as the ConditionType that you are combining with, it is primarily used to identify the 
      * new condition in the context of the existing validator.
@@ -479,7 +371,7 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    any(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
+    or(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
 
     /**
      * Use this method to specify a condition that must be met for the existing validator to be evaluated.

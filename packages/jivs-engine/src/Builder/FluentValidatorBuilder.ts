@@ -1,3 +1,22 @@
+/**
+ * Part of the Builder fluent sequence. It configures a validator, with representations
+ * of all conditions in Jivs amongst its methods.
+ * It is typically returned by the Builder.field('name') method to start a chain.
+ * Each condition method returns the same FluentValidatorBuilder for chaining.
+ * 
+ * ```ts
+ * builder.field('fieldname').requireText('Error message', 'Summary message')
+ *    .regExp(/^[a-z]+$/, 'Error message', 'Summary message')
+ *   .notNull('Error message', 'Summary message');
+ * ```
+ * 
+ * The FluentValidatorBuilder modifies ValidatableValueHostBaseConfig objects, of which FieldValueHostConfig
+ * is the typical use case.
+ * Each validator is added to the parent ValidatableValueHostBaseConfig.validatorConfigs array.
+ * 
+ * @module Builder/ConcreteClasses/FluentValidatorBuilder
+ */
+
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig,
     CountMatchesConditionConfig, DataTypeCheckConditionConfig,
@@ -12,17 +31,14 @@ import {
     RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
 } from "../Conditions/ConcreteConditions";
-import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
-import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
-import { ValidatorConfig } from "../Interfaces/Validator";
-import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { resolveErrorCode } from "../Utilities/Validation";
-import { ConditionBuilder } from "./ConditionBuilder";
-import { FluentValidatorConfig } from '../Interfaces/Fluent';
+import { NotConditionConfig } from "../Conditions/NotCondition";
+import { WhenConditionConfig } from "../Conditions/WhenCondition";
+import { ValueHostName } from "../DataTypes/BasicTypes";
 import {
-    IBuilderConfigHost, CompleteConfigBuilderHandler, IFluentValidatorBuilder,
-    IConditionBuilder, ConditionWithChildrenBuilderHandler,
-    ConditionBuilderHandler, FluentAllMatchValidatorConfig,
+    CompleteConfigBuilderHandler,
+    ConditionBuilderHandler,
+    ConditionWithChildrenBuilderHandler,
+    FluentAllMatchValidatorConfig,
     FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
     FluentDataTypeCheckValidatorConfig, FluentEqualToValidatorConfig,
     FluentEqualToValueValidatorConfig, FluentGreaterThanOrEqualValidatorConfig,
@@ -34,13 +50,17 @@ import {
     FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig,
     FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
     FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig,
-    FluentStringLengthValidatorConfig, FluentWhenValidatorConfig
+    FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
+    IConditionBuilder,
+    IFluentValidatorBuilder
 } from "../Interfaces/ChildBuilders";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { NotConditionConfig } from "../Conditions/NotCondition";
-import { WhenConditionConfig } from "../Conditions/WhenCondition";
+import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
+import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
+import { FluentValidatorConfig } from '../Interfaces/Fluent';
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { ValidatableValueHostBaseConfig } from "../Interfaces/ValidatableValueHostBase";
+import { ValidatorConfig } from "../Interfaces/Validator";
+import { assertNotNull } from "../Utilities/ErrorHandling";
+import { resolveErrorCode } from "../Utilities/Validation";
 import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
 
 
