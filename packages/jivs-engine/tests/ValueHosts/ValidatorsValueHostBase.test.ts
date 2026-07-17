@@ -47,13 +47,7 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { IValidatorBuilder } from "../../src/Interfaces/ChildBuilders";
-import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-
-import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
-import { ServiceWithAccessorBase } from "../../src/Services/ServiceWithAccessorBase";
-
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.
@@ -115,19 +109,13 @@ class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerCo
     }
 
 }
-class TestManagerConfigBuilderFactory extends ServiceWithAccessorBase
-    implements IManagerConfigBuilderFactory {
-    public create(configToExtend?: ValueHostsManagerConfig | undefined): IManagerConfigBuilder<ValidationManagerConfig> {
-        return new TestValueHostForValidationManagerConfigBuilder(configToExtend as ValidationManagerConfig ?? this.services);
-    }
-}
+
 
 function supportTestValueHostInServices(services: IValidationServices): void
 {
     let factory = new ValueHostFactory();
     factory.register(new TestValidatorsValueHostGenerator());
     services.valueHostFactory = factory;
-    services.managerConfigBuilderFactory = new TestManagerConfigBuilderFactory();
 }
 
 interface ITestSetupConfigWithMocks {

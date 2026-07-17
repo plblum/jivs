@@ -6,7 +6,7 @@ import { ConditionBuilder } from "../Builder/ConditionBuilder";
 import { ValidatorBuilder } from '../Builder/ValidatorBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { FieldValueHostConfig } from '../Interfaces/FieldValueHost';
-import { IFluentFactory } from '../Interfaces/FluentFactory';
+import { IBuildersFactory } from '../Interfaces/BuildersFactory';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import {
     CompleteConfigBuilderHandler, IBuilderConfigHost, IConditionBuilder,
@@ -18,17 +18,21 @@ import { StartConditionWithChildrenBuilder } from "../Builder/StartConditionWith
 import { StartConditionWithOneChildBuilder } from "../Builder/StartConditionWithOneChildBuilder";
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
-
+import { IManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
+import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
 /**
  * Base interface to provide a factory that supplies:
  * 1. ValidatorBuilder or subclass replacement
  * 2. ConditionBuilder or subclass replacement
  */
-export class FluentFactory extends ServiceWithAccessorBase implements IFluentFactory
+export class BuildersFactory extends ServiceWithAccessorBase implements IBuildersFactory
 {
     constructor() {
         super();
-        this._fluentValidatorBuilderCreator =
+        this._managerConfigBuilder = (parentConfig: ValidationManagerConfig | null) =>
+            new ValidationManagerConfigBuilder(parentConfig as ValidationManagerConfig ?? this.services);
+        this._validatorBuilderCreator =
             (parentConfig: FieldValueHostConfig) =>
                 new ValidatorBuilder(this.services, parentConfig);
         this._conditionBuilderCreator =
@@ -44,7 +48,8 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
                 new StartConditionWithOneChildBuilder(this.services, parentBuilder, completed);
     }
-    private _fluentValidatorBuilderCreator: (parentConfig: FieldValueHostConfig) => IValidatorBuilder;
+    private _managerConfigBuilder: (parentConfig: ValidationManagerConfig | null) => IManagerConfigBuilder<ValidationManagerConfig>;
+    private _validatorBuilderCreator: (parentConfig: FieldValueHostConfig) => IValidatorBuilder;
     private _conditionBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
         IConditionBuilder;
     private _startConditionBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
@@ -53,6 +58,17 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
         IStartConditionWithChildrenBuilder;
     private _startConditionWithOneChildBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
         IStartConditionWithOneChildBuilder;
+
+    /**
+     * Replaces the current ManagerConfigBuilderCreator
+     * @param replacement 
+     */
+    public setManagerConfigBuilder(replacement:
+        (parentConfig: ValidationManagerConfig | null) => IManagerConfigBuilder<ValidationManagerConfig>): void
+    {
+        this._managerConfigBuilder = replacement;
+    }
+
     /**
      * Replaces the current ValidatorBuilderCreator
      * @returns 
@@ -60,7 +76,7 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
     public setValidatorBuilderCreator(replacement:
         (parentConfig: FieldValueHostConfig) => ValidatorBuilder): void
     {
-        this._fluentValidatorBuilderCreator = replacement;
+        this._validatorBuilderCreator = replacement;
     }
 
     /**
@@ -98,6 +114,17 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
     {
         this._startConditionWithOneChildBuilderCreator = replacement;
     }
+
+    /**
+     * Creates the instance of ManagerConfigBuilder.
+     * Its parameter is used by the constructor's parameter.
+     * @param parentConfig - Config object from the parent to host this manager config builder.
+     * @returns The instance of IManagerConfigBuilder.
+     */
+    public createManagerConfigBuilder(parentConfig: ValidationManagerConfig | null): IManagerConfigBuilder<ValidationManagerConfig>
+    {
+        return this._managerConfigBuilder(parentConfig);
+    }
     
     /**
      * Creates the instance of ValidatorBuilder.
@@ -106,7 +133,7 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
      */
     public createValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IValidatorBuilder
     {
-        return this._fluentValidatorBuilderCreator(parentConfig);
+        return this._validatorBuilderCreator(parentConfig);
     }
 
     /**

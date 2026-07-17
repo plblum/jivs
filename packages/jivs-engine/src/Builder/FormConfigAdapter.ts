@@ -489,7 +489,7 @@ export class ModifyFieldBuilder
             this.reportError(new Error(`ValueHost type ${config.valueHostType} config does not support validators.`)); // throws
         }
 
-        return this.services.fluentFactory.createValidatorBuilder(config);
+        return this.services.buildersFactory.createValidatorBuilder(config);
     }
 
     /**
@@ -633,7 +633,7 @@ export class ModifyValidatorBuilder
         let existingCondition = existingValidator.conditionConfig;
         if (!existingCondition)
             this.reportError(new Error('Existing condition is null or undefined.')); // throws
-        let startBuilder = this.services.fluentFactory.createStartConditionBuilder(this as any);
+        let startBuilder = this.services.buildersFactory.createStartConditionBuilder(this as any);
         builderCallback(startBuilder);
         let newCondition = startBuilder.getConfig()!;
         if (!newCondition)
@@ -674,7 +674,7 @@ export class ModifyValidatorBuilder
         let thenConfig = existingValidator.conditionConfig;
         if (!thenConfig)
             this.reportError(new Error('Existing condition is null or undefined.'));    // throws
-        let startBuilder = this.services.fluentFactory.createStartConditionWithOneChildBuilder(this as any);
+        let startBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(this as any);
         builderCallback(startBuilder);
         let whenToEnableConfig = startBuilder.getConfig()!;
         if (!whenToEnableConfig)

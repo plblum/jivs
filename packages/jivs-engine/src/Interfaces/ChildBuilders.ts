@@ -117,7 +117,7 @@ export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TCon
 
 /**
  * Use this when using alternative conditions, as you will need to provide substitutes
- * for each fluent function. Your class should be registered with FluentFactory.
+ * for each fluent function. Your class should be registered with BuildersFactory.
  */
 export interface IValidatorBuilder extends IBuilderConfigHost<object>
 {

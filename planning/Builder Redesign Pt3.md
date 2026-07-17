@@ -768,7 +768,7 @@ public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionBuil
 ```
 
 ```ts
-export class FluentFactory
+export class BuildersFactory
 {
     constructor()
     {

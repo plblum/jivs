@@ -191,12 +191,12 @@ export class ValidatorBuilder
 
     /**
      * Creates the ConditionBuilder used by each Fluent validator function
-     * using the one defined in FluentFactory on ValidationServices.
+     * using the one defined in BuildersFactory on ValidationServices.
      * @returns 
      */
     protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder
     {
-        return this.services.fluentFactory.createConditionBuilder(this, completed);
+        return this.services.buildersFactory.createConditionBuilder(this, completed);
     }
 
     /**

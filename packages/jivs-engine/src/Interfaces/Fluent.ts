@@ -160,12 +160,12 @@
  *          }
  *     }
  *     ```
- * 3. Register your custom builders with the FluentFactory which is in ValidationServices.
+ * 3. Register your custom builders with the BuildersFactory which is in ValidationServices.
  *      ```ts
  *      // within the createValidationServices function, this code already exists, 
  *      // only needing removing comments:
- *      // --- FluentFactory -------------------------------------------
- *      let ff = new FluentFactory();
+ *      // --- BuildersFactory -------------------------------------------
+ *      let ff = new BuildersFactory();
  *      vs.fluentFactory = ff;
  *      // Adding custom conditions to ValidatorBuilder and ConditionBuilder
  *      ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {

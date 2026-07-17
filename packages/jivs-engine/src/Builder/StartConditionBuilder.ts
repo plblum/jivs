@@ -78,7 +78,7 @@ export class StartConditionBuilder
      */
     public parentValue(): IConditionBuilder {
         this._valueHostName = undefined;
-        return this.services.fluentFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
+        return this.services.buildersFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
             (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => this.setConfig(childCondition, { bubbleUp: true, applyValueHostName: false })
         );
     }
@@ -94,7 +94,7 @@ export class StartConditionBuilder
      */
     public fieldValue(valueHostName: string): IConditionBuilder {
         this._valueHostName = valueHostName;
-        return this.services.fluentFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
+        return this.services.buildersFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
             (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => this.setConfig(childCondition,
                 { bubbleUp: true, applyValueHostName: true }
             ) // sets childConfig.valueHostName and calls parent.completed

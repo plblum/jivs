@@ -191,7 +191,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
             conditionType: ConditionType.Not,
             childConditionConfig: null! // updated in the callback of the child builder
         };
-        let childBuilder = this.services.fluentFactory.createStartConditionWithOneChildBuilder(
+        let childBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /* IConditionBuilderBase<TConfig> */) => {
                 notConfig.childConditionConfig = childConfig;
@@ -221,7 +221,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
             whenToEnableConfig: null!,  // pending completion of whenBuilder
             thenConfig: null!   // pending completion of thenBuilder
         };        
-        let whenBuilder = this.services.fluentFactory.createStartConditionWithOneChildBuilder(
+        let whenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /*IConditionBuilderBase<TConfig> */) => {
                 whenConditionConfig.whenToEnableConfig = childConfig;
@@ -230,7 +230,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         whenToEnableCallback(whenBuilder);
         assertNotNull(whenConditionConfig.whenToEnableConfig, 'whenToEnableConfig');
 
-        let thenBuilder = this.services.fluentFactory.createStartConditionWithOneChildBuilder(
+        let thenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /*IConditionBuilderBase<TConfig> */) => {
                 whenConditionConfig.thenConfig = childConfig;
@@ -257,7 +257,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         // We'll actually use another builder to build the child configs
         // and deposit them into the parent builder's config.
 
-        let childBuilder = this.services.fluentFactory.createStartConditionWithChildrenBuilder(
+        let childBuilder = this.services.buildersFactory.createStartConditionWithChildrenBuilder(
             this as IBuilderConfigHost<object>,
             conditionType);
         // pass down inherited valueHostName from parent builder if available

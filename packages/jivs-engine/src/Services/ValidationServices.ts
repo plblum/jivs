@@ -19,13 +19,11 @@ import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolver
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
-import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
-import { ValidationManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 import { ValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from '../Interfaces/CachingService';
 import { CachingService } from './CachingService';
-import { IFluentFactory } from '../Interfaces/FluentFactory';
-import { FluentFactory } from './FluentFactory';
+import { IBuildersFactory } from '../Interfaces/BuildersFactory';
+import { BuildersFactory } from './BuildersFactory';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -134,29 +132,23 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
 
     //#endregion ValidatorFactory
 
-    //#region FluentFactory    
+    //#region BuildersFactory    
     /**
-     * The FluentFactory to use.
-     * It supplies a default if not setup by the user.
+     * Factory for creating various Builder instances.
      */
-    public get fluentFactory(): IFluentFactory {
-        let service = this.getService<IFluentFactory>(ServiceName.fluentFactory);
+    public get buildersFactory(): IBuildersFactory {
+        let service = this.getService<IBuildersFactory>(ServiceName.buildersFactory);
         if (!service) {
-            service = new FluentFactory();
-            this.setService(ServiceName.fluentFactory, service);
+            service = new BuildersFactory();
+            this.setService(ServiceName.buildersFactory, service);
         }
         return service;
     }
-    public set fluentFactory(factory: IFluentFactory) {
-        this.setService(ServiceName.fluentFactory, factory);
+    public set buildersFactory(factory: IBuildersFactory) {
+        this.setService(ServiceName.buildersFactory, factory);
     }
 
-    //#endregion FluentFactory       
-
-    protected defaultManagerConfigBuilderFactory(): IManagerConfigBuilderFactory {
-        return new ValidationManagerConfigBuilderFactory();
-    }
-
+    //#endregion BuildersFactory       
 
     /**
      * Service to get the ICachingService instance that 

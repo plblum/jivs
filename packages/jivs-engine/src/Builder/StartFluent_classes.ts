@@ -273,7 +273,7 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
         let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
         if (!config.validatorConfigs)
             config.validatorConfigs = [];
-        return this.services.fluentFactory.createValidatorBuilder(config);
+        return this.services.buildersFactory.createValidatorBuilder(config);
     }    
 
 

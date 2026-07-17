@@ -149,7 +149,7 @@ export function registerEmailAddress(validationServices: IValidationServices): v
     ag.register(new EmailAddressDataTypeCheckGenerator());
 
     // Adding custom conditions to ValidatorBuilder and ConditionBuilder
-    let ff = validationServices.fluentFactory;
+    let ff = validationServices.buildersFactory;
     ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
         return new EmailAddressValidatorBuilder(validationServices, parentConfig) as unknown as IValidatorBuilder;
     });

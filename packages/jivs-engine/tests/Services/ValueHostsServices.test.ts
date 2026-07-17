@@ -13,9 +13,7 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ValueHostsManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { CachingService } from "../../src/Services/CachingService";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -35,7 +33,6 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.cultureService).toBeInstanceOf(CultureService);    
         expect(testItem.lookupKeyFallbackService).toBeInstanceOf(LookupKeyFallbackService);            
         expect(testItem.valueHostConfigMergeService).toBeInstanceOf(ValueHostConfigMergeService);
-        expect(testItem.managerConfigBuilderFactory).toBeInstanceOf(ValueHostsManagerConfigBuilderFactory);
     });
 });
 describe('Replace factories and services', () => {
@@ -105,14 +102,6 @@ describe('Replace factories and services', () => {
         testItem.valueHostFactory = replacement;
         expect(testItem.valueHostFactory).toBe(replacement);
     });    
-
-    test('Replace managerConfigBuilderFactory', () => {
-        let replacement = new ValueHostsManagerConfigBuilderFactory();
-        let testItem = new ValueHostsServices();
-        testItem.managerConfigBuilderFactory = replacement;
-        expect(testItem.managerConfigBuilderFactory).toBe(replacement);
-        expect(replacement.services).toBe(testItem);
-    });     
    
 });
 describe('valueHostFactory property', () => {
@@ -303,7 +292,6 @@ describe('dispose', () => {
         testItem.valueHostConfigMergeService = new ValueHostConfigMergeService();
         testItem.textLocalizerService = new TextLocalizerService();
         testItem.valueHostFactory = new ValueHostFactory();
-        testItem.managerConfigBuilderFactory = new ValueHostsManagerConfigBuilderFactory();
         testItem.dispose();
 
         expect(() => testItem.conditionFactory).toThrow(TypeError);        
@@ -311,7 +299,6 @@ describe('dispose', () => {
         expect(() => testItem.dataTypeComparerService).toThrow(TypeError);
         expect(() => testItem.textLocalizerService).toThrow(TypeError);
         expect(() => testItem.valueHostConfigMergeService).toThrow(TypeError);
-        expect(() => testItem.managerConfigBuilderFactory).toThrow(TypeError);
 
     });
 });

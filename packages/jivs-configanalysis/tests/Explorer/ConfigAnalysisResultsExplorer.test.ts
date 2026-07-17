@@ -4013,7 +4013,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
             builder.field('NewField', LookupKey.Date, 
                 {
@@ -4040,7 +4040,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                     twoDigitYearBreak: 29
                 }));            
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
             builder.field('NewField', LookupKey.Date,
                 {
@@ -4072,7 +4072,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             });
 
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
             builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
@@ -4097,7 +4097,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 'es': 'Esto es necesario'
             });
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
             builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
@@ -4115,7 +4115,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 ConditionType.LessThanOrEqualValue,
                 (config) => new LessThanOrEqualValueCondition(config));
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
             builder.field('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
                 conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
             });

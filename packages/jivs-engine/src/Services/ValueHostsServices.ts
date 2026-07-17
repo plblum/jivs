@@ -25,8 +25,6 @@ import { CodingError } from '../Utilities/ErrorHandling';
 import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService';
 import { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
-import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
-import { ValueHostsManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 import { ValueHostConfigMergeService } from './ConfigMergeService';
 
 /**
@@ -214,25 +212,6 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     }
 
     //#endregion ValueHostFactory
-    /**
-     * Creates the ManagerConfigBuilder instances.
-     * Defaults to using ManagerConfigBuilderFactory.
-     */
-    public get managerConfigBuilderFactory(): IManagerConfigBuilderFactory {
-        let service = this.getService<IManagerConfigBuilderFactory>(ServiceName.managerConfigBuilder);
-        if (!service) {
-            let factory = service = this.defaultManagerConfigBuilderFactory();
-            this.setService(ServiceName.managerConfigBuilder, factory);
-        }
-        return service;
-    }
-    public set managerConfigBuilderFactory(factory: IManagerConfigBuilderFactory) {
-        this.setService(ServiceName.managerConfigBuilder, factory);
-    }
-
-    protected defaultManagerConfigBuilderFactory(): IManagerConfigBuilderFactory {
-        return new ValueHostsManagerConfigBuilderFactory();
-    }   
 
 }
 

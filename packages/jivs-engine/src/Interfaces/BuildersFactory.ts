@@ -12,14 +12,23 @@ import {
 import { FieldValueHostConfig } from './FieldValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
+import { ValidationManagerConfig } from './ValidationManager';
+import { IManagerConfigBuilder } from './ManagerConfigBuilder';
 
 /**
  * Base interface to provide a factory that supplies:
  * 1. ValidatorBuilder or subclass replacement
  * 2. ConditionBuilder or subclass replacement
  */
-export interface IFluentFactory extends IServiceWithAccessor
+export interface IBuildersFactory extends IServiceWithAccessor
 {
+    /**
+     * Replaces the current ValidatorBuilderCreator
+     * @param replacement 
+     */
+    setValidatorBuilderCreator(replacement:
+        (parentConfig: FieldValueHostConfig) => IValidatorBuilder): void;
+
     /**
      * Replaces the current ValidatorBuilderCreator
      * @returns 
@@ -56,6 +65,14 @@ export interface IFluentFactory extends IServiceWithAccessor
         (parentBuilder: IBuilderConfigHost<object>, 
         completed?: CompleteConfigBuilderHandler<any>) => IStartConditionWithOneChildBuilder): void;
 
+    /**
+     * Creates the instance of ManagerConfigBuilder.
+     * Its parameter is used by the constructor's parameter.
+     * @param parentConfig - Config object from the parent to host this builder.
+     * It can be null, in which case the builder will use the services object that owns this factory.
+     */
+    createManagerConfigBuilder(parentConfig: ValidationManagerConfig | null): IManagerConfigBuilder<ValidationManagerConfig>;
+    
     /**
      * Creates the instance of ValidatorBuilder.
      * Its parameter is used by the constructor's parameter.

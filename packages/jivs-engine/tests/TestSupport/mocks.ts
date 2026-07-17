@@ -47,14 +47,12 @@ import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../.
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
-import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
-import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
-import { IFluentFactory } from "../../src/Interfaces/FluentFactory";
-import { FluentFactory } from "../../src/Services/FluentFactory";
+import { IBuildersFactory } from "../../src/Interfaces/BuildersFactory";
+import { BuildersFactory } from "../../src/Services/BuildersFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -303,9 +301,8 @@ export class MockValidationServices implements IValidationServices
         this.messageTokenResolverService = new MessageTokenResolverService();
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
-        this.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
         this.cachingService = new CachingService();
-        this.fluentFactory = new FluentFactory();
+        this.buildersFactory = new BuildersFactory();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -510,27 +507,17 @@ export class MockValidationServices implements IValidationServices
     }
     private _validatorFactory: IValidatorFactory;
 
-    public get fluentFactory(): IFluentFactory
+    public get buildersFactory(): IBuildersFactory
     {
-        return this._fluentFactory;
+        return this._buildersFactory;
     }
-    public set fluentFactory(factory: IFluentFactory)
+    public set buildersFactory(factory: IBuildersFactory)
     {
-        this._fluentFactory = factory;
+        this._buildersFactory = factory;
         factory.services = this;
     }
-    private _fluentFactory!: IFluentFactory;    
+    private _buildersFactory!: IBuildersFactory;    
 
-    public get managerConfigBuilderFactory(): IManagerConfigBuilderFactory
-    {
-        return this._managerConfigBuilderFactory;
-    }
-    public set managerConfigBuilderFactory(factory: IManagerConfigBuilderFactory)
-    {
-        this._managerConfigBuilderFactory = factory;
-        factory.services = this;
-    }
-    private _managerConfigBuilderFactory!: IManagerConfigBuilderFactory; 
 
     public get cachingService(): ICachingService {
         return this._cachingService;

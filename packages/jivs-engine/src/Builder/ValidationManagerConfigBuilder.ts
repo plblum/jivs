@@ -27,10 +27,10 @@ import { ValidationManagerStartFluent } from "./StartFluent_classes"
 export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
         let services = (arg1 as ValidationManagerConfig).services;
-        return services.managerConfigBuilderFactory.create(arg1 as ValidationManagerConfig) as ValidationManagerConfigBuilder;
+        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as ValidationManagerConfigBuilder;
     }
     let services = arg1 as IValidationServices;
-    return services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+    return services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 }
 
 /**

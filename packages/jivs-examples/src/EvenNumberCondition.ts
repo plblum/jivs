@@ -147,7 +147,7 @@ export function registerEvenNumberCondition(validationServices: IValidationServi
     cf.register<EvenNumberConditionConfig>(evenNumberConditionType, (config) => new EvenNumberCondition(config));
     
     // Adding custom conditions to ValidatorBuilder and ConditionBuilder
-    let ff = validationServices.fluentFactory;
+    let ff = validationServices.buildersFactory;
     ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
         return new EvenNumberValidatorBuilder(validationServices, parentConfig) as unknown as IValidatorBuilder;
     });
