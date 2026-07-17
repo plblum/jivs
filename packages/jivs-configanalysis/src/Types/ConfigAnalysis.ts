@@ -47,7 +47,7 @@ export interface IConfigAnalysis {
      */
     analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
-     * Analyze the configuration found in the Builder or Modifier object
+     * Analyze the configuration found in the Builder object
      * @param builder 
      * @param options 
      */

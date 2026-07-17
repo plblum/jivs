@@ -158,12 +158,8 @@ export class ConfigFormAdapter
      * perspective.
      * 
      * The UI layer can override them in several ways:
-     * 1. Replacing them directly using updateValidator during configuration.
-     * 2. Replacing them directly once ValidationManager exists, using startModifier().
-     *    modifier.updateValidator('valuehostname', 'errorcode', { errorMessage: 'replacement'})
-     *    or
-     *    modifier.valueHostType('valuehostname').ruleName(null, 'replacement')
-     * 3. By using those registered with TextLocalizationService.
+     * 1. Use this ConfigFormAdapter.modify().validator() to change the error messages.
+     * 2. By using those registered with TextLocalizationService.
      *    To use them, there should not be any error message already
      *    supplied to the validator and business layer messages get in the way.
      * 

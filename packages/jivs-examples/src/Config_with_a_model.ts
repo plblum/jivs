@@ -87,10 +87,6 @@ export class PersonEditFormRules
  4. Use the builder API to add and modify ValueHosts and validators.
  5. Attach callbacks to Builder object
  6. Create the ValidationManager, passing in the builder object.
- 7. Where you need to change the configuration, after this point, use the Modifier API.
-    Call the startModifier() method on the ValidationManager to get a Modifier object
-    and use its API. Once done, call the apply() method to apply the changes.
-    In this demo, look for the Modifier API in the onValueChanged callback.
 */
 export function configPersonEditFormRules(): ValidationManager
 {
@@ -98,13 +94,13 @@ export function configPersonEditFormRules(): ValidationManager
     let services = createValidationServices('en');
     let rules = new PersonEditFormRules(services);
     let config = rules.configure();
-    config.onValueChanged = onValueChanged; 
+    config.onValueChanged = onValueChangedHandler; 
     let vm = new ValidationManager(config);
 
     // at this point, use the ValidationManager to validate your model.
     return vm;
 }
 
-export function onValueChanged(vh: IValueHost, oldValue: any) : void {
+export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {
   // just a stub to show that the onValueChanged callback is available for use.
 }

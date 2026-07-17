@@ -158,15 +158,10 @@ export function createValidationServices(cultureID: string): ValidationServices 
 // Callback functions used by ValidationManager.
 
 // Builder.onValueChanged is called each time any ValueHost's value changes.
-// Here we want a change in the timeZone ValueHost to trigger a change in the startDate ValueHost's label.
-// It demonstrates the use of the Modifier API
-export function onValueChangedUsingModifierAPI(vh: IValueHost, oldValue: any) : void {
+export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {
     if (vh.getName() === 'timeZone')
     {
-        let vm = vh.valueHostsManager as IValidationManager;
-        let modifier = vm.startModifying();
-        modifier.field('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
-        modifier.apply();
+        // do something
     }
 }
 

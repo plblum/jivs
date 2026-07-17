@@ -37,10 +37,6 @@
  * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
  * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
  * let vm = new ValidationManager(builder);
- * 
- * let modifier = vm.startModifying();
- * modifier.field('price').requireText();   // add this validator
- * modifier.apply();
  * ```
  * 
  * ## How this system works

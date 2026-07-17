@@ -11,10 +11,6 @@
   Phase 2
      Create the ValidationManager through your FormRulesBase subclass.
      Wire up any callbacks from the ValidationManagerConfig object to your UI layer.
-  
-  Additional example:
-     While the ValidationManager is running, the UI layer can still change the configuration.
-     This phase uses the Modifier API, available from the startModifier() method on the ValidationManager.
 
   To accomplish our goal, we will setup the ValidationManager with the following
   ValueHosts and validators:
@@ -33,7 +29,6 @@ import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHo
 import { IValueHostsManager, } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValidationManager, } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 
 import { createValidationServices, timeZoneRegex } from "./Config_example_common_code";
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
@@ -86,40 +81,19 @@ export function configUsingDateRangeFormRules(): ValidationManager
     let services = createValidationServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
-    config.onValueChanged = onValueChangedUsingModifierAPI; // shows the modifier API in action.
+    config.onValueChanged = onValueChangedHandler;
     let vm = new ValidationManager(config);
 
     // at this point, use the ValidationManager to validate your model.
 
-    // Additional example: Use the Modifier API to change the startDate label when the timeZone ValueHost changes.
-    // We want to show the current time zone in the start date label.
-    // When timeZonePicker's change event fires, we'll pass the input value 
-    // to the timeZone ValueHost,
-    // where the CleanUpStringParser will convert it into a native value.
-    // Then the ValueHost will trigger the onValueChanged callback, 
-    // which will update the start date label.
-    // The parser is setup in the ValidationServices object and 
-    // selected because of the LookupKey.String data type
-    // on the TimeZone ValueHost.
-    let element: HTMLSelectElement = document.getElementById('timeZonePicker') as HTMLSelectElement;
-    element.addEventListener('change', () => {
-        vm.vh.field('timeZone').setTextValue(element.value);
-    });
-    
     return vm;
 }
 
 // Phase 4:
 // Builder.onValueChanged is called each time any ValueHost's value changes.
-// Here we want a change in the timeZone ValueHost to trigger a change 
-// in the startDate ValueHost's label.
-// It demonstrates the use of the Modifier API
-export function onValueChangedUsingModifierAPI(vh: IValueHost, oldValue: any) : void {
+export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {
     if (vh.getName() === 'timeZone')
     {
-        let vm = vh.valueHostsManager as IValidationManager;
-        let modifier = vm.startModifying();
-        modifier.field('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
-        modifier.apply();
+        // do something here
     }
 }

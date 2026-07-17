@@ -19,7 +19,7 @@ import { IValueHostsServices } from "./ValueHostsServices";
 
 
 /**
- * Base interface for a ValueHostsManagerConfigBuilder and Modifier.
+ * Base interface for a ValueHostsManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
  * and ValidationManagerConfig through meaningful code.
  */

@@ -38,8 +38,8 @@ import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./St
  * (although its great if you have to write conversion between your own business logic
  * and Jivs).
  * 
- * The Builder and Modifier classes provide a fluent API to create the ValueHostConfig objects and add them to the ValidationManagerConfig.
- * ManagerConfigBuilderBase is the base class for both the Builder and Modifier classes.
+ * The Builder provides a fluent API to create the ValueHostConfig objects and add them to the ValidationManagerConfig.
+ * ManagerConfigBuilderBase is the base class.
  * 
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
  * 
@@ -70,18 +70,6 @@ import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./St
  *   }
  * }
  * ```
- * Once the ValidationManager is created, you can modify it later using the Modifier.
- * ```ts
- * let services = createValidatorServices();
- * let rules = new PersonEditFormRules(services);
- * let config = rules.configure();
- * let vm = new ValidationManager(config);
- * // later when you need to modify vm:
- * // in this example, the user's language is changed to French.
- * let modifier = vm.startModifying();
- * modifier.field('birthDate', null, { label: 'date de naissance'});   // let's disable the existing validator
- * modifier.apply(); // consider modifier disposed at this point
- * ```
  * ## Without the ModelRulesBase, using the Builder directly.
  * The code is very similar to that above, except you explicitly create the Builder and add the ValueHostConfigs to it.
  * In this case, you are likely to be working only on the UI, and can declare all fields at once.
@@ -94,11 +82,6 @@ import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./St
  *        .lessThan('today');
  * builder.static('today', LookupKey.Date, { initialValue: new Date() }
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
- * // later when you need to modify vm:
- * // in this example, the user's language is changed to French.
- * let modifier = vm.startModifying();
- * modifier.field('birthDate', null, { label: 'date de naissance'});   // let's disable the existing validator
- * modifier.apply(); // consider modifier disposed at this point
  * ```
  */
 export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
@@ -141,7 +124,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     /**
      * The state is not intended to be used directly. However, 
-     * it is exposed to allow sharing it with other Builder or Modifier instances, 
+     * it is exposed to allow sharing it with other Builder instances, 
      * so that they can edit the same configuration.
      * This member is not part of the IManagerConfigBuilder interface, and is not intended to be used directly.
      * @returns 
@@ -295,7 +278,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     /**
      * Gets a ValueHostConfig with matching name by looking in previous overrides and the baseConfig.
-     * Goal is to find a ValueHostConfig that existed prior to creating the Modifier or using addOverride().
+     * Goal is to find a ValueHostConfig that existed prior to using addOverride().
      * @param valueHostName - case sensitive match against existing
      * @param throwWhenNotFound 
      * @returns 

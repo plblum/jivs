@@ -839,7 +839,6 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     + [`ValidationManagerConfigBuilder class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Builder object, use it to configure the ValidationManager class. Internally, it prepares the `ValidationManagerConfig type`.
     + [`ConfigFormAdapter class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Configuration Form Adapter, use it to configure the ValidationManager class from
     within the `IAdaptModelRulesToForm.adaptToForm()` method. Internally, it prepares the `ValidationManagerConfig type`.
-    + [`ValidationManagerConfigModifier class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Modifier object, use it to change the configuration once the ValidationManager has been created. Internally, it modifies the `ValidationManagerConfig type`.
 
 -   [`Condition classes`](#conditions---the-validation-rules) – Classes that evaluate value(s) against a rule
     to see if those values conform. `Condition classes` exist for each
@@ -906,8 +905,6 @@ Let's cover all of the Condition-building functions of the [`Builder API`](#conf
 ```ts
 builder.field('field').conditionName(required parameters, errorMessage?, summaryMessage? );
 builder.field('field').conditionName(required parameters, { validator properties } );
-
-modifier.field('field').conditionName(required parameters, { condition properties }?);
 ```
 - The *condition properties* argument is an object with any properties offered by the Condition's configuration that are not elsewhere. It is omitted if the rest of the function parameters cover those properties. Each function below shows its condition properties object.
 - The *validator properties* argument blends the condition properties with:
@@ -1778,7 +1775,7 @@ Jivs provides numerous `Condition classes`.
 </details>
 
 To use them, you need to provide a configuration with properties specific to its class. 
-> Configuration must be setup when [configuring the ValidationManager](#configuring-the-validationmanager-the-builder-api) or [using the Modifier object](#Modifying the configuration with the Modifier object) after it was created.
+> Configuration must be setup when [configuring the ValidationManager](#configuring-the-validationmanager-the-builder-api).
 
 We'll work with this example: Compare a date from the Input to today's date.
 
@@ -2122,7 +2119,7 @@ interface IValidator {
 
 ### Configuring Validators
 Validators have an underlying object, ValidatorConfig, that hosts the configuration. You generally use the [Builder API](#configuring-the-validationmanager-the-builder-api) to assist setting it up.
-> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager) or [using the Modifier object](#Modifying the configuration with the Modifier object) after it was created.
+> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager).
 ```ts
 interface ValidatorConfig {
     errorCode?: string;
@@ -2146,7 +2143,7 @@ Let’s go through each property.
   + It is used by these features:
     + Lookup the localized error message with the [`TextLocalizerService`](#localizing-strings-textlocalizerservice).
     + It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it. IssueFound is passed to your UI in these ValidationManager callbacks: `onValidationStateChanged` and `onValueHostValidationStateChanged`.
-    + When the Builder or Modifier object has to merge validators using the `ValidatorConfigMergeService`.
+    + When the Builder object has to merge validators using the `ValidatorConfigMergeService`.
     + When business logic provides errors, if its own error code matches this property, this validator reports an error, making it easy to ensure error messages are consistent and UI friendly.
   + Set it directly in these cases:
     + The same condition type is used more than once.
@@ -2480,7 +2477,7 @@ The `builder.field()` function allows appending validators. Just use the name of
 ```ts
 builder.field('StartDate').requireText().regExp(/expression/);
 ```
-> The same chaining applies to the `Configuration Form Adapter` and `Modifier object`.
+> The same chaining applies to the `Configuration Form Adapter`.
 
 With the `Builder object`, all chained functions have parameters to supply key validator values like error message, error code and severity. Those that need it have parameters for configuring the Conditions too. Most parameters are optional, and many take `null` if you don't want to set them.
 ```ts
@@ -2489,91 +2486,6 @@ builder.field('StartDate').regExp(expression, ignoreCase, {condition parameters}
 ```
 For details on all validators using the Builder API, see [All condition configurations](#all-condition-configurations).
 
-#### Modifying the configuration with the Modifier object
-Sometimes its necessary to change the configuration after creating the ValidationManager, perhaps just a property on a Validator.
-
-> If you want to add a ValueHost or Validator, consider adding them during initial configuration and use their enabled property to disable them. Later the configuration change is just changing the enabled property.
-
-You will use the `Modifier object`, which is very similar to the `Builder object`, except it expects to merge your changes with the existing configuration. The `Modifier object` supports the Builder API with a few additions.
-
-1. Call `startModifying()` on the ValidationManager to get the `Modifier object`.
-2. Use the same functions as on build, like `field()`, `static()` and validators attached to `field()`.
-3. Call the `apply()` function on the `Modifier object`.
-
-In this example, *vm* is the ValidationManager instance.
-```ts
-let modifier = vm.startModifying();
-modifier.field('Start Date').lessThan(null, null, 'some new error message', {
-    summaryMessage: 'some new error message for {Label}'
-});
-modifier.apply();
-```
-> Don't use the `Modifier object` to change the data value of a ValueHost. The data value is stateful information, not configuration.
-
-In the previous example, that code will either add or update an existing `FieldValueHost` and its lessThan validator. If you wanted to change only the error messages, here is another syntax with a focus only on changing validator parameters like error messages.
-
-```ts
-let modifier = vm.startModifying();
-modifier.updateValidator('Start Date', ConditionType.LessThan, {
-    errorMessage: 'some new error message',
-    summaryMessage: 'some new error message for {Label}'
-});
-modifier.apply();
-```
-You must be careful not to disable the validation rules supplied by the business logic layer without good reason. Yet the UI often has to augment them or replace them with an improved rule. The Builder API includes two functions designed to make any changes transparent: `combineWithRule()` and `replaceRule()`. When combining, the business logic Condition is retained, with the UI adding a second condition. Both become children of either the `AllMatchCondition`, `AnyMatchCondition`, or `WhenCondition`.
-
-> These functions are available on the `Configuration Form Adapter` too.
-
-Here we elect to combine a new condition with the `RegExpCondition` supplied by business object layer with a `StringLengthCondition` by placing them under an `AllMatchCondition`.
-
-```ts
-// Suppose your ValidationManager already had this ValueHost:
-builder.field('Key', LookupKey.String, { label: 'Start date'} ).regExp(/^[\d[ABCD_]+$/);
-
-// assume 'vm' references the ValidationManager
-let modifier = vm.startModifying();
-modifier.combineWithRule('Key', ConditionType.RegExp, CombiningUsingCondition.All,
-  (combiningBuilder)=> combiningBuilder.stringLength(10));
-modifier.apply();
-```
-The result would be the same as if business logic had initially done this:
-
-```ts
-builder.field('Key', LookupKey.String, { label: 'Start date'} ).all(
-  (childrenBuilder)=> [
-      childrenBuilder.parentValue().regExp(/^[\d[ABCD_]+$/),
-      childrenBuilder.parentValue().stringLength(10)
-    ]);
-```
-#### The Modifier object
-Here's the Builder API on the `Modifier object`:
-```ts
-class ValidationManagerConfigModifier {
-    field(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    field(valueHostName, partial config?): FluentValidatorBuilder;
-    field(partial config?): FluentValidatorBuilder;
-    static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
-    static(valueHostName, partial config?): ValidationManagerConfigBuilder;
-    static(partial config?): ValidationManagerConfigBuilder;
-    calc(valueHostName, dataType, calcFn): ValidationManagerConfigBuilder;    
-    
-    updateValidator(valueHostName, errorCode, { *validator properties* }): ValidationManagerConfigModifier;
-    addValidatorsTo(valueHostName): FluentValidatorBuilder;
-    combineWithRule(valueHostName, errorCode, CombineUsingCondition parameter, builderFn): ValidationManagerConfigModifier;
-    combineWithRule(valueHostName, errorCode, builderFn): ValidationManagerConfigModifier;  
-    replaceRule(valueHostName, errorCode, builderFn):   ValidationManagerConfigModifier;  
-}
-```
-Let's go through these members:
-- `field()` adds or modifies an [FieldValueHost](#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
-- `static()` adds or modifies a [StaticValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
-- `calc()` adds or modifies a [CalcValueHost](#valuehosts) configuration. See [Configuring ValueHosts with Builder API](#configuring-valuehosts-with-the-builder-api).
-- `updateValidator()` is a simplified way to modify properties on a validator, including error message. For the *validator properties* argument, see [Configuring Validators](#configuring-validators).
-
-  `updateValidator('fieldname', ConditionType.RegExp, { errorMessage: 'new message' })` is effectively the same as writing: `field('fieldname').regExp(null, null, 'new message')`.
-- `addValidatorsTo()` is a simplified way to add a validator without first figuring out the valueHost type. Use it like this: `addValidatorsTo('fieldname').regExp(parameters)`
-- `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
-- `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
 ## Rules
 Rules classes are the preferred way to define reusable validation rules in Jivs.
 In most apps, you should create a subclass of `ModelRulesBase` to package the validation rules that belong to your business logic model.
@@ -2586,9 +2498,9 @@ You then create the `ValidationManager` from that config.
 
 Use these types depending on where the rules belong:
 
-* `ModelRulesBase` - Define validation rules that belong to the business logic model.
-* `FormRulesBase` - Define validation rules that belong directly to a form when there is no business logic model.
-* `IAdaptModelRulesToForm` - Implement this on a form-specific subclass when the form consumes rules from a `ModelRulesBase` subclass.
+- `ModelRulesBase` - Define validation rules that belong to the business logic model.
+- `FormRulesBase` - Define validation rules that belong directly to a form when there is no business logic model.
+- `IAdaptModelRulesToForm` - Implement this on a form-specific subclass when the form consumes rules from a `ModelRulesBase` subclass.
 
 ### What `configure()` gives you
 
@@ -2764,7 +2676,6 @@ interface IValidationServices {
     valueHostConfigMergeService: IValueHostConfigMergeService;
     validatorConfigMergeService: IValidatorConfigMergeService;    
     managerConfigBuilderFactory: IManagerConfigBuilderFactory;
-    managerConfigModifierFactory: IManagerConfigModifierFactory;
     fluentFactory: IFluentFactory;
     lookupKeyFallbackService: ILookupKeyFallbackService;
     messageTokenResolverService: IMessageTokenResolverService;    

@@ -83,7 +83,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * - ValueHost (including all subclasses)
  * - Validator
  * - Condition (by only replacing it when combineWithRule() or replaceRule() functions 
- * where used in the Builder/Modifier)
+ * where used in the Builder)
  * 
  * Its basic behavior is to copy a list of properties from phase 2 over phase 1's object.
  * When phase2 has a property not found in phase1, its just copied.
@@ -93,10 +93,6 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * There are some properties that are strictly controlled by ConfigMergeService like ValueHostName (cannot change it)
  * and ValueHostType (changes automatically for upscaling Property to Field). Also ValidationConfig, ConditionConfig cannot be 
  * specified for replacement. But their children can. 
- * 
- * Conditions -- the validatorConfig.conditionConfig property -- are a special case. 
- * They are resolved by defining the conditions through 
- * combineWithRule() or replaceRule() functions where used in the Builder/Modifier.
  * 
  */
 export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccessorBase

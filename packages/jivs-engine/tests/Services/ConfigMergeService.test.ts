@@ -794,7 +794,7 @@ describe('ValidatorConfigMergeService', () => {
         test('Source and destination conflicting Validators merges validatorConfigs except nochange for conditionConfig', () => {
             //!! NOTE: There is an override for conditionConfig. It involves passing a special flag
             // through the ValidatorConfig. The ValidatorConfigMergeService respects that flag and replaces.
-            // That capability is tested in the Builder and Modifier code tests.
+            // That capability is tested in the Builder code tests.
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Field,
