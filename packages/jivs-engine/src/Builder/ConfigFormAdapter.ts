@@ -574,18 +574,13 @@ export class ModifyValidatorBuilder
      *  (newCondBuilder)=>
      *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
      * ```
-     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
-     * as the ConditionType that you are combining with, it is primarily used to identify the 
-     * new condition in the context of the existing validator.
-     * Can be an empty string to retain the original error code of the existing validator.
-     * This is especially useful when the existing validator is AllMatchesCondition
-     * because we are just adding a new condition to the existing AllMatchesCondition.
+     * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public and(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
+    public and(builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
-        this.replaceChildren(ConditionType.All, newErrorCode, builderCallback);
+        this.replaceChildren(ConditionType.All, builderCallback);
     }
     /**
      * Use this method when you want to combine the existing validator condition 
@@ -598,18 +593,13 @@ export class ModifyValidatorBuilder
      *  (newCondBuilder)=>
      *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
      * ```
-     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
-     * as the ConditionType that you are combining with, it is primarily used to identify the 
-     * new condition in the context of the existing validator.
-     * Can be an empty string to retain the original error code of the existing validator.
-     * This is especially useful when the existing validator is AllMatchesCondition
-     * because we are just adding a new condition to the existing AllMatchesCondition.
+     * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    public or(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
+    public or(builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
-        this.replaceChildren(ConditionType.Any, newErrorCode, builderCallback);
+        this.replaceChildren(ConditionType.Any, builderCallback);
     }
 
     /**
@@ -623,7 +613,7 @@ export class ModifyValidatorBuilder
      * @param builderCallback 
      * @returns 
      */
-    protected replaceChildren(conditionType: ConditionType, errorCode: string,
+    protected replaceChildren(conditionType: ConditionType, 
         builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
         assertFunction(builderCallback);
@@ -643,8 +633,8 @@ export class ModifyValidatorBuilder
             if (owner.conditionConfigs == null) // null/undefined
                 owner.conditionConfigs = [];
             owner.conditionConfigs.push(newCondition);
-            if (errorCode)
-                existingValidator.errorCode = errorCode;
+        // lock down the original error code
+            existingValidator.errorCode = originalErrorCode;
 
             return;
         }
@@ -653,8 +643,9 @@ export class ModifyValidatorBuilder
             conditionType: conditionType,
             conditionConfigs: [existingCondition!, newCondition]
         };
-        if (errorCode)
-            existingValidator.errorCode = errorCode;
+
+        // lock down the original error code
+        existingValidator.errorCode = originalErrorCode;
         existingValidator.conditionConfig = combinedCondition;        
     }
     /**

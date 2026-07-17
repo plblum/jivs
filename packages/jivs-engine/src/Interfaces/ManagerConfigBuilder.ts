@@ -340,16 +340,11 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      *  (newCondBuilder)=>
      *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
      * ```
-     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
-     * as the ConditionType that you are combining with, it is primarily used to identify the 
-     * new condition in the context of the existing validator.
-     * Can be an empty string to retain the original error code of the existing validator.
-     * This is especially useful when the existing validator is AllMatchesCondition
-     * because we are just adding a new condition to the existing AllMatchesCondition.
+     * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    and(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
+    and(builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
 
     /**
      * Use this method when you want to combine the existing validator condition 
@@ -362,16 +357,12 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      *  (newCondBuilder)=>
      *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
      * ```
-     * @param newErrorCode - The error code to assign to the new All validator. While it can be the same
-     * as the ConditionType that you are combining with, it is primarily used to identify the 
-     * new condition in the context of the existing validator.
-     * Can be an empty string to retain the original error code of the existing validator.
-     * This is especially useful when the existing validator is AllMatchesCondition
-     * because we are just adding a new condition to the existing AllMatchesCondition.
+     * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
+
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
      * Use fluent syntax to build the desired condition to be combined with the existing one. 
      */
-    or(newErrorCode: string, builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
+    or(builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void;
 
     /**
      * Use this method to specify a condition that must be met for the existing validator to be evaluated.

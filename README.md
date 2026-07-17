@@ -2411,7 +2411,7 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
             adapter.modify('Field1').validator(ConditionType.RequireText).whenToEnable(
                 (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
             ```
-        > While `and()` and `whenToEnable()` logically appear the same, and() evaluates as NoMatch
+        > While `and()` and `whenToEnable()` logically appear the same, `and()` evaluates as NoMatch
         and `whenToEnable()` evaluates as Undetermined if your condition evaluates as NoMatch.
     + `addValidator()` - starts adding new validators to the ValueHost. This uses the Builder's chaining syntax.
         ```ts
