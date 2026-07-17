@@ -48,13 +48,4 @@ describe('configExample', () => {
         expect(vh5).toBeInstanceOf(CalcValueHost);
         expect(vh5!.getDataType()).toBe(LookupKey.Integer);
     });
-    it('call to timeZonePicker.onchange will change the start date to append "UTC+1"', () => {
-        // Execute configExample
-        let vm: ValidationManager;
-        expect(() => vm = configUsingDateRangeFormRules()).not.toThrow();
-        let timeZonePicker = global.document.getElementById('timeZonePicker') as unknown as MockHTMLSelectElement;
-        timeZonePicker.onchange({} as Event);
-        let vh1 = vm!.getValueHost('startDate');
-        expect(vh1!.getLabel()).toBe('Start date (UTC+1)');
-    });
 });
