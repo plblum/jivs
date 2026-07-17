@@ -154,7 +154,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         validatorParameters: FluentValidatorConfig): IValidatorBuilder;
 
     /**
-     * Adds a DataTypeCheck condition to the fluent validator builder.
+     * Adds a DataTypeCheck condition to the validator builder.
      * DataTypeCheck ensures that the value being validated matches the expected data type.
      * In many cases, it is automatically added by the ValueHost based on the dataType field value.
      * @param errorMessage 
@@ -181,7 +181,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         validatorParameters: FluentDataTypeCheckValidatorConfig): IValidatorBuilder;
 
     /**
-      * Adds a RequireText condition to the fluent validator builder.
+      * Adds a RequireText condition to the validator builder.
       * RequireText ensures that the value being validated is not empty.
       * The value must be a string or null or it evaluates as Undetermined.
       * When evaluating against null, set its nullValueResult parameter to determine
@@ -210,7 +210,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
     requireText(
         validatorParameters: FluentRequireTextValidatorConfig): IValidatorBuilder;
     /**
-     * Adds a NotNull condition to the fluent validator builder.
+     * Adds a NotNull condition to the validator builder.
      * NotNull ensures that the value being validated is not null.
      * The value can be of any type.
      * This condition is useful for ensuring that required fields are not left null.
@@ -241,7 +241,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         validatorParameters: FluentNotNullValidatorConfig): IValidatorBuilder;
 
     /**
-     * Adds a RegExp condition to the fluent validator builder.
+     * Adds a RegExp condition to the validator builder.
      * RegExp ensures that the value being validated matches the specified regular expression.
      * The value can be of any type that can be tested against a regular expression.
      * Example usage:

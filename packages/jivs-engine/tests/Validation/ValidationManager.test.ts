@@ -37,7 +37,7 @@ import { ValidatableValueHostBase } from '../../src/ValueHosts/ValidatableValueH
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '../../src/ValueHosts/CalcValueHost';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
-import { ValidationManagerStartFluent } from '../../src/Builder/StartFluent_classes';
+import { ValidatableValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 import {
     TestValidatableValueHost,
     addTestValidatableValueHostGeneratorToServices,
@@ -1458,10 +1458,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     test('With 2 fieldValueHost where only one has validators, it should return {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
-        let fluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let config2 = fluent.field('Field2');
+        let builder = new ValidatableValueHostConfigBuilder(null, new MockValidationServices(true, true));
+        let config2 = builder.field('Field2');
 
-        let setup = setupValidationManager([config1, config2.parentConfig]);
+        let setup = setupValidationManager([config1, config2]);
 
         let validationState : ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
@@ -1476,7 +1476,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.validationManager.doNotSave).toBe(false);
 
         expect(setup.validationManager.getIssuesForField(config1.name)).toBeNull();
-        expect(setup.validationManager.getIssuesForField(config2.parentConfig.name)).toBeNull();
+        expect(setup.validationManager.getIssuesForField(config2.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });    
     test('With 2 fieldValueHost that are both undetermined, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {

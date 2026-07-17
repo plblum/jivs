@@ -1,16 +1,14 @@
 /**
- *  @module Builder/ConcreteClasses/ValidationManagerStartFluent
+ *  @module Builder/ConcreteClasses/ValidatableValueHostConfigBuilder
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { CalculationHandler, CalcValueHostConfig } from "../Interfaces/CalcValueHost";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { IDisposable } from "../Interfaces/General_Purpose";
-import { IValidatorBuilder } from "../Interfaces/ChildBuilders";
 import { IServicesAccessor } from "../Interfaces/Services";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { IValueHostsServices } from "../Interfaces/ValueHostsServices";
@@ -25,12 +23,13 @@ import {
     FluentStaticValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
 } from "../Interfaces/Fluent";
+import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
  * and StaticValueHost (static())
  */
-export class ValueHostsManagerStartFluent implements IDisposable, IServicesAccessor
+export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
 {
     /**
      * 
@@ -126,15 +125,15 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
         return false;
     }
     /**
-     * Fluent format to create a StaticValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * Converts builder input into StaticValueHostConfig.
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
+     * @returns StaticValueHostConfig
      */
     public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
     /**
-     * Fluent format to create a StaticValueHostConfig.
+     * Converts builder input into StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
@@ -147,18 +146,18 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
     }
 
     /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * Converts builder input into CalcValueHostConfig.
      * @param valueHostName - the ValueHost name
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
+     * @returns CalcValueHostConfig
      */
     public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
     /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * Converts builder input into CalcValueHostConfig.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
+     * @returns CalcValueHostConfig
      */
     public calc(config: FluentCalcValueConfig): CalcValueHostConfig;
     // overload resolution
@@ -181,33 +180,8 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }    
 
-    // /**
-    //  * Start of a series to collect ConditionConfigs into any condition that
-    //  * implements EvaluateChildConditionResultsConfig.
-    //  * For example:
-    //  * ```ts
-    //  * let fluent = new ValueHostsManagerStartFluent(null);
-    //  * fluent.field('Field1').all([
-    //  *  fluent.conditions().required('Field2').required('Field3'));
-    //  * ```
-    //  * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
-    //  * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
-    // * @param config - When null/undefined, the instance is created and the caller is expected
-    // * to retrieve its conditionConfigs from the config property.
-    // * When assigned, that instance gets conditionConfigs populated and 
-    // * there is no need to get a value from configs property.
-    // */
-    // public conditions(config?: ConditionWithChildrenBaseConfig): FluentMultiFieldConditionBuilder
-    // {
-    //     config = config ?? { conditionType: 'TBD', conditionConfigs: [] };
-    //     if (config.conditionConfigs == null) // null or undefined
-    //         config.conditionConfigs = [];
-    //     let builder = new FluentMultiFieldConditionBuilder(config ?? null);
-    //     return builder;
-    // }   
-    
     /**
-     * Helper for fluent starting nodes to ensure the first parameter supplies
+     * Helper for valueHostConfig nodes to ensure the first parameter supplies
      * a name and that name is not previously defined.
      * @param arg 
      */
@@ -237,10 +211,10 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
 
 
 /**
- * Starts a fluent chain. Its methods start FieldValueHost (field()),
- * StaticValueHost (static()), and a collection of Conditions (conditions()).
+ * Extends ValueHostConfigBuilder to add support for ValueHosts with Validators.
+ * Introduces the field() function to assemble a FieldValueHostConfig from fluent input.
  */
-export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
+export class ValidatableValueHostConfigBuilder extends ValueHostConfigBuilder
 {
     /**
      * 
@@ -268,32 +242,33 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
     public withValidators<T extends ValidatorsValueHostBaseConfig>(valueHostType: ValueHostType | string, 
         arg1: FluentValidatorsValueHostConfig<T> | ValueHostName,
         arg2?: FluentValidatorsValueHostParameters<T> | string | null,
-        arg3?: FluentValidatorsValueHostParameters<T>): IValidatorBuilder
+        arg3?: FluentValidatorsValueHostParameters<T>): ValidatorsValueHostBaseConfig
     {
         let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
         if (!config.validatorConfigs)
             config.validatorConfigs = [];
-        return this.services.buildersFactory.createValidatorBuilder(config);
+        //     return this.services.buildersFactory.createValidatorBuilder(config);
+        return config;
     }    
 
 
     /**
-     * Fluent format to create a FieldValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "require()".
+     * Converts builder input into FieldValueHostConfig.
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns FieldValueHostConfig
      */
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): FieldValueHostConfig;
     /**
-     * Fluent format to create a FieldValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * Converts builder input into FieldValueHostConfig.
      * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
+     * @returns FieldValueHostConfig
      */
-    public field(config: FluentFieldValueConfig): IValidatorBuilder;
+    public field(config: FluentFieldValueConfig): ValidatorsValueHostBaseConfig;
     // overload resolution
-    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: string | null, parameters?: FluentFieldParameters): IValidatorBuilder
+    public field(arg1: ValueHostName | FluentFieldValueConfig, arg2?: string | null, parameters?: FluentFieldParameters): FieldValueHostConfig
     {
         return this.withValidators<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, parameters);
     }    

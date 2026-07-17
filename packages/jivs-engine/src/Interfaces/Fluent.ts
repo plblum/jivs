@@ -46,34 +46,23 @@
  * class appear to be part of ValidatorBuilder and FluentConditionBuilder, classes that connect
  * the conditions to the FieldValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
+ * - ValidationManagerConfigBuilder - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
  *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  *   ```ts
- *   let fluent = new ValueHostsManagerStartFluent(null);
- *   fluent.field('Field1').requireText().regExp('pattern').greaterThanOrEqualValue(0);
- *   fluent.calc('Field2', LookupKey.Number, calcFn);
- *   fluent.static('Field3');
- *   ```
- * - ValidationManagerConfigBuilder - Wrapper around ValidationManagerStartFluent 
- *   that is used to create a ValidationManagerConfig. 
- *   It is the main entry point for the developer to create a ValidationManagerConfig.
- *   It has wrapper functions around field(), static(), and calc() that call the underlying fluent functions.
- * 
- *   ```ts
- *   let builder = new ValidationManagerConfigBuilder();
+ *   let builder = new ValueHostConfigBuilder(services);
  *   builder.field('Field1').requireText().regExp('pattern').greaterThanOrEqualValue(0);
  *   builder.calc('Field2', LookupKey.Number, calcFn);
  *   builder.static('Field3');
  *   ```
  * 
  * - ValidatorBuilder - Class that supplies Conditions and Validators
- *   to the preceding FieldValueHost. It is returned by fluent.field() and each chained object that follows.
+ *   to the preceding FieldValueHost. It is returned by builder.field() and each chained object that follows.
  *   ```ts
- *   fluent.field(field name) -> ValidatorBuilder
+ *   builder.field(field name) -> ValidatorBuilder
  *   ```
  *   It exposes functions specific to each Condition class, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
  *   ```ts
- *   fluent.field('Field1').requireText(), regExp(), etc
+ *   builder.field('Field1').requireText(), regExp(), etc
  *   ```
  *   Then the individual condition takes over the fluent chain, returning a ValidatorBuilder 
  *   for the next condition.
@@ -81,7 +70,7 @@
  * - StartConditionBuilder  - 
  *   Starts a fluent sequence to create child conditions for a parent condition or validator. 
  *   At this point, we need to specify the valueHostName used for the upcoming condition,
- *   similar to how we specify it in fluent.field().
+ *   similar to how we specify it in builder.field().
  *   ```ts
  *   childbuilder.fieldValue(valueHostName).condition()
  *   childbuilder.parentValue().condition()
@@ -166,7 +155,7 @@
  *      // only needing removing comments:
  *      // --- BuildersFactory -------------------------------------------
  *      let ff = new BuildersFactory();
- *      vs.fluentFactory = ff;
+ *      vs.builderFactory = ff;
  *      // Adding custom conditions to ValidatorBuilder and ConditionBuilder
  *      ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
  *          return new YourValidatorBuilder(parentConfig);
@@ -179,8 +168,8 @@
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
- * allows replacing the ValidatorBuilder and FluentConditionBuilder classes with your own.
- * Just register it with fluentFactory.singleton.register().
+ * allows replacing the ValidatorBuilder and ConditionBuilder classes with your own.
+ * Just register them within the BuilderFactory in ValidationServices.
  */
 
 import { CalcValueHostConfig } from './CalcValueHost';

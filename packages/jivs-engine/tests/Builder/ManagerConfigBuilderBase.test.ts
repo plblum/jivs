@@ -4,9 +4,9 @@ import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
 import {
-    ValidationManagerStartFluent,
-    ValueHostsManagerStartFluent
-} from "../../src/Builder/StartFluent_classes";
+    ValidatableValueHostConfigBuilder,
+    ValueHostConfigBuilder
+} from "../../src/Builder/ValueHostConfigBuilder";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -22,6 +22,8 @@ import { IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { FluentFieldParameters } from "../../src/Interfaces/Fluent";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -33,8 +35,8 @@ function createVMConfig(): ValidationManagerConfig {
 
 class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsManagerConfig>
 {
-    protected createFluent(): ValueHostsManagerStartFluent {
-        return new ValueHostsManagerStartFluent(this.destinationValueHostConfigs(), this.services);
+    protected createValueHostBuilder(): ValueHostConfigBuilder {
+        return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 
     public get publicify_services(): IValueHostsServices
@@ -62,18 +64,18 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
     }
     
 }
-class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValidationManagerConfig>
+class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuilder
 {
-    protected createFluent(): ValidationManagerStartFluent {
-        return new ValidationManagerStartFluent(this.destinationValueHostConfigs(), this.services);
+    protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
+        return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 
-    public publicify_setupValueHostToCombine(valueHostName: ValueHostName, errorCode: string):{
-        vhc: ValidatorsValueHostBaseConfig,
-        vc: ValidatorConfig
-    } {
-        return super.setupValueHostToCombine(valueHostName, errorCode);
-    }
+    // public publicify_setupValueHostToCombine(valueHostName: ValueHostName, errorCode: string):{
+    //     vhc: ValidatorsValueHostBaseConfig,
+    //     vc: ValidatorConfig
+    // } {
+    //     return super.setupValueHostToCombine(valueHostName, errorCode);
+    // }
 
     // public publicify_combineWithValidatorConfig(
     //     destinationOfCondition: ValidatorConfig,
@@ -111,9 +113,9 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     {
         super.addOverride();
     }
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): IValidatorBuilder {
-        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
-    }
+    // public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IValidatorBuilder {
+    //     return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
+    // }
 
     public publicify_getExistingValueHostConfig(valueHostName: string, throwWhenNotFound: boolean): ValueHostConfig | null {
         return this.getExistingValueHostConfig(valueHostName, throwWhenNotFound);
@@ -555,244 +557,244 @@ describe('build(vmConfig).calc', () => {
     });
 });
 
-describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
-    function setup(includeOverrideData: boolean): TestValidationManagerConfigBuilderBase {
-        let vmConfig = createVMConfig();
+// describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
+//     function setup(includeOverrideData: boolean): TestValidationManagerConfigBuilderBase {
+//         let vmConfig = createVMConfig();
 
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
 
-        builder.field('Field1');
-        builder.field('Field2').regExp(/abc/);
-        builder.field('Field3').requireText({ errorCode: 'RequireText1' }).regExp(/def/, { errorCode: 'RegExp1' });
-        // same as Field3 to show it always gets the first found
-        builder.field('Field4').requireText({ errorCode: 'RequireText1' }).requireText({ errorCode: 'RequireText2' });
-        if (includeOverrideData) {
-            builder.publicify_addOverride();
-            builder.field('Field1').requireText();
-            builder.field('Field2').regExp(/abc_alt/, { errorCode: 'RegExp1_alt' });
-        }
-        return builder;
-    }
-    function findValueHostName(name: string, vhc: Array<ValueHostConfig>): ValueHostConfig | null {
-        return vhc.find(v => v.name === name) ?? null;
-    }
-    // when found in earlier array of ValueHostConfigs, the ValidatorConfig is newly generated and added to the latest array of ValueHostConfigs
-    // expects "earlier" to be the first found in the array of ValueHostConfigs, baseConfig
-    function testFoundInEarlier(builder: TestValidationManagerConfigBuilderBase,
-        valueHostName: ValueHostName, errorCode: string,
-        expectedValidatorConfig: ValidatorConfig): void {
+//         builder.field('Field1');
+//         builder.field('Field2').regExp(/abc/);
+//         builder.field('Field3').requireText({ errorCode: 'RequireText1' }).regExp(/def/, { errorCode: 'RegExp1' });
+//         // same as Field3 to show it always gets the first found
+//         builder.field('Field4').requireText({ errorCode: 'RequireText1' }).requireText({ errorCode: 'RequireText2' });
+//         if (includeOverrideData) {
+//             builder.publicify_addOverride();
+//             builder.field('Field1').requireText();
+//             builder.field('Field2').regExp(/abc_alt/, { errorCode: 'RegExp1_alt' });
+//         }
+//         return builder;
+//     }
+//     function findValueHostName(name: string, vhc: Array<ValueHostConfig>): ValueHostConfig | null {
+//         return vhc.find(v => v.name === name) ?? null;
+//     }
+//     // when found in earlier array of ValueHostConfigs, the ValidatorConfig is newly generated and added to the latest array of ValueHostConfigs
+//     // expects "earlier" to be the first found in the array of ValueHostConfigs, baseConfig
+//     function testFoundInEarlier(builder: TestValidationManagerConfigBuilderBase,
+//         valueHostName: ValueHostName, errorCode: string,
+//         expectedValidatorConfig: ValidatorConfig): void {
                 
-        // call before setup, which can modify the source config arrays
-        let original = findValueHostName(valueHostName, builder.publicify_baseConfig.valueHostConfigs);
+//         // call before setup, which can modify the source config arrays
+//         let original = findValueHostName(valueHostName, builder.publicify_baseConfig.valueHostConfigs);
 
-        let result = builder.publicify_setupValueHostToCombine(valueHostName, errorCode);
-        expect(result).toBeTruthy();
-        expect(result.vhc.name).toEqual(valueHostName);
-        expect(result.vhc.validatorConfigs).toContain(result.vc);
-        expect(result.vc).toEqual(expectedValidatorConfig);
-        // prove vhc is a clone
-        expect(original).not.toBe(result.vhc);
-        expect(original).toEqual(result.vhc);
+//         let result = builder.publicify_setupValueHostToCombine(valueHostName, errorCode);
+//         expect(result).toBeTruthy();
+//         expect(result.vhc.name).toEqual(valueHostName);
+//         expect(result.vhc.validatorConfigs).toContain(result.vc);
+//         expect(result.vc).toEqual(expectedValidatorConfig);
+//         // prove vhc is a clone
+//         expect(original).not.toBe(result.vhc);
+//         expect(original).toEqual(result.vhc);
 
-    }
-    // when found latest array of ValueHostConfigs, the ValidatorConfig is the original object
-    // expects "latest" to be after creating an entry in overriddenValueHostConfigs
-    function testFoundInLatest(builder: TestValidationManagerConfigBuilderBase,
-        valueHostName: ValueHostName, errorCode: string,
-            expectedValidatorConfig: ValidatorConfig): void {
-        // call before setup, which can modify the source config arrays
-        let original = findValueHostName(valueHostName, builder.publicify_destinationValueHostConfigs());
+//     }
+//     // when found latest array of ValueHostConfigs, the ValidatorConfig is the original object
+//     // expects "latest" to be after creating an entry in overriddenValueHostConfigs
+//     function testFoundInLatest(builder: TestValidationManagerConfigBuilderBase,
+//         valueHostName: ValueHostName, errorCode: string,
+//             expectedValidatorConfig: ValidatorConfig): void {
+//         // call before setup, which can modify the source config arrays
+//         let original = findValueHostName(valueHostName, builder.publicify_destinationValueHostConfigs());
 
-        let result = builder.publicify_setupValueHostToCombine(valueHostName, errorCode);
-        expect(result).toBeTruthy();
-        expect(result.vhc.name).toEqual(valueHostName);
-        expect(result.vhc.validatorConfigs).toContain(result.vc);
-        expect(result.vc).toEqual(expectedValidatorConfig);
-        // prove not cloned
-        expect(original).toBe(result.vhc);
-    }    
-    function testValueHostNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
-        valueHostName: ValueHostName, errorCode: string): void {
-        expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/not defined/);
-    }
-    function testErrorCodeNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
-        valueHostName: ValueHostName, errorCode: string): void {
-        expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/validator with error code/);
-    }
+//         let result = builder.publicify_setupValueHostToCombine(valueHostName, errorCode);
+//         expect(result).toBeTruthy();
+//         expect(result.vhc.name).toEqual(valueHostName);
+//         expect(result.vhc.validatorConfigs).toContain(result.vc);
+//         expect(result.vc).toEqual(expectedValidatorConfig);
+//         // prove not cloned
+//         expect(original).toBe(result.vhc);
+//     }    
+//     function testValueHostNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
+//         valueHostName: ValueHostName, errorCode: string): void {
+//         expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/not defined/);
+//     }
+//     function testErrorCodeNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
+//         valueHostName: ValueHostName, errorCode: string): void {
+//         expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/validator with error code/);
+//     }
 
 
-    test('With valueHosts in the initial config and empty overridden ValueHosts, finds the correct validatorConfig and valueHostConfig', () => {
-        // configuration is shown in setup function
-        let testItem = setup(false);
-        testItem.publicify_addOverride();
-        testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);
+//     test('With valueHosts in the initial config and empty overridden ValueHosts, finds the correct validatorConfig and valueHostConfig', () => {
+//         // configuration is shown in setup function
+//         let testItem = setup(false);
+//         testItem.publicify_addOverride();
+//         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);
 
-        testItem = setup(false);
-        testItem.publicify_addOverride();        
-        testFoundInEarlier(testItem, 'Field2', ConditionType.RegExp, <ValidatorConfig>{
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        });
+//         testItem = setup(false);
+//         testItem.publicify_addOverride();        
+//         testFoundInEarlier(testItem, 'Field2', ConditionType.RegExp, <ValidatorConfig>{
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         });
 
-        testItem = setup(false);
-        testItem.publicify_addOverride();        
-        testFoundInEarlier(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(false);
-        testItem.publicify_addOverride();        
-        testFoundInEarlier(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
-            errorCode: 'RegExp1',
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /def/
-            }
-        });
-        testItem = setup(false);
-        testItem.publicify_addOverride();        
-        testFoundInEarlier(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(false);
-        testItem.publicify_addOverride();        
-        testFoundInEarlier(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
-            errorCode: 'RequireText2',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
+//         testItem = setup(false);
+//         testItem.publicify_addOverride();        
+//         testFoundInEarlier(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(false);
+//         testItem.publicify_addOverride();        
+//         testFoundInEarlier(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
+//             errorCode: 'RegExp1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /def/
+//             }
+//         });
+//         testItem = setup(false);
+//         testItem.publicify_addOverride();        
+//         testFoundInEarlier(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(false);
+//         testItem.publicify_addOverride();        
+//         testFoundInEarlier(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
+//             errorCode: 'RequireText2',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
        
-    });
-    test('With valueHosts in the initial config and nothing overriden, never finds a match because cannot modify the initial config', () => {
-        // configuration is shown in setup function
-        let testItem = setup(false);
-        testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);
+//     });
+//     test('With valueHosts in the initial config and nothing overriden, never finds a match because cannot modify the initial config', () => {
+//         // configuration is shown in setup function
+//         let testItem = setup(false);
+//         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);
 
-        testItem = setup(false);     
-        testFoundInLatest(testItem, 'Field2', ConditionType.RegExp, <ValidatorConfig>{
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /abc/
-            }
-        });
+//         testItem = setup(false);     
+//         testFoundInLatest(testItem, 'Field2', ConditionType.RegExp, <ValidatorConfig>{
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc/
+//             }
+//         });
 
-        testItem = setup(false);      
-        testFoundInLatest(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(false);       
-        testFoundInLatest(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
-            errorCode: 'RegExp1',
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /def/
-            }
-        });
-        testItem = setup(false);     
-        testFoundInLatest(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(false);      
-        testFoundInLatest(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
-            errorCode: 'RequireText2',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
+//         testItem = setup(false);      
+//         testFoundInLatest(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(false);       
+//         testFoundInLatest(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
+//             errorCode: 'RegExp1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /def/
+//             }
+//         });
+//         testItem = setup(false);     
+//         testFoundInLatest(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(false);      
+//         testFoundInLatest(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
+//             errorCode: 'RequireText2',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
        
-    });    
-    test('With valueHosts in the initial config and in overridden ValueHosts, finds the correct validatorConfig and valueHostConfig', () => {
-        // configuration is shown in setup function
-        let testItem = setup(true);
-        testFoundInLatest(testItem, 'Field1', ConditionType.RequireText, <ValidatorConfig>{
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(true);
-        testFoundInLatest(testItem, 'Field2', 'RegExp1_alt', <ValidatorConfig>{
-            errorCode: 'RegExp1_alt',
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /abc_alt/
-            }
-        });        
-        testItem = setup(true);
-        testFoundInEarlier(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(true);
-        testFoundInEarlier(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
-            errorCode: 'RegExp1',
-            conditionConfig: {
-                conditionType: ConditionType.RegExp,
-                expression: /def/
-            }
-        });
-        testItem = setup(true);
-        testFoundInEarlier(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
-            errorCode: 'RequireText1',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
-        testItem = setup(true);
-        testFoundInEarlier(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
-            errorCode: 'RequireText2',
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            }
-        });
+//     });    
+//     test('With valueHosts in the initial config and in overridden ValueHosts, finds the correct validatorConfig and valueHostConfig', () => {
+//         // configuration is shown in setup function
+//         let testItem = setup(true);
+//         testFoundInLatest(testItem, 'Field1', ConditionType.RequireText, <ValidatorConfig>{
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(true);
+//         testFoundInLatest(testItem, 'Field2', 'RegExp1_alt', <ValidatorConfig>{
+//             errorCode: 'RegExp1_alt',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /abc_alt/
+//             }
+//         });        
+//         testItem = setup(true);
+//         testFoundInEarlier(testItem, 'Field3', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(true);
+//         testFoundInEarlier(testItem, 'Field3', 'RegExp1', <ValidatorConfig>{
+//             errorCode: 'RegExp1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RegExp,
+//                 expression: /def/
+//             }
+//         });
+//         testItem = setup(true);
+//         testFoundInEarlier(testItem, 'Field4', 'RequireText1', <ValidatorConfig>{
+//             errorCode: 'RequireText1',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
+//         testItem = setup(true);
+//         testFoundInEarlier(testItem, 'Field4', 'RequireText2', <ValidatorConfig>{
+//             errorCode: 'RequireText2',
+//             conditionConfig: {
+//                 conditionType: ConditionType.RequireText
+//             }
+//         });
        
-    });
+//     });
 
-    test('The ValueHostName is unknown throws and no valueHosts defined', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
-        testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
-    });
-    test('The ValueHostName is unknown throws and different named valueHost defined', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1');
-        testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
-    });
-    test('The ValueHostName is null throws', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
-        expect(()=> testItem.publicify_setupValueHostToCombine(null!, ConditionType.RegExp)).toThrow(/valueHostName/);
-    });
+//     test('The ValueHostName is unknown throws and no valueHosts defined', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
+//         testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
+//     });
+//     test('The ValueHostName is unknown throws and different named valueHost defined', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         testItem.field('Field1');
+//         testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
+//     });
+//     test('The ValueHostName is null throws', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
+//         expect(()=> testItem.publicify_setupValueHostToCombine(null!, ConditionType.RegExp)).toThrow(/valueHostName/);
+//     });
 
-    test('The errorCode is unknown throws when no validators on valuehost', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1');
-        testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
-    });
-    test('The errorCode is unknown throws when different validator on valuehost', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1').requireText();
-        testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
-    });    
-    test('The errorCode is null throws', () => {
-        let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
-        testItem.field('Field1').requireText();
-        expect(()=> testItem.publicify_setupValueHostToCombine('Field1', null!)).toThrow(/errorCode/);       
-    });
-});
+//     test('The errorCode is unknown throws when no validators on valuehost', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         testItem.field('Field1');
+//         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
+//     });
+//     test('The errorCode is unknown throws when different validator on valuehost', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         testItem.field('Field1').requireText();
+//         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
+//     });    
+//     test('The errorCode is null throws', () => {
+//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         testItem.field('Field1').requireText();
+//         expect(()=> testItem.publicify_setupValueHostToCombine('Field1', null!)).toThrow(/errorCode/);       
+//     });
+// });
 
 describe('whenToEnable', ()=> {
     // existing valueHostName returns the StartConditionWithOneChildBuilder

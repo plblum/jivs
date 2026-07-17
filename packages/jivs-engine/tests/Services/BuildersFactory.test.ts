@@ -51,71 +51,71 @@ export class TestParentBuilder implements IBuilderConfigHost<object> {
 describe('BuildersFactory', () => {
     // createManagerConfigBuilder test
     test('createManagerConfigBuilder should return a valid builder', () => {
-        const fluentFactory = new BuildersFactory();
-        fluentFactory.services = new MockValidationServices(false, false);
-        const builder = fluentFactory.createManagerConfigBuilder(null);
+        const buildersFactory = new BuildersFactory();
+        buildersFactory.services = new MockValidationServices(false, false);
+        const builder = buildersFactory.createManagerConfigBuilder(null);
         expect(builder).toBeDefined();
         expect(builder).toBeInstanceOf(ValidationManagerConfigBuilder);
     });
 
    test('createValidatorBuilder should return a valid builder', () => {
-       const fluentFactory = new BuildersFactory();
-       fluentFactory.services = new MockValidationServices(false, false);
+       const buildersFactory = new BuildersFactory();
+       buildersFactory.services = new MockValidationServices(false, false);
        let parentConfig: FieldValueHostConfig = {
            name: 'Field1',
            validatorConfigs: []
        };
-       const builder = fluentFactory.createValidatorBuilder(parentConfig);
+       const builder = buildersFactory.createValidatorBuilder(parentConfig);
        expect(builder).toBeDefined();
        expect(builder).toBeInstanceOf(ValidatorBuilder);
        expect(builder.parentConfig).toBe(parentConfig);
     });
     
     test('createConditionBuilder should return a valid builder', () => {
-        const fluentFactory = new BuildersFactory();
-        fluentFactory.services = new MockValidationServices(false, false);
+        const buildersFactory = new BuildersFactory();
+        buildersFactory.services = new MockValidationServices(false, false);
         const parentBuilder = new TestParentBuilder();
-        const builder = fluentFactory.createConditionBuilder(parentBuilder);
+        const builder = buildersFactory.createConditionBuilder(parentBuilder);
         expect(builder).toBeDefined();
         expect(builder).toBeInstanceOf(ConditionBuilder);
     });
 
     test('Replace ManagerConfigBuilder with SubstituteManagerConfigBuilder', () => {
-        const fluentFactory = new BuildersFactory();
-        fluentFactory.services = new MockValidationServices(false, false);  
-        fluentFactory.setManagerConfigBuilder(
-            (services) => new SubstituteManagerConfigBuilder(fluentFactory.services));
-        const builder = fluentFactory.createManagerConfigBuilder(null);
+        const buildersFactory = new BuildersFactory();
+        buildersFactory.services = new MockValidationServices(false, false);  
+        buildersFactory.setManagerConfigBuilder(
+            (services) => new SubstituteManagerConfigBuilder(buildersFactory.services));
+        const builder = buildersFactory.createManagerConfigBuilder(null);
         expect(builder).toBeDefined();
         expect(builder).toBeInstanceOf(SubstituteManagerConfigBuilder);
     });
 
     test('Replace ValidatorBuilder with SubstituteValidatorBuilder', () => {   
         let services = new MockValidationServices(false, false);
-        const fluentFactory = new BuildersFactory();
-        fluentFactory.services = services;
-        fluentFactory.setValidatorBuilderCreator(
+        const buildersFactory = new BuildersFactory();
+        buildersFactory.services = services;
+        buildersFactory.setValidatorBuilderCreator(
             (parentConfig: FieldValueHostConfig) =>
                 new SubstituteValidatorBuilder(services, parentConfig));
         let parentConfig: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: []
         };
-        const builder = fluentFactory.createValidatorBuilder(parentConfig);
+        const builder = buildersFactory.createValidatorBuilder(parentConfig);
         expect(builder).toBeDefined();
         expect(builder).toBeInstanceOf(SubstituteValidatorBuilder);
         expect(builder.parentConfig).toBe(parentConfig);
     });
 
     test('Replace ConditionBuilder with SubstituteConditionBuilder', () => {
-        const fluentFactory = new BuildersFactory();
-        fluentFactory.services = new MockValidationServices(false, false);
+        const buildersFactory = new BuildersFactory();
+        buildersFactory.services = new MockValidationServices(false, false);
 
-        fluentFactory.setConditionBuilderCreator(
+        buildersFactory.setConditionBuilderCreator(
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
-                new SubstituteConditionBuilder(fluentFactory.services, parentBuilder, completed));
+                new SubstituteConditionBuilder(buildersFactory.services, parentBuilder, completed));
         const parentBuilder = new TestParentBuilder();
-        const builder = fluentFactory.createConditionBuilder(parentBuilder);
+        const builder = buildersFactory.createConditionBuilder(parentBuilder);
         expect(builder).toBeDefined();
         expect(builder).toBeInstanceOf(SubstituteConditionBuilder);
     });

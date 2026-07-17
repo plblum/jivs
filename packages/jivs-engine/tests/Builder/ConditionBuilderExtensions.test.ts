@@ -1,4 +1,4 @@
-import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
+import { ValidatableValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
@@ -8,6 +8,7 @@ import { MockValidationServices } from '../TestSupport/mocks';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
+import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
     constructor() {
@@ -63,8 +64,8 @@ describe('dataTypeCheck on conditions', () => {
     });
     // checking from the validator starting point, using when with this condition type in the thenBuilder
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().dataTypeCheck()
         );
@@ -184,8 +185,8 @@ describe('regExp on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().regExp('\\d', true)
         );
@@ -277,8 +278,8 @@ describe('range on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().range(1, 4)
         );
@@ -375,8 +376,8 @@ describe('equalToValue on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
         );
@@ -472,8 +473,8 @@ describe('equalTo on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().equalTo('F3')
         );
@@ -567,8 +568,8 @@ describe('notEqualToValue on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
         );
@@ -660,8 +661,8 @@ describe('notEqualTo on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notEqualTo('F3')
         );
@@ -755,8 +756,8 @@ describe('lessThanValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
         );
@@ -880,8 +881,8 @@ describe('lessThan on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThan('F3')
         );
@@ -1019,8 +1020,8 @@ describe('lessThanOrEqualValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
         );
@@ -1144,8 +1145,8 @@ describe('lessThanOrEqual on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual('F3')
         );
@@ -1285,8 +1286,8 @@ describe('greaterThanValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
         );
@@ -1423,8 +1424,8 @@ describe('greaterThan on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThan('F3')
         );
@@ -1559,8 +1560,8 @@ describe('greaterThanOrEqualValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
         );
@@ -1697,8 +1698,8 @@ describe('greaterThanOrEqual on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqual('F3')
         );
@@ -1789,8 +1790,8 @@ describe('stringLength on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().stringLength(4)
         );
@@ -1879,8 +1880,8 @@ describe('requireText on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().requireText()
         );
@@ -1936,8 +1937,8 @@ describe('notNull on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notNull()
         );
@@ -1993,8 +1994,8 @@ describe('positive on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().positive()
         );
@@ -2050,8 +2051,8 @@ describe('integer on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().integer()
         );
@@ -2109,8 +2110,8 @@ describe('maxDecimals on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let startFluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
-        let fieldFluent =  startFluent.field('myField').when(
+        let vmBuilder = new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+        let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().maxDecimals(2)
         );

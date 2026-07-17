@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManagerConfigBuilder
  */
 
-import { ValueHostsManagerStartFluent } from "./StartFluent_classes";
+import { ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
 import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
@@ -139,9 +139,9 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
 /**
  * Supplies the ValidationManagerStartFluent object, already setup
  */
-    protected createFluent(): ValueHostsManagerStartFluent
+    protected createValueHostBuilder(): ValueHostConfigBuilder
     {
-        return new ValueHostsManagerStartFluent(this.destinationValueHostConfigs(), this.services);
+        return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 
     //#endregion fluent for creating ValueHosts

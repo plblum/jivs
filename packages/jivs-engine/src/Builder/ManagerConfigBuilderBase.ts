@@ -30,7 +30,7 @@ import { deepClone, isPlainObject } from '../Utilities/Utilities';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
-import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./StartFluent_classes";
+import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
 
 /**
  * The ValueHostConfig object configures one ValueHost and its validators. 
@@ -272,9 +272,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     }
 
     /**
-     * Supplies the ValidationManagerStartFluent object, already setup
+     * Supplies the ValidatableValueHostConfigBuilder object, already setup
      */
-    protected abstract createFluent(): ValueHostsManagerStartFluent;
+    protected abstract createValueHostBuilder(): ValueHostConfigBuilder;
 
     /**
      * Gets a ValueHostConfig with matching name by looking in previous overrides and the baseConfig.
@@ -349,8 +349,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         arg2?: Partial<TVHConfig> | string | null,
         arg3?: Partial<TVHConfig>): IManagerConfigBuilder<T> {
         assertNotNull(arg1, 'arg1');
-        let fluent = this.createFluent();
-        let vhConfig = fluent.withoutValidators<TVHConfig>(valueHostType,
+        let builder = this.createValueHostBuilder();
+        let vhConfig = builder.withoutValidators<TVHConfig>(valueHostType,
             arg1 as FluentAnyValueHostConfig<TVHConfig> | ValueHostName,
             arg2 as FluentAnyValueHostParameters<TVHConfig> | string | null,
             arg3 as FluentAnyValueHostParameters<TVHConfig>);
@@ -412,14 +412,14 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T> {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
-        let fluent = this.createFluent();
+        let builder = this.createValueHostBuilder();
         let vhConfig: CalcValueHostConfig;
 
         if (isPlainObject(arg1)) {
-            vhConfig = fluent.calc(arg1 as CalcValueHostConfig);
+            vhConfig = builder.calc(arg1 as CalcValueHostConfig);
         }
         else if (typeof arg1 === 'string') {
-            vhConfig = fluent.calc(arg1, dataType ?? null, calcFn!);
+            vhConfig = builder.calc(arg1, dataType ?? null, calcFn!);
         }
         else
             throw new TypeError('Must pass valuehost name or CalcValueHostConfig');
@@ -484,92 +484,6 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             this.reportError(new Error(`Child builder was not used to define a Condition`));
         return this;
     }
-
-
-    //#region utilities for ValidationManager-based subclasses
-    // These utilities should all be protected. The ValidationManager subclass will create a public version of it.
-    /**
-     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * Protected because ValueHostManager does not support FieldValueHost. 
-     * ValidationManager offers a public interface.
-     * @param valueHostType - the ValueHostType to configure
-     * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
-     * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
-     * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
-     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
-     */
-    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
-        valueHostType: ValueHostType | string,
-        arg1: Partial<TVHConfig> | ValueHostName,
-        arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): IValidatorBuilder {
-        this.assertNotDisposed();
-        assertNotNull(arg1, 'arg1');
-        let fluent = this.createFluent() as ValidationManagerStartFluent;
-        let builder = fluent.withValidators(valueHostType,
-            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
-            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
-            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
-
-        this.applyConfig(builder.parentConfig);
-        return builder;
-    }
-
-    protected confirmConfigWasAdded(config: ConditionConfig | undefined): boolean
-    {
-        if (config == null) {
-            this.logger.message(LoggingLevel.Warn, ()=> `Builder function did not create a conditionConfig`);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns a ValueHostConfig that is already in the destinationValueHostConfigs with the desired
-     * validatorConfig. If it cannot match both valueHostName and errorCode, it will throw an error.
-     * @param valueHostName 
-     * @param errorCode 
-     * @returns 
-     */
-    protected setupValueHostToCombine(valueHostName: ValueHostName, errorCode: string): {
-        vhc: ValidatorsValueHostBaseConfig,
-        vc: ValidatorConfig
-    } {
-        this.assertNotDisposed();
-        assertNotNull(valueHostName, 'valueHostName');
-        assertNotNull(errorCode, 'errorCode');
-        // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.
-        let vhToModify = this.destinationValueHostConfigs().find((item) => item.name === valueHostName) as ValidatorsValueHostBaseConfig | undefined;
-        if (vhToModify && vhToModify.validatorConfigs) {
-            let validatorConfig = vhToModify.validatorConfigs.find((item) => resolveErrorCode(item) === errorCode);
-            if (validatorConfig) {
-                return { vhc: vhToModify, vc: validatorConfig };
-            }
-        }
-        // find in earlier arrays. Clone the ValueHostConfig and add it to the current array, replacing the validator's condition
-        let vhToClone = this.getExistingValueHostConfig(valueHostName, false) as ValidatorsValueHostBaseConfig;
-        if (vhToClone && vhToClone.validatorConfigs) {
-            let validatorConfig = vhToClone.validatorConfigs.find((item) => resolveErrorCode(item) === errorCode);
-            if (validatorConfig) {
-                let clonedVH = deepClone(vhToClone) as ValidatorsValueHostBaseConfig;
-                let clonedVC = clonedVH.validatorConfigs!.find((item) => resolveErrorCode(item) === errorCode);
-                this.destinationValueHostConfigs().push(clonedVH);
-                return { vhc: clonedVH, vc: clonedVC! };
-            }
-
-        }
-        let msg = (vhToModify || vhToClone) ?
-            `ValueHost name "${valueHostName}" does not have a validator with error code "${errorCode}".` :
-            `ValueHost name "${valueHostName}" is not defined.`;
-
-        let error = new CodingError(msg);
-        this.reportError(error); // throws
-        throw error; // only here to satisfy TypeScript's control flow analysis
-    }
-
-    //#endregion utilities for ValidationManager-based subclasses
-
 }
 
 /**

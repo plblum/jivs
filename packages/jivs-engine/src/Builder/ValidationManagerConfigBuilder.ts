@@ -12,10 +12,12 @@ import { ValueHostValidationStateChangedHandler } from "../Interfaces/Validatabl
 import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { FluentFieldParameters, FluentFieldValueConfig } from "../Interfaces/Fluent";
+import { FluentFieldParameters, FluentFieldValueConfig, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters } from "../Interfaces/Fluent";
 import { BuilderState } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfigBuilder } from "./ValueHostsManagerConfigBuilder";
-import { ValidationManagerStartFluent } from "./StartFluent_classes"
+import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder"
+import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 
 /**
  * Access point for using ValidationManagerConfigBuilder. It wraps an instance of ValueHostsManagerConfigBuilder
@@ -50,8 +52,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         return this.baseConfig.services;
     }
 
-    protected createFluent(): ValidationManagerStartFluent {
-        return new ValidationManagerStartFluent(this.destinationValueHostConfigs(), this.services);
+    protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
+        return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
     //#region validation oriented ValueHost support
     /**
@@ -85,6 +87,38 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         arg3?: FluentFieldParameters): IValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
     }
+
+    //#region utilities for ValidationManager-based subclasses
+    // These utilities should all be protected. The ValidationManager subclass will create a public version of it.
+    /**
+     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * Protected because ValueHostManager does not support FieldValueHost. 
+     * ValidationManager offers a public interface.
+     * @param valueHostType - the ValueHostType to configure
+     * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
+     */
+    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
+        valueHostType: ValueHostType | string,
+        arg1: Partial<TVHConfig> | ValueHostName,
+        arg2?: Partial<TVHConfig> | string | null,
+        arg3?: Partial<TVHConfig>): IValidatorBuilder {
+        this.assertNotDisposed();
+        assertNotNull(arg1, 'arg1');
+        let builder = this.createValueHostBuilder() as ValidatableValueHostConfigBuilder;
+        let config = builder.withValidators(valueHostType,
+            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
+            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
+            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
+
+        this.applyConfig(config);
+        return this.services.buildersFactory.createValidatorBuilder(config);        
+  //    return builder;
+    }
+
     //#endregion validation oriented ValueHost support
 
     //#region InstanceState
