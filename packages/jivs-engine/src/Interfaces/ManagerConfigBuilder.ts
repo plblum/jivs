@@ -321,6 +321,19 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      */
     whenToEnable(callback: (builder: IStartConditionWithOneChildBuilder) => void): IModifyFieldBuilder;
 
+    /**
+     * Specifies the data type for this ValueHost. 
+     * Use case 1: The business layer did not specify a data type, but the UI layer needs to specify one
+     * for clarity.
+     * Use case 2: The business layer specified a data type, but the UI layer needs to change it to a different one.
+     * In this case, the new data type must be compatible with the original data type. If it is not, it is an error.
+     * By "compatible", there must be a fallback defined between the new data type and existing one
+     * in the LookupKeyFallbackService within the ValidationServices. If there is no fallback, it is an error.
+     * @param newDataType - the new data type to apply to this ValueHost. It must be compatible with the existing data type.
+     * @returns The IModifyFieldBuilder for further modifications.
+     */
+    refineDataType(newDataType: string): IModifyFieldBuilder;
+
 }
 
 /**

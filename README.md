@@ -672,7 +672,6 @@ changes to whatever impacts the UI.
     + parsers 
     + enabling
     + validation groups
-    + data type, but only if yours can fall back to the data type already specified (like Currency -> Number)
     ```ts
     modify(valueHostName, {
         label: 'label',
@@ -680,6 +679,8 @@ changes to whatever impacts the UI.
         group: 'group name'
     });
     ```
+- Modify the data type name to use more specialized tools. For example, the original data type is "String"
+but the UI wants to use tools around "Email". `modify(valueHostName).refineDataType(data type)`
 - Modify existing Validators through the `modify(valueHostName).validator(validator name)` method including:
     + error messages
     + severity
@@ -2363,6 +2364,13 @@ Let’s go through these types.
     This is useful when the business layer has a model with many fields, 
     but the UI layer is only going to use a subset of those fields.
     ```ts
+    protected configureRules(builder, options): void
+    {
+        builder.field('FirstName');
+        builder.field('LastName');
+        builder.field('BirthDate');
+        builder.field('Suffix');
+    }
     protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
     {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // all others are disabled
@@ -2373,6 +2381,13 @@ Let’s go through these types.
     This is useful when the business layer has a model with many fields, 
     but the UI layer is only going to use a subset of those fields.
     ```ts
+    protected configureRules(builder, options): void
+    {
+        builder.field('FirstName');
+        builder.field('LastName');
+        builder.field('BirthDate');
+        builder.field('Suffix');
+    }
     protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
     {
         adapter.disableTheseModelFields(['BirthDate', 'Suffix']); // all others remain enabled
@@ -2388,6 +2403,10 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
         ```
         > The _conditionType_ parameter takes either a standard conditionType identifier (`ConditionType.RequireText`, for example) or an error code. Use the error code when the existing validator uses the error code.
         ```ts
+        // from the business rules
+        builder.field('Field1').requireText();
+        builder.field('Field2').requireText();
+        // adapt
         adapter.modify('Field1').validator(ConditionType.RequireText, 'error message', 'summary message');
         adapter.modify('Field2').validator(ConditionType.RequireText, {
             errorMessage: 'error message',
@@ -2398,16 +2417,25 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
         `validator()` returns another object with these methods to further modify the validator.
         + `and()` - combine a condition with an existing validator's condition using an AND operator.
             ```ts
+            // from the business rules
+            builder.field('Field1').requireText();
+            // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).and(
                 (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
             ```
         + `or()` - combine a condition with an existing validator's condition using an OR operator.
             ```ts
+            // from the business rules
+            builder.field('Field1').requireText();
+            // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).or(
                 (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
             ```
         + `whenToEnable() `- provide a condition that determines when the validator is enabled.
             ```ts
+            // from the business rules
+            builder.field('Field1').requireText();
+            // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).whenToEnable(
                 (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
             ```
@@ -2415,14 +2443,25 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
         and `whenToEnable()` evaluates as Undetermined if your condition evaluates as NoMatch.
     + `addValidator()` - starts adding new validators to the ValueHost. This uses the Builder's chaining syntax.
         ```ts
+        // from the business rules
+        builder.field('Field1');
+        // adapt
         adapter.modify('Field1').addValidator().requireText();
         ```
     + `whenToEnable()` - Establishes the condition that must be met for the ValueHost to be enabled. When disabled, its validators do nothing.
         ```ts
         adapter.modify('Field1').whenToEnable(
             (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+    + `refineDataType()` - Updates the data type. The new data type must be able to fallback to 
+        the original data type as specified in the `LookupFallbackService` of `ValidationServices`.
+        ```ts
+        // from the business rules
+        builder.field('Field1', LookupKey.String);  // original
+        // adapt
+        adapter.modify('Field1').refineDataType('Email');   // assuming Email is setup in LookupFallbackService
+        adapter.modify('Field1').refineDataType(LookupKey.Number); // !!ERROR No fallback from number to string
         ```
-
+    ```
 #### Chaining Validators using the Builder API
 The `builder.field()` function allows appending validators. Just use the name of the validator without the "Condition" suffix, and in camelCase.
 ```ts

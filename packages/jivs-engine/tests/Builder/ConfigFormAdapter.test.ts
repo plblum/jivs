@@ -523,104 +523,6 @@ describe('assignToGroup', () => {
 });
 
 
-describe('replaceDataType using publicify_replaceDataType', () => {
-    test('New data type that is registered with the service. The data type is replaced', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            dataType: LookupKey.String
-        };
-        formAdapter.publicify_replaceDataType(fieldConfig, 'NewString');
-        expect(fieldConfig.dataType).toBe('NewString');
-    });
-    test('Unknown data type throws when ValueHostConfig.dataType is already assigned', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            dataType: LookupKey.String
-        };
-        expect(() => {
-            formAdapter.publicify_replaceDataType(fieldConfig, 'NewUnknownDataType');
-        }).toThrow('Cannot replace dataType');
-
-    });
-
-    // known data type requested, but the ValueHostConfig.dataType is not assigned. Replaces with the known data type.
-    test('Known data type requested, but the ValueHostConfig.dataType is not assigned. Replaces with the known data type.', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: null
-        };
-        formAdapter.publicify_replaceDataType(fieldConfig, 'NewString');
-        expect(fieldConfig.dataType).toBe('NewString');
-    });
-
-    // unknown data type requested, and the ValueHostConfig.dataType is not assigned. Still assigns it
-    test('Unknown data type requested, and the ValueHostConfig.dataType is not assigned. Still assigns it', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: null
-        };
-        formAdapter.publicify_replaceDataType(fieldConfig, 'NewUnknownDataType');
-        expect(fieldConfig.dataType).toBe('NewUnknownDataType');
-    });
-    test('Source is String. Existing data type is String. No change to data type', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            dataType: LookupKey.String,
-            validatorConfigs: null
-        };
-        formAdapter.publicify_replaceDataType(fieldConfig, LookupKey.String);
-        expect(fieldConfig.dataType).toBe(LookupKey.String);
-    });
-    // source is string, Existing data type is unassigned. Replaces with string
-    test('Source is String. Existing data type is unassigned. Replaces with String', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: null
-        };
-        formAdapter.publicify_replaceDataType(fieldConfig, LookupKey.String);
-        expect(fieldConfig.dataType).toBe(LookupKey.String);
-    });
-    // Both valid but not a valid fallback. Throws error
-    test('Both valid but not a valid fallback. Throws error', () => {
-        let formAdapter = setupPublicifyFormAdapter();
-        setupFallbackService(formAdapter.services);
-        // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
-        let fieldConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            dataType: LookupKey.String,
-            validatorConfigs: null
-        };
-        expect(() => {
-            formAdapter.publicify_replaceDataType(fieldConfig, LookupKey.Number);
-        }).toThrow('Cannot replace dataType');
-    });
-});
-
 describe('mergeConfigs() using publicify_mergeConfigs', () => {
 
     test('adjustments are all existing in AdapterValueHostConfig. All will end up in the destination, along with those already there. No overwriting in this case.', () => {
@@ -1357,6 +1259,92 @@ describe('ModifyFieldBuilder class', () => {
             expect(vh1).toEqual(expectedConfig);
         });
     });
+    describe('refineDataType', () => {
+        test('New data type that is registered with the service. The data type is replaced', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1', LookupKey.String);
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+            formAdapter.modify('Field1').refineDataType('NewString');
+            let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
+            expect(fieldConfig.dataType).toBe('NewString');
+        });
+        test('Unknown data type throws when ValueHostConfig.dataType is already assigned', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1', LookupKey.String);
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+
+            // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
+            expect(() => {
+                formAdapter.modify('Field1').refineDataType('NewUnknownDataType');
+            }).toThrow('Cannot replace dataType');
+
+        });
+
+        // known data type requested, but the ValueHostConfig.dataType is not assigned. Replaces with the known data type.
+        test('Known data type requested, but the ValueHostConfig.dataType is not assigned. Replaces with the known data type.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1');
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+
+            formAdapter.modify('Field1').refineDataType('NewString');
+            let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
+            expect(fieldConfig.dataType).toBe('NewString');
+        });
+
+        // unknown data type requested, and the ValueHostConfig.dataType is not assigned. Still assigns it
+        test('Unknown data type requested, and the ValueHostConfig.dataType is not assigned. Still assigns it', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1');
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+
+            formAdapter.modify('Field1').refineDataType('NewUnknownDataType');
+            let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
+            expect(fieldConfig.dataType).toBe('NewUnknownDataType');
+        });
+        test('Source is String. Existing data type is String. No change to data type', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1', LookupKey.String);
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+
+            formAdapter.modify('Field1').refineDataType(LookupKey.String);
+            let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
+            expect(fieldConfig.dataType).toBe(LookupKey.String);
+        });
+        // source is string, Existing data type is unassigned. Replaces with string
+        test('Source is String. Existing data type is unassigned. Replaces with String', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1');
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+            
+            formAdapter.modify('Field1').refineDataType(LookupKey.String);
+            let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
+            expect(fieldConfig.dataType).toBe(LookupKey.String);
+        });
+        // Both valid but not a valid fallback. Throws error
+        test('Both valid but not a valid fallback. Throws error', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            setupFallbackService(builder.services);
+            builder.field('Field1', LookupKey.String);
+            let formAdapter = new Publicify_ConfigFormAdapter(
+                builder.handOffState());
+
+            expect(() => { // string is not a valid fallback for number
+                formAdapter.modify('Field1').refineDataType(LookupKey.Number);
+            }).toThrow('Cannot replace dataType');
+        });
+    });    
 });
 describe('ModifyValidatorBuilder class', () => {
     describe('constructor', () => {

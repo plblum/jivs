@@ -543,6 +543,35 @@ export class ModifyFieldBuilder
         return this;
 
     }
+
+    /**
+     * Specifies the data type for this ValueHost. 
+     * Use case 1: The business layer did not specify a data type, but the UI layer needs to specify one
+     * for clarity.
+     * Use case 2: The business layer specified a data type, but the UI layer needs to change it to a different one.
+     * In this case, the new data type must be compatible with the original data type. If it is not, it is an error.
+     * By "compatible", there must be a fallback defined between the new data type and existing one
+     * in the LookupKeyFallbackService within the ValidationServices. If there is no fallback, it is an error.
+     * @param newDataType - the new data type to apply to this ValueHost. It must be compatible with the existing data type.
+     * @returns The IModifyFieldBuilder for further modifications.
+     */
+    public refineDataType(newDataType: string): IModifyFieldBuilder
+    {
+        let vhConfig = this.getConfig()!;
+
+        // Replace dataType only if unassigned or this value has a fallback
+        // matching the existing data type.
+        let existingDataType = vhConfig.dataType;
+        if (existingDataType && (newDataType != existingDataType)) {
+            if (!this.services.lookupKeyFallbackService.canFallbackTo(newDataType, existingDataType)) 
+                this.reportError(new Error(`Cannot replace dataType '${existingDataType}' with '${newDataType}' as no fallback is available.`));
+        }
+        vhConfig.dataType = newDataType;
+        this.logger.message(LoggingLevel.Debug, () => `ValueHost '${vhConfig.name}' dataType upgraded to '${newDataType}'.`);
+    
+        return this;
+    }
+
 }
 
 /**
