@@ -2,7 +2,7 @@
  * Provides types for the builders for validator and condition configuration.
  * 
  * - IBuilderConfigHost: Interface for builders that host child config objects.
- * - IFluentValidatorBuilder: Interface for builders that create validator configs.
+ * - IValidatorBuilder: Interface for builders that create validator configs.
  * - IStartConditionBuilder: Interface for the starting point of condition builders.
  * - IStartConditionWithChildrenBuilder: Interface for the starting point of condition builders that can have child conditions.
  * - IStartConditionWithOneChildBuilder: Interface for the starting point of condition builders that can have exactly one child condition.
@@ -119,7 +119,7 @@ export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TCon
  * Use this when using alternative conditions, as you will need to provide substitutes
  * for each fluent function. Your class should be registered with FluentFactory.
  */
-export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
+export interface IValidatorBuilder extends IBuilderConfigHost<object>
 {
     /**
      * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
@@ -127,7 +127,7 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     parentConfig: FieldValueHostConfig;    
     /**
      * Lets you create the condition instance itself into the Builder instead of
-     * using the existing FluentValidatorBuilder validators.
+     * using the existing ValidatorBuilder validators.
      * 
      * It takes a function where you return the condition instance.
      * (requester: ValidatorConfig) => ICondition | null
@@ -149,9 +149,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
-        validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a DataTypeCheck condition to the fluent validator builder.
@@ -176,9 +176,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     dataTypeCheck(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     dataTypeCheck(
-        validatorParameters: FluentDataTypeCheckValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentDataTypeCheckValidatorConfig): IValidatorBuilder;
 
     /**
       * Adds a RequireText condition to the fluent validator builder.
@@ -206,9 +206,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
       */
     requireText(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     requireText(
-        validatorParameters: FluentRequireTextValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentRequireTextValidatorConfig): IValidatorBuilder;
     /**
      * Adds a NotNull condition to the fluent validator builder.
      * NotNull ensures that the value being validated is not null.
@@ -236,9 +236,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     notNull(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     notNull(
-        validatorParameters: FluentNotNullValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotNullValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a RegExp condition to the fluent validator builder.
@@ -270,19 +270,19 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     regExp(
         expression: RegExp,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     regExp(
         expression: string,
         ignoreCase?: boolean,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     regExp(
         expression: RegExp,
-        validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentRegExpValidatorConfig): IValidatorBuilder;
     regExp(
         expression: string,
         ignoreCase: boolean,
-        validatorParameters: FluentRegExpValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentRegExpValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a range condition to the validator.
@@ -312,11 +312,11 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
         minimum: any,
         maximum: any,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     range(
         minimum: any,
         maximum: any,
-        validatorParameters: FluentRangeValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentRangeValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is equal to the specified second value.
@@ -338,14 +338,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */
     equalToValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     equalToValue(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for equalToValue
@@ -355,10 +355,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     eqValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     eqValue(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is equal to the second value host.
@@ -380,14 +380,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     equalTo(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     equalTo(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for equalTo
@@ -397,10 +397,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     eq(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     eq(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
@@ -422,14 +422,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */
     notEqualToValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     notEqualToValue(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for notEqualToValue
@@ -439,10 +439,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     neqValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     neqValue(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is not equal to the second value host.
@@ -464,14 +464,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */
     notEqualTo(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     notEqualTo(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for notEqualTo
@@ -481,10 +481,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     neq(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     neq(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is less than the specified second value.
@@ -506,14 +506,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     lessThanValue(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for lessThanValue
@@ -523,10 +523,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     ltValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     ltValue(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is less than the second value host.
@@ -548,15 +548,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     lessThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     lessThan(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for lessThan
@@ -567,10 +567,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     lt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     lt(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
 
 
     /**
@@ -593,14 +593,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanOrEqualValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     lessThanOrEqualValue(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for lessThanOrEqualValue
@@ -610,10 +610,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     lteValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     lteValue(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is less than or equal to the second value host.
@@ -635,15 +635,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     lessThanOrEqual(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for lessThanOrEqual
@@ -654,10 +654,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     lte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     lte(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
 
 
     /**
@@ -680,14 +680,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */
     greaterThanValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     greaterThanValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for greaterThanValue
@@ -697,10 +697,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     gtValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     gtValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is greater than the second value host.
@@ -722,15 +722,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     greaterThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     greaterThan(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for greaterThan
@@ -741,10 +741,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     gt(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     gt(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
@@ -766,14 +766,14 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     greaterThanOrEqualValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     greaterThanOrEqualValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for greaterThanOrEqualValue
@@ -783,10 +783,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     gteValue(
         secondValue: any,
-        errorMessage?: string | null, summaryMessage?: string | null): IFluentValidatorBuilder;
+        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     gteValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
 
 
     /**
@@ -809,23 +809,23 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     greaterThanOrEqual(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
 
     gte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     gte(
         secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the text length is within limits.
@@ -847,15 +847,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     stringLength(
         maximum: number | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     stringLength(
         maximum: number | null,
-        validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentStringLengthValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for stringLength
@@ -866,10 +866,10 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
     len(
         maximum: number | null,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     len(
         maximum: number | null,
-        validatorParameters: FluentStringLengthValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentStringLengthValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is 0 or higher.
@@ -891,13 +891,13 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     positive(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     positive(
-        validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentPositiveValidatorConfig): IValidatorBuilder;
 
     /**
      * Alias for positive
@@ -906,9 +906,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     pos(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     pos(
-        validatorParameters: FluentPositiveValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentPositiveValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is an integer.
@@ -930,13 +930,13 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     integer(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     integer(
-        validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentIntegerValidatorConfig): IValidatorBuilder;
     /**
      * Alias for integer
      * @param errorMessage 
@@ -944,9 +944,9 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      */
     int(
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     int(
-        validatorParameters: FluentIntegerValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentIntegerValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the number of decimal places is limited to the specified maximum.
@@ -969,15 +969,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     maxDecimals(
         maxDecimals: number,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     maxDecimals(
         maxDecimals: number,
-        validatorParameters: FluentMaxDecimalsValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentMaxDecimalsValidatorConfig): IValidatorBuilder;
 
     /**
      * Builds a validator around a condition and negates the validation result
@@ -1009,15 +1009,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     not(
         childBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     not(
         childBuilder: ConditionBuilderHandler,
-        validatorParameters: FluentNotValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentNotValidatorConfig): IValidatorBuilder;
 
     /**
      * Builds a validator that must only be evaluated based on another condition.
@@ -1069,17 +1069,17 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
-        validatorParameters: FluentWhenValidatorConfig): IFluentValidatorBuilder;    
+        validatorParameters: FluentWhenValidatorConfig): IValidatorBuilder;    
     
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1128,15 +1128,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     all(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentAllMatchValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentAllMatchValidatorConfig): IValidatorBuilder;
 
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1179,15 +1179,15 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */
     any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     any(
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentAnyMatchValidatorConfig): IFluentValidatorBuilder;
+        validatorParameters: FluentAnyMatchValidatorConfig): IValidatorBuilder;
 
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
@@ -1238,19 +1238,19 @@ export interface IFluentValidatorBuilder extends IBuilderConfigHost<object>
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      * @param validatorParameters - Optional validator configuration parameters.
-     * @returns The current instance of FluentValidatorBuilder for method chaining.
+     * @returns The current instance of ValidatorBuilder for method chaining.
      */            
     countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
-        summaryMessage?: string | null): IFluentValidatorBuilder;
+        summaryMessage?: string | null): IValidatorBuilder;
     countMatches(
         minimum: number | null,
         maximum: number | null,
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
-        validatorParameters: FluentCountMatchesValidatorConfig): IFluentValidatorBuilder;    
+        validatorParameters: FluentCountMatchesValidatorConfig): IValidatorBuilder;    
 }
 
 export type OptionalRequireTextConditionParams = Partial<Omit<RequireTextConditionConfig,

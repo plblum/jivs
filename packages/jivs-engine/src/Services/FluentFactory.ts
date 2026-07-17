@@ -3,14 +3,14 @@
  */
 
 import { ConditionBuilder } from "../Builder/ConditionBuilder";
-import { FluentValidatorBuilder } from '../Builder/FluentValidatorBuilder';
+import { ValidatorBuilder } from '../Builder/ValidatorBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { FieldValueHostConfig } from '../Interfaces/FieldValueHost';
 import { IFluentFactory } from '../Interfaces/FluentFactory';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import {
     CompleteConfigBuilderHandler, IBuilderConfigHost, IConditionBuilder,
-    IFluentValidatorBuilder, IStartConditionBuilder,
+    IValidatorBuilder, IStartConditionBuilder,
     IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder
 } from '../Interfaces/ChildBuilders';
 import { StartConditionBuilder } from "../Builder/StartConditionBuilder";
@@ -21,7 +21,7 @@ import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHost
 
 /**
  * Base interface to provide a factory that supplies:
- * 1. FluentValidatorBuilder or subclass replacement
+ * 1. ValidatorBuilder or subclass replacement
  * 2. ConditionBuilder or subclass replacement
  */
 export class FluentFactory extends ServiceWithAccessorBase implements IFluentFactory
@@ -30,7 +30,7 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
         super();
         this._fluentValidatorBuilderCreator =
             (parentConfig: FieldValueHostConfig) =>
-                new FluentValidatorBuilder(this.services, parentConfig);
+                new ValidatorBuilder(this.services, parentConfig);
         this._conditionBuilderCreator =
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
                 new ConditionBuilder(this.services, parentBuilder, completed);
@@ -44,7 +44,7 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
                 new StartConditionWithOneChildBuilder(this.services, parentBuilder, completed);
     }
-    private _fluentValidatorBuilderCreator: (parentConfig: FieldValueHostConfig) => IFluentValidatorBuilder;
+    private _fluentValidatorBuilderCreator: (parentConfig: FieldValueHostConfig) => IValidatorBuilder;
     private _conditionBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
         IConditionBuilder;
     private _startConditionBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
@@ -54,11 +54,11 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
     private _startConditionWithOneChildBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
         IStartConditionWithOneChildBuilder;
     /**
-     * Replaces the current FluentValidatorBuilderCreator
+     * Replaces the current ValidatorBuilderCreator
      * @returns 
      */
-    public setFluentValidatorBuilderCreator(replacement:
-        (parentConfig: FieldValueHostConfig) => FluentValidatorBuilder): void
+    public setValidatorBuilderCreator(replacement:
+        (parentConfig: FieldValueHostConfig) => ValidatorBuilder): void
     {
         this._fluentValidatorBuilderCreator = replacement;
     }
@@ -100,11 +100,11 @@ export class FluentFactory extends ServiceWithAccessorBase implements IFluentFac
     }
     
     /**
-     * Creates the instance of FluentValidatorBuilder.
+     * Creates the instance of ValidatorBuilder.
      * Its parameter is used by the constructor's parameter.
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    public createFluentValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IFluentValidatorBuilder
+    public createValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IValidatorBuilder
     {
         return this._fluentValidatorBuilderCreator(parentConfig);
     }

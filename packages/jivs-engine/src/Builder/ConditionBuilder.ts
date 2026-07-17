@@ -49,7 +49,7 @@ import { ConditionBuilderBase } from "./ConditionBuilderBase";
  * builder.parentValue().regExp('pattern');
  * ```
  *
- * This class is also used with FluentValidatorBuilder to create condition-specific configurations.
+ * This class is also used with ValidatorBuilder to create condition-specific configurations.
  */
 export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     TOptions extends SetConfigOptions = SetConfigOptions>

@@ -1920,9 +1920,9 @@ The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has t
 > The Form Configuration Adapter is actually a Builder object, supporting the same functions.
 - `field()` adds or modifies an `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
    
-    `field(valueHostName, dataType?, *parameters object*?): FluentValidatorBuilder`
+    `field(valueHostName, dataType?, *parameters object*?): ValidatorBuilder`
     
-    `field(valueHostName, *parameters object*?): FluentValidatorBuilder`
+    `field(valueHostName, *parameters object*?): ValidatorBuilder`
     ```ts
     builder.field('fieldname', LookupKey.Date);
     builder.field('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
@@ -1942,7 +1942,7 @@ The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has t
     ```
     This variant takes one parameter, an object with all properties on the `FieldValueHostConfig`.
 
-    `field(*config*): FluentValidatorBuilder`
+    `field(*config*): ValidatorBuilder`
     ```ts
     builder.field({ name: 'fieldname', dataType: LookupKey.Date,
         label: 'Field name', labell10n: 'FNKey' }).requireText();
@@ -2295,9 +2295,9 @@ class ValidationManagerConfigBuilder {
     notifyValidationStateChangedDelay?: number;
     
 // some of the functions to configure ValueHosts
-    field(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
-    field(valueHostName, partial config?): FluentValidatorBuilder;
-    field(partial config?): FluentValidatorBuilder;
+    field(valueHostName, dataType?, partial config?): ValidatorBuilder;
+    field(valueHostName, partial config?): ValidatorBuilder;
+    field(partial config?): ValidatorBuilder;
     static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
     static(valueHostName, partial config?): ValidationManagerConfigBuilder;
     static(partial config?): ValidationManagerConfigBuilder;
@@ -2482,7 +2482,7 @@ builder.field('StartDate').requireText().regExp(/expression/);
 With the `Builder object`, all chained functions have parameters to supply key validator values like error message, error code and severity. Those that need it have parameters for configuring the Conditions too. Most parameters are optional, and many take `null` if you don't want to set them.
 ```ts
 builder.field('StartDate').requireText({condition parameters}, errorMessage, {validator parameters});
-builder.field('StartDate').regExp(expression, ignoreCase, {condition parameters}, errorMessage, {validator parameters}): FluentValidatorBuilder
+builder.field('StartDate').regExp(expression, ignoreCase, {condition parameters}, errorMessage, {validator parameters}): ValidatorBuilder
 ```
 For details on all validators using the Builder API, see [All condition configurations](#all-condition-configurations).
 

@@ -43,7 +43,7 @@
  * 
  * Each condition class will define its fluent method based on its ConditionType name ("requireText", "regExp", etc).
  * They will use some TypeScript Declaration Merging magic to make their
- * class appear to be part of FluentValidatorBuilder and FluentConditionBuilder, classes that connect
+ * class appear to be part of ValidatorBuilder and FluentConditionBuilder, classes that connect
  * the conditions to the FieldValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
  * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
@@ -66,16 +66,16 @@
  *   builder.static('Field3');
  *   ```
  * 
- * - FluentValidatorBuilder - Class that supplies Conditions and Validators
+ * - ValidatorBuilder - Class that supplies Conditions and Validators
  *   to the preceding FieldValueHost. It is returned by fluent.field() and each chained object that follows.
  *   ```ts
- *   fluent.field(field name) -> FluentValidatorBuilder
+ *   fluent.field(field name) -> ValidatorBuilder
  *   ```
  *   It exposes functions specific to each Condition class, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
  *   ```ts
  *   fluent.field('Field1').requireText(), regExp(), etc
  *   ```
- *   Then the individual condition takes over the fluent chain, returning a FluentValidatorBuilder 
+ *   Then the individual condition takes over the fluent chain, returning a ValidatorBuilder 
  *   for the next condition.
  * 
  * - StartConditionBuilder  - 
@@ -90,10 +90,10 @@
  *   to create their child conditions.
  *   ```ts
  *   childbuilder.field('Field1').all(
- *      childBuilder -> FluentMultiFieldConditionBuilder) -> FluentValidatorBuilder
+ *      childBuilder -> FluentMultiFieldConditionBuilder) -> ValidatorBuilder
  *   childbuilder.field('Field1').when(
  *      whenBuilder -> FluentSingleFieldConditionBuilder,
- *      thenBuilder -> FluentSingleFieldConditionBuilder) -> FluentValidatorBuilder
+ *      thenBuilder -> FluentSingleFieldConditionBuilder) -> ValidatorBuilder
  *   ```
  *   ```ts
  *   builder.field('Field1').all(
@@ -134,23 +134,23 @@
  *          }
  *    }
  *    ```
- * 2. Subclass FluentValidatorBuilder and add your validator functions. This requires 2 overloads
+ * 2. Subclass ValidatorBuilder and add your validator functions. This requires 2 overloads
  *    as shown here:
  *     ```ts
  *      // again wiring up your custom condition, EmailAddressCondition.
  * 
- *     export class YourFluentValidatorBuilder extends FluentValidatorBuilder {
+ *     export class YourValidatorBuilder extends ValidatorBuilder {
  *          public emailAddress(
  *              allowMultiple: boolean,
  *              errorMessage?: string | null, 
- *              summaryMessage?: string | null): IFluentValidatorBuilder;
+ *              summaryMessage?: string | null): IValidatorBuilder;
  *          public emailAddress(
  *              allowMultiple: boolean,
- *              validatorParameters: FluentValidatorConfig): IFluentValidatorBuilder;
+ *              validatorParameters: FluentValidatorConfig): IValidatorBuilder;
  *          public emailAddress(
  *              allowMultiple: boolean,
  *              arg2?: FluentValidatorConfig | string | null,
- *              arg3?: string | null): IFluentValidatorBuilder {
+ *              arg3?: string | null): IValidatorBuilder {
  *              let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
  *                  this.resolveOverloadArgs<EmailAddressConditionConfig>(arg2, arg3);
  *              let conditionBuilder = new YourConditionBuilder(this);
@@ -167,9 +167,9 @@
  *      // --- FluentFactory -------------------------------------------
  *      let ff = new FluentFactory();
  *      vs.fluentFactory = ff;
- *      // Adding custom conditions to FluentValidatorBuilder and ConditionBuilder
- *      ff.setFluentValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
- *          return new YourFluentValidatorBuilder(parentConfig);
+ *      // Adding custom conditions to ValidatorBuilder and ConditionBuilder
+ *      ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
+ *          return new YourValidatorBuilder(parentConfig);
  *      });
  *      ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
  *          return new YourConditionBuilder(parentBuilder, completed);
@@ -179,7 +179,7 @@
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
- * allows replacing the FluentValidatorBuilder and FluentConditionBuilder classes with your own.
+ * allows replacing the ValidatorBuilder and FluentConditionBuilder classes with your own.
  * Just register it with fluentFactory.singleton.register().
  */
 

@@ -6,7 +6,7 @@
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
-import { IFluentValidatorBuilder } from "../Interfaces/ChildBuilders";
+import { IValidatorBuilder } from "../Interfaces/ChildBuilders";
 import { toIServicesAccessor } from "../Interfaces/Services";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
 import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
@@ -60,29 +60,29 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IFluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IValidatorBuilder;
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): IFluentValidatorBuilder;
+    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): IValidatorBuilder;
     /**
      * Fluent format to create a FieldValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
      */
-    public field(config: FluentFieldValueConfig): IFluentValidatorBuilder;
+    public field(config: FluentFieldValueConfig): IValidatorBuilder;
     // overload resolution
     public field(arg1: ValueHostName | FluentFieldValueConfig,
         arg2?: FluentFieldParameters | string | null,
-        arg3?: FluentFieldParameters): IFluentValidatorBuilder {
+        arg3?: FluentFieldParameters): IValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
     }
     //#endregion validation oriented ValueHost support

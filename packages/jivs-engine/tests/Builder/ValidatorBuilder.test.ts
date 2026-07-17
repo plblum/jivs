@@ -1,6 +1,6 @@
-import { ValidationManagerStartFluent } from './../../src/Builder/StartFluent_classes';
-import { ConditionBuilder } from './../../src/Builder/ConditionBuilder';
-import { FluentValidatorConfig } from './../../src/Interfaces/Fluent';
+import { ValidationManagerStartFluent } from '../../src/Builder/StartFluent_classes';
+import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
+import { FluentValidatorConfig } from '../../src/Interfaces/Fluent';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, 
@@ -15,22 +15,22 @@ from '../../src/Conditions/ConcreteConditions';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { FluentValidatorBuilder, FluentOverloadArgs } from './../../src/Builder/FluentValidatorBuilder';
+import { ValidatorBuilder, FluentOverloadArgs } from './../../src/Builder/ValidatorBuilder';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { NotConditionConfig } from '../../src/Conditions/NotCondition';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { MockValidationServices } from '../TestSupport/mocks';
-import { IBuilderConfigHost, IFluentValidatorBuilder, FluentDataTypeCheckValidatorConfig } from '../../src/Interfaces/ChildBuilders'
+import { IBuilderConfigHost, IValidatorBuilder, FluentDataTypeCheckValidatorConfig } from '../../src/Interfaces/ChildBuilders'
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 
 
-class Publicify_FluentValidatorBuilder extends FluentValidatorBuilder
+class Publicify_ValidatorBuilder extends ValidatorBuilder
 {
     public publicify_finish(conditionBuilder: ConditionBuilder | null,
         errorMessage: string | null | undefined,
         summaryMessage: string | null | undefined,
-        validatorConfig: FluentValidatorConfig | undefined | null): IFluentValidatorBuilder
+        validatorConfig: FluentValidatorConfig | undefined | null): IValidatorBuilder
     {
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorConfig as any);
     }
@@ -59,34 +59,34 @@ beforeAll(() => {
     services = new MockValidationServices(false, false);
 });
 
-describe('FluentValidatorBuilder', () => {
+describe('ValidatorBuilder', () => {
     describe('constructor', () => {
         test('constructor with vhConfig sets up vhConfig property', () => {
             let vhConfig = createVMConfig();
-            let testItem = new FluentValidatorBuilder(services, vhConfig);
+            let testItem = new ValidatorBuilder(services, vhConfig);
             expect(testItem.parentConfig).toBe(vhConfig);
         });
         test('constructor with vhConfig that has validatorConfig=null sets up vhConfig property with empty validatorConfig array', () => {
             let vhConfig = createVMConfig();
             vhConfig.validatorConfigs = null;
 
-            let testItem = new FluentValidatorBuilder(services, vhConfig);
+            let testItem = new ValidatorBuilder(services, vhConfig);
             expect(testItem.parentConfig).toBeDefined();
             expect(testItem.parentConfig.validatorConfigs).toEqual([]);
         });
         test('constructor with services=null throws', () => {
             let vhConfig = createVMConfig();
-            expect(() => new FluentValidatorBuilder(null!, vhConfig)).toThrow('services');
+            expect(() => new ValidatorBuilder(null!, vhConfig)).toThrow('services');
         });
         test('constructor with config= null throws', () => {
-            expect(() => new FluentValidatorBuilder(services, null!)).toThrow('parentConfig');
+            expect(() => new ValidatorBuilder(services, null!)).toThrow('parentConfig');
         });
     });
     describe('finish()', () => {
         test('with error message and summary message stand-alone, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
@@ -103,7 +103,7 @@ describe('FluentValidatorBuilder', () => {
         test('with error message stand-alone, summary parameter null, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
@@ -119,7 +119,7 @@ describe('FluentValidatorBuilder', () => {
         test('with error message and summary message null, empty validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {};
@@ -135,7 +135,7 @@ describe('FluentValidatorBuilder', () => {
         test('with error message and summary message in validatorConfig, and other parameters correctly defined', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
@@ -154,7 +154,7 @@ describe('FluentValidatorBuilder', () => {
         });
         test('with validatorConfig.conditionCreator assigned', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
                 errorMessage: 'Error',
@@ -173,7 +173,7 @@ describe('FluentValidatorBuilder', () => {
         test('with null for error message and summary parameters, but rich content in validatorConfig', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
@@ -195,7 +195,7 @@ describe('FluentValidatorBuilder', () => {
         test('defines same errorCode twice throws on the second definition', () => {
             let vhConfig = createVMConfig();
 
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
             let conditionBuilder = new ConditionBuilder(services, testItem);
             conditionBuilder.requireText();
             let validatorConfig: FluentValidatorConfig = {
@@ -211,7 +211,7 @@ describe('FluentValidatorBuilder', () => {
 
         test('validatorConfig.conditionCreator = null and conditionBuilder = null throws', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
                 errorMessage: 'Error',
@@ -229,7 +229,7 @@ describe('FluentValidatorBuilder', () => {
 
         test('All parameters null, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -243,7 +243,7 @@ describe('FluentValidatorBuilder', () => {
         // with error and summary messages, no conditionConfig or validatorParameters
         test('error and summary messages, no conditionConfig or validatorParameters, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -256,7 +256,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message only, as a single parameter
         test('error message only, as a single parameter, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -269,7 +269,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message, summary = null
         test('error message, summary = null, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -282,7 +282,7 @@ describe('FluentValidatorBuilder', () => {
         // with error message = null, summary assigned
         test('error message = null, summary assigned, returns correct object', () => {
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -300,7 +300,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessagel10n: 'Key'
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -316,7 +316,7 @@ describe('FluentValidatorBuilder', () => {
                 trim: true
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -336,7 +336,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessagel10n: 'Key'
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -360,7 +360,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessage: 'Error',
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -383,7 +383,7 @@ describe('FluentValidatorBuilder', () => {
                 errorMessage: 'Error',
             };
             let vhConfig = createVMConfig();
-            let testItem = new Publicify_FluentValidatorBuilder(services, vhConfig);
+            let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 testItem.publicify_resolveOverloadArgs<DataTypeCheckConditionConfig>(
@@ -404,11 +404,11 @@ describe('FluentValidatorBuilder', () => {
 function createFluent(): ValidationManagerStartFluent {
     return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
 }
-function TestFluentValidatorBuilder(testItem: IBuilderConfigHost<any>,
+function TestValidatorBuilder(testItem: IBuilderConfigHost<any>,
     expectedValConfig: ValidatorConfig) {
 
-    expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
-    let typedTextItem = testItem as FluentValidatorBuilder;
+    expect(testItem).toBeInstanceOf(ValidatorBuilder);
+    let typedTextItem = testItem as ValidatorBuilder;
     let config = typedTextItem.parentConfig as FieldValueHostConfig;
     expect(config.validatorConfigs).not.toBeNull();
     expect(config.validatorConfigs!.length).toBe(1);
@@ -433,7 +433,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With no parameters creates ValidatorConfig with DataTypeCheckCondition with only type assigned', () => {
 
         let testItem = createFluent().field('Field1').dataTypeCheck();
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -442,7 +442,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With only errorMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').dataTypeCheck('Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -452,7 +452,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     // both errormessage and summarymessage parameters
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').dataTypeCheck('Error', 'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -463,7 +463,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     // with null for errorMessage, 'summary'
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').dataTypeCheck(null, 'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -473,7 +473,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     // with only null, which should be treated as no parameters, so no errorMessage or summaryMessage
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
         let testItem = createFluent().field('Field1').dataTypeCheck(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -483,7 +483,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     // It has many parameters, and we need to be sure all pass through
     test('With FluentValidatorConfig with errorMessage and summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').dataTypeCheck({ errorMessage: 'Error', summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -505,13 +505,13 @@ describe('dataTypeCheck as a validator of a field()', () => {
                 conditionType: ConditionType.DataTypeCheck
             }
         };        
-        TestFluentValidatorBuilder(testItem, destProperties as any);
+        TestValidatorBuilder(testItem, destProperties as any);
 
     });
     // empty object
     test('With FluentValidatorConfig with no properties assigned', () => {
         let testItem = createFluent().field('Field1').dataTypeCheck({});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -525,7 +525,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
 
             let testItem = createFluent().field('Field1').regExp('\\d');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
@@ -535,7 +535,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true)
         test('regExp(string, true), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -546,7 +546,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, false)
         test('regExp(string, false), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', false);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
 
                     conditionType: ConditionType.RegExp,
@@ -558,7 +558,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, errorMessage)
         test('regExp(string, true, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, 'Error');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -570,7 +570,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, false, errorMessage)
         test('regExp(string, false, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', false, 'Error');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
 
                     conditionType: ConditionType.RegExp,
@@ -583,7 +583,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, errorMessage, summaryMessage)
         test('regExp(string, true, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -596,7 +596,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, null, summaryMessage)
         test('regExp(string, true, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, null, 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -608,7 +608,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, undefined, string)
         test('regExp(string, undefined, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', undefined, 'Error');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
@@ -619,7 +619,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, null)
         test('regExp(string, true, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, null);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -630,7 +630,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, false, null, null)
         test('regExp(string, false, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', false, null, null);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -641,7 +641,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, validatorParameters)
         test('regExp(string, true, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -654,7 +654,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, false, validatorParameters)
         test('regExp(string, false, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage + summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', false, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -667,7 +667,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(string, true, {})
         test('regExp(string, true, {}), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createFluent().field('Field1').regExp('\\d', true, {});
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -681,7 +681,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp)
         test('regExp(RegExp), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -691,7 +691,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp, errorMessage)
         test('regExp(RegExp, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/, 'Error');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -703,7 +703,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp, errorMessage, summaryMessage)
         test('regExp(RegExp, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage + summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -715,7 +715,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp, null, summaryMessage)
         test('regExp(RegExp, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and summaryMessage assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/, null, 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -726,7 +726,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp, null, null)
         test('regExp(RegExp, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/, null, null);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -736,7 +736,7 @@ describe('regExp as a validator of a field()', () => {
         // regExp(RegExp, null)
         test('regExp(RegExp, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createFluent().field('Field1').regExp(/\d/, null);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -752,7 +752,7 @@ describe('regExp as a validator of a field()', () => {
                     summaryMessage: 'Summary',
                     multiline: true
                 });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/,
@@ -768,7 +768,7 @@ describe('regExp as a validator of a field()', () => {
                 {
                     multiline: true
                 });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/,
@@ -783,7 +783,7 @@ describe('regExp as a validator of a field()', () => {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -801,7 +801,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4), creates ValidatorConfig with RangeCondition with type=Range and minimum assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).range(1, 4);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -813,7 +813,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, null), creates ValidatorConfig with RangeCondition with type=Range, minimum assigned', () => {
 
         let testItem = createFluent().field('Field1').range(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1
@@ -823,7 +823,7 @@ describe('range as a validator of a field()', () => {
     test('range(null, 4), creates ValidatorConfig with RangeCondition with type=Range, maximum assigned', () => {
 
         let testItem = createFluent().field('Field1').range(null, 4);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 maximum: 4
@@ -834,7 +834,7 @@ describe('range as a validator of a field()', () => {
     test('range(null, null, "Error"), creates ValidatorConfig with RangeCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').range(null, null, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
             },
@@ -844,7 +844,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4, "Error"), creates ValidatorConfig with RangeCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').range(1, 4, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -856,7 +856,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4, "Error", "Summary"), creates ValidatorConfig with RangeCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').range(1, 4, 'Error',  'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -868,7 +868,7 @@ describe('range as a validator of a field()', () => {
     });
     test('range(1, 4, null, "Summary"), creates ValidatorConfig with RangeCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').range(1, 4, null,  'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -884,7 +884,7 @@ describe('range as a validator of a field()', () => {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -897,7 +897,7 @@ describe('range as a validator of a field()', () => {
     // range(1, 4, {})
     test('range(1, 4, {}), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').range(1, 4, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -908,7 +908,7 @@ describe('range as a validator of a field()', () => {
     // range(1, 4, null)
     test('range(1, 4, null), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').range(1, 4, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -919,7 +919,7 @@ describe('range as a validator of a field()', () => {
     // range(null, null, null)
     test('range(null, null, null), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').range(null, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
             }
@@ -932,7 +932,7 @@ describe('equalToValue as a validator of a field()', () => {
     test('equalToValue(1), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -942,7 +942,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(1, null)
     test('equalToValue(1, null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -952,7 +952,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(1, null, null)
     test('equalToValue(1, null, null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -962,7 +962,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(null)
     test('equalToValue(null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue unassigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
             }
@@ -971,7 +971,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(undefined)
     test('equalToValue(undefined), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(undefined);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
             }
@@ -981,7 +981,7 @@ describe('equalToValue as a validator of a field()', () => {
     test('equalToValue(1, "Error"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -992,7 +992,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(1, 'Error', 'Summary')
     test('equalToValue(1, "Error", "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,  
                 secondValue: 1
@@ -1004,7 +1004,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(1, null, 'Summary')
     test('equalToValue(1, null, "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -1019,7 +1019,7 @@ describe('equalToValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary' 
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -1037,7 +1037,7 @@ describe('equalToValue as a validator of a field()', () => {
                 summaryMessage: 'Summary',
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1,
@@ -1053,7 +1053,7 @@ describe('equalToValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1,
@@ -1064,7 +1064,7 @@ describe('equalToValue as a validator of a field()', () => {
     // equalToValue(1, {})
     test('equalToValue(1, {}), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).equalToValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
                 secondValue: 1
@@ -1076,7 +1076,7 @@ describe('equalToValue as a validator of a field()', () => {
         test('eqValue(1), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer).eqValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 1
@@ -1087,7 +1087,7 @@ describe('equalToValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .eqValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 1
@@ -1100,7 +1100,7 @@ describe('equalToValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .eqValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToValueConditionConfig>{
                     conditionType: ConditionType.EqualToValue,
                     secondValue: 1
@@ -1114,7 +1114,7 @@ describe('equalToValue as a validator of a field()', () => {
 describe('equalTo as a validator of a field()', () => {
     test('equalTo("Field2"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1124,7 +1124,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", null)
     test('equalTo("Field2", null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1134,7 +1134,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", null, null)
     test('equalTo("Field2", null, null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1144,7 +1144,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", "Error")
     test('equalTo("Field2", "Error"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1155,7 +1155,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", "Error", "Summary")
     test('equalTo("Field2", "Error", "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1167,7 +1167,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", null, "Summary")
     test('equalTo("Field2", null, "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1182,7 +1182,7 @@ describe('equalTo as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1197,7 +1197,7 @@ describe('equalTo as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2',
@@ -1208,7 +1208,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("Field2", {})
     test('equalTo("Field2", {}), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
@@ -1218,7 +1218,7 @@ describe('equalTo as a validator of a field()', () => {
     // equalTo("")
     test('equalTo(""), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').equalTo('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
                 secondValueHostName: ''
@@ -1229,7 +1229,7 @@ describe('equalTo as a validator of a field()', () => {
         test('eq("Field2"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer).eq('Field2');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToConditionConfig>{
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1240,7 +1240,7 @@ describe('equalTo as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .eq("Field2", 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToConditionConfig>{
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1253,7 +1253,7 @@ describe('equalTo as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .eq("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <EqualToConditionConfig>{
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1269,7 +1269,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     test('notEqualToValue(1), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1279,7 +1279,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, null)
     test('notEqualToValue(1, null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1289,7 +1289,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, null, null)
     test('notEqualToValue(1, null, null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1299,7 +1299,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, 'Error')
     test('notEqualToValue(1, "Error"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1310,7 +1310,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, 'Error', 'Summary')
     test('notEqualToValue(1, "Error", "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1322,7 +1322,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, null, 'Summary')
     test('notEqualToValue(1, null, "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1337,7 +1337,7 @@ describe('notEqualToValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1352,7 +1352,7 @@ describe('notEqualToValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1,
@@ -1363,7 +1363,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(1, {})
     test('notEqualToValue(1, {}), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
@@ -1373,7 +1373,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue("")
     test('notEqualToValue(""), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
                 secondValue: ''
@@ -1383,7 +1383,7 @@ describe('notEqualToValue as a validator of a field()', () => {
     // notEqualToValue(null)
     test('notEqualToValue(null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue unassigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).notEqualToValue(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue
             }
@@ -1393,7 +1393,7 @@ describe('notEqualToValue as a validator of a field()', () => {
         test('neqValue(1), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer).neqValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <NotEqualToValueConditionConfig>{
                     conditionType: ConditionType.NotEqualToValue,
                     secondValue: 1
@@ -1404,7 +1404,7 @@ describe('notEqualToValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .neqValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <NotEqualToValueConditionConfig>{
                     conditionType: ConditionType.NotEqualToValue,
                     secondValue: 1
@@ -1417,7 +1417,7 @@ describe('notEqualToValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .neqValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <NotEqualToValueConditionConfig>{
                     conditionType: ConditionType.NotEqualToValue,
                     secondValue: 1
@@ -1432,7 +1432,7 @@ describe('notEqualTo as a validator of a field()', () => {
     test('notEqualTo("Field2"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').notEqualTo('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1442,7 +1442,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", null)
     test('notEqualTo("Field2", null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1452,7 +1452,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", null, null)
     test('notEqualTo("Field2", null, null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1462,7 +1462,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", "Error")
     test('notEqualTo("Field2", "Error"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1473,7 +1473,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", "Error", "Summary")
     test('notEqualTo("Field2", "Error", "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,    
                 secondValueHostName: 'Field2'
@@ -1485,7 +1485,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", null, "Summary")
     test('notEqualTo("Field2", null, "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1500,7 +1500,7 @@ describe('notEqualTo as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1515,7 +1515,7 @@ describe('notEqualTo as a validator of a field()', () => {
             {   
             secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2',
@@ -1526,7 +1526,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("Field2", {})
     test('notEqualTo("Field2", {}), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
@@ -1536,7 +1536,7 @@ describe('notEqualTo as a validator of a field()', () => {
     // notEqualTo("")
     test('notEqualTo(""), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').notEqualTo('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: ''
@@ -1549,7 +1549,7 @@ describe('lessThanValue as a validator of a field()', () => {
     test('lessThanValue(1), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1559,7 +1559,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, null)
     test('lessThanValue(1, null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1569,7 +1569,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, null, null)
     test('lessThanValue(1, null, null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1579,7 +1579,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, 'Error')
     test('lessThanValue(1, "Error"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1590,7 +1590,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, 'Error', 'Summary')
     test('lessThanValue(1, "Error", "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1602,7 +1602,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, null, 'Summary')
     test('lessThanValue(1, null, "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1617,7 +1617,7 @@ describe('lessThanValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1632,7 +1632,7 @@ describe('lessThanValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1,
@@ -1643,7 +1643,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue(1, {})
     test('lessThanValue(1, {}), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: 1
@@ -1653,7 +1653,7 @@ describe('lessThanValue as a validator of a field()', () => {
     // lessThanValue("")
     test('lessThanValue(""), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanValue('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
                 secondValue: ''
@@ -1664,7 +1664,7 @@ describe('lessThanValue as a validator of a field()', () => {
         test('ltValue(1), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer).ltValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanValueConditionConfig>{
                     conditionType: ConditionType.LessThanValue,
                     secondValue: 1
@@ -1675,7 +1675,7 @@ describe('lessThanValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .ltValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanValueConditionConfig>{
                     conditionType: ConditionType.LessThanValue,
                     secondValue: 1
@@ -1688,7 +1688,7 @@ describe('lessThanValue as a validator of a field()', () => {
 
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .ltValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanValueConditionConfig>{
                     conditionType: ConditionType.LessThanValue,
                     secondValue: 1
@@ -1704,7 +1704,7 @@ describe('lessThan as a validator of a field()', () => {
     test('lessThan("Field2"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').lessThan('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1714,7 +1714,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", null)
     test('lessThan("Field2", null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1724,7 +1724,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", null, null)
     test('lessThan("Field2", null, null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1734,7 +1734,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", "Error")
     test('lessThan("Field2", "Error"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1745,7 +1745,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", "Error", "Summary")
     test('lessThan("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1757,7 +1757,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", null, "Summary")
     test('lessThan("Field2", null, "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1772,7 +1772,7 @@ describe('lessThan as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1787,7 +1787,7 @@ describe('lessThan as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2',
@@ -1798,7 +1798,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("Field2", {})
     test('lessThan("Field2", {}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
@@ -1808,7 +1808,7 @@ describe('lessThan as a validator of a field()', () => {
     // lessThan("")
     test('lessThan(""), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThan('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
                 secondValueHostName: ''
@@ -1819,7 +1819,7 @@ describe('lessThan as a validator of a field()', () => {
         test('lt("Field2"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
             let testItem = createFluent().field('Field1').lt('Field2');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanConditionConfig>{
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1829,7 +1829,7 @@ describe('lessThan as a validator of a field()', () => {
         test('lt("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
             let testItem = createFluent().field('Field1').lt('Field2', 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanConditionConfig>{
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1841,7 +1841,7 @@ describe('lessThan as a validator of a field()', () => {
         test('lt("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
             let testItem = createFluent().field('Field1').lt('Field2', { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanConditionConfig>{
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1857,7 +1857,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     test('lessThanOrEqualValue(1), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1867,7 +1867,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, null)
     test('lessThanOrEqualValue(1, null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1877,7 +1877,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, null, null)
     test('lessThanOrEqualValue(1, null, null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1887,7 +1887,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, 'Error')
     test('lessThanOrEqualValue(1, "Error"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1898,7 +1898,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, 'Error', 'Summary')
     test('lessThanOrEqualValue(1, "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1910,7 +1910,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, null, 'Summary')
     test('lessThanOrEqualValue(1, null, "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1925,7 +1925,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1940,7 +1940,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1,
@@ -1951,7 +1951,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue(1, {})
     test('lessThanOrEqualValue(1, {}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
@@ -1961,7 +1961,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     // lessThanOrEqualValue("")
     test('lessThanOrEqualValue(""), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).lessThanOrEqualValue('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: ''
@@ -1971,7 +1971,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
     describe('lteValue alias of lessThanOrEqualValue. Confirm overloaded interfaces', () => {
         test('lteValue(1), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer).lteValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqualValue,
                     secondValue: 1
@@ -1981,7 +1981,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
         test('lteValue(1, errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .lteValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqualValue,
                     secondValue: 1
@@ -1993,7 +1993,7 @@ describe('lessThanOrEqualValue as a validator of a field()', () => {
         test('lteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .lteValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqualValue,
                     secondValue: 1
@@ -2010,7 +2010,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     test('lessThanOrEqual("Field2"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2020,7 +2020,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", null)
     test('lessThanOrEqual("Field2", null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2030,7 +2030,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", null, null)
     test('lessThanOrEqual("Field2", null, null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2040,7 +2040,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", "Error")
     test('lessThanOrEqual("Field2", "Error"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2051,7 +2051,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", "Error", "Summary")
     test('lessThanOrEqual("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2063,7 +2063,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", null, "Summary")
     test('lessThanOrEqual("Field2", null, "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2077,7 +2077,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2091,7 +2091,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', {
             secondConversionLookupKey: LookupKey.Integer
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2',
@@ -2102,7 +2102,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("Field2", {})
     test('lessThanOrEqual("Field2", {}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2112,7 +2112,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     // lessThanOrEqual("")
     test('lessThanOrEqual(""), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').lessThanOrEqual('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: ''
@@ -2122,7 +2122,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
     describe('lte alias of lessThanOrEqual. Confirm overloaded interfaces', () => {
         test('lte("Field2"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').lte('Field2');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2131,7 +2131,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
         });
         test('lte("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').lte('Field2', 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2142,7 +2142,7 @@ describe('lessThanOrEqual as a validator of a field()', () => {
         });
         test('lte("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').lte('Field2', { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <LessThanOrEqualConditionConfig>{
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2161,7 +2161,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     test('greaterThanValue(1), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2171,7 +2171,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, null)
     test('greaterThanValue(1, null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2181,7 +2181,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, null, null)
     test('greaterThanValue(1, null, null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2191,7 +2191,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, 'Error')
     test('greaterThanValue(1, "Error"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2202,7 +2202,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, 'Error', 'Summary')
     test('greaterThanValue(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2214,7 +2214,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, null, 'Summary')
     test('greaterThanValue(1, null, "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2229,7 +2229,7 @@ describe('greaterThanValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2244,7 +2244,7 @@ describe('greaterThanValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: LookupKey.Integer
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1,
@@ -2255,7 +2255,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(1, {})
     test('greaterThanValue(1, {}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
@@ -2265,7 +2265,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     // greaterThanValue(null)
     test('greaterThanValue(null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue unassigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanValue(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue
             }
@@ -2274,7 +2274,7 @@ describe('greaterThanValue as a validator of a field()', () => {
     describe('gtValue alias of greaterThanValue. Confirm overloaded interfaces', () => {
         test('gtValue(1), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer).gtValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanValue,
                     secondValue: 1
@@ -2284,7 +2284,7 @@ describe('greaterThanValue as a validator of a field()', () => {
         test('gtValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .gtValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanValue,
                     secondValue: 1
@@ -2296,7 +2296,7 @@ describe('greaterThanValue as a validator of a field()', () => {
         test('gtValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .gtValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanValue,
                     secondValue: 1
@@ -2314,7 +2314,7 @@ describe('greaterThan as a validator of a field()', () => {
     test('greaterThan("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').greaterThan('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2324,7 +2324,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", null)
     test('greaterThan("Field2", null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2334,7 +2334,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", null, null)
     test('greaterThan("Field2", null, null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2344,7 +2344,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", "Error")
     test('greaterThan("Field2", "Error"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2355,7 +2355,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", "Error", "Summary")
     test('greaterThan("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2367,7 +2367,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", null, "Summary")
     test('greaterThan("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2381,7 +2381,7 @@ describe('greaterThan as a validator of a field()', () => {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2395,7 +2395,7 @@ describe('greaterThan as a validator of a field()', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', {
             secondConversionLookupKey: 'key'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2',
@@ -2406,7 +2406,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("Field2", {})
     test('greaterThan("Field2", {}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -2416,7 +2416,7 @@ describe('greaterThan as a validator of a field()', () => {
     // greaterThan("")
     test('greaterThan(""), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThan('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: ''
@@ -2426,7 +2426,7 @@ describe('greaterThan as a validator of a field()', () => {
     describe('gt alias of greaterThan. Confirm overloaded interfaces', () => {
         test('gt("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').gt('Field2');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanConditionConfig>{
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2435,7 +2435,7 @@ describe('greaterThan as a validator of a field()', () => {
         });
         test('gt("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').gt('Field2', 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanConditionConfig>{
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2446,7 +2446,7 @@ describe('greaterThan as a validator of a field()', () => {
         });
         test('gt("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').gt('Field2', { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanConditionConfig>{
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2462,7 +2462,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     test('greaterThanOrEqualValue(1), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2472,7 +2472,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, null)
     test('greaterThanOrEqualValue(1, null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2482,7 +2482,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, null, null)
     test('greaterThanOrEqualValue(1, null, null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2492,7 +2492,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, 'Error')
     test('greaterThanOrEqualValue(1, "Error"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2503,7 +2503,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, 'Error', 'Summary')
     test('greaterThanOrEqualValue(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2515,7 +2515,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, null, 'Summary')
     test('greaterThanOrEqualValue(1, null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2530,7 +2530,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2545,7 +2545,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
             {
                 secondConversionLookupKey: 'key'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1,
@@ -2556,7 +2556,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(1, {})
     test('greaterThanOrEqualValue(1, {}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
@@ -2566,7 +2566,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     // greaterThanOrEqualValue(null)
     test('greaterThanOrEqualValue(null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue unassigned', () => {
         let testItem = createFluent().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue
             }
@@ -2575,7 +2575,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
     describe('gteValue alias of greaterThanOrEqualValue. Confirm overloaded interfaces', () => {
         test('gteValue(1), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer).gteValue(1);
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqualValue,
                     secondValue: 1
@@ -2585,7 +2585,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
         test('gteValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .gteValue(1, 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqualValue,
                     secondValue: 1
@@ -2597,7 +2597,7 @@ describe('greaterThanOrEqualValue as a validator of a field()', () => {
         test('gteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
             let testItem = createFluent().field('Field1', LookupKey.Integer)
                 .gteValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqualValue,
                     secondValue: 1
@@ -2614,7 +2614,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     test('greaterThanOrEqual("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
 
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2625,7 +2625,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", null)
     test('greaterThanOrEqual("Field2", null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2635,7 +2635,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", null, null)
     test('greaterThanOrEqual("Field2", null, null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2645,7 +2645,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", "Error")
     test('greaterThanOrEqual("Field2", "Error"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2656,7 +2656,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", "Error", "Summary")
     test('greaterThanOrEqual("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2668,7 +2668,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", null, "Summary")
     test('greaterThanOrEqual("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2682,7 +2682,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2696,7 +2696,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', {
             secondConversionLookupKey: 'key'
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2',
@@ -2707,7 +2707,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("Field2", {})
     test('greaterThanOrEqual("Field2", {}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2', {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -2717,7 +2717,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     // greaterThanOrEqual("")
     test('greaterThanOrEqual(""), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
         let testItem = createFluent().field('Field1').greaterThanOrEqual('');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: ''
@@ -2727,7 +2727,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
     describe('gte alias of greaterThanOrEqual. Confirm overloaded interfaces', () => {
         test('gte("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').greaterThanOrEqual('Field2');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2736,7 +2736,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
         });
         test('gte("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').gte('Field2', 'Error', 'Summary');
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2747,7 +2747,7 @@ describe('greaterThanOrEqual as a validator of a field()', () => {
         });
         test('gte("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
             let testItem = createFluent().field('Field1').gte('Field2', { errorMessage: 'Error', summaryMessage: 'Summary' });
-            TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+            TestValidatorBuilder(testItem, <ValidatorConfig>{
                 conditionConfig: <GreaterThanOrEqualConditionConfig>{
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2765,7 +2765,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4), creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -2776,7 +2776,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4, { minimum: 1 }), creates ValidatorConfig with StringLengthCondition with type=StringLength, minimum assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4, { minimum: 1 });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4,
@@ -2789,7 +2789,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4, "Error"), creates ValidatorConfig with StringLengthCondition with type=StringLength, maximum assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -2801,7 +2801,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4, "Error", "Summary"), creates ValidatorConfig with StringLengthCondition with type=StringLength, maximum assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -2814,7 +2814,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4, null, "Summary"), creates ValidatorConfig with StringLengthCondition with type=StringLength, maximum assigned and summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -2826,7 +2826,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(4, { errorMessage: "Error", summaryMessage: "Summary", minimum: 1 }), creates ValidatorConfig with StringLengthCondition with type=StringLength, maximum assigned and errorMessage + summaryMessage + minimum assigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(4, { errorMessage: 'Error', summaryMessage: 'Summary', minimum: 1 });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4,
@@ -2840,7 +2840,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(null), creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum unassigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -2850,7 +2850,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(null, null), creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum unassigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -2860,7 +2860,7 @@ describe('stringLength as a validator of a field()', () => {
     test('stringLength(null, null, null), creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum unassigned', () => {
 
         let testItem = createFluent().field('Field1').stringLength(null, null, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -2872,7 +2872,7 @@ describe('requireText as a validator of a field()', () => {
     test('requireText(), creates ValidatorConfig with RequireTextCondition with type=RequireText', () => {
 
         let testItem = createFluent().field('Field1').requireText();
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             }
@@ -2885,7 +2885,7 @@ describe('requireText as a validator of a field()', () => {
             nullValueResult: ConditionEvaluateResult.NoMatch,
             errorMessage: 'Error',
         });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 nullValueResult: ConditionEvaluateResult.NoMatch
@@ -2897,7 +2897,7 @@ describe('requireText as a validator of a field()', () => {
     test('requireText(errorMessage), creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').requireText('Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -2908,7 +2908,7 @@ describe('requireText as a validator of a field()', () => {
     test('requireText(errorMessage, summaryMessage), creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').requireText('Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -2920,7 +2920,7 @@ describe('requireText as a validator of a field()', () => {
     test('requireText(null, summaryMessage), creates ValidatorConfig with RequireTextCondition with only type assigned and summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').requireText(null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -2933,7 +2933,7 @@ describe('notNull as a validator of a field()', () => {
     test('notNull(), creates ValidatorConfig with NotNullCondition with type=NotNull', () => {
 
         let testItem = createFluent().field('Field1').notNull();
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             }
@@ -2943,7 +2943,7 @@ describe('notNull as a validator of a field()', () => {
     test('notNull(errorMessage), creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').notNull('Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -2953,7 +2953,7 @@ describe('notNull as a validator of a field()', () => {
     // same also with summary message
     test('notNull(errorMessage, summaryMessage), creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').notNull('Error', 'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -2965,7 +2965,7 @@ describe('notNull as a validator of a field()', () => {
     test('notNull({ errorMessage, summaryMessage }), creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').notNull({ errorMessage: 'Error', summaryMessage: 'Summary' });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -2980,7 +2980,7 @@ describe('all as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1').all(
             (children) => []);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -2995,7 +2995,7 @@ describe('all as a validator of a field()', () => {
                     children.fieldValue('F1').requireText(),
                     children.fieldValue('F2').requireText()
                 ]);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3019,7 +3019,7 @@ describe('all as a validator of a field()', () => {
                     children.fieldValue('F2').requireText()
                 ],
                 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3044,7 +3044,7 @@ describe('all as a validator of a field()', () => {
                 ],
                 'Error',
                 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3066,7 +3066,7 @@ describe('all as a validator of a field()', () => {
             (children) => [],
             null,
             'Summary' );
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -3082,7 +3082,7 @@ describe('all as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -3105,7 +3105,7 @@ describe('any as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1').any(
             (children) => []);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3119,7 +3119,7 @@ describe('any as a validator of a field()', () => {
                 children.fieldValue('F1').requireText(),
                 children.fieldValue('F2').requireText()
             ]);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3142,7 +3142,7 @@ describe('any as a validator of a field()', () => {
                 children.fieldValue('F2').requireText()
             ],
             'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3166,7 +3166,7 @@ describe('any as a validator of a field()', () => {
             ],
             'Error',
             'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3188,7 +3188,7 @@ describe('any as a validator of a field()', () => {
             (children) => [],
             null,
             'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3204,7 +3204,7 @@ describe('any as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3228,7 +3228,7 @@ describe('countMatches as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1').countMatches(1, 2,
             (children) => []);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3240,7 +3240,7 @@ describe('countMatches as a validator of a field()', () => {
     test('countMatches(1, null, (0 children)), creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
         let testItem = createFluent().field('Field1').countMatches(1, null,
             (children) => []);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3252,7 +3252,7 @@ describe('countMatches as a validator of a field()', () => {
 
         let testItem = createFluent().field('Field1').countMatches(null, 2,
             (children) => []);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 maximum: 2,
@@ -3268,7 +3268,7 @@ describe('countMatches as a validator of a field()', () => {
                 children.fieldValue('F2').requireText()
             ]);
 
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 0,
@@ -3292,7 +3292,7 @@ describe('countMatches as a validator of a field()', () => {
                 children.fieldValue('F2').requireText()
             ],
             'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3317,7 +3317,7 @@ describe('countMatches as a validator of a field()', () => {
             ],
             'Error',
             'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3342,7 +3342,7 @@ describe('countMatches as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 conditionConfigs: [],
@@ -3357,7 +3357,7 @@ describe('countMatches as a validator of a field()', () => {
         let testItem = createFluent().field('Field1').countMatches(1, 2,
             (children) => [], 
             {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 conditionConfigs: [],
@@ -3380,7 +3380,7 @@ describe('positive as a validator of a field()', () => {
     test('positive(), creates ValidatorConfig with PositiveCondition with type=Positive', () => {
 
         let testItem = createFluent().field('Field1').positive();
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3390,7 +3390,7 @@ describe('positive as a validator of a field()', () => {
     test('positive(errorMessage), creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').positive('Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3401,7 +3401,7 @@ describe('positive as a validator of a field()', () => {
     test('positive(errorMessage, summaryMessage), creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
         let testItem = createFluent().field('Field1').positive('Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3412,7 +3412,7 @@ describe('positive as a validator of a field()', () => {
     // positive(null, summaryMessage)
     test('positive(null, summaryMessage), creates ValidatorConfig with PositiveCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').positive(null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3425,7 +3425,7 @@ describe('positive as a validator of a field()', () => {
             {
                 errorMessage: 'Error', summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3436,7 +3436,7 @@ describe('positive as a validator of a field()', () => {
     // positive({})
     test('positive({}), creates ValidatorConfig with PositiveCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').positive({});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3445,7 +3445,7 @@ describe('positive as a validator of a field()', () => {
     // positive(null)
     test('positive(null), creates ValidatorConfig with PositiveCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').positive(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3457,7 +3457,7 @@ describe('integer as a validator of a field()', () => {
     test('integer(), creates ValidatorConfig with IntegerCondition with type=Integer', () => {
 
         let testItem = createFluent().field('Field1').integer();
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3466,7 +3466,7 @@ describe('integer as a validator of a field()', () => {
     // integer(errorMessage)
     test('integer(errorMessage), creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').integer('Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3476,7 +3476,7 @@ describe('integer as a validator of a field()', () => {
     // integer(errorMessage, summaryMessage)
     test('integer(errorMessage, summaryMessage), creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').integer('Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3487,7 +3487,7 @@ describe('integer as a validator of a field()', () => {
     // integer(null, summaryMessage)
     test('integer(null, summaryMessage), creates ValidatorConfig with IntegerCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').integer(null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3501,7 +3501,7 @@ describe('integer as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3512,7 +3512,7 @@ describe('integer as a validator of a field()', () => {
     // integer({})
     test('integer({}), creates ValidatorConfig with IntegerCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').integer({});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3521,7 +3521,7 @@ describe('integer as a validator of a field()', () => {
     // integer(null)
     test('integer(null), creates ValidatorConfig with IntegerCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').integer(null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3534,7 +3534,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2), creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals', () => {
 
         let testItem = createFluent().field('Field1').maxDecimals(2);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3544,7 +3544,7 @@ describe('maxDecimals as a validator of a field()', () => {
     // maxDecimals(2, errorMessage)
     test('maxDecimals(2, errorMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createFluent().field('Field1').maxDecimals(2, 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3555,7 +3555,7 @@ describe('maxDecimals as a validator of a field()', () => {
     // maxDecimals(2, errorMessage, summaryMessage)
     test('maxDecimals(2, errorMessage, summaryMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').maxDecimals(2, 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3567,7 +3567,7 @@ describe('maxDecimals as a validator of a field()', () => {
     // maxDecimals(2, null, summaryMessage)
     test('maxDecimals(2, null, summaryMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createFluent().field('Field1').maxDecimals(2, null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3582,7 +3582,7 @@ describe('maxDecimals as a validator of a field()', () => {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3594,7 +3594,7 @@ describe('maxDecimals as a validator of a field()', () => {
     // maxDecimals(2, {})
     test('maxDecimals(2, {}), creates ValidatorConfig with MaxDecimalsCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').maxDecimals(2, {});
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3604,7 +3604,7 @@ describe('maxDecimals as a validator of a field()', () => {
     // maxDecimals(2, null)
     test('maxDecimals(2, null), creates ValidatorConfig with MaxDecimalsCondition with only type assigned', () => {
         let testItem = createFluent().field('Field1').maxDecimals(2, null);
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3620,7 +3620,7 @@ describe('not as a validator of a field()', () => {
     test('not((1 child)), creates ValidatorConfig with NotCondition with type=Not and conditionConfigs populated', () => {
         let testItem = createFluent().field('Field1')
             .not((children) => children.fieldValue('F1').requireText());
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3635,7 +3635,7 @@ describe('not as a validator of a field()', () => {
             .not(
                 (children) => children.fieldValue('F1').requireText(),
                 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3652,7 +3652,7 @@ describe('not as a validator of a field()', () => {
                 (children) => children.fieldValue('F1').requireText(),
                 'Error',
                 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3669,7 +3669,7 @@ describe('not as a validator of a field()', () => {
             .not((children) => children.fieldValue('F1').requireText(),
                 null,
                 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3711,7 +3711,7 @@ describe('when as a validator of a field()', () => {
             .when(
                 (whenBuilder) => whenBuilder.parentValue().regExp(/abc/),
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText());
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -3732,7 +3732,7 @@ describe('when as a validator of a field()', () => {
                 (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),
                 'Error');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -3757,7 +3757,7 @@ describe('when as a validator of a field()', () => {
                 (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 'Error', 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -3780,7 +3780,7 @@ describe('when as a validator of a field()', () => {
                 (whenBuilder)=> whenBuilder.fieldValue('F2').regExp(/abc/),
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 null, 'Summary');
-        TestFluentValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{

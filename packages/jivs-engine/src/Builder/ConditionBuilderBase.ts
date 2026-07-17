@@ -6,7 +6,7 @@
  * 
  * There are two ways that conditions are used within Jivs:
  * 1. As a single companion to a Validator object, configured in ValidatorConfig.conditionConfig.
- *    This is handled by FluentValidatorBuilder and the FluentValidatorBuilderExtensions,
+ *    This is handled by ValidatorBuilder,
  *    where each condition is wired into validator builder.
  * 2. As a stand-alone Condition object, with these use cases:
  *   a. ValueHost's enabler, which is a condition to determine whether the ValueHost is enabled or disabled.
@@ -48,7 +48,7 @@
  * 
  * The cases for b, c, and d are used within the Fluent validator syntax.
  * ```ts
- * const valBuilder = new FluentValidatorBuilder(services, parentConfig);
+ * const valBuilder = new ValidatorBuilder(services, parentConfig);
  * valBuilder.field("Field1")
  *       .requireText()
  *       .any((childBuilder)=>{  // here's the child builder
@@ -100,13 +100,10 @@
  *   all functions that create a condition config object.
  *   It has all Jivs-supplied conditions declared as its methods, each doing its own thing to create
  *   its condition object and attach it to the parent builder.
- *   This class is intended for expansion through prototypes, allowing the user to create
- *   new conditions and add them to the ConditionBuilder class. 
- *   See the ConditionBuilderExtensions.ts file for examples.
  * 
  * * StartConditionBuilder: The first part of the fluent syntax, used to identify the 
  *   source value host name for conditions that require it.
- *   Its parent could be either a FluentValidatorBuilder or a ConditionBuilder. 
+ *   Its parent could be either a ValidatorBuilder or a ConditionBuilder. 
  *   It inherits from ConditionBuilderBase, and has the following methods:
  * 
  *   It supplies these methods to start:

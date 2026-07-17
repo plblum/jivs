@@ -1,4 +1,4 @@
-import { FluentValidatorBuilder } from '../../src/Builder/FluentValidatorBuilder';
+import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
 // Tests around FormConfigAdapter.
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
@@ -997,15 +997,15 @@ describe('ModifyFieldBuilder class', () => {
     });
 
     describe('addValidator()', () => {
-        // used on a field, which supports a validator, and has no validators, returns a IFluentValidatorBuilder correctly configured with the new validator
-        test('used on a field, which supports a validator, and has no validators, returns a IFluentValidatorBuilder correctly configured with the new validator', () => {
+        // used on a field, which supports a validator, and has no validators, returns a IValidatorBuilder correctly configured with the new validator
+        test('used on a field, which supports a validator, and has no validators, returns a IValidatorBuilder correctly configured with the new validator', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.addValidator();
-            expect(result).toBeInstanceOf(FluentValidatorBuilder);
+            expect(result).toBeInstanceOf(ValidatorBuilder);
             expect(result.parentConfig).toEqual(<FieldValueHostConfig>{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',

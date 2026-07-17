@@ -55,7 +55,7 @@ export interface IValidationServices extends IValueHostsServices {
     validatorFactory: IValidatorFactory;
 
     /**
-     * Factory for creating FluentValidatorBuilder and ConditionBuilder instances.
+     * Factory for creating ValidatorBuilder and ConditionBuilder instances.
      */
     fluentFactory: IFluentFactory;
 

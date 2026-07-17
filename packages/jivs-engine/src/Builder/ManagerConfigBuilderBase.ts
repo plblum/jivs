@@ -14,7 +14,7 @@ import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 
-import { IFluentValidatorBuilder, IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
+import { IValidatorBuilder, IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
@@ -497,13 +497,13 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
      * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
      * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial FieldValueHost
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
      */
     protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
         valueHostType: ValueHostType | string,
         arg1: Partial<TVHConfig> | ValueHostName,
         arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): IFluentValidatorBuilder {
+        arg3?: Partial<TVHConfig>): IValidatorBuilder {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent() as ValidationManagerStartFluent;

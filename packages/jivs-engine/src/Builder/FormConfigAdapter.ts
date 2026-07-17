@@ -101,7 +101,7 @@ import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import {
-    CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder,
+    CompleteConfigBuilderHandler, IBuilderConfigHost, IValidatorBuilder,
     IStartConditionBuilder, IStartConditionWithOneChildBuilder
 } from "../Interfaces/ChildBuilders";
 import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
@@ -470,16 +470,16 @@ export class ModifyFieldBuilder
 
     /**
      * Adds a new validator to the current ValueHost.
-     * Returns the IFluentValidatorBuilder for further configuration of the new validator.
+     * Returns the IValidatorBuilder for further configuration of the new validator.
      * If the user adds any validators that share an error code/condition type of an existing validator,
      * it is an error.
      * 
      * ```ts
      * FormConfigAdapter.addValidator().requiredText({ errorMessage: 'error' });
      * ```
-     * @returns The IFluentValidatorBuilder for further modifications.
+     * @returns The IValidatorBuilder for further modifications.
      */
-    public addValidator(): IFluentValidatorBuilder
+    public addValidator(): IValidatorBuilder
     {
         // find the existing validator with the specified conditionType/errorCode
         // in config.validatorConfigs array.
@@ -489,7 +489,7 @@ export class ModifyFieldBuilder
             this.reportError(new Error(`ValueHost type ${config.valueHostType} config does not support validators.`)); // throws
         }
 
-        return this.services.fluentFactory.createFluentValidatorBuilder(config);
+        return this.services.fluentFactory.createValidatorBuilder(config);
     }
 
     /**

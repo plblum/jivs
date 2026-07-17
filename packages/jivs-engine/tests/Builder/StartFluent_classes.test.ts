@@ -1,4 +1,4 @@
-import { FluentValidatorBuilder } from './../../src/Builder/FluentValidatorBuilder';
+import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
@@ -267,7 +267,7 @@ describe('ValidationManagerStartFluent', () => {
     describe('field()', () => {
         test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().field('Field1', null, { label: 'Field 1' });
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             expect(testItem.parentConfig).toEqual({
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -277,7 +277,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Name, data type supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().field('Field1', 'Test');
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -289,7 +289,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Name supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().field('Field1');
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -299,7 +299,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().field({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -330,7 +330,7 @@ describe('ValidationManagerStartFluent', () => {
     describe('withValidators()', () => {
         test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().withValidators(ValueHostType.Field, 'Field1', null, { label: 'Field 1' });
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             expect(testItem.parentConfig).toEqual({
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -340,7 +340,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().withValidators(ValueHostType.Field, 'Field1', 'Test');
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -352,7 +352,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().withValidators(ValueHostType.Field, 'Field1');
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
@@ -362,7 +362,7 @@ describe('ValidationManagerStartFluent', () => {
         });
         test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
             let testItem = createVMFluent().withValidators(ValueHostType.Field, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
-            expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+            expect(testItem).toBeInstanceOf(ValidatorBuilder);
             let expected = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',

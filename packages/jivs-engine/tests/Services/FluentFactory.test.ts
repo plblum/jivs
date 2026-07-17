@@ -2,12 +2,12 @@ import { IBuilderConfigHost, CompleteConfigBuilderHandler } from './../../src/In
 import { ConditionBuilder } from './../../src/Builder/ConditionBuilder';
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { FluentFactory } from "../../src/Services/FluentFactory";
-import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
+import { ValidatorBuilder } from "../../src/Builder/ValidatorBuilder";
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { MockValidationServices } from '../TestSupport/mocks';
 
 
-class SubstituteFluentValidatorBuilder extends FluentValidatorBuilder
+class SubstituteValidatorBuilder extends ValidatorBuilder
 {
     constructor(services: IValidationServices, parentConfig: FieldValueHostConfig) {
         super(services, parentConfig);
@@ -41,16 +41,16 @@ export class TestParentBuilder implements IBuilderConfigHost<object> {
 }
 
 describe('FluentFactory', () => {
-   test('createFluentValidatorBuilder should return a valid builder', () => {
+   test('createValidatorBuilder should return a valid builder', () => {
        const fluentFactory = new FluentFactory();
        fluentFactory.services = new MockValidationServices(false, false);
        let parentConfig: FieldValueHostConfig = {
            name: 'Field1',
            validatorConfigs: []
        };
-       const builder = fluentFactory.createFluentValidatorBuilder(parentConfig);
+       const builder = fluentFactory.createValidatorBuilder(parentConfig);
        expect(builder).toBeDefined();
-       expect(builder).toBeInstanceOf(FluentValidatorBuilder);
+       expect(builder).toBeInstanceOf(ValidatorBuilder);
        expect(builder.parentConfig).toBe(parentConfig);
     });
     
@@ -63,20 +63,20 @@ describe('FluentFactory', () => {
         expect(builder).toBeInstanceOf(ConditionBuilder);
     });
 
-    test('Replace FluentValidatorBuilder with SubstituteFluentValidatorBuilder', () => {   
+    test('Replace ValidatorBuilder with SubstituteValidatorBuilder', () => {   
         let services = new MockValidationServices(false, false);
         const fluentFactory = new FluentFactory();
         fluentFactory.services = services;
-        fluentFactory.setFluentValidatorBuilderCreator(
+        fluentFactory.setValidatorBuilderCreator(
             (parentConfig: FieldValueHostConfig) =>
-                new SubstituteFluentValidatorBuilder(services, parentConfig));
+                new SubstituteValidatorBuilder(services, parentConfig));
         let parentConfig: FieldValueHostConfig = {
             name: 'Field1',
             validatorConfigs: []
         };
-        const builder = fluentFactory.createFluentValidatorBuilder(parentConfig);
+        const builder = fluentFactory.createValidatorBuilder(parentConfig);
         expect(builder).toBeDefined();
-        expect(builder).toBeInstanceOf(SubstituteFluentValidatorBuilder);
+        expect(builder).toBeInstanceOf(SubstituteValidatorBuilder);
         expect(builder.parentConfig).toBe(parentConfig);
     });
 

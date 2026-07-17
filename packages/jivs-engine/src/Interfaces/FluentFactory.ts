@@ -6,7 +6,7 @@ import { IServiceWithAccessor } from './Services';
 import { ConditionConfig } from './Conditions';
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler, IConditionBuilder,
-    IFluentValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder,
+    IValidatorBuilder, IStartConditionBuilder, IStartConditionWithChildrenBuilder,
     IStartConditionWithOneChildBuilder
 } from './ChildBuilders';
 import { FieldValueHostConfig } from './FieldValueHost';
@@ -15,17 +15,17 @@ import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
 
 /**
  * Base interface to provide a factory that supplies:
- * 1. FluentValidatorBuilder or subclass replacement
+ * 1. ValidatorBuilder or subclass replacement
  * 2. ConditionBuilder or subclass replacement
  */
 export interface IFluentFactory extends IServiceWithAccessor
 {
     /**
-     * Replaces the current FluentValidatorBuilderCreator
+     * Replaces the current ValidatorBuilderCreator
      * @returns 
      */
-    setFluentValidatorBuilderCreator(replacement:
-        (parentConfig: FieldValueHostConfig) => IFluentValidatorBuilder): void;
+    setValidatorBuilderCreator(replacement:
+        (parentConfig: FieldValueHostConfig) => IValidatorBuilder): void;
     /**
      * Replaces the current ConditionBuilderCreator
      * @param replacement 
@@ -57,11 +57,11 @@ export interface IFluentFactory extends IServiceWithAccessor
         completed?: CompleteConfigBuilderHandler<any>) => IStartConditionWithOneChildBuilder): void;
 
     /**
-     * Creates the instance of FluentValidatorBuilder.
+     * Creates the instance of ValidatorBuilder.
      * Its parameter is used by the constructor's parameter.
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    createFluentValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IFluentValidatorBuilder;
+    createValidatorBuilder(parentConfig: ValidatorsValueHostBaseConfig): IValidatorBuilder;
 
     /**
      * Creates the instance of ConditionBuilder.

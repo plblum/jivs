@@ -18,7 +18,7 @@ import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interface
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 
-import { IFluentValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
+import { IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -111,7 +111,7 @@ class TestValidationManagerConfigBuilderBase extends ManagerConfigBuilderBase<Va
     {
         super.addOverride();
     }
-    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): IFluentValidatorBuilder {
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<FieldValueHostConfig>): IValidatorBuilder {
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, valueHostName, dataType, parameters);
     }
 

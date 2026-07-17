@@ -48,7 +48,7 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
-import { IFluentValidatorBuilder } from "../../src/Interfaces/ChildBuilders";
+import { IValidatorBuilder } from "../../src/Interfaces/ChildBuilders";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
@@ -106,11 +106,11 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
 
 }
 class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerConfigBuilder {
-    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;
-    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;    
-    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;
+    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;
+    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;    
+    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;
     // overload resolution
-    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder {
+    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder {
         return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
     }
 

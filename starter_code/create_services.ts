@@ -181,9 +181,9 @@ export function createValidationServices(activeCultureId: string,
     // --- FluentFactory -------------------------------------------
     let ff = new FluentFactory();
     vs.fluentFactory = ff;
-/*  // Adding custom conditions to FluentValidatorBuilder and ConditionBuilder
-    ff.setFluentValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
-        return new YourFluentValidatorBuilder(vs, parentConfig);
+/*  // Adding custom conditions to ValidatorBuilder and ConditionBuilder
+    ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
+        return new YourValidatorBuilder(vs, parentConfig);
     });
     ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
         return new YourConditionBuilder(parentBuilder, completed);
