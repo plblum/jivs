@@ -60,7 +60,7 @@ export class DateRangeFormRules extends FormRulesBase
                     valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,
                     errorCode: 'NumOfDays' // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
-                 }); 
+                }); 
         builder.field('endDate', LookupKey.Date, { label: 'End date' });
         builder.field('timeZone', LookupKey.String).regExp(timeZoneRegex, { errorCode: 'TimeZone'})    
         builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
