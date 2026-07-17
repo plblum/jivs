@@ -42,9 +42,6 @@ import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./St
  * ManagerConfigBuilderBase is the base class for both the Builder and Modifier classes.
  * 
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
- * There are actually 2 of these, the builder and the modifier. ValueHostsManagerConfigBuilder is used for
- * the initial configuration passed into ValueHostManager/ValidationManager.
- * ValueHostsManagerConfigModifier is used to modify the configuration in an existing ValueHostManager.
  * 
  * Here are two ways to use it. 
  * 1) Wrapped in a ModelRulesBase subclass, so that your model has a single source of truth for its validation rules.

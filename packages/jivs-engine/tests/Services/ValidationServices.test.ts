@@ -6,7 +6,7 @@ import { MessageTokenResolverService } from "../../src/Services/MessageTokenReso
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { ValidatorConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { CachingService } from "../../src/Services/CachingService";
 
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
@@ -22,7 +22,6 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.validatorConfigMergeService).toBeInstanceOf(ValidatorConfigMergeService);
         expect(testItem.managerConfigBuilderFactory).toBeInstanceOf(ValidationManagerConfigBuilderFactory);
-        expect(testItem.managerConfigModifierFactory).toBeInstanceOf(ValidationManagerConfigModifierFactory);  
 
     });
 });
@@ -66,6 +65,12 @@ describe('Replace factories and services', () => {
         testItem.validatorFactory = replacement;
         expect(testItem.validatorFactory).toBe(replacement);
     });    
+    test('Replace CachingService', () => {
+        let replacement = new CachingService();
+        let testItem = new ValidationServices();
+        testItem.cachingService = replacement;
+        expect(testItem.cachingService).toBe(replacement);
+    });
 
 });
 

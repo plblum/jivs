@@ -19,10 +19,8 @@ import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolver
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
-import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
 import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
 import { ValidationManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
-import { ValidationManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { ValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from '../Interfaces/CachingService';
 import { CachingService } from './CachingService';
@@ -159,9 +157,6 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
         return new ValidationManagerConfigBuilderFactory();
     }
 
-    protected defaultManagerConfigModifierFactory(): IManagerConfigModifierFactory {
-        return new ValidationManagerConfigModifierFactory();
-    }
 
     /**
      * Service to get the ICachingService instance that 

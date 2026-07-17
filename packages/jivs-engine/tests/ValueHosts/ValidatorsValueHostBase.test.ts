@@ -47,15 +47,12 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { FluentValidatorBuilder } from "../../src/Builder/FluentValidatorBuilder";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { IFluentValidatorBuilder } from "../../src/Interfaces/ChildBuilders";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
-import { IManagerConfigModifier } from "../../src/Interfaces/ManagerConfigModifier";
+
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
 import { ServiceWithAccessorBase } from "../../src/Services/ServiceWithAccessorBase";
-import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
 
 
 /**
@@ -124,23 +121,6 @@ class TestManagerConfigBuilderFactory extends ServiceWithAccessorBase
         return new TestValueHostForValidationManagerConfigBuilder(configToExtend as ValidationManagerConfig ?? this.services);
     }
 }
-class TestValueHostForValidationManagerConfigModifier extends ValidationManagerConfigModifier {
-
-    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;
-    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;    
-    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder;
-    // overload resolution
-    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): IFluentValidatorBuilder {
-        return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
-    }
-
-}
-class TestManagerConfigModifierFactory extends ServiceWithAccessorBase
-implements IManagerConfigModifierFactory {
-    public create(manager: IValidationManager, existingValueHostConfigs: Map<string, ValueHostConfig>): IManagerConfigModifier<ValueHostsManagerConfig> {
-        return new TestValueHostForValidationManagerConfigModifier(manager, existingValueHostConfigs);
-    }
-}
 
 function supportTestValueHostInServices(services: IValidationServices): void
 {
@@ -148,7 +128,6 @@ function supportTestValueHostInServices(services: IValidationServices): void
     factory.register(new TestValidatorsValueHostGenerator());
     services.valueHostFactory = factory;
     services.managerConfigBuilderFactory = new TestManagerConfigBuilderFactory();
-    services.managerConfigModifierFactory = new TestManagerConfigModifierFactory();
 }
 
 interface ITestSetupConfigWithMocks {
@@ -828,39 +807,6 @@ describe('ValidatorsValueHostBase.validate', () => {
     });
     test('Group test. ValidatorsValueHostBase has Group name but validate has a different group name. Validation skipped and result is Valid', () => {
         testGroups('GROUPA', 'GROUPB', null, 0);
-    });
-
-    function TestGroupUsingOverride(valueHostGroup: string, overriddenGroup: string,
-        validateGroup: string, expectedResult: ValidationStatus | null): void {
-        let ivConfigs: Array<Partial<ValidatorConfig>> = [
-            {
-                conditionConfig: {
-                    conditionType: NeverMatchesConditionType
-                },
-            }
-        ];
-        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
-
-        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state, valueHostGroup);
-        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
-        modifier.testValueHost('Field1', null, { group: overriddenGroup});
-        modifier.apply();
-        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
-
-        let result = setup.valueHost.validate({ group: validateGroup });
-        if (expectedResult === null)
-            expect(result).toBeNull();
-        else
-            expect(result!.status).toBe(expectedResult);
-    }
-    test('Group test where group is modified and is a match to the supplied group and original group. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationStatus.Invalid)
-    });
-    test('Group test where group is modified and is a match to the supplied group but not the original. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationStatus.Invalid)
-    });
-    test('Group test where group is modified and is not a match to the supplied group. ValidatorsValueHostBase has Group name but validate has a different group name. ValidationStatus = undetermined', () => {
-        TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', null)
     });
     test('validate one ValueHost with validators that results in Valid. onValueHostValidationStateChanged called.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2123,62 +2069,7 @@ describe('clearValidation', () => {
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
 
     });
-    test('Option.group matches clears', () => {
-        let ivConfig: ValidatorConfig = {
-            conditionConfig: { conditionType: NeverMatchesConditionType },
-            errorMessage: ''
-        };
-        let ivConfigs: Array<Partial<ValidatorConfig>> = [
-            ivConfig
-        ];
-        let state: Partial<ValidatorsValueHostBaseInstanceState> = {
-            name: 'Field1',
-            status: ValidationStatus.Invalid,
-            issuesFound: []
-        };
-        state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
-        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
-        modifier.testValueHost('Field1', null, { group: 'GROUPA' });
-        modifier.apply();
-        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
-
-        let result: boolean | null = null;
-        expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPA'})).not.toThrow();
-        expect(result).toBe(true);
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
-        expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
-
-    });
-    test('Option.group does not match, nothing cleared', () => {
-        let ivConfig: ValidatorConfig = {
-            conditionConfig: { conditionType: NeverMatchesConditionType },
-            errorMessage: ''
-        };
-        let ivConfigs: Array<Partial<ValidatorConfig>> = [
-            ivConfig
-        ];
-        let state: Partial<ValidatorsValueHostBaseInstanceState> = {
-            name: 'Field1',
-            status: ValidationStatus.Invalid,
-            issuesFound: []
-        };
-        state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
-
-        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
-        modifier.testValueHost('Field1', null, { group: 'GROUPA' });
-        modifier.apply();
-        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;   // because modifier has clobbered the existing instance
-
-        let result: boolean | null = null;
-        expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPB'})).not.toThrow();
-        expect(result).toBe(false);
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
-        expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toBeNull();
-
-    });    
     test('Without calling validate but with external IssueFound (Error), Ensure the state discards external IssueFound after clear', () => {
         let setup = setupValidatorsValueHostBaseForValidate([], {});
         setup.valueHost.addExternalIssueFound({

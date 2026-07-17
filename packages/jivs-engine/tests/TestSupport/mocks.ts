@@ -47,11 +47,8 @@ import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../.
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
-import { ValidationManagerConfigModifier } from "../../src/Builder/ValidationManagerConfigModifier";
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
-import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
 import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
@@ -307,7 +304,6 @@ export class MockValidationServices implements IValidationServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
-        this.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
         this.cachingService = new CachingService();
         this.fluentFactory = new FluentFactory();
 
@@ -535,17 +531,6 @@ export class MockValidationServices implements IValidationServices
         factory.services = this;
     }
     private _managerConfigBuilderFactory!: IManagerConfigBuilderFactory; 
-    
-    public get managerConfigModifierFactory(): IManagerConfigModifierFactory
-    {
-        return this._managerConfigModifierFactory;
-    }
-    public set managerConfigModifierFactory(factory: IManagerConfigModifierFactory)
-    {
-        this._managerConfigModifierFactory = factory;
-        factory.services = this;
-    }
-    private _managerConfigModifierFactory!: IManagerConfigModifierFactory;
 
     public get cachingService(): ICachingService {
         return this._cachingService;
@@ -577,10 +562,6 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
 
     public get services(): IValidationServices {
         return super.services as IValidationServices;
-    }
-
-    public startModifying(): ValidationManagerConfigModifier {
-        return this.services.managerConfigModifierFactory.create(this, this.valueHostConfigs) as ValidationManagerConfigModifier
     }
 
     public getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {

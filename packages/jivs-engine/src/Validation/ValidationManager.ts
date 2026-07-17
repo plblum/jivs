@@ -16,7 +16,6 @@ import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
-import { ValidationManagerConfigModifier } from '../Builder/ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 
@@ -119,27 +118,6 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
 
     public get services(): IValidationServices {// just strongly typing
         return super.services as IValidationServices;
-    }
-
-    /**
-     * Easier way to add or modify a ValueHostConfig than using
-     * addValueHost(), addOrUpdateValueHost(), or addOrMergeValueHost().
-     * It returns an object whose methods allow adding ValueHosts
-     * and their validators. Upon calling its apply() method,
-     * your changes will be applied through the addOrMergeValueHost() function.
-     * ```ts
-     * let vm = new ValidationManager(builder);
-     * // later when you need to modify vm:
-     * let modifier = vm.startModifying();
-     * // supply changes to the ValueHostConfigs
-     * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
-     * // merge those changes into the ValidationManager
-     * modifier.apply(); // consider modifier disposed at this point 
-     * ```
-     */
-    public startModifying(): ValidationManagerConfigModifier
-    {
-        return super.startModifying() as ValidationManagerConfigModifier;
     }
     
     /**

@@ -26,9 +26,7 @@ import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService'
 import { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
 import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
-import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
 import { ValueHostsManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
-import { ValueHostsManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { ValueHostConfigMergeService } from './ConfigMergeService';
 
 /**
@@ -236,24 +234,5 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
         return new ValueHostsManagerConfigBuilderFactory();
     }   
 
-    /**
-     * Creates the ManagerConfigModifier instances.
-     * Defaults to using ManagerConfigModifierFactory.
-     */
-    public get managerConfigModifierFactory(): IManagerConfigModifierFactory {
-        let service = this.getService<IManagerConfigModifierFactory>(ServiceName.managerConfigModifier);
-        if (!service) {
-            let factory = service = this.defaultManagerConfigModifierFactory();
-            this.setService(ServiceName.managerConfigModifier, factory);
-        }
-        return service;
-    }
-    public set managerConfigModifierFactory(factory: IManagerConfigModifierFactory) {
-        this.setService(ServiceName.managerConfigModifier, factory);
-    }
-
-    protected defaultManagerConfigModifierFactory(): IManagerConfigModifierFactory {
-        return new ValueHostsManagerConfigModifierFactory();
-    }
 }
 

@@ -63,7 +63,6 @@ import { CleanUpStringParser, NumberParser } from "../DataTypes/DataTypeParsers"
 import { IDataTypeParserService } from "../Interfaces/DataTypeParserService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../Services/ConfigMergeService";
 import { ValidationManagerConfigBuilderFactory } from "../Services/ManagerConfigBuilderFactory";
-import { ValidationManagerConfigModifierFactory } from "../Services/ManagerConfigModifierFactory";
 import {
     CaseInsensitiveStringConverter, DateTimeConverter, IntegerConverter, LocalDateOnlyConverter,
     NumericStringToNumberConverter, TimeOfDayHMSOnlyConverter, TimeOfDayOnlyConverter, UTCDateOnlyConverter
@@ -155,7 +154,6 @@ export function createValidationServicesForTesting(options?: CvstOptions): IVali
     vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
     vs.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
-    vs.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
 
     return vs;
 }

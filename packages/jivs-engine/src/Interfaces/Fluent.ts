@@ -4,10 +4,6 @@
  * 
  * These tools are used in the Builder API (ValidationManagerConfigBuilder class), 
  * which is what the developer creates with the ValidatorManagerConfig that they are constructing.
- * Similarly, these tools are used in the Modifier API (ValidationManagerConfigModifier class), 
- * which is what the developer uses to modify the configuration after ValidationManager is created.
- * Effectively ValidationManagerConfigBuilder and ValidationManagerConfigModifier are wrapper classes
- * around ValueHostsManagerStartFluent.
  * 
  * With the following, assume 'let builder = new ValidationManagerConfigBuilder(vmConfig)'.
  * 

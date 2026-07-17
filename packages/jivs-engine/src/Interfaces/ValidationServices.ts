@@ -150,12 +150,7 @@ export enum ServiceName {
      * IManagerConfigBuilderFactory
      */
     managerConfigBuilder = 'managerConfigBuilder',
-
-    /**
-     * IManagerConfigModifierFactory
-     */
-    managerConfigModifier = 'managerConfigModifier',
-
+    
     /**
      * IModelToValuesFactory - in jivs-model
      */

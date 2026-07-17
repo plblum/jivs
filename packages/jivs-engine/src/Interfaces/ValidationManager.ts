@@ -32,7 +32,6 @@ import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
 import { IValidationServices } from './ValidationServices';
 import { IFieldValueHost } from './FieldValueHost';
-import { ValidationManagerConfigModifier } from '../Builder/ValidationManagerConfigModifier';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -42,8 +41,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Provides access to ValidationServices (override IServices).
      */
     readonly services: IValidationServices; 
-
-    startModifying(): ValidationManagerConfigModifier;
+    
     /**
      * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property

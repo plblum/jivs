@@ -229,8 +229,6 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
     /**
      * Exposes property names that are not expected to be changed by the rules.
      * Ignores rules with functions. 
-     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
-     * to strip out instead of allowing them to make it into the merge code.
      * Value is cached upon first request. Cache is cleared if rules are changed.
      * @returns 
      */

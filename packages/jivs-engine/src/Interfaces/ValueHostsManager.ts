@@ -12,7 +12,6 @@ import { IFieldValueHostChangedCallback } from './FieldValueHost';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 import { IDisposable } from './General_Purpose';
-import { ValueHostsManagerConfigModifier } from '../Builder/ValueHostsManagerConfigModifier';
 import { IValueHostsServices } from './ValueHostsServices';
 
 /**
@@ -84,17 +83,6 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
      * @param valueHostName 
      */
     discardValueHost(valueHostName: ValueHostName): void;    
-
-    /**
-     * Easier way to add or modify a ValueHostConfig than using
-     * addValueHost(), addOrUpdateValueHost(), or addOrMergeValueHost().
-     * It returns an object whose methods allow adding ValueHosts
-     * and their validators. Upon calling its apply() method,
-     * your changes will be applied through the addOrMergeValueHost() function.
-     * Any ValueHost that gets updated will have its original instance disposed.
-     * Be sure to discard any reference to the ValueHost instance that you have.
-     */
-    startModifying(): ValueHostsManagerConfigModifier<ValueHostsManagerConfig>;
     
     /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 
@@ -206,8 +194,7 @@ export interface IValueHostsManagerCallbacks extends IValueHostCallbacks, IField
     /**
      * Use this when caching the configuration for a later creation of ValueHostsManager.
      * 
-     * Called when the configuration of ValueHosts has been changed, usually
-     * through the ValueHostsManagerConfigModifier.apply, or these members
+     * Called when the configuration of ValueHosts has been changed, by these members
      * of ValueHostsManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
      * discardValueHost.
      * The supplied object is a clone so modifications will not impact the ValueHostsManager.

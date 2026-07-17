@@ -14,7 +14,6 @@ import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
-import { IManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { IManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 
 /**
@@ -98,8 +97,4 @@ export interface IValueHostsServices extends IServices
      */
     managerConfigBuilderFactory: IManagerConfigBuilderFactory;
 
-    /**
-     * Creates the ManagerConfigModifier instances.
-     */
-    managerConfigModifierFactory: IManagerConfigModifierFactory;
 }

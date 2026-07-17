@@ -25,8 +25,6 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
     /**
      * Exposes property names that are not expected to be changed by the rules.
      * Ignores rules with functions. 
-     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
-     * to strip out instead of allowing them to make it into the merge code.
      * @returns 
      */
     getNoChangePropertyNames(): Array<string>;    

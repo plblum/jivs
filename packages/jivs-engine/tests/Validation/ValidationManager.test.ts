@@ -351,89 +351,6 @@ function setupFieldValueHostConfig(fieldIndex: number,
     return config;
 }
 
-describe('startModifying()', () => {
-    test('field().requireText() gets added correctly', () => {
-        let vmConfig: ValidationManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValidationManager(vmConfig);
-
-        let modifier = testItem.startModifying();
-        modifier.field('Field1', null, { label: 'Field 1' }).requireText('msg');
-        modifier.apply();
-
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeInstanceOf(FieldValueHost);
-        expect(vh1!.getName()).toBe('Field1');
-        expect(vh1!.getLabel()).toBe('Field 1');
-        expect(vh1!.getDataType()).toBeNull();
-        let ivh1 = vh1 as FieldValueHost;
-        expect(ivh1.getValidator(ConditionType.RequireText)).toBeDefined();
-
-        // prove the error message was used.
-
-        ivh1.setValues('', ''); // will be Invalid
-        let result = ivh1.validate();
-        expect(result).toEqual(<ValueHostValidateResult>{
-            status: ValidationStatus.Invalid,
-            issuesFound: [
-                {
-                    errorCode: ConditionType.RequireText,
-                    valueHostName: 'Field1',
-                    severity: ValidationSeverity.Severe,    // due to required
-                    errorMessage: 'msg',
-                    summaryMessage: 'msg',
-                    doNotSave: true
-                }
-            ]
-        });
-    });
-    test('Add Field then replace it fully replaces.', () => {
-        let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(true, true), valueHostConfigs: [] });
-        let modifier = testItem.startModifying();
-        modifier.field('Field1', null, { label: 'Field 1' });
-        modifier.apply();
-
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeInstanceOf(FieldValueHost);
-        expect(vh1!.getName()).toBe('Field1');
-        expect(vh1!.getLabel()).toBe('Field 1');
-        expect(vh1!.getDataType()).toBeNull();
-        expect((vh1 as FieldValueHost).getValidator(ConditionType.RequireText)).toBeNull();
-
-        let modifier2 = testItem.startModifying();
-        modifier2.field('Field1', 'TEST', { label: 'Field 1' }).requireText('Error');
-        modifier2.apply();
-
-        let vh2 = testItem.getValueHost('Field1');
-        expect(vh2).toBeInstanceOf(FieldValueHost);
-        expect(vh2!.getName()).toBe('Field1');
-        expect(vh2!.getLabel()).toBe('Field 1');
-        expect(vh2!.getDataType()).toBe('TEST');
-        let ivh2 = vh2 as FieldValueHost;
-        let vh2Validator = ivh2.getValidator(ConditionType.RequireText);
-        expect(vh2Validator).toBeDefined();
-
-        // prove the error message was used.
-
-        ivh2.setValues('', ''); // will be Invalid
-        let result = ivh2.validate();
-        expect(result).toEqual(<ValueHostValidateResult>{
-            status: ValidationStatus.Invalid,
-            issuesFound: [
-                {
-                    errorCode: ConditionType.RequireText,
-                    valueHostName: 'Field1',
-                    severity: ValidationSeverity.Severe,    // due to required
-                    errorMessage: 'Error',
-                    summaryMessage: 'Error',
-                    doNotSave: true
-                }
-            ]
-        });
-    });
-});
-
 function testValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
     instanceState: Partial<FieldValueHostInstanceState> | null): void
 {
@@ -2891,9 +2808,7 @@ describe('toIValidationManager function', () => {
             enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
                 throw new Error('Function not implemented.');
             },
-            startModifying: function () {
-                throw new Error('Function not implemented.');
-            },
+
             notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
                 throw new Error('Function not implemented.');
             },
@@ -2932,81 +2847,6 @@ describe('toIValidationManager function', () => {
     });        
 });
 
-describe('3 phase configuration: business logic->ui->new ValidationManager->modifier', () => {
-    test('Each step adds one ValueHost with a new ValueHostName', () => {
-        let services = createValidationServicesForTesting(); 
-        (services.conditionFactory as ConditionFactory).register<RegExpConditionConfig>(
-            ConditionType.RegExp, (config) => new RegExpCondition(config));    
-        // phase 1
-        let builder = createConfigBuilder(services);
-        builder.field('Property1').requireText();
-
-        // phase 2
-        let formAdapter = createConfigFormAdapter(builder);
-        formAdapter.field('Field2').regExp(/\d/);
-
-        let vm = new PublicifiedValidationManager(builder);
-
-        // phase 3
-        let modifier = vm.startModifying();
-        modifier.static('Field3');
-        modifier.apply();
-        expect(vm.exposedValueHostConfigs.get('Property1')).toEqual(<FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'Property1',
-            validatorConfigs: [
-                {
-                    conditionConfig: { conditionType: ConditionType.RequireText }
-                }
-            ]
-        });
-        expect(vm.exposedValueHostConfigs.get('Field2')).toEqual(<FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'Field2',
-            validatorConfigs: [
-                {
-                    conditionConfig: <RegExpConditionConfig>{ conditionType: ConditionType.RegExp, expression: /\d/ }
-                }
-            ]
-        });        
-        expect(vm.exposedValueHostConfigs.get('Field3')).toEqual(<StaticValueHostConfig>{
-            valueHostType: ValueHostType.Static,
-            name: 'Field3'
-        });
-    });
-    test('All steps modify the same ValueHostName', () => {
-        let services = createValidationServicesForTesting(); 
-        (services.conditionFactory as ConditionFactory).register<RegExpConditionConfig>(
-            ConditionType.RegExp, (config) => new RegExpCondition(config));   
-        // phase 1
-        let builder = createConfigBuilder(services);
-        builder.field('Property1').requireText();
-        // phase 2
-        let formAdapter = createConfigFormAdapter(builder);
-        formAdapter.field('Property1').regExp(/\d/);
-
-        let vm = new PublicifiedValidationManager(builder);
-        // phase 3
-        let modifier = vm.startModifying();
-        modifier.field('Property1', LookupKey.String, { label: 'Label1'});
-        modifier.apply();
-        expect(vm.exposedValueHostConfigs.get('Property1')).toEqual(<FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'Property1',
-            dataType: LookupKey.String,
-            label: 'Label1',
-            validatorConfigs: [
-                {
-                    conditionConfig: { conditionType: ConditionType.RequireText }
-                },
-                {
-                    conditionConfig: <RegExpConditionConfig>{ conditionType: ConditionType.RegExp, expression: /\d/ }
-                }
-            ]
-        });
-    });    
-});
-
 describe('Round trip caching of Config and State', () => {
     test('With capturing of state and config setup, create another ValidationManager using the captured data to confirm it rebuilds the same config', () => {
         function captureConfig(ValueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
@@ -3033,15 +2873,20 @@ describe('Round trip caching of Config and State', () => {
         builder.onInstanceStateChanged = captureManagerStateChanged;
         builder.onValueHostInstanceStateChanged = captureValueHostStateChanged;
 
-        builder.field('Field1', LookupKey.String).requireText('required');
-        builder.static('Field2');
+        builder.field('Field1', LookupKey.String).requireText('required').regExp(/^\d*$/, 'Digits only');
+        builder.static('Field2', LookupKey.Integer);
         let vm = new ValidationManager(builder);
-        let modifier = vm.startModifying();
-        modifier.field('Field1').regExp(/^\d*$/, 'Digits only');    // only digits allowed
-        modifier.static('Field2', LookupKey.Integer);
-        modifier.apply();
+
+        // this triggers the onConfigChanged callback and captures the config for later use.
+        vm.addValueHost(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field3',
+            dataType: LookupKey.Integer
+        }, null);
+
         vm.getFieldValueHost('Field1')!.setValues('abc', ' abc ');    // saved into state
         vm.getStaticValueHost('Field2')!.setValue(10);
+        vm.getStaticValueHost('Field3')!.setValue(20);
 
         let vmValidationState = vm.validate();  // changes validationManager state and Field1 state which has validation error now.
 
@@ -3052,6 +2897,7 @@ describe('Round trip caching of Config and State', () => {
         let vh1TextValue = vm.getFieldValueHost('Field1')!.getTextValue();
         let issuesFoundVH1 = vm.getFieldValueHost('Field1')!.getIssuesFound();
         let vh2Value = vm.getStaticValueHost('Field2')!.getValue();
+        let vh3Value = vm.getStaticValueHost('Field3')!.getValue();
 
         vm.dispose();   // our captured configs and states are still around
         let expectedField1: FieldValueHostConfig = {
@@ -3079,8 +2925,13 @@ describe('Round trip caching of Config and State', () => {
             name: 'Field2',
             dataType: LookupKey.Integer
         }
+        let expectedField3: StaticValueHostConfig = {
+            valueHostType: ValueHostType.Static,
+            name: 'Field3',
+            dataType: LookupKey.Integer
+        };
 
-        expect(capturedConfig).toEqual([expectedField1, expectedField2]);
+        expect(capturedConfig).toEqual([expectedField1, expectedField2, expectedField3]);
 
         let testItem = new ValidationManager({
             services: services,
@@ -3105,6 +2956,10 @@ describe('Round trip caching of Config and State', () => {
         let vh2 = testItem.getStaticValueHost('Field2');
         expect(vh2).toBeInstanceOf(StaticValueHost);
         expect(vh2!.getValue()).toBe(vh2Value);
+
+        let vh3 = testItem.getStaticValueHost('Field3');
+        expect(vh3).toBeInstanceOf(StaticValueHost);
+        expect(vh3!.getValue()).toBe(vh3Value);
 
     });
 });

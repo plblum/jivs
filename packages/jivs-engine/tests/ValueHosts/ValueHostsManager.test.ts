@@ -1097,9 +1097,6 @@ describe('toIValueHostsManager function', () => {
             enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
                 throw new Error("Function not implemented.");
             },
-            startModifying: function () {
-                throw new Error("Function not implemented.");
-            },
             notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
                 throw new Error("Function not implemented.");
             }
@@ -1149,9 +1146,6 @@ describe('toIValueHostsManagerAccessor function', () => {
                 },
 
                 enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
-                    throw new Error("Function not implemented.");
-                },
-                startModifying: function () {
                     throw new Error("Function not implemented.");
                 },
                 notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
@@ -1235,51 +1229,6 @@ describe('toIValueHostsManagerCallbacks function', () => {
     });
 });
 
-describe('startModifying()', () => {
-    test('static() gets added correctly', () => {
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValueHostsManager(vmConfig);
-        let modifier = testItem.startModifying();
-        modifier.static('Field1', null, { label: 'Field 1' });
-        modifier.apply();
-
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeInstanceOf(StaticValueHost);
-        expect(vh1!.getName()).toBe('Field1');
-        expect(vh1!.getLabel()).toBe('Field 1');
-        expect(vh1!.getDataType()).toBeNull();
-    });
-    test('calc() gets added correctly', () => {
-        function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
-            return 1;
-        }
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValueHostsManager(vmConfig);
-        let modifier = testItem.startModifying();
-        modifier.calc('Field1', 'Test', calcFnForTests);
-        modifier.apply();
-
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeInstanceOf(CalcValueHost);
-        expect(vh1!.getName()).toBe('Field1');
-        expect(vh1!.getDataType()).toBe('Test');
-    });
-    test('no changes if apply is not called', () => {
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValueHostsManager(vmConfig);
-        let modifier = testItem.startModifying();
-        modifier.static('Field1', null, { label: 'Field 1' });
-
-        let vh1 = testItem.getValueHost('Field1');
-        expect(vh1).toBeNull();
-    });
-});
 describe('invokeOnConfigChanged', () => {
     function testCallback(configs: Array<ValueHostConfig>): void {
         function handler(manager: IValueHostsManager, configs: Array<ValueHostConfig>): void {
@@ -1455,34 +1404,6 @@ describe('invokeOnConfigChanged', () => {
         testItem.discardValueHost('Field1');
         expect(configsReceived).toBeUndefined();
     });        
-    test('Use Modifier to invoke, merging with existing', () => {
-        function handler(manager: IValueHostsManager, configs: Array<ValueHostConfig>): void {
-            configsReceived = configs;
-        }
-        let configsReceived: Array<ValueHostConfig> | undefined = undefined;
-        let config1: StaticValueHostConfig = {
-            valueHostType: ValueHostType.Static,
-            name: 'Field1',
-            dataType: LookupKey.String
-        };
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockValidationServices(true, false),
-            valueHostConfigs: [config1],
-            onConfigChanged: handler
-        };
-        let testItem = new PublicifiedValueHostsManager(vmConfig);
-        let modifier = testItem.startModifying();
-        modifier.static('Field1', null, { label: 'Field 1' });
-        expect(configsReceived).toBeUndefined();    // not unto apply
-        modifier.apply();
-
-        expect(configsReceived).toEqual([<StaticValueHostConfig>{
-            valueHostType: ValueHostType.Static,
-            name: 'Field1',
-            label: 'Field 1',
-            dataType: LookupKey.String
-        }]);
-    });           
 });
 describe('dispose', () => {
     test('dispose kills all expected properties', () => {

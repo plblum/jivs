@@ -24,7 +24,6 @@ import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import { ValueHostsManagerConfigModifier } from '../Builder/ValueHostsManagerConfigModifier';
 import { ValueHostsManagerConfigBuilder } from '../Builder/ValueHostsManagerConfigBuilder';
 import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
@@ -406,30 +405,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
             this.onConfigChanged(this, valueHostConfigs);
         }
     }
-
-    /**
-     * Easier way to add or modify a ValueHostConfig than using
-     * addValueHost(), addOrUpdateValueHost(), or addOrMergeValueHost().
-     * It returns an object whose methods allow adding ValueHosts
-     * and their validators. Upon calling its apply() method,
-     * your changes will be applied through the addOrMergeValueHost() function.
-     * ```ts
-     * let vm = new ValueHostManager(config);
-     * // later when you need to modify vm:
-     * let modifier = vm.startModifying();
-     * // supply changes to the ValueHostConfigs
-     * modifier.field('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
-     * // merge those changes into the ValueHostManager
-     * modifier.apply(); // consider modifier disposed at this point 
-     * ```
-     * Any ValueHost that gets updated will have its original instance disposed.
-     * Be sure to discard any reference to the ValueHost instance that you have.
-     */
-    public startModifying(): ValueHostsManagerConfigModifier<ValueHostsManagerConfig>
-    {
-        return this.services.managerConfigModifierFactory.create(this, this.valueHostConfigs) as ValueHostsManagerConfigModifier<ValueHostsManagerConfig>;
-    }
-
     /**
      * Retrieves the ValueHost associated with valueHostName
      * @param valueHostName - Matches to the IValueHost.name property
@@ -513,8 +488,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Use this when caching the configuration for a later creation of ValueHostsManager.
      * 
-     * Called when the configuration of ValueHosts has been changed, usually
-     * through the ValueHostsManagerConfigModifier.apply, or these members
+     * Called when the configuration of ValueHosts has been changed by these members
      * of ValueHostsManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
      * discardValueHost.
      * The supplied object is a clone so modifications will not impact the ValueHostsManager.
