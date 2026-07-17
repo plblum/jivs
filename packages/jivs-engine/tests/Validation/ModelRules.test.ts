@@ -7,7 +7,7 @@ import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValidationManagerConfigBuilder, IConfigFormAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
+import { IValidationManagerConfigBuilder, IFormConfigAdapter } from "../../src/Interfaces/ManagerConfigBuilder";
 
 class Person
 {
@@ -113,7 +113,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
         constructor(services: IValidationServices) {
             super(services);
         }
-        adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void {
+        adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().

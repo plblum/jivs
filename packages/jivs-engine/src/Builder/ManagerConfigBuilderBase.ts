@@ -63,7 +63,7 @@ import { ValidationManagerStartFluent, ValueHostsManagerStartFluent } from "./St
  * and implement the IAdaptModelRulesToForm interface, again using the Builder.
  * ```ts
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *   adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void {
+ *   adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
  *      adapter.field('birthDate', null, { label: 'Birth date' })
  *        .lessThan('today');
  *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });

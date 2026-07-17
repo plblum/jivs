@@ -205,7 +205,7 @@ export interface IValueHostsForValidatorManagerConfigBuilder<T extends Validatio
 }
 
 
-//#region ConfigFormAdapter
+//#region FormConfigAdapter
 
 /** 
  * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
@@ -213,7 +213,7 @@ export interface IValueHostsForValidatorManagerConfigBuilder<T extends Validatio
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export interface IConfigFormAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig> {
+export interface IFormConfigAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig> {
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
      * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 
@@ -274,7 +274,7 @@ export interface IConfigFormAdapter extends IValidationManagerConfigBuilder<Vali
 export type AdapterValueHostConfig = Omit<FieldValueHostConfig, 'validatorConfigs' | 'name' | 'dataType'>;
 
 /**
- * Builder that is chained from IConfigFormAdapter to modify individual fields.
+ * Builder that is chained from IFormConfigAdapter to modify individual fields.
  */
 export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
 {
@@ -392,4 +392,4 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
     disable(): void;
 
 }
-//#endregion ConfigFormAdapter
+//#endregion FormConfigAdapter

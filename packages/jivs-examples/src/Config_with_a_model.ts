@@ -27,7 +27,7 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { RulesConfigOptions, IAdaptModelRulesToForm } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
 import { ModelRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
-import { IConfigFormAdapter } from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
+import { IFormConfigAdapter } from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
 
 // The Model
 export class Person {
@@ -68,7 +68,7 @@ export class PersonEditFormRules
     super(services);
   }
   public adaptToForm(
-    adapter: IConfigFormAdapter,
+    adapter: IFormConfigAdapter,
     options?: RulesConfigOptions
   ): void {
     adapter.field('FirstName', null, { label: 'First name' })

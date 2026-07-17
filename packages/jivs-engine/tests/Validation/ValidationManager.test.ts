@@ -45,7 +45,7 @@ import {
 } from '../TestSupport/TestValidatableValueHost';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { createConfigFormAdapter } from '../../src/Builder/ConfigFormAdapter';
+import { createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 
 
 // Subclass of what we want to test to expose internals to tests

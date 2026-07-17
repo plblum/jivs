@@ -1,11 +1,11 @@
 /**
- * The ConfigFormAdapter is used together with ModuleRule classes that implement 
+ * The FormConfigAdapter is used together with ModuleRule classes that implement 
  * IAdaptModelRulesToForm to adapt the configuration already established according
  * to the business logic within ModuleRules.configureRules().
  * 
  * Our goal is to protect business logic from forms own needs, due to separation of concerns.
  * To make this work, the form developer will use IAdaptModelRulesToForm.adaptToForm()
- * with this ConfigFormAdapter class. ConfigFormAdapter is designed to allow these kinds of modifications:
+ * with this FormConfigAdapter class. FormConfigAdapter is designed to allow these kinds of modifications:
  * 1. Add entirely new ValueHosts, field(), static() and calc(), using the standard syntax
  *    built into the ValidationManagerConfigBuilder. However, if those functions are used
  *    on existing valuehosts, it is an error.
@@ -81,7 +81,7 @@
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
  *     .disable();
  * ``` 
- * @module Builder/ConcreteClasses/ConfigFormAdapter
+ * @module Builder/ConcreteClasses/FormConfigAdapter
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
@@ -89,7 +89,7 @@ import { ValidatableValueHostBaseConfig } from "../Interfaces/ValidatableValueHo
 import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
 import { LoggingLevel } from "../Interfaces/LoggerService";
 import {
-    AdapterValueHostConfig, BuilderOverrideOptions, IConfigFormAdapter,
+    AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
     IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
 } from "../Interfaces/ManagerConfigBuilder";
 import { RulesConfigOptions } from "../Interfaces/ModelRules";
@@ -104,7 +104,7 @@ import {
     CompleteConfigBuilderHandler, IBuilderConfigHost, IFluentValidatorBuilder,
     IStartConditionBuilder, IStartConditionWithOneChildBuilder
 } from "../Interfaces/ChildBuilders";
-import { BuilderConfigHostBase } from "../Builder/BuilderConfigHostBase";
+import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionType } from '../Conditions/ConditionTypes';
@@ -114,16 +114,16 @@ import { FluentValidatorConfig } from "../Interfaces/Fluent";
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 
 /**
- * Creates a ConfigFormAdapter from a source IManagerConfigBuilder.
+ * Creates a FormConfigAdapter from a source IManagerConfigBuilder.
  * @param source 
  * @param options 
  * @returns 
  */
-export function createConfigFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IConfigFormAdapter
+export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
         let state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
-        return new ConfigFormAdapter(state, { favorUIMessages: options?.favorUIMessages });
+        return new FormConfigAdapter(state, { favorUIMessages: options?.favorUIMessages });
     }
     throw new CodingError("createFormAdapter() expects a ManagerConfigBuilderBase instance.");
 }
@@ -134,9 +134,9 @@ export function createConfigFormAdapter(source: IManagerConfigBuilder<any>, opti
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export class ConfigFormAdapter
+export class FormConfigAdapter
     extends ValidationManagerConfigBuilder
-    implements IConfigFormAdapter
+    implements IFormConfigAdapter
 {
     /**
      * Opens a new override layer for the UI layer to add or modify ValueHostConfigs.
@@ -158,7 +158,7 @@ export class ConfigFormAdapter
      * perspective.
      * 
      * The UI layer can override them in several ways:
-     * 1. Use this ConfigFormAdapter.modify().validator() to change the error messages.
+     * 1. Use this FormConfigAdapter.modify().validator() to change the error messages.
      * 2. By using those registered with TextLocalizationService.
      *    To use them, there should not be any error message already
      *    supplied to the validator and business layer messages get in the way.
@@ -364,7 +364,7 @@ export class ConfigFormAdapter
         // except for those in donotReplaceTheseProperties. 
         // Those skipped are logged.
         for (const prop in adjustments) {
-            if (ConfigFormAdapter.doNotReplaceTheseValueHostProperties.includes(prop)) {
+            if (FormConfigAdapter.doNotReplaceTheseValueHostProperties.includes(prop)) {
                 // log that this property was skipped
                 this.logger.message(LoggingLevel.Warn, ()=> `Skipped property "${prop}" as it is protected.`);
             }
@@ -384,7 +384,7 @@ export class ConfigFormAdapter
 }    
 
 /**
- * Builder that is chained from IConfigFormAdapter.modify() to modify individual fields.
+ * Builder that is chained from IFormConfigAdapter.modify() to modify individual fields.
  */
 export class ModifyFieldBuilder
     extends BuilderConfigHostBase<ValueHostConfig>
@@ -475,7 +475,7 @@ export class ModifyFieldBuilder
      * it is an error.
      * 
      * ```ts
-     * configFormAdapter.addValidator().requiredText({ errorMessage: 'error' });
+     * FormConfigAdapter.addValidator().requiredText({ errorMessage: 'error' });
      * ```
      * @returns The IFluentValidatorBuilder for further modifications.
      */

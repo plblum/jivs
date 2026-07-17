@@ -71,7 +71,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
       export class PersonFormEditorRules 
         extends PersonModelRules 
         implements IAdaptModelRulesToForm {
-        protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void {
+        protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
           // apply some properties to the fields and validators
           adapter.modify('firstName', {label: 'First Name'}).validator(ConditionType.RequireText, '{Label} is required.');
           adapter.modify('lastName', {label: 'Last Name'}).whenToEnable((whenBuilder) =>
@@ -661,9 +661,9 @@ const vm = new ValidationManager(config);
 A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
 
 The form _should_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface. Use its `adaptToForm()` method to further extend
-the configuration to reflect the needs of your form. `adaptToForm()` passes you a Configuration Form Adapter (`IConfigFormAdapter`). 
+the configuration to reflect the needs of your form. `adaptToForm()` passes you a Form Configuration Adapter (`IFormConfigAdapter`). 
 
-> Configuration Form Adapter is designed to _prevent_ you from modifying the validation rules, while _allowing_
+> Form Configuration Adapter is designed to _prevent_ you from modifying the validation rules, while _allowing_
 changes to whatever impacts the UI.
 
 - Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](#define-rules-for-the-model).
@@ -719,7 +719,7 @@ class PersonEditFormRules
     implements IAdaptModelRulesToForm
 {
     public adaptToForm(
-        adapter: IConfigFormAdapter,
+        adapter: IFormConfigAdapter,
         options?: RulesConfigOptions
     ): void {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
@@ -837,7 +837,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   [`ValidationManager class`](#validationmanager) – The "face" of this API. It represents the fields of your form or model to Jivs through its `ValueHosts`. Your validation-related UI elements will need access to it to do their work. Use it to validate, retrieve validation results, and report additional errors determined by your business logic. It is supported by these types:
     + [`ValidationManagerConfig type`](#configuring-the-validationmanager-the-builder-api) – An object that describes all ValueHosts and their Validators.
     + [`ValidationManagerConfigBuilder class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Builder object, use it to configure the ValidationManager class. Internally, it prepares the `ValidationManagerConfig type`.
-    + [`ConfigFormAdapter class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Configuration Form Adapter, use it to configure the ValidationManager class from
+    + [`FormConfigAdapter class`](#configuring-the-validationmanager-the-builder-api) – Also known as the Form Configuration Adapter, use it to configure the ValidationManager class from
     within the `IAdaptModelRulesToForm.adaptToForm()` method. Internally, it prepares the `ValidationManagerConfig type`.
 
 -   [`Condition classes`](#conditions---the-validation-rules) – Classes that evaluate value(s) against a rule
@@ -1889,7 +1889,7 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
     public adaptToForm(
-        adapter: IConfigFormAdapter,
+        adapter: IFormConfigAdapter,
         options?: RulesConfigOptions): void {
     // PENDING WORK...
     // make changes to labels, error messages, severity, parsers and more
@@ -1898,11 +1898,11 @@ class PersonEditFormRules
     }
 }
 ```
-From there, you can use the _form adapter_ to further customize. The Configuration Form Adapter is actually 
+From there, you can use the _form adapter_ to further customize. The Form Configuration Adapter is actually 
 a builder, with a few new methods designed around the adaption process.
 ```ts
 public adaptToForm(
-    adapter: IConfigFormAdapter,
+    adapter: IFormConfigAdapter,
     options?: RulesConfigOptions): void {
     adapter.useOnlyTheseModelFields('FirstName', 'LastName'); // your form will not be editing any other fields on the model
     adapter.modify('FirstName', { label: 'First name' });
@@ -1917,7 +1917,7 @@ public adaptToForm(
 ```
 #### Configuring ValueHosts with the Builder API
 The [`Builder object`](#configuring-the-validationmanager-the-builder-api) has these functions to add ValueHosts by their type. (There are other functions in the [Builder API](#configuring-the-validationmanager-the-builder-api).)
-> The Configuration Form Adapter is actually a Builder object, supporting the same functions.
+> The Form Configuration Adapter is actually a Builder object, supporting the same functions.
 - `field()` adds or modifies an `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
    
     `field(valueHostName, dataType?, *parameters object*?): FluentValidatorBuilder`
@@ -2335,12 +2335,12 @@ class ValidationManagerConfigBuilder {
         whenBuilder.conditionConfig(existingConditionConfig));
     builder.whenToEnable('Field1', handler).any validator can be chained
     ```
-#### The Configuration Form Adapter
-The Configuration Form Adapter (`ConfigFormAdapter class`) is used within `IAdaptModelRulesToForm.adaptToForm()`. It targets adapting
-the business rules to the form, and adding your own ValueHosts. Configuration Form Adapter inherits from the [Builder object](#the-builder-object-validationmanagerconfigbuilder), sharing its API.
+#### The Form Configuration Adapter
+The Form Configuration Adapter (`FormConfigAdapter class`) is used within `IAdaptModelRulesToForm.adaptToForm()`. It targets adapting
+the business rules to the form, and adding your own ValueHosts. Form Configuration Adapter inherits from the [Builder object](#the-builder-object-validationmanagerconfigbuilder), sharing its API.
 
 ```ts
-class ConfigFormAdapter extends ValidationManagerConfigBuilder
+class FormConfigAdapter extends ValidationManagerConfigBuilder
 {
   // see Builder object for field(), static(), calc(), whenToEnable(), state and callbacks
     useOnlyTheseModelFields(modelFieldNames: Array<string>): void;
@@ -2368,7 +2368,7 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
+    protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void
     {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // all others are disabled
     }
@@ -2385,7 +2385,7 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void
+    protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void
     {
         adapter.disableTheseModelFields(['BirthDate', 'Suffix']); // all others remain enabled
     }
@@ -2477,7 +2477,7 @@ The `builder.field()` function allows appending validators. Just use the name of
 ```ts
 builder.field('StartDate').requireText().regExp(/expression/);
 ```
-> The same chaining applies to the `Configuration Form Adapter`.
+> The same chaining applies to the `Form Configuration Adapter`.
 
 With the `Builder object`, all chained functions have parameters to supply key validator values like error message, error code and severity. Those that need it have parameters for configuring the Conditions too. Most parameters are optional, and many take `null` if you don't want to set them.
 ```ts
@@ -2511,7 +2511,7 @@ Inside `configure()` Jivs handles several support steps for you:
 
 * Creates the `ValidationManagerConfigBuilder` so your subclass only focuses on `configureRules()`.
 * Runs `configureRules()`. You are expected to override it to define your rules.
-* When `IAdaptModelRulesToForm` is implemented, `configure()` transistions from business rules to form adaptation by creating the [Configuration Form Adapter](#configuration-form-adapter), 
+* When `IAdaptModelRulesToForm` is implemented, `configure()` transistions from business rules to form adaptation by creating the [Form Configuration Adapter](#configuration-form-adapter), 
   then calls `adaptToForm()` so you can adjust the rules for the form.
 * Optionally runs config analysis.
 * Finalizes the builder into `ValidationManagerConfig`.
@@ -2556,7 +2556,7 @@ class PersonModelRules extends ModelRulesBase {
 ### IAdaptModelRulesToForm
 When a form consumes rules supplied by a `ModelRulesBase` subclass, the form _should_ define its own subclass and implement `IAdaptModelRulesToForm`.
 
-That step adapts the model-oriented configuration for use by the form using the [Configuration Form Adapter](#configuration-form-adapter). 
+That step adapts the model-oriented configuration for use by the form using the [Form Configuration Adapter](#configuration-form-adapter). 
 The `IAdaptModelRulesToForm.adaptToForm()` method is where you:
 - Declare a subset of model fields you are editing
     + `adapter.useOnlyTheseModelFields([field names])`
@@ -2580,7 +2580,7 @@ class PersonEditFormRules
     implements IAdaptModelRulesToForm
 {
     public adaptToForm(
-        adapter: IConfigFormAdapter,
+        adapter: IFormConfigAdapter,
         options?: RulesConfigOptions): void 
     {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']);

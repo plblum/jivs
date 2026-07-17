@@ -1,7 +1,7 @@
-import { FluentValidatorBuilder } from './../../src/Builder/FluentValidatorBuilder';
-import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/ConfigFormAdapter';
-// Tests around ConfigFormAdapter.
-import { ConfigFormAdapter, createConfigFormAdapter } from '../../src/Builder/ConfigFormAdapter';
+import { FluentValidatorBuilder } from '../../src/Builder/FluentValidatorBuilder';
+import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
+// Tests around FormConfigAdapter.
+import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
 import { createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
@@ -21,7 +21,7 @@ import { ValidationSeverity } from '../../src/Interfaces/Validation';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 
 // Subclass that makes protected members public for testing
-class Publicify_ConfigFormAdapter extends ConfigFormAdapter
+class Publicify_FormConfigAdapter extends FormConfigAdapter
 {
     constructor(state: BuilderState<ValidationManagerConfig>, options?: BuilderOverrideOptions)
     {
@@ -68,9 +68,9 @@ function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
     return vmConfig;
 }
 
-function setupPublicifyFormAdapter(options?: BuilderOverrideOptions, standardDataTypes?: boolean): Publicify_ConfigFormAdapter {
+function setupPublicifyFormAdapter(options?: BuilderOverrideOptions, standardDataTypes?: boolean): Publicify_FormConfigAdapter {
     let state = new BuilderState<ValidationManagerConfig>(createVMConfig(standardDataTypes));
-    return new Publicify_ConfigFormAdapter(state);
+    return new Publicify_FormConfigAdapter(state);
 }
 function setupFallbackService(services: IValidationServices): IValidationServices {
     services.lookupKeyFallbackService.register('NewString', LookupKey.String);
@@ -86,7 +86,7 @@ describe('constructor', () => {
             services: services,
             valueHostConfigs: []
         });
-        let testItem = new ConfigFormAdapter(state);
+        let testItem = new FormConfigAdapter(state);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.savedInstanceState).toBeNull();
@@ -102,7 +102,7 @@ describe('constructor', () => {
     test('favorUIMessages option undefined runs favorUIMessages', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());    // no options
 
         expect(formAdapter.favorUIMessagesCount).toBe(1);
@@ -110,7 +110,7 @@ describe('constructor', () => {
     test('favorUIMessages option true runs favorUIMessages', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState(), { favorUIMessages: true });       
 
         expect(formAdapter.favorUIMessagesCount).toBe(1);
@@ -118,7 +118,7 @@ describe('constructor', () => {
     test('favorUIMessages option false does not run favorUIMessages', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState(), { favorUIMessages: false });        
         expect(formAdapter.favorUIMessagesCount).toBeUndefined(); // because favorUIMessage is called in the constructor and the counter doesn't get initiatialized
     });
@@ -277,7 +277,7 @@ describe('useOnlyTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.useOnlyTheseModelFields(['Field1']);
         let result = builder.snapshot().valueHostConfigs;
         // get field1's config and inspect initialEnabled does not exist
@@ -297,7 +297,7 @@ describe('useOnlyTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
 
         formAdapter.useOnlyTheseModelFields([]);
         let result = builder.snapshot().valueHostConfigs;
@@ -318,7 +318,7 @@ describe('useOnlyTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.useOnlyTheseModelFields(['Field1', 'UnknownField']);
         let result = builder.snapshot().valueHostConfigs;
         // get field1's config and inspect initialEnabled does not exist
@@ -341,7 +341,7 @@ describe('disableTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.disableTheseModelFields(['Field1']);
         let result = builder.snapshot().valueHostConfigs;
         // get field1's config and inspect initialEnabled is false
@@ -362,7 +362,7 @@ describe('disableTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.disableTheseModelFields([]);
         let result = builder.snapshot().valueHostConfigs;
         // get field1's config and inspect initialEnabled does not exist
@@ -382,7 +382,7 @@ describe('disableTheseModelFields', () => {
         let builder = createConfigBuilder(vmConfig);
         builder.field('Field1').requireText();
         builder.field('Field2').requireText();
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.disableTheseModelFields(['Field1', 'UnknownField']);
         let result = builder.snapshot().valueHostConfigs;
         // get field1's config and inspect initialEnabled is false
@@ -415,7 +415,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group1', ['Field1', 'Field2']);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -437,7 +437,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group1', ['Field1']);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -455,7 +455,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group1', ['UnknownField']);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -473,7 +473,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group1', ['Field1']);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -491,7 +491,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group1', []);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -510,7 +510,7 @@ describe('assignToGroup', () => {
             }
         ];
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = createConfigFormAdapter(builder);
+        let formAdapter = createFormConfigAdapter(builder);
         formAdapter.assignToGroup('Group2', ['Field1']);
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -741,7 +741,7 @@ describe('modify()', () => {
     test('valuehostname already defined, no second parameter, returns ModifyFieldBuilder with the existing config', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
         let expectedConfig: FieldValueHostConfig = {
@@ -756,7 +756,7 @@ describe('modify()', () => {
     test('valuehostname not defined, no second parameter. Throws error and records an entry in the loggerService', () => {
         let vmConfig = createVMConfig();
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         expect(() => {
             formAdapter.modify('Field2');
@@ -768,7 +768,7 @@ describe('modify()', () => {
     test('valueHostName is valid, second parameter is null. Returns ModifyFieldBuilder with the existing config', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1', null!);
         let expectedConfig: FieldValueHostConfig = {
@@ -783,7 +783,7 @@ describe('modify()', () => {
     test('valueHostName is valid, second parameter is an empty object. Returns ModifyFieldBuilder with the existing config', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1', {});
         let expectedConfig: FieldValueHostConfig = {
@@ -797,7 +797,7 @@ describe('modify()', () => {
     test('valueHostName is valid, second parameter is an object with all properties that are in AdapterValueHostConfig. Returns ModifyFieldBuilder with the existing config, plus the properties from the second parameter', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1', {
             initialEnabled: false,
@@ -832,7 +832,7 @@ describe('modify()', () => {
     test('valueHostName is valid, second parameter object has only one property, it is in doNotReplaceTheseProperties. That property is ignored, and the rest are applied to the existing config', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1', <any>{
             dataType: 'NewDataType'
@@ -851,7 +851,7 @@ describe('modify()', () => {
     test('valueHostName is invalid, second parameter is an empty object. Throws error and records an entry in the loggerService', () => {
         let vmConfig = createVMConfig();
         let builder = createConfigBuilder(vmConfig);
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         expect(() => {
             formAdapter.modify('Field2', {});
@@ -863,7 +863,7 @@ describe('modify()', () => {
     test('valid valueHostName, second parameter is a label. Returns ModifyFieldBuilder with the existing config, plus the label property from the second parameter', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1', 'NewLabel');
         let expectedConfig: FieldValueHostConfig = {
@@ -884,7 +884,7 @@ describe('ModifyFieldBuilder class', () => {
         test('single parameter overload with an existing conditionType. Returns a ModifyValidatorBuilder correctly configured.', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator(ConditionType.RequireText);
@@ -899,7 +899,7 @@ describe('ModifyFieldBuilder class', () => {
         test('single parameter overload with an existing conditionType that has an errorCode. Returns a ModifyValidatorBuilder correctly configured.', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText({ errorCode: 'ErrorCode1' });
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator('ErrorCode1');
@@ -915,7 +915,7 @@ describe('ModifyFieldBuilder class', () => {
         test('two parameter overload with an existing conditionType, second parameter is null. Returns a ModifyValidatorBuilder correctly configured without changes.', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator(ConditionType.RequireText, null!);
@@ -930,7 +930,7 @@ describe('ModifyFieldBuilder class', () => {
         test('two parameter overload with an existing conditionType, second parameter is an empty object. Returns a ModifyValidatorBuilder correctly configured without changes.', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator(ConditionType.RequireText, {});
@@ -945,7 +945,7 @@ describe('ModifyFieldBuilder class', () => {
         test('two parameter overload with an existing conditionType, second parameter is an object with all properties that are in ValidatorConfig. Returns a ModifyValidatorBuilder correctly configured with the properties from the second parameter.', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator(ConditionType.RequireText, {
@@ -973,7 +973,7 @@ describe('ModifyFieldBuilder class', () => {
         test('second parameter is an object with all properties in doNotReplaceTheseProperties and one valid. Invalid properties are ignored and logged', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.validator(ConditionType.RequireText, <any>{
@@ -1001,7 +1001,7 @@ describe('ModifyFieldBuilder class', () => {
         test('used on a field, which supports a validator, and has no validators, returns a IFluentValidatorBuilder correctly configured with the new validator', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let result = modifyBuilder.addValidator();
@@ -1016,7 +1016,7 @@ describe('ModifyFieldBuilder class', () => {
         test('valuehost is static, which does not support a validator. Throws error and records an entry in the loggerService', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.static('Static1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Static1');
             expect(() => {
@@ -1029,7 +1029,7 @@ describe('ModifyFieldBuilder class', () => {
         test('add a validator after modify() and check results', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');    
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                     builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');   
             modifyBuilder.addValidator().requireText('errormessage1');
@@ -1051,7 +1051,7 @@ describe('ModifyFieldBuilder class', () => {
         test('add two validators chained after modify() and check results', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             modifyBuilder.addValidator()
@@ -1083,7 +1083,7 @@ describe('ModifyFieldBuilder class', () => {
         test('add two validators, each a separate use of modify().addValidator() and check results', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             modifyBuilder.addValidator().requireText('errormessage1');
@@ -1114,7 +1114,7 @@ describe('ModifyFieldBuilder class', () => {
         test('the same validator already exists on the initial field(), throws and logs a message, but does not add a duplicate validator', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText('errormessage1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');   
             expect(() => {
@@ -1128,7 +1128,7 @@ describe('ModifyFieldBuilder class', () => {
         test('same validator but supply {errorCode: "ErrorCode1"} in the second parameter. It is added as a new validator, because the errorCode is different from the existing one', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText('errormessage1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             modifyBuilder.addValidator().requireText({ errorCode: 'ErrorCode1' });
@@ -1160,7 +1160,7 @@ describe('ModifyFieldBuilder class', () => {
         test('With a known valueHostName, returns the same instance', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let result = formAdapter.modify('Field1').whenToEnable((childBuilder) => childBuilder);
             expect(result).toBeInstanceOf(ModifyFieldBuilder);
@@ -1169,7 +1169,7 @@ describe('ModifyFieldBuilder class', () => {
         test('using parentValue().requireText(), updates enablerConfig', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             formAdapter.modify('Field1').whenToEnable(childBuilder => childBuilder.parentValue().requireText());
             let result = builder.snapshot().valueHostConfigs;
@@ -1187,7 +1187,7 @@ describe('ModifyFieldBuilder class', () => {
         test('child using fieldValue().requireText(), updates enablerConfig', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             formAdapter.modify('Field1').whenToEnable(childBuilder => childBuilder.fieldValue('Field2').requireText());
             let result = builder.snapshot().valueHostConfigs;
@@ -1209,7 +1209,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1', LookupKey.String);
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             formAdapter.modify('Field1').refineDataType('NewString');
             let fieldConfig = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')!;
@@ -1219,7 +1219,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1', LookupKey.String);
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
 
             // using a FieldValueHostConfig definition to test replaceDataType, which is normally used for ValueHostConfigs that are not FieldValueHostConfigs
@@ -1234,7 +1234,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
 
             formAdapter.modify('Field1').refineDataType('NewString');
@@ -1247,7 +1247,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
 
             formAdapter.modify('Field1').refineDataType('NewUnknownDataType');
@@ -1258,7 +1258,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1', LookupKey.String);
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
 
             formAdapter.modify('Field1').refineDataType(LookupKey.String);
@@ -1270,7 +1270,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             
             formAdapter.modify('Field1').refineDataType(LookupKey.String);
@@ -1282,7 +1282,7 @@ describe('ModifyFieldBuilder class', () => {
             let builder = createConfigBuilder(createVMConfig());
             setupFallbackService(builder.services);
             builder.field('Field1', LookupKey.String);
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
 
             expect(() => { // string is not a valid fallback for number
@@ -1296,7 +1296,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('constructor with existingValidator, returns a ModifyValidatorBuilder correctly configured', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText({ errorCode: 'ErrorCode1' });
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1314,7 +1314,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('existingValidator is null, throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText({ errorCode: 'ErrorCode1' });
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             expect(() => {
@@ -1328,7 +1328,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('existing validator is RequireText, add AndMatchesCondition with a new condition. Returns a ModifyValidatorBuilder correctly configured', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1353,7 +1353,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('second parameter is null.throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1365,7 +1365,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('second parameter does not modify the builder, so it does not create the new condition. Throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1378,7 +1378,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('special case: validatorConfig.conditionConfig = null throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1396,7 +1396,7 @@ describe('ModifyValidatorBuilder class', () => {
                 childBuilder.parentValue().requireText(),
                 'error message1',
                 'summary message1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1430,7 +1430,7 @@ describe('ModifyValidatorBuilder class', () => {
                     errorMessage: 'error message1',
                     summaryMessage: 'summary message1'
                  });
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1467,7 +1467,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('existing validator is RequireText, add AndMatchesCondition with a new condition. Returns a ModifyValidatorBuilder correctly configured', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1492,7 +1492,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('second parameter is null.throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1505,7 +1505,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('second parameter does not modify the builder, so it does not create the new condition. Throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1518,7 +1518,7 @@ describe('ModifyValidatorBuilder class', () => {
         test('special case: validatorConfig.conditionConfig = null throws', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.field('Field1').requireText();
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1536,7 +1536,7 @@ describe('ModifyValidatorBuilder class', () => {
                 childBuilder.parentValue().requireText(),
                 'error message1',
                 'summary message1');
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1569,7 +1569,7 @@ describe('ModifyValidatorBuilder class', () => {
                     errorMessage: 'error message1',
                     summaryMessage: 'summary message1'
                  });
-            let formAdapter = new Publicify_ConfigFormAdapter(
+            let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
             let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1606,7 +1606,7 @@ describe('whenToEnable()', () => {
     test('with a known valueHostName, creates the WhenCondition with existing as the Then and the new one as the When', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
         let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1637,7 +1637,7 @@ describe('whenToEnable()', () => {
     test('existing validator has conditionConfig = null, throws. Special case', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
         let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
@@ -1651,7 +1651,7 @@ describe('whenToEnable()', () => {
     test('second parameter does not take any action, meaning it has no child condition for the When. Throws', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1').requireText();
-        let formAdapter = new Publicify_ConfigFormAdapter(
+        let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
         let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];

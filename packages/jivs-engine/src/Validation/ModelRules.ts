@@ -21,13 +21,13 @@
  * @module ValidationManager/ConcreteClasses
  */
 
-import { IManagerConfigBuilder, IValidationManagerConfigBuilder, IConfigFormAdapter } from "../Interfaces/ManagerConfigBuilder";
+import { IManagerConfigBuilder, IValidationManagerConfigBuilder, IFormConfigAdapter } from "../Interfaces/ManagerConfigBuilder";
 import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { assertNotNull } from "../Utilities/ErrorHandling";
 import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
-import { createConfigFormAdapter } from "../Builder/ConfigFormAdapter";
+import { createFormConfigAdapter } from "../Builder/FormConfigAdapter";
 
 
 /**
@@ -136,9 +136,9 @@ export abstract class RulesBase implements IRules
         return new ValidationManagerConfigBuilder(this.services);
     }
 
-    protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IConfigFormAdapter
+    protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
     {
-        return createConfigFormAdapter(source, options);
+        return createFormConfigAdapter(source, options);
     }
 
     /**
@@ -168,7 +168,7 @@ export abstract class RulesBase implements IRules
  * to add any form-specific rules to the model rules. 
  *    ```ts
  *    export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *        adaptToForm(adapter: IConfigFormAdapter, options?: RulesConfigOptions): void {
+ *        adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
  *            // add form-specific rules and adjustments such as to labels and error messages here
  *        }
  *    }
