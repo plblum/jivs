@@ -1,6 +1,10 @@
 * Change of valuehost.enabled or enabler condition result must fire the onvalueHostValidationState callback, except if the current validationstate is notattempted. The UI needs to update validator related features as that state changes.
 
-* Rename 'enabler' method, especially on the builder. builder.enabler(valuehost, condition) -> builder.enableWhen(valuehost, condition) or perhaps builder.input(valueHost).enableWhen(condition)
+* Rename 'enablerConfig' prperty to whenToEnableConfig
+* Rename secondValue to rightOperand, value, something else?
+
+
+* Rename conditional comparison equalToValue -> equalTo, equalTo -> equalToField. 
 
 
 * Possibly introduce callback that notifies a specific input that it needs to show itself and set focus. ValidationSummary calls ValidationManager.setFocusTo(valueHostName) and it fires this callback. All inputs can listen to that callback and take appropriate actions if they are the same valueHostName. This will allow clicks on error messages to set focus to the relevant input.
@@ -47,9 +51,7 @@
 
 * Log ValueHostsManager addValueHost, update/merge, discard.
 
-* Add logging to ValueHostConfigBuilder/Modifier.
-
-* Support modifier.apply() after conditions:  vm.startModifying().input('Field1').requiredText().apply() by passing Modifier class into a new subclass of FluentConditionCollector.
+* Add logging to ValueHostConfigBuilder.
 
 * Documentation: Section just listing all of the solutions/use cases built in, based on Code work section. 
 
@@ -64,8 +66,6 @@
   - usagePatternl10key
 - There can also be an error message, but its not used in output. Its probably just logged. The error code is the right way to map from an error to an error message.
   
-
-
 
 * Document setting activeCultureID each time you create a validation manager, especially on postback where we need to know the clientside value for cultureID
 * Document usage scenarios: 
@@ -88,9 +88,6 @@ The setExternalIssueFound will:
 - Run the tokenSupport values against the tokens of errorMessage and summaryErrorMessage
 - Run the MessageTokenResolverService against the remaining tokens
 - Retain the finalized errormessages
-
-
-* Shorthand fluent functions "eq" and "neq"
 
 
 * Expand ModelValidatorsValueHost to support validators at the model level.
@@ -125,8 +122,6 @@ used to handle collections which need unique paths per each item in the collecti
 * Deep dive doc into all things error messages
 
 * Document using conditions to find invalid matches, so there can be specific errors that tell the user exactly what to fix.
-
-* Should setExternalIssueFound be able to override a disabled validator when its error code matches? Suppose we let the user create validators on the UI just to show for business logic responses. They can be enabled=false full time, but when setExternalIssueFound matches to it, it acts like its enabled.
 
 
 * IValueHost implementations:
