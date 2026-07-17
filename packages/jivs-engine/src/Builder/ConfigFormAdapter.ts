@@ -306,17 +306,14 @@ export class ConfigFormAdapter
     public modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
     
     /**
-     * Modifies the configuration of a specific ValueHost by applying the given adjustments.
-     * Applies the specified adjustments to the ValueHostConfig.
-     * This does not modify anything that must be retained from business logic itself.
-     * It contains the dataType property which is a special case for changes.
+     * Updates just the ValueHostConfig.label property.
+     * It is a shorthand for `modify(valueHostName, { label: label })` but is more convenient 
+     * for the common case of just changing the label.
      * @param valueHostName - the name of the ValueHost to modify.
-     * @param dataType - the data type of the ValueHost to modify. It must support falling back to the 
-     * original dataType. (However, if the original is not supplied, it is used without verification.)
-     * @param adjustments - the adjustments to apply to the ValueHostConfig.
+     * @param label - the new label to apply to the ValueHostConfig.
      * @returns The IModifyFieldBuilder for further modifications.
      */
-    public modify(valueHostName: ValueHostName, dataType: string, adjustments?: AdapterValueHostConfig): IModifyFieldBuilder;    
+    public modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    
 
     /**
      * Modifies the configuration of a specific ValueHost by applying the given adjustments.
@@ -340,16 +337,16 @@ export class ConfigFormAdapter
         if (arg2 || arg3)
         {
             let configSource: AdapterValueHostConfig | undefined;
-            let dataType: string | undefined;
+            let label: string | undefined;
             if (typeof arg2 === 'string') {
-                dataType = arg2;
+                label = arg2;
                 configSource = arg3;
             } else {
                 configSource = arg2;
             }   
             // we have something to modify
-            if (dataType) {
-                this.replaceDataType(existingConfig, dataType);
+            if (label) {
+                existingConfig.label = label;
             }
             if (configSource) {
                 this.mergeConfigs(existingConfig, configSource);
@@ -357,17 +354,7 @@ export class ConfigFormAdapter
         }
         return new ModifyFieldBuilder(this.services, existingConfig);
     }
-    protected replaceDataType(valueHostConfig: ValueHostConfig, dataType: string): void
-    {
-        // Replace dataType only if unassigned or this value has a fallback
-        // matching the existing data type.
-        let existingDataType = valueHostConfig.dataType;
-        if (existingDataType && (dataType != existingDataType)) {
-            if (!this.services.lookupKeyFallbackService.canFallbackTo(dataType, existingDataType)) 
-                this.reportError(new Error(`Cannot replace dataType '${existingDataType}' with '${dataType}' as no fallback is available.`));
-        }
-        valueHostConfig.dataType = dataType;
-    }
+
     /**
      * Assigns properties on existingConfig from adjustments, except for those in donotReplaceTheseProperties.
      * This strategy allows the user to supply properties not formally defined in AdapterValueHostConfig,

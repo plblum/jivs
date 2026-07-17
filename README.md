@@ -2352,7 +2352,7 @@ class ConfigFormAdapter extends ValidationManagerConfigBuilder
 
     modify(valueHostName: ValueHostName): IModifyFieldBuilder;
     modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
-    modify(valueHostName: ValueHostName, dataType: string, adjustments?: AdapterValueHostConfig): IModifyFieldBuilder;    
+    modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    
    
     whenToEnable(valueHostName, builderFn): IManagerConfigBuilder;
 }
@@ -2395,7 +2395,19 @@ Let’s go through these types.
     ```  
     
 - `modify()` provides access to an existing ValueHost. Specify the value host name and optionally an object
-that includes label, group, enabling tools, parsers, and more. It chains to supply these methods:
+that includes label, group, enabling tools, parsers, and more. 
+    ```ts
+    adapter.modify('Field1');
+    adapter.modify('Field1', 'New Label');  // update the label
+    adapter.modify('Field1', {
+        label: 'New Label',
+        group: 'group name',
+        parserLookupKey: 'MyParser'
+    });
+    ```
+
+    It chains to supply these methods:
+
     + `validator()` - Identifies an existing validator to modify. Returns functions to combine existing conditional rules with your own.
         ```ts
         validator(conditionType: string): IModifyValidatorBuilder;
@@ -2414,7 +2426,8 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
             severity: ValidationSeverity.Severe
         });
         ```
-        `validator()` returns another object with these methods to further modify the validator.
+        `validator()` returns another object with these methods to further modify the validator:
+
         + `and()` - combine a condition with an existing validator's condition using an AND operator.
             ```ts
             // from the business rules
@@ -2461,7 +2474,7 @@ that includes label, group, enabling tools, parsers, and more. It chains to supp
         adapter.modify('Field1').refineDataType('Email');   // assuming Email is setup in LookupFallbackService
         adapter.modify('Field1').refineDataType(LookupKey.Number); // !!ERROR No fallback from number to string
         ```
-    ```
+
 #### Chaining Validators using the Builder API
 The `builder.field()` function allows appending validators. Just use the name of the validator without the "Condition" suffix, and in camelCase.
 ```ts

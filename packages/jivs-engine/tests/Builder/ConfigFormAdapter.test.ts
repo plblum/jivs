@@ -53,10 +53,6 @@ class Publicify_ConfigFormAdapter extends ConfigFormAdapter
         this.favorUIMessages();
     }
     public favorUIMessagesCount?: number;   // favorUIMessages() is called once in constructor, prior to this getting initialized
-    public publicify_replaceDataType(valueHostConfig: ValueHostConfig, dataType: string): void
-    {
-        this.replaceDataType(valueHostConfig, dataType);
-    }
 
     public publicify_mergeConfigs(existingConfig: ValueHostConfig, adjustments: AdapterValueHostConfig): void
     {
@@ -864,71 +860,20 @@ describe('modify()', () => {
         expect(loggerService.findMessage('ValueHost name "Field2" is not defined')).toBeTruthy();
     });
 
-    // valid valueHostName, second parameter is a dataType, 'String'. Third parameter is null. Returns ModifyFieldBuilder with the existing config, plus the dataType property from the second parameter
-    test('valid valueHostName, second parameter is a dataType, "String". Third parameter is null. Returns ModifyFieldBuilder with the existing config, plus the dataType property from the second parameter', () => {
+    test('valid valueHostName, second parameter is a label. Returns ModifyFieldBuilder with the existing config, plus the label property from the second parameter', () => {
         let builder = createConfigBuilder(createVMConfig());
         builder.field('Field1');
         let formAdapter = new Publicify_ConfigFormAdapter(
             builder.handOffState());
-        let modifyBuilder = formAdapter.modify('Field1', LookupKey.String, null!);
+        let modifyBuilder = formAdapter.modify('Field1', 'NewLabel');
         let expectedConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [],
-            dataType: LookupKey.String
-        };
-        expect(modifyBuilder).not.toBeNull();
-        expect(modifyBuilder!.getConfig()).toEqual(expectedConfig);
-    });
-    // valid valueHostName, second parameter is 'NewString' and the fallback service is set up to recognize 'NewString' as a valid data type. Third parameter is null. Returns ModifyFieldBuilder with the existing config, plus the dataType property from the second parameter
-    test('valid valueHostName, second parameter is "NewString" and the fallback service is set up to recognize "NewString" as a valid data type. Third parameter is omitted. Returns ModifyFieldBuilder with the existing config, plus the dataType property from the second parameter', () => {
-        let builder = createConfigBuilder(createVMConfig());
-        builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
-            builder.handOffState());
-        setupFallbackService(formAdapter.services);
-        let modifyBuilder = formAdapter.modify('Field1', 'NewString');
-        let expectedConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: [],
-            dataType: 'NewString'
-        };
-        expect(modifyBuilder).not.toBeNull();
-        expect(modifyBuilder!.getConfig()).toEqual(expectedConfig);
-    });
-    test('same as last but has an object in the 3rd parameter with 2 valid properties. Returns ModifyFieldBuilder with the existing config, plus the dataType property from the second parameter, plus the 2 valid properties from the 3rd parameter', () => {
-        let builder = createConfigBuilder(createVMConfig());
-        builder.field('Field1');
-        let formAdapter = new Publicify_ConfigFormAdapter(
-            builder.handOffState());
-        setupFallbackService(formAdapter.services);
-        let modifyBuilder = formAdapter.modify('Field1', 'NewString', {
-            initialEnabled: false,
-            label: 'NewLabel'
-        });
-        let expectedConfig: FieldValueHostConfig = {
-            valueHostType: ValueHostType.Field,
-            name: 'Field1',
-            validatorConfigs: [],
-            dataType: 'NewString',
-            initialEnabled: false,
             label: 'NewLabel'
         };
         expect(modifyBuilder).not.toBeNull();
         expect(modifyBuilder!.getConfig()).toEqual(expectedConfig);
-    });
-    // valueHostName is valid, second parameter is a dataType that is not recognized by the fallback service. Third parameter is omitted. Throws error and records an entry in the loggerService
-    test('valueHostName is valid, second parameter is a dataType that is not recognized by the fallback service. Third parameter is omitted. Throws error and records an entry in the loggerService', () => {
-        let builder = createConfigBuilder(createVMConfig());
-        builder.field('Field1', LookupKey.String);
-        let formAdapter = new Publicify_ConfigFormAdapter(
-            builder.handOffState());
-        expect(() => {
-            formAdapter.modify('Field1', 'NewUnknownDataType');
-        }).toThrow('Cannot replace dataType');
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Cannot replace dataType')).toBeTruthy();
     });
     
 });
