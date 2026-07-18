@@ -1,5 +1,4 @@
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
@@ -9,22 +8,16 @@ import {
 } from "../../src/Builder/ValueHostConfigBuilder";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
-import { ValidatorConfig } from "../../src/Interfaces/Validator";
-import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 
-import { IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
-import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { FluentFieldParameters } from "../../src/Interfaces/Fluent";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -34,7 +27,7 @@ function createVMConfig(): ValidationManagerConfig {
     return vmConfig;
 }
 
-class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsManagerConfig>
+class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValidationManagerConfig>
 {
     protected createValueHostBuilder(): ValueHostConfigBuilder {
         return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
@@ -50,7 +43,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValueHostsManagerConfig
+    public get publicify_baseConfig(): ValidationManagerConfig
     {
         return this.baseConfig;
     }
@@ -101,7 +94,7 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValueHostsManagerConfig
+    public get publicify_baseConfig(): ValidationManagerConfig
     {
         return this.baseConfig;
     }
@@ -494,7 +487,7 @@ describe('build(vmConfig).static()', () => {
     });
 });
 describe('build(vmConfig).calc', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
         return 1;
     }
     test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {

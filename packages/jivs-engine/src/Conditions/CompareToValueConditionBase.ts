@@ -5,13 +5,13 @@
  * @module Conditions/AbstractClasses/CompareToValueConditionBase
  */
 
-import { IValueHostsManager } from './../Interfaces/ValueHostsManager';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 /**
  * ConditionConfig for CompareToValueConditionBase.
@@ -48,23 +48,23 @@ export interface CompareToValueConditionBaseConfig extends OneValueConditionBase
  */
 export abstract class CompareToValueConditionBase<TConfig extends CompareToValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
         {
-            this.logNothingToEvaluate('value', valueHostsManager.services);
+            this.logNothingToEvaluate('value', validationManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
         
         if (this.config.secondValue == null)    // null/undefined
         {
-            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
+            this.logNothingToEvaluate('secondValue', validationManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
 
         let valueDetails = this.tryConversion(value, valueHost.getDataType(),
-            this.config.conversionLookupKey, valueHostsManager.services);
+            this.config.conversionLookupKey, validationManager.services);
         if (valueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
@@ -72,14 +72,14 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
         // !!! However, this isn't ideal. We should offer config.secondValueLookupKey        
         
         let secondValueDetails = this.tryConversion(this.config.secondValue, null,   
-            this.config.secondConversionLookupKey, valueHostsManager.services);
+            this.config.secondConversionLookupKey, validationManager.services);
         if (secondValueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
-        let comparison = valueHostsManager.services.dataTypeComparerService.compare(
+        let comparison = validationManager.services.dataTypeComparerService.compare(
             valueDetails.value, secondValueDetails.value, valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
+            this.logTypeMismatch(validationManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
 
             return ConditionEvaluateResult.Undetermined;
         }
@@ -88,9 +88,9 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
+        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
         let secondValue = this.config.secondValue;
         
         list.push({

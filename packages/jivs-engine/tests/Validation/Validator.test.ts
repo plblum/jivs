@@ -30,7 +30,7 @@ import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHo
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 
 // subclass of Validator to expose many of its protected members so they
@@ -159,10 +159,10 @@ describe('Validator.constructor and initial property values', () => {
         expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
-    test('ValueHostsManager used with Validator throws when trying to access ValidationManager or Services', () => {
+    test('ValidationManager used with Validator throws when trying to access ValidationManager or Services', () => {
         let services = createValidationServicesForTesting();
         let builder = new ValueHostsManagerConfigBuilder(services);
-        let vm = new ValueHostsManager(builder);
+        let vm = new ValidationManager(builder);
         let vh = new MockFieldValueHost(vm, '', '',);
         let testItem = new PublicifiedValidator(vh, { conditionConfig: { conditionType: 'Test' } });
 

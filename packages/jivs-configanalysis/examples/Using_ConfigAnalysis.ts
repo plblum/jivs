@@ -4,11 +4,10 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
 import { FormRulesBase } from '@plblum/jivs-engine/build/Validation/ModelRules';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
-import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { RulesConfigOptions } from '@plblum/jivs-engine/build/Interfaces/ModelRules';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 
 import { createValidationServices } from './Config_example_common_code';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
@@ -87,7 +86,7 @@ export class DateRangeFormRules extends FormRulesBase
         builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);        
     }
     // For our DiffDays CalcValueHost
-    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(),
             null, LookupKey.TotalDays);

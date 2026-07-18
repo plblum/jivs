@@ -22,7 +22,7 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { ValidatorBuilder } from "@plblum/jivs-engine/build/Builder/ValidatorBuilder";
 import { ConditionBuilder } from "@plblum/jivs-engine/build/Builder/ConditionBuilder";
@@ -44,13 +44,13 @@ export interface EvenNumberConditionConfig extends OneValueConditionBaseConfig
  */
 export class EvenNumberCondition extends OneValueConditionBase<EvenNumberConditionConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
         let value = valueHost.getValue();
         //#region  --- start optional lines
         // Give it the ability to get a number from an object that has a converter for a number.
         if (typeof value !== 'number') {
-            value = valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
+            value = validationManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
             if (typeof value !== 'number')
                 return ConditionEvaluateResult.Undetermined;
         }

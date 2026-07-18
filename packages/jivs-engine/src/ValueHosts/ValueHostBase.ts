@@ -6,7 +6,7 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone, valueForLog } from '../Utilities/Utilities';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import type { IValidationManager } from '../Interfaces/ValidationManager';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIDisposable } from '../Interfaces/General_Purpose';
@@ -19,25 +19,25 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  */
 export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostInstanceState>
     implements IValueHost {
-    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
-        assertNotNull(valueHostsManager, 'valueHostsManager');
+    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
+        assertNotNull(validationManager, 'validationManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
-        this._valueHostsManager = new WeakRef<IValueHostsManager>(valueHostsManager);
+        this._validationManager = new WeakRef<IValidationManager>(validationManager);
         this._config = config;
         this._instanceState = state;
     }
-    //#region IValueHostsManagerAccessor
-    public get valueHostsManager(): IValueHostsManager {
-        assertWeakRefExists(this._valueHostsManager, 'ValueHostManager disposed');
-        return this._valueHostsManager.deref()!;
+    //#region IValidationManagerAccessor
+    public get validationManager(): IValidationManager {
+        assertWeakRefExists(this._validationManager, 'ValueHostManager disposed');
+        return this._validationManager.deref()!;
     }
-    private readonly _valueHostsManager: WeakRef<IValueHostsManager>;
+    private readonly _validationManager: WeakRef<IValidationManager>;
 
-    //#endregion IValueHostsManagerAccessor
+    //#endregion IValidationManagerAccessor
     
     protected get services(): IValidationServices {
-        return this.valueHostsManager.services;
+        return this.validationManager.services;
     }
     /**
      * Always supplied by constructor. Treat it as immutable.
@@ -60,7 +60,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
         this._instanceState = undefined!;
-        (this._valueHostsManager as any) = undefined!;
+        (this._validationManager as any) = undefined!;
         (this._logger as any) = undefined!;
     }
 
@@ -81,7 +81,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
+     * for which they will transfer a value, via ValidationManager.getValueHost(this name)
      */
     public getName(): valueHostName {
         return this.config.name;
@@ -187,7 +187,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 
     protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void {
         if (changed && (!options || !options.skipValueChangedCallback))
-            toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);
+            toIValueHostCallbacks(this.validationManager)?.onValueChanged?.(this, oldValue);
     }
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
@@ -249,7 +249,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             try {
                 // NOTE: The result of the enabler does not change any state of the valueHost,
                 // unlike setEnabled(false) which clears validation.
-                let result = enabler.evaluate(this, this.valueHostsManager);
+                let result = enabler.evaluate(this, this.validationManager);
                 if (result === ConditionEvaluateResult.Match)
                     return true;
                 if (result === ConditionEvaluateResult.NoMatch)
@@ -348,7 +348,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         let updated = updater(toUpdate);
         if (!deepEquals(this.instanceState, updated)) {
             this._instanceState = updated;
-            this.valueHostsManager.notifyValueHostInstanceStateChanged(source, updated);
+            this.validationManager.notifyValueHostInstanceStateChanged(source, updated);
             return true;
         }
         return false;
@@ -387,7 +387,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
+    public abstract create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.

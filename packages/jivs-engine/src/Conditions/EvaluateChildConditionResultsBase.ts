@@ -9,7 +9,7 @@
 
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { ConditionWithChildrenBase, ConditionWithChildrenBaseConfig } from './ConditionWithChildrenBase';
 
 /**
@@ -37,17 +37,17 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
     /**
      * 
      * @param valueHost - this is passed down to the child ValueHosts
-     * @param valueHostsManager 
+     * @param validationManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let conditions = this.conditions(valueHostsManager);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        let conditions = this.conditions(validationManager);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
-        return this.evaluateChildren(conditions, valueHost, valueHostsManager);
+        return this.evaluateChildren(conditions, valueHost, validationManager);
     }
 
-    protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
+    protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult;
 
     /**
      * Utility for EvaluateChildren to apply the Config.treatUndeterminedAs

@@ -6,7 +6,7 @@ import {
 import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 
 describe('ConditionFactory.create', () => {
     test('create with registered Condition creates the correct instance', () => {
@@ -70,7 +70,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'Normal'};
         conditionType: string = 'Normal';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;
@@ -79,7 +79,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'LazyLoad'};
         conditionType: string = 'LazyLoad';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;

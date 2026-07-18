@@ -7,7 +7,7 @@
 import { LookupKey } from "../DataTypes/LookupKeys";
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostsManager } from "../Interfaces/ValueHostsManager";
+import { IValidationManager } from "../Interfaces/ValidationManager";
 import { OneValueConditionBase, OneValueConditionBaseConfig } from "./OneValueConditionBase";
 
 /**
@@ -26,24 +26,24 @@ export abstract class NumberConditionBase<TConditionConfig extends NumberConditi
     constructor(config: TConditionConfig) {
         super(config);
     }
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
         let value = valueHost.getValue();
         if (typeof value !== 'number') {
-            let result = valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
+            let result = validationManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
             if (result.value === undefined || typeof result.value !== 'number')
                 return ConditionEvaluateResult.Undetermined;
             value = result.value;
         }
 
-        return this.evaluateNumber(value, valueHost, valueHostsManager);
+        return this.evaluateNumber(value, valueHost, validationManager);
     }
 
     /**
      * Evaluate the value as its already determined to be a number.
      * @param value 
      * @param valueHost 
-     * @param valueHostsManager 
+     * @param validationManager 
      */
-    protected abstract evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    protected abstract evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 }

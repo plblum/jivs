@@ -2,7 +2,7 @@
  * Interfaces and types for ConfigAnalysis class.
  * @module ConfigAnalysis/Types
  */
-import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
@@ -45,7 +45,7 @@ export interface IConfigAnalysis {
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
+    analyze(config: ValidationManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder object
      * @param builder 

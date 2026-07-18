@@ -2,7 +2,7 @@ import { FieldValueHostGenerator } from "../../src/ValueHosts/FieldValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -19,8 +19,8 @@ interface IFactoryTestsValueHostInstanceState extends ValueHostInstanceState
 
 class FactoryTestsValueHost extends ValueHostBase<ValueHostConfig, IFactoryTestsValueHostInstanceState>
 {
-    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState) {
+        super(validationManager, config, state);
     }
 }
 
@@ -29,8 +29,8 @@ class FactoryTestsValueHostGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === FactoryTestGeneratorType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState): IValueHost {
-        return new FactoryTestsValueHost(valueHostsManager, config, state);
+    public create(validationManager : IValidationManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState): IValueHost {
+        return new FactoryTestsValueHost(validationManager, config, state);
     }
     public cleanupInstanceState(state: IFactoryTestsValueHostInstanceState, config: ValueHostConfig): void {
         state.Counter = 0;
@@ -108,7 +108,7 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/valueHostsManager/);
+        expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/validationManager/);
         expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/config/);
         expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
     });

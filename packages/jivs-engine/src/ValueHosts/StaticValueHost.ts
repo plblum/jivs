@@ -6,7 +6,7 @@ import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHost
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { CalcValueHost, hasICalcValueHostSpecificMembers } from './CalcValueHost';
 import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
@@ -46,9 +46,9 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
 export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostInstanceState>
     implements IStaticValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
+    constructor(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
     {
-        super(valueHostsManager, config, state);
+        super(validationManager, config, state);
     }
 }
 
@@ -67,8 +67,8 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
             return true;
         return false;
     }
-    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
-        return new StaticValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
+        return new StaticValueHost(validationManager, config, state);
     }
 
     public cleanupInstanceState(state: StaticValueHostInstanceState, config: StaticValueHostConfig): void {

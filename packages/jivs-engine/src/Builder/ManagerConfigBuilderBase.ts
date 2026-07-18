@@ -22,14 +22,15 @@ import { IValidationServices } from '../Interfaces/ValidationServices';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
 import { CodingError, assertFunction, assertNotNull } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { deepClone, isPlainObject } from '../Utilities/Utilities';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
+
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
+import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
+import { ValidationManager } from '../Validation/ValidationManager';
 
 /**
  * The ValueHostConfig object configures one ValueHost and its validators. 
@@ -83,7 +84,7 @@ import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from "./Val
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * ```
  */
-export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
+export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig>
     implements IManagerConfigBuilder<T> {
 
     constructor(services: IValidationServices)
@@ -177,7 +178,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     }
 
     /**
-     * A ValueHostManagerConfig that is getting overridden ValueHost configurations.
+     * A ValidationManagerConfig that is getting overridden ValueHost configurations.
      * Each are created by the addOverride() function.
      * They retain a reference to services.
      */
@@ -242,7 +243,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     public snapshot(): T {
         this.assertNotDisposed();
         
-        let destination = ValueHostsManager.safeConfigClone(this.baseConfig) as T;
+        let destination = ValidationManager.safeConfigClone(this.baseConfig) as T;
         let vhms = destination.services.valueHostConfigMergeService;
 
         this.overriddenValueHostConfigs.forEach((o) => {
@@ -335,7 +336,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     //#region fluent for creating ValueHosts
     /**
-     * Utility to use the Fluent system to add a ValueHostConfig to the ValueHostsManagerConfig.
+     * Utility to use the Fluent system to add a ValueHostConfig to the ValidationManagerConfig.
      * @param valueHostType 
      * @param arg1 
      * @param arg2 
@@ -489,7 +490,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
  * Each private storage field in ManagerConfigBuilderBase is stored here,
  * so this object can be transferred to companion builders who will do additional work.
  */
-export class BuilderState<T extends ValueHostsManagerConfig>
+export class BuilderState<T extends ValidationManagerConfig>
 {
     constructor(baseConfig: T) {
         this.baseConfig = baseConfig;

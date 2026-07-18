@@ -1,11 +1,11 @@
-import { ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
+import { ValidationManagerConfig, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
 
-function createVMConfig(): ValueHostsManagerConfig {
-    let vmConfig: ValueHostsManagerConfig = {
+function createVMConfig(): ValidationManagerConfig {
+    let vmConfig: ValidationManagerConfig = {
         services: new MockValidationServices(false, true),
         valueHostConfigs: []
     };
@@ -13,7 +13,7 @@ function createVMConfig(): ValueHostsManagerConfig {
 }
 class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBuilder
 {
-    public get publicify_baseConfig(): ValueHostsManagerConfig {
+    public get publicify_baseConfig(): ValidationManagerConfig {
         return this.baseConfig;
     }
 
@@ -23,15 +23,15 @@ class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBu
 }
 describe('instance state properties', () => {
     test('savedInstanceState', () => {
-        const initialState: ValueHostsManagerInstanceState = {
+        const initialState: ValidationManagerInstanceState = {
             stateChangeCounter: 10
         };
-        const replacementState: ValueHostsManagerInstanceState = {
+        const replacementState: ValidationManagerInstanceState = {
             stateChangeCounter: 20,
         };
 
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             savedInstanceState: initialState
@@ -48,7 +48,7 @@ describe('instance state properties', () => {
         const replacementState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'B' }];
 
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             savedValueHostInstanceStates: initialState
@@ -72,7 +72,7 @@ describe('Callbacks get and set', () => {
             
         }
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValueHostInstanceStateChanged: handler
@@ -94,7 +94,7 @@ describe('Callbacks get and set', () => {
             
         }
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValueChanged: handler
@@ -117,7 +117,7 @@ describe('Callbacks get and set', () => {
             
         }
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onTextValueChanged: handler
@@ -132,16 +132,16 @@ describe('Callbacks get and set', () => {
     
     
     test('onInstanceStateChanged', () => {
-        function handler(ValueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
+        function handler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
         {
             
         }
-        function replacementHandler(ValueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
+        function replacementHandler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
         {
             
         }
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onInstanceStateChanged: handler
@@ -154,16 +154,16 @@ describe('Callbacks get and set', () => {
         expect(result.onInstanceStateChanged).toBe(replacementHandler);
     });
     test('onConfigChanged', () => {
-        function handler(ValueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
+        function handler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
         {
             
         }
-        function replacementHandler(ValueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
+        function replacementHandler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
         {
             
         }
         let services = new MockValidationServices(false, false);
-        let vmConfig: ValueHostsManagerConfig = {
+        let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onConfigChanged: handler

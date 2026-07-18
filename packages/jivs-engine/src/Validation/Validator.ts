@@ -26,7 +26,7 @@ import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase'
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { toIValidationManagerAccessor } from '../Interfaces/ValidationManager';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
 import { ValidationManager } from './ValidationManager';
@@ -81,14 +81,14 @@ export class Validator implements IValidator {
     }
 
     protected get validationManager(): IValidationManager {
-        let vm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
+        let vm = toIValidationManagerAccessor(this.valueHost)?.validationManager;
         if (vm) {
             if (vm instanceof ValidationManager || toIValidationManager(vm))
                 return vm as IValidationManager;
-            throw new CodingError('ValueHost.services must contain IValidationManager');
+            throw new CodingError('ValueHost.validationManager must contain IValidationManager');
         }
         /* istanbul ignore next */
-        throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
+        throw new CodingError('ValueHost must implement IValidationManagerAccessor');
     }
     /**
      * Always supplied by constructor. Treat it as immutable.

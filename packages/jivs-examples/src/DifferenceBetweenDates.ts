@@ -12,7 +12,6 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
@@ -48,7 +47,7 @@ export class DateRangeFormRules extends FormRulesBase {
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
-    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) : SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(),
             null, LookupKey.TotalDays);

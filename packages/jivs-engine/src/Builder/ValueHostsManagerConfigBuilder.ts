@@ -6,10 +6,10 @@
 import { ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
 import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
-import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../Interfaces/ValueHost";
 import { IValueHostsManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 import { IValidationServices } from "../Interfaces/ValidationServices";
+import { ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState, ValidationManagerInstanceStateChangedHandler } from "../Interfaces/ValidationManager";
 
 /**
  * For populating the ValueHostsManagerConfig and ValidationManagerConfig's ValueHostsConfig
@@ -42,7 +42,7 @@ import { IValidationServices } from "../Interfaces/ValidationServices";
  * let vm = new ValidationManager(vmConfig);
  * ```
  */
-export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig> extends ManagerConfigBuilderBase<T>
+export class ValueHostsManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig> extends ManagerConfigBuilderBase<T>
     implements IValueHostsManagerConfigBuilder<T>
 {
 /**
@@ -62,16 +62,16 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
     //#region InstanceState
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedInstanceState
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
      */
-    public get savedInstanceState(): ValueHostsManagerInstanceState | null {
+    public get savedInstanceState(): ValidationManagerInstanceState | null {
         return this.baseConfig.savedInstanceState ?? null;
     }
-    public set savedInstanceState(value: ValueHostsManagerInstanceState | null) {
+    public set savedInstanceState(value: ValidationManagerInstanceState | null) {
         this.baseConfig.savedInstanceState = value;
     }
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
      */
     public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
         return this.baseConfig.savedValueHostInstanceStates ?? null;
@@ -81,7 +81,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
     //#endregion InstanceState
 
-    //#region IValueHostsManagerCallbacks
+    //#region IValidationManagerCallbacks
 
     /**
      * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
@@ -114,23 +114,23 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!IValueHostsManagerCallbacks.onInstanceStateChanged
+     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onInstanceStateChanged
      */
 
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
         return this.baseConfig.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(value: ValueHostsManagerInstanceStateChangedHandler | null) {
+    public set onInstanceStateChanged(value: ValidationManagerInstanceStateChangedHandler | null) {
         this.baseConfig.onInstanceStateChanged = value;
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!IValueHostsManagerCallbacks.onConfigChanged
+     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onConfigChanged
      */
-    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
+    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
         return this.baseConfig.onConfigChanged ?? null;
     }
-    public set onConfigChanged(value: ValueHostsManagerConfigChangedHandler | null) {
+    public set onConfigChanged(value: ValidationManagerConfigChangedHandler | null) {
         this.baseConfig.onConfigChanged = value;
     }
   

@@ -7,7 +7,7 @@ import { CodingError } from '../Utilities/ErrorHandling';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { ConditionBase } from './ConditionBase';
 
 
@@ -21,7 +21,7 @@ export interface OneValueConditionBaseConfig extends ConditionConfig {
      * to simply pass in the value.
      * Leave this null to use that valueHost object.
      * 
-     * Assign this to a ValueHostName if you want to have it looked up in the ValueHostsManager.getValueHost().
+     * Assign this to a ValueHostName if you want to have it looked up in the ValidationManager.getValueHost().
      * 
      * Typically leave Validator.ConditionConfig.valueHostName null
      * because Condition.evaluate() is passed the correct valueHost.
@@ -52,29 +52,29 @@ export abstract class OneValueConditionBase<TConditionConfig extends OneValueCon
      * and if not, supplying one identified by ConditionConfig.valueHostName.
      * ConditionConfig.valueHostName takes precidence over the valueHost passed in.
      * @param valueHost 
-     * @param valueHostsManager 
+     * @param validationManager 
      * @returns 
      */
-    protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): IValueHost   // IValueHost
+    protected ensurePrimaryValueHost(valueHost: IValueHost | null, validationManager: IValidationManager): IValueHost   // IValueHost
     {
         if (this.config.valueHostName) {
-            valueHost = this.getValueHost(this.config.valueHostName, valueHostsManager);
+            valueHost = this.getValueHost(this.config.valueHostName, validationManager);
             if (!valueHost) {
-                this.throwInvalidPropertyData('valueHostName', 'is unknown', valueHostsManager.services);
+                this.throwInvalidPropertyData('valueHostName', 'is unknown', validationManager.services);
             }
         }
         if (valueHost)
             return valueHost;
         let error = new CodingError('Missing value for valueHostName.');
-        this.logger(valueHostsManager.services).error(error);
+        this.logger(validationManager.services).error(error);
         // istanbul ignore next // never get here because logError throws, but TSC doesn't know that
         throw error;
     }
-    protected getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
-        return valueHostsManager.getValueHost(valueHostName);
+    protected getValueHost(valueHostName: ValueHostName, validationManager: IValidationManager): IValueHost | null {
+        return validationManager.getValueHost(valueHostName);
     }
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
+    public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void {
         if (this.config.valueHostName)
             collection.add(this.config.valueHostName);
     }

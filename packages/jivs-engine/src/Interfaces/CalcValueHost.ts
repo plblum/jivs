@@ -24,7 +24,7 @@
  * that you have a builder object, and that is provided so long as you are writing configuration 
  * code using the ModelRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
  * ```ts
- * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
+ * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager)
  * : SimpleValueType
  * {
  *      let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
@@ -48,12 +48,12 @@
 import { LookupKey } from "../DataTypes/LookupKeys";
 import { SimpleValueType } from "./DataTypeConverterService";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostsManager";
+import { IValidationManager } from "./ValidationManager";
 
 /**
  * Function definition for calculation functions used by CalcValueHost
  */
-export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => SimpleValueType;
+export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => SimpleValueType;
 
 /**
  * Structure of CalcValueHost

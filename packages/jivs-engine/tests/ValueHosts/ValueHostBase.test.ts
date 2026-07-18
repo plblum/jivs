@@ -6,7 +6,7 @@ import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValueHostsManager, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
@@ -19,7 +19,6 @@ import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHa
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
-import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
 
 
@@ -33,8 +32,8 @@ interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
  */
 class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostInstanceState>
 {
-    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
+        super(validationManager, config, state);
     }
     public get exposeServices(): IValidationServices {
         return this.services;
@@ -67,8 +66,8 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === testValueHostType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
-        return new PublicifiedValueHostBase(valueHostsManager, config, state);
+    public create(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
+        return new PublicifiedValueHostBase(validationManager, config, state);
     }
     public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
         state.counter = 0;
@@ -156,7 +155,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -169,7 +168,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.exposeConfig).toBe(vhConfig);
         expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.exposeState.enabled).toBeUndefined();
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () => {
@@ -222,7 +221,7 @@ describe('constructor and resulting property values', () => {
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
-            config, state)).toThrow(/valueHostsManager/);
+            config, state)).toThrow(/validationManager/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
             null!, state)).toThrow(/config/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
@@ -779,7 +778,7 @@ describe('isEnabled and related enabled', () => {
     ): {
         vh: PublicifiedValueHostBase,
         logger: CapturingLogger,
-        vm: ValueHostsManager<ValueHostsManagerInstanceState>
+        vm: ValidationManager<ValidationManagerInstanceState>
     } {
         let services = new MockValidationServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
@@ -802,7 +801,7 @@ describe('isEnabled and related enabled', () => {
         builder.savedValueHostInstanceStates = [];
         builder.savedValueHostInstanceStates.push(state);
 
-        let vm = new ValueHostsManager(builder);
+        let vm = new ValidationManager(builder);
 
         return {
             vm: vm,

@@ -464,7 +464,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -1620,7 +1620,7 @@ function validateWithAsyncConditions(
     let handlerCount = 0;
     let onValidateHandler: ValueHostValidationStateChangedHandler =
         (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => {
-            let vm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValidationManager;
+            let vm = (valueHost as TestValidatorsValueHost).validationManager as IValidationManager;
             let evr = expectedValidateResults[handlerCount];
             expect(snapshot.isValid).toBe(evr.status !== ValidationStatus.Invalid);
             expect(snapshot.issuesFound).toEqual(evr.issuesFound);
@@ -2729,7 +2729,7 @@ describe('toIValidatorsValueHostBase function', () => {
         private hostTextValue: string | undefined = undefined;
         private hostEnabled: boolean = true;
 
-        valueHostsManager: IValidationManager = {} as IValidationManager;
+        validationManager: IValidationManager = {} as IValidationManager;
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
         }

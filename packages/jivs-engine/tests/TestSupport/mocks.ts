@@ -3,13 +3,26 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import type {
+    IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig,
+    ValueChangedHandler, ValueHostInstanceStateChangedHandler
+} from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IFieldValueHost, TextValueChangedHandler, FieldValueHostConfig, FieldValueHostInstanceState } from "../../src/Interfaces/FieldValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
+import {
+    IFieldValueHost, TextValueChangedHandler,
+    FieldValueHostConfig, FieldValueHostInstanceState
+} from "../../src/Interfaces/FieldValueHost";
+import {
+    ValidateOptions, ValueHostValidateResult,
+    ValidationStatus, IssueFound, ValidationState
+} from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
-import { IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
+import {
+    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig,
+    ValidationManagerConfigChangedHandler,
+    ValidationManagerInstanceState, ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
+} from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -31,7 +44,6 @@ import { ValueHostValidationState, ValueHostValidationStateChangedHandler } from
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import { IValueHostsManager, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
@@ -45,7 +57,7 @@ import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserServi
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../../src/Interfaces/ConfigMergeService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
@@ -53,6 +65,7 @@ import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
 import { IBuildersFactory } from "../../src/Interfaces/BuildersFactory";
 import { BuildersFactory } from "../../src/Services/BuildersFactory";
+
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -64,16 +77,16 @@ export function createMockValidationManagerForMessageTokenResolver(registerLooku
 
 export class MockValueHost implements IValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, name: string, dataTypeLookupKey: string, label?: string)
+    constructor(validationManager: IValidationManager, name: string, dataTypeLookupKey: string, label?: string)
     {
-        this._valueHostsManager = valueHostsManager;
+        this._validationManager = validationManager;
         this._name = name;
         this._dataTypeLookupKey = dataTypeLookupKey;
         this._label = label ?? name;
         this._value = undefined;
     }
     dispose(): void {}
-    _valueHostsManager: IValueHostsManager;
+    _validationManager: IValidationManager;
     _name: string;
     _label: string;
     _value: any;
@@ -89,8 +102,8 @@ export class MockValueHost implements IValueHost
         }
     }
 
-    public get valueHostsManager(): IValueHostsManager {
-        return this._valueHostsManager;
+    public get validationManager(): IValidationManager {
+        return this._validationManager;
     }
     getName(): string {
         return this._name;
@@ -532,7 +545,7 @@ export class MockValidationServices implements IValidationServices
  * MockValidationManager limited to implementing support for 
  * child ValueHosts.
  */
-export class MockValidationManager extends ValueHostsManager<ValidationManagerInstanceState>
+export class MockValidationManager extends ValidationManager<ValidationManagerInstanceState>
     implements IValidationManager, IValidationManagerCallbacks
 {
     constructor(services: IValidationServices)
@@ -564,7 +577,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         return null;
     }
 
-    asyncProcessing?: boolean | undefined;
+//    asyncProcessing?: boolean | undefined;
 
     public addMockValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {
@@ -611,9 +624,9 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
         throw new Error("Method not implemented.");
     }
 
-    isValid: boolean = true;        
+    // isValid: boolean = true;        
 
-    doNotSave: boolean = false;
+    // doNotSave: boolean = false;
     addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
@@ -639,15 +652,15 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
 
     }
     
-    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
+    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
         return this.config.onConfigChanged ?? null;
     }
 
 
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
         return this.config.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
+    public set onInstanceStateChanged(fn: ValidationManagerInstanceStateChangedHandler) {
         this.config.onInstanceStateChanged = fn;
     }
 

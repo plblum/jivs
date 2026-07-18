@@ -11,7 +11,7 @@ import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
 import { FieldValueHostGenerator } from './FieldValueHost';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
-import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import type { IValidationManager } from '../Interfaces/ValidationManager';
 import { StaticValueHostGenerator } from './StaticValueHost';
 import { ValueHostType, type IValueHostFactory, type IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';
@@ -22,12 +22,12 @@ import { CalcValueHostGenerator } from './CalcValueHost';
 export class ValueHostFactory implements IValueHostFactory {
     /**
      * Creates the instance.
-     * @param valueHostsManager 
+     * @param validationManager 
      * @param config 
      * @param state 
      */
-    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-        assertNotNull(valueHostsManager, 'valueHostsManager');
+    public create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
+        assertNotNull(validationManager, 'validationManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
         let generator = this.resolveConfig(config);
@@ -36,7 +36,7 @@ export class ValueHostFactory implements IValueHostFactory {
         // if (!state && config.InitialValue !== undefined) {
         //     state = generator.createInstanceState(config);
         // }        
-        return generator.create(valueHostsManager, config, state);
+        return generator.create(validationManager, config, state);
     }
     /**
      * Always returns a Generator or throws an exception if it fails.

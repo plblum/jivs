@@ -5,7 +5,7 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { MockValidationServices } from '../TestSupport/mocks';
 import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
+import { IValidationManager } from '../../src/Interfaces/ValidationManager';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 
 class Publicify_ValueHostConfigBuilder extends ValueHostConfigBuilder { 
@@ -108,7 +108,7 @@ describe('ValueHostConfigBuilder', () => {
             });        
         });        
         describe('calc()', () => {
-            function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
+            function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
                 return 1;
             }
             test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {

@@ -2,7 +2,7 @@ import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost }
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
@@ -22,7 +22,7 @@ describe('StaticValueHost constructor', () => {
             value: undefined
         })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
@@ -193,7 +193,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });        
     class TestIStaticValueHostImplementation implements IStaticValueHost {
-        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
+        validationManager: IValidationManager = {} as IValidationManager;
         dispose(): void {}
         getName(): string {
             throw new Error("Method not implemented.");

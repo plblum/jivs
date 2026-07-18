@@ -26,7 +26,7 @@ import {
 import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
 
 /**
- * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
+ * Starts a fluent chain for ValidationManager. Its methods start CalcValueHost (calc()),
  * and StaticValueHost (static())
  */
 export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor

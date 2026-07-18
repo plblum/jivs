@@ -11,18 +11,17 @@ import { FieldValueHostConfig } from "./FieldValueHost";
 import { FluentFieldParameters, FluentFieldValueConfig, FluentStaticParameters, FluentValidatorConfig } from "./Fluent";
 import { IDisposable } from "./General_Purpose";
 import { StaticValueHostConfig } from "./StaticValueHost";
-import { IValidationManagerCallbacks, ValidationManagerConfig } from "./ValidationManager";
+import { IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState } from "./ValidationManager";
 import { ValidatorConfig } from "./Validator";
 import { ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
-import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
 import type { IValidationServices } from "./ValidationServices";
 /**
- * Base interface for a ValueHostsManagerConfigBuilder.
+ * Base interface for a ValidationManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
  * and ValidationManagerConfig through meaningful code.
  */
-export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
-    extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
+export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
+    extends IDisposable, IValueHostsForValidationManagerConfig<T>
 {
     services: IValidationServices;
     /**
@@ -61,18 +60,18 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
 }
 
 /**
- * A builder for preparing ValueHostsManagerConfig.
+ * A builder for preparing ValidationManagerConfig.
  */
-export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig>
-    extends IManagerConfigBuilder<T>, IValueHostsManagerCallbacks
+export interface IValueHostsManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
+    extends IManagerConfigBuilder<T>, IValidationManagerCallbacks
 {
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedInstanceState
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
      */
-    savedInstanceState?: ValueHostsManagerInstanceState | null;
+    savedInstanceState?: ValidationManagerInstanceState | null;
 
     /**
-     * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;
 
@@ -108,9 +107,9 @@ export interface BuilderOverrideOptions
 }
 
 /**
- * Provides value host creation functions for ValueHostsManagerConfigBuilder.
+ * Provides value host creation functions for ValidationManagerConfigBuilder.
  */
-export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManagerConfig>
+export interface IValueHostsForValidationManagerConfig<T extends ValidationManagerConfig>
 {
     /**
      * Fluent format to create a StaticValueHostConfig.

@@ -4,11 +4,10 @@
  */
 
 
-import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import {
@@ -33,7 +32,7 @@ import { SampleValues } from "./SampleValues";
 /**
  * @inheritdoc Types!IConfigAnalysis:interface
  */
-export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IValidationServices>
+export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig, TServices extends IValidationServices>
     implements IConfigAnalysis {
 
     /**
@@ -282,19 +281,6 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
         this._conditionConfigPropertyAnalyzersLoader = lazyLoadAnalyzers;
     }
     private _conditionConfigPropertyAnalyzersLoader: (() => Array<IConditionConfigPropertyAnalyzer>) | undefined = undefined
-}
-
-/**
- * ValueHostsManagerConfig analysis service.
- */
-export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IValidationServices> {
-    protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
-        let helper = new AnalysisResultsHelper<IValidationServices>(args);
-
-        helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));
-        helper.registerLookupKeyAnalyzer(ServiceName.identifier, new DataTypeIdentifierLookupKeyAnalyzer(args));
-        return helper;
-    }
 }
 
 /**

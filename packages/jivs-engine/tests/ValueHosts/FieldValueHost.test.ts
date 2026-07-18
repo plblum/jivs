@@ -212,7 +212,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Field1');
@@ -245,7 +245,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Prop1');
@@ -1341,7 +1341,7 @@ describe('toIFieldValueHost function', () => {
     });
     class TestIFieldValueHostImplementation implements IFieldValueHost {
 
-        valueHostsManager: IValidationManager = {} as IValidationManager;       
+        validationManager: IValidationManager = {} as IValidationManager;       
         dispose(): void { }
         groupCheck(options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");

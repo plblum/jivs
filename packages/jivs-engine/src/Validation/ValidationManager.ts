@@ -6,18 +6,28 @@
  */
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
+import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
+import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay, ValidationManagerConfigChangedHandler, ValidationManagerInstanceStateChangedHandler } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
-import { IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
+import { ICalcValueHost } from '../Interfaces/CalcValueHost';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import { IStaticValueHost } from '../Interfaces/StaticValueHost';
+import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { deepClone, deepEquals } from '../Utilities/Utilities';
+import { toICalcValueHost } from '../ValueHosts/CalcValueHost';
+import { toIStaticValueHost } from '../ValueHosts/StaticValueHost';
+import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
 
 
 /**
@@ -67,7 +77,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends ValidationManagerInstanceState = ValidationManagerInstanceState> extends ValueHostsManager<TState>
+export class ValidationManager<TState extends ValidationManagerInstanceState = ValidationManagerInstanceState>
     implements IValidationManager, IValidationManagerCallbacks {
     /**
      * Constructor
@@ -97,29 +107,472 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     constructor(config: ValidationManagerConfig)
     constructor(builder: ManagerConfigBuilderBase<any>)
     constructor(arg1: ValidationManagerConfig | ManagerConfigBuilderBase<any>){
-        super(arg1 as any);
+        assertNotNull(arg1, 'arg1');
+        let config: ValidationManagerConfig;
+        if (arg1 instanceof ManagerConfigBuilderBase)
+            config = arg1.complete();
+        else
+            config = arg1 as ValidationManagerConfig;
+        assertNotNull(config.services, 'services');
+        // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
+        // let savedServices = config.services;
+        // config.services = null as any; // to ignore during DeepClone
+        // let internalConfig = deepClone(config) as ValidationManagerConfig;
+        // config.services = savedServices;
+        // internalConfig.services = savedServices;
+
+        // this._config = internalConfig;
+        let internalConfig = this._config = ValidationManager.safeConfigClone(config);
+
+        this._instanceState = internalConfig.savedInstanceState ?? {};
+        if (typeof this._instanceState.stateChangeCounter !== 'number')
+            this._instanceState.stateChangeCounter = 0;
+        // There may be valuehostinstancesstates that do not have an associated ValueHostConfig.
+        // This allows for calling addValueHost manually later and the new ValueHost will
+        // get attached to its instance state.
+        if (internalConfig.savedValueHostInstanceStates)
+            internalConfig.savedValueHostInstanceStates.forEach((instanceState) =>
+                this._lastValueHostInstanceStates.set(instanceState.name, instanceState));
+
+        let configs = internalConfig.valueHostConfigs ?? [];
+        
+        let saveOnChangeConfig = this.onConfigChanged;
+        this._config.onConfigChanged = null;
+        for (let item of configs) {
+            this.addValueHost(item as ValueHostConfig, null);   // will get its instance state from _lastValueHostInstanceStates
+        }
+        this._config.onConfigChanged = saveOnChangeConfig;
     }
+
+    public static safeConfigClone(config: ValidationManagerConfig): ValidationManagerConfig {
+        // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
+        let savedServices = config.services;
+        config.services = null as any; // to ignore during DeepClone
+        let internalConfig = deepClone(config) as ValidationManagerConfig;
+        config.services = savedServices;
+        internalConfig.services = savedServices;
+        return internalConfig;
+    }
+
     /**
      * If the user needs to abandon this instance, they should use this to 
      * clean up active resources (like timers)
      */
     public dispose(): void
     {
-        super.dispose();
+        this.valueHosts.forEach((vh) => vh.dispose());
+        this.valueHosts.clear();
+        (this._valueHosts as any) = undefined;
+
+        this.valueHostConfigs.forEach((vhConfig) => toIDisposable(vhConfig)?.dispose());
+        this.valueHostConfigs.clear();
+        (this._valueHostConfigs as any) = undefined;
+
+        toIDisposable(this._config)?.dispose();        
+        (this._config as any) = undefined;
+
+        this._instanceState = undefined!;
+        (this._lastValueHostInstanceStates as any) = undefined;
+
+        this._vh?.dispose();
+        this._vh = undefined;
+        (this._logger as any) = undefined!;
         if (this._debounceVHValidated)
             this._debounceVHValidated.dispose();
         this._debounceVHValidated = null;
     }
-    
-    protected get config(): ValidationManagerConfig // just strongly typing
+    /**
+     * Provides an API for logging, sending entries to the loggerService.
+     */
+    protected get logger(): LoggerFacade
     {
-        return super.config as ValidationManagerConfig;
+        if (!this._logger)
+            this._logger = new LoggerFacade(this.services.loggerService,
+                'Manager', this, null, false);
+        return this._logger;
+    }
+    private _logger: LoggerFacade | null = null;    
+
+    protected get config(): ValidationManagerConfig
+    {
+        return this._config;
+    }
+    private readonly _config: ValidationManagerConfig;
+
+    /**
+     * Access to the ValidationServices.
+     */
+    public get services(): IValidationServices {
+        return this._config.services!;
+    }
+    /**
+     * ValueHosts for all ValueHostConfigs.
+     * Always replace a ValueHost when the associated Config or InstanceState are changed.
+     */
+    protected get valueHosts(): Map<string, IValueHost> {
+        return this._valueHosts;
+    }
+    /**
+     * This is the only place we expect to find strong references to ValueHosts
+     * within a Manager. Use WeakRef elsewhere to point to the same instances.
+     */
+    private readonly _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();
+
+    /**
+     * Provides a way to enumerate through existing ValueHosts.
+     * @returns A generator that yields a tuple of [valueHostName, IValueHost]
+     */
+    public *enumerateValueHosts(filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
+        for (let [name, vh] of this.valueHosts) {
+            if (filter && !filter(vh))
+                continue;
+            yield vh;
+        }
     }
 
-    public get services(): IValidationServices {// just strongly typing
-        return super.services as IValidationServices;
+    /**
+     * ValueHostConfigs supplied by the caller (business logic).
+     * Always replace a ValueHost when its Config changes.
+     */
+    protected get valueHostConfigs(): Map<string, ValueHostConfig> {
+        return this._valueHostConfigs;
     }
+    private readonly _valueHostConfigs: Map<string, ValueHostConfig> = new Map<string, ValueHostConfig>();
+
+    /**
+     * ValueHostInstanceStates and more.
+     * A copy of this is expected to be retained (redux/localstorage/etc)
+     * by the caller to support recreating the ValidationManager in a stateless situation.
+     */
+    protected get instanceState(): ValidationManagerInstanceState {
+        return this._instanceState;
+    }
+    private _instanceState: ValidationManagerInstanceState;
+
+    /**
+     * Value retained from the constructor to share with calls to addValueHost,
+     * giving new ValueHost instances their last state.
+     * Updated by onValueHostInstanceStateChanged so that calls to updateValueHost
+     * and mergeValueHost will start with the last state, because both
+     * calls discard the value host info for that name before creating it fresh.
+     */
+    private readonly _lastValueHostInstanceStates: Map<string, ValueHostInstanceState> = new Map<string, ValueHostInstanceState>();
+
+    /**
+     * Use to change anything in ValidationManagerInstanceState without impacting the immutability 
+     * of the current instance.
+     * Your callback will be passed a cloned instance. Change any desired properties
+     * and return that instance. It will become the new immutable value of
+     * the instanceState property.
+     * @param updater - Your function to change and return a state instance.
+     * @returns true when the state did change. false when it did not.
+     */
+    public updateInstanceState(updater: (stateToUpdate: TState) => TState): boolean {
+        assertNotNull(updater, 'updater');
+        let toUpdate = deepClone(this.instanceState);
+        let updated = updater(toUpdate);
+        if (!deepEquals(this.instanceState, updated)) {
+            updated.stateChangeCounter = typeof updated.stateChangeCounter === 'number' ? updated.stateChangeCounter + 1 : 0;
+            this._instanceState = updated;
+            this.onInstanceStateChanged?.(this, updated);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Adds a ValueHostConfig for a ValueHost not previously added. 
+     * Does not trigger any notifications.
+     * Exception when the same ValueHostConfig.name already exists.
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     * When null, the state supplied in the ValidationManager constructor will be used if available.
+     * When neither state was supplied, a default state is created.
+     */
+    public addValueHost(config: ValueHostConfig,
+        initialState: ValueHostInstanceState | null): IValueHost {
+        assertNotNull(config, 'config');
+        this.logger.message(LoggingLevel.Debug, ()=> `addValueHost(${config.name})`);
+
+        if (!this.valueHostConfigs.has(config.name)) {
+            if (initialState) // need to lock in the initial state for a later update
+                this._lastValueHostInstanceStates.set(initialState.name, initialState);
+            return this.applyConfig(config, initialState);
+        }
+
+        throw new CodingError(`Property ${config.name} already assigned.`);
+    }
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost. It does not merge.
+     * If merging is required, use the ValueHostConfigMergeService first.
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    public addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        assertNotNull(config, 'config');
+
+        if (this.valueHostConfigs.has(config.name)) {
+            this.logger.message(LoggingLevel.Debug, ()=> `addOrUpdateValueHost(${config.name})`);
+            return this.applyConfig(config, initialState);
+        }
+        return this.addValueHost(config, initialState);
+    }
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost.
+     * It merges the new config with the existing one using the ValueHostConfigMergeService.
+     * The goal is to protect important business logic settings while allowing the UI
+     * to inject new property values where appropriate.
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    public addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost
+    {
+        assertNotNull(config, 'config');
+
+        if (this.valueHostConfigs.has(config.name)) {
+            let destinations: Array<ValueHostConfig> = [];
+            this.valueHostConfigs.forEach((vhConfig) => destinations.push(vhConfig));
+            let vhcms = this.services.valueHostConfigMergeService;
+            let destinationToMerge = vhcms.identifyValueHostConflict(config, destinations);
+            if (destinationToMerge)
+            {
+                destinationToMerge = deepClone(destinationToMerge) as ValueHostConfig; // don't want to let merge change the config already in use.
+                vhcms.merge(config, destinationToMerge);
+                return this.applyConfig(destinationToMerge, initialState);
+            }
+            else // defensive. Should always find destinationToMerge if it was in _valueHostConfigs
+                /* istanbul ignore next */
+                return this.applyConfig(config, initialState);
+        }
+        return this.addValueHost(config, initialState);
+    }
+    /**
+     * Discards a ValueHost. 
+     * Does not trigger any notifications.
+     * @param valueHostName 
+     */
+    public discardValueHost(valueHostName: ValueHostName): void {
+        assertNotNull(valueHostName, 'valueHostName');
+        if (this.valueHostConfigs.has(valueHostName)) {
+            this.valueHosts.get(valueHostName)!.dispose();  // this also calls valueHostConfigs.dispose if setup
+            this.valueHosts.delete(valueHostName);
+
+            toIDisposable(this.valueHostConfigs.get(valueHostName))?.dispose();
+            this.valueHostConfigs.delete(valueHostName);
+
+            this._lastValueHostInstanceStates.delete(valueHostName);
+
+            this.invokeOnConfigChanged();
+        }
+    }
+    /**
+     * Creates the IValueHost based on the config and ensures
+     * ValidationManager has correct and corresponding instances of ValueHost,
+     * ValueHostConfig and ValueHostInstanceState.
+     * Any previous ValueHost and its config will be disposed.
+     * @param config - a clone of this instance will be retained
+     * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     * @returns 
+     */
+    protected applyConfig(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        config = deepClone(config); // our own private copy
+        let factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
+        let state: ValueHostInstanceState | undefined = undefined;
+        let existingState = initialState;
+        let defaultState = factory.createInstanceState(config);
+
+        if (!existingState)
+            existingState = this._lastValueHostInstanceStates.get(config.name) ?? null;
+        if (existingState) {
+            let cleanedState = deepClone(existingState) as ValueHostInstanceState;  // clone to allow changes during Cleanup
+            factory.cleanupInstanceState(cleanedState, config);
+            // User may have supplied the state without
+            // all of the properties we normally use.
+            // Ensure all properties defined by createInstanceState() exist, even if their value is undefined
+            // so that we have consistency. 
+            state = { ...defaultState, ...cleanedState };
+        }
+        else
+            state = defaultState;
+        this.discardValueHost(config.name);
+        
+        let vh = factory.create(this, config, state);
+
+        this.valueHosts.set(config.name, vh);
+        this.valueHostConfigs.set(config.name, config);
+        this.invokeOnConfigChanged();
+        return vh;
+    }
+/**
+ * Executes the onConfigChanged callback if it is setup.
+ * Sends cloned copies of all ValueHostConfigs.
+ */
+    protected invokeOnConfigChanged(): void
+    {
+        if (this.onConfigChanged)
+        {
+            let valueHostConfigs: Array<ValueHostConfig> = [];
+            this.valueHostConfigs.forEach((vhConfig) => valueHostConfigs.push(deepClone(vhConfig)));
+
+            this.onConfigChanged(this, valueHostConfigs);
+        }
+    }
+    /**
+     * Retrieves the ValueHost associated with valueHostName
+     * @param valueHostName - Matches to the IValueHost.name property
+     * Returns the instance or null if not found.
+     */
+    public getValueHost(valueHostName: ValueHostName): IValueHost | null {
+        return this.valueHosts.get(valueHostName) ?? null;
+    }
+
+    /**
+     * Retrieves the StaticValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IStaticValueHost.name property
+     * Returns the instance or null if not found or found a non-field valuehost.
+     */
+    public getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null {
+        return toIStaticValueHost(this.getValueHost(valueHostName));
+    }
+    /**
+     * Retrieves the CalcValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the ICalcValueHost.name property
+     * Returns the instance or null if not found or found a non-field valuehost.
+     */
+    public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
+        return toICalcValueHost(this.getValueHost(valueHostName));
+    }
+    //FYI: other getValueHosts are built around validation and declared in IValidationManager
+
+    /**
+     * Alternative to getValueHost that returns strongly typed valuehosts 
+     * in a shortened syntax. Always throws exceptions if the value host requested
+     * is unknown or not the expected type.
+     */
+    public get vh(): IValueHostAccessor
+    {
+        if (!this._vh)
+            this._vh = new ValueHostAccessor(this);
+        return this._vh;
+    }
+    private _vh: IValueHostAccessor | undefined;
     
+    /**
+     * Upon changing the value of a ValueHost, other ValueHosts need to know. 
+     * They may have Conditions that take the changed ValueHost into account and
+     * will want to revalidate or set up a state to force revalidation.
+     * This goes through those ValueHosts and notifies them.
+     */
+    public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
+        this.logger.message(LoggingLevel.Debug, ()=> `notifyOtherValueHostsOfValueChange on ${valueHostIdThatChanged}`);        
+        for (let ivh of this.validatableValueHost())
+            if (ivh.getName() !== valueHostIdThatChanged)
+                ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
+    }
+
+    /**
+     * Report that a ValueHost had its instance state changed.
+     * Invokes onValueHostInstanceStateChanged if setup.
+     * @param valueHost 
+     * @param instanceState 
+     */
+    public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void
+    {
+        this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
+        this.onValueHostInstanceStateChanged?.(valueHost, instanceState);
+    }
+
+    protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
+        for (let [name, vh] of this.valueHosts) {
+            if (vh instanceof ValidatableValueHostBase)
+                yield vh;
+        }
+    }
+
+    //#region IValidationManagerCallbacks
+    protected resolveCallback<T>(callback: T | null | undefined, name: string): T | null {
+        if (callback) {
+            this.logger.message(LoggingLevel.Info, ()=> name);            
+            return callback;
+        }
+        return null;
+    }
+    /**
+     * Use this when caching the configuration for a later creation of ValidationManager.
+     * 
+     * Called when the configuration of ValueHosts has been changed by these members
+     * of ValidationManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
+     * discardValueHost.
+     * The supplied object is a clone so modifications will not impact the ValidationManager.
+     */    
+    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+
+        return this.resolveCallback<ValidationManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
+    }
+
+    /**
+     * Called when the ValidationManager's state has changed.
+     * React example: React component useState feature retains this value
+     * and needs to know when to call its setState function with the stateToRetain
+     */
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+        return this.resolveCallback<ValidationManagerInstanceStateChangedHandler>(this.config.onInstanceStateChanged, 'onInstanceStateChanged');
+    }
+
+    /**
+     * Called when any ValueHost had its ValueHostInstanceState changed.
+     * React example: React component useState feature retains this value
+     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
+     * You can setup the same callback on individual ValueHosts.
+     * Here, it aggregates all ValueHost notifications.
+     */
+    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
+        return this.resolveCallback<ValueHostInstanceStateChangedHandler>(this.config.onValueHostInstanceStateChanged, 'onValueHostInstanceStateChanged');
+    }
+
+    /**
+     * Called when the ValueHost's Value property has changed.
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
+     * to avoid round trips where you already know the details.
+     * You can setup the same callback on individual ValueHosts.
+     * Here, it aggregates all ValueHost notifications.
+     */
+    public get onValueChanged(): ValueChangedHandler | null {
+        return this.resolveCallback<ValueChangedHandler>(this.config.onValueChanged, 'onValueChanged');
+    }
+    /**
+     * Called when the FieldValueHost's text value has changed.
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
+     * to avoid round trips where you already know the details.
+     * You can setup the same callback on individual FieldValueHosts.
+     * Here, it aggregates all FieldValueHost notifications.
+     */
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.resolveCallback<TextValueChangedHandler>(this.config.onTextValueChanged, 'onTextValueChanged');
+    }
+    //#endregion IValidationManagerCallbacks
     /**
      * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property

@@ -16,7 +16,6 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
 
 
@@ -39,7 +38,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -1929,7 +1928,7 @@ describe('toIValidatableValueHostBase', () => {
     });
     test('Compatible object match', () => {
         let testItem: IValidatableValueHostBase = {
-            valueHostsManager: {} as IValidationManager,
+            validationManager: {} as IValidationManager,
             dispose(): void { },
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
                 throw new Error('Function not implemented.');
@@ -2220,7 +2219,7 @@ describe('toIValidatableValueHostBase function', () => {
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
-        valueHostsManager: IValueHostsManager = {} as IValidationManager;  
+        validationManager: IValidationManager = {} as IValidationManager;  
         dispose(): void {}
         groupCheck(options?: ValidateOptions | undefined): boolean {
             throw new Error('Method not implemented.');

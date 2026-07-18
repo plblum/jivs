@@ -4,7 +4,7 @@
  */
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../Interfaces/Conditions";
 import { IValueHost, toIGatherValueHostNames } from "../Interfaces/ValueHost";
-import { IValueHostsManager } from "../Interfaces/ValueHostsManager";
+import { IValidationManager } from "../Interfaces/ValidationManager";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { toIDisposable } from "../Interfaces/General_Purpose";
 import { ConditionBase, ErrorResponseCondition } from "./ConditionBase";
@@ -80,21 +80,21 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
      * Returns the result of the child condition if the enabler condition is matched.
      * Otherwise, returns ConditionEvaluateResult.Undetermined.
      * @param valueHost 
-     * @param valueHostsManager 
+     * @param validationManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        const whenCondition = this.whenToEnableCondition(valueHostsManager);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        const whenCondition = this.whenToEnableCondition(validationManager);
         // Intentially passing null instead of valuehost because we expect the enabler to get its own valuehost.
-        let whenResult = whenCondition.evaluate(null, valueHostsManager);
+        let whenResult = whenCondition.evaluate(null, validationManager);
 
         if (whenResult === ConditionEvaluateResult.Match) {
-            let result = this.thenCondition(valueHostsManager).evaluate(valueHost, valueHostsManager);
+            let result = this.thenCondition(validationManager).evaluate(valueHost, validationManager);
             this.ensureNoPromise(result);
             return result;
         }
 
-        this.logger(valueHostsManager.services).message(LoggingLevel.Info,
+        this.logger(validationManager.services).message(LoggingLevel.Info,
             () => `WhenCondition enabler condition did not match. Child condition not evaluated.`);
         return ConditionEvaluateResult.Undetermined;
     }
@@ -103,41 +103,41 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
      * Provides the two conditions -- whenToEnableCondition and thenCondition -- based on their configs.
      * This targets Validator.validate which uses both conditions directly instead of calling
      * WhenCondition.evaluate.
-     * @param valueHostsManager 
+     * @param validationManager 
      * @returns 
      */
-    public extractConditions(valueHostsManager: IValueHostsManager): {
+    public extractConditions(validationManager: IValidationManager): {
         whenToEnableCondition: ICondition,
         thenCondition: ICondition
     } {
         return {
-            whenToEnableCondition: this.whenToEnableCondition(valueHostsManager),
-            thenCondition: this.thenCondition(valueHostsManager)
+            whenToEnableCondition: this.whenToEnableCondition(validationManager),
+            thenCondition: this.thenCondition(validationManager)
         };
     }
 
     /**
      * Does not support returning promises from the evaluate() function of the enabler condition.
-     * @param valueHostsManager 
+     * @param validationManager 
      * @returns 
      */
-    protected whenToEnableCondition(valueHostsManager: IValueHostsManager): ICondition {
+    protected whenToEnableCondition(validationManager: IValidationManager): ICondition {
         if (!this._whenToEnable) {
-            this._whenToEnable = this.generateCondition(this.config.whenToEnableConfig, valueHostsManager.services);
+            this._whenToEnable = this.generateCondition(this.config.whenToEnableConfig, validationManager.services);
             if (this._whenToEnable instanceof ErrorResponseCondition) {
-                this.throwInvalidPropertyData('whenToEnableConfig', 'must be assigned and configured correctly', valueHostsManager.services);
+                this.throwInvalidPropertyData('whenToEnableConfig', 'must be assigned and configured correctly', validationManager.services);
             }
         }
         return this._whenToEnable;
     }
     private _whenToEnable: ICondition | null = null;
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
-        let whenToEnableCondition = this.whenToEnableCondition(valueHostsManager);
+    public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void {
+        let whenToEnableCondition = this.whenToEnableCondition(validationManager);
 
-        toIGatherValueHostNames(whenToEnableCondition)?.gatherValueHostNames(collection, valueHostsManager);
-        let thenCondition = this.thenCondition(valueHostsManager);
-        toIGatherValueHostNames(thenCondition)?.gatherValueHostNames(collection, valueHostsManager);
+        toIGatherValueHostNames(whenToEnableCondition)?.gatherValueHostNames(collection, validationManager);
+        let thenCondition = this.thenCondition(validationManager);
+        toIGatherValueHostNames(thenCondition)?.gatherValueHostNames(collection, validationManager);
     }
 
     /**
@@ -150,11 +150,11 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
         return ct
     }
 
-    protected thenCondition(valueHostsManager: IValueHostsManager): ICondition {
+    protected thenCondition(validationManager: IValidationManager): ICondition {
         if (!this._thenCondition) {
-            this._thenCondition = this.generateCondition(this.config.thenConfig, valueHostsManager.services);
+            this._thenCondition = this.generateCondition(this.config.thenConfig, validationManager.services);
             if (this._thenCondition instanceof ErrorResponseCondition) {
-                this.throwInvalidPropertyData('thenConfig', 'must be assigned and configured correctly', valueHostsManager.services);
+                this.throwInvalidPropertyData('thenConfig', 'must be assigned and configured correctly', validationManager.services);
             }  
         }
         return this._thenCondition;

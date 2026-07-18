@@ -63,7 +63,7 @@ import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Condit
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { NumberConditionBaseConfig, NumberConditionBase } from "../../src/Conditions/NumberConditionBase";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
@@ -127,13 +127,13 @@ describe('ConditionBase class', () => {
             return super.tryConversion(value, valueLookupKey, conversionLookupKey, services);
         }
 
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error('Method not implemented.');
         }
         protected get defaultCategory(): ConditionCategory {
             return ConditionCategory.Contents;
         }
-        public gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+        public gatherValueHostNames(collection: Set<string>, validationManager: IValidationManager): void {
             throw new Error('Method not implemented.');
         }
         public publicify_ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
@@ -186,10 +186,10 @@ describe('ConditionBase class', () => {
                 super(config);
                 throw new Error('Test Error');
             }
-            evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
                 throw new Error('Method not implemented.');
             }
-            gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+            gatherValueHostNames(collection: Set<string>, validationManager: IValidationManager): void {
                 throw new Error('Method not implemented.');
             }
             protected get defaultCategory(): ConditionCategory {
@@ -404,14 +404,14 @@ describe('OneValueConditionBase class', () => {
         constructor(config: OneValueConditionBaseConfig) {
             super(config);
         }
-        public publicify_ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): IValueHost {
-            return super.ensurePrimaryValueHost(valueHost, valueHostsManager);
+        public publicify_ensurePrimaryValueHost(valueHost: IValueHost | null, validationManager: IValidationManager): IValueHost {
+            return super.ensurePrimaryValueHost(valueHost, validationManager);
         }
-        public publicify_getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
-            return super.getValueHost(valueHostName, valueHostsManager);
+        public publicify_getValueHost(valueHostName: ValueHostName, validationManager: IValidationManager): IValueHost | null {
+            return super.getValueHost(valueHostName, validationManager);
         }
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-            let vh = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+        public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            let vh = this.ensurePrimaryValueHost(valueHost, validationManager);
             return ConditionEvaluateResult.Undetermined;
         }
         protected get defaultCategory(): ConditionCategory {
@@ -5450,7 +5450,7 @@ describe('class NotNullCondition', () => {
 describe('NumberConditionBase', () => {
     class TestNumberConditionBase extends NumberConditionBase<NumberConditionBaseConfig>
     {
-        protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        protected evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
         }
         protected get defaultCategory(): ConditionCategory {
