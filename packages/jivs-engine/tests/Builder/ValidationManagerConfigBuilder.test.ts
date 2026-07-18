@@ -5,7 +5,7 @@ import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { IValidatableValueHostBase, ValueHostValidationState } from '../../src/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '../../src/Interfaces/Validation';
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '../../src/Interfaces/ValidationManager';
-import { ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { MockValidationServices } from '../TestSupport/mocks';
@@ -163,7 +163,119 @@ describe('instance state properties', () => {
     
 });
 describe('Callbacks get and set', () => {
-   
+    test('onValueHostInstanceStateChanged', () => {
+        function handler(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void
+        {
+            
+        }
+        function replacementHandler(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void
+        {
+            
+        }
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: [],
+            onValueHostInstanceStateChanged: handler
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onValueHostInstanceStateChanged).toBe(handler);
+        testItem.onValueHostInstanceStateChanged = replacementHandler;
+        expect(testItem.onValueHostInstanceStateChanged).toBe(replacementHandler);
+        let result = testItem.complete();
+        expect(result.onValueHostInstanceStateChanged).toBe(replacementHandler);
+    });
+    test('onValueChanged', () => {
+        function handler(valueHost: IValueHost, oldValue: any): void
+        {
+            
+        }
+        function replacementHandler(valueHost: IValueHost, oldValue: any): void
+        {
+            
+        }
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: [],
+            onValueChanged: handler
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onValueChanged).toBe(handler);
+        testItem.onValueChanged = replacementHandler;
+        expect(testItem.onValueChanged).toBe(replacementHandler);
+        let result = testItem.complete();
+        expect(result.onValueChanged).toBe(replacementHandler);
+    });
+    
+    test('onTextValueChanged', () => {
+        function handler(valueHost: IValueHost, oldValue: any): void
+        {
+            
+        }
+        function replacementHandler(valueHost: IValueHost, oldValue: any): void
+        {
+            
+        }
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: [],
+            onTextValueChanged: handler
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onTextValueChanged).toBe(handler);
+        testItem.onTextValueChanged = replacementHandler;
+        expect(testItem.onTextValueChanged).toBe(replacementHandler);
+        let result = testItem.complete();
+        expect(result.onTextValueChanged).toBe(replacementHandler);
+    });
+    
+    
+    test('onInstanceStateChanged', () => {
+        function handler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
+        {
+            
+        }
+        function replacementHandler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
+        {
+            
+        }
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: [],
+            onInstanceStateChanged: handler
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onInstanceStateChanged).toBe(handler);
+        testItem.onInstanceStateChanged = replacementHandler;
+        expect(testItem.onInstanceStateChanged).toBe(replacementHandler);
+        let result = testItem.complete();
+        expect(result.onInstanceStateChanged).toBe(replacementHandler);
+    });
+    test('onConfigChanged', () => {
+        function handler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
+        {
+            
+        }
+        function replacementHandler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
+        {
+            
+        }
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: [],
+            onConfigChanged: handler
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onConfigChanged).toBe(handler);
+        testItem.onConfigChanged = replacementHandler;
+        expect(testItem.onConfigChanged).toBe(replacementHandler);
+        let result = testItem.complete();
+        expect(result.onConfigChanged).toBe(replacementHandler);
+    });    
     test('onValueHostValidationStateChanged', () => {
         function handler(valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState): void
         {

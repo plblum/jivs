@@ -31,34 +31,34 @@ import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
-import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
 class PublicifiedValidator extends Validator {
-    public ExposeConfig(): ValidatorConfig {
+    public exposeConfig(): ValidatorConfig {
         return this.config;
     }
-    public ExposeServices(): IValidationServices {
+    public exposeServices(): IValidationServices {
         return this.services;
     }
-    public ExposeValidationManager(): IValidationManager {
+    public exposeValidationManager(): IValidationManager {
         return this.validationManager;
     }
-    public ExposeValueHost(): IValidatorsValueHostBase {
+    public exposeValueHost(): IValidatorsValueHostBase {
         return this.valueHost;
     }
 
-    public ExposeEnabler(): ICondition | null {
+    public exposeEnabler(): ICondition | null {
         return this.enabler;
     }
-    public ExposeSeverity(): ValidationSeverity {
+    public exposeSeverity(): ValidationSeverity {
         return this.severity;
     }
-    public ExposeGetErrorMessageTemplate(): string {
+    public exposeGetErrorMessageTemplate(): string {
         return this.getErrorMessageTemplate();
     }
-    public ExposeGetSummaryMessageTemplate(): string {
+    public exposeGetSummaryMessageTemplate(): string {
         return this.getSummaryMessageTemplate();
     }
 }
@@ -155,19 +155,10 @@ describe('Validator.constructor and initial property values', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: { conditionType: '' },
         });
-        expect(setup.validator.ExposeConfig()).toBe(setup.config);
-        expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
+        expect(setup.validator.exposeConfig()).toBe(setup.config);
+        expect(setup.validator.exposeValidationManager()).toBe(setup.vm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
-    test('ValidationManager used with Validator throws when trying to access ValidationManager or Services', () => {
-        let services = createValidationServicesForTesting();
-        let builder = new ValueHostsManagerConfigBuilder(services);
-        let vm = new ValidationManager(builder);
-        let vh = new MockFieldValueHost(vm, '', '',);
-        let testItem = new PublicifiedValidator(vh, { conditionConfig: { conditionType: 'Test' } });
-
-        expect(()=> testItem.ExposeValidationManager()).toThrow('ValueHost.services must contain IValidationManager');
-    });    
 });
 describe('errorCode', () => {
     test('Value assigned is returned regardless of ConditionType', () => {
@@ -289,7 +280,7 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({});
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
     test('Successful creation of EqualToCondition', () => {
@@ -309,7 +300,7 @@ describe('Validator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
         expect(enabler).toBeInstanceOf(EqualToCondition);
     });
@@ -327,7 +318,7 @@ describe('Validator.enabler', () => {
             }            
         });
 
-        expect(() => setup.validator.ExposeEnabler()).toThrow(/ConditionType/);
+        expect(() => setup.validator.exposeEnabler()).toThrow(/ConditionType/);
 
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
@@ -348,7 +339,7 @@ describe('Validator.enabler', () => {
         expect(() => child = setup.validator.condition).toThrow(/ConditionType/);
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull(); // because of the error
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
@@ -359,7 +350,7 @@ describe('Validator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
 });
@@ -416,21 +407,21 @@ describe('Validator.severity', () => {
             severity: ValidationSeverity.Error
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = Warning, severity=Warning', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Warning
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
     });
     test('Config.severity = Severe, severity=Severe', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Severe
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
     });  
     test('Conditions that use severity=Severe when Config.severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string, ) {
@@ -442,7 +433,7 @@ describe('Validator.severity', () => {
             });
             registerAllConditions((setup.services.conditionFactory as ConditionFactory));
 
-            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
@@ -458,7 +449,7 @@ describe('Validator.severity', () => {
                 severity: undefined
             });
 
-            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
@@ -481,7 +472,7 @@ describe('Validator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
@@ -491,7 +482,7 @@ describe('Validator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = function, severity= result of function', () => {
         let setup = setupWithField1AndField2({
@@ -499,11 +490,11 @@ describe('Validator.severity', () => {
         });
 
         let severityForFn: ValidationSeverity = ValidationSeverity.Warning;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
         severityForFn = ValidationSeverity.Error;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
         severityForFn = ValidationSeverity.Severe;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
     });
 });
 
@@ -532,7 +523,7 @@ describe('Validator.getErrorMessageTemplate', () => {
             errorMessage: 'Test',
         });
 
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe('Test');
     });
 
     test('Config.errorMessage = function, getErrorMessageTemplate= result of function', () => {
@@ -541,38 +532,38 @@ describe('Validator.getErrorMessageTemplate', () => {
         });
 
         let errorMessageForFn = 'Test';
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe('Test');
     });
     test('Config.errorMessage = function, throws when function returns static error message', () => {
         let setup = setupWithField1AndField2({
             errorMessage: (iv: IValidator) => null!
         });
 
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('esErrorMessage');
     });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
 
     test('TextLocalizationService.GetErrorMessage used because errorMessage is not supplied', () => {
@@ -587,7 +578,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });    
     test('TextLocalizationService.GetErrorMessage is not used because errorMessage is supplied', () => {
       
@@ -602,7 +593,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('supplied');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('supplied');
     });        
     test('TextLocalizationService.GetErrorMessage together with both Condition Type and DataTypeLookupKey', () => {
       
@@ -620,7 +611,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });        
     test('TextLocalizationService.GetErrorMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
@@ -642,7 +633,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     }); 
 });
 describe('Validator.GetSummaryMessageTemplate', () => {
@@ -652,7 +643,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: 'Summary',
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = null, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -660,7 +651,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = undefined, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -668,7 +659,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: undefined
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
         let setup = setupWithField1AndField2({
@@ -677,7 +668,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         });
 
         let summaryMessageForFn = 'Summary';
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = function that returns null GetSummaryMessageTemplate = errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -685,31 +676,31 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: (iv: IValidator) => null!
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
     });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
     test('TextLocalizationService.GetSummaryMessage used because summaryMessage is not supplied', () => {
       
@@ -723,7 +714,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });    
     test('TextLocalizationService.GetSummaryMessage is not used because summaryMessage is supplied', () => {
       
@@ -738,7 +729,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('supplied');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('supplied');
     });        
     test('TextLocalizationService.GetSummaryMessage together with both Condition Type and DataTypeLookupKey', () => {
       
@@ -756,7 +747,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });        
     test('TextLocalizationService.GetSummaryMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
@@ -778,7 +769,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
 
 });

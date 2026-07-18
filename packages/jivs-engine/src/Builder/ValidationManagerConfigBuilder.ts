@@ -4,20 +4,21 @@
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FieldValueHostConfig } from "../Interfaces/FieldValueHost";
+import { FieldValueHostConfig, TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 import { IValidatorBuilder } from "../Interfaces/ChildBuilders";
 import { toIServicesAccessor } from "../Interfaces/Services";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
-import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
+import { ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState, ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { FluentFieldParameters, FluentFieldValueConfig, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters } from "../Interfaces/Fluent";
 import { BuilderState } from "./ManagerConfigBuilderBase";
-import { ValueHostsManagerConfigBuilder } from "./ValueHostsManagerConfigBuilder";
 import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder"
 import { ValidatorsValueHostBaseConfig } from "../Interfaces/ValidatorsValueHostBase";
 import { assertNotNull } from "../Utilities/ErrorHandling";
+import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../Interfaces/ValueHost";
 
 /**
  * Access point for using ValidationManagerConfigBuilder. It wraps an instance of ValueHostsManagerConfigBuilder
@@ -36,22 +37,69 @@ export function createConfigBuilder(arg1: IValidationServices | ValidationManage
 }
 
 /**
- * Builder specific to ValidationManager.
- * It provides the ability to attach callbacks to the baseConfig.
+ * For building the ValidationManagerConfig
+ * 
+ * ```ts
+ * let builder = new ValidationManagerConfigBuilder(createValidationServices());
+ * builder.field('Field1').requireText();
+ * let vmConfig = builder.complete();
+ * 
+ * let vm = new ValidationManager(vmConfig);
+ * ```
+ * instead of
+ * ```ts
+ * let vmConfig: ValidationManagerConfig = {
+ *      services: createValidationServices(),
+ *      valueHostConfigs: [
+ *          {
+ *              valueHostType: ValueHostType.Field,
+ *              name: 'Field1',
+ *              validatorConfigs: [
+ *                  {
+ *                      conditionConfig: { conditionType: ConditionType.RequireText }
+ *                  }
+ *              ]
+ *          }
+ *      ]
+ * }
+ * 
+ * let vm = new ValidationManager(vmConfig);
+ * ```
  */
 
-export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuilder<ValidationManagerConfig>
-    implements IValidationManagerConfigBuilder<ValidationManagerConfig> {
+export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig> extends ManagerConfigBuilderBase<T>
+    implements IValidationManagerConfigBuilder<T> {
+    
     constructor(services: IValidationServices)
-    constructor(config: ValidationManagerConfig)
-    constructor(state: BuilderState<ValidationManagerConfig>)
-    constructor(arg1: IValidationServices | ValidationManagerConfig | BuilderState<ValidationManagerConfig>) {
+    constructor(config: T)
+    constructor(state: BuilderState<T>)
+    constructor(arg1: IValidationServices | T | BuilderState<T>) {
         super(arg1 as any);
     }
     public get services(): IValidationServices {
         return this.baseConfig.services;
     }
-
+    //#region InstanceState
+    /**
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
+     */
+    public get savedInstanceState(): ValidationManagerInstanceState | null {
+        return this.baseConfig.savedInstanceState ?? null;
+    }
+    public set savedInstanceState(value: ValidationManagerInstanceState | null) {
+        this.baseConfig.savedInstanceState = value;
+    }
+    /**
+     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
+     */
+    public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
+        return this.baseConfig.savedValueHostInstanceStates ?? null;
+    }
+    public set savedValueHostInstanceStates(value: Array<ValueHostInstanceState> | null) {
+        this.baseConfig.savedValueHostInstanceStates = value;
+    }
+    
+    //#endregion InstanceState
     protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
         return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
@@ -121,16 +169,27 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
 
     //#endregion validation oriented ValueHost support
 
-    //#region InstanceState
-    public get savedInstanceState(): ValidationManagerInstanceState | null {
-        return super.savedInstanceState;
-    }
-    public set savedInstanceState(value: ValidationManagerInstanceState | null) {
-        super.savedInstanceState = value;
-    }
-    //#endregion InstanceState
 
     //#region IValidationManagerCallbacks
+    /**
+     * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
+     */
+    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null | undefined {
+        return this.baseConfig.onValueHostInstanceStateChanged;
+    }
+    public set onValueHostInstanceStateChanged(value: ValueHostInstanceStateChangedHandler | null) {
+        this.baseConfig.onValueHostInstanceStateChanged = value;
+    }
+    /**
+     * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
+     */
+    public get onValueChanged(): ValueChangedHandler | null {
+        return this.baseConfig.onValueChanged ?? null;
+    }
+    public set onValueChanged(value: ValueChangedHandler | null) {
+        this.baseConfig.onValueChanged = value;
+    }
+
     /**
      * @inheritDoc ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
      */
@@ -150,7 +209,37 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     public set onValidationStateChanged(value: ValidationStateChangedHandler | null) {
         this.baseConfig.onValidationStateChanged = value;
     }
+    /**
+     * @inheritDoc ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
+     */
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.baseConfig.onTextValueChanged ?? null;
+    }
+    public set onTextValueChanged(value: TextValueChangedHandler | null) {
+        this.baseConfig.onTextValueChanged = value;
+    }
 
+    /**
+     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onInstanceStateChanged
+     */
+
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+        return this.baseConfig.onInstanceStateChanged ?? null;
+    }
+    public set onInstanceStateChanged(value: ValidationManagerInstanceStateChangedHandler | null) {
+        this.baseConfig.onInstanceStateChanged = value;
+    }
+
+    /**
+     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onConfigChanged
+     */
+    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+        return this.baseConfig.onConfigChanged ?? null;
+    }
+    public set onConfigChanged(value: ValidationManagerConfigChangedHandler | null) {
+        this.baseConfig.onConfigChanged = value;
+    }
+  
     /**
      * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
      */

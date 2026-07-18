@@ -62,8 +62,28 @@ export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
 /**
  * A builder for preparing ValidationManagerConfig.
  */
-export interface IValueHostsManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
-    extends IManagerConfigBuilder<T>, IValidationManagerCallbacks
+//export interface IValueHostsManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
+//     extends IManagerConfigBuilder<T>, IValidationManagerCallbacks
+// {
+//     /**
+//      * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
+//      */
+//     savedInstanceState?: ValidationManagerInstanceState | null;
+
+//     /**
+//      * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
+//      */
+//     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;
+
+// }
+
+
+/**
+ * A builder for preparing ValidationManagerConfig.
+ */
+export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
+    extends IManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
+    IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {
     /**
      * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
@@ -73,18 +93,7 @@ export interface IValueHostsManagerConfigBuilder<T extends ValidationManagerConf
     /**
      * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
      */
-    savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;
-
-}
-
-
-/**
- * A builder for preparing ValidationManagerConfig.
- */
-export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
-    extends IValueHostsManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
-    IValidationManagerCallbacks, IValidationManagerConfigExtensions
-{
+    savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
 }
 
 export interface IValidationManagerConfigExtensions

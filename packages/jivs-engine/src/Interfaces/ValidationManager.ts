@@ -428,15 +428,19 @@ export const defaultNotifyValidationStateChangedDelay = 100;
  */
 export function toIValidationManager(source: any): IValidationManager | null
 {
-    if (toIValidationManager(source))
-    {
-        let test = source as IValidationManager;     
-        if (test.validate !== undefined &&
+    if (source && typeof source === 'object') {
+        let test = source as IValidationManager;
+        if (
+            test.getValueHost !== undefined &&
+            test.services !== undefined &&
+            test.addValueHost !== undefined &&
+            test.addOrUpdateValueHost !== undefined &&
+            test.getFieldValueHost !== undefined &&
+            test.validate !== undefined &&
             test.clearValidation !== undefined &&
             test.isValid !== undefined &&
             test.doNotSave !== undefined &&
-            test.getIssuesFound !== undefined &&
-            test.getFieldValueHost !== undefined
+            test.getIssuesFound !== undefined
         )
             return test;
     }

@@ -603,7 +603,7 @@ describe('ValidationManagerConfigAnalysis', () => {
         expect(args.comparerAnalyzer).toBeDefined();
         expect(args.valueHostConfigAnalyzer).toBeDefined();
         expect(args.conditionConfigAnalyzer).toBeDefined();
-        expect(args.validatorConfigAnalyzer).toBeUndefined();
+        expect(args.validatorConfigAnalyzer).toBeDefined();
 
         expect(testItem.publicify_helper).toBeDefined();
         let helper = testItem.publicify_helper!;
@@ -611,8 +611,8 @@ describe('ValidationManagerConfigAnalysis', () => {
         expect(helper.hasLookupKeyAnalyzer(ServiceName.comparer)).toBe(false);  // yes, false
         expect(helper.hasLookupKeyAnalyzer(ServiceName.identifier)).toBe(true);
         // check a few more to ensure they are false
-        expect(helper.hasLookupKeyAnalyzer(ServiceName.formatter)).toBe(false);
-        expect(helper.hasLookupKeyAnalyzer(ServiceName.parser)).toBe(false);
+        expect(helper.hasLookupKeyAnalyzer(ServiceName.formatter)).toBe(true);
+        expect(helper.hasLookupKeyAnalyzer(ServiceName.parser)).toBe(true);
 
     });
 

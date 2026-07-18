@@ -18,7 +18,7 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
-import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
 
 
@@ -782,7 +782,7 @@ describe('isEnabled and related enabled', () => {
     } {
         let services = new MockValidationServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
-        let builder = new ValueHostsManagerConfigBuilder(services);
+        let builder = new ValidationManagerConfigBuilder(services);
         if (stateChangeCallback)
             builder.onValueHostInstanceStateChanged = stateChangeCallback;
         builder.static('Field1');
