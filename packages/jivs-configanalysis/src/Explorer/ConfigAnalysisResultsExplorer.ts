@@ -3,14 +3,23 @@
  * @module Explorer/Classes
  */
 
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { ServiceName, IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { CodingError, assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { deepClone } from "@plblum/jivs-engine/build/Utilities/Utilities";
 import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from "./Outputters/ConfigAnalysisOutputterClasses";
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from "./Formatters/ConfigAnalysisOutputFormatterClasses";
-import { IConfigAnalysisResultsExplorer, ICAExplorerFactory, IConfigAnalysisOutputter, IConfigAnalysisSearchCriteria, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData, ICASearcher, ICAExplorerBase, ExplorerCreatorHandler } from "../Types/Explorer";
-import { IConfigAnalysisResults, CAIssueSeverity, CAPathedResult, CAResultPath, CAResultBase, ValueHostConfigCAResult, CAFeature, ValidatorConfigCAResult, ConditionConfigCAResult, LookupKeyCAResult, IdentifierServiceCAResult, ConverterServiceCAResult, ComparerServiceCAResult, ParserServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormatterServiceCAResult, FormattersByCultureCAResult, PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult } from "../Types/Results";
+import {
+    IConfigAnalysisResultsExplorer, ICAExplorerFactory, IConfigAnalysisOutputter,
+    IConfigAnalysisSearchCriteria, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData,
+    ICASearcher, ICAExplorerBase, ExplorerCreatorHandler
+} from "../Types/Explorer";
+import {
+    IConfigAnalysisResults, CAIssueSeverity, CAPathedResult, CAResultPath, CAResultBase,
+    ValueHostConfigCAResult, CAFeature, ValidatorConfigCAResult, ConditionConfigCAResult,
+    LookupKeyCAResult, IdentifierServiceCAResult, ConverterServiceCAResult, ComparerServiceCAResult,
+    ParserServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormatterServiceCAResult,
+    FormattersByCultureCAResult, PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult
+} from "../Types/Results";
 
 /**
  * Tool to explore the results of the configuration analysis.
@@ -20,7 +29,7 @@ import { IConfigAnalysisResults, CAIssueSeverity, CAPathedResult, CAResultPath, 
  * Intended for your testing code and to write the results to something that can store them,
  * even if you don't have a testing situation.
  */
-export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices>
+export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices>
     implements IConfigAnalysisResultsExplorer {
     constructor(results: IConfigAnalysisResults,
         factory: ICAExplorerFactory,

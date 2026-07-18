@@ -2,8 +2,7 @@ import { jest } from '@jest/globals';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
-import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
 import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
@@ -2901,14 +2900,14 @@ describe('ConfigAnalysisResultExplorer class', () => {
         expect(notFound).toHaveLength(0);
     }
     describe('Constructor and setup', () => {
-        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValueHostsServices> {
-            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValueHostsServices) {
+        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValidationServices> {
+            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValidationServices) {
                 super(results, factory, services);
             }
             public get publicify_factory(): ICAExplorerFactory {
                 return this.factory;
             }
-            public get publicify_services(): IValueHostsServices {
+            public get publicify_services(): IValidationServices {
                 return this.services;
             }
         }
@@ -2940,7 +2939,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/factory/);
         });
         test('constructor throws when services is null', () => {
-            let services: IValueHostsServices = null as any;
+            let services: IValidationServices = null as any;
             expect(() => new Publicify_ConfigAnalysisResultsExplorer(
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/services/);
         });

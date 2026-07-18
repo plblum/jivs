@@ -4,7 +4,7 @@
  */
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+
 import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { IValidator, ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
@@ -68,7 +68,7 @@ export interface IDataTypeComparerAnalyzer {
  * The implementation is supplied to the IConfigAnalyzer and IConfigPropertyAnalyzer
  * instances, as they will utilitize its methods.
  */
-export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
+export interface IAnalysisResultsHelper<TServices extends IValidationServices> {
 
     analysisArgs: AnalysisArgs<TServices>;
 
@@ -346,7 +346,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
  * @template TResults - The type of the analysis results.
  */
 export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
-    TServices extends IValueHostsServices> {
+    TServices extends IValidationServices> {
     /**
      * Analyzes the given configuration object and returns the analysis results.
      *
@@ -363,7 +363,7 @@ export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResults
  * Represents an interface for analyzing ValueHostConfig objects,
  * creating a ValueHostConfigCAResult object for each VHC.
  */
-export interface IValueHostConfigAnalyzer<TServices extends IValueHostsServices>
+export interface IValueHostConfigAnalyzer<TServices extends IValidationServices>
     extends IConfigAnalyzer<ValueHostConfig, ValueHostConfigCAResult, TServices> {
 }
 
@@ -379,7 +379,7 @@ export interface IValidatorConfigAnalyzer
 /**
  * Analyzes a ConditionConfig object, creating a ConditionResults object.
  */
-export interface IConditionConfigAnalyzer<TServices extends IValueHostsServices> extends
+export interface IConditionConfigAnalyzer<TServices extends IValidationServices> extends
     IConfigAnalyzer<ConditionConfig, ConditionConfigCAResult, TServices> {
 }
 

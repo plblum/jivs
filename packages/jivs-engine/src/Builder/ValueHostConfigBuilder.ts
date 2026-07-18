@@ -11,7 +11,7 @@ import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { IValueHostsServices } from "../Interfaces/ValueHostsServices";
+
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { isPlainObject } from "../Utilities/Utilities";
 import {
@@ -36,7 +36,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
      * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
      * @param services
      */
-    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValidationServices)
     {
         assertNotNull(services, 'services');
         if (existingValueHostConfigs)
@@ -49,11 +49,11 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
     {
         return this._existingValueHostConfigs ? this._existingValueHostConfigs.deref() ?? null : null;
     }
-    public get services(): IValueHostsServices
+    public get services(): IValidationServices
     {
         return this._services.deref()!;
     }
-    private _services: WeakRef<IValueHostsServices>;
+    private _services: WeakRef<IValidationServices>;
 
     dispose(): void {
         this._services = undefined!;
@@ -221,7 +221,7 @@ export class ValidatableValueHostConfigBuilder extends ValueHostConfigBuilder
      * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
      * @param services
      */
-    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValidationServices)
     {
         super(existingValueHostConfigs, services);
     }

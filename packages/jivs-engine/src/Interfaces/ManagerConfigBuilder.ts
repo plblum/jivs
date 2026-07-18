@@ -15,9 +15,7 @@ import { IValidationManagerCallbacks, ValidationManagerConfig } from "./Validati
 import { ValidatorConfig } from "./Validator";
 import { ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "./ValueHostsManager";
-import { IValueHostsServices } from "./ValueHostsServices";
-
-
+import type { IValidationServices } from "./ValidationServices";
 /**
  * Base interface for a ValueHostsManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
@@ -26,7 +24,7 @@ import { IValueHostsServices } from "./ValueHostsServices";
 export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
     extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
 {
-    services: IValueHostsServices;
+    services: IValidationServices;
     /**
      * Delivers a complete ValueHostConfig and shuts down this instance.
      * You cannot use the instance after this point.

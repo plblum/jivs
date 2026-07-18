@@ -4,7 +4,7 @@
  */
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { valueForLog } from "@plblum/jivs-engine/build/Utilities/Utilities";
 import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
@@ -15,7 +15,7 @@ import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } 
  * Base class for analyzing a Config object, creating a ConfigResults object.
  */
 export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
-    TServices extends IValueHostsServices>
+    TServices extends IValidationServices>
     implements IConfigAnalyzer<TConfig, TResults, TServices> {
     constructor(helper: AnalysisResultsHelper<TServices>,
         propertyAnalyzers: Array<IConfigPropertyAnalyzer<TConfig, TResults>>

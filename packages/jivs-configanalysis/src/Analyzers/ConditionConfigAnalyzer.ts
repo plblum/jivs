@@ -6,9 +6,10 @@
 import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+
 import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
 import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
 import { IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from "../Types/Analyzers";
@@ -23,8 +24,8 @@ import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from "../Types/Re
  * There are no tests for duplicates.
  * There are no child configs to check.
  */
-export class ConditionConfigAnalyzer<TServices extends IValueHostsServices>
-    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult, IValueHostsServices>
+export class ConditionConfigAnalyzer<TServices extends IValidationServices>
+    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult, IValidationServices>
 implements IConditionConfigAnalyzer<TServices> {
 
     constructor(helper: AnalysisResultsHelper<TServices>,

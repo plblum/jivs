@@ -7,9 +7,9 @@ import { ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
 import { TextValueChangedHandler } from "../Interfaces/FieldValueHost";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../Interfaces/ValueHost";
 import { IValueHostsManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { IValidationServices } from "../Interfaces/ValidationServices";
 
 /**
  * For populating the ValueHostsManagerConfig and ValidationManagerConfig's ValueHostsConfig
@@ -53,10 +53,10 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
  * can be null or []. The user will use the field(), static(), and calc() functions
  * to populate it.
  */
-    constructor(services: IValueHostsServices)
+    constructor(services: IValidationServices)
     constructor(config: T)
     constructor(state: BuilderState<T>)
-    constructor(arg1: IValueHostsServices | T | BuilderState<T>)
+    constructor(arg1: IValidationServices | T | BuilderState<T>)
     {
         super(arg1 as any);
     }

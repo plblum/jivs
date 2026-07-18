@@ -7,7 +7,7 @@
 import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
@@ -33,7 +33,7 @@ import { SampleValues } from "./SampleValues";
 /**
  * @inheritdoc Types!IConfigAnalysis:interface
  */
-export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IValueHostsServices>
+export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IValidationServices>
     implements IConfigAnalysis {
 
     /**
@@ -287,9 +287,9 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
 /**
  * ValueHostsManagerConfig analysis service.
  */
-export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
-    protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
-        let helper = new AnalysisResultsHelper<IValueHostsServices>(args);
+export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IValidationServices> {
+    protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
+        let helper = new AnalysisResultsHelper<IValidationServices>(args);
 
         helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));
         helper.registerLookupKeyAnalyzer(ServiceName.identifier, new DataTypeIdentifierLookupKeyAnalyzer(args));

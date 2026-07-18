@@ -1,11 +1,11 @@
 /**
  * Provides a container for ValueHosts that can be used
- * when working with a model or form. It works together with IValueHostsServices.
- * Since IValueHostsServices doesn't deal with validation services,
+ * when working with a model or form. It works together with IValidationServices.
+ * Since IValidationServices doesn't deal with validation services,
  * ValueHostsManager doesn't support ValueHosts inheriting from
  * ValidatableValueHostBase, including FieldValueHost,
  * as those are built for validation.
- * IValueHostsServices does handle conditions, so it can be shared with Conditions
+ * IValidationServices does handle conditions, so it can be shared with Conditions
  * that need services.
  * @module ValueHosts/ConcreteClasses/ValueHostsManager
  */
@@ -26,19 +26,19 @@ import { toIStaticValueHost } from './StaticValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { ValueHostsManagerConfigBuilder } from '../Builder/ValueHostsManagerConfigBuilder';
 import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 
 
 /**
  * Provides a container for ValueHosts that can be used
- * when working with a model or form. It works together with IValueHostsServices.
- * Since IValueHostsServices doesn't deal with validation services,
+ * when working with a model or form. It works together with IValidationServices.
+ * Since IValidationServices doesn't deal with validation services,
  * ValueHostsManager doesn't support ValueHosts inheriting from
  * ValidatableValueHostBase, including FieldValueHost,
  * as those are built for validation.
- * IValueHostsServices does handle conditions, so it can be shared with Conditions
+ * IValidationServices does handle conditions, so it can be shared with Conditions
  * that need services.
  * 
  * Ultimately in Jivs, it supports the ValidationManager, but can work stand-alone.
@@ -167,7 +167,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Access to the ValidationServices.
      */
-    public get services(): IValueHostsServices {
+    public get services(): IValidationServices {
         return this._config.services!;
     }
 

@@ -11,7 +11,8 @@ import {
     RegExpConditionConfig, RegExpCondition,
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
-    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig,
+    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig,
+    NotNullCondition, NotNullConditionConfig,
     EqualToConditionConfig,
     NotEqualToConditionConfig,
     GreaterThanConditionConfig,
@@ -37,7 +38,10 @@ import {
     MaxDecimalsCondition,
     MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
-import { LogDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
+import {
+    LogDetails, LoggingCategory, LoggingLevel,
+    logGatheringErrorHandler, logGatheringHandler
+} from "../../src/Interfaces/LoggerService";
 
 import {
     MockValidationServices, MockValidationManager,
@@ -48,7 +52,8 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import {
-    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable,
+    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType,
+    EvaluatesAsPromiseConditionType, makeDisposable,
     DisposableConditionType
 } from "../../src/Support/conditionsForTesting";
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
@@ -63,7 +68,6 @@ import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifier
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
-import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { CodingError, InvalidTypeError } from '../../src/Utilities/ErrorHandling';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
@@ -110,12 +114,12 @@ describe('ConditionBase class', () => {
         constructor(config: ConditionConfig) {
             super(config);
         }
-        public publicify_generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
+        public publicify_generateCondition(config: ConditionConfig, services: IValidationServices): ICondition {
             return super.generateCondition(config, services);
         }
 
         public publicify_convertValueAndLookupKey(value: any, valueLookupKey: string | null | undefined,
-            conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+            conversionLookupKey: string | null | undefined, services: IValidationServices): {
                 value?: any,
                 lookupKey?: string | null,
                 failed: boolean
@@ -135,20 +139,20 @@ describe('ConditionBase class', () => {
         public publicify_ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
             return super.ensureNoPromise(result);
         }
-        public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel : LoggingLevel): void {
+        public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValidationServices, logLevel : LoggingLevel): void {
             super.logInvalidPropertyData(propertyName, errorMessage, services, logLevel);
         }
-        public publicify_logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+        public publicify_logTypeMismatch(services: IValidationServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
             super.logTypeMismatch(services, propertyName, propertyName2, propertyValue, propertyValue2);
         }
 
-        public publicify_log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        public publicify_log(services: IValidationServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
             super.logger(services).log(level, gatherFn);
         }
-        public publicify_logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: () => string): void {
+        public publicify_logQuick(services: IValidationServices, level: LoggingLevel, messageFn: () => string): void {
             super.logger(services).message(level, messageFn);
         }
-        public publicify_logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
+        public publicify_logError(services: IValidationServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
             super.logger(services).error(error, gatherFn);
         }
     }

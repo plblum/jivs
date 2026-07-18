@@ -12,7 +12,6 @@ import {
 } from '../Interfaces/Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 
 import { IValidatorBuilder, IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { ConditionConfig } from '../Interfaces/Conditions';
@@ -80,24 +79,24 @@ import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from "./Val
  * builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
  *        .lessThan('today');
- * builder.static('today', LookupKey.Date, { initialValue: new Date() }
+ * builder.static('today', LookupKey.Date, { initialValue: new Date() });
  * let vm = new ValidationManager(builder); // consider builder disposed at this point
  * ```
  */
 export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
     implements IManagerConfigBuilder<T> {
 
-    constructor(services: IValueHostsServices)
+    constructor(services: IValidationServices)
     constructor(config: T)
     constructor(state: BuilderState<T>)
-    constructor(arg1: IValueHostsServices | T | BuilderState<T>) {
+    constructor(arg1: IValidationServices | T | BuilderState<T>) {
         assertNotNull(arg1);
         if (arg1 instanceof BuilderState)
         {
             this._state = arg1;
             return;
         }
-        let services = toIServices(arg1) as IValueHostsServices;
+        let services = toIServices(arg1) as IValidationServices;
         if (services) {
             this._state = new BuilderState<T>({
                 services: services,
@@ -133,7 +132,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         return this.state;
     }
 
-    public get services(): IValueHostsServices {
+    public get services(): IValidationServices {
         return this.baseConfig.services;
     }
     

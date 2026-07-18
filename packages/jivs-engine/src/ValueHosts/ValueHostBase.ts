@@ -7,8 +7,8 @@ import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/Er
 import { deepEquals, deepClone, valueForLog } from '../Utilities/Utilities';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel, LoggingCategory, logGatheringHandler, LogOptions, LogDetails, logGatheringErrorHandler } from '../Interfaces/LoggerService';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
@@ -36,7 +36,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 
     //#endregion IValueHostsManagerAccessor
     
-    protected get services(): IValueHostsServices {
+    protected get services(): IValidationServices {
         return this.valueHostsManager.services;
     }
     /**

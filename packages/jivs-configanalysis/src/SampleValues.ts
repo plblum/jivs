@@ -6,7 +6,7 @@
 
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ConfigAnalysisOptions, ISampleValues } from "./Types/ConfigAnalysis";
 
 /**
@@ -25,7 +25,7 @@ import { ConfigAnalysisOptions, ISampleValues } from "./Types/ConfigAnalysis";
  * Use options.lookupKeysSampleValues for data type lookup keys
  * and options.valueHostsSampleValues for valueHost specific values.
  */
-export class SampleValues<TServices extends IValueHostsServices> implements ISampleValues {
+export class SampleValues<TServices extends IValidationServices> implements ISampleValues {
     constructor(services: TServices,
         options: ConfigAnalysisOptions) {
         this._sampleValuesCache = new Map();
@@ -124,7 +124,7 @@ export class SampleValues<TServices extends IValueHostsServices> implements ISam
      * to try another. It will return undefined only if it runs out of fallbacks.
      * @param lookupKey 
      */
-    protected tryToIdentifyLookupKey(lookupKey: string, services: IValueHostsServices): any {
+    protected tryToIdentifyLookupKey(lookupKey: string, services: IValidationServices): any {
         // implement this
         let dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === lookupKey);
         if (dti)

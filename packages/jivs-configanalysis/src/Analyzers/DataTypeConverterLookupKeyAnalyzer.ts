@@ -4,7 +4,7 @@
 
 import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult, CAFeature } from "../Types/Results";
 import { AnalysisArgs } from "../Types/ConfigAnalysis";
@@ -28,8 +28,8 @@ import { AnalysisArgs } from "../Types/ConfigAnalysis";
  * - If the converter is not found, it will report an error and provide an error message.
  * 
  */
-export class DataTypeConverterLookupKeyAnalyzer extends OneClassPerLookupKeyAnalyzer<IDataTypeConverter, IValueHostsServices> {
-    constructor(args: AnalysisArgs<IValueHostsServices>) {
+export class DataTypeConverterLookupKeyAnalyzer extends OneClassPerLookupKeyAnalyzer<IDataTypeConverter, IValidationServices> {
+    constructor(args: AnalysisArgs<IValidationServices>) {
         super(args);
     }
 

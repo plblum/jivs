@@ -1,33 +1,33 @@
-import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
+
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
-
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
 import { SampleValues } from './../src/SampleValues';
 
 
 describe('SampleValues', () => {
-    class Publicify_SampleValues extends SampleValues<IValueHostsServices> {
+    class Publicify_SampleValues extends SampleValues<IValidationServices> {
         public get Publicify_sampleValuesCache(): Map<string, any>
         {
-            return super.sampleValuesCache;
+            return this.sampleValuesCache;
         }
         public get Publicify_options(): ConfigAnalysisOptions {
-            return super.options;
+            return this.options;
         }
 
-        public get Publicify_services(): IValueHostsServices {
-            return super.services;
+        public get Publicify_services(): IValidationServices {
+            return this.services;
         }
 
         public get Publicify_lookupKeysSampleValues(): { [key: string]: any } {
-            return super.lookupKeysSampleValues ?? {}
+            return this.lookupKeysSampleValues ?? {}
         }
         public get Publicify_valueHostsSampleValues(): { [key: string]: any } {
-            return super.valueHostsSampleValues ?? {}
+            return this.valueHostsSampleValues ?? {}
         }
-        public tryToIdentifyLookupKey(lookupKey: string, services: IValueHostsServices)
+        public tryToIdentifyLookupKey(lookupKey: string, services: IValidationServices)
         {
             return super.tryToIdentifyLookupKey(lookupKey, services);
         }

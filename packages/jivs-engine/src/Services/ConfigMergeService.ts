@@ -286,7 +286,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
             return;
         this.mergeConfigs(source, destination, { valueHostName: destination.name });
         if (this.hasServices()) {
-            let vcms = this.services.validatorConfigMergeService;  // may be undefined if services is ValueHostsServices
+            let vcms = this.services.validatorConfigMergeService; 
             if (vcms)
                 vcms.merge(source as ValidatorsValueHostBaseConfig,
                     destination as ValidatorsValueHostBaseConfig);

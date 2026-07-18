@@ -43,7 +43,6 @@ import {
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
-import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
@@ -58,7 +57,7 @@ class TestValidatorsValueHost extends ValidatorsValueHostBase<ValidatorsValueHos
     {
         return this.validators();
     }
-    public get exposeServices(): IValueHostsServices {
+    public get exposeServices(): IValidationServices {
         return this.services;
     }
 

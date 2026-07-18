@@ -5,7 +5,7 @@
 
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ILookupKeyAnalyzer } from "../Types/Analyzers";
 import { AnalysisArgs } from "../Types/ConfigAnalysis";
 import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound, CAIssueSeverity, IssueForCAResultBase } from "../Types/Results";
@@ -15,7 +15,7 @@ import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound
  * has a child of this class registered with the CodeAnalysisService.
  * Each provides a way to take that key and retrieve the matching object, or report an error when not found.
  */
-export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHostsServices>
+export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValidationServices>
     implements ILookupKeyAnalyzer {
 
         constructor(args: AnalysisArgs<TServices>) {
@@ -76,7 +76,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
  * For services that have a single object to report on per key.
  * Adds OneClassRetrieval to LookupKeyCAResult.serviceResults.
  */
-export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices>
+export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IValidationServices>
     extends LookupKeyAnalyzerBase<TData, TServices> 
 {
 
@@ -87,6 +87,6 @@ export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IVal
  * such as on for each cultureId.
  * Adds MultiClassRetrieval to LookupKeyCAResult.serviceResults.
  */
-export abstract class MultipleClassesPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices> extends
+export abstract class MultipleClassesPerLookupKeyAnalyzer<TData, TServices extends IValidationServices> extends
     LookupKeyAnalyzerBase<TData, TServices> {
 }

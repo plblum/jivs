@@ -5,7 +5,7 @@
 
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
@@ -66,7 +66,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @param valueHost
      * @param services 
      */
-    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValueHostsServices):
+    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValidationServices):
         ConditionEvaluateResult;
     /**
      * Runs when Config.supportsDuringEdit is true and validateOptions.DuringEdit is true
@@ -77,7 +77,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns When supportsDuringEdit is false, returns undetermined. Otherwise it follows
      * the rules from the Config.
      */
-    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValueHostsServices): ConditionEvaluateResult{
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult{
         if (this.config.supportsDuringEdit !== false)
         {
             if (this.config.trim ?? true)

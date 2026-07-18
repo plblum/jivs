@@ -15,7 +15,7 @@ import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsVa
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
+
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 import { IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
@@ -24,6 +24,7 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { FluentFieldParameters } from "../../src/Interfaces/Fluent";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -39,7 +40,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
         return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 
-    public get publicify_services(): IValueHostsServices
+    public get publicify_services(): IValidationServices
     {   
         return this.services;
     }
@@ -90,7 +91,7 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
     //     super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
     // }    
 
-    public get publicify_services(): IValueHostsServices
+    public get publicify_services(): IValidationServices
     {   
         return this.services;
     }

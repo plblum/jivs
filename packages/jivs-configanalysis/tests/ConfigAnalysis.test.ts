@@ -5,7 +5,7 @@ import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Inte
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-engine/build/Builder/ValueHostsManagerConfigBuilder";
 import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
@@ -38,8 +38,8 @@ import {
 import { ConfigAnalysisService } from '../src/ConfigAnalysisService';
 
 describe('ConfigAnalysisBase class', () => {
-    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
-        protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValidationServices> {
+        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             let helper = new AnalysisResultsHelper(args);
             this._helper = helper;
             helper.registerLookupKeyAnalyzer(ServiceName.converter, new MockAnalyzer(ServiceName.converter, {} as ServiceWithLookupKeyCAResultBase));
@@ -50,10 +50,10 @@ describe('ConfigAnalysisBase class', () => {
         /**
          * Expose the helper for testing
          */
-        public get publicify_helper(): AnalysisResultsHelper<IValueHostsServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
 
         public get publicify_options(): ConfigAnalysisOptions | null | undefined {
             return this._options;
@@ -63,7 +63,7 @@ describe('ConfigAnalysisBase class', () => {
         public publicify_getValueHostNames(config: ValueHostsManagerConfig): string[] {
             return this.getValueHostNames(config);
         }
-        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IValueHostsServices>): void {
+        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IValidationServices>): void {
             this.gatherDataTypeIdentifierLookupKeys(helper);
         }
         public get publicify_valueHostConfigPropertyAnalyzers(): Array<IValueHostConfigPropertyAnalyzer> {
@@ -79,18 +79,18 @@ describe('ConfigAnalysisBase class', () => {
             return this.createConfigAnalysisResults(config);
         }
         public publicify_createAnalysisArgs(config: ValueHostsManagerConfig,
-            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             return this.createAnalysisArgs(config, results, options);
         }
-        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValueHostsServices>, helper: AnalysisResultsHelper<IValueHostsServices>): void {
+        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValidationServices>, helper: AnalysisResultsHelper<IValidationServices>): void {
             this.resolveConfigAnalyzers(analysisArgs, helper);
 
         }
-        public publicify_createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+        public publicify_createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             return this.createHelper(args);
         }
         // just to expose options
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             this._options = options;
             return super.createAnalysisArgs(config, results, options);
 
@@ -114,9 +114,9 @@ describe('ConfigAnalysisBase class', () => {
     }
     function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
         testItem: Publicify_ConfigAnalysisBase,
-        services: IValueHostsServices,
-        helper: AnalysisResultsHelper<IValueHostsServices>,
-        analysisArgs: AnalysisArgs<IValueHostsServices>,
+        services: IValidationServices,
+        helper: AnalysisResultsHelper<IValidationServices>,
+        analysisArgs: AnalysisArgs<IValidationServices>,
         results: IConfigAnalysisResults,
     } {
         let services = createServices(serviceOptions);
@@ -563,25 +563,25 @@ describe('ConfigAnalysisBase class', () => {
 });
 describe('ValueHostsManagerConfigAnalysis', () => {
     class Publicify_ValueHostsManagerConfigAnalysis extends ValueHostsManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
         }
-        public get publicify_helper(): AnalysisResultsHelper<IValueHostsServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
-        public get publicify_AnalysisArgs(): AnalysisArgs<IValueHostsServices> | undefined {
+        public get publicify_AnalysisArgs(): AnalysisArgs<IValidationServices> | undefined {
 
             return this._analysisArgs;
         }
-        private _analysisArgs: AnalysisArgs<IValueHostsServices> | undefined = undefined;
+        private _analysisArgs: AnalysisArgs<IValidationServices> | undefined = undefined;
     }
 
     // test a very simple configuration of 1 valueHostConfig

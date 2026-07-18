@@ -4,7 +4,7 @@
 
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
 import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, CAFeature } from "../Types/Results";
 import { AnalysisArgs } from "../Types/ConfigAnalysis";
@@ -42,8 +42,8 @@ import { AnalysisArgs } from "../Types/ConfigAnalysis";
  * }
  * ```
  */
-export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAnalyzer<IDataTypeIdentifier, IValueHostsServices> {
-    constructor(args: AnalysisArgs<IValueHostsServices>) {
+export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAnalyzer<IDataTypeIdentifier, IValidationServices> {
+    constructor(args: AnalysisArgs<IValidationServices>) {
         super(args);
     }
 

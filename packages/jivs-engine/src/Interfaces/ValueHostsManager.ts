@@ -12,7 +12,7 @@ import { IFieldValueHostChangedCallback } from './FieldValueHost';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 import { IDisposable } from './General_Purpose';
-import { IValueHostsServices } from './ValueHostsServices';
+import type { IValidationServices } from './ValidationServices';
 
 /**
  * Provides a container for ValueHosts that can be used
@@ -26,7 +26,7 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
     /**
      * Typecast from IServices
      */
-    readonly services: IValueHostsServices;
+    readonly services: IValidationServices;
 
     /**
      * Adds a ValueHostConfig for a ValueHost not previously added. 
@@ -138,7 +138,7 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
      * If this is set to another object created within the scope of ValueHostsManager,
      * that other object should keep a WeakRef to it.
      */
-    services: IValueHostsServices;
+    services: IValidationServices;
     /**
      * Initial list of ValueHostConfigs. Here's where all of the action is!
      * Each ValueHostConfig describes one ValueHost (which is info about one value in your app),

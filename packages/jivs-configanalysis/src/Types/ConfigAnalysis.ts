@@ -4,7 +4,7 @@
  */
 import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
 
 import {
@@ -88,9 +88,9 @@ export interface IConfigAnalysis {
  */
 /**
  * Represents the arguments for analysis in the ConfigAnalysis.
- * @template TServices - The type of services provided by IValueHostsServices.
+ * @template TServices - The type of services provided by IValidationServices.
  */
-export interface AnalysisArgs<TServices extends IValueHostsServices> {
+export interface AnalysisArgs<TServices extends IValidationServices> {
     valueHostConfigs: Array<ValueHostConfig>;
     results: IConfigAnalysisResults;
     services: TServices;

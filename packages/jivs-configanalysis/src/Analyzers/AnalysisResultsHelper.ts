@@ -3,10 +3,9 @@
  */
 
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { ServiceName, IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValidatorConfig, IValidator } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { findCaseInsensitiveValueInStringEnum } from "@plblum/jivs-engine/build/Utilities/Utilities";
 import { IAnalysisResultsHelper, ILookupKeyAnalyzer } from "../Types/Analyzers";
@@ -19,7 +18,7 @@ import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResult
  * The implementation is supplied to the IConfigAnalyzer and IConfigPropertyAnalyzer
  * instances, as they will utilitize its methods.
  */
-export class AnalysisResultsHelper<TServices extends IValueHostsServices>
+export class AnalysisResultsHelper<TServices extends IValidationServices>
     implements IAnalysisResultsHelper<TServices> {
     constructor(args: AnalysisArgs<TServices>) {
         this._args = args;

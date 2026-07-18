@@ -13,7 +13,7 @@ import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { ConditionType } from './ConditionTypes';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 
@@ -36,7 +36,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param services 
      * @returns 
      */
-    protected logger(services: IValueHostsServices): LoggerFacade
+    protected logger(services: IValidationServices): LoggerFacade
     {
         if (!this._logger)
             this._logger = new LoggerFacade(services.loggerService, 'Condition', this, this.conditionType);
@@ -145,7 +145,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param services 
      * @returns Condition created including ErrorResponseCondition if it could not be created.
      */
-    protected generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
+    protected generateCondition(config: ConditionConfig, services: IValidationServices): ICondition {
 
         if (!config)
             return new ErrorResponseCondition(new CodingError('ConditionConfig is unassigned.'));
@@ -178,7 +178,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @returns An object containing the converted value, lookup key, and a flag indicating if the conversion failed.
      */
     protected tryConversion(value: any, valueLookupKey: string | null | undefined,
-        conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+        conversionLookupKey: string | null | undefined, services: IValidationServices): {
         value?: any,
         lookupKey?: string | null,
         failed: boolean
@@ -223,7 +223,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param errorMessage 
      * @param services 
      */
-    protected logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel: LoggingLevel = LoggingLevel.Warn): void {
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValidationServices, logLevel: LoggingLevel = LoggingLevel.Warn): void {
         
         this.logger(services).log(logLevel,
             (options?: LogOptions) => {
@@ -244,7 +244,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param services - The value host services.
      * @throws {CodingError} - Throws a CodingError with the specified error message.
      */
-    protected throwInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices): void {
+    protected throwInvalidPropertyData(propertyName: string, errorMessage: string, services: IValidationServices): void {
         this.logInvalidPropertyData(propertyName, errorMessage, services, LoggingLevel.Error);
         throw new CodingError(propertyName + ': ' + errorMessage);
     }
@@ -256,7 +256,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param propertyValue 
      * @param propertyValue2 
      */
-    protected logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+    protected logTypeMismatch(services: IValidationServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
         this.logger(services).log(LoggingLevel.Warn, (options?: LogOptions) => {
             let details: LogDetails = {
                 message: `Type mismatch. ${propertyName} cannot be compared to ${propertyName2}`,
@@ -275,7 +275,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param propertyName - The name of the property.
      * @param services - The value host services.
      */
-    protected logNothingToEvaluate(propertyName: string, services: IValueHostsServices): void {
+    protected logNothingToEvaluate(propertyName: string, services: IValidationServices): void {
         const msg = 'lacks value to evaluate';
         this.logInvalidPropertyData(propertyName, msg, services);
     }
