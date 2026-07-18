@@ -17,7 +17,7 @@ builder.model()
 ```
 
 ### I-02
-
+RESOLVED
 The parameters supplied are great for initial setup in `ModelRulesBase.configureRules`, because the user is dumping the full definition of a value host and its validators. However, when the UI developer works with Form Adapter and wants to override a value host label, validator error message, or other non-invasive aspect of value hosts and validators, the parameters and syntax are too complex.
 
 ```ts
@@ -27,6 +27,7 @@ adapter.field('FirstName', null, { label: 'First name' })
 
 ### I-03
 
+CHANGED: Use Adapter to edit. RESOLVED
 Using the same method to add and edit is acceptable. Business rules use `builder.field('field1')` to create `field1`, and the UI developer uses `adapter.field('field1', null, { label: 'label' })`. This is all part of the fluent syntax.
 
 ```ts
@@ -35,6 +36,8 @@ adapter.field('FirstName', null, { label: 'First name' });
 ```
 
 ### I-04
+
+RESOLVED: Adapter + modify().reviseDataType()
 
 `field(valueHostName, dataType, parametersObject)` is an excellent API for the business developer, but a poor one for the UI developer because the second parameter, `dataType`, is not changed often and is strongly directed to be the domain of the business logic. So the UI developer uses `null` frequently. To change the label, they have to write `field('field1', null, { label: 'label' })`.
 
@@ -47,6 +50,8 @@ adapter.field('Email', LookupKey.EmailAddress, { label: 'Email address' });
 ```
 
 ### I-05
+
+RESOLVED: Removed old. Made Adapter use and(), or(), when().
 
 The syntax of Form Adapter's `combineWithRule`, `replaceRule`, and `enabler` needs review.
 
@@ -145,6 +150,8 @@ builder.field('TextBox1', LookupKey.String)
 ```
 
 ### I-11
+
+RESOLVED with new Adapter functions: and(), or(), when().
 
 The two `combineWithRule(...)` overloads are confusing enough that even the API author is not comfortable reading examples of them.
 

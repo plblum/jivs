@@ -9,6 +9,8 @@ import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { RangeConditionConfig, RequireTextConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
     constructor() {
@@ -35,6 +37,35 @@ beforeAll(() => {
     services = new MockValidationServices(true, false);
 });
 
+describe('ConditionBuilder', () => {
+    // using expects syntax
+    test('ConditionBuilder attaches child RequireTextConditionConfig to its builder; no impact on parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let conditionBuilder = new ConditionBuilder(services, parentBuilder);
+        let childConfig: RequireTextConditionConfig = {
+            conditionType: ConditionType.RequireText,
+            valueHostName: null
+        };
+        conditionBuilder.setConfig(childConfig);
+        expect(conditionBuilder.getConfig()).toEqual(childConfig);
+        expect(parentBuilder.getConfig()).toBeUndefined();
+    });
+
+    // try RangeConditionConfig, which has a secondValue property, to ensure that the builder can handle configs with additional properties
+    test('ConditionBuilder attaches child RangeConditionConfig to its builder; no impact on parent builder', () => {
+        let parentBuilder = new TestParentBuilder();
+        let conditionBuilder = new ConditionBuilder(services, parentBuilder);
+        let childConfig: RangeConditionConfig = {
+            conditionType: ConditionType.Range,
+            valueHostName: null,
+            minimum: 1,
+            maximum: 10
+        };
+        conditionBuilder.setConfig(childConfig);
+        expect(conditionBuilder.getConfig()).toEqual(childConfig);
+        expect(parentBuilder.getConfig()).toBeUndefined();
+    });
+});
 
 describe('dataTypeCheck on conditions', () => {
     test('with fieldValue assigned, creates DataTypeCheckConditionConfig with type=DataTypeCheck and valueHostName assigned', () => {

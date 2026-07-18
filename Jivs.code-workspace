@@ -91,6 +91,10 @@
 		"coverage-gutters.showLineCoverage": false,
 		"coverage-gutters.showRulerCoverage": true,
 		"coverage-gutters.showGutterCoverage": false,
+		"testing.coverageToolbarEnabled": false,
+		"coverage-gutters.highlightlight": "rgba(0, 255, 64, 0.3)",
+		"coverage-gutters.highlightdark": "rgba(0, 122, 30, 0.5)",
+		"testing.showCoverageInExplorer": false,
 
 	}
 }
