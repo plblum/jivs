@@ -10,6 +10,9 @@
 			"path": "packages/jivs-examples"
 		},
 		{
+			"path": "packages/jivs-builder"
+		},
+		{
 			"path": "packages/jivs-configanalysis"
 		},
 		{
