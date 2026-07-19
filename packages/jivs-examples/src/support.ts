@@ -13,6 +13,9 @@ import { ConsoleLoggerService } from "@plblum/jivs-engine/build/Services/Console
 import { MessageTokenResolverService } from "@plblum/jivs-engine/build/Services/MessageTokenResolverService";
 import { DataTypeCheckCondition, DataTypeCheckConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
+import { BuildersFactoryInstaller } from "@plblum/jivs-engine/build/Services/BuildersFactoryInstaller";
+
+new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
 
 export function createMinimalValidationServices(activeCultureId: string): ValidationServices {
     let vs = new ValidationServices();

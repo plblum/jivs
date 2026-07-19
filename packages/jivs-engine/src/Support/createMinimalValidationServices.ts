@@ -24,6 +24,7 @@ import { DataTypeParserService } from "../Services/DataTypeParserService";
 import { MessageTokenResolverService } from "../Services/MessageTokenResolverService";
 import { TextLocalizerService } from "../Services/TextLocalizerService";
 import { ValidationServices } from "../Services/ValidationServices";
+import { BuildersFactoryInstaller } from "../Services/BuildersFactoryInstaller";
 
 
 /**

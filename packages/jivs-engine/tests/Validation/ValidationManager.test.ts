@@ -48,10 +48,10 @@ import {
 } from '../TestSupport/TestValidatableValueHost';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { ValueHostAccessor } from '../../src/ValueHosts/ValueHostAccessor';
 import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IDisposable } from '../../src/Interfaces/General_Purpose';
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 
 
 // Subclass of what we want to test to expose internals to tests
@@ -116,6 +116,10 @@ function setupValidationManagerForAddExternalIssueFoundTests(
         validationManager
     };
 }
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 //  constructor(setup: ValidationManagerConfig)
 describe('constructor and initial property values', () => {

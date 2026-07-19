@@ -49,7 +49,6 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(() => x = testItem.messageTokenResolverService).toThrow(/MessageTokenResolverService/);       
         expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.validatorConfigMergeService).toBeInstanceOf(ValidatorConfigMergeService);
-        expect(testItem.buildersFactory).toBeInstanceOf(BuildersFactory);
         expect(testItem.cachingService).toBeInstanceOf(CachingService);
 
     });
@@ -402,7 +401,6 @@ describe('dispose', () => {
         expect(() => testItem.loggerService).toThrow(TypeError);
         expect(() => testItem.lookupKeyFallbackService).toThrow(TypeError);
         expect(() => testItem.valueHostFactory).toThrow(TypeError);
-        expect(() => testItem.buildersFactory).toThrow(TypeError);
         expect(() => testItem.cachingService).toThrow(TypeError);
 
     });

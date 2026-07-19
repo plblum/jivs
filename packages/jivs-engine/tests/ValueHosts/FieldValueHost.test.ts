@@ -31,6 +31,7 @@ import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { BuildersFactoryInstaller } from "../../src/Services/BuildersFactoryInstaller";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -193,6 +194,10 @@ function setupFieldValueHostForValidate(
 
     return setupFieldValueHost(fieldValueConfig, updatedState);
 }
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('constructor and resulting property values', () => {
 

@@ -1,5 +1,8 @@
 /**
  * Provides a dependency injection approach to this library.
+ * 
+ * To add more services, use setService(name, service) to add a new service to the IValidationServices instance.
+ * Alternatively, use the ModuleServicesInstaller to add services to the global default IValidationServices instance.
  * @module Services/Types/IValidationServices
  */
 
@@ -10,7 +13,6 @@ import { IMessageTokenResolverService } from './MessageTokenResolverService';
 import { IDataTypeParserService } from './DataTypeParserService';
 import { IValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from './CachingService';
-import { IBuildersFactory } from './BuildersFactory';
 
 import { IValueHostFactory } from './ValueHostFactory';
 import { IServices } from './Services';
@@ -26,6 +28,8 @@ import { IValueHostConfigMergeService } from './ConfigMergeService';
 
 /**
  * Full interface representation of ValidationServices.
+ * To add more services, use setService(name, service) to add a new service to the IValidationServices instance.
+ * Alternatively, use the ModuleServicesInstaller to add services to the global default IValidationServices instance.
  */
 export interface IValidationServices extends IServices {
 
@@ -136,11 +140,6 @@ export interface IValidationServices extends IServices {
     validatorFactory: IValidatorFactory;
 
     /**
-     * Factory for creating various Builder instances.
-     */
-    buildersFactory: IBuildersFactory;
-
-    /**
      * Service for caching data.
      */
     cachingService: ICachingService;
@@ -221,11 +220,6 @@ export enum ServiceName {
      * IValidatorFactory
      */
     validatorFactory = 'ValidatorFactory',
-
-    /**
-     * IBuildersFactory
-     */
-    buildersFactory = 'BuildersFactory',
     
     /**
      * IModelToValuesFactory - in jivs-model

@@ -6,8 +6,7 @@ import {
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
-import { StaticValueHost } from '@plblum/jivs-engine/build/ValueHosts/StaticValueHost';
-import { CalcValueHost } from '@plblum/jivs-engine/build/ValueHosts/CalcValueHost';
+
 
 let originalDocument: any;
 beforeEach(() => {

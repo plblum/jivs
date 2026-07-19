@@ -1,11 +1,15 @@
 /**
  * Supplies services and tools to be used as dependency injection
  * into the classes of this system.
+ * 
  * There are many configuration choices involved. Its best to have
  * a function that creates a ValidationService with its configuration together.
  * Copy the /starter_code/create_services.ts file into your app.
  * It contains such a function, createValidationServices().
  * Edit that file to adjust your configuration.
+ * 
+ * To add more services, use setService(name, service) to add a new service to the IValidationServices instance.
+ * Alternatively, use the ModuleServicesInstaller to add services to the global default IValidationServices instance.
  * @module Services/ConcreteClasses/ValidationServices
  */
 
@@ -43,11 +47,15 @@ import { ValueHostConfigMergeService } from './ConfigMergeService';
 /**
  * Supplies services and tools to be used as dependency injection
  * into the classes of this system. It also supplies factories.
+ * 
  * There are many configuration choices involved. Its best to have
  * a function that creates a ValidationService with its configuration together.
  * Copy the /starter_code/create_services.ts file into your app.
  * It contains such a function, createValidationServices().
  * Edit that file to adjust your configuration.
+ * 
+ * To add more services, use setService(name, service) to add a new service to the IValidationServices instance.
+ * Alternatively, use the ModuleServicesInstaller to add services to the global default IValidationServices instance.
  */
 export class ValidationServices extends Services implements IValidationServices {
     /**
@@ -324,23 +332,23 @@ export class ValidationServices extends Services implements IValidationServices 
 
     //#endregion ValidatorFactory
 
-    //#region BuildersFactory    
-    /**
-     * Factory for creating various Builder instances.
-     */
-    public get buildersFactory(): IBuildersFactory {
-        let service = this.getService<IBuildersFactory>(ServiceName.buildersFactory);
-        if (!service) {
-            service = new BuildersFactory();
-            this.setService(ServiceName.buildersFactory, service);
-        }
-        return service;
-    }
-    public set buildersFactory(factory: IBuildersFactory) {
-        this.setService(ServiceName.buildersFactory, factory);
-    }
+    // //#region BuildersFactory    
+    // /**
+    //  * Factory for creating various Builder instances.
+    //  */
+    // public get buildersFactory(): IBuildersFactory {
+    //     let service = this.getService<IBuildersFactory>(ServiceName.buildersFactory);
+    //     if (!service) {
+    //         service = new BuildersFactory();
+    //         this.setService(ServiceName.buildersFactory, service);
+    //     }
+    //     return service;
+    // }
+    // public set buildersFactory(factory: IBuildersFactory) {
+    //     this.setService(ServiceName.buildersFactory, factory);
+    // }
 
-    //#endregion BuildersFactory       
+    // //#endregion BuildersFactory       
 
     /**
      * Service to get the ICachingService instance that 
