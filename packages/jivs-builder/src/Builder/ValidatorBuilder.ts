@@ -56,7 +56,7 @@ import {
 } from "../Interfaces/ChildBuilders";
 import { ConditionConfig, ICondition } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { FluentValidatorConfig } from '../Interfaces/Fluent';
+import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";

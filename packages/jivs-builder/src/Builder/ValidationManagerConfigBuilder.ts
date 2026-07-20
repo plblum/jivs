@@ -20,7 +20,7 @@ import { IValidatorBuilder } from "../Interfaces/ChildBuilders";
 import {
     FluentFieldParameters, FluentFieldValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from "../Interfaces/Fluent";
+} from "../Interfaces/ValueHostConfigBuilders";
 import { IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder";

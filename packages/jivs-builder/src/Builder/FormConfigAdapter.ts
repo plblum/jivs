@@ -103,7 +103,7 @@ import {
     IStartConditionBuilder, IStartConditionWithOneChildBuilder,
     IValidatorBuilder
 } from "../Interfaces/ChildBuilders";
-import { FluentValidatorConfig } from "../Interfaces/Fluent";
+import { FluentValidatorConfig } from "../Interfaces/ValueHostConfigBuilders";
 import {
     AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
     IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder

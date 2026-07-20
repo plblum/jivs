@@ -10,7 +10,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import {
     FluentAnyValueHostConfig,
     FluentAnyValueHostParameters, FluentStaticParameters
-} from '../Interfaces/Fluent';
+} from '../Interfaces/ValueHostConfigBuilders';
 
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';

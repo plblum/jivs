@@ -23,7 +23,7 @@ import {
 import {
     FluentFieldParameters, FluentFieldValueConfig,
     FluentStaticParameters, FluentValidatorConfig
-} from "./Fluent";
+} from "./ValueHostConfigBuilders";
 /**
  * Base interface for a ValidationManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig

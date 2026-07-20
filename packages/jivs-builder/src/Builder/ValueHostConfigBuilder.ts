@@ -22,7 +22,7 @@ import {
     FluentStaticParameters,
     FluentStaticValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from "../Interfaces/Fluent";
+} from "../Interfaces/ValueHostConfigBuilders";
 import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
 
 /**

@@ -24,7 +24,7 @@ import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Su
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
-import { FluentValidatorConfig } from '../../src/Interfaces/Fluent';
+import { FluentValidatorConfig } from '../../src/Interfaces/ValueHostConfigBuilders';
 import { FluentOverloadArgs, ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 

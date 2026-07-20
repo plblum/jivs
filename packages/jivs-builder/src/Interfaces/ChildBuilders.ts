@@ -31,7 +31,7 @@ import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
-import { FluentValidatorConfig } from './Fluent';
+import { FluentValidatorConfig } from './ValueHostConfigBuilders';
 
 
 /**

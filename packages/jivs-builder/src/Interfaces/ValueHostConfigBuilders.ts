@@ -79,21 +79,21 @@
  *   to create their child conditions.
  *   ```ts
  *   childbuilder.field('Field1').all(
- *      childBuilder -> FluentMultiFieldConditionBuilder) -> ValidatorBuilder
+ *      childBuilder -> StartConditionWithChildrenBuilder) -> ValidatorBuilder
  *   childbuilder.field('Field1').when(
- *      whenBuilder -> FluentSingleFieldConditionBuilder,
- *      thenBuilder -> FluentSingleFieldConditionBuilder) -> ValidatorBuilder
+ *      whenBuilder -> StartConditionWithOneChildBuilder,
+ *      thenBuilder -> StartConditionWithOneChildBuilder) -> ValidatorBuilder
  *   ```
  *   ```ts
  *   builder.field('Field1').all(
- *     (allBuilder : FluentMultiFieldConditionBuilder) => [
+ *     (allBuilder : StartConditionWithChildrenBuilder) => [
  *         allBuilder.fieldValue('Field2').requireText(),
  *         allBuilder.fieldValue('Field3').requireText()
  *      ]);
  *   builder.field('Field1').when(
- *      (whenBuilder : FluentSingleFieldConditionBuilder) => 
+ *      (whenBuilder : StartConditionWithOneChildBuilder) => 
  *          whenBuilder.fieldValue('Field2').regExp('pattern'),
- *     (thenBuilder : FluentSingleFieldConditionBuilder) =>
+ *     (thenBuilder : StartConditionWithOneChildBuilder) =>
  *        thenBuilder.fieldValue('Field3').requireText());
  *   );
  *   ```
@@ -180,30 +180,30 @@ import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfa
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 
-export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'conditionType' | 'enablerConfig' >;
+export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'enablerConfig' | 'initialEnabled' >;
 export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent field() function.
  */
-export type FluentFieldValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
+export type FluentFieldValueConfig = Omit<FieldValueHostConfig, 'valueHostType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentFieldParameters = Omit<FluentFieldValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent calc() function.
  */
-export type FluentCalcValueConfig = Omit<CalcValueHostConfig, 'valueHostType' | 'conditionType' | 'initialValue' | 'label' | 'labell10n' | 'enablerConfig'>;
+export type FluentCalcValueConfig = Omit<CalcValueHostConfig, 'valueHostType' | 'initialValue' | 'label' | 'labell10n' | 'enablerConfig' | 'initialEnabled'>;
 
 /**
  * For fluent withoutValidators() function.
  */
-export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
+export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentAnyValueHostParameters<T extends ValueHostConfig> = Omit<FluentAnyValueHostConfig<T>, 'name' | 'dataType' >;
 
 /**
  * for fluent withValidators() function.
  */
-export type FluentValidatorsValueHostConfig<T extends ValidatorsValueHostBaseConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
+export type FluentValidatorsValueHostConfig<T extends ValidatorsValueHostBaseConfig> = Omit<T, 'valueHostType' |  'validatorConfigs' | 'enablerConfig'>;
 export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBaseConfig> = Omit<FluentValidatorsValueHostConfig<T>, 'name' | 'dataType'>;
 
 /**
