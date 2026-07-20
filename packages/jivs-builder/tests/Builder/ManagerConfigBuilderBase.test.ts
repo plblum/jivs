@@ -7,6 +7,7 @@ import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/Valida
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
@@ -14,11 +15,10 @@ import {
     ValidatableValueHostConfigBuilder,
     ValueHostConfigBuilder
 } from "../../src/Builder/ValueHostConfigBuilder";
-import { MockValidationServices } from "../TestSupport/mocks";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: new MockValidationServices(false, true),
+        services: createValidationServicesForTesting(),
         valueHostConfigs: []
     };
     return vmConfig;
@@ -123,7 +123,7 @@ describe('ManagerConfigBuilderBase constructor', () => {
         expect(builder.publicify_destinationValueHostConfigs()).toBe(testItem.valueHostConfigs);
     });
     test('Initial setup with services successful', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let builder = new TestValueHostManagerConfigBuilderBase(services);
         expect(builder.publicify_baseConfig).not.toBeUndefined();
         expect(builder.publicify_baseConfig.services).toBe(services);
@@ -149,7 +149,7 @@ describe('ManagerConfigBuilderBase constructor', () => {
         expect(testItem.valueHostConfigs).toEqual(valueHostsConfigs);
     });
     test('services supplied as parameter creates a vmConfig with services', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         expect(testItem.publicify_destinationValueHostConfigs()).not.toBeNull();
         expect(testItem.publicify_services).toBe(services);
@@ -212,7 +212,7 @@ describe('addOverride', () => {
 });
 describe('complete', () => {
     test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         let result = testItem.complete();
         expect(result.services).toBe(services);
@@ -227,7 +227,7 @@ describe('complete', () => {
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });    
     test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         let result = testItem.complete();
@@ -287,7 +287,7 @@ describe('complete', () => {
 });
 describe('snapshot', () => {
     test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         let result = testItem.snapshot();
         expect(result.services).toBe(services);
@@ -302,7 +302,7 @@ describe('snapshot', () => {
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });    
     test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         let result = testItem.snapshot();
@@ -314,7 +314,7 @@ describe('snapshot', () => {
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });    
     test('Using service, override and add a new field', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         testItem.publicify_addOverride();

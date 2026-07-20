@@ -21,17 +21,17 @@ declare module "@plblum/jivs-engine/build/Interfaces/ValidationServices" {
         buildersFactory: IBuildersFactory;
     }
 }
-/**
- * Extends the ValidationServices instance type.
- *
- * This declaration adds no runtime property. BuildersServicesInstaller
- * installs the actual getter and setter on ValidationServices.prototype.
- */
-declare module "@plblum/jivs-engine/build/Services/ValidationServices" {
-    interface ValidationServices {
-        buildersFactory: IBuildersFactory;
-    }
-}
+// /**
+//  * Extends the ValidationServices instance type.
+//  *
+//  * This declaration adds no runtime property. BuildersServicesInstaller
+//  * installs the actual getter and setter on ValidationServices.prototype.
+//  */
+// declare module "@plblum/jivs-engine/build/Services/ValidationServices" {
+//     interface ValidationServices {
+//         buildersFactory: IBuildersFactory;
+//     }
+// }
 
 
 /**

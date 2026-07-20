@@ -7,7 +7,7 @@ import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationMana
 import { IFormConfigAdapter, IValidationManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { RulesBase } from "../../src/ModelRules/ModelRules";
-import { MockValidationServices } from "../TestSupport/mocks";
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 
 class Person
 {
@@ -34,7 +34,7 @@ class PersonModelRules extends RulesBase {
 describe('RulesBase subclass for a single Model and no form involvement', () => {
 
     test('configureRules adds rules for the model', () => {
-        let services = new MockValidationServices(true, true);
+        let services = createValidationServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure();
         // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
@@ -54,7 +54,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
     });
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = new MockValidationServices(true, true);
+        let services = createValidationServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure( { variantName: 'variant1' });
         // check that the second config has the age property
@@ -66,7 +66,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
     describe('caching use cases', () => {
         test('configureRules uses cached config when available', () => {
-            let services = new MockValidationServices(true, true);
+            let services = createValidationServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure();
@@ -74,7 +74,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // options.disableCache = true
         test('configureRules does not use cached config when options.disableCache = true', () => {
-            let services = new MockValidationServices(true, true);
+            let services = createValidationServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure({ disableCache: true });
             let config2 = rules.configure({ disableCache: true });
@@ -84,7 +84,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // options.disableCache = false
         test('configureRules uses cached config when options.disableCache = false', () => {
-            let services = new MockValidationServices(true, true);
+            let services = createValidationServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ disableCache: false });
@@ -92,7 +92,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // variantName = 'variant1' on second call caches two different configs
         test('configureRules uses variantName to create a different config', () => {
-            let services = new MockValidationServices(true, true);
+            let services = createValidationServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ variantName: 'variant1' });
@@ -126,7 +126,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
     }
     // same tests as above, but using the FormRules subclass instead of the ModelRules subclass
     test('configureRules adds rules for the model and form', () => {
-        let services = new MockValidationServices(true, true);
+        let services = createValidationServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure();
         // find 2 fieldValueHostConfigs, each with one validator and the RequiredText condition
@@ -148,7 +148,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
 
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = new MockValidationServices(true, true);
+        let services = createValidationServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure({ variantName: 'variant1' });
         // check that the second config has the age property

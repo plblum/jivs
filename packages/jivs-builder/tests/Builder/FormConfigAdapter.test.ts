@@ -16,7 +16,7 @@ import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
 import { createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
 
 // Subclass that makes protected members public for testing
@@ -61,7 +61,7 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
 
 function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: new MockValidationServices(false, standardDataTypes ?? true),
+        services: createValidationServicesForTesting(),
         valueHostConfigs: []
     };
     return vmConfig;
@@ -80,7 +80,7 @@ function setupFallbackService(services: IValidationServices): IValidationService
 describe('constructor', () => {
 
     test('Basic state', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let state = new BuilderState<ValidationManagerConfig>({
             services: services,
             valueHostConfigs: []

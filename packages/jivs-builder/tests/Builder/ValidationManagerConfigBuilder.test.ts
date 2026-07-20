@@ -6,14 +6,14 @@ import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
-import { MockValidationServices } from '../TestSupport/mocks';
 import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: new MockValidationServices(false, true),
+        services: createValidationServicesForTesting(),
         valueHostConfigs: []
     };
     return vmConfig;
@@ -47,7 +47,7 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
 }
 describe('constructor', () => {
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem = new ValidationManagerConfigBuilder(services);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
@@ -60,7 +60,7 @@ describe('constructor', () => {
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -80,7 +80,7 @@ describe('constructor', () => {
 
 describe('function build()', () => {
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let testItem: ValidationManagerConfigBuilder;
         expect(() => testItem = createConfigBuilder(services)).not.toThrow();
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
@@ -99,7 +99,7 @@ describe('function build()', () => {
         expect(result.onValueHostValidationStateChanged).toBeUndefined();        
     });
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -130,7 +130,7 @@ describe('instance state properties', () => {
             stateChangeCounter: 20,
         };
 
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -147,7 +147,7 @@ describe('instance state properties', () => {
         const initialState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'A' }];
         const replacementState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'B' }];
 
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -172,7 +172,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -194,7 +194,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -217,7 +217,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -241,7 +241,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -263,7 +263,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -285,7 +285,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -308,7 +308,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -325,7 +325,7 @@ describe('Callbacks get and set', () => {
     
     test('notifyValidationStateChangedDelay', () => {
 
-        let services = new MockValidationServices(false, false);
+        let services = createValidationServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],

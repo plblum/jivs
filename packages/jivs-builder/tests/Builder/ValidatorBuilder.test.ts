@@ -15,14 +15,15 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FluentValidatorConfig } from '../../src/Interfaces/Fluent';
-import { MockValidationServices } from '../TestSupport/mocks';
 import { FluentOverloadArgs, ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 
 
@@ -55,9 +56,9 @@ function createVMConfig(): FieldValueHostConfig
     };
 }
 
-let services: MockValidationServices;
+let services: IValidationServices;
 beforeAll(() => {
-    services = new MockValidationServices(false, false);
+    services = createValidationServicesForTesting();
 });
 
 describe('ValidatorBuilder', () => {
@@ -403,7 +404,7 @@ describe('ValidatorBuilder', () => {
 });
 
 function createVMBuilder(): ValidationManagerConfigBuilder {
-    return new ValidationManagerConfigBuilder(new MockValidationServices(true, true));
+    return new ValidationManagerConfigBuilder(createValidationServicesForTesting());
 }
 function TestValidatorBuilder(testItem: IBuilderConfigHost<any>,
     expectedValConfig: ValidatorConfig) {

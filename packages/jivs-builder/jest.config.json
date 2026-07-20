@@ -16,15 +16,15 @@
     "testRegex": "/tests/.*\\.(test)\\.ts$",
     "testPathIgnorePatterns": [
         "/node_modules/", 
-        "build", 
+        "<rootDir>/build/", 
         "docs",
         "coverage",
         "temp",
         "TestSupport"],
     "modulePaths": ["/src/"],
     "moduleFileExtensions": ["ts", "js"],
-    "collectCoverage": true,
-    "verbose": false,
+    "collectCoverage": false,
+    "verbose": true,
     "coveragePathIgnorePatterns": [
         "tests", 
         "build", 

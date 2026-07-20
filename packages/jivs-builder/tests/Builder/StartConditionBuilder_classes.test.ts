@@ -6,6 +6,7 @@ import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCond
 import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
 import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import {
     ConditionBuilder
 } from "../../src/Builder/ConditionBuilder";
@@ -13,7 +14,6 @@ import {
     StartConditionBuilder
 } from "../../src/Builder/StartConditionBuilder";
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
-import { MockValidationServices } from "../TestSupport/mocks";
 
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
@@ -35,10 +35,10 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
-let services: MockValidationServices;
+let services: IValidationServices;
 
 beforeAll(() => {
-    services = new MockValidationServices(true, false); 
+    services = createValidationServicesForTesting(); 
 });
 
 
