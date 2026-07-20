@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
@@ -30,6 +31,9 @@ class PersonModelRules extends RulesBase {
         return this.createConfigCacheKey(options);
     }
 }
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('RulesBase subclass for a single Model and no form involvement', () => {
 

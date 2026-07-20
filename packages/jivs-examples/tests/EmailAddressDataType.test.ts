@@ -1,12 +1,12 @@
 
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { createConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
-import { createMinimalValidationServices } from '../src/support';
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
+import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
@@ -15,7 +15,7 @@ describe('EmailAddressCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey);
 
-        let vm = new ValidationManager(builder);
+        let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         let config: RegExpConditionConfig = {
@@ -49,7 +49,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey);
 
-        let vm = new ValidationManager(builder);
+        let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
@@ -63,7 +63,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', emailAddressLookupKey).emailAddress();
 
-        let vm = new ValidationManager(builder);
+        let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');

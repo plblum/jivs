@@ -24,6 +24,7 @@
     }
   },
   "dependencies": {
-    "@plblum/jivs-engine": "file:../jivs-engine"
+    "@plblum/jivs-engine": "file:../jivs-engine",
+    "@plblum/jivs-builder": "file:../jivs-builder"
   }
 }

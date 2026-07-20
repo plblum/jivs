@@ -1,51 +1,94 @@
 import { jest } from '@jest/globals';
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
-import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
-import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import {
-    RequireTextConditionConfig, RequireTextCondition, LessThanOrEqualValueCondition,
-    LessThanOrEqualValueConditionConfig
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig,
+    RequireTextCondition,
+    RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
-import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
+import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
+import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
-    CASearcher, CAExplorerBase, ConfigAnalysisResultsExplorerFactory, ValueHostConfigCAResultExplorer,
-    ValidatorConfigCAResultExplorer, ConditionConfigCAResultExplorer, LookupKeyCAResultExplorer, IdentifierServiceCAResultExplorer,
-    ConverterServiceCAResultExplorer, ComparerServiceCAResultExplorer, ParserServiceCAResultExplorer,
-    ParsersByCultureCAResultExplorer, ParserFoundCAResultExplorer, FormatterServiceCAResultExplorer,
-    FormattersByCultureCAResultExplorer, PropertyCAResultExplorer, LocalizedPropertyCAResultExplorer,
-    ErrorCAResultExplorer, ConfigAnalysisResultsExplorer
+    CAExplorerBase,
+    CASearcher,
+    ComparerServiceCAResultExplorer,
+    ConditionConfigCAResultExplorer,
+    ConfigAnalysisResultsExplorer,
+    ConfigAnalysisResultsExplorerFactory,
+    ConverterServiceCAResultExplorer,
+    ErrorCAResultExplorer,
+    FormatterServiceCAResultExplorer,
+    FormattersByCultureCAResultExplorer,
+    IdentifierServiceCAResultExplorer,
+    LocalizedPropertyCAResultExplorer,
+    LookupKeyCAResultExplorer,
+    ParserFoundCAResultExplorer,
+    ParserServiceCAResultExplorer,
+    ParsersByCultureCAResultExplorer,
+    PropertyCAResultExplorer,
+    ValidatorConfigCAResultExplorer,
+    ValueHostConfigCAResultExplorer
 } from '../../src/Explorer/ConfigAnalysisResultsExplorer';
-import { NullConfigAnalysisOutputter, JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
+import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
+import { JsonConsoleConfigAnalysisOutputter, NullConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import {
-    ICASearcher, IConfigAnalysisSearchCriteria, ICAExplorerFactory,
-    IConfigAnalysisOutputter, ConfigAnalysisOutputReportData
+    ConfigAnalysisOutputReportData,
+    ICAExplorerFactory,
+    ICASearcher,
+    IConfigAnalysisOutputter,
+    IConfigAnalysisSearchCriteria
 } from '../../src/Types/Explorer';
 import {
-    CAIssueSeverity, CAResultBase, IssueForCAResultBase, CAPathedResult, CAResultPath,
-    CAFeature, ParserServiceCAResult, FormatterServiceCAResult, IdentifierServiceCAResult, ConverterServiceCAResult,
-    ComparerServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormattersByCultureCAResult,
-    PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult, IConfigAnalysisResults, ConditionConfigCAResult
+    CAFeature,
+    CAIssueSeverity,
+    CAPathedResult,
+    CAResultBase,
+    CAResultPath,
+    ComparerServiceCAResult,
+    ConditionConfigCAResult,
+    ConverterServiceCAResult,
+    ErrorCAResult,
+    FormatterServiceCAResult,
+    FormattersByCultureCAResult,
+    IConfigAnalysisResults,
+    IdentifierServiceCAResult,
+    IssueForCAResultBase,
+    LocalizedPropertyCAResult,
+    ParserFoundCAResult,
+    ParserServiceCAResult,
+    ParsersByCultureCAResult,
+    PropertyCAResult
 } from '../../src/Types/Results';
-import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 
-import {
-    createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult,
-    createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults,
-    attachSeverity, createIdentifierServiceCAResult
-} from '../TestSupport/support';
 import { ConfigAnalysisService } from '../../src/ConfigAnalysisService';
+import {
+    attachSeverity,
+    createBasicConfigAnalysisResults,
+    createConditionConfigResult,
+    createExtensiveConfigAnalysisResults,
+    createIdentifierServiceCAResult,
+    createLookupKeyCAResult,
+    createPropertyCAResult, createValidatorConfigResult,
+    createValueHostCAResult
+} from '../TestSupport/support';
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {

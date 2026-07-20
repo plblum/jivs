@@ -22,7 +22,7 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { createValidationServicesForTesting, registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
+import { registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
@@ -30,8 +30,7 @@ import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHo
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested

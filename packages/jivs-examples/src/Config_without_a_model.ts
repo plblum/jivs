@@ -31,11 +31,12 @@ import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeCo
 import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 
 import { createValidationServices, timeZoneRegex } from "./Config_example_common_code";
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { RulesConfigOptions } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
-import { FormRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
+import { FormRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
+import { BuildersFactoryInstaller } from "@plblum/jivs-builder/build/services/BuildersFactoryInstaller";
 
 /**
  * Our Forms rules class, which is a subclass of FormRulesBase.

@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import { RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
@@ -18,6 +19,7 @@ import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
 import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
@@ -64,6 +66,7 @@ function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
         services: createValidationServicesForTesting(),
         valueHostConfigs: []
     };
+    vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Info, vmConfig.services.loggerService);
     return vmConfig;
 }
 
@@ -76,6 +79,10 @@ function setupFallbackService(services: IValidationServices): IValidationService
     services.lookupKeyFallbackService.register('NewNumber', LookupKey.Number);
     return services;
 }
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('constructor', () => {
 

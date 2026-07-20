@@ -53,7 +53,7 @@ import {
     FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
     IConditionBuilder,
     IValidatorBuilder
-} from "@plblum/jivs-engine/build/Interfaces/ChildBuilders";
+} from "../Interfaces/ChildBuilders";
 import { ConditionConfig, ICondition } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { FluentValidatorConfig } from '../Interfaces/Fluent';

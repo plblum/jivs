@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import {
     EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
@@ -38,11 +39,9 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
 let services: IValidationServices;
 
 beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
     services = createValidationServicesForTesting(); 
 });
-
-
-
 
 describe('StartConditionBuilder', () => {
     describe('parentValue()', () => {

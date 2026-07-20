@@ -6,8 +6,8 @@ import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValidationManager, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
-import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
+import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
@@ -18,8 +18,10 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -782,15 +784,17 @@ describe('isEnabled and related enabled', () => {
     } {
         let services = new MockValidationServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
-        let builder = new ValidationManagerConfigBuilder(services);
+
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: LookupKey.String
+        });
         if (stateChangeCallback)
-            builder.onValueHostInstanceStateChanged = stateChangeCallback;
-        builder.static('Field1');
-
-
+            vmConfig.onValueHostInstanceStateChanged = stateChangeCallback;
         if (enablerConfig !== undefined)
-            builder.whenToEnable('Field1', (childBuilder)=> childBuilder.conditionConfig(enablerConfig));
-
+            vmConfig.valueHostConfigs[0].enablerConfig = enablerConfig;
         let state: IPublicifiedValueHostInstanceState = {
             name: 'Field1',
             counter: 0,
@@ -798,10 +802,29 @@ describe('isEnabled and related enabled', () => {
         };
         if (stateEnabled !== undefined)
             state.enabled = stateEnabled;
-        builder.savedValueHostInstanceStates = [];
-        builder.savedValueHostInstanceStates.push(state);
+        vmConfig.savedValueHostInstanceStates = [];
+        vmConfig.savedValueHostInstanceStates.push(state);
 
-        let vm = new ValidationManager(builder);
+        // let builder = new ValidationManagerConfigBuilder(services);
+        // if (stateChangeCallback)
+        //     builder.onValueHostInstanceStateChanged = stateChangeCallback;
+        // builder.static('Field1');
+
+
+        // if (enablerConfig !== undefined)
+        //     builder.whenToEnable('Field1', (childBuilder)=> childBuilder.conditionConfig(enablerConfig));
+
+        // let state: IPublicifiedValueHostInstanceState = {
+        //     name: 'Field1',
+        //     counter: 0,
+        //     value: undefined
+        // };
+        // if (stateEnabled !== undefined)
+        //     state.enabled = stateEnabled;
+        // builder.savedValueHostInstanceStates = [];
+        // builder.savedValueHostInstanceStates.push(state);
+
+        let vm = new ValidationManager(vmConfig);
 
         return {
             vm: vm,

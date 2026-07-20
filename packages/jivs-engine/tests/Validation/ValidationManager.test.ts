@@ -39,8 +39,6 @@ import { deepClone } from '../../src/Utilities/Utilities';
 import { ValidatableValueHostBase } from '../../src/ValueHosts/ValidatableValueHostBase';
 import { StaticValueHost, StaticValueHostGenerator } from '../../src/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '../../src/ValueHosts/CalcValueHost';
-import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
-import { ValidatableValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 import {
     TestValidatableValueHost,
     addTestValidatableValueHostGeneratorToServices,
@@ -51,12 +49,11 @@ import { LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { ValueHostAccessor } from '../../src/ValueHosts/ValueHostAccessor';
 import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IDisposable } from '../../src/Interfaces/General_Purpose';
-import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerInstanceState> {
-    constructor(setup: ValidationManagerConfig | ValidationManagerConfigBuilder) {
+    constructor(setup: ValidationManagerConfig) {
         super(setup as any);
     }
 
@@ -117,10 +114,6 @@ function setupValidationManagerForAddExternalIssueFoundTests(
     };
 }
 
-beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-});
-
 //  constructor(setup: ValidationManagerConfig)
 describe('constructor and initial property values', () => {
     test('No configs (empty array), an empty state and no callback', () => {
@@ -128,7 +121,7 @@ describe('constructor and initial property values', () => {
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager({ services: services, valueHostConfigs: [] })).not.toThrow();
         expect(testItem!.services).toBe(services);
-        
+
         expect(testItem!.exposedValueHosts.size).toBe(0);
         expect(testItem!.exposedValueHostConfigs.size).toBe(0);
         expect(testItem!.exposedState).not.toBeNull();
@@ -144,28 +137,10 @@ describe('constructor and initial property values', () => {
     test('null setup parameter throws', () => {
         let testItem: PublicifiedValidationManager | null = null;
 
-        expect(() => testItem = new PublicifiedValidationManager(null!)).toThrow(/arg1/);
+        expect(() => testItem = new PublicifiedValidationManager(null!)).toThrow(/config/);
 
-    });    
-    test('With builder, No configs (empty array), an empty state and no callback', () => {
-        let services = new MockValidationServices(false, false);
-        let builder = new ValidationManagerConfigBuilder(services);
-        let testItem: PublicifiedValidationManager | null = null;
-        expect(() => testItem = new PublicifiedValidationManager(builder)).not.toThrow();
-        expect(testItem!.services).toBe(services);
-        
-        expect(testItem!.exposedValueHosts.size).toBe(0);
-        expect(testItem!.exposedValueHostConfigs.size).toBe(0);
-        expect(testItem!.exposedState).not.toBeNull();
-        expect(testItem!.exposedState.stateChangeCounter).toBe(0);
-        expect(testItem!.onInstanceStateChanged).toBeNull();
-        expect(testItem!.onValidationStateChanged).toBeNull();
-        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueHostValidationStateChanged).toBeNull();
-        expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onTextValueChanged).toBeNull();
-        expect(testItem!.onConfigChanged).toBeNull();
     });
+
     test('Config for 1 ValueHost supplied. Other parameters are null', () => {
         let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
@@ -176,9 +151,9 @@ describe('constructor and initial property values', () => {
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager({ services: services, valueHostConfigs: configs })).not.toThrow();
         expect(testItem!.services).toBe(services);
-        
+
         expect(testItem!.exposedValueHosts.size).toBe(1);
-        
+
         expect(testItem!.exposedValueHostConfigs.size).toBe(1);
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
@@ -196,28 +171,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedValueHostConfigs.get('Field1')).not.toBe(configs[0]);
         expect(testItem!.exposedValueHostConfigs.get('Field1')).toEqual(configs[0]);
     });
-    test('Using builder, config for 1 ValueHost supplied. Other parameters are null', () => {
-        let services = new MockValidationServices(false, false);
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.static('Field1', null, { label: 'Field 1' });
-        let testItem: PublicifiedValidationManager | null = null;
-        expect(() => testItem = new PublicifiedValidationManager(builder)).not.toThrow();
-        expect(testItem!.services).toBe(services);
-        
-        expect(testItem!.exposedValueHosts.size).toBe(1);
-        
-        expect(testItem!.exposedValueHostConfigs.size).toBe(1);
-        expect(testItem!.exposedState).not.toBeNull();
-        expect(testItem!.exposedState.stateChangeCounter).toBe(0);
-        expect(testItem!.onInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onTextValueChanged).toBeNull();
-        expect(testItem!.onConfigChanged).toBeNull();
 
-        // ensure ValueHost is supporting the Config
-        expect(testItem!.exposedValueHosts.get('Field1')).toBeInstanceOf(StaticValueHost);
-    });
     test('Configs for 2 ValueHosts supplied. Other parameters are null', () => {
         let configs: Array<ValueHostConfig> = [
             {
@@ -236,9 +190,9 @@ describe('constructor and initial property values', () => {
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager({ services: services, valueHostConfigs: configs })).not.toThrow();
         expect(testItem!.services).toBe(services);
-        
+
         expect(testItem!.exposedValueHosts.size).toBe(2);
-        
+
         expect(testItem!.exposedValueHostConfigs.size).toBe(2);
 
 
@@ -258,40 +212,16 @@ describe('constructor and initial property values', () => {
             validatorConfigs: []
         });
     });
-    test('Using Builder, Configs for 2 ValueHosts supplied. Other parameters are null', () => {
 
-        let services = new MockValidationServices(false, false);
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.static('Field1', null, { label: 'Field 1' }).static('Field2', null, { label: 'Field 2' });
-        let testItem: PublicifiedValidationManager | null = null;
-        expect(() => testItem = new PublicifiedValidationManager(builder)).not.toThrow();
-        expect(testItem!.services).toBe(services);
-        
-        expect(testItem!.exposedValueHosts.size).toBe(2);
-        
-        expect(testItem!.exposedValueHostConfigs.size).toBe(2);
-
-
-        // ensure ValueHost is supporting the Config
-        expect(testItem!.exposedValueHosts.get('Field1')).toBeInstanceOf(StaticValueHost);
-        expect(testItem!.exposedValueHosts.get('Field2')).toBeInstanceOf(StaticValueHost);
-
-        // when using the resolver, we don't have the original config.
-        expect(testItem!.exposedValueHostConfigs.get('Field2')).toEqual({
-            name: 'Field2',
-            label: 'Field 2',
-            valueHostType: ValueHostType.Static
-        });
-    });    
     test('Empty State object. Other parameters are null', () => {
         let state: ValidationManagerInstanceState = {};
         let testItem: PublicifiedValidationManager | null = null;
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager(
             { services: services, valueHostConfigs: [], savedInstanceState: state })).not.toThrow();
-        
+
         expect(testItem!.exposedValueHosts.size).toBe(0);
-        
+
         expect(testItem!.exposedValueHostConfigs.size).toBe(0);
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
@@ -324,9 +254,9 @@ describe('constructor and initial property values', () => {
         })).not.toThrow();
         expect(testItem!.services).toBe(services);
 
-        
+
         expect(testItem!.exposedValueHosts.size).toBe(1);
-        
+
         expect(testItem!.exposedValueHostConfigs.size).toBe(1);
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
@@ -346,45 +276,13 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedValueHostConfigs.get('Field1')).not.toBe(configs[0]);
         expect(testItem!.exposedValueHostConfigs.get('Field1')).toStrictEqual(configs[0]);
     });
-    test('With Builder, Config and ValueHostInstanceState for 1 ValueHost supplied. Other parameters are null', () => {
-        let savedState: ValidationManagerInstanceState = {};
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [];
-        savedValueHostInstanceStates.push({
-            name: 'Field1',
-            value: 10   // something we can return
-        });
-        let services = new MockValidationServices(false, false);
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.savedInstanceState = savedState;
-        builder.savedValueHostInstanceStates = savedValueHostInstanceStates;
-        builder.static('Field1', null, { label: 'Field 1' });
 
-        let testItem = new PublicifiedValidationManager(builder);
-        expect(testItem!.services).toBe(services);
-
-        
-        expect(testItem!.exposedValueHosts.size).toBe(1);
-        
-        expect(testItem!.exposedValueHostConfigs.size).toBe(1);
-        expect(testItem!.exposedState).not.toBeNull();
-        expect(testItem!.exposedState.stateChangeCounter).toBe(0);
-
-        expect(testItem!.onInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueChanged).toBeNull();
-        expect(testItem!.onTextValueChanged).toBeNull();
-        expect(testItem!.onConfigChanged).toBeNull();
-
-        // ensure ValueHost is supporting the Config and a Value of 10 from State
-        expect(testItem!.exposedValueHosts.get('Field1')).toBeInstanceOf(StaticValueHost);
-        expect(testItem!.exposedValueHosts.get('Field1')!.getValue()).toBe(10);
-    });
     test('Callbacks supplied. Other parameters are null', () => {
         let setup: ValidationManagerConfig = {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
             onInstanceStateChanged: (validationManager: IValidationManager, state: ValidationManagerInstanceState) => { },
-            onValidationStateChanged: (validationManager: IValidationManager, validationState : ValidationState) => { },
+            onValidationStateChanged: (validationManager: IValidationManager, validationState: ValidationState) => { },
             onValueHostInstanceStateChanged: (valueHost: IValueHost, state: ValueHostInstanceState) => { },
             onValueHostValidationStateChanged: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
@@ -404,29 +302,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onTextValueChanged).not.toBeNull();
         expect(testItem!.onConfigChanged).not.toBeNull();
     });
-    test('With builder, Callbacks supplied. Other parameters are null', () => {
-        let builder = new ValidationManagerConfigBuilder(new MockValidationServices(false, false));
 
-        builder.onInstanceStateChanged = (validationManager: IValidationManager, state: ValidationManagerInstanceState) => { };
-        builder.onValidationStateChanged = (validationManager: IValidationManager, validationState: ValidationState) => { };
-        builder.onValueHostInstanceStateChanged = (valueHost: IValueHost, state: ValueHostInstanceState) => { };
-        builder.onValueHostValidationStateChanged = (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { };
-        builder.onValueChanged = (valueHost: IValueHost, oldValue: any) => { };
-        builder.onTextValueChanged = (valueHost: IValidatableValueHostBase, oldValue: any) => { };
-        builder.onConfigChanged = (manager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>) => { };
-
-        let testItem: PublicifiedValidationManager | null = null;
-        expect(() => testItem = new PublicifiedValidationManager(builder)).not.toThrow();
-
-        // other tests will confirm that the function correctly runs
-        expect(testItem!.onInstanceStateChanged).not.toBeNull();
-        expect(testItem!.onValidationStateChanged).not.toBeNull();
-        expect(testItem!.onValueHostInstanceStateChanged).not.toBeNull();
-        expect(testItem!.onValueHostValidationStateChanged).not.toBeNull();
-        expect(testItem!.onValueChanged).not.toBeNull();
-        expect(testItem!.onTextValueChanged).not.toBeNull();
-        expect(testItem!.onConfigChanged).not.toBeNull();
-    });    
     test('Configure with an actual RegExp object to ensure that object is still present when needed', () => {
         let services = createValidationServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
@@ -439,12 +315,12 @@ describe('constructor and initial property values', () => {
                 dataType: LookupKey.String,
                 validatorConfigs: [
                     {
-                        conditionConfig: <RegExpConditionConfig> {
+                        conditionConfig: <RegExpConditionConfig>{
                             conditionType: ConditionType.RegExp,
                             valueHostName: 'Property1',
                             expression: /^ABC$/im // <<< monitoring this value
                         }
-                    
+
                     }
                 ]
             }]
@@ -458,22 +334,6 @@ describe('constructor and initial property values', () => {
         vh.validate();
         expect(vh.validationStatus).toBe(ValidationStatus.Invalid);
     });
-    test('With Builder, Configure with an actual RegExp object to ensure that object is still present when needed', () => {
-        let services = createValidationServicesForTesting();
-        let cf = services.conditionFactory as ConditionFactory;
-        cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.field('Property1', LookupKey.String).regExp(/^ABC$/im);
-        let vm = new ValidationManager(builder);
-
-        let vh = vm.getFieldValueHost('Property1')!;
-        vh.setValue('ABC');
-        vh.validate();
-        expect(vh.validationStatus).toBe(ValidationStatus.Valid);
-        vh.setValue('ABCDEF');
-        vh.validate();
-        expect(vh.validationStatus).toBe(ValidationStatus.Invalid);
-    });    
     test('Configure with an actual Date object to ensure that object is still present when needed', () => {
         let services = createValidationServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
@@ -486,12 +346,12 @@ describe('constructor and initial property values', () => {
                 dataType: LookupKey.Date,
                 validatorConfigs: [
                     {
-                        conditionConfig: <EqualToValueConditionConfig> {
+                        conditionConfig: <EqualToValueConditionConfig>{
                             conditionType: ConditionType.EqualToValue,
                             valueHostName: 'Property1',
                             secondValue: new Date(2000, 0, 1)
                         }
-                    
+
                     }
                 ]
             }],
@@ -499,7 +359,7 @@ describe('constructor and initial property values', () => {
                 {
                     name: 'Property1',
                     value: new Date(2000, 0, 1) // <<< monitoring this value
-                    
+
                 }
             ]
         });
@@ -508,26 +368,6 @@ describe('constructor and initial property values', () => {
         vh.validate();
         expect(vh.validationStatus).toBe(ValidationStatus.Valid);
     });
-    test('Using Builder, Configure with an actual Date object to ensure that object is still present when needed', () => {
-        let services = createValidationServicesForTesting();
-        let cf = services.conditionFactory as ConditionFactory;
-        cf.register<EqualToValueConditionConfig>(ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.field('Property1', LookupKey.Date).equalToValue(new Date(2000, 0, 1));
-        builder.savedValueHostInstanceStates = [
-            {
-                name: 'Property1',
-                value: new Date(2000, 0, 1) // <<< monitoring this value
-                
-            }
-        ];
-
-        let vm = new ValidationManager(builder);
-
-        let vh = vm.getFieldValueHost('Property1')!;
-        vh.validate();
-        expect(vh.validationStatus).toBe(ValidationStatus.Valid);
-    });    
 });
 
 function setupValidationManager(configs?: Array<FieldValueHostConfig> | null,
@@ -539,7 +379,7 @@ function setupValidationManager(configs?: Array<FieldValueHostConfig> | null,
     let services = createValidationServicesForTesting();
     services.autoGenerateDataTypeCheckService.enabled = false;
     services.dataTypeParserService.enabled = false;
-    
+
     let setup: ValidationManagerConfig = {
         services: services,
         valueHostConfigs: configs!,
@@ -582,8 +422,7 @@ function setupFieldValueHostConfig(fieldIndex: number,
 }
 
 function testValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
-    instanceState: Partial<FieldValueHostInstanceState> | null): void
-{
+    instanceState: Partial<FieldValueHostInstanceState> | null): void {
     let valueHost = testItem.exposedValueHosts.get(valueHostName) as FieldValueHost;
     expect(valueHost).toBeDefined();
     expect(valueHost).toBeInstanceOf(FieldValueHost);
@@ -594,7 +433,7 @@ function testValueHostInstanceState(testItem: PublicifiedValidationManager, valu
     let factory = new ValueHostFactory();
     factory.register(new FieldValueHostGenerator());
     let config = testItem.exposedValueHostConfigs.get(valueHostName) as FieldValueHostConfig;
-    let defaultState = factory.createInstanceState(config) as FieldValueHostInstanceState;    
+    let defaultState = factory.createInstanceState(config) as FieldValueHostInstanceState;
 
     let stateToCompare: FieldValueHostInstanceState = { ...defaultState, ...instanceState, };
 
@@ -602,7 +441,7 @@ function testValueHostInstanceState(testItem: PublicifiedValidationManager, valu
     valueHost.updateInstanceState((stateToUpdate) => {
         expect(stateToUpdate).toEqual(stateToCompare);
         return stateToUpdate;
-    }, valueHost);        
+    }, valueHost);
 }
 function testStaticValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
     instanceState: Partial<StaticValueHostInstanceState> | null): void {
@@ -650,7 +489,7 @@ describe('ValidationManager.addValueHost', () => {
         // ensure the stored Config is the same as the one supplied
         expect(testItem.exposedValueHostConfigs.get('Field1')).toEqual(config);
         expect(testItem.exposedValueHostConfigs.get('Field1')).not.toBe(config);
-        
+
         // Check the valueHosts type and initial state
         testStaticValueHostInstanceState(testItem, 'Field1', null);
     });
@@ -733,7 +572,7 @@ describe('ValidationManager.addValueHost', () => {
     });
 });
 describe('addToValueHosts with FieldValueHosts', () => {
-    
+
     test('Add FieldValueHostConfig with required ConditionConfig', () => {
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(true, false), valueHostConfigs: []
@@ -752,9 +591,9 @@ describe('addToValueHosts with FieldValueHosts', () => {
             ]
         };
         testItem.addValueHost(config, null);
-        expect(testItem.exposedValueHostConfigs.get('Field1')).toBeDefined();     
+        expect(testItem.exposedValueHostConfigs.get('Field1')).toBeDefined();
         expect(testItem.exposedValueHostConfigs.get('Field1')).toEqual(config);
-    });    
+    });
 
     test('InstanceState with ValidationStatus=Valid already exists for the ValueHostConfig being added. That state is used', () => {
 
@@ -786,41 +625,9 @@ describe('addToValueHosts with FieldValueHosts', () => {
         };
         testItem.addValueHost(config, null);
 
-        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
+        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);
     });
-    test('With Builder, InstanceState with ValidationStatus=Valid already exists for the ValueHostConfig being added. That state is used', () => {
 
-        let savedState: ValidationManagerInstanceState = {};
-
-        let savedValueHostInstanceState: FieldValueHostInstanceState = {
-            name: 'Field1',
-            status: ValidationStatus.Valid, // something we can return
-            value: 10,   // something we can return,
-            issuesFound: null
-        };
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];
-        let builder = new ValidationManagerConfigBuilder(new MockValidationServices(false, false));
-        builder.savedInstanceState = savedState;
-        builder.savedValueHostInstanceStates = savedValueHostInstanceStates;
-        
-        let testItem = new PublicifiedValidationManager(builder);
-        let config: FieldValueHostConfig = {
-            name: 'Field1',
-            valueHostType: ValueHostType.Field,
-            label: 'Field 1',
-            validatorConfigs: [
-                {
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText,
-                    },
-                    errorMessage: 'msg'
-                }
-            ]
-        };
-        testItem.addValueHost(config, null);
-
-        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
-    });    
     test('InstanceState with ValidationStatus=Invalid already exists for the ValueHostConfig being added.', () => {
 
         let savedState: ValidationManagerInstanceState = {};
@@ -836,7 +643,7 @@ describe('addToValueHosts with FieldValueHosts', () => {
                 severity: ValidationSeverity.Error
             }]
         };
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];      
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(false, false), valueHostConfigs: [],
             savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
@@ -856,46 +663,9 @@ describe('addToValueHosts with FieldValueHosts', () => {
         };
         testItem.addValueHost(config, null);
 
-        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
-    });    
-    test('With Builder, InstanceState with ValidationStatus=Invalid already exists for the ValueHostConfig being added.', () => {
+        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);
+    });
 
-        let savedState: ValidationManagerInstanceState = {};
-
-        let savedValueHostInstanceState: FieldValueHostInstanceState = {
-            name: 'Field1',
-            status: ValidationStatus.Invalid, // something we can return
-            value: 10,   // something we can return,
-            issuesFound: [{
-                errorMessage: 'msg',
-                valueHostName: 'Field1',
-                errorCode: ConditionType.RequireText,
-                severity: ValidationSeverity.Error
-            }]
-        };
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];      
-        let builder = new ValidationManagerConfigBuilder(new MockValidationServices(false, false));
-        builder.savedInstanceState = savedState;
-        builder.savedValueHostInstanceStates = savedValueHostInstanceStates;
-        
-        let testItem = new PublicifiedValidationManager(builder);
-        let config: FieldValueHostConfig = {
-            name: 'Field1',
-            valueHostType: ValueHostType.Field,
-            label: 'Field 1',
-            validatorConfigs: [
-                {
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText,
-                    },
-                    errorMessage: 'msg'
-                }
-            ]
-        };
-        testItem.addValueHost(config, null);
-
-        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
-    });    
     test('InstanceState already exists in two places: lastValueHostInstanceState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
         let config: FieldValueHostConfig = {
             name: 'Field1',
@@ -934,49 +704,9 @@ describe('addToValueHosts with FieldValueHosts', () => {
         };
         testItem.addValueHost(config, addState);
 
-        testValueHostInstanceState(testItem, 'Field1', addState);        
-    });    
-    test('With Builder, InstanceState already exists in two places: lastValueHostInstanceState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
-        let config: FieldValueHostConfig = {
-            name: 'Field1',
-            valueHostType: ValueHostType.Field,
-            label: 'Field 1',
-            validatorConfigs: [
-                {
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText,
-                    },
-                    errorMessage: 'msg'
-                }
-            ]
-        };
-        let savedState: ValidationManagerInstanceState = {};
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [];
-        savedValueHostInstanceStates.push(<FieldValueHostInstanceState>{
-            name: 'Field1',
-            status: ValidationStatus.Valid, // something we can return
-            value: 10   // something we can return
-        });
-        let builder = new ValidationManagerConfigBuilder(new MockValidationServices(false, false));
-        builder.savedInstanceState = savedState;
-        builder.savedValueHostInstanceStates = savedValueHostInstanceStates;
-        
-        let testItem = new PublicifiedValidationManager(builder);
-        let addState: FieldValueHostInstanceState = {
-            name: 'Field1',
-            value: 20,
-            status: ValidationStatus.Invalid,
-            issuesFound: [{
-                errorMessage: 'msg',
-                valueHostName: 'Field1',
-                errorCode: ConditionType.RequireText,
-                severity: ValidationSeverity.Error
-            }]
-        };
-        testItem.addValueHost(config, addState);
-
-        testValueHostInstanceState(testItem, 'Field1', addState);        
+        testValueHostInstanceState(testItem, 'Field1', addState);
     });
+
     test('InstanceState instance is changed after passing in has no impact on stored state', () => {
 
         let lastState: ValidationManagerInstanceState = {};
@@ -1009,43 +739,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
         let copiedLastState = deepClone(savedValueHostInstanceState) as FieldValueHostInstanceState;
         savedValueHostInstanceState.value = 20;
 
-        testValueHostInstanceState(testItem, 'Field1', copiedLastState);        
-    });    
-    test('With Builder, InstanceState instance is changed after passing in has no impact on stored state', () => {
-
-        let lastState: ValidationManagerInstanceState = {};
-
-        let savedValueHostInstanceState: FieldValueHostInstanceState = {
-            name: 'Field1',
-            status: ValidationStatus.Valid, // something we can return
-            value: 10,   // something we can return,
-            issuesFound: null
-        };
-        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];
-        let builder = new ValidationManagerConfigBuilder(new MockValidationServices(false, false));
-        builder.savedInstanceState = lastState;
-        builder.savedValueHostInstanceStates = savedValueHostInstanceStates;
-        
-        let testItem = new PublicifiedValidationManager(builder);
-        let config: FieldValueHostConfig = {
-            name: 'Field1',
-            valueHostType: ValueHostType.Field,
-            label: 'Field 1',
-            validatorConfigs: [
-                {
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText,
-                    },
-                    errorMessage: 'msg'
-                }
-            ]
-        };
-        testItem.addValueHost(config, null);
-        let copiedLastState = deepClone(savedValueHostInstanceState) as FieldValueHostInstanceState;
-        savedValueHostInstanceState.value = 20;
-
-        testValueHostInstanceState(testItem, 'Field1', copiedLastState);        
-    });    
+        testValueHostInstanceState(testItem, 'Field1', copiedLastState);
+    });
 });
 describe('addOrUpdateValueHost completely replaces the ValueHost instance', () => {
     describe('Using FieldValueHostConfig', () => {
@@ -1101,7 +796,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
             };
             expect(() => testItem.addOrUpdateValueHost(config, null)).not.toThrow();
 
-        
+
             expect(testItem.exposedValueHosts).not.toBeNull();
             expect(testItem.exposedValueHosts.size).toBe(1);
             expect(testItem.exposedValueHostConfigs).not.toBeNull();
@@ -1142,7 +837,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
             expect(replacementValueHost).not.toBeNull();
             expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
-        
+
             expect(testItem.exposedValueHosts.size).toBe(1);
             expect(testItem.exposedValueHosts.get('Field1')).toBe(replacementValueHost);
 
@@ -1164,7 +859,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
             // ensure ValueHost is FieldValueHost and has an initial state
             testValueHostInstanceState(testItem, 'Field1', null);
         });
- 
+
         test('Replace the state, keeping the same config. Confirm the state and config', () => {
             let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
             let config: FieldValueHostConfig = {
@@ -1196,7 +891,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
             // ensure the stored Config is the same as the one supplied
             expect(testItem.exposedValueHostConfigs.get('Field1')).toEqual(config);
             expect(testItem.exposedValueHostConfigs.get('Field1')).not.toBe(config);
-     
+
             // ensure ValueHost is FieldValueHost and has an initial state
             testValueHostInstanceState(testItem, 'Field1', updateState);
         });
@@ -1215,7 +910,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
                     }
                 ]
             };
-        
+
             let initialValueHost = testItem.addValueHost(config, null);
 
             let updateState: FieldValueHostInstanceState = {
@@ -1228,7 +923,7 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
 
             let savedState = deepClone(updateState);
             updateState.value = 100;
-     
+
             // ensure ValueHost is FieldValueHost and has an initial state
             testValueHostInstanceState(testItem, 'Field1', savedState);
         });
@@ -1508,7 +1203,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
                     errorMessage: 'Error'
                 }
             ]
-        };        
+        };
         let replacementValidatorConfig = replacementConfig.validatorConfigs[0];
 
         let replacementValueHost: IValueHost | null = null;
@@ -1516,7 +1211,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
-        
+
         expect(testItem.exposedValueHosts.size).toBe(1);
         expect(testItem.exposedValueHosts.get('Field1')).toBe(replacementValueHost);
         expect(testItem!.exposedValueHostConfigs.size).toBe(1);
@@ -1541,7 +1236,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         };
         expect(() => testItem.addOrMergeValueHost(config, null)).not.toThrow();
 
-        
+
         expect(testItem.exposedValueHosts.size).toBe(1);
         expect(testItem!.exposedValueHostConfigs.size).toBe(1);
         expect(testItem.exposedState).not.toBeNull();
@@ -1592,7 +1287,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
-        
+
         expect(testItem.exposedValueHosts.size).toBe(1);
         expect(testItem.exposedValueHosts.get('Field1')).toBe(replacementValueHost);
         expect(testItem!.exposedValueHostConfigs.size).toBe(1);
@@ -1621,7 +1316,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
                 {   // this does not match in the replacement
                     errorCode: 'Q',
                     conditionConfig: { conditionType: ConditionType.NotNull }
-                } , 
+                },
                 {   // replacement changes its error message
                     errorCode: 'R',
                     errorMessage: 'Required',
@@ -1632,12 +1327,12 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         let initialValueHost = testItem.addValueHost(config, null);
 
         let replacementConfig = { ...config, dataType: LookupKey.String, label: 'First name' };
-        
+
         replacementConfig.validatorConfigs = [
             {
                 errorCode: 'R',
                 errorMessage: 'Changed',
-                conditionConfig:  { conditionType: ConditionType.RequireText }
+                conditionConfig: { conditionType: ConditionType.RequireText }
             },
             {
                 conditionConfig: {
@@ -1656,18 +1351,18 @@ describe('ValidationManager.addOrMergeValueHost', () => {
                 {
                     errorCode: 'Q',
                     conditionConfig: { conditionType: ConditionType.NotNull }
-                },            
+                },
                 {
                     errorCode: 'R',
                     errorMessage: 'Changed',
-                    conditionConfig: { conditionType: ConditionType.RequireText}
+                    conditionConfig: { conditionType: ConditionType.RequireText }
                 },
                 {
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     },
                     errorMessage: 'Always'
-                },                
+                },
             ]
         };
 
@@ -1685,7 +1380,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         // ensure ValueHost is FieldValueHost and has an initial state
         testValueHostInstanceState(testItem, 'Field1', null);
     });
- 
+
     test('Replace the state, keeping the same config. Confirm the state and config', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: FieldValueHostConfig = {
@@ -1716,10 +1411,10 @@ describe('ValidationManager.addOrMergeValueHost', () => {
 
         // ensure the stored Config is the same as the one supplied
         expect(testItem.exposedValueHostConfigs.get('Field1')).toEqual(config);
-     
+
         // ensure ValueHost is FieldValueHost and has an initial state
         testValueHostInstanceState(testItem, 'Field1', updateState);
-    });    
+    });
     test('Edit state instance after addOrMergeValueHost has no impact on state in ValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: FieldValueHostConfig = {
@@ -1747,10 +1442,10 @@ describe('ValidationManager.addOrMergeValueHost', () => {
 
         let savedState = deepClone(updateState);
         updateState.value = 100;
-     
+
         // ensure ValueHost is FieldValueHost and has an initial state
         testValueHostInstanceState(testItem, 'Field1', savedState);
-    });        
+    });
     test('Confirm previous ValueHost is discarded and new one retains the state from the previous one', () => {
         let config: StaticValueHostConfig = {
             name: 'Field1',
@@ -1773,7 +1468,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         expect(replacementValueHost.getValue()).toBe(savedValue);
         expect(replacementValueHost.getLabel()).toBe('Label changed');
         expect(() => initialValueHost.getFromInstanceState('anything')).toThrow();  // deref error
-    });    
+    });
     test('Confirm previous ValueHost is discarded and but uses the state passed into addOrUpdateValueHost', () => {
         let config: StaticValueHostConfig = {
             name: 'Field1',
@@ -1789,7 +1484,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         initialValueHost.setValue(100); // some stateful info
         let savedValue = initialValueHost.getValue();
 
-        let updatedConfig: StaticValueHostConfig = { ...config, label: 'Label changed' };        
+        let updatedConfig: StaticValueHostConfig = { ...config, label: 'Label changed' };
         let updateState: StaticValueHostInstanceState = {
             name: 'Field1',
             value: 40
@@ -1801,7 +1496,7 @@ describe('ValidationManager.addOrMergeValueHost', () => {
         expect(replacementValueHost.getLabel()).toBe('Label changed');
 
         expect(() => initialValueHost.getFromInstanceState('anything')).toThrow();  // deref error
-    });            
+    });
 });
 describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueHost, getStaticValueHost', () => {
     test('With 2 FieldValueHostConfigs, get each with all functions. Expect null for Calc and Static', () => {
@@ -1837,7 +1532,7 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         let vh4: IValidatorsValueHostBase | null = null;
         expect(() => vh4 = testItem.getValidatorsValueHost('Field2')).not.toThrow();
         expect(vh4).toBeInstanceOf(ValidatableValueHostBase);
-        expect(vh4!.getName()).toBe('Field2');        
+        expect(vh4!.getName()).toBe('Field2');
         let vh5: IFieldValueHost | null = null;
         expect(() => vh5 = testItem.getFieldValueHost('Field1')).not.toThrow();
         expect(vh5).toBeInstanceOf(FieldValueHost);
@@ -1845,13 +1540,13 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         let vh6: IFieldValueHost | null = null;
         expect(() => vh6 = testItem.getFieldValueHost('Field2')).not.toThrow();
         expect(vh6).toBeInstanceOf(FieldValueHost);
-        expect(vh6!.getName()).toBe('Field2');          
+        expect(vh6!.getName()).toBe('Field2');
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field2')).not.toThrow();
         expect(vh9).toBeNull();
         let vh10: IStaticValueHost | null = null;
         expect(() => vh10 = testItem.getStaticValueHost('Field2')).not.toThrow();
-        expect(vh10).toBeNull();              
+        expect(vh10).toBeNull();
 
     });
     test('With 2 Array<ValueHostConfig>, get each with both functions. getValueHost returns VH, getValidatorsValueHost and getFieldValueHost return null', () => {
@@ -1889,21 +1584,21 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(vh5).toBeNull();
         let vh6: IFieldValueHost | null = null;
         expect(() => vh6 = testItem.getFieldValueHost('Field2')).not.toThrow();
-        expect(vh6).toBeNull();  
+        expect(vh6).toBeNull();
         let vh9: ICalcValueHost | null = null;
         expect(() => vh9 = testItem.getCalcValueHost('Field1')).not.toThrow();
         expect(vh9).toBeNull();
         let vh10: ICalcValueHost | null = null;
         expect(() => vh10 = testItem.getCalcValueHost('Field2')).not.toThrow();
-        expect(vh10).toBeInstanceOf(CalcValueHost);            
+        expect(vh10).toBeInstanceOf(CalcValueHost);
         let vh11: IStaticValueHost | null = null;
         expect(() => vh11 = testItem.getStaticValueHost('Field1')).not.toThrow();
         expect(vh11).toBeInstanceOf(StaticValueHost);
         let vh12: IStaticValueHost | null = null;
         expect(() => vh12 = testItem.getStaticValueHost('Field2')).not.toThrow();
-        expect(vh12).toBeNull();                 
+        expect(vh12).toBeNull();
 
-    });    
+    });
     test('When supplying an unknown ValueHostName, return null.', () => {
 
         let config1: FieldValueHostConfig = {
@@ -1922,16 +1617,16 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(vh1).toBeNull();
         let vh2: IValidatorsValueHostBase | null = null;
         expect(() => vh2 = testItem.getValidatorsValueHost('Unknown')).not.toThrow();
-        expect(vh1).toBeNull();    
+        expect(vh1).toBeNull();
         let vh3: IFieldValueHost | null = null;
         expect(() => vh3 = testItem.getFieldValueHost('Unknown')).not.toThrow();
         expect(vh3).toBeNull();
         let vh4: ICalcValueHost | null = null;
         expect(() => vh4 = testItem.getCalcValueHost('Unknown')).not.toThrow();
-        expect(vh4).toBeNull();      
+        expect(vh4).toBeNull();
         let vh5: IStaticValueHost | null = null;
         expect(() => vh5 = testItem.getStaticValueHost('Unknown')).not.toThrow();
-        expect(vh5).toBeNull();        
+        expect(vh5).toBeNull();
     });
 });
 
@@ -1960,7 +1655,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
@@ -1988,7 +1683,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             doNotSave: true
         };
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2018,7 +1713,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             doNotSave: true
         };
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2032,7 +1727,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         expect(setup.validationManager.getIssuesForField(config.name)).toEqual([expectedIssueFound]);
         expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
-    });    
+    });
 
     test('With 2 fieldValueHost that are both valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
@@ -2041,7 +1736,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
@@ -2057,30 +1752,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.validationManager.getIssuesForField(config2.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 2 fieldValueHost where only one has validators, it should return {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
-        let config1 = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
-        let builder = new ValidatableValueHostConfigBuilder(null, new MockValidationServices(true, true));
-        let config2 = builder.field('Field2');
-
-        let setup = setupValidationManager([config1, config2]);
-
-        let validationState : ValidationState | null = null;
-        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
-            isValid: true,
-            doNotSave: false,
-            issuesFound: null,
-            asyncProcessing: false
-        });
-
-        expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSave).toBe(false);
-
-        expect(setup.validationManager.getIssuesForField(config1.name)).toBeNull();
-        expect(setup.validationManager.getIssuesForField(config2.name)).toBeNull();
-        expect(setup.validationManager.getIssuesFound()).toBeNull();
-    });    
     test('With 2 fieldValueHost that are both undetermined, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupFieldValueHostConfig(0, [IsUndeterminedConditionType]);
@@ -2088,7 +1760,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
@@ -2126,7 +1798,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             doNotSave: true
         };
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2261,10 +1933,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let setup = setupValidationManager();
         let result = setup.validationManager.addExternalIssuesFound([], true);
         expect(result).toBe(false);
-    });    
+    });
     test('addExternalIssuesFound called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
         let setup = setupValidationManager();
-        let result =  setup.validationManager.addExternalIssuesFound([
+        let result = setup.validationManager.addExternalIssuesFound([
             {
                 errorMessage: 'BL_ERROR',
             }
@@ -2272,10 +1944,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(result).toBe(true);
         let result2 = setup.validationManager.addExternalIssuesFound([], true);
         expect(result2).toBe(true);
-    });        
+    });
     test('OnValidated callback test invokes callback with expected ValidationState', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+        let callback = (vm: IValidationManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2303,10 +1975,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             asyncProcessing: false
         });
 
-    });    
+    });
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+        let callback = (vm: IValidationManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2325,10 +1997,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             {
                 errorMessage: 'BL_ERROR'
             }
-        ], true, { skipCallback: true});
+        ], true, { skipCallback: true });
         expect(callbackValue).toBeNull();
 
-    });    
+    });
     test('With 1 fieldValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Require should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupFieldValueHostConfig(0, [conditionType]);
@@ -2337,11 +2009,11 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
                 category: ConditionCategory.Require,
-            result: ConditionEvaluateResult.NoMatch
+                result: ConditionEvaluateResult.NoMatch
             }));
-    
+
         (setup.validationManager.getValueHost('Field1')! as IFieldValueHost).setTextValue('');
-        
+
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ preliminary: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
@@ -2364,8 +2036,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
                 category: ConditionCategory.Require,
-            result: ConditionEvaluateResult.NoMatch
-        }));
+                result: ConditionEvaluateResult.NoMatch
+            }));
         let expectedIssueFound: IssueFound = {
             errorCode: conditionType,
             valueHostName: 'Field1',
@@ -2376,7 +2048,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         };
 
         (setup.validationManager.getValueHost('Field1')! as IFieldValueHost).setValue('');
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ preliminary: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2405,7 +2077,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         };
 
         (setup.validationManager.getValueHost('Field1')! as IFieldValueHost).setTextValue('');
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2436,7 +2108,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
-    });    
+    });
     test('With 1 fieldValueHost that has a string value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -2449,13 +2121,13 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             issuesFound: null,
             asyncProcessing: false
         });
-    });        
+    });
     test('With 1 fieldValueHost that has an undefined value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Undetermined because DuringEdit requires a string value', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
         setup.validationManager.getFieldValueHost(config.name)?.setTextValue(undefined);
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
@@ -2464,7 +2136,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             asyncProcessing: false
         });
 
-    });          
+    });
     test('With 1 fieldValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Category=Require validators', () => {
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -2479,7 +2151,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         (setup.validationManager.getValueHost('Field1')! as IFieldValueHost).setValue('');
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2496,7 +2168,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let vh = (setup.validationManager.getValueHost('Field1')! as IFieldValueHost);
         vh.setTextValue('');
-        
+
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
@@ -2521,7 +2193,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         (setup.validationManager.getValueHost('Field1')! as IFieldValueHost).setValue('');
 
-        let validationState : ValidationState | null = null;
+        let validationState: ValidationState | null = null;
         expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
@@ -2532,7 +2204,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+        let callback = (vm: IValidationManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -2551,7 +2223,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test with skipCallback does not callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+        let callback = (vm: IValidationManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -2559,7 +2231,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             onValidationStateChanged: callback
         });
 
-        let validationState = setup.validationManager.validate({ skipCallback: true});
+        let validationState = setup.validationManager.validate({ skipCallback: true });
 
         expect(callbackValue).toBeNull();
     });
@@ -2574,7 +2246,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForField(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
-    });    
+    });
     test('When ValueHost.isEnabled=false, even though validator is invalid, result is as if the validator did not get used because its own ValidationStatus=Disabled', () => {
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -2586,17 +2258,35 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForField(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
-    });        
+    });
     test('validate() passes final ValidationState to callback', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.onValidationStateChanged = 
-            (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{
+            services: services,
+            valueHostConfigs: [],
+            onValidationStateChanged:
+                (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState
+        };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+        // let vmConfig = { services: services, valueHostConfigs: [] };
+        // builder.onValidationStateChanged = 
+        //     (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
 
         let callbackValidationState: ValidationState | null = null;
-        let testItem = new ValidationManager(valConfig);
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
 
         let validationState = testItem.validate();
@@ -2607,16 +2297,26 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
 
     test('validate({ skipCallback: true }) suppresses callback', () => {
-        let callbackValidationState : ValidationState | null = null;
+        let callbackValidationState: ValidationState | null = null;
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.onValidationStateChanged = 
-            (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState;
+        let vmConfig = {
+            services: services,
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Field,
+                name: 'Field1',
+                dataType: LookupKey.String,
+                validatorConfigs: [{
+                    errorMessage: 'required',
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText        
+                    }
+                }]
+            }],
+            onValidationStateChanged:
+                (validationManager: IValidationManager, validationState: ValidationState) => callbackValidationState = validationState
+        };
 
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
-
-        let testItem = new ValidationManager(valConfig);
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
 
         let validationState = testItem.validate({
@@ -2629,12 +2329,33 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
     test('validate({ group }) filters issuesFound to that group', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
-        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field2',
+            dataType: LookupKey.String,
+            group: 'B',
+            validatorConfigs: [{
+                errorMessage: 'required B',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(valConfig);
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.getFieldValueHost('Field2')!.setValues('', '');
 
@@ -2647,12 +2368,36 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
     test('validate({ group }) reflects group specific isValid, doNotSave and asyncProcessing', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
-        builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field2',
+            dataType: LookupKey.String,
+            group: 'B',
+            validatorConfigs: [{
+                errorMessage: 'required B',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        // builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
+        // builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
+        // let valConfig = builder.complete();
 
-        let testItem = new ValidationManager(valConfig);
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
         testItem.getFieldValueHost('Field2')!.setValues('', '');
 
@@ -2666,16 +2411,36 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         expect(validationState2.issuesFound != null && validationState2.issuesFound.length === 1).toBe(true);
         expect(validationState2.isValid).toBe(false);
-        expect(validationState2.doNotSave).toBe(true);    
+        expect(validationState2.doNotSave).toBe(true);
         expect(validationState2.asyncProcessing).toBe(false);
     });
 
     test('validate() excludes disabled hosts from validation and aggregate state', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required 1');
-        builder.field('Field2', LookupKey.String).requireText('required 2');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required 1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field2',
+            dataType: LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required 2',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        let valConfig = vmConfig;
 
         let testItem = new ValidationManager(valConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
@@ -2734,7 +2499,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.validationManager.getIssuesFound('A')).toBeNull();
         expect(setup.validationManager.getIssuesFound('B')).toBeNull();
     });
-  
+
     test('getIssuesFound(group) matches group names case-insensitively', () => {
         let configA = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
         configA.group = 'GroupA';
@@ -2777,7 +2542,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         // validate() returns ValidationState for VM. Do avoid changing vh's state
         // we must call it with a group that does not match.
 
-        let validationState = setup.validationManager.validate({ group: 'nonMatchingGroup'});
+        let validationState = setup.validationManager.validate({ group: 'nonMatchingGroup' });
         expect(vh.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
@@ -2799,7 +2564,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
-        let validationState = setup.validationManager.validate({ group: 'B' }); 
+        let validationState = setup.validationManager.validate({ group: 'B' });
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
         expect(vhB.currentValidationState.status).toBe(ValidationStatus.Valid);
 
@@ -2823,7 +2588,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
-        let validationState = setup.validationManager.validate({ group: 'B' }); 
+        let validationState = setup.validationManager.validate({ group: 'B' });
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
         expect(vhB.currentValidationState.status).toBe(ValidationStatus.Invalid);
 
@@ -2832,13 +2597,13 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             doNotSave: true,
             issuesFound: [
                 {
-                   'valueHostName': vhB.getName(),
-                   'doNotSave': true,
-                   'errorCode': NeverMatchesConditionType2,
-                   'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
-                   'severity': ValidationSeverity.Error,
-                   'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
-                 }         
+                    'valueHostName': vhB.getName(),
+                    'doNotSave': true,
+                    'errorCode': NeverMatchesConditionType2,
+                    'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
+                    'severity': ValidationSeverity.Error,
+                    'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
+                }
             ],
             asyncProcessing: false
         });
@@ -2854,7 +2619,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let vhB = setup.validationManager.getValueHost(configB.name) as IValidatableValueHostBase;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
-        let validationState = setup.validationManager.validate(); 
+        let validationState = setup.validationManager.validate();
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.Valid);
         expect(vhA.currentValidationState.doNotSave).toBe(false);
         expect(vhB.currentValidationState.status).toBe(ValidationStatus.Valid);
@@ -2865,38 +2630,51 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
             doNotSave: false,
             issuesFound: [
                 {
-                   'valueHostName': vhA.getName(),
-                   'doNotSave': false,
-                   'errorCode': NeverMatchesConditionType,
-                   'errorMessage': 'Error 1: ' + NeverMatchesConditionType,
-                   'severity': ValidationSeverity.Warning,
-                   'summaryMessage': 'Summary 1: ' + NeverMatchesConditionType,
-                 },            
+                    'valueHostName': vhA.getName(),
+                    'doNotSave': false,
+                    'errorCode': NeverMatchesConditionType,
+                    'errorMessage': 'Error 1: ' + NeverMatchesConditionType,
+                    'severity': ValidationSeverity.Warning,
+                    'summaryMessage': 'Summary 1: ' + NeverMatchesConditionType,
+                },
                 {
-                   'valueHostName': vhB.getName(),
-                   'doNotSave': false,
-                   'errorCode': NeverMatchesConditionType2,
-                   'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
-                   'severity': ValidationSeverity.Warning,
-                   'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
-                 }         
+                    'valueHostName': vhB.getName(),
+                    'doNotSave': false,
+                    'errorCode': NeverMatchesConditionType2,
+                    'errorMessage': 'Error 2: ' + NeverMatchesConditionType2,
+                    'severity': ValidationSeverity.Warning,
+                    'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
+                }
             ],
             asyncProcessing: false
         });
-    });        
+    });
     test('getIssuesForField returns null for an existing host that is not a ValidatableValueHostBase', () => {
         let services = createValidationServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
-        let builder = new ValidationManagerConfigBuilder(services);
-        builder.field('Field1', LookupKey.String);
-        builder.static('Field2', LookupKey.Number);
-        let vm = new ValidationManager(builder);
+
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: []
+        });
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field2',
+            dataType:  LookupKey.Number
+        });
+        // let builder = new ValidationManagerConfigBuilder(services);
+        // builder.field('Field1', LookupKey.String);
+        // builder.static('Field2', LookupKey.Number);
+        let vm = new ValidationManager(vmConfig);
 
         vm.validate();
 
         expect(vm.getIssuesForField('Field2')).toBeNull();
-    });    
+    });
 });
 
 describe('clearValidation', () => {
@@ -2920,26 +2698,25 @@ describe('clearValidation', () => {
     // each of the child ValueHosts will call it using debounce.
     //
     function testOnValidatedWithDebounce(delayConfig: number | undefined,
-        expectedOnValidatedCalls: number, 
-        useVHCallback: boolean, numberOfValueHosts: number = 1, delayAfterVHCallback: number = 100): void
-    {
+        expectedOnValidatedCalls: number,
+        useVHCallback: boolean, numberOfValueHosts: number = 1, delayAfterVHCallback: number = 100): void {
         jest.useFakeTimers();
 
         let capturedFromOnValidated: Array<ValidationState> = [];
-        let callbackValidated = (vm: IValidationManager, validationState : ValidationState) => {
+        let callbackValidated = (vm: IValidationManager, validationState: ValidationState) => {
             capturedFromOnValidated.push(validationState);
         };
         let capturedFromOnValueHostValidated: Array<ValueHostValidationState> = [];
-        let callbackValueHostValidated = (valueHost: IValidatableValueHostBase, validationState : ValueHostValidationState) => {
+        let callbackValueHostValidated = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => {
             capturedFromOnValueHostValidated.push(validationState);
             jest.advanceTimersByTime(delayAfterVHCallback); // has the potential to trigger onValidate
-        };        
+        };
         let ivConfigs: Array<FieldValueHostConfig> = [];
         for (let i = 0; i < numberOfValueHosts; i++)
             ivConfigs.push(setupFieldValueHostConfig(i, [NeverMatchesConditionType]));
         let setup = setupValidationManager(ivConfigs, null, {
             onValidationStateChanged: callbackValidated,
-            onValueHostValidationStateChanged : useVHCallback ? callbackValueHostValidated : undefined,
+            onValueHostValidationStateChanged: useVHCallback ? callbackValueHostValidated : undefined,
             notifyValidationStateChangedDelay: delayConfig
         });
         setup.services.autoGenerateDataTypeCheckService.enabled = false;
@@ -2952,36 +2729,36 @@ describe('clearValidation', () => {
     }
     test('with notifyValidationStateChangedDelay=0, OnValidated invoked twice because debounce is off and ValueHost.validate fires it once', () => {
         testOnValidatedWithDebounce(0, 2, false);
-    });    
+    });
     test('with notifyValidationStateChangedDelay=undefined, OnValidated invoked once because debounce is on', () => {
         testOnValidatedWithDebounce(undefined, 1, false);
-    });        
+    });
     test('with notifyValidationStateChangedDelay=1000, OnValidated invoked once because debounce is on', () => {
         testOnValidatedWithDebounce(1000, 1, false);
-    });    
+    });
     test('With ValueHostcallbacks enabled and no delay after, and with notifyValidationStateChangedDelay=0, OnValidated invoked twice because debounce is off', () => {
         testOnValidatedWithDebounce(0, 2, true, 1, 0);
         testOnValidatedWithDebounce(0, 3, true, 2, 0);
-    });    
+    });
     test('With ValueHostcallbacks enabled and no delay after, and with notifyValidationStateChangedDelay=undefined, OnValidated invoked once', () => {
         testOnValidatedWithDebounce(undefined, 1, true, 1, 0);
         testOnValidatedWithDebounce(undefined, 1, true, 2, 0);
-    });        
+    });
     test('With ValueHostcallbacks enabled and no delay after, and with notifyValidationStateChangedDelay=1000, OnValidated invoked once', () => {
         testOnValidatedWithDebounce(1000, 1, true, 1, 0);
-        testOnValidatedWithDebounce(1000, 1, true, 2, 0);        
-    });    
+        testOnValidatedWithDebounce(1000, 1, true, 2, 0);
+    });
     test('With ValueHostcallbacks enabled and delay after < overall delay, and with notifyValidationStateChangedDelay=1000, OnValidated invoked once', () => {
         testOnValidatedWithDebounce(1000, 1, true, 1, 1000 - 1);
-        testOnValidatedWithDebounce(1000, 1, true, 2, 1000 - 1);        
-    });        
+        testOnValidatedWithDebounce(1000, 1, true, 2, 1000 - 1);
+    });
     test('With ValueHostcallbacks enabled and delay after > overall delay, and with notifyValidationStateChangedDelay=1000, OnValidated invoked twice as debounce triggers', () => {
         testOnValidatedWithDebounce(1000, 2, true, 1, 1000 + 1);
-        testOnValidatedWithDebounce(1000, 3, true, 2, 1000 + 1);        
-    });            
+        testOnValidatedWithDebounce(1000, 3, true, 2, 1000 + 1);
+    });
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+        let callback = (vm: IValidationManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2992,7 +2769,7 @@ describe('clearValidation', () => {
         let validationState = setup.validationManager.validate({ skipCallback: true });
         expect(callbackValue).toBeNull();
 
-        setup.validationManager.clearValidation({ skipCallback: true});
+        setup.validationManager.clearValidation({ skipCallback: true });
         expect(callbackValue).toBeNull();
     });
 
@@ -3060,7 +2837,7 @@ describe('clearValidation', () => {
 
         expect(changed).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toBeNull();
-    });    
+    });
 });
 
 describe('asyncProcessing', () => {
@@ -3428,7 +3205,7 @@ describe('invokeOnConfigChanged', () => {
             name: 'Field2',
             dataType: LookupKey.String,
             label: 'Field 2'
-        };        
+        };
         let vmConfig: ValidationManagerConfig = {
             services: new MockValidationServices(true, false),
             valueHostConfigs: [config1, config2],
@@ -3437,7 +3214,7 @@ describe('invokeOnConfigChanged', () => {
         let testItem = new PublicifiedValidationManager(vmConfig);
 
         expect(configsReceived).toBeUndefined();
-    });            
+    });
     test('Use addValueHost to invoke', () => {
         function handler(manager: IValidationManager, configs: Array<ValueHostConfig>): void {
             configsReceived = configs;
@@ -3487,7 +3264,7 @@ describe('invokeOnConfigChanged', () => {
         };
         testItem.addOrUpdateValueHost(config2, null);
         expect(configsReceived).toEqual([config2]);
-    });    
+    });
     test('Use addOrMergeValueHost to invoke, with both referencing the same ValueHostName', () => {
         function handler(manager: IValidationManager, configs: Array<ValueHostConfig>): void {
             configsReceived = configs;
@@ -3518,7 +3295,7 @@ describe('invokeOnConfigChanged', () => {
             label: 'Field 1',
             dataType: LookupKey.String
         }]);
-    });       
+    });
     test('Use discardValueHost to invoke', () => {
         function handler(manager: IValidationManager, configs: Array<ValueHostConfig>): void {
             configsReceived = configs;
@@ -3533,7 +3310,7 @@ describe('invokeOnConfigChanged', () => {
             name: 'Field2',
             dataType: LookupKey.String,
             label: 'Field 2'
-        };        
+        };
         let vmConfig: ValidationManagerConfig = {
             services: new MockValidationServices(true, false),
             valueHostConfigs: [config1, config2],
@@ -3547,15 +3324,19 @@ describe('invokeOnConfigChanged', () => {
         configsReceived = undefined;
         testItem.discardValueHost('Field1');
         expect(configsReceived).toBeUndefined();
-    });        
+    });
 });
 describe('dispose', () => {
     test('dispose kills all expected properties', () => {
         let vmConfig: ValidationManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
+            services: new MockValidationServices(true, false),
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1'
+            }]
         };
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.static('Field1');
+        // let builder = new ValidationManagerConfigBuilder(vmConfig);
+        // builder.static('Field1');
         let testItem = new PublicifiedValidationManager(vmConfig);
         let vh = testItem.vh.static('Field1');
         testItem.dispose();
@@ -3577,13 +3358,19 @@ describe('dispose', () => {
             x: {},
             dispose: () => { vmConfig.x = undefined! }
         };
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.static('Field1');
+
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        });
+
+        // let builder = new ValidationManagerConfigBuilder(vmConfig);
+        // builder.static('Field1');
         let testItem = new PublicifiedValidationManager(vmConfig);
         testItem.dispose();
         expect(vmConfig.x).toBeUndefined();
 
-    });    
+    });
     test('Ordinary does not make any noise', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -3591,7 +3378,7 @@ describe('dispose', () => {
     });
     test('Ordinary does not make any noise', () => {
         jest.useFakeTimers();
-        let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);     
+        let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let countCalls = 0;
         let setup = setupValidationManager([config], null, {
             onValidationStateChanged: (vm, vs) => {
@@ -3608,15 +3395,15 @@ describe('dispose', () => {
         setup.validationManager.dispose();
         jest.advanceTimersByTime(100);  // force onValidationStateChanged to run   
         expect(countCalls).toBe(1);
-    });    
+    });
 });
 
 describe('toIValidationManagerCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValidationManagerCallbacks = {
-            onValueChanged: (vh: IValueHost, old: any) => {},
-            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
-            onTextValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
+            onValueChanged: (vh: IValueHost, old: any) => { },
+            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
+            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onInstanceStateChanged: (vm, state) => { },
             onValidationStateChanged: (vm, results) => { },
@@ -3630,21 +3417,21 @@ describe('toIValidationManagerCallbacks function', () => {
             valueHostConfigs: []
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
-    });    
+    });
     test('ValidationManager with callbacks defined returns itself.', () => {
         let testItem = new ValidationManager({
             services: new ValidationServices(),
             valueHostConfigs: [],
-            onValueChanged: (vh: IValueHost, old: any) => {},
-            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
-            onTextValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
+            onValueChanged: (vh: IValueHost, old: any) => { },
+            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
+            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onInstanceStateChanged: (vm, state) => { },
             onValidationStateChanged: (vm, results) => { },
             onConfigChanged: (vm, config) => { }
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
-    });        
+    });
     test('ValidationManager with callbacks=null defined returns itself.', () => {
         let testItem = new ValidationManager({
             services: new ValidationServices(),
@@ -3658,17 +3445,17 @@ describe('toIValidationManagerCallbacks function', () => {
             onConfigChanged: null
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
-    });            
+    });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIValidationManagerCallbacks(testItem)).toBeNull();
-    });    
+    });
     test('null returns null.', () => {
         expect(toIValidationManagerCallbacks(null)).toBeNull();
-    });        
+    });
     test('Non-object returns null.', () => {
         expect(toIValidationManagerCallbacks(100)).toBeNull();
-    });        
+    });
 });
 
 describe('toIValueHostResolver function', () => {
@@ -3790,18 +3577,18 @@ describe('toIValidationManager function', () => {
             valueHostConfigs: []
         });
         expect(toIValidationManager(testItem)).toBe(testItem);
-    });    
+    });
 
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIValidationManager(testItem)).toBeNull();
-    });    
+    });
     test('null returns null.', () => {
         expect(toIValidationManager(null)).toBeNull();
-    });        
+    });
     test('Non-object returns null.', () => {
         expect(toIValidationManager(100)).toBeNull();
-    });        
+    });
 });
 describe('toIValidationManagerAccessor function', () => {
     test('Matches interface returns strongly typed object.', () => {
@@ -3897,18 +3684,15 @@ describe('toIValidationManagerAccessor function', () => {
 });
 describe('Round trip caching of Config and State', () => {
     test('With capturing of state and config setup, create another ValidationManager using the captured data to confirm it rebuilds the same config', () => {
-        function captureConfig(ValidationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
-        {
+        function captureConfig(ValidationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void {
             capturedConfig = valueHostConfigs;
         }
         let capturedConfig: Array<ValueHostConfig> | undefined = undefined;
-        function captureManagerStateChanged(ValidationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
-        {
+        function captureManagerStateChanged(ValidationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void {
             capturedManagerState = stateToRetain;
-        }  
+        }
         let capturedManagerState: ValidationManagerInstanceState | undefined = undefined;
-        function captureValueHostStateChanged(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void
-        {
+        function captureValueHostStateChanged(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void {
             capturedValueHostStates.set(valueHost.getName(), stateToRetain);
         }
         let capturedValueHostStates = new Map<string, ValueHostInstanceState>();
@@ -3916,14 +3700,43 @@ describe('Round trip caching of Config and State', () => {
         let services = createValidationServicesForTesting();
         services.conditionFactory.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
 
-        let builder = createConfigBuilder(services);
-        builder.onConfigChanged = captureConfig;
-        builder.onInstanceStateChanged = captureManagerStateChanged;
-        builder.onValueHostInstanceStateChanged = captureValueHostStateChanged;
+        let vmConfig = <ValidationManagerConfig>{
+            services: services,
+            valueHostConfigs: [],
+            onConfigChanged: captureConfig,
+            onInstanceStateChanged: captureManagerStateChanged,
+            onValueHostInstanceStateChanged: captureValueHostStateChanged,
+        };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            },
+            {
+                errorMessage: 'Digits only',
+                conditionConfig: <RegExpConditionConfig>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /^\d*$/
+                }
+            }]
+        });
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field2',
+            dataType:  LookupKey.Integer
+        });
+        // builder.onConfigChanged = captureConfig;
+        // builder.onInstanceStateChanged = captureManagerStateChanged;
+        // builder.onValueHostInstanceStateChanged = captureValueHostStateChanged;
 
-        builder.field('Field1', LookupKey.String).requireText('required').regExp(/^\d*$/, 'Digits only');
-        builder.static('Field2', LookupKey.Integer);
-        let vm = new ValidationManager(builder);
+        // builder.field('Field1', LookupKey.String).requireText('required').regExp(/^\d*$/, 'Digits only');
+        // builder.static('Field2', LookupKey.Integer);
+        let vm = new ValidationManager(vmConfig);
 
         // this triggers the onConfigChanged callback and captures the config for later use.
         vm.addValueHost(<StaticValueHostConfig>{
@@ -4000,7 +3813,7 @@ describe('Round trip caching of Config and State', () => {
         expect(vh1!.isValid).toBe(vh1IsValid);
         expect(vh1!.validationStatus).toBe(vh1ValidationStatus);
         expect(vh1!.getIssuesFound()).toEqual(issuesFoundVH1);
-        
+
         let vh2 = testItem.getStaticValueHost('Field2');
         expect(vh2).toBeInstanceOf(StaticValueHost);
         expect(vh2!.getValue()).toBe(vh2Value);
@@ -4170,7 +3983,7 @@ describe('addExternalIssueFound()', () => {
         expect(host.lastAddExternalIssueFoundCall.determinedLocally).toBe(false);
         expect(host.lastAddExternalIssueFoundCall.options).toBe(options);
         expect(host.lastAddExternalIssueFoundCall.options?.skipCallback).toBe(true);
-    });    
+    });
 });
 
 describe('addExternalIssuesFound()', () => {
@@ -4288,10 +4101,23 @@ describe('addExternalIssuesFound()', () => {
 describe('toValidationPayload()', () => {
     test('returns a serialized single IssueFound[] list for validator-generated issues', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(builder);
+        // let vmConfig = { services: services, valueHostConfigs: [] };
+        // builder.field('Field1', LookupKey.String).requireText('required');
+
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.validate();
 
@@ -4309,10 +4135,22 @@ describe('toValidationPayload()', () => {
 
     test('includes supplied external issues in the serialized single IssueFound[] list', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(builder);
+        // builder.field('Field1', LookupKey.String).requireText('required');
+
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.validate();
 
@@ -4333,10 +4171,22 @@ describe('toValidationPayload()', () => {
 
     test('returns the same visible issue set as getIssuesFound()', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(builder);
+        // builder.field('Field1', LookupKey.String).requireText('required');
+
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.validate();
 
@@ -4400,15 +4250,27 @@ describe('fromValidationPayload()', () => {
 
     test('preserves existing validator-managed issues while importing external issues', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let target = new ValidationManager(valConfig);
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
+
+        let target = new ValidationManager(vmConfig);
         target.getFieldValueHost('Field1')!.setValues('', '');
         target.validate();
 
-        let source = new ValidationManager(valConfig);
+        let source = new ValidationManager(vmConfig);
         source.addExternalIssueFound(
             {
                 errorMessage: 'IMPORTED_MODEL_ERROR'
@@ -4429,17 +4291,29 @@ describe('fromValidationPayload()', () => {
 
     test('round-trips a field-level validator-generated issue via toValidationPayload(); existing validator overrides external resulting in issueFound from the validator with doNotSave=true', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let source = new ValidationManager(valConfig);
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
+
+        let source = new ValidationManager(vmConfig);
         source.getFieldValueHost('Field1')!.setValues('', '');
         source.validate();
 
         let payload = source.toValidationPayload(null);
 
-        let target = new ValidationManager(valConfig);
+        let target = new ValidationManager(vmConfig);
         let result = target.fromValidationPayload(payload);
         let issuesFound = target.getIssuesFound();
 
@@ -4477,10 +4351,35 @@ describe('fromValidationPayload()', () => {
 
     test('imports a server issue for a field missing on the client by routing it to ModelValidatorsValueHost', () => {
         let serverServices = createValidationServicesForTesting();
-        let serverBuilder = createConfigBuilder(serverServices);
-        serverBuilder.field('Field1', LookupKey.String).requireText('required 1');
-        serverBuilder.field('Field2', LookupKey.String).requireText('required 2');
-        let serverConfig = serverBuilder.complete();
+        let serverConfig = <ValidationManagerConfig>{ services: serverServices, valueHostConfigs: [] };
+        serverConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required 1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+        serverConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field2',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required 2',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        // let serverBuilder = createConfigBuilder(serverServices);
+        // serverBuilder.field('Field1', LookupKey.String).requireText('required 1');
+        // serverBuilder.field('Field2', LookupKey.String).requireText('required 2');
+        // let serverConfig = serverBuilder.complete();
 
         let source = new ValidationManager(serverConfig);
         source.getFieldValueHost('Field1')!.setValues('', '');
@@ -4490,9 +4389,23 @@ describe('fromValidationPayload()', () => {
         let payload = source.toValidationPayload(null);
 
         let clientServices = createValidationServicesForTesting();
-        let clientBuilder = createConfigBuilder(clientServices);
-        clientBuilder.field('Field1', LookupKey.String).requireText('required 1');
-        let clientConfig = clientBuilder.complete();
+        let clientConfig = <ValidationManagerConfig>{ services: clientServices, valueHostConfigs: [] };
+        clientConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required 1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        // let clientBuilder = createConfigBuilder(clientServices);
+        // clientBuilder.field('Field1', LookupKey.String).requireText('required 1');
+        // let clientConfig = clientBuilder.complete();
 
         let target = new ValidationManager(clientConfig);
         let result = target.fromValidationPayload(payload);
@@ -4514,9 +4427,22 @@ describe('fromValidationPayload()', () => {
 
     test('keeps imported doNotSave = false when the client has the field but no matching validator to swap with', () => {
         let serverServices = createValidationServicesForTesting();
-        let serverBuilder = createConfigBuilder(serverServices);
-        serverBuilder.field('Field1', LookupKey.String).requireText('required');
-        let serverConfig = serverBuilder.complete();
+        let serverConfig = <ValidationManagerConfig>{ services: serverServices, valueHostConfigs: [] };
+        serverConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+        // let serverBuilder = createConfigBuilder(serverServices);
+        // serverBuilder.field('Field1', LookupKey.String).requireText('required');
+        // let serverConfig = serverBuilder.complete();
 
         let source = new ValidationManager(serverConfig);
         source.getFieldValueHost('Field1')!.setValues('', '');
@@ -4525,9 +4451,18 @@ describe('fromValidationPayload()', () => {
         let payload = source.toValidationPayload(null);
 
         let clientServices = createValidationServicesForTesting();
-        let clientBuilder = createConfigBuilder(clientServices);
-        clientBuilder.field('Field1', LookupKey.String);
-        let clientConfig = clientBuilder.complete();
+        let clientConfig = <ValidationManagerConfig>{ services: clientServices, valueHostConfigs: [] };
+        clientConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: []
+        });
+
+
+        // let clientBuilder = createConfigBuilder(clientServices);
+        // clientBuilder.field('Field1', LookupKey.String);
+        // let clientConfig = clientBuilder.complete();
 
         let target = new ValidationManager(clientConfig);
         let result = target.fromValidationPayload(payload);
@@ -4539,7 +4474,7 @@ describe('fromValidationPayload()', () => {
         let importedIssue = issuesFound!.find((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required');
         expect(importedIssue).toBeDefined();
         expect(importedIssue!.doNotSave).toBe(false); // no client validator issue to swap with
-    });    
+    });
 
     test('forces imported doNotSave = false', () => {
         let payload = JSON.stringify([
@@ -4593,10 +4528,23 @@ describe('fromValidationPayload()', () => {
 
     test('imports multiple issues from one payload', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
-        let source = new ValidationManager(valConfig);
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+        // let vmConfig = { services: services, valueHostConfigs: [] };
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
+        let source = new ValidationManager(vmConfig);
         source.getFieldValueHost('Field1')!.setValues('', '');
         source.validate();
         source.addExternalIssueFound(
@@ -4608,7 +4556,7 @@ describe('fromValidationPayload()', () => {
 
         let payload = source.toValidationPayload(null);
 
-        let target = new ValidationManager(valConfig);
+        let target = new ValidationManager(vmConfig);
         let result = target.fromValidationPayload(payload);
         let issuesFound = target.getIssuesFound();
 
@@ -4639,11 +4587,24 @@ describe('clearExternalIssuesFound()', () => {
 
     test('does not clear validator-managed issues', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(valConfig);
+        // let vmConfig = { services: services, valueHostConfigs: [] };
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.validate();
 
@@ -4656,11 +4617,24 @@ describe('clearExternalIssuesFound()', () => {
 
     test('clears external issues while preserving validator-managed issues', () => {
         let services = createValidationServicesForTesting();
-        let builder = createConfigBuilder(services);
-        builder.field('Field1', LookupKey.String).requireText('required');
-        let valConfig = builder.complete();
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType:  LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'required',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        let testItem = new ValidationManager(valConfig);
+        // let vmConfig = { services: services, valueHostConfigs: [] };
+        // builder.field('Field1', LookupKey.String).requireText('required');
+        // let valConfig = builder.complete();
+
+        let testItem = new ValidationManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('', '');
         testItem.validate();
         testItem.addExternalIssueFound(

@@ -63,8 +63,7 @@ import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
-import { IBuildersFactory } from "../../src/Interfaces/BuildersFactory";
-import { BuildersFactory } from "../../src/Services/BuildersFactory";
+
 
 
 
@@ -315,7 +314,6 @@ export class MockValidationServices implements IValidationServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
-        this.buildersFactory = new BuildersFactory();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -519,17 +517,6 @@ export class MockValidationServices implements IValidationServices
         this._validatorFactory = factory;
     }
     private _validatorFactory: IValidatorFactory;
-
-    public get buildersFactory(): IBuildersFactory
-    {
-        return this._buildersFactory;
-    }
-    public set buildersFactory(factory: IBuildersFactory)
-    {
-        this._buildersFactory = factory;
-        factory.services = this;
-    }
-    private _buildersFactory!: IBuildersFactory;    
 
 
     public get cachingService(): ICachingService {

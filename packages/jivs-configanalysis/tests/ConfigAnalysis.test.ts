@@ -1,39 +1,45 @@
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { ValidationManagerConfigBuilder } from "@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder";
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
+import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
-import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
-import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
-import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 
 import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
     checkLookupKeyResultsForService, createServices
 } from "./TestSupport/support";
 
-import { ConfigAnalysisBase, ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { AnalysisResultsHelper } from '../src/Analyzers/AnalysisResultsHelper';
-import { SampleValues } from '../src/SampleValues';
-import { IValueHostConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IConditionConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../src/Types/Analyzers';
-import { AnalysisArgs, ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
-import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
-import {
-    ServiceWithLookupKeyCAResultBase, IConfigAnalysisResults, CAFeature, ValueHostConfigCAResult,
-    ValidatorConfigCAResult, PropertyCAResult, CAIssueSeverity
-} from '../src/Types/Results';
 import { DataTypeComparerAnalyzer } from '../src/Analyzers/DataTypeComparerAnalyzer';
 import { ValueHostConfigAnalyzer } from '../src/Analyzers/ValueHostConfigAnalyzer';
 import {
     DataTypePropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase,
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
 } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
+import { ConfigAnalysisBase, ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { ConfigAnalysisService } from '../src/ConfigAnalysisService';
+import { SampleValues } from '../src/SampleValues';
+import { IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from '../src/Types/Analyzers';
+import { AnalysisArgs, ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
+import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
+import {
+    CAFeature,
+    CAIssueSeverity,
+    IConfigAnalysisResults,
+    PropertyCAResult,
+    ServiceWithLookupKeyCAResultBase,
+    ValidatorConfigCAResult,
+    ValueHostConfigCAResult
+} from '../src/Types/Results';
+
+
 
 describe('ConfigAnalysisBase class', () => {
     class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValidationManagerConfig, IValidationServices> {

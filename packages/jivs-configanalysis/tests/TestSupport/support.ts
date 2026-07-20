@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
@@ -23,6 +24,7 @@ import {
     ParserServiceCAResult, ParserFoundCAResult
 } from "../../src/Types/Results";
 
+new BuildersFactoryInstaller();
 /**
  * 
  * @param options - When cultures = undefined, it adds 'en'.

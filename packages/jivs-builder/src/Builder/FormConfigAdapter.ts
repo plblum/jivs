@@ -659,7 +659,7 @@ export class ModifyValidatorBuilder
 
         // lock down the original error code
         existingValidator.errorCode = originalErrorCode;
-        existingValidator.conditionConfig = combinedCondition;        
+        existingValidator.conditionConfig = combinedCondition;      
     }
     /**
      * Use this method to specify a condition that must be met for the existing validator to be evaluated.

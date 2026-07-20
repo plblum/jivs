@@ -43,10 +43,7 @@ import {
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
-
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { IValidatorBuilder } from "../../src/Interfaces/ChildBuilders";
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.
@@ -98,17 +95,6 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
     // }
 
 }
-class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerConfigBuilder {
-    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;
-    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;    
-    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder;
-    // overload resolution
-    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): IValidatorBuilder {
-        return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
-    }
-
-}
-
 
 function supportTestValueHostInServices(services: IValidationServices): void
 {

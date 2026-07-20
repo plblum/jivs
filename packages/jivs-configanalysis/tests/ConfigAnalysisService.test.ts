@@ -1,19 +1,19 @@
-import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
-import { createServices } from './TestSupport/support';
-import { ConfigAnalysisOptions, IConfigAnalysis } from '../src/Types/ConfigAnalysis';
-import { installConfigAnalysisService, getConfigAnalysisService, ConfigAnalysisService } from '../src/ConfigAnalysisService';
-import { ConfigAnalysisResultsExplorer } from '../src/Explorer/ConfigAnalysisResultsExplorer';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from '../src/Types/Analyzers';
-import { ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from '../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
 import { ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
+import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from '../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
+import { ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
 import { ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
-import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
+import { ConfigAnalysisService, getConfigAnalysisService, installConfigAnalysisService } from '../src/ConfigAnalysisService';
+import { ConfigAnalysisResultsExplorer } from '../src/Explorer/ConfigAnalysisResultsExplorer';
+import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from '../src/Types/Analyzers';
+import { ConfigAnalysisOptions, IConfigAnalysis } from '../src/Types/ConfigAnalysis';
 import { CONFIG_ANALYSIS_SERVICE_NAME } from '../src/Types/ConfigAnalysisService';
+import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
+import { createServices } from './TestSupport/support';
 
 describe('install and getConfigAnalysisService', () => {
     // not installed initially

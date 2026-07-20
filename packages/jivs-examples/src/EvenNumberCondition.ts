@@ -24,13 +24,13 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { ValidatorBuilder } from "@plblum/jivs-engine/build/Builder/ValidatorBuilder";
-import { ConditionBuilder } from "@plblum/jivs-engine/build/Builder/ConditionBuilder";
-import { FluentValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Fluent";
+import { ValidatorBuilder } from "@plblum/jivs-builder/build/Builder/ValidatorBuilder";
+import { ConditionBuilder } from "@plblum/jivs-builder/build/Builder/ConditionBuilder";
+import { FluentValidatorConfig } from "@plblum/jivs-builder/build/Interfaces/Fluent";
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler,
     IValidatorBuilder, IConditionBuilder
-} from "@plblum/jivs-engine/build/Interfaces/ChildBuilders";
+} from "@plblum/jivs-builder/build/Interfaces/ChildBuilders";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
@@ -121,7 +121,7 @@ export class EvenNumberValidatorBuilder
 
 // TypeScript Declaration Merging with ValidatorBuilder and ConditionBuilder
 // This gives you intellisense and strong typing without heavy lifting
-declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
+declare module "@plblum/jivs-builder/build/Interfaces/ChildBuilders"
 {
     export interface IValidatorBuilder {
         evenNumber(
@@ -131,7 +131,7 @@ declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
             validatorParameters: FluentValidatorConfig): IValidatorBuilder;
     }
 }
-declare module "@plblum/jivs-engine/build/Interfaces/ChildBuilders"
+declare module "@plblum/jivs-builder/build/Interfaces/ChildBuilders"
 {
     export interface IConditionBuilder {
         evenNumber(): void;

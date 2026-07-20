@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import { RegExpConditionConfig, RequireTextCondition } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
@@ -45,6 +46,11 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     }
     
 }
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
+
+
 describe('constructor', () => {
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
         let services = createValidationServicesForTesting();

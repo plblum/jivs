@@ -25,6 +25,7 @@
   "dependencies": {
     "@angular/forms": "^18.2.5",
     "@angular/router": "^18.2.5",
+    "@plblum/jivs-builder": "^0.19.0",
     "@plblum/jivs-engine": "^0.19.0"
   },
   "devDependencies": {

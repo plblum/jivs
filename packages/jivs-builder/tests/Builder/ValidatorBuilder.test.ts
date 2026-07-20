@@ -14,6 +14,7 @@ import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCo
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
@@ -25,6 +26,7 @@ import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationMana
 import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FluentValidatorConfig } from '../../src/Interfaces/Fluent';
 import { FluentOverloadArgs, ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 
 
 class Publicify_ValidatorBuilder extends ValidatorBuilder
@@ -58,7 +60,9 @@ function createVMConfig(): FieldValueHostConfig
 
 let services: IValidationServices;
 beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
     services = createValidationServicesForTesting();
+    services.loggerService = new CapturingLogger(LoggingLevel.Debug, services.loggerService);
 });
 
 describe('ValidatorBuilder', () => {

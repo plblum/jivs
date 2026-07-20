@@ -18,16 +18,15 @@
   You will see all three phases in this example.
 */
 
-import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 
-import { createValidationServices } from "./Config_example_common_code";
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { RulesConfigOptions, IAdaptModelRulesToForm } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
-import { ModelRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
-import { IFormConfigAdapter } from "@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder";
+import { createValidationServices } from "./Config_example_common_code";
+import { IFormConfigAdapter, IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { IAdaptModelRulesToForm, RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
+import { ModelRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
 
 // The Model
 export class Person {

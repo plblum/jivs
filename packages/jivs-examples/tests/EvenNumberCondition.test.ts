@@ -1,10 +1,10 @@
-import { createConfigBuilder } from '@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder';
-import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { createMinimalValidationServices } from "../src/support";
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
+import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
+import { createMinimalValidationServices } from "../src/support";
 
 describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
@@ -13,7 +13,7 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number);
 
-        let vm = new ValidationManager(builder);
+        let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: evenNumberConditionType,
@@ -47,7 +47,7 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vm = new ValidationManager(builder);
+        let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);

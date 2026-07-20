@@ -1,28 +1,26 @@
-import { ValidationManagerConfigAnalysis } from "./ConfigAnalysis";
-import { ConsoleConfigAnalysisOutputter } from "./Explorer/Outputters/ConfigAnalysisOutputterClasses";
-import {  IConditionConfigPropertyAnalyzer,  IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from "./Types/Analyzers";
-import { ConfigAnalysisOptions, IConfigAnalysis } from "./Types/ConfigAnalysis";
-import { CONFIG_ANALYSIS_SERVICE_NAME, IConfigAnalysisService } from "./Types/ConfigAnalysisService";
-import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
-import { CAIssueSeverity } from "./Types/Results";
+import { ManagerConfigBuilderBase } from "@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase";
+import type { ValidationManagerConfigBuilder } from "@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder";
+import type { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import type { ValidationManagerConfig} from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import type { ValidationManagerConfigBuilder} from "@plblum/jivs-engine/build/Builder/ValidationManagerConfigBuilder";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
+import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import {
   ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer,
   ConditionWithChildrenPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer,
   ConditionWithOneChildPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer,
   ConditionWithSecondValuePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer
-}
-  from "./Analyzers/ConditionConfigPropertyAnalyzerClasses";
+} from "./Analyzers/ConditionConfigPropertyAnalyzerClasses";
+import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "./Analyzers/ValidatorConfigPropertyAnalyzerClasses";
 import {
   CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
   ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
-}
-  from "./Analyzers/ValueHostConfigPropertyAnalyzerClasses";
-import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "./Analyzers/ValidatorConfigPropertyAnalyzerClasses";
-import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
+} from "./Analyzers/ValueHostConfigPropertyAnalyzerClasses";
+import { ValidationManagerConfigAnalysis } from "./ConfigAnalysis";
+import { ConsoleConfigAnalysisOutputter } from "./Explorer/Outputters/ConfigAnalysisOutputterClasses";
+import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from "./Types/Analyzers";
+import { ConfigAnalysisOptions, IConfigAnalysis } from "./Types/ConfigAnalysis";
+import { CONFIG_ANALYSIS_SERVICE_NAME, IConfigAnalysisService } from "./Types/ConfigAnalysisService";
+import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
+import { CAIssueSeverity } from "./Types/Results";
 
 /**
  * ConfigAnalysisService supplies the ConfigAnalysis object.

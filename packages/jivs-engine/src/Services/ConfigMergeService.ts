@@ -14,7 +14,6 @@ import {
 } from '../Interfaces/ConfigMergeService';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
-import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Builder/ManagerConfigBuilderBase';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
@@ -420,4 +419,22 @@ function logLabel(identity: MergeIdentity, propertyName: string | null): string 
     if (propertyName)
         label += propertyName;
     return label;
+}
+
+
+/**
+ * This value is used as a special property of a ValidatorConfig to indicate that the conditionConfig
+ * has been replaced by a new one. This is used by the ValidatorConfigMergeService to 
+ * override its default behavior of ignoring conditionConfig.
+ * Expect it to be assigned by ManagerConfigBuilderBase.combineWithRule and replaceRule.
+ * Note: We really don't want users to inject the same property, as it is a way to work around the system.
+ * Thus its limited to this module and which is where the code is to set it.
+ * Other consumers can only check its presence through hasConditionBeenReplaced.
+ */
+export const conditionReplacedSymbol = Symbol('conditionReplaced');
+export function hasConditionBeenReplaced(validatorConfig: ValidatorConfig): boolean {
+    return conditionReplacedSymbol in validatorConfig;
+}
+export function deleteConditionReplacedSymbol(validatorConfig: ValidatorConfig): void {
+    delete (validatorConfig as any)[conditionReplacedSymbol];
 }

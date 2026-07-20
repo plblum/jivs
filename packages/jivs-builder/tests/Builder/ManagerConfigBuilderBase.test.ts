@@ -1,3 +1,4 @@
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
@@ -21,6 +22,7 @@ function createVMConfig(): ValidationManagerConfig {
         services: createValidationServicesForTesting(),
         valueHostConfigs: []
     };
+    vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Debug, vmConfig.services.loggerService);
     return vmConfig;
 }
 
@@ -113,6 +115,10 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
     }
 
 }
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('ManagerConfigBuilderBase constructor', () => {
     test('Initial setup with vmConfig successful', () => {

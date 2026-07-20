@@ -14,7 +14,6 @@ import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { ManagerConfigBuilderBase } from '../Builder/ManagerConfigBuilderBase';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
@@ -104,15 +103,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * }
      * ```
      */
-    constructor(config: ValidationManagerConfig)
-    constructor(builder: ManagerConfigBuilderBase<any>)
-    constructor(arg1: ValidationManagerConfig | ManagerConfigBuilderBase<any>){
-        assertNotNull(arg1, 'arg1');
-        let config: ValidationManagerConfig;
-        if (arg1 instanceof ManagerConfigBuilderBase)
-            config = arg1.complete();
-        else
-            config = arg1 as ValidationManagerConfig;
+    constructor(config: ValidationManagerConfig){
+        assertNotNull(config, 'config');
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         // let savedServices = config.services;

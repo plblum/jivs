@@ -1,20 +1,23 @@
-import { LoggingLevel, LogDetails, LogOptions } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
+import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
+import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
-import { FormRulesBase } from '@plblum/jivs-engine/build/Validation/ModelRules';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { RulesConfigOptions } from '@plblum/jivs-engine/build/Interfaces/ModelRules';
+import { LogDetails, LogOptions, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 
-import { createValidationServices } from './Config_example_common_code';
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
+import { ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
 import { CAIssueSeverity } from '../src/Types/Results';
-import { LoggerConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
-import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
+import { createValidationServices } from './Config_example_common_code';
+
+new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
 
 
 /**

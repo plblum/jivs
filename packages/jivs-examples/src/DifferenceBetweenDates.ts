@@ -22,9 +22,9 @@ import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/Data
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { RulesConfigOptions } from "@plblum/jivs-engine/build/Interfaces/ModelRules";
-import { FormRulesBase } from "@plblum/jivs-engine/build/Validation/ModelRules";
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Interfaces/ManagerConfigBuilder';
+import { RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
+import { FormRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
+import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 
 export class DateRangeFormRules extends FormRulesBase {
     constructor(services: IValidationServices) {

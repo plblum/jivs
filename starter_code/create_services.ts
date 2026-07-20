@@ -88,7 +88,11 @@ import {
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
-import { BuildersFactory } from '@plblum/jivs-engine/build/Services/BuildersFactory';
+
+// If you need to omit the jivs-builder module later, comment out these next two lines.
+import { BuildersFactory } from '@plblum/jivs-builder/build/Services/BuildersFactory';
+new BuildersFactoryInstaller();  // install the buildersFactory service property on ValidationServices
+// 
 
 /**
  * Creates and configures the ValidationServices object for your app.
@@ -179,13 +183,12 @@ export function createValidationServices(activeCultureId: string,
     vs.valueHostFactory = vhf;
 
     // --- BuildersFactory -------------------------------------------
-    let ff = new BuildersFactory();
-    vs.fluentFactory = ff;
 /*  // Adding custom conditions to ValidatorBuilder and ConditionBuilder
-    ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
+    let bf = vs.buildersFactory;
+    bf.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) => {
         return new YourValidatorBuilder(vs, parentConfig);
     });
-    ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
+    bf.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => {
         return new YourConditionBuilder(parentBuilder, completed);
     });
 */

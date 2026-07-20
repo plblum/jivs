@@ -29,9 +29,8 @@ import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { BuildersFactoryInstaller } from "../../src/Services/BuildersFactoryInstaller";
+
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -194,10 +193,6 @@ function setupFieldValueHostForValidate(
 
     return setupFieldValueHost(fieldValueConfig, updatedState);
 }
-
-beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-});
 
 describe('constructor and resulting property values', () => {
 
@@ -1535,23 +1530,10 @@ describe('No mocks!', () => {
         services.loggerService.minLevel = logLevel;
         return services;
     }
-    function createBuilder(callbacks: IValidationManagerCallbacks, services?: IValidationServices ): ValidationManagerConfigBuilder {
-        let config: ValidationManagerConfig = {
-            ...callbacks, 
-            services: services ?? createServices(),
-            valueHostConfigs: []
-         };
-        let builder = new ValidationManagerConfigBuilder(config);
-        return builder;
-    }
+
     test('setValue with validate=true, onValueHostValidationStateChanged called', () => {
         let onValidateResult: ValueHostValidationState | null = null;
         let services = createServices(LoggingLevel.Error);
-        let builder = createBuilder({
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            },
-        }, services);
         let logger = services.loggerService as ConsoleLoggerService;
         logger.overrideMinLevelWhen({
             feature: 'ValueHost',
@@ -1560,9 +1542,32 @@ describe('No mocks!', () => {
         logger.overrideMinLevelWhen({
             category: LoggingCategory.Result,
         });
+        let vmConfig = <ValidationManagerConfig>{
+            services: services,
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            lookupKey: LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: 'error',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
 
-        builder.field('Field1').requireText('error');
-        let vm = new ValidationManager(builder);
+        // let builder = createBuilder({
+        //     onValueHostValidationStateChanged: (vh, vr) => {
+        //         onValidateResult = vr;
+        //     },
+        // }, services);
+        // builder.field('Field1').requireText('error');
+        let vm = new ValidationManager(vmConfig);
         let vh = vm.vh.field('Field1');
         vh.setValues('', '', { validate: true });   // empty is invalid
 

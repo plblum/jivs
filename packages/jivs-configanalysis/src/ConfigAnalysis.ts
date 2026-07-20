@@ -5,7 +5,7 @@
 
 
 import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/Builder/ManagerConfigBuilderBase";
+import { ManagerConfigBuilderBase } from "@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";

@@ -69,9 +69,7 @@ import {
 import { IConditionFactory } from "../Interfaces/Conditions";
 import { CapturingLogger } from "./CapturingLogger";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { BuildersFactoryInstaller } from "../Services/BuildersFactoryInstaller";
 
-new BuildersFactoryInstaller();  // install the buildersFactory service property on ValidationServices
 
 /**
  * Every app should have a function like this to create the ValidationServices object.
