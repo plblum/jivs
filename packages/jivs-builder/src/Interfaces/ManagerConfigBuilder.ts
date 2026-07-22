@@ -280,9 +280,13 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      * @param conditionType - the type of the validator condition to modify. Same as 'errorCode'
      * and if using an error code on the validator, you must specify it explicitly
      * as errorcode overrides conditionType.
+     * @param errorMessage - optional. If specified, it will override the existing error message.
+     * @param summaryMessage - optional. If specified, it will override the existing summary message.
+     * @param adjustments - optional. If specified, it will override the existing validator configuration,
+     * including errormessage and summarymessage.
      * @returns The IModifyValidatorBuilder for further modifications.
      */
-    validator(conditionType: string): IModifyValidatorBuilder;
+    validator(conditionType: string, errorMessage?: string | null, summaryMessage?: string | null): IModifyValidatorBuilder;
     validator(conditionType: string, adjustments: FluentValidatorConfig): IModifyValidatorBuilder;
 
     /**

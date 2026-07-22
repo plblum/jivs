@@ -410,11 +410,13 @@ export class ModifyFieldBuilder
      * @param conditionType - aka 'errorCode'. The type of the validator condition to modify. 
      * If using an error code on the validator, you must specify it explicitly
      * as errorcode overrides conditionType.
+     * @param errorMessage - optional. If specified, it will override the existing error message.
+     * @param summaryMessage - optional. If specified, it will override the existing summary message.
      * @returns The IModifyValidatorBuilder for further modifications.
      */
-    public validator(conditionType: string): IModifyValidatorBuilder;
-    public validator(conditionType: string, adjustments: FluentValidatorConfig): IModifyValidatorBuilder
-    public validator(conditionType: string, arg2?: FluentValidatorConfig): IModifyValidatorBuilder
+    public validator(conditionType: string, errorMessage?: string | null, summaryMessage?: string | null): IModifyValidatorBuilder;
+    public validator(conditionType: string, adjustments: FluentValidatorConfig): IModifyValidatorBuilder;
+    public validator(conditionType: string, arg2?: string | FluentValidatorConfig | null, arg3?: string ): IModifyValidatorBuilder
     {
         assertNotNull(conditionType, "conditionType");
         // find the existing validator with the specified conditionType/errorCode
@@ -430,8 +432,21 @@ export class ModifyFieldBuilder
         if (!existingValidator) {
             this.reportError(new Error(`Validator with conditionType/errorCode '${conditionType}' does not exist.`));
         }
-        if (arg2) {
-            this.mergeConfigs(existingValidator!, arg2);
+        if (arg2 != null || arg3 !== undefined) // null/undefined
+        {
+            let adjustments: FluentValidatorConfig | undefined;
+            if (typeof arg2 === 'string') {
+                adjustments = { errorMessage: arg2, summaryMessage: arg3 };
+            }
+            else if (typeof arg3 === 'string') { // arg2 should be null
+                adjustments = { errorMessage: null, summaryMessage: arg3 };
+            }
+            else if (typeof arg2 === 'object')
+                adjustments = arg2 as FluentValidatorConfig;
+
+            if (adjustments) {
+                this.mergeConfigs(existingValidator!, adjustments);
+            }
         }
 
         // Return the IModifyValidatorBuilder for the found validator.

@@ -1000,6 +1000,123 @@ describe('ModifyFieldBuilder class', () => {
             expect(loggerService.findMessage('Skipped property "conditionConfig"')).toBeTruthy();
             expect(loggerService.findMessage('Skipped property "conditionCreator"')).toBeTruthy();
         });
+        // 2 parameter, conditionType and error message
+        test('two parameter overload with an existing conditionType, second parameter is an error message. Returns a ModifyValidatorBuilder correctly configured with the error message from the second parameter.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, 'ErrorMessage1');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: 'ErrorMessage1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 3 parameter, conditionType, error message, and summary message
+        test('three parameter overload with an existing conditionType, second parameter is an error message, third parameter is a summary message. Returns a ModifyValidatorBuilder correctly configured with the error message and summary message from the second and third parameters.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, 'ErrorMessage1', 'SummaryMessage1');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: 'ErrorMessage1',
+                summaryMessage: 'SummaryMessage1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 3 parameter, conditionType, null, summary message
+        test('three parameter overload with an existing conditionType, second parameter is null, third parameter is a summary message. Returns a ModifyValidatorBuilder correctly configured with the summary message from the third parameter.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, null, 'SummaryMessage1');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: null,
+                summaryMessage: 'SummaryMessage1',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 2 parameter, conditionType, empty string (for error message)
+        test('two parameter overload with an existing conditionType, second parameter is an empty string. Returns a ModifyValidatorBuilder correctly configured with the empty string as the error message.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, '');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: '',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 3 parameter, conditionType, empty string, empty string
+        test('three parameter overload with an existing conditionType, second parameter is an empty string, third parameter is an empty string. Returns a ModifyValidatorBuilder correctly configured with the empty strings as the error message and summary message.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, '', '');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: '',
+                summaryMessage: '',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 3 parameter, empty string, null
+        test('three parameter overload with an existing conditionType, second parameter is an empty string, third parameter is null. Returns a ModifyValidatorBuilder correctly configured with the empty string as the error message and summary message = null.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, '', null);
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: '',
+                summaryMessage: null,
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
+        // 3 parameter, null, empty string
+        test('three parameter overload with an existing conditionType, second parameter is null, third parameter is an empty string. Returns a ModifyValidatorBuilder correctly configured with no error message and the empty string as the summary message.', () => {
+            let builder = createConfigBuilder(createVMConfig());
+            builder.field('Field1').requireText();  
+            let formAdapter = new Publicify_FormConfigAdapter(
+                builder.handOffState());
+            let modifyBuilder = formAdapter.modify('Field1');
+            let result = modifyBuilder.validator(ConditionType.RequireText, null, '');
+            expect(result).toBeInstanceOf(ModifyValidatorBuilder);
+            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                errorMessage: null,
+                summaryMessage: '',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            });
+        });
     });
 
     describe('addValidator()', () => {
