@@ -26,7 +26,7 @@ import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/Validat
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { ValidatorBuilder } from "@plblum/jivs-builder/build/Builder/ValidatorBuilder";
 import { ConditionBuilder } from "@plblum/jivs-builder/build/Builder/ConditionBuilder";
-import { FluentValidatorConfig } from "@plblum/jivs-builder/build/Interfaces/Fluent";
+import { FluentValidatorConfig } from "@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders";
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler,
     IValidatorBuilder, IConditionBuilder

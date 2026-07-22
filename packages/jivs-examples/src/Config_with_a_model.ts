@@ -20,6 +20,7 @@
 
 
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
@@ -70,11 +71,13 @@ export class PersonEditFormRules
     adapter: IFormConfigAdapter,
     options?: RulesConfigOptions
   ): void {
-    adapter.field('FirstName', null, { label: 'First name' })
-      .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
-    adapter.field('LastName', null, { label: 'Last name' })
-      .stringLength(null, null, 'No more than {maximum} characters. You entered {length}.');
-    adapter.field('BirthDate', null, { label: 'Birth date' });
+    adapter.modify('FirstName', 'First name' )
+      .validator(ConditionType.StringLength, 'No more than {maximum} characters. You entered {length}.');
+      // same idea but using an object to supply numerous parameters
+    adapter.modify('LastName', { label: 'Last name' })
+      .validator(ConditionType.StringLength, 
+        { errorMessage: 'No more than {maximum} characters. You entered {length}.'});
+    adapter.modify('BirthDate', { label: 'Birth date' });
   }
 }
 
