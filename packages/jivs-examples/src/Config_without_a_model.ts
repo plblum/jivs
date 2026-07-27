@@ -36,7 +36,6 @@ import { ValidationManager } from "@plblum/jivs-engine/build/Validation/Validati
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
 import { FormRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
-import { BuildersFactoryInstaller } from "@plblum/jivs-builder/build/services/BuildersFactoryInstaller";
 
 /**
  * Our Forms rules class, which is a subclass of FormRulesBase.

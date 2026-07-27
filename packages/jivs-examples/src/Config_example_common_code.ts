@@ -13,7 +13,7 @@
 
 
 */
-import { BuildersFactoryInstaller } from "@plblum/jivs-builder/build/services/BuildersFactoryInstaller";
+import { BuildersFactoryInstaller } from "@plblum/jivs-builder/build/Services/BuildersFactoryInstaller";
 import {
     DataTypeCheckCondition,
     DataTypeCheckConditionConfig,
