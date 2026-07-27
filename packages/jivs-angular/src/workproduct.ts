@@ -585,7 +585,8 @@ export abstract class RendererActionBase implements IRendererAction {
      */
     protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseFormat: IFivaseForm): void {
         renderer.setProperty(element, 'innerHTML', issueFound.errorMessage);    // NOTE: errorMessage is already in HTML format
-        renderer.setAttribute(element, 'data-severity', ValidationSeverity[issueFound.severity].toLowerCase());
+        let severity: ValidationSeverity = issueFound.severity ?? ValidationSeverity.Error;
+        renderer.setAttribute(element, 'data-severity', ValidationSeverity[severity].toLowerCase());
         //!!!PENDING: ARIA attributes
     }
 }
@@ -869,7 +870,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     }
 
     protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseForm: IFivaseForm): void {
-        if (this.setFocusToInput) {
+        if (this.setFocusToInput && issueFound.valueHostName) {
             this.addSetFocusToValueHost(element, renderer, fivaseForm, issueFound.valueHostName);
         }
         super.addErrorMessageToElement(element, renderer, issueFound, fivaseForm);
@@ -2563,17 +2564,17 @@ export class FivaseForm implements IFivaseForm {
      * @param options 
      */
     public setValue(valueHostName: string, value: any, options?: SetValueOptions): void {
-        this.validationManager.vh.input(valueHostName).setValue(value, options);
+        this.validationManager.vh.field(valueHostName).setValue(value, options);
     }
     /**
-     * Call when an input value has changed.  Same as calling `validationManager.vh.input(vaueHostName).setTextValue(textValue,options)`.
+     * Call when an input value has changed.  Same as calling `validationManager.vh.field(valueHostName).setTextValue(textValue,options)`.
      * See Fivase documentation for details.
      * @param valueHostName 
      * @param textValue 
      * @param options 
      */
     public setTextValue(valueHostName: string, textValue: string, options?: SetTextValueOptions): void {
-        this.validationManager.vh.input(valueHostName).setTextValue(textValue, options);
+        this.validationManager.vh.field(valueHostName).setTextValue(textValue, options);
     }
 
     /**

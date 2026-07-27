@@ -11,9 +11,12 @@
         "rootDir": "./",
         "declarationDir": "./global_build/types",    
         "paths": {
-          "@plblum/jivs-engine": ["./packages/jivs-engine"]
-        }
-    },
+          "@plblum/jivs-engine": ["./packages/jivs-engine"],
+          "@plblum/jivs-builder": ["./packages/jivs-builder"]
+        },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+    },    
     "include": [
       "packages"
     ],

@@ -25,8 +25,9 @@
   "dependencies": {
     "@angular/forms": "^18.2.5",
     "@angular/router": "^18.2.5",
-    "@plblum/jivs-builder": "^0.19.0",
-    "@plblum/jivs-engine": "^0.19.0"
+    "@plblum/jivs-engine": "^0.20.0",
+    "@plblum/jivs-builder": "^0.20.0",
+    "@plblum/jivs-configanalysis": "^0.20.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.4",
@@ -61,19 +62,19 @@
     "@angular/core": "^18.2.5"
   },
   "scripts": {
-    "pretypedoc": "npm --prefix ./packages/jivs-engine run compile",
+    "pretypedoc": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",
     "test": "jest --silent",
     "preconsoletest": "npm --prefix ./packages/jivs-engine run compile",
     "consoletest": "jest --no-console --noStackTrace --silent",
-    "pretest:github": "npm --prefix ./packages/jivs-engine run compile",
+    "pretest:github": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "test:github": "jest --silent --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
     "gulp": "node gulpfile.mjs",
     "clean": "gulp clean",
-    "prebumpversion": "npm --prefix ./packages/jivs-engine run compile",
+    "prebumpversion": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "bumpversion": "lerna version --no-private",
-    "prepublish_library": "npm --prefix ./packages/jivs-engine run compile",
+    "prepublish_library": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "publish_library": "lerna publish --no-private",
     "retry_publish": "lerna publish from-package"
   },
