@@ -22,7 +22,11 @@ Starting within Terminal at the workspace root ('jivs').
     cd packages/jivs-configanalysis
     cd ../../packages/jivs-configanalysis
     ```
-
+* Switch to Jivs-builder: 
+    ```bash
+    cd packages/jivs-builder
+    cd ../../packages/jivs-builder
+    ```
 
 ## 🔨 Compile
 
@@ -86,7 +90,7 @@ npm run typedoc           # Generate API documentation
 
 - This is a Lerna monorepo with packages in `packages/*`
 - All packages depend on `@plblum/jivs-engine`
-- Packages: jivs-engine, jivs-angular, jivs-configanalysis, jivs-examples
+- Packages: jivs-engine, jivs-builder, jivs-configanalysis, jivs-examples, jivs-angular, jivs-react
 - TypeScript compilation uses `tsc` command
 - Tests use Jest
 
