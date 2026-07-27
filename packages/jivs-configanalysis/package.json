@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@plblum/jivs-builder": "file:../jivs-builder",
-    "@plblum/jivs-engine": "^0.20.0"
+    "@plblum/jivs-engine": "file:../jivs-engine"
   },
   "gitHead": "14a1e8e3245c01937f747dd3859194b3769bdb52"
 }

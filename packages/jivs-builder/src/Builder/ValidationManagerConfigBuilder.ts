@@ -35,10 +35,10 @@ import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder";
 export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
         let services = (arg1 as ValidationManagerConfig).services;
-        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as ValidationManagerConfigBuilder;
+        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as unknown as ValidationManagerConfigBuilder;
     }
     let services = arg1 as IValidationServices;
-    return services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+    return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValidationManagerConfigBuilder;
 }
 
 /**
