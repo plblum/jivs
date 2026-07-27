@@ -25,9 +25,9 @@
   "dependencies": {
     "@angular/forms": "^18.2.5",
     "@angular/router": "^18.2.5",
-    "@plblum/jivs-engine": "^0.20.0",
     "@plblum/jivs-builder": "^0.20.0",
-    "@plblum/jivs-configanalysis": "^0.20.0"
+    "@plblum/jivs-configanalysis": "^0.20.0",
+    "@plblum/jivs-engine": "^0.20.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.4",
@@ -51,10 +51,10 @@
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.1.2",
-    "typedoc": "^0.25.12",
-    "typedoc-plugin-extras": "^3.0.0",
-    "typedoc-plugin-merge-modules": "^5.1.0",
-    "typescript": "^5.4.3",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-extras": "^4.0.1",
+    "typedoc-plugin-merge-modules": "^7.0.0",
+    "typescript": "~5.5.0",
     "typescript-eslint": "^7.3.1"
   },
   "peerDependencies": {
