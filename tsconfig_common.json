@@ -2,7 +2,7 @@
   // NOTE: Most path related options are in package-specific tsconfig files.
   "compilerOptions": {
     "rootDir": "./",
-    "target": "ES6",
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
