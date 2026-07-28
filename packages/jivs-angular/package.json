@@ -21,15 +21,24 @@
     }
   },
   "peerDependencies": {
-    "@angular/common": "^18.2.5",
-    "@angular/core": "^18.2.5",
+    "@angular/animations": "^18.2.14",
+    "@angular/common": "^18.2.14",
+    "@angular/core": "^18.2.14",
+    "@angular/forms": "^18.2.14",
+    "@angular/platform-browser": "^18.2.14",
+    "@angular/router": "^18.2.14",
     "@plblum/jivs-engine": "^0.20.0"
   },
   "devDependencies": {
-    "@angular/common": "^18.2.5",
-    "@angular/compiler": "^18.2.5",
-    "@angular/compiler-cli": "^18.2.5",
-    "@angular/core": "^18.2.5",
+    "@angular/animations": "^18.2.14",
+    "@angular/common": "^18.2.14",
+    "@angular/compiler": "^18.2.14",
+    "@angular/compiler-cli": "^18.2.14",
+    "@angular/core": "^18.2.14",
+    "@angular/forms": "^18.2.14",
+    "@angular/platform-browser": "^18.2.14",
+    "@angular/platform-browser-dynamic": "^18.2.14",
+    "@angular/router": "^18.2.14",
     "jest-preset-angular": "^14.3.3",
     "ng-packagr": "^18.2.1"
   }
