@@ -30,7 +30,7 @@
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/jest": "^30.0.0",
-    "del": "^7.1.0",
+    "del": "^8.0.1",
     "eslint": "^9.0.0",
     "gulp": "^5.0.1",
     "gulp-jest": "^4.0.4",
@@ -47,6 +47,7 @@
     "typescript-eslint": "^8.0.0"
   },
   "scripts": {
+    "compile": "lerna run compile",
     "pretypedoc": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",
