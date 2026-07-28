@@ -62,7 +62,10 @@
 			"type": "on-demand",
 			"coverage": true			
 		},
-   	 	"jest.jestCommandLine": "node --experimental-vm-modules --disable-warning ExperimentalWarning ../../node_modules/jest/bin/jest.js",
+		"jest.jestCommandLine": "npx jest",
+		"jest.nodeEnv": {
+			"NODE_OPTIONS": "--experimental-vm-modules --disable-warning ExperimentalWarning"
+		},
 
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
