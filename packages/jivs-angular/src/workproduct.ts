@@ -1750,7 +1750,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * leave this property undefined.
      */
 
-    @Input('validate') valueHostName: string | undefined;
+    @Input('validate') declare valueHostName: string | undefined;
 
     /**
      * CSS class applied when validation fails (invalid state).
@@ -1981,7 +1981,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('validationErrors') valueHostName: string | undefined;
+    @Input('validationErrors') declare valueHostName: string | undefined;
     /**
      * CSS class applied when validation fails (invalid state).
      * Passed along to the IRendererAction implementation.
@@ -2084,7 +2084,7 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
      * This allows the directive to either take a value directly via input or 
      * inherit it from a parent `ValueHostNameDirective`.
      */
-    @Input('showWhenCorrected') valueHostName: string | undefined;
+    @Input('showWhenCorrected') declare valueHostName: string | undefined;
 }
 
 /**
@@ -2131,7 +2131,7 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('showWhenRequired') valueHostName: string | undefined;
+    @Input('showWhenRequired') declare valueHostName: string | undefined;
 }
 
 /**
@@ -2177,7 +2177,7 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('showWhenIssuesFound') valueHostName: string | undefined;
+    @Input('showWhenIssuesFound') declare valueHostName: string | undefined;
 }
 
 
@@ -2252,7 +2252,7 @@ export class PopupDirective extends FivaseDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('popup') valueHostName: string | undefined;
+    @Input('popup') declare valueHostName: string | undefined;
     
     /**
      * Input to specify a custom factory name for IPopupAction.
