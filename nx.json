@@ -5,7 +5,7 @@
         "dependsOn": [
           "^clean"
         ]
-      },      
+      },
       "cache": true,
       "dependsOn": [
         "^compile"

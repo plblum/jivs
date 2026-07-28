@@ -364,6 +364,15 @@ npx gulp clean --prefix packages/jivs-engine
 npx lerna run compile
 ```
 
+### Completion info
+
+- "gulp": "^5.0.1" tested with npm run clean
+- "lerna": "^9.0.7" tested with npx lerna run compile
+- "prettier": "^3.9.6" tested with VSCode Format Doc
+- "prettier-eslint": "^17.1.1"
+
+Holding off on typedoc due to complexity.
+
 ---
 
 ## Phase 7: Root script cleanup (optional, low priority)
