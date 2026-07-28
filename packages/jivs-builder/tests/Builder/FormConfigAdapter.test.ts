@@ -53,7 +53,7 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
     public publicify_favorUIMessages(): void {
         this.favorUIMessages();
     }
-    public favorUIMessagesCount?: number;   // favorUIMessages() is called once in constructor, prior to this getting initialized
+    public declare favorUIMessagesCount?: number;   // favorUIMessages() is called once in constructor, prior to this getting initialized. 'declare' is used to avoid any initialization here.
 
     public publicify_mergeConfigs(existingConfig: ValueHostConfig, adjustments: AdapterValueHostConfig): void
     {

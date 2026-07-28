@@ -181,6 +181,21 @@ npm run compile --workspace packages/jivs-configanalysis
 
 **Commit after Phase 2 is green.**
 
+### Completion info
+Phase 2 is complete. Summary of changes:
+
+Root package.json:
+
+- dependencies: removed @angular/forms, @angular/router (unused — not imported anywhere in jivs-angular source)
+- devDependencies: removed @angular-devkit/build-angular, @angular/animations, @angular/compiler, @angular/compiler-cli, @angular/platform-browser, @angular/platform-browser-dynamic, ng-packagr, jest-preset-angular
+- peerDependencies: removed entire section (the root package is not published)
+
+jivs-angular/package.json:
+
+- Added devDependencies: @angular/common, @angular/compiler, @angular/compiler-cli, @angular/core, jest-preset-angular, ng-packagr
+
+Result: 526 transitive packages cleaned from node_modules (from the removed Angular packages that were never needed), no local node_modules conflict in jivs-angular, build and pack still clean.
+
 ---
 
 ## Phase 3: TypeScript upgrade
