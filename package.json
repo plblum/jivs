@@ -51,7 +51,7 @@
     "pretypedoc": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",
-    "test": "jest --silent",
+    "test": "jest --silent --passWithNoTests",
     "preconsoletest": "npm --prefix ./packages/jivs-engine run compile",
     "consoletest": "jest --no-console --noStackTrace --silent",
     "pretest:github": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",

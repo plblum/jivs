@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "ng-packagr -p ng-package.json",
     "build": "ng-packagr -p ng-package.json",
-    "test": "jest --silent",
+    "test": "jest --silent --passWithNoTests",
     "consoletest": "jest --silent --no-console --noStackTrace",
     "clean": "gulp clean"
   },
@@ -20,26 +20,27 @@
       "jest": true
     }
   },
+
   "peerDependencies": {
-    "@angular/animations": "^18.2.14",
-    "@angular/common": "^18.2.14",
-    "@angular/core": "^18.2.14",
-    "@angular/forms": "^18.2.14",
-    "@angular/platform-browser": "^18.2.14",
-    "@angular/router": "^18.2.14",
+    "@angular/animations": "^19.0.0",
+    "@angular/common": "^19.0.0",
+    "@angular/core": "^19.0.0",
+    "@angular/forms": "^19.0.0",
+    "@angular/platform-browser": "^19.0.0",
+    "@angular/router": "^19.0.0",
     "@plblum/jivs-engine": "^0.20.0"
   },
   "devDependencies": {
-    "@angular/animations": "^18.2.14",
-    "@angular/common": "^18.2.14",
-    "@angular/compiler": "^18.2.14",
-    "@angular/compiler-cli": "^18.2.14",
-    "@angular/core": "^18.2.14",
-    "@angular/forms": "^18.2.14",
-    "@angular/platform-browser": "^18.2.14",
-    "@angular/platform-browser-dynamic": "^18.2.14",
-    "@angular/router": "^18.2.14",
-    "jest-preset-angular": "^14.3.3",
-    "ng-packagr": "^18.2.1"
+    "@angular/animations": "19.2.25",
+    "@angular/common": "19.2.25",
+    "@angular/compiler": "19.2.25",
+    "@angular/compiler-cli": "19.2.25",
+    "@angular/core": "19.2.25",
+    "@angular/forms": "19.2.25",
+    "@angular/platform-browser": "19.2.25",
+    "@angular/platform-browser-dynamic": "19.2.25",
+    "@angular/router": "19.2.25",
+    "jest-preset-angular": "^15.0.0",
+    "ng-packagr": "^19.0.0"
   }
 }
