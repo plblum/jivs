@@ -231,6 +231,9 @@ npm run compile --workspace packages/jivs-angular
 
 **Commit after Phase 3 is green.**
 
+### Completion info
+We already had TS 5.5.4 installed and confirmed it compiles and runs under tests and in github.
+
 ---
 
 ## Phase 4: ESLint and typescript-eslint upgrade
@@ -268,6 +271,19 @@ npx eslint packages/jivs-angular/src --ext .ts
 ```
 
 **Commit after Phase 4 is green.**
+
+### Completion info
+Phase 4 finished after updating to v9.
+
+Replaced eslintrc.js + eslintignore with eslint.config.js.
+
+After moving all rules, ran:
+```ts
+npx eslint packages/jivs-project name/src 
+```
+Fixed many things and reduced errors to warnings where appropriate. Over 150 ts files changed.
+
+Every project was recompiled and rerun under unit tests. No bugs. Pushed commit to github and it successfully ran tests too.
 
 ---
 
@@ -313,6 +329,16 @@ npm test --workspace packages/jivs-angular
 ```
 
 **Commit after Phase 5 is green.**
+
+### Completion info
+Updated Jest
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "ts-jest": "^29.4.12",
+
+Updated jest-preset-angular to the latest compatible with Angular 18:  
+"jest-preset-angular": "^14.3.3",
+However, there are currently no tests in jivs-angular, so its impact is minimal.
 
 ---
 
