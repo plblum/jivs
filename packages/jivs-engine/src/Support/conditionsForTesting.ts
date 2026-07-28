@@ -14,17 +14,17 @@
  * Add to an existing ValidationService by calling registerTestingOnlyConditions(services.conditionsFactory).
  * @module Support/ConditionsForTesting
  */
-import { ConditionFactory } from "../Conditions/ConditionFactory";
+import { ConditionFactory } from '../Conditions/ConditionFactory';
 import {
     ConditionConfig, IConditionCore, ConditionEvaluateResult, ConditionCategory,
     IEvaluateConditionDuringEdits
-} from "../Interfaces/Conditions";
-import { IDisposable } from "../Interfaces/General_Purpose";
-import { IFieldValueHost } from "../Interfaces/FieldValueHost";
-import { IValidationServices } from "../Interfaces/ValidationServices";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { CodingError } from "../Utilities/ErrorHandling";
+} from '../Interfaces/Conditions';
+import { IDisposable } from '../Interfaces/General_Purpose';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { CodingError } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -85,7 +85,7 @@ export abstract class MockConditionBase<TConfig extends ConditionConfig> impleme
 
 // Custom Conditions designed for testing validation where the Condition has a predictable behavior
 
-export const AlwaysMatchesConditionType = "AlwaysMatches";
+export const AlwaysMatchesConditionType = 'AlwaysMatches';
 /**
  * Custom condition that always returns Match, designed for testing validation.
  * Expected to be registered using AlwaysMatchesConditionType ("AlwaysMatches").
@@ -101,8 +101,8 @@ export class AlwaysMatchesCondition extends MockConditionBase<ConditionConfig> i
     }
 }
 
-export const NeverMatchesConditionType = "NeverMatches";
-export const NeverMatchesConditionType2 = "NeverMatches2"; // two type names for the same condition so we can test with 2 conditions without type naming conflicts
+export const NeverMatchesConditionType = 'NeverMatches';
+export const NeverMatchesConditionType2 = 'NeverMatches2'; // two type names for the same condition so we can test with 2 conditions without type naming conflicts
 
 /**
  * Custom condition that always returns NoMatch, designed for testing validation.
@@ -118,14 +118,14 @@ export class NeverMatchesCondition extends MockConditionBase<ConditionConfig> im
     }
 }
 
-export const IsUndeterminedConditionType = "AlwaysUndetermined";
+export const IsUndeterminedConditionType = 'AlwaysUndetermined';
 
 /**
  * Custom condition that always returns Undetermined, designed for testing validation.
  * Expected to be registered using IsUndeterminedConditionType ("AlwaysUndetermined").
  */
 export class IsUndeterminedCondition extends MockConditionBase<ConditionConfig>{
-    protected get DefaultConditionType(): string { return this.config.conditionType; }
+    protected get defaultConditionType(): string { return this.config.conditionType; }
     
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
@@ -133,20 +133,20 @@ export class IsUndeterminedCondition extends MockConditionBase<ConditionConfig>{
 
 }
 
-export const ThrowsExceptionConditionType = "AlwaysThrows";
+export const ThrowsExceptionConditionType = 'AlwaysThrows';
 
 /**
  * Custom condition that always throws an Error, designed for testing validation.
  * Expected to be registered using ThrowsExceptionConditionType ("AlwaysThrows").
  */
 export class ThrowsExceptionCondition extends MockConditionBase<ConditionConfig>{
-    protected get DefaultConditionType(): string { return this.config.conditionType; }    
+    protected get defaultConditionType(): string { return this.config.conditionType; }    
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        throw new Error("Always Throws");
+        throw new Error('Always Throws');
     }
 }
 
-export const ThrowsSevereExceptionConditionType = "AlwaysThrowsSevere";
+export const ThrowsSevereExceptionConditionType = 'AlwaysThrowsSevere';
 
 /**
  * Custom condition that always throws a CodingError (which is a Severe error), 
@@ -154,9 +154,9 @@ export const ThrowsSevereExceptionConditionType = "AlwaysThrowsSevere";
  * Expected to be registered using ThrowsSevereExceptionConditionType ("AlwaysThrowsSevere").
  */
 export class ThrowsSevereExceptionCondition extends MockConditionBase<ConditionConfig>{
-    protected get DefaultConditionType(): string { return this.config.conditionType; }    
+    protected get defaultConditionType(): string { return this.config.conditionType; }
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        throw new CodingError("Always Throws");
+        throw new CodingError('Always Throws');
     }
 }
 
@@ -190,7 +190,7 @@ export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResul
         return this.config.result;
     }
 }
-export const EvaluatesAsPromiseConditionType = "EvaluatesAsPromise";
+export const EvaluatesAsPromiseConditionType = 'EvaluatesAsPromise';
 
 /**
  * Custom condition that returns a Promise that resolves to Match, designed for testing validation.
@@ -225,7 +225,7 @@ export class DisposableCondition extends MockConditionBase<DisposableConditionCo
         return this.config.result;
     }
 
-    dispose(): void {
+    public dispose(): void {
     }
 
 }
@@ -246,7 +246,7 @@ export function resultTypeToConditionType(result: ConditionEvaluateResult): stri
         case ConditionEvaluateResult.Undetermined:
             return IsUndeterminedConditionType;
     }
-    throw new Error("Unknown ConditionEvaluateResult");
+    throw new Error('Unknown ConditionEvaluateResult');
 }
 
 export interface IDisposableConfig extends AlwaysMatchesCondition, IDisposable {

@@ -90,7 +90,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         if (!l10nKey)   // including '', null and undefined
             return fallback;
 
-        let mapped = this._l10nKeyMap.get(l10nKey);
+        const mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
             let text = mapped[cultureLanguageCode(cultureIdToMatch)];
@@ -126,7 +126,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         // parallel implementations. If you change one, change the other.
         // This is to keep the localize() version as fast as possible.
         
-        let r: LocalizedDetailsResult = {
+        const r: LocalizedDetailsResult = {
             result: (fallback != null) ? 'fallback' : 'notFound',
             requestedCultureId: cultureIdToMatch,
             text: fallback != null ? fallback : undefined
@@ -134,10 +134,10 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         if (!l10nKey)   // including '', null and undefined
             return r;
 
-        let mapped = this._l10nKeyMap.get(l10nKey);
+        const mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
-            let languageCode = cultureLanguageCode(cultureIdToMatch);
+            const languageCode = cultureLanguageCode(cultureIdToMatch);
             let text = mapped[languageCode];
             if (text !== undefined) {
                 r.text = text;
@@ -230,7 +230,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public getDataTypeLabel(cultureIdToMatch: string, dataTypeLookupKey: string): string | null
     {
-        let text = this.localize(cultureIdToMatch, this.getDataTypeNamel10nText(dataTypeLookupKey), null);
+        const text = this.localize(cultureIdToMatch, this.getDataTypeNamel10nText(dataTypeLookupKey), null);
         if (text === null && this.fallbackService !== null)
             return this.fallbackService.getDataTypeLabel(cultureIdToMatch, dataTypeLookupKey);  
         if (text === null && dataTypeLookupKey)
@@ -337,7 +337,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     {
         if (this._lazyLoader) {
             // prevent recursion by disabling the feature right away
-            let fn = this._lazyLoader;
+            const fn = this._lazyLoader;
             this._lazyLoader = null;
             fn(this);
             return true;

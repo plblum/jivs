@@ -3,16 +3,16 @@
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
-import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { deepEquals, deepClone, valueForLog } from '../Utilities/Utilities';
-import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValidationManager } from '../Interfaces/ValidationManager';
-import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { toIDisposable } from '../Interfaces/General_Purpose';
-import { LoggingLevel, LoggingCategory, logGatheringHandler, LogOptions, LogDetails, logGatheringErrorHandler } from '../Interfaces/LoggerService';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import { LoggingLevel } from '../Interfaces/LoggerService';
+import type { IValidationManager } from '../Interfaces/ValidationManager';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
+import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
+import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { deepClone, deepEquals } from '../Utilities/Utilities';
 
 /**
  * Standard implementation of IValueHost
@@ -93,8 +93,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * Localization should occur when setting up the ValueHostConfig.
      */
     public getLabel(): string {
-        let label = (this.config.label ?? '') as string;
-        let labell10n: string | null = (this.config.labell10n ?? null) as string | null;
+        const label = (this.config.label ?? '') as string;
+        const labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
             return this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId, labell10n, label)!;
         return label;
@@ -135,8 +135,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         if (!this.canChangeValueCheck(options))
             return;
         
-        let oldValue: any = this.instanceState.value;   // even undefined is supported
-        let changed = !deepEquals(value, oldValue);
+        const oldValue: any = this.instanceState.value;   // even undefined is supported
+        const changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.value = value;
@@ -204,7 +204,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     public getDataTypeLabel(): string {
         let dt = this.getDataType();
         if (!dt) {
-            let value = this.getValue();
+            const value = this.getValue();
             if (value != null) { // null or undefined
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
@@ -244,19 +244,19 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         if (this.instanceState.enabled === false)
             return false;
 
-        let enabler = this.getEnablerCondition();
+        const enabler = this.getEnablerCondition();
         if (enabler) {
             try {
                 // NOTE: The result of the enabler does not change any state of the valueHost,
                 // unlike setEnabled(false) which clears validation.
-                let result = enabler.evaluate(this, this.validationManager);
+                const result = enabler.evaluate(this, this.validationManager);
                 if (result === ConditionEvaluateResult.Match)
                     return true;
                 if (result === ConditionEvaluateResult.NoMatch)
                     return false;
             }
             catch (e) {
-                let err = ensureError(e);                
+                const err = ensureError(e);                
                 this.logger.error(err);
                 throw err;
             }
@@ -283,7 +283,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
                     this._enablerCondition = this.services.conditionFactory.create(this.config.enablerConfig!);
                 }
                 catch (e) {
-                    let err = ensureError(e);                    
+                    const err = ensureError(e);                    
                     this.logger.error(err);
                     throw err;
                 }
@@ -344,8 +344,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     public updateInstanceState(updater: (stateToUpdate: TState) => TState,
         source: IValueHost): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.instanceState);
-        let updated = updater(toUpdate);
+        const toUpdate = deepClone(this.instanceState);
+        const updated = updater(toUpdate);
         if (!deepEquals(this.instanceState, updated)) {
             this._instanceState = updated;
             this.validationManager.notifyValueHostInstanceStateChanged(source, updated);

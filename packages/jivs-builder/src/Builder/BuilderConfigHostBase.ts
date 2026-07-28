@@ -2,11 +2,11 @@
  *  @module Builder/ConcreteClasses
  */
 
-import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { LoggerFacade } from '@plblum/jivs-engine/build/Utilities/LoggerFacade';
-import { CompleteConfigBuilderHandler, IBuilderConfigHost, SetConfigOptions } from "../Interfaces/ChildBuilders";
+import { CompleteConfigBuilderHandler, IBuilderConfigHost, SetConfigOptions } from '../Interfaces/ChildBuilders';
 
 /**
  * Base class for Builders that implement IBuilderConfigHost
@@ -34,12 +34,12 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
     {
         return this._services;
     }
-    private _services: IValidationServices;
+    private readonly _services: IValidationServices;
 
     protected get parentBuilder(): IBuilderConfigHost<object> | null {
         return this._parentBuilder;
     }
-    private _parentBuilder: IBuilderConfigHost<object> | null;
+    private readonly _parentBuilder: IBuilderConfigHost<object> | null;
 
     /**
      * Supporting functions finish up by calling the setConfig method.
@@ -75,14 +75,14 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
     public get completed(): CompleteConfigBuilderHandler<TConfig> | undefined {
         return this._completed;
     }
-    private _completed?: CompleteConfigBuilderHandler<TConfig>;
+    private readonly _completed?: CompleteConfigBuilderHandler<TConfig>;
 
     private _config?: TConfig;
 
     public setConfig(config: TConfig, options?: TOptions): void {
-        assertNotNull(config, "config");
+        assertNotNull(config, 'config');
         this._config = config;
-        let bubbleUp = !options || options.bubbleUp != false;
+        const bubbleUp = !options || options.bubbleUp != false;
         if (bubbleUp && this.parentBuilder?.completed) {
             this.parentBuilder.completed?.(config, this as IBuilderConfigHost<object>);
         }
@@ -100,7 +100,7 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
      * If it is an Error object, it will be thrown after reporting.
      */
     protected reportError(message: string | Error): void {
-        let msg = message instanceof Error ? message.message : message;
+        const msg = message instanceof Error ? message.message : message;
         console.error(msg);
         this.logger.message(LoggingLevel.Error, ()=> msg);
         if (message instanceof Error) {

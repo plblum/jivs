@@ -49,11 +49,11 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      */
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
-        let value = this.resolveValue(valueHost);
+        const value = this.resolveValue(valueHost);
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        let text = value as string;
+        const text = value as string;
         // trimming is not appropriate since we are evaluating an already cleaned up native value
         // if (this.config.trim ?? true)
         //     text = text.trim();
@@ -93,7 +93,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns 
      */
     protected resolveValue(valueHost: IValueHost): string | undefined {
-        let value = valueHost.getValue();
+        const value = valueHost.getValue();
         if (typeof value !== 'string')
             return undefined;
         return value;

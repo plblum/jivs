@@ -10,11 +10,11 @@ import {
     MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
     NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import {
     CompleteConfigBuilderHandler,
     IBuilderConfigHost,
@@ -27,8 +27,8 @@ import {
     OptionalNotEqualToValueConditionParams, OptionalRegExpConditionParams,
     OptionalRequireTextConditionParams, OptionalStringLengthConditionParams,
     SetConfigOptions
-} from "../Interfaces/ChildBuilders";
-import { ConditionBuilderBase } from "./ConditionBuilderBase";
+} from '../Interfaces/ChildBuilders';
+import { ConditionBuilderBase } from './ConditionBuilderBase';
 
 /**
  * This class is intended to be used by all functions that create a condition config object.
@@ -80,7 +80,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * Creates a configuration for DataTypeCheckCondition.
      */
     public dataTypeCheck(): void {
-        let config: Partial<DataTypeCheckConditionConfig> = {
+        const config: Partial<DataTypeCheckConditionConfig> = {
             conditionType: ConditionType.DataTypeCheck
         };
         this.setConfig(config as any);
@@ -91,7 +91,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * @param conditionConfig - Optional configuration parameters for the RequireText condition.
      */
     public requireText(conditionConfig?: OptionalRequireTextConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as RequireTextConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as RequireTextConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.RequireText;
 
@@ -102,7 +102,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * Creates a configuration for the NotNullCondition.
      */
     public notNull(): void {
-        let config: Partial<NotNullConditionConfig> = {
+        const config: Partial<NotNullConditionConfig> = {
             conditionType: ConditionType.NotNull
         };
         this.setConfig(config as any);
@@ -117,7 +117,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public regExp(
         expression: RegExp | string, ignoreCase?: boolean | null,
         conditionConfig?: OptionalRegExpConditionParams): void {
-        let config: RegExpConditionConfig = (conditionConfig ? { ...conditionConfig } : {}) as RegExpConditionConfig;
+        const config: RegExpConditionConfig = (conditionConfig ? { ...conditionConfig } : {}) as RegExpConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.RegExp;
         if (expression != null)
@@ -138,7 +138,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * @param maximum - The maximum value for the range.
      */
     public range(minimum: any, maximum: any): void {
-        let config = { conditionType: ConditionType.Range } as RangeConditionConfig;
+        const config = { conditionType: ConditionType.Range } as RangeConditionConfig;
         if (minimum != null)
             config.minimum = minimum;
         if (maximum != null)
@@ -154,7 +154,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public equalToValue(
         secondValue: any,
         conditionConfig?: OptionalEqualToValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.EqualToValue;
         if (secondValue != null)
@@ -179,7 +179,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public equalTo(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalEqualToConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.EqualTo;
         if (secondValueHostName != null)
@@ -204,7 +204,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public notEqualToValue(
         secondValue: any,
         conditionConfig?: OptionalNotEqualToValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.NotEqualToValue;
         if (secondValue != null)
@@ -229,7 +229,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public notEqualTo(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalNotEqualToConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.NotEqualTo;
         if (secondValueHostName != null)
@@ -254,7 +254,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public lessThanValue(
         secondValue: any,
         conditionConfig?: OptionalLessThanValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThanValue;
         if (secondValue != null)
@@ -279,7 +279,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public lessThan(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalLessThanConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThan;
         if (secondValueHostName != null)
@@ -304,7 +304,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public lessThanOrEqualValue(
         secondValue: any,
         conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThanOrEqualValue;
         if (secondValue != null)
@@ -329,7 +329,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalLessThanOrEqualConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThanOrEqual;
         if (secondValueHostName != null)
@@ -354,7 +354,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public greaterThanValue(
         secondValue: any,
         conditionConfig?: OptionalGreaterThanValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThanValue;
         if (secondValue != null)
@@ -379,7 +379,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public greaterThan(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalGreaterThanConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThan;
         if (secondValueHostName != null)
@@ -404,7 +404,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public greaterThanOrEqualValue(
         secondValue: any,
         conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanOrEqualValueConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanOrEqualValueConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThanOrEqualValue;
         if (secondValue != null)
@@ -429,7 +429,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanOrEqualConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as GreaterThanOrEqualConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThanOrEqual;
         if (secondValueHostName != null)
@@ -454,7 +454,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     public stringLength(
         maximum: number | null,
         conditionConfig?: OptionalStringLengthConditionParams): void {
-        let config = (conditionConfig ? { ...conditionConfig } : {}) as StringLengthConditionConfig;
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as StringLengthConditionConfig;
         if (!config.conditionType)
             config.conditionType = ConditionType.StringLength;
         if (maximum != null)
@@ -476,7 +476,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * This condition checks if a value is positive.
      */
     public positive(): void {
-        let config = { conditionType: ConditionType.Positive } as PositiveConditionConfig;
+        const config = { conditionType: ConditionType.Positive } as PositiveConditionConfig;
         this.setConfig(config as any);
     }
 
@@ -485,7 +485,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * This condition checks if a value is an integer.
      */
     public integer(): void {
-        let config = { conditionType: ConditionType.Integer } as IntegerConditionConfig;
+        const config = { conditionType: ConditionType.Integer } as IntegerConditionConfig;
         this.setConfig(config as any);
     }
 
@@ -495,7 +495,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * @param maxDecimals - The maximum number of decimal places allowed.
      */
     public maxDecimals(maxDecimals: number): void {
-        let config = {
+        const config = {
             conditionType: ConditionType.MaxDecimals,
             maxDecimals: maxDecimals
         } as MaxDecimalsConditionConfig;

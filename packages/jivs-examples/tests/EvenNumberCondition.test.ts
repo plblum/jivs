@@ -3,7 +3,7 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
+import { EvenNumberCondition, EvenNumberConditionConfig, EvenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
 import { createMinimalValidationServices } from "../src/support";
 
 describe('EvenNumberCondition tests', () => {
@@ -16,7 +16,7 @@ describe('EvenNumberCondition tests', () => {
         let vm = new ValidationManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
-            conditionType: evenNumberConditionType,
+            conditionType: EvenNumberConditionType,
             valueHostName: 'Field1',
         };
         let testItem = new EvenNumberCondition(config);

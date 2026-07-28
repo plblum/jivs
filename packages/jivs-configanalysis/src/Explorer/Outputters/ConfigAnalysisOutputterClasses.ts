@@ -5,8 +5,8 @@
 
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from '../Formatters/ConfigAnalysisOutputFormatterClasses';
 
-import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { assertNotNull, CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
+import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData } from '../../Types/Explorer';
 
 /**
@@ -37,7 +37,7 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
     public get formatter(): IConfigAnalysisOutputFormatter {
         return this._formatter;
     }
-    private _formatter: IConfigAnalysisOutputFormatter;
+    private readonly _formatter: IConfigAnalysisOutputFormatter;
     /**
      * Entry point for the outputter. It builds the output from the results
      * and sends it to the appropriate destination.
@@ -47,7 +47,7 @@ export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutp
      */
     public send(reportData: ConfigAnalysisOutputReportData): any
     {
-        let content = this.format(reportData);
+        const content = this.format(reportData);
         this.output(content);
         return content;
     }
@@ -126,25 +126,25 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
     protected get loggerService(): ILoggerService {
         return this._loggerService;
     }
-    private _loggerService: ILoggerService;
+    private readonly _loggerService: ILoggerService;
 
     /**
      * The formatted string is wrapped in the LogDetails object
      * which is supported by the ILoggerService object.
      * @param reportData - The data to be formatted.
      */
-    protected format(reportData: ConfigAnalysisOutputReportData) {
-        let content = super.format(reportData);
+    protected format(reportData: ConfigAnalysisOutputReportData) : LogDetails {
+        const content = super.format(reportData);
         if (typeof content !== 'string')
             throw new CodingError('LoggerConfigAnalysisOutputter requires content to be a string.');
-        return <LogDetails>{
+        return {
             feature: 'ConfigAnalysis',
             category: LoggingCategory.Configuration,
             message: content,
             type: 'ConfigAnalysis',
             data: reportData
 
-        }
+        } as LogDetails;
     }
 
     /**
@@ -153,7 +153,7 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
      * @param content 
      */
     protected output(content: LogDetails): void {
-        let savedLevel = this.loggerService.minLevel;
+        const savedLevel = this.loggerService.minLevel;
         try {
             this.loggerService.minLevel = LoggingLevel.Info;
             this.loggerService.log(LoggingLevel.Info, (options) => content);

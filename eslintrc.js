@@ -1,3 +1,4 @@
+// OBSOLETE: Discard!
 module.exports = {
   extends: [
     //    "eslint:recommended"
@@ -190,8 +191,7 @@ module.exports = {
     "@typescript-eslint/no-extra-semi": "error",
     "comma-dangle": "off",
     "@typescript-eslint/comma-dangle": "error",
-    quotes: "off",
-    "@typescript-eslint/quotes": ["error", "single"],
+    quotes: ['error', 'single', { avoidEscape: true }],
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {

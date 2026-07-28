@@ -27,7 +27,7 @@ export function toIDisposable(source: any): IDisposable | null
     if (source != null &&   // null and undefined
         typeof source === 'object')
     {
-        let temp = source as IDisposable;
+        const temp = source as IDisposable;
         if (temp.dispose !== undefined)
             return temp;
     }

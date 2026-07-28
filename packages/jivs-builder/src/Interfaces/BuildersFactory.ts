@@ -127,7 +127,7 @@ export interface IBuildersFactory extends IServiceWithAccessor
      * This is usually consumed by calling parentBuilder to use the child
      * builder's config.
      */
-    createStartConditionWithChildrenBuilder<TConfig extends ConditionConfig>
+    createStartConditionWithChildrenBuilder
         (parentBuilder: IBuilderConfigHost<object>, 
         conditionType: ConditionType): IStartConditionWithChildrenBuilder;
     

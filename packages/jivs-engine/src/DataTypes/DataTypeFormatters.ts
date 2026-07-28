@@ -8,13 +8,13 @@
  * @module DataTypes/ConcreteClasses/DataTypeFormatters
  */
 
-import { cultureLanguageCode } from '../Services/CultureService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { IValidationServices } from '../Interfaces/ValidationServices';
-import { CodingError, assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
-import { LookupKey } from './LookupKeys';
 import { IServicesAccessor } from '../Interfaces/Services';
+import { IValidationServices } from '../Interfaces/ValidationServices';
+import { cultureLanguageCode } from '../Services/CultureService';
+import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
+import { LookupKey } from './LookupKeys';
 
 /**
  * Abstract implementation of IDataTypeFormatter.
@@ -161,7 +161,7 @@ export class CapitalizeStringFormatter extends DataTypeFormatterBase
     }
 
     public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-        let result = this.prepString(value);
+        const result = this.prepString(value);
         if (result.value && result.value.length > 0)
             result.value = result.value[0].toLocaleUpperCase(cultureId) +
                 result.value.substring(1);
@@ -186,7 +186,7 @@ export class UppercaseStringFormatter extends DataTypeFormatterBase
     }
 
     public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-        let result = this.prepString(value);
+        const result = this.prepString(value);
         if (result.value && result.value.length > 0)
             result.value = result.value.toLocaleUpperCase(cultureId);
         return result;
@@ -210,7 +210,7 @@ export class LowercaseStringFormatter extends DataTypeFormatterBase
     }
 
     public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-        let result = this.prepString(value);
+        const result = this.prepString(value);
         if (result.value && result.value.length > 0)
             result.value = result.value.toLocaleLowerCase(cultureId);
         return result;
@@ -481,7 +481,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         super();
         this._dataTypeLookupKey = dataTypeLookupKey ?? LookupKey.Boolean;
-        let defaults = this.getDefaultLabels();
+        const defaults = this.getDefaultLabels();
         this._trueLabel = trueLabel ?? defaults.trueLabel ?? 'true';
         this._falseLabel = falseLabel ?? defaults.falseLabel ?? 'false';
         this._trueLabell10n = trueLabell10n ?? defaults.trueLabell10n ?? null;
@@ -557,7 +557,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     protected formatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
         let text = value ? this.trueLabel : this.falseLabel;
-        let l10n = value ? this.trueLabell10n : this.falseLabell10n;
+        const l10n = value ? this.trueLabell10n : this.falseLabell10n;
         if (this.hasServices) {
             text = this.services.textLocalizerService.localize(
                 cultureId, l10n, text)!;

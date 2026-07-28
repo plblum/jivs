@@ -87,32 +87,32 @@
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { ValidatableValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { ValidatableValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { CodingError, assertFunction, assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { resolveErrorCode } from "@plblum/jivs-engine/build/Utilities/Validation";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
 import {
     CompleteConfigBuilderHandler, IBuilderConfigHost,
     IStartConditionBuilder, IStartConditionWithOneChildBuilder,
     IValidatorBuilder
-} from "../Interfaces/ChildBuilders";
-import { FluentValidatorConfig } from "../Interfaces/ValueHostConfigBuilders";
+} from '../Interfaces/ChildBuilders';
+import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import {
     AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
     IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
-} from "../Interfaces/ManagerConfigBuilder";
-import { RulesConfigOptions } from "../Interfaces/ModelRules";
-import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
-import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+} from '../Interfaces/ManagerConfigBuilder';
+import { RulesConfigOptions } from '../Interfaces/ModelRules';
+import { BuilderConfigHostBase } from './BuilderConfigHostBase';
+import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
-import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder";
+import { ValidationManagerConfigBuilder } from './ValidationManagerConfigBuilder';
 
 /**
  * Creates a FormConfigAdapter from a source IManagerConfigBuilder.
@@ -123,10 +123,10 @@ import { ValidationManagerConfigBuilder } from "./ValidationManagerConfigBuilder
 export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
-        let state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
+        const state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
         return new FormConfigAdapter(state, { favorUIMessages: options?.favorUIMessages });
     }
-    throw new CodingError("createFormAdapter() expects a ManagerConfigBuilderBase instance.");
+    throw new CodingError('createFormAdapter() expects a ManagerConfigBuilderBase instance.');
 }
 
 /** 
@@ -171,14 +171,14 @@ export class FormConfigAdapter
      * before calling this.
      */
     protected favorUIMessages(): void {
-        let tls = this.services.textLocalizerService;
+        const tls = this.services.textLocalizerService;
         // goes through all validators, but only on the baseConfig which is setup by business logic.
         // For any with an error message, see if it exists
         // in TextLocalizationService as "*". If so, clear
         // errorMessage, errorMessagel10n, summaryMessage, summaryMessagel10n
         // This allows TextLocalizationService to supply messages.
         for (let i = 0; i < this.baseConfig.valueHostConfigs.length; i++) {
-            let vhConfig = this.baseConfig.valueHostConfigs[i] as FieldValueHostConfig;
+            const vhConfig = this.baseConfig.valueHostConfigs[i] as FieldValueHostConfig;
             if (vhConfig.validatorConfigs)
                 vhConfig.validatorConfigs.forEach((ivConfig) => {
                     if (ivConfig.errorMessage || ivConfig.errorMessagel10n)
@@ -204,10 +204,10 @@ export class FormConfigAdapter
     public useOnlyTheseModelFields(modelFieldNames: Array<ValueHostName>): void
     {
         // clone the array
-        let notFound: Array<ValueHostName> = modelFieldNames.slice();
+        const notFound: Array<ValueHostName> = modelFieldNames.slice();
         // uses baseConfig, not destinationValueHostConfigs(), 
         // because the model's ValueHostConfigs are on baseConfig, not the current override.
-        for (let vhConfig of this.baseConfig.valueHostConfigs) {
+        for (const vhConfig of this.baseConfig.valueHostConfigs) {
             {
                 const index = notFound.indexOf(vhConfig.name);
                 if (index > -1)
@@ -218,7 +218,7 @@ export class FormConfigAdapter
         }
         if (notFound.length > 0) {
             // log
-            let msg = `useOnlyTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
+            const msg = `useOnlyTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
             this.logger.message(LoggingLevel.Warn, () => msg);
         }
     }
@@ -233,10 +233,10 @@ export class FormConfigAdapter
      */
     public disableTheseModelFields(modelFieldNames: Array<ValueHostName>): void
     {
-        let notFound: Array<ValueHostName> = modelFieldNames.slice();
+        const notFound: Array<ValueHostName> = modelFieldNames.slice();
         // uses baseConfig, not destinationValueHostConfigs(), 
         // because the model's ValueHostConfigs are on baseConfig, not the current override.
-        for (let vhConfig of this.baseConfig.valueHostConfigs) {
+        for (const vhConfig of this.baseConfig.valueHostConfigs) {
             {
                 const index = notFound.indexOf(vhConfig.name);
                 if (index > -1)
@@ -247,7 +247,7 @@ export class FormConfigAdapter
         }
         if (notFound.length > 0) {
             // log
-            let msg = `disableTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
+            const msg = `disableTheseModelFields specified names not already registered: ${notFound.join(', ')}`;
             this.logger.message(LoggingLevel.Warn, () => msg);
         }
     }
@@ -267,14 +267,14 @@ export class FormConfigAdapter
     {
         assertNotNull(groupName, 'groupName');
         assertNotNull(valueHostNames, 'valueHostNames');
-        let notFound: Array<ValueHostName> = valueHostNames.slice();
+
         // uses baseConfig, not destinationValueHostConfigs()
         // because the model's ValueHostConfigs are on baseConfig, not the current override.
-        for (let valueHostName of valueHostNames) {
-            let vhConfig = this.getExistingValueHostConfig(valueHostName, false); 
+        for (const valueHostName of valueHostNames) {
+            const vhConfig = this.getExistingValueHostConfig(valueHostName, false); 
             if (vhConfig) {
                 if (isValidatableValueHostConfig(vhConfig))
-                    (<ValidatableValueHostBaseConfig>vhConfig).group = groupName;
+                    (vhConfig as ValidatableValueHostBaseConfig).group = groupName;
                 else
                     this.logger.message(LoggingLevel.Warn, () => `assignToGroup specified name is not a validatable ValueHost: ${valueHostName}`);
             }
@@ -300,7 +300,7 @@ export class FormConfigAdapter
      * @param adjustments - the adjustments to apply to the ValueHostConfig.
      * @returns The IModifyValidatorBuilder for further modifications.
      */
-    public modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
+    public modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;  // eslint-disable-line @typescript-eslint/unified-signatures
     
     /**
      * Updates just the ValueHostConfig.label property.
@@ -310,7 +310,7 @@ export class FormConfigAdapter
      * @param label - the new label to apply to the ValueHostConfig.
      * @returns The IModifyFieldBuilder for further modifications.
      */
-    public modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    
+    public modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    // eslint-disable-line @typescript-eslint/unified-signatures
 
     /**
      * Modifies the configuration of a specific ValueHost by applying the given adjustments.
@@ -329,12 +329,12 @@ export class FormConfigAdapter
     {
         // find the existing ValueHostConfig for the given valueHostName in destinationValueHostConfigs
         // If not found, throw an error
-        let existingConfig = this.getExistingValueHostConfig(valueHostName, true)!;    // throws
+        const existingConfig = this.getExistingValueHostConfig(valueHostName, true)!;    // throws
 
         if (arg2 || arg3)
         {
-            let configSource: AdapterValueHostConfig | undefined;
-            let label: string | undefined;
+            let configSource: AdapterValueHostConfig | undefined = undefined;
+            let label: string | undefined = undefined;
             if (typeof arg2 === 'string') {
                 label = arg2;
                 configSource = arg3;
@@ -376,11 +376,11 @@ export class FormConfigAdapter
     // These property names are on ValueHostConfig and children that 
     // the modify() + mergeConfigs() methods are not allowed to change. 
     // They are considered essential to the business logic and should not be overridden by the UI layer.
-    static readonly doNotReplaceTheseValueHostProperties = [
+    public static readonly doNotReplaceTheseValueHostProperties = [
         'name',
         'valueHostType',
         'dataType',
-        'validatorConfigs',
+        'validatorConfigs'
     ];
 }    
 
@@ -393,11 +393,11 @@ export class ModifyFieldBuilder
 {
     constructor(services: IValidationServices, parentConfig: ValueHostConfig) {
         super(services, null);
-        assertNotNull(parentConfig, "parentConfig");
+        assertNotNull(parentConfig, 'parentConfig');
         this.setConfig(parentConfig, { bubbleUp: false });
     }
 
-    override setConfig(config: ValueHostConfig, options?: object): void {
+    public override setConfig(config: ValueHostConfig, options?: object): void {
         if (config)
             assertNotNull(config.valueHostType, 'config.valueHostType');
 
@@ -418,15 +418,15 @@ export class ModifyFieldBuilder
     public validator(conditionType: string, adjustments: FluentValidatorConfig): IModifyValidatorBuilder;
     public validator(conditionType: string, arg2?: string | FluentValidatorConfig | null, arg3?: string ): IModifyValidatorBuilder
     {
-        assertNotNull(conditionType, "conditionType");
+        assertNotNull(conditionType, 'conditionType');
         // find the existing validator with the specified conditionType/errorCode
         // in config.validatorConfigs array.
         // throws if the validator with the specified conditionType/errorCode does not exist
-        let config = this.getConfig()! as ValidatorsValueHostBaseConfig;
+        const config = this.getConfig()! as ValidatorsValueHostBaseConfig;
         if (!isValidatableValueHostConfig(config)) {
             this.reportError(new Error(`ValueHost type ${config.valueHostType} config does not support validators.`));  // throws
         }
-        let existingValidator: ValidatorConfig | undefined;
+        let existingValidator: ValidatorConfig | undefined = undefined;
         if (config.validatorConfigs && config.validatorConfigs.length > 0)
             existingValidator = config.validatorConfigs.find(v => conditionType === resolveErrorCode(v));
         if (!existingValidator) {
@@ -434,7 +434,7 @@ export class ModifyFieldBuilder
         }
         if (arg2 != null || arg3 !== undefined) // null/undefined
         {
-            let adjustments: FluentValidatorConfig | undefined;
+            let adjustments: FluentValidatorConfig | undefined = undefined;
             if (typeof arg2 === 'string') {
                 adjustments = { errorMessage: arg2, summaryMessage: arg3 };
             }
@@ -479,9 +479,9 @@ export class ModifyFieldBuilder
     // These property names are on ValueHostConfig and children that 
     // the modify() + mergeConfigs() methods are not allowed to change. 
     // They are considered essential to the business logic and should not be overridden by the UI layer.
-    static readonly doNotReplaceTheseValidatorProperties = [
+    public static readonly doNotReplaceTheseValidatorProperties = [
         'conditionConfig',
-        'conditionCreator',
+        'conditionCreator'
     ];
 
     /**
@@ -500,7 +500,7 @@ export class ModifyFieldBuilder
         // find the existing validator with the specified conditionType/errorCode
         // in config.validatorConfigs array.
         // throws if the validator with the specified conditionType/errorCode does not exist
-        let config = this.getConfig()! as ValidatorsValueHostBaseConfig;
+        const config = this.getConfig()! as ValidatorsValueHostBaseConfig;
         if (!isValidatableValueHostConfig(config)) {
             this.reportError(new Error(`ValueHost type ${config.valueHostType} config does not support validators.`)); // throws
         }
@@ -530,8 +530,8 @@ export class ModifyFieldBuilder
     {
         assertFunction(callback);
         
-        let vhConfig = this.getConfig()! as ValidatableValueHostBaseConfig;
-        let startBuilder = new StartConditionWithOneChildBuilder(
+        const vhConfig = this.getConfig()! as ValidatableValueHostBaseConfig;
+        const startBuilder = new StartConditionWithOneChildBuilder(
             this.services as IValidationServices,
             null,
             (conditionConfig) => {
@@ -556,11 +556,11 @@ export class ModifyFieldBuilder
      */
     public refineDataType(newDataType: string): IModifyFieldBuilder
     {
-        let vhConfig = this.getConfig()!;
+        const vhConfig = this.getConfig()!;
 
         // Replace dataType only if unassigned or this value has a fallback
         // matching the existing data type.
-        let existingDataType = vhConfig.dataType;
+        const existingDataType = vhConfig.dataType;
         if (existingDataType && (newDataType != existingDataType)) {
             if (!this.services.lookupKeyFallbackService.canFallbackTo(newDataType, existingDataType)) 
                 this.reportError(new Error(`Cannot replace dataType '${existingDataType}' with '${newDataType}' as no fallback is available.`));
@@ -645,19 +645,19 @@ export class ModifyValidatorBuilder
         builderCallback: (newCondBuilder: IStartConditionBuilder) => void): void
     {
         assertFunction(builderCallback);
-        let existingValidator = this.getConfig()!;
-        let existingCondition = existingValidator.conditionConfig;
+        const existingValidator = this.getConfig()!;
+        const existingCondition = existingValidator.conditionConfig;
         if (!existingCondition)
             this.reportError(new Error('Existing condition is null or undefined.')); // throws
-        let startBuilder = this.services.buildersFactory.createStartConditionBuilder(this as any);
+        const startBuilder = this.services.buildersFactory.createStartConditionBuilder(this as any);
         builderCallback(startBuilder);
-        let newCondition = startBuilder.getConfig()!;
+        const newCondition = startBuilder.getConfig()!;
         if (!newCondition)
             this.reportError(new Error('Child builder was not used to define a Condition.')); // throws
-        let originalErrorCode = resolveErrorCode(existingValidator);
+        const originalErrorCode = resolveErrorCode(existingValidator);
         if (originalErrorCode === conditionType) {
             // Logic to combine the existing condition with the new one using AND logic
-            let owner = (<ConditionWithChildrenBaseConfig>existingCondition);
+            const owner = (existingCondition as ConditionWithChildrenBaseConfig);
             if (owner.conditionConfigs == null) // null/undefined
                 owner.conditionConfigs = [];
             owner.conditionConfigs.push(newCondition);
@@ -667,7 +667,7 @@ export class ModifyValidatorBuilder
             return;
         }
             // Logic to combine the existing condition with the new one using AND logic
-        let combinedCondition: ConditionWithChildrenBaseConfig = {
+        const combinedCondition: ConditionWithChildrenBaseConfig = {
             conditionType: conditionType,
             conditionConfigs: [existingCondition!, newCondition]
         };
@@ -686,21 +686,21 @@ export class ModifyValidatorBuilder
      */
     public whenToEnable(builderCallback: (whenToEnableBuilder: IStartConditionWithOneChildBuilder) => void): void
     {
-        let existingValidator = this.getConfig()!;
-        let thenConfig = existingValidator.conditionConfig;
+        const existingValidator = this.getConfig()!;
+        const thenConfig = existingValidator.conditionConfig;
         if (!thenConfig)
             this.reportError(new Error('Existing condition is null or undefined.'));    // throws
-        let startBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(this as any);
+        const startBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(this as any);
         builderCallback(startBuilder);
-        let whenToEnableConfig = startBuilder.getConfig()!;
+        const whenToEnableConfig = startBuilder.getConfig()!;
         if (!whenToEnableConfig)
             this.reportError(new Error('Child builder was not used to define a Condition.')); // throws
 
-        existingValidator.conditionConfig = <WhenConditionConfig>{
+        existingValidator.conditionConfig = {
             conditionType: ConditionType.When,
             whenToEnableConfig: whenToEnableConfig,
             thenConfig: thenConfig
-        };
+        } as WhenConditionConfig;
     }
 
         /**
@@ -710,7 +710,7 @@ export class ModifyValidatorBuilder
      */
     public disable(): void
     {
-        let existingValidator = this.getConfig()!;
+        const existingValidator = this.getConfig()!;
         existingValidator.enabled = false;
     }
 }

@@ -37,15 +37,15 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
         }
 
         protected publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-            super.logger.log(level, gatherFn);
+            this.logger.log(level, gatherFn);
         }
 
         public publicify_mergeConfigs(source: object, destination: object, identity: MergeIdentity): void {
-            super.mergeConfigs(source, destination, identity);
+            this.mergeConfigs(source, destination, identity);
         }
         public publicify_mergeProperty(propertyName: string, rule: PropertyConflictRule<object>,
             source: object, destination: object, identity: MergeIdentity): void {
-            super.mergeProperty(propertyName, rule, source, destination, identity);
+            this.mergeProperty(propertyName, rule, source, destination, identity);
         }
 
     }
@@ -551,7 +551,8 @@ describe('ValidatorConfigMergeService', () => {
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorCode')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorMessage')).toBeUndefined();
-            expect(testItem.identifyHandler).toBe(testItem.identifyValidatorConflict);
+            // identityValidatorConflict is using the Bind() function, so match by name, not instance
+            expect(testItem.identifyHandler.name).toContain(testItem.identifyValidatorConflict.name);
         });
 
         test('identityHandler set should be returned on get', () => {

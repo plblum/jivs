@@ -155,7 +155,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         }
         catch (e)
         {
-            let err = ensureError(e);
+            const err = ensureError(e);
             this.logger(services).error(err);
 
             return new ErrorResponseCondition(e as Error);
@@ -179,20 +179,20 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      */
     protected tryConversion(value: any, valueLookupKey: string | null | undefined,
         conversionLookupKey: string | null | undefined, services: IValidationServices): {
-        value?: any,
-        lookupKey?: string | null,
-        failed: boolean
+        value?: any;
+        lookupKey?: string | null;
+        failed: boolean;
     }
     {
         if (conversionLookupKey) {
-            let result = services.dataTypeConverterService.convertUntilResult(
+            const result = services.dataTypeConverterService.convertUntilResult(
                 value, valueLookupKey ?? null, conversionLookupKey);
             if (!result.resolvedValue) {
 
                 this.logger(services).log(LoggingLevel.Warn, (options?: LogOptions) => {
-                    let details: LogDetails = {
+                    const details: LogDetails = {
                         message: `Value cannot be converted to "${conversionLookupKey}".`,
-                        category: LoggingCategory.TypeMismatch,
+                        category: LoggingCategory.TypeMismatch
                     };
                     if (options?.includeData)
                         details.data = {
@@ -227,7 +227,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         
         this.logger(services).log(logLevel,
             (options?: LogOptions) => {
-            let details: LogDetails = {
+            const details: LogDetails = {
                 message: propertyName + ': ' + errorMessage,
                 category: LoggingCategory.Configuration
             };
@@ -258,9 +258,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      */
     protected logTypeMismatch(services: IValidationServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
         this.logger(services).log(LoggingLevel.Warn, (options?: LogOptions) => {
-            let details: LogDetails = {
+            const details: LogDetails = {
                 message: `Type mismatch. ${propertyName} cannot be compared to ${propertyName2}`,
-                category: LoggingCategory.TypeMismatch,
+                category: LoggingCategory.TypeMismatch
             };
             if (options?.includeData)
                 details.data = {

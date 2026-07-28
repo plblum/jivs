@@ -84,8 +84,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
             this.logger.message(LoggingLevel.Warn, () => 'setValue does not support duringEdit option');
         }
-        let oldValue: any = this.instanceState.value;
-        let changed = !deepEquals(value, oldValue);
+        const oldValue: any = this.instanceState.value;
+        const changed = !deepEquals(value, oldValue);
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -237,7 +237,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
         // any external issues that aren't warnings override ValidationStatus with Invalid.
         if (this.externalIssuesFound)
-            for (let error of this.externalIssuesFound)
+            for (const error of this.externalIssuesFound)
                 if (error.severity !== ValidationSeverity.Warning)
                     return ValidationStatus.Invalid;
         return this.instanceState.status;
@@ -338,11 +338,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             default:
                 // check IssuesFound in both instanceState and externalIssuesFound. If any have doNotSave = true, return true.
                 if (this.instanceState.issuesFound)
-                    for (let issue of this.instanceState.issuesFound)
+                    for (const issue of this.instanceState.issuesFound)
                         if (issue.doNotSave)
                             return true;
                 if (this.externalIssuesFound)
-                    for (let issue of this.externalIssuesFound)
+                    for (const issue of this.externalIssuesFound)
                         if (issue.doNotSave)
                             return true;
                 return false;
@@ -381,7 +381,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = false;
         if (issuesFound && issuesFound.length)
         {
-            for (let issue of issuesFound) {      
+            for (const issue of issuesFound) {      
                 if (this.addExternalIssueFound(issue, determinedLocally, options)) {
                     changed = true;
                 }
@@ -431,7 +431,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                         break;
                     }
                 }
-            let changed = this.updateInstanceState((stateToUpdate) => {
+            const changed = this.updateInstanceState((stateToUpdate) => {
                 if (!stateToUpdate.externalIssuesFound)
                     stateToUpdate.externalIssuesFound = [];
                 if (replacementIndex === -1)
@@ -457,7 +457,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */
     public clearExternalIssuesFound(options?: ValidateOptions): boolean {
         if (this.externalIssuesFound) {
-            let changed = this.updateInstanceState((stateToUpdate) => {
+            const changed = this.updateInstanceState((stateToUpdate) => {
                 delete stateToUpdate.externalIssuesFound;
                 delete stateToUpdate.corrected;
                 return stateToUpdate;
@@ -507,7 +507,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             asyncProcessing: this.asyncProcessing,
             status: this.validationStatus,
             corrected: this.corrected
-        }
+        };
     }
     
     /**
@@ -578,10 +578,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
             return null;
         }        
-        let list: Array<IssueFound> = [];
+        const list: Array<IssueFound> = [];
 
         if (this.instanceState.issuesFound && this.groupsMatch(group, true)) {
-            for (let issue of this.instanceState.issuesFound) {
+            for (const issue of this.instanceState.issuesFound) {
                 list.push(issue);
             }
         }
@@ -593,7 +593,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     private addExternalIssuesFoundToSnapshotList(list: Array<IssueFound>): void {
         if (this.externalIssuesFound) {
             let issueCount = 0;
-            for (let error of this.externalIssuesFound) {
+            for (const error of this.externalIssuesFound) {
                 list.push(this.externalToInternalIssueFound(error, issueCount));
                 issueCount++;
             }
@@ -604,7 +604,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * an immutable IssueFound with all properties set, such as doNotSave.
     */
     private externalToInternalIssueFound(issueFound: IssueFound, issueCount: number): IssueFound {
-        let severity = issueFound.severity ?? ValidationSeverity.Error;
+        const severity = issueFound.severity ?? ValidationSeverity.Error;
         return {
                 valueHostName: this.getName(),
                 errorCode: cleanString(issueFound.errorCode)  ?? `GENERATED_${issueCount}`,
@@ -613,7 +613,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 summaryMessage: (issueFound.summaryMessage && issueFound.summaryMessage.length) ?
                     issueFound.summaryMessage : issueFound.errorMessage,
                 doNotSave: issueFound.doNotSave ?? severity !== ValidationSeverity.Warning
-            }        
+            };        
     }
 
 
@@ -653,7 +653,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             updating[pos] = issueFound;
         else
             updating.push(issueFound);
-        let changed = this.updateInstanceState((stateToUpdate) => {
+        const changed = this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.issuesFound = updating;
             if (issueFound.severity !== ValidationSeverity.Warning)
                 stateToUpdate.status = ValidationStatus.Invalid;
@@ -679,7 +679,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
         return source as IValidatableValueHostBase;
     if (source && typeof source === 'object')
     {
-        let test = source as IValidatableValueHostBase;    
+        const test = source as IValidatableValueHostBase;    
         // some select members of IValidatableValueHostBase
         if (test.validate !== undefined &&
             test.getIssuesFound !== undefined)

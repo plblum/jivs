@@ -1,9 +1,9 @@
 /**
  *  @module Builder/ConcreteClasses/StartConditionWithOneChildBuilder
  */
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { SetConfigOptions, IStartConditionWithOneChildBuilder } from "../Interfaces/ChildBuilders";
-import { StartConditionBuilder } from "./StartConditionBuilder";
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { SetConfigOptions, IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
+import { StartConditionBuilder } from './StartConditionBuilder';
 
 /**
  * Builder that allows only one child condition.

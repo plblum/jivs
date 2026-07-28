@@ -7,8 +7,8 @@
 import {
     ILoggerService, LogDetails, LogOptions, LoggingLevel,
     logGatheringErrorHandler, logGatheringHandler
-} from "../Interfaces/LoggerService";
-import { SevereErrorBase } from "./ErrorHandling";
+} from '../Interfaces/LoggerService';
+import { SevereErrorBase } from './ErrorHandling';
 
 /**
  * Used by many classes to log different types of messages to the LoggerService.
@@ -27,15 +27,15 @@ export class LoggerFacade
         this._identity = identity;
         this._rethrowSevereErrors = rethrowSevereErrors;
     }
-    private _loggerService: ILoggerService | null;
+    private readonly _loggerService: ILoggerService | null;
     protected get loggerService(): ILoggerService | null { return this._loggerService; }
-    private _feature: string;
+    private readonly _feature: string;
     protected get feature(): string { return this._feature; }
-    private _type: object | Function | string;
+    private readonly _type: object | Function | string;
     protected get type(): object | Function | string { return this._type; }
-    private _identity: string | Array<string> | null;
+    private readonly _identity: string | Array<string> | null;
     protected get identity(): string | Array<string> | null { return this._identity; }
-    private _rethrowSevereErrors: boolean;
+    private readonly _rethrowSevereErrors: boolean;
     protected get rethrowSevereErrors(): boolean { return this._rethrowSevereErrors; }
     
     /**
@@ -44,7 +44,7 @@ export class LoggerFacade
      */
     public log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
         this.loggerService?.log(level, (options?: LogOptions) => {
-            let details = gatherFn(options);
+            const details = gatherFn(options);
             details.feature = this.feature;
             details.type = this.type;
             if (this.identity)
@@ -75,7 +75,7 @@ export class LoggerFacade
     public error(error: Error, gatherFn?: logGatheringErrorHandler): void
     {
         this.loggerService?.logError(error, (options?: LogOptions) => {
-            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            const details = gatherFn ? gatherFn(options) : {} as LogDetails;
             details.feature = this.feature;
             details.type = this.type;
             if (this.identity)

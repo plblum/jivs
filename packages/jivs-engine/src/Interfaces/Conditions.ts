@@ -277,7 +277,7 @@ export interface IEvaluateConditionDuringEdits extends ICondition
  */
 export function toIEvaluateConditionDuringEdits(source: any): IEvaluateConditionDuringEdits | null {
     if (source && typeof source === 'object') {
-        let test = source as IEvaluateConditionDuringEdits;       
+        const test = source as IEvaluateConditionDuringEdits;       
         if (test.evaluateDuringEdits !== undefined)
             return test;
     }

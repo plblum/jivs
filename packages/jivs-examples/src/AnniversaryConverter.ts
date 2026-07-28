@@ -1,6 +1,6 @@
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 
 
@@ -20,7 +20,7 @@ export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object 
  */
 export class UTCAnniversaryConverter extends DataTypeConverterBase
 {
-    convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) {
+    public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): number | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(2004, value.getUTCMonth(), value.getUTCDate()));
@@ -29,10 +29,10 @@ export class UTCAnniversaryConverter extends DataTypeConverterBase
     protected validValue(value: any): boolean {
         return value instanceof Date;
     }
-    supportedResultLookupKeys(): string[] {
-        return [LookupKey.Number, LookupKey.Milliseconds]
+    public supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number, LookupKey.Milliseconds];
     }
-    supportedSourceLookupKeys(): (string | null)[] {
+    public supportedSourceLookupKeys(): (string | null)[] {
         return [AnniversaryLookupKey];
     }
 }

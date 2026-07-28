@@ -3,8 +3,8 @@
  * @module DataTypes/Types/IDataTypeCheckGenerator
  */
 
-import { IConditionFactory, ICondition } from "./Conditions";
-import { IFieldValueHost } from "./FieldValueHost";
+import { IConditionFactory, ICondition } from './Conditions';
+import { IFieldValueHost } from './FieldValueHost';
 
 /**
  * Used to automatically generate a Condition used for Data Type Check

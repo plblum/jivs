@@ -24,18 +24,18 @@
     below.
 */
 
-import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { IValidationManager, } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 
-import { createValidationServices, timeZoneRegex } from "./Config_example_common_code";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { createValidationServices, TimeZoneRegex } from './Config_example_common_code';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import { RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
-import { FormRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
+import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
+import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 
 /**
  * Our Forms rules class, which is a subclass of FormRulesBase.
@@ -57,9 +57,9 @@ export class DateRangeFormRules extends FormRulesBase
                     errorCode: 'NumOfDays' // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
                 }); 
         builder.field('endDate', LookupKey.Date, { label: 'End date' });
-        builder.field('timeZone', LookupKey.String).regExp(timeZoneRegex, { errorCode: 'TimeZone'})    
+        builder.field('timeZone', LookupKey.String).regExp(TimeZoneRegex, { errorCode: 'TimeZone'});    
         builder.static('numOfDays', LookupKey.Integer, { initialValue: 10 });
-        builder.calc('diffDays', LookupKey.Integer, this.differenceBetweenDates);        
+        builder.calc('diffDays', LookupKey.Integer, this.differenceBetweenDates);   // eslint-disable-line @typescript-eslint/unbound-method    
     }
     // For our diffDays CalcValueHost
     private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {

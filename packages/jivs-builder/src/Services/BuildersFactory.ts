@@ -5,14 +5,14 @@
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ServiceWithAccessorBase } from '@plblum/jivs-engine/build/Services/ServiceWithAccessorBase';
-import { ConditionBuilder } from "../Builder/ConditionBuilder";
-import { StartConditionBuilder } from "../Builder/StartConditionBuilder";
-import { StartConditionWithChildrenBuilder } from "../Builder/StartConditionWithChildrenBuilder";
-import { StartConditionWithOneChildBuilder } from "../Builder/StartConditionWithOneChildBuilder";
-import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
+import { ConditionBuilder } from '../Builder/ConditionBuilder';
+import { StartConditionBuilder } from '../Builder/StartConditionBuilder';
+import { StartConditionWithChildrenBuilder } from '../Builder/StartConditionWithChildrenBuilder';
+import { StartConditionWithOneChildBuilder } from '../Builder/StartConditionWithOneChildBuilder';
+import { ValidationManagerConfigBuilder } from '../Builder/ValidationManagerConfigBuilder';
 import { ValidatorBuilder } from '../Builder/ValidatorBuilder';
 import { IBuildersFactory } from '../Interfaces/BuildersFactory';
 import {
@@ -21,7 +21,7 @@ import {
     IStartConditionWithChildrenBuilder, IStartConditionWithOneChildBuilder,
     IValidatorBuilder
 } from '../Interfaces/ChildBuilders';
-import { IManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 /**
  * Base interface to provide a factory that supplies:
  * 1. ValidatorBuilder or subclass replacement
@@ -31,22 +31,22 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
 {
     constructor() {
         super();
-        this._managerConfigBuilder = (parentConfig: ValidationManagerConfig | null) =>
+        this._managerConfigBuilder = (parentConfig: ValidationManagerConfig | null) : IManagerConfigBuilder<ValidationManagerConfig> =>
             new ValidationManagerConfigBuilder(parentConfig as ValidationManagerConfig ?? this.services);
         this._validatorBuilderCreator =
-            (parentConfig: FieldValueHostConfig) =>
+            (parentConfig: FieldValueHostConfig): IValidatorBuilder =>
                 new ValidatorBuilder(this.services, parentConfig);
         this._conditionBuilderCreator =
-            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
+            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder<ConditionConfig> =>
                 new ConditionBuilder(this.services, parentBuilder, completed);
         this._startConditionBuilderCreator =
-            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
+            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>): IStartConditionBuilder =>
                 new StartConditionBuilder(this.services, parentBuilder, completed);
         this._startConditionWithChildrenBuilderCreator =
-            (parentBuilder: IBuilderConfigHost<object>, conditionType: ConditionType) =>
+            (parentBuilder: IBuilderConfigHost<object>, conditionType: ConditionType): IStartConditionWithChildrenBuilder =>
                 new StartConditionWithChildrenBuilder(this.services, parentBuilder, conditionType);
         this._startConditionWithOneChildBuilderCreator =
-            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
+            (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>): IStartConditionWithOneChildBuilder =>
                 new StartConditionWithOneChildBuilder(this.services, parentBuilder, completed);
     }
     private _managerConfigBuilder: (parentConfig: ValidationManagerConfig | null) => IManagerConfigBuilder<ValidationManagerConfig>;
@@ -75,7 +75,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * @returns 
      */
     public setValidatorBuilderCreator(replacement:
-        (parentConfig: FieldValueHostConfig) => ValidatorBuilder): void
+        (parentConfig: FieldValueHostConfig) => IValidatorBuilder): void
     {
         this._validatorBuilderCreator = replacement;
     }
@@ -84,7 +84,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * Replaces the current ConditionBuilderCreator
      * @param replacement 
      */
-    public setConditionBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => ConditionBuilder): void
+    public setConditionBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => IConditionBuilder): void
     {
         this._conditionBuilderCreator = replacement;
     }
@@ -93,7 +93,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * Replaces the current StartConditionBuilderCreator
      * @param replacement 
      */
-    public setStartConditionBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => StartConditionBuilder): void
+    public setStartConditionBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => IStartConditionBuilder): void
     {
         this._startConditionBuilderCreator = replacement;
     }
@@ -102,7 +102,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * Replaces the current StartConditionWithChildrenBuilderCreator
      * @param replacement 
      */
-    public setStartConditionWithChildrenBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, conditionType: ConditionType) => StartConditionWithChildrenBuilder): void
+    public setStartConditionWithChildrenBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, conditionType: ConditionType) => IStartConditionWithChildrenBuilder): void
     {
         this._startConditionWithChildrenBuilderCreator = replacement;
     }
@@ -111,7 +111,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * Replaces the current StartConditionWithOneChildBuilderCreator
      * @param replacement 
      */
-    public setStartConditionWithOneChildBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => StartConditionWithOneChildBuilder): void
+    public setStartConditionWithOneChildBuilderCreator(replacement: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) => IStartConditionWithOneChildBuilder): void
     {
         this._startConditionWithOneChildBuilderCreator = replacement;
     }
@@ -185,7 +185,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * This is usually consumed by calling parentBuilder to use the child
      * builder's config.
      */
-    public createStartConditionWithChildrenBuilder<TConfig extends ConditionConfig>
+    public createStartConditionWithChildrenBuilder
         (parentBuilder: IBuilderConfigHost<object>, conditionType: ConditionType): IStartConditionWithChildrenBuilder
     {
         return this._startConditionWithChildrenBuilderCreator(parentBuilder, conditionType);

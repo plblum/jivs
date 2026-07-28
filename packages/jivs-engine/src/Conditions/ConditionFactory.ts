@@ -30,10 +30,10 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      */
     public create<TConfig extends ConditionConfig>
         (config: TConfig): IConditionCore<TConfig> {
-        let ct = cleanString(config.conditionType);
+        const ct = cleanString(config.conditionType);
         if (!ct)
             throw new CodingError('conditionType property not assigned in ConditionConfig');
-        let fn = this._map.get(ct);
+        const fn = this._map.get(ct);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
         if (this.ensureLazyLoaded())
@@ -58,7 +58,7 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      */
     public register<TConfig extends ConditionConfig>(conditionType: string,
         fn: (config: TConfig) => IConditionCore<TConfig>): void {
-        let ct = cleanString(conditionType);
+        const ct = cleanString(conditionType);
         if (!ct)
             throw new CodingError('conditionType not assigned');
         this._map.register(conditionType, fn as any);
@@ -81,13 +81,13 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      * @returns The real name of the conditionType or null if not found.
      */
     public findRealName(conditionType: string): string | null {
-        let ct = cleanString(conditionType);
+        const ct = cleanString(conditionType);
         if (!ct)
             return null;
         // _registeredNames needs to be searched
         // with the same as the user supplied
-        let lcCT = ct.toLowerCase();
-        for (let key of this._registeredNames.keys()) {
+        const lcCT = ct.toLowerCase();
+        for (const key of this._registeredNames.keys()) {
             if (key.toLowerCase() === lcCT)
                 return key;
         }
@@ -113,7 +113,7 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
     {
         if (this._lazyLoader) {
             // prevent recursion by disabling the feature right away
-            let fn = this._lazyLoader;
+            const fn = this._lazyLoader;
             this._lazyLoader = null;
             fn(this);
             return true;

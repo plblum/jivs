@@ -10,7 +10,7 @@
  * @returns 
  */
 export function escapeRegExp(text: string): string {
-    return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 }
 
 /**
@@ -42,8 +42,8 @@ export function groupsMatch(group1: string | Array<string> | undefined | null,
 
     if (alwaysMatch(group1) || alwaysMatch(group2))
         return true;
-    let requestedGroups = asArray(group1);
-    let hasGroups = asArray(group2);
+    const requestedGroups = asArray(group1);
+    const hasGroups = asArray(group2);
     // just need to find one match between the two arrays, case insensitive
     for (let i = 0; i < requestedGroups.length; i++)
         if (hasGroups.includes(requestedGroups[i]) ||
@@ -63,10 +63,10 @@ export function deepEquals(obj1: any, obj2: any): boolean
     if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
         return Object.is(obj1, obj2);
     // adapted from https://stackoverflow.com/questions/22266826/how-can-i-do-a-shallow-comparison-of-the-properties-of-two-objects-with-javascri
-    let keys1 = Object.keys(obj1);
+    const keys1 = Object.keys(obj1);
     if (keys1.length !== Object.keys(obj2).length)
         return false;
-    /* eslint-disable no-prototype-builtins */
+     
     return keys1.every(key => 
         obj2.hasOwnProperty(key) && deepEquals(obj1[key], obj2[key])
     );  
@@ -100,7 +100,7 @@ export function deepClone(value: any, alreadyChecked?: Array<any>,
     if (alreadyChecked === undefined)
         alreadyChecked = [];
 
-    for (let key in value) {
+    for (const key in value) {
         if (value.hasOwnProperty(key)) {
             let valueToClone = value[key];
             if (filter) {
@@ -109,7 +109,7 @@ export function deepClone(value: any, alreadyChecked?: Array<any>,
                     continue;
             }            
             // clone alreadyChecked and add the current value to it
-            let newAlreadyChecked = alreadyChecked.slice();
+            const newAlreadyChecked = alreadyChecked.slice();
             newAlreadyChecked.push(value);
                 
             newObject[key] = deepClone(valueToClone, newAlreadyChecked, filter);
@@ -226,7 +226,7 @@ export function cleanString(value: string | null | undefined): string | null
 {
     if (typeof value === 'string')
     {
-        let text = value.trim();
+        const text = value.trim();
         return text.length > 0 ? text : null;
     }
     return null;
@@ -259,7 +259,7 @@ export function valueForLog(value: any): string
         // @ts-ignore so we don't worry about the fall-thru        
         case 'object':
             if (isPlainObject(value))
-                return `Plain object`;                
+                return 'Plain object';                
             if (value.constructor !== undefined && value.constructor.name !== undefined)
                 return value.constructor.name;
             // intentional fall thru: note: missing code coverage on this case due to it being rare if impossible to get here
@@ -277,16 +277,16 @@ export function isPlainObject(obj: any): boolean {
     return proto === Object.prototype || proto === null;
 }
 
-const notSupportedAsValue = [
+const NotSupportedAsValue = [
     Array, Function, Error, RegExp, Map, Set, WeakMap, WeakSet
     // add more built-in constructors if needed
 ];
 
-export function isSupportedAsValue(obj: any) {
+export function isSupportedAsValue(obj: any) : boolean {
     if (obj === null || obj === undefined || typeof obj !== 'object')
         return true;
 
-    if (notSupportedAsValue.includes(obj.constructor))
+    if (NotSupportedAsValue.includes(obj.constructor))
         return false;
     return true;
 };

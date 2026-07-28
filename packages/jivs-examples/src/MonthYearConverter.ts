@@ -3,8 +3,8 @@
 
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 
 export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date object and only need month and year. Assumes UTC
 
@@ -17,7 +17,7 @@ export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date obj
  */
 export class UTCMonthYearConverter extends DataTypeConverterBase
 {
-    public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) {
+    public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) : number | undefined {
         if (isNaN(value.getTime()))
             return undefined;
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));

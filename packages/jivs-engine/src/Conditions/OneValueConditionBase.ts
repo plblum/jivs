@@ -65,7 +65,7 @@ export abstract class OneValueConditionBase<TConditionConfig extends OneValueCon
         }
         if (valueHost)
             return valueHost;
-        let error = new CodingError('Missing value for valueHostName.');
+        const error = new CodingError('Missing value for valueHostName.');
         this.logger(validationManager.services).error(error);
         // istanbul ignore next // never get here because logError throws, but TSC doesn't know that
         throw error;

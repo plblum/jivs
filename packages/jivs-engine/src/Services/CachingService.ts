@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/CachingService
  */
 
-import { ICachingService } from "../Interfaces/CachingService";
+import { ICachingService } from '../Interfaces/CachingService';
 
 /**
  * General in memory caching service.
@@ -11,7 +11,7 @@ import { ICachingService } from "../Interfaces/CachingService";
  * Found on IValidationServices.cachingService.
  */
 export class CachingService implements ICachingService {
-    private _cache: Map<string, any> = new Map<string, any>();
+    private readonly _cache: Map<string, any> = new Map<string, any>();
     public get<TValue>(key: string): TValue | undefined | null {
         if (this._cache.has(key))
             return this._cache.get(key) as TValue;

@@ -19,21 +19,21 @@
 */
 
 
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { IValidationServices, } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { createValidationServices } from "./Config_example_common_code";
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { createValidationServices } from './Config_example_common_code';
 import { IFormConfigAdapter, IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import { IAdaptModelRulesToForm, RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
-import { ModelRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
+import { IAdaptModelRulesToForm, RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
+import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 
 // The Model
 export class Person {
-  firstName!: string;
-  lastName!: string;
-  birthDate!: Date | null;
+  public firstName!: string;
+  public lastName!: string;
+  public birthDate!: Date | null;
 }
 
 // Phase 1: Business logic layer defines the rules for the model in ModelRulesBase subclass.

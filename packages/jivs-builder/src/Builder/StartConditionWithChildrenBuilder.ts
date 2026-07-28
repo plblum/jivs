@@ -2,17 +2,17 @@
  *  @module Builder/ConcreteClasses/StartConditionWithChildrenBuilder
 */
 
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { ConditionWithChildrenBaseConfig } from "@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase";
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     IBuilderConfigHost,
     IStartConditionWithChildrenBuilder,
     SetConfigOptions
-} from "../Interfaces/ChildBuilders";
-import { StartConditionBuilder } from "./StartConditionBuilder";
+} from '../Interfaces/ChildBuilders';
+import { StartConditionBuilder } from './StartConditionBuilder';
 
 /**
  * Starter these conditions: AllCondition, AnyCondition, CountMatchesCondition.
@@ -50,14 +50,14 @@ export class StartConditionWithChildrenBuilder
     }
 
     public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
-        assertNotNull(config, "config");
-        assertNotNull(config.conditionType, "config.conditionType");
+        assertNotNull(config, 'config');
+        assertNotNull(config.conditionType, 'config.conditionType');
 
         // child node may get handled a valuehostname
-        let revise = !options || options.applyValueHostName != false;
+        const revise = !options || options.applyValueHostName != false;
         if (revise)
             this.reviseValueHostName(config);
-        let configWithChildren = this.getConfig() as ConditionWithChildrenBaseConfig;
+        const configWithChildren = this.getConfig() as ConditionWithChildrenBaseConfig;
         configWithChildren?.conditionConfigs.push(config);
         // do not bubble up the changes to parent's completed handler because
         // we are still capturing. Its up to the parent builder to handle the completed configuration.

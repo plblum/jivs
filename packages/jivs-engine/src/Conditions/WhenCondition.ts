@@ -2,14 +2,14 @@
  * @inheritDoc Conditions/ConcreteConditions/WhenCondition!WhenCondition:class
  * @module Conditions/ConcreteConditions/WhenCondition
  */
-import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../Interfaces/Conditions";
-import { IValueHost, toIGatherValueHostNames } from "../Interfaces/ValueHost";
-import { IValidationManager } from "../Interfaces/ValidationManager";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { toIDisposable } from "../Interfaces/General_Purpose";
-import { ConditionBase, ErrorResponseCondition } from "./ConditionBase";
-import { ConditionType } from "./ConditionTypes";
-import { LoggingLevel } from "../Interfaces/LoggerService";
+import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
+import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
+import { IValidationManager } from '../Interfaces/ValidationManager';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import { ConditionBase, ErrorResponseCondition } from './ConditionBase';
+import { ConditionType } from './ConditionTypes';
+import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
  * Configuration for WhenCondition
@@ -86,16 +86,16 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         const whenCondition = this.whenToEnableCondition(validationManager);
         // Intentially passing null instead of valuehost because we expect the enabler to get its own valuehost.
-        let whenResult = whenCondition.evaluate(null, validationManager);
+        const whenResult = whenCondition.evaluate(null, validationManager);
 
         if (whenResult === ConditionEvaluateResult.Match) {
-            let result = this.thenCondition(validationManager).evaluate(valueHost, validationManager);
+            const result = this.thenCondition(validationManager).evaluate(valueHost, validationManager);
             this.ensureNoPromise(result);
             return result;
         }
 
         this.logger(validationManager.services).message(LoggingLevel.Info,
-            () => `WhenCondition enabler condition did not match. Child condition not evaluated.`);
+            () => 'WhenCondition enabler condition did not match. Child condition not evaluated.');
         return ConditionEvaluateResult.Undetermined;
     }
 
@@ -107,8 +107,8 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
      * @returns 
      */
     public extractConditions(validationManager: IValidationManager): {
-        whenToEnableCondition: ICondition,
-        thenCondition: ICondition
+        whenToEnableCondition: ICondition;
+        thenCondition: ICondition;
     } {
         return {
             whenToEnableCondition: this.whenToEnableCondition(validationManager),
@@ -133,10 +133,10 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
     private _whenToEnable: ICondition | null = null;
 
     public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void {
-        let whenToEnableCondition = this.whenToEnableCondition(validationManager);
+        const whenToEnableCondition = this.whenToEnableCondition(validationManager);
 
         toIGatherValueHostNames(whenToEnableCondition)?.gatherValueHostNames(collection, validationManager);
-        let thenCondition = this.thenCondition(validationManager);
+        const thenCondition = this.thenCondition(validationManager);
         toIGatherValueHostNames(thenCondition)?.gatherValueHostNames(collection, validationManager);
     }
 
@@ -147,7 +147,7 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
         let ct = ConditionType.Unknown as string;
         if (this.config.thenConfig && this.config.thenConfig.conditionType)
             ct = this.config.thenConfig.conditionType;
-        return ct
+        return ct;
     }
 
     protected thenCondition(validationManager: IValidationManager): ICondition {

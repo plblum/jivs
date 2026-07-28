@@ -45,10 +45,10 @@
 * @module ValueHosts/Types/CalcValueHost
  */
 
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { SimpleValueType } from "./DataTypeConverterService";
-import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
-import { IValidationManager } from "./ValidationManager";
+import { LookupKey } from '../DataTypes/LookupKeys';
+import { SimpleValueType } from './DataTypeConverterService';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+import { IValidationManager } from './ValidationManager';
 
 /**
  * Function definition for calculation functions used by CalcValueHost

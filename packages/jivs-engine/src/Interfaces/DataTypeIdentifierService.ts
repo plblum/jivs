@@ -2,8 +2,8 @@
  * {@inheritDoc Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService:interface }
  * @module Services/Types/IDataTypeIdentifierService
  */
-import { IDataTypeIdentifier } from "./DataTypeIdentifier";
-import { IDataTypeService } from "./DataTypes";
+import { IDataTypeIdentifier } from './DataTypeIdentifier';
+import { IDataTypeService } from './DataTypes';
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type

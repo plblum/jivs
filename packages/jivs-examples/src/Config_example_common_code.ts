@@ -13,7 +13,7 @@
 
 
 */
-import { BuildersFactoryInstaller } from "@plblum/jivs-builder/build/Services/BuildersFactoryInstaller";
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import {
     DataTypeCheckCondition,
     DataTypeCheckConditionConfig,
@@ -25,23 +25,23 @@ import {
     NotNullConditionConfig,
     RequireTextCondition,
     RequireTextConditionConfig
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
-import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
-import { DateTimeCultureInfo } from "@plblum/jivs-engine/build/DataTypes/DataTypeParserBase";
-import { CleanUpStringParser, ShortDatePatternParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
+import { CleanUpStringParser, ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
-import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
-import { createMinimalValidationServices } from "./support";
+import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
+import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
+import { createMinimalValidationServices } from './support';
 
 // Our model
 export interface FilterDatesModel {
@@ -61,7 +61,7 @@ export interface FilterDatesModel {
     timeZone: string;
 }
 
-export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
+export const TimeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
 export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
@@ -176,10 +176,10 @@ export class MockHTMLSelectElement {
         this.id = id;
         this.value = initiaValue;
     }
-    id: string;
-    value: string;
+    public id: string;
+    public value: string;
     public addEventListener(event: string, callback: (e: Event) => void): void {
-        if (event === "change") {
+        if (event === 'change') {
             this._onchangeCallback = callback;
 
         }
@@ -197,5 +197,5 @@ export class MockDocument {
         }
         return null;
     }
-    private _timeZonePicker = new MockHTMLSelectElement('timeZonePicker', 'UTC+1');
+    private readonly _timeZonePicker = new MockHTMLSelectElement('timeZonePicker', 'UTC+1');
 }

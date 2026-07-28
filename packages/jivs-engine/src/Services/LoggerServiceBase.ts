@@ -101,7 +101,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
     public log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
         if (this.overrides === null && this.minLevel > level)
             return;
-        let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
+        const logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
         if (logDetails.type && typeof logDetails.type !== 'string')
             logDetails.type = valueForLog(logDetails.type); // convert to string
 
@@ -141,7 +141,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
                 if (logDetailsValue == null) // null or undefined
                     return false;
 
-                let re = toRegExp(overrideWhenValue);
+                const re = toRegExp(overrideWhenValue);
                 if (!re || !re.test(logDetailsValue))
                     return false;
             }
@@ -150,7 +150,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
         if (this.overrides === null)
             return true;
 
-        for (let test of this.overrides) {
+        for (const test of this.overrides) {
             if ((test.level != null) && (test.level !== logLevel))
                 continue;
             if ((test.category != null) && (test.category !== logDetails.category))
@@ -168,7 +168,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
                 if (!logDetails.data)
                     continue;
                 let match = true;
-                for (let key in test.data) {
+                for (const key in test.data) {
                     if (logDetails.data.hasOwnProperty(key)) {
                         if (!deepEquals((test.data as any)[key], (logDetails.data as any)[key])) {
                             match = false;
@@ -215,7 +215,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
      * @param gatherFn 
      */
     public logError(error: Error, gatherFn: logGatheringErrorHandler): void {
-        let logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
+        const logDetails = gatherFn(this.getLogOptions()) as LogDetails;    // this logger does not use the data option
         if (logDetails.type && typeof logDetails.type !== 'string')
             logDetails.type = valueForLog(logDetails.type); // convert to string
 

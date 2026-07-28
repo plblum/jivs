@@ -110,7 +110,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
      * @param rule 
      */
     public setPropertyConflictRule(propertyName: string, rule: PropertyConflictRule<TConfig>): void {
-        let current = this.configProperties.get(propertyName);
+        const current = this.configProperties.get(propertyName);
         switch (current) {
             case 'locked':
                 throw new CodingError(`${propertyName} is locked`);
@@ -151,8 +151,8 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
      * @param identity - Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
      */
     protected mergeConfigs(source: TConfig, destination: TConfig, identity: MergeIdentity): void {
-        let noChangeNames = this.getNoChangePropertyNames();
-        for (let propertyName in source) {
+        const noChangeNames = this.getNoChangePropertyNames();
+        for (const propertyName in source) {
             if (destination[propertyName] === undefined) {
                 if (noChangeNames.includes(propertyName))
                     this.logger.message(LoggingLevel.Info, ()=> `${logLabel(identity, propertyName)}. Rule prevents changes.`);
@@ -162,7 +162,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 }
                 continue;
             }
-            let rule = this.configProperties.get(propertyName);
+            const rule = this.configProperties.get(propertyName);
             this.mergeProperty(propertyName, rule ?? 'replace', source, destination, identity);
         }
         // delete action determined by property on the destination
@@ -184,12 +184,12 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 break;  // no change for all of these
             case 'replace':
             case 'replaceExceptNull':
-                let sourceVal = (source as any)[propertyName];
+                const sourceVal = (source as any)[propertyName];
                 if (sourceVal === undefined)
                     break;
                 if (rule === 'replaceExceptNull' && sourceVal === null)
                     break;
-                let destVal = (destination as any)[propertyName];
+                const destVal = (destination as any)[propertyName];
                 if (deepEquals(sourceVal, destVal))
                     break;
                 (destination as any)[propertyName] = sourceVal;
@@ -202,13 +202,13 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 }
                 break;
             case 'replaceOrDelete':
-                let sourceValue = (source as any)[propertyName];
+                const sourceValue = (source as any)[propertyName];
                 this.mergeProperty(propertyName, (sourceValue !== null) ? 'replace' : 'delete',
                     source, destination, identity);
                 break;
             default:
                 if (typeof rule === 'function') {
-                    let result = rule.call(this, source, destination, propertyName, identity);
+                    const result = rule.call(this, source, destination, propertyName, identity);
                     if (result.useValue) {
                         (destination as any)[propertyName] = result.useValue;
                         this.logger.message(LoggingLevel.Debug, () => `${logLabel(identity, propertyName)} replaced`);
@@ -217,7 +217,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                         this.mergeProperty(propertyName, result.useAction, source, destination, identity); // recursion
                     return;
                 }
-                throw new CodingError(`Unknown rule ${rule}`);
+                throw new CodingError(`Unknown rule ${JSON.stringify(rule)}`);
         }
     }
 
@@ -230,8 +230,8 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
     public getNoChangePropertyNames(): Array<string>
     {
         if (!this._cacheNoChangePropertyNames) {
-            let namesFound: Array<string> = [];
-            for (let [name, rule] of this.configProperties)
+            const namesFound: Array<string> = [];
+            for (const [name, rule] of this.configProperties)
                 if (rule === 'nochange' || rule === 'locked' || rule === 'delete')
                     namesFound.push(name);
             this._cacheNoChangePropertyNames = namesFound;
@@ -255,7 +255,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
 
         this.setPropertyConflictRule('name', 'locked');
         this.setPropertyConflictRule('validatorConfigs', 'locked');
-        this.setPropertyConflictRule('valueHostType', this.updateValueHostType);
+        this.setPropertyConflictRule('valueHostType', this.updateValueHostType.bind(this));
         this.setPropertyConflictRule('dataType', 'replaceExceptNull');
 
         // everything else has no initial value which means 'replace'
@@ -285,7 +285,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
             return;
         this.mergeConfigs(source, destination, { valueHostName: destination.name });
         if (this.hasServices()) {
-            let vcms = this.services.validatorConfigMergeService; 
+            const vcms = this.services.validatorConfigMergeService; 
             if (vcms)
                 vcms.merge(source as ValidatorsValueHostBaseConfig,
                     destination as ValidatorsValueHostBaseConfig);
@@ -319,7 +319,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         super();
         this.setPropertyConflictRule('validatorType', 'locked');
         this.setPropertyConflictRule('errorCode', 'nochange');
-        this.setPropertyConflictRule('conditionConfig', this.protectConditionConfigProperty);
+        this.setPropertyConflictRule('conditionConfig', this.protectConditionConfigProperty.bind(this));
         this.setPropertyConflictRule('conditionCreator', 'nochange');   //!!! haven't worked on a solution for the creator callback functions
 
         // everything else has no initial value which means 'replace'
@@ -327,7 +327,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
 
     protected protectConditionConfigProperty(source: ValidatorConfig, destination: ValidatorConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
         if (hasConditionBeenReplaced(source)) {
-            let replacement = deepClone(source);
+            const replacement = deepClone(source);
             deleteConditionReplacedSymbol(replacement);
             return { useValue: replacement.conditionConfig };
         }
@@ -345,7 +345,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
      * identifyValidatorConflict().
      */
     public get identifyHandler(): ConditionConflictIdentifierHandler {
-        return this._identifyHandler ?? this.identifyValidatorConflict;
+        return this._identifyHandler ?? this.identifyValidatorConflict.bind(this);
     }
     public set identifyHandler(value: ConditionConflictIdentifierHandler) {
         this._identifyHandler = value;
@@ -363,7 +363,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
     public identifyValidatorConflict(source: ValidatorConfig,
         destinations: Array<ValidatorConfig>, identity: MergeIdentity):
         ValidatorConfig | undefined {
-        let srcErrorCode = identity.errorCode ?? resolveErrorCode(source);
+        const srcErrorCode = identity.errorCode ?? resolveErrorCode(source);
         return destinations.find((item) => resolveErrorCode(item) === srcErrorCode);
     }
 
@@ -383,15 +383,15 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         if (!destination.validatorConfigs)
             destination.validatorConfigs = [];
 
-        for (let validatorSrc of source.validatorConfigs) {
-            let identity: MergeIdentity = { valueHostName: destination.name, errorCode: resolveErrorCode(validatorSrc) };
-            let validatorDest = this.identifyHandler.call(this, validatorSrc, destination.validatorConfigs, identity)
+        for (const validatorSrc of source.validatorConfigs) {
+            const identity: MergeIdentity = { valueHostName: destination.name, errorCode: resolveErrorCode(validatorSrc) };
+            const validatorDest = this.identifyHandler.call(this, validatorSrc, destination.validatorConfigs, identity);
             if (validatorDest) {
                 if (validatorSrc.conditionConfig && validatorDest.conditionConfig)
                     if (validatorSrc.conditionConfig.conditionType !==
                         validatorDest.conditionConfig.conditionType)
                         this.logger.message(LoggingLevel.Warn, () => `ConditionType mismatch for ${identity.errorCode}`);
-                let keepErrorCode = hasConditionBeenReplaced(validatorSrc) && validatorSrc.errorCode
+                const keepErrorCode = hasConditionBeenReplaced(validatorSrc) && validatorSrc.errorCode;
                 this.mergeConfigs(validatorSrc, validatorDest, identity);
                 if (keepErrorCode)
                     validatorDest.errorCode = validatorSrc.errorCode;
@@ -431,10 +431,10 @@ function logLabel(identity: MergeIdentity, propertyName: string | null): string 
  * Thus its limited to this module and which is where the code is to set it.
  * Other consumers can only check its presence through hasConditionBeenReplaced.
  */
-export const conditionReplacedSymbol = Symbol('conditionReplaced');
+export const ConditionReplacedSymbol = Symbol('conditionReplaced');
 export function hasConditionBeenReplaced(validatorConfig: ValidatorConfig): boolean {
-    return conditionReplacedSymbol in validatorConfig;
+    return ConditionReplacedSymbol in validatorConfig;
 }
 export function deleteConditionReplacedSymbol(validatorConfig: ValidatorConfig): void {
-    delete (validatorConfig as any)[conditionReplacedSymbol];
+    delete (validatorConfig as any)[ConditionReplacedSymbol];
 }

@@ -2,18 +2,18 @@
  * Interfaces and types for ConfigAnalysis class.
  * @module ConfigAnalysis/Types
  */
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase";
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 
 import {
     IValueHostConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer,
     IConditionConfigPropertyAnalyzer, IValueHostConfigAnalyzer, IValidatorConfigAnalyzer,
     IConditionConfigAnalyzer, IDataTypeComparerAnalyzer
-} from "./Analyzers";
-import { IConfigAnalysisResultsExplorer } from "./Explorer";
-import { IConfigAnalysisResults } from "./Results";
+} from './Analyzers';
+import { IConfigAnalysisResultsExplorer } from './Explorer';
+import { IConfigAnalysisResults } from './Results';
 
 /**
  * A tool to ensure that your configuration is as expected,
@@ -51,7 +51,7 @@ export interface IConfigAnalysis {
      * @param builder 
      * @param options 
      */
-    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;    
+    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;   // eslint-disable-line @typescript-eslint/unified-signatures  
 
     /**
      * Lazyloads all ValueHostConfigPropertyAnalyzers.
@@ -102,7 +102,7 @@ export interface AnalysisArgs<TServices extends IValidationServices> {
      * that the valueHostType is in the ValueHostFactory, it
      * uses the valueHostConfigPropertyAnalyzers to check the properties.
      */
-    valueHostConfigAnalyzer?: IValueHostConfigAnalyzer<TServices>;
+    valueHostConfigAnalyzer?: IValueHostConfigAnalyzer;
     /**
      * Analyzer for any ValidatorConfig object. In addition to checking
      * that the validatorType is in the ValidatorFactory, it
@@ -115,7 +115,7 @@ export interface AnalysisArgs<TServices extends IValidationServices> {
      * that the conditionType is in the ConditionFactory, it
      * uses the conditionConfigPropertyAnalyzers to check the properties.
      */
-    conditionConfigAnalyzer?: IConditionConfigAnalyzer<TServices>;
+    conditionConfigAnalyzer?: IConditionConfigAnalyzer;
 
     /**
      * Analyzer for identifying if a ConditionConfig needs a comparer.

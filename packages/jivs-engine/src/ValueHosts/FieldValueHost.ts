@@ -126,8 +126,8 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         if (this.tryParse(textValue, options))
             return; // determines the native value and redirects to setValues().
 
-        let oldValue: any = this.instanceState.textValue;
-        let changed = !deepEquals(textValue, oldValue);
+        const oldValue: any = this.instanceState.textValue;
+        const changed = !deepEquals(textValue, oldValue);
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -161,7 +161,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     {
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
-            let nativeValue = resolution.value; // may be undefined which indicates a parser error
+            const nativeValue = resolution.value; // may be undefined which indicates a parser error
             if (resolution.errorMessage)
                 options.conversionErrorTokenValue = resolution.errorMessage;
             self.logger.log(LoggingLevel.Debug, (options) => {
@@ -178,7 +178,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
 
             self.setValues(nativeValue, textValue, options);
         }
-        let self = this;
+        const self = this;
         // not supported in duringEdit mode as we are focused
         // on validating the input value alone
         if (options.duringEdit === true)
@@ -189,17 +189,17 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                     this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
                     return false;
                 }
-                let dtps = this.services.dataTypeParserService;
+                const dtps = this.services.dataTypeParserService;
                 if (dtps.isActive()) {
                     this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
                          
-                    let lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
-                    let cultureId = this.services.cultureService.activeCultureId;
-                    let parser = this.config.parserCreator?.(this);
+                    const lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
+                    const cultureId = this.services.cultureService.activeCultureId;
+                    const parser = this.config.parserCreator?.(this);
                     if (parser && parser.supports(lookupKey!, cultureId, textValue)) { // in this case, we have to let the parser function deal with
                         // any fallback behavior and we'll supply a null lookupKey.
                         this.logger.message(LoggingLevel.Info, () => 'Parsing');
-                        let result = parser.parse(textValue, lookupKey!, cultureId);
+                        const result = parser.parse(textValue, lookupKey!, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
@@ -207,18 +207,18 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                         return false;
                 
                     if (lookupKey) {
-                        let result = dtps.parse(textValue, lookupKey, cultureId);
+                        const result = dtps.parse(textValue, lookupKey, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
-                    let error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
+                    const error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
                     this.logger.error(error);
                     throw error;
                 }
             }
         }
         catch (e) {
-            let err = ensureError(e);            
+            const err = ensureError(e);            
             this.logger.error(err);
             throw err;
         }            
@@ -252,11 +252,11 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         options = options ?? {};
         if (!this.canChangeValueCheck(options))
             return;        
-        let oldNative: any = this.instanceState.value;
-        let nativeChanged = !deepEquals(nativeValue, oldNative);
-        let oldText = this.instanceState.textValue;
-        let textChanged = !deepEquals(textValue, oldText);
-        let changed = nativeChanged || textChanged;
+        const oldNative: any = this.instanceState.value;
+        const nativeChanged = !deepEquals(nativeValue, oldNative);
+        const oldText = this.instanceState.textValue;
+        const textChanged = !deepEquals(textValue, oldText);
+        const changed = nativeChanged || textChanged;
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -301,7 +301,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      */
     protected generateValidators(): Array<IValidator> {
 
-        let validators: Array<IValidator> = super.generateValidators();
+        const validators: Array<IValidator> = super.generateValidators();
         let needsDataTypeCheck = true;
         validators.forEach((validator) => {
             if (needsDataTypeCheck && validator.condition.category === ConditionCategory.DataTypeCheck)
@@ -315,12 +315,12 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IValidator>): boolean {
         let created = false;
         if (this.services.autoGenerateDataTypeCheckService.enabled) {
-            let lookupKey = this.getDataType();
+            const lookupKey = this.getDataType();
             if (lookupKey) {
-                let dtcConditions = this.services.autoGenerateDataTypeCheckService.autoGenerateDataTypeConditions(this, lookupKey);
+                const dtcConditions = this.services.autoGenerateDataTypeCheckService.autoGenerateDataTypeConditions(this, lookupKey);
                 dtcConditions.forEach((condition)=>{
-                    let config: ValidatorConfig = {
-                        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+                    const config: ValidatorConfig = {
+                         
                         conditionCreator: (requester) => condition,
                         conditionConfig: null,
                         errorMessage: null, // expecting TextLocalizationService to contribute based on ConditionType + DataTypeLookupKey
@@ -345,7 +345,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      */
     public get required(): boolean {
         // by design, Validators are sorted with Require first. So only check the first
-        let validators = this.validators();
+        const validators = this.validators();
 
         return validators != null && validators.length > 0 &&
             (validators[0].condition.category === ConditionCategory.Require);
@@ -400,7 +400,7 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
  */
 export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
 {
-    let test = source as IFieldValueHost;
+    const test = source as IFieldValueHost;
     return (test.getTextValue !== undefined &&
         test.setTextValue !== undefined &&
         test.setValues !== undefined &&
@@ -422,7 +422,7 @@ export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
     }
 
     public createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
-        let state = super.createInstanceState(config);
+        const state = super.createInstanceState(config);
 
         return {
             ...state,

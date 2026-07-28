@@ -24,12 +24,12 @@
  * 
  */
 
-import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 
 export class TimeSpan
 {
@@ -43,17 +43,17 @@ export class TimeSpan
     {
         return this._hours;
     }
-    private _hours: number;
+    private readonly _hours: number;
     public get minutes(): number
     {
         return this._minutes;
     }
-    private _minutes: number;
+    private readonly _minutes: number;
     public get seconds(): number
     {
         return this._seconds;
     }
-    private _seconds: number;
+    private readonly _seconds: number;
 
     public get totalSeconds(): number
     {
@@ -67,17 +67,17 @@ export class TimeSpan
     }
 }
 
-export const timeSpanLookupKey = "TimeSpan";
-export const timeSpanAsHoursLookupKey = "TimeSpanAsHours";
-export const timeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
+export const TimeSpanLookupKey = 'TimeSpan';
+export const TimeSpanAsHoursLookupKey = 'TimeSpanAsHours';
+export const TimeSpanAsSecondsLookupKey = 'TimeSpanAsSeconds';
 
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
-    public get dataTypeLookupKey(): string { return timeSpanLookupKey}
+    public get dataTypeLookupKey(): string { return TimeSpanLookupKey;}
     public supportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
-    public sampleValue() {
+    public sampleValue() : TimeSpan {
         return new TimeSpan(1, 30);
     }
 }
@@ -86,12 +86,12 @@ export class TimeSpanIdentifier implements IDataTypeIdentifier
 // being "TimeSpanAsHours" or "TimeSpanAsSeconds"
 export class TimeSpanConverter extends DataTypeConverterBase
 {
-    public convert(value: TimeSpan, sourceLookupKey: string | null, resultLookupKey: string) {
+    public convert(value: TimeSpan, sourceLookupKey: string | null, resultLookupKey: string) : number {
         switch (resultLookupKey)
         {
-            case timeSpanAsHoursLookupKey:
+            case TimeSpanAsHoursLookupKey:
                 return value.totalHours;
-            case timeSpanAsSecondsLookupKey:
+            case TimeSpanAsSecondsLookupKey:
                 return value.totalSeconds;
             default:
                 return value.totalHours;
@@ -100,11 +100,11 @@ export class TimeSpanConverter extends DataTypeConverterBase
     protected validValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
-    supportedResultLookupKeys(): string[] {
-        return [LookupKey.Number, timeSpanAsHoursLookupKey, timeSpanAsSecondsLookupKey];
+    public supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number, TimeSpanAsHoursLookupKey, TimeSpanAsSecondsLookupKey];
     }
-    supportedSourceLookupKeys(): (string | null)[] {
-        return [null, timeSpanLookupKey];
+    public supportedSourceLookupKeys(): (string | null)[] {
+        return [null, TimeSpanLookupKey];
     }  
 
 }

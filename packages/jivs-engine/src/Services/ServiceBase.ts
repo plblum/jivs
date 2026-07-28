@@ -2,7 +2,7 @@
  * @module Services/AbstractClasses/ServiceBase
  */
 
-import { IService } from "../Interfaces/Services";
+import { IService } from '../Interfaces/Services';
 
 export abstract class ServiceBase implements IService
 {

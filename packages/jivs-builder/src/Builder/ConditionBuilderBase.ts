@@ -121,14 +121,14 @@
  *  @module Builder/ConcreteClasses/ConditionBuilderBase
  */
 
-import { CountMatchesConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { ConditionWithChildrenBaseConfig } from "@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase";
-import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
-import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { assertFunction, assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
+import { CountMatchesConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
+import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
+import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     CompleteConfigBuilderHandler,
     ConditionBuilderHandler, ConditionWithChildrenBuilderHandler,
@@ -136,8 +136,8 @@ import {
     IConditionBuilderBase,
     IStartConditionBuilder,
     SetConfigOptions
-} from "../Interfaces/ChildBuilders";
-import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
+} from '../Interfaces/ChildBuilders';
+import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 
 /**
  * Base class for condition builders.
@@ -174,7 +174,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         super(services, parentBuilder, completed);
     }
 
-    override setConfig(config: TConfig, options?: TOptions): void {
+    public override setConfig(config: TConfig, options?: TOptions): void {
         if (config) {
             assertNotNull(config.conditionType, 'config.conditionType');
         }
@@ -190,11 +190,11 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
     public not(notCallback: ConditionBuilderHandler): void {
         assertNotNull(notCallback, 'notCallback');
         assertFunction(notCallback);
-        let notConfig: NotConditionConfig = {
+        const notConfig: NotConditionConfig = {
             conditionType: ConditionType.Not,
             childConditionConfig: null! // updated in the callback of the child builder
         };
-        let childBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
+        const childBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /* IConditionBuilderBase<TConfig> */) => {
                 notConfig.childConditionConfig = childConfig;
@@ -219,12 +219,12 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         assertNotNull(thenCallback, 'thenCallback');
         assertFunction(thenCallback);
 
-        let whenConditionConfig: WhenConditionConfig = {
+        const whenConditionConfig: WhenConditionConfig = {
             conditionType: ConditionType.When,
             whenToEnableConfig: null!,  // pending completion of whenBuilder
             thenConfig: null!   // pending completion of thenBuilder
         };        
-        let whenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
+        const whenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /*IConditionBuilderBase<TConfig> */) => {
                 whenConditionConfig.whenToEnableConfig = childConfig;
@@ -233,7 +233,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         whenToEnableCallback(whenBuilder);
         assertNotNull(whenConditionConfig.whenToEnableConfig, 'whenToEnableConfig');
 
-        let thenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
+        const thenBuilder = this.services.buildersFactory.createStartConditionWithOneChildBuilder(
             this as IBuilderConfigHost<object>,
             (childConfig: ConditionConfig, source: unknown /*IConditionBuilderBase<TConfig> */) => {
                 whenConditionConfig.thenConfig = childConfig;
@@ -260,19 +260,19 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
         // We'll actually use another builder to build the child configs
         // and deposit them into the parent builder's config.
 
-        let childBuilder = this.services.buildersFactory.createStartConditionWithChildrenBuilder(
+        const childBuilder = this.services.buildersFactory.createStartConditionWithChildrenBuilder(
             this as IBuilderConfigHost<object>,
             conditionType);
         // pass down inherited valueHostName from parent builder if available
-        if ((<IStartConditionBuilder>this.parentBuilder).valueHostName) {
-            childBuilder.fieldValue((<IStartConditionBuilder>this.parentBuilder).valueHostName!);
+        if ((this.parentBuilder as IStartConditionBuilder).valueHostName) {
+            childBuilder.fieldValue((this.parentBuilder as IStartConditionBuilder).valueHostName!);
         }
         // StartConditionWithChildrenBuilder is building the full config for the conditiontype.
         // it is gathering all child conditions into its own config via internal completed callbacks.
         // It does not fire any completed callbacks to the parent builder
         // leaving us to get the completed config directly from the child builder.
         childrenCallback(childBuilder);
-        let config = childBuilder.getConfig() as ConditionWithChildrenBaseConfig;
+        const config = childBuilder.getConfig() as ConditionWithChildrenBaseConfig;
         finishing?.(config);
         
         this.setConfig(config as unknown as TConfig,

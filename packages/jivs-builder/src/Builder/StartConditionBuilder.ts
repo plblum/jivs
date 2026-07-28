@@ -2,17 +2,17 @@
  *  @module Builder/ConcreteClasses/StartConditionBuilder
  */
 
-import { OneValueConditionBaseConfig } from "@plblum/jivs-engine/build/Conditions/OneValueConditionBase";
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import {
     CompleteConfigBuilderHandler,
     IBuilderConfigHost,
     IConditionBuilder, IStartConditionBuilder,
     SetConfigOptions
-} from "../Interfaces/ChildBuilders";
-import { ConditionBuilderBase } from "./ConditionBuilderBase";
+} from '../Interfaces/ChildBuilders';
+import { ConditionBuilderBase } from './ConditionBuilderBase';
 
 /**
  * The starting point for building a condition, where you identify the valueHostName for the condition
@@ -56,7 +56,7 @@ export class StartConditionBuilder
      * @param config
      */
     public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
-        let revise = !options || options.applyValueHostName != false;
+        const revise = !options || options.applyValueHostName != false;
         if (revise)
             this.reviseValueHostName(config);
         super.setConfig(config, options);
@@ -66,7 +66,7 @@ export class StartConditionBuilder
 
     protected reviseValueHostName(config: ConditionConfig): void {
         if (this._valueHostName) {
-            let oneValueConfig = config as OneValueConditionBaseConfig;
+            const oneValueConfig = config as OneValueConditionBaseConfig;
             if (oneValueConfig.valueHostName == null) // null/undefined
                 oneValueConfig.valueHostName = this._valueHostName;
         }
@@ -84,7 +84,7 @@ export class StartConditionBuilder
     public parentValue(): IConditionBuilder {
         this._valueHostName = undefined;
         return this.services.buildersFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
-            (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => this.setConfig(childCondition, { bubbleUp: true, applyValueHostName: false })
+            (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => { this.setConfig(childCondition, { bubbleUp: true, applyValueHostName: false }); }
         );
     }
 
@@ -100,9 +100,9 @@ export class StartConditionBuilder
     public fieldValue(valueHostName: string): IConditionBuilder {
         this._valueHostName = valueHostName;
         return this.services.buildersFactory.createConditionBuilder(this as IBuilderConfigHost<object>,
-            (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => this.setConfig(childCondition,
+            (childCondition: ConditionConfig, source: IBuilderConfigHost<ConditionConfig>) => { this.setConfig(childCondition,
                 { bubbleUp: true, applyValueHostName: true }
-            ) // sets childConfig.valueHostName and calls parent.completed
+            ); } // sets childConfig.valueHostName and calls parent.completed
         );
     }
 }

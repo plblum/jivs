@@ -36,11 +36,11 @@ export abstract class TextValueConditionBase<TConfig extends TextValueConditionB
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
         if (!toIFieldValueHost(valueHost)) {
-            let error = new CodingError('Invalid ValueHost used. Must be an FieldValueHost');
+            const error = new CodingError('Invalid ValueHost used. Must be an FieldValueHost');
             this.logger(validationManager.services).error(error);
         }
-        let iValueHost = valueHost as unknown as IFieldValueHost;
-        let textValue = iValueHost.getTextValue();
+        const iValueHost = valueHost as unknown as IFieldValueHost;
+        const textValue = iValueHost.getTextValue();
         if (textValue === undefined)
             return ConditionEvaluateResult.Undetermined;
 

@@ -17,23 +17,23 @@
 //      ValidationServices.fluentFactory.
 // 7. Write unit tests. See the companion file in the Tests folder.
 
-import { OneValueConditionBase, OneValueConditionBaseConfig } from "@plblum/jivs-engine/build/Conditions/OneValueConditionBase";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ConditionEvaluateResult, ConditionCategory } from "@plblum/jivs-engine/build/Interfaces/Conditions";
+import { OneValueConditionBase, OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ConditionEvaluateResult, ConditionCategory } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { ValidatorBuilder } from "@plblum/jivs-builder/build/Builder/ValidatorBuilder";
-import { ConditionBuilder } from "@plblum/jivs-builder/build/Builder/ConditionBuilder";
-import { FluentValidatorConfig } from "@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders";
+import { ValidatorBuilder } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
+import { ConditionBuilder } from '@plblum/jivs-builder/build/Builder/ConditionBuilder';
+import { FluentValidatorConfig } from '@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders';
 import {
     IBuilderConfigHost, CompleteConfigBuilderHandler,
     IValidatorBuilder, IConditionBuilder
-} from "@plblum/jivs-builder/build/Interfaces/ChildBuilders";
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
+} from '@plblum/jivs-builder/build/Interfaces/ChildBuilders';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
-export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
+export const EvenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
 
 export interface EvenNumberConditionConfig extends OneValueConditionBaseConfig
 {
@@ -84,7 +84,7 @@ export class EvenNumberConditionBuilder
     public evenNumber(): void {
         let config: Partial<EvenNumberConditionConfig> =
         {
-            conditionType: evenNumberConditionType
+            conditionType: EvenNumberConditionType
         };
         this.setConfig(config as any);
     }
@@ -110,6 +110,7 @@ export class EvenNumberValidatorBuilder
     public evenNumber(
         arg2?: FluentValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EvenNumberConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
@@ -121,7 +122,7 @@ export class EvenNumberValidatorBuilder
 
 // TypeScript Declaration Merging with ValidatorBuilder and ConditionBuilder
 // This gives you intellisense and strong typing without heavy lifting
-declare module "@plblum/jivs-builder/build/Interfaces/ChildBuilders"
+declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
 {
     export interface IValidatorBuilder {
         evenNumber(
@@ -131,7 +132,7 @@ declare module "@plblum/jivs-builder/build/Interfaces/ChildBuilders"
             validatorParameters: FluentValidatorConfig): IValidatorBuilder;
     }
 }
-declare module "@plblum/jivs-builder/build/Interfaces/ChildBuilders"
+declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
 {
     export interface IConditionBuilder {
         evenNumber(): void;
@@ -144,7 +145,7 @@ export function registerEvenNumberCondition(validationServices: IValidationServi
 {
     let cf = validationServices.conditionFactory as ConditionFactory;
     // or move just this line into registerDataTypeCheckGenerators() function     
-    cf.register<EvenNumberConditionConfig>(evenNumberConditionType, (config) => new EvenNumberCondition(config));
+    cf.register<EvenNumberConditionConfig>(EvenNumberConditionType, (config) => new EvenNumberCondition(config));
     
     // Adding custom conditions to ValidatorBuilder and ConditionBuilder
     let ff = validationServices.buildersFactory;

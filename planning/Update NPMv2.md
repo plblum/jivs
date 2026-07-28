@@ -198,18 +198,25 @@ Result: 526 transitive packages cleaned from node_modules (from the removed Angu
 
 ---
 
-## Phase 3: TypeScript upgrade
+## Phase 3: TypeScript patch update
 
-TypeScript 5.5 is the current baseline. Upgrade to the latest stable 5.x release. Do not jump to a TypeScript version that Angular 18's `@angular/compiler-cli` does not support — check the [Angular version compatibility table](https://angular.dev/reference/releases) before committing to a version.
+TypeScript 5.5 is the current baseline. A meaningful version bump (5.6+) is blocked by Angular 18's `@angular/compiler-cli`, which caps TypeScript at ~5.5. Because TypeScript is installed at the root and hoisted to a single `node_modules`, all packages — including jivs-angular's ng-packagr build — share the same TypeScript binary. Installing a newer TypeScript for only the non-Angular packages would require creating a version conflict and a local `node_modules` in jivs-angular, which is fragile and not worth it here.
+
+The scope of this phase is limited to applying the latest 5.5.x patch release:
 
 ```bash
-npm install --save-dev typescript@latest --workspace packages/jivs-engine
-# Repeat for jivs-builder, jivs-configanalysis once jivs-angular is confirmed working
+npm update typescript
 ```
 
-Since `tsconfig_common.json` is shared, a single TypeScript upgrade affects all non-Angular packages simultaneously. Angular's compiler-cli imposes a TypeScript ceiling; confirm the chosen version is within that ceiling.
+The existing `~5.5.0` constraint in the root `package.json` already restricts this to patch-level updates within 5.5.x, so no version specifier change is needed. Confirm the installed version afterward:
 
-### Validation for Phase 2
+```bash
+npm ls typescript
+```
+
+A full TypeScript version upgrade (5.6+) is deferred to the Angular upgrade project described at the end of this document. Each Angular major step will include a coordinated TypeScript bump within that Angular major's supported range.
+
+### Validation for Phase 3
 
 ```bash
 # All packages compile
@@ -248,12 +255,12 @@ The `typescript-eslint` package at the root (`^7.3.1`) vs `@typescript-eslint/es
 ### Suggested upgrade targets
 
 ```bash
-npm install --save-dev eslint@latest typescript-eslint@latest --save-exact-compatible
+npm install --save-dev eslint@latest typescript-eslint@latest
 ```
 
 Do not attempt ESLint config migration and Angular build fixes at the same time. ESLint changes only need to green-light the lint pass, not affect tsc or Jest.
 
-### Validation for Phase 3
+### Validation for Phase 4
 
 ```bash
 npx eslint packages/jivs-engine/src --ext .ts
@@ -293,7 +300,7 @@ npm install --save-dev jest-preset-angular@latest --workspace packages/jivs-angu
 
 Check the `jest-preset-angular` changelog to confirm it supports the chosen Jest version.
 
-### Validation for Phase 4
+### Validation for Phase 5
 
 ```bash
 # Non-Angular tests
@@ -364,6 +371,33 @@ This is a housekeeping step with no functional impact on the upgrade goal. Do it
 
 ---
 
-## Angular version ceiling note
+## Angular version ceiling note and future upgrade project
 
-Angular 18 is the current target and is not being upgraded as part of this work. If a specific Angular 18 security patch or bug-fix release becomes available (e.g. 18.2.x → 18.3.x), apply it as a patch-level update within Phase 1 validation. A full Angular major upgrade (19+) is a separate project with its own migration steps and should not be mixed into this work.
+**Angular 18 is end-of-life.** As of mid-2026, only Angular v20 (LTS), v21 (LTS), and v22 (Active) receive security patches and bug fixes. Angular 18 and 19 are no longer supported. Staying on Angular 18 means the Angular packages themselves receive no fixes.
+
+This also constrains TypeScript: Angular 18 caps TypeScript at ~5.5, which blocks Phase 3 from being a meaningful upgrade. A real TypeScript jump (5.6+) requires upgrading Angular first.
+
+Angular upgrade is a separate follow-on project, to begin after this document's phases are complete and committed. It should not be mixed into the current work.
+
+### Angular upgrade path
+
+Angular requires stepping one major at a time. Each step must be committed before the next:
+
+```
+Step 1: Angular 19  (TypeScript ~5.5–5.7, ng-packagr 19)
+Step 2: Angular 20  (TypeScript ~5.7–5.8, ng-packagr 20)  ← minimum to reach LTS
+Step 3: Angular 21  (TypeScript ~5.8+,    ng-packagr 21)
+Step 4: Angular 22  (TypeScript ~5.8+,    ng-packagr 22)  ← current active
+```
+
+For each step:
+1. Update every `@angular/*` devDependency in `jivs-angular/package.json` to the target major.
+2. Update `ng-packagr` to match the Angular major.
+3. Update `typescript` at the root to a version within that Angular major's supported range.
+4. Build the library: `npm run compile --workspace packages/jivs-angular`
+5. Run all tests.
+6. Commit before the next step.
+
+Angular 20 is the minimum viable target (oldest LTS). Angular 22 gives the most runway before the next EOL cycle.
+
+This repo does not use Angular CLI, so `ng update` does not apply. Each step is a manual coordinated install.

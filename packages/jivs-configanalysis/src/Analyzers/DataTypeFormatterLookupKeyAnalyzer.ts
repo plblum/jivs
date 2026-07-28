@@ -2,13 +2,13 @@
  * @module Analyzers/Classes/LookupKeys
  */
 
-import { IDataTypeFormatter } from "@plblum/jivs-engine/build/Interfaces/DataTypeFormatters";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ensureError, CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
-import { ServiceWithLookupKeyCAResultBase, FormatterServiceCAResult, CAFeature, FormattersByCultureCAResult } from "../Types/Results";
-import { AnalysisArgs } from "../Types/ConfigAnalysis";
+import { IDataTypeFormatter } from '@plblum/jivs-engine/build/Interfaces/DataTypeFormatters';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ensureError, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { MultipleClassesPerLookupKeyAnalyzer } from './LookupKeyAnalyzerClasses';
+import { ServiceWithLookupKeyCAResultBase, FormatterServiceCAResult, CAFeature, FormattersByCultureCAResult } from '../Types/Results';
+import { AnalysisArgs } from '../Types/ConfigAnalysis';
 
 /**
  * Handles IDataTypeFormatter objects through the DataTypeFormatterService.
@@ -59,16 +59,16 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
 
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
-        let info: FormatterServiceCAResult = {
+        const info: FormatterServiceCAResult = {
             feature: CAFeature.formatter,
             results: []
         };
-        let lookupKey = key ?? container.dataType;
+        const lookupKey = key ?? container.dataType;
         if (lookupKey) {
             info.tryFallback = true;
             this.results.cultureIds.forEach(cultureId => {
                 try {
-                    let analysis = this.analyzeForCulture(lookupKey, cultureId);
+                    const analysis = this.analyzeForCulture(lookupKey, cultureId);
                     info.results.push(analysis);
                     if (analysis.classFound)
                         info.tryFallback = false;
@@ -78,11 +78,11 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
                     // istanbul ignore next
                     info.tryFallback = false;
                     // istanbul ignore next
-                    let errorInfo: FormattersByCultureCAResult = {
+                    const errorInfo: FormattersByCultureCAResult = {
                         feature: CAFeature.formattersByCulture,
                         requestedCultureId: cultureId,
                         notFound: true
-                    }
+                    };
 // istanbul ignore next
                     info.results.push(errorInfo);
 // istanbul ignore next                    
@@ -115,7 +115,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      * @returns 
      */
     public analyzeForCulture(lookupKey: string, startingCultureId: string): FormattersByCultureCAResult {
-        let info: FormattersByCultureCAResult = {
+        const info: FormattersByCultureCAResult = {
             feature: CAFeature.formattersByCulture,
             requestedCultureId: startingCultureId
         };
@@ -127,12 +127,12 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
 
         let cultureId: string | null = startingCultureId;
         while (cultureId) {
-            let cc = this.services.cultureService.find(cultureId);
+            const cc = this.services.cultureService.find(cultureId);
             /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
             if (!cc)
                 throw new CodingError(`Must add CultureID ${cultureId} in to CultureServices.`);
 
-            let dtlf = this.services.dataTypeFormatterService.find(lookupKey, cultureId);
+            const dtlf = this.services.dataTypeFormatterService.find(lookupKey, cultureId);
             if (dtlf) {
                 // found it.
                 info.classFound = dtlf.constructor.name;

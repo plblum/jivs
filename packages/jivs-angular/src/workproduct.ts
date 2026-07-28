@@ -65,7 +65,7 @@ export interface IRendererAction {
 
 export interface IRendererActionOptions {
     enabledCssClass?: string | null;
-    disabledCssClass?: string | null
+    disabledCssClass?: string | null;
 }
 
 /**
@@ -265,7 +265,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
     protected get inputEventEnabled(): boolean {
         return this._inputEventEnabled;
     }
-    private _inputEventEnabled: boolean;
+    private readonly _inputEventEnabled: boolean;
 
     /**
      * The input event fires as fast as the user types. When this is assigned to a number,
@@ -275,7 +275,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
     protected get inputEventDebounceTime(): number {
         return this._inputEventDebounceTime;
     }
-    private _inputEventDebounceTime: number;
+    private readonly _inputEventDebounceTime: number;
 
     /**
      * Sets up validation-related event handlers on the target element. 
@@ -313,7 +313,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
         valueHostName: string,
         fivaseForm: IFivaseForm
     ): void {
-        let self = this;
+        const self = this;
         const tagName = element.tagName.toLowerCase();
 
         switch (tagName) {
@@ -366,7 +366,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
                         Array.from(files).map(file => ({
                             name: file.name,
                             size: file.size,
-                            type: file.type,
+                            type: file.type
                         }))
                     )
                     : ''; // Send empty string if no files are selected
@@ -459,7 +459,7 @@ export abstract class RendererActionBase implements IRendererAction {
     protected get enabledCssClass(): string | null {
         return this._enabledCssClass;
     }
-    private _enabledCssClass: string | null;
+    private readonly _enabledCssClass: string | null;
 
     /**
      * Default CSS class applied when in disabled state.
@@ -470,7 +470,7 @@ export abstract class RendererActionBase implements IRendererAction {
     protected get disabledCssClass(): string | null {
         return this._disabledCssClass;
     }
-    private _disabledCssClass: string | null;
+    private readonly _disabledCssClass: string | null;
 
     /**
      * Optional parameter to hide the element when two states are present.
@@ -483,7 +483,7 @@ export abstract class RendererActionBase implements IRendererAction {
     protected get hideElementWhenTwoStateIs(): boolean | null {
         return this._hideElementWhenTwoStateIs;
     }
-    private _hideElementWhenTwoStateIs: boolean | null;
+    private readonly _hideElementWhenTwoStateIs: boolean | null;
 
     /**
      * Applies validation-related render logic to the target element.
@@ -507,7 +507,7 @@ export abstract class RendererActionBase implements IRendererAction {
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions
     ): void {
-        let twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseForm, options);
+        const twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseForm, options);
         if (twoStates !== null) {
             this.twoStateRender(twoStates, element, renderer, valueHostName, validationState, fivaseForm, options);
             this.twoStateHideElement(twoStates, element, renderer);
@@ -534,9 +534,9 @@ export abstract class RendererActionBase implements IRendererAction {
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions
-    ) {
-        let enabledCssClass = options?.enabledCssClass ?? this.enabledCssClass;
-        let disabledCssClass = options?.disabledCssClass ?? this.disabledCssClass;
+    ): void {
+        const enabledCssClass = options?.enabledCssClass ?? this.enabledCssClass;
+        const disabledCssClass = options?.disabledCssClass ?? this.disabledCssClass;
 
         if (enabledState) {
             changeCssClasses(enabledCssClass, disabledCssClass, element, renderer);
@@ -555,7 +555,7 @@ export abstract class RendererActionBase implements IRendererAction {
      */
     protected twoStateHideElement(enabledState: boolean, element: HTMLElement, renderer: Renderer2): void {
         if (this.hideElementWhenTwoStateIs !== null) {
-            let enabledStateForHide = this.hideElementWhenTwoStateIs;
+            const enabledStateForHide = this.hideElementWhenTwoStateIs;
             if (enabledState === enabledStateForHide) {
                 renderer.setStyle(element, 'display', 'none');
                 renderer.setAttribute(element, 'hidden', 'true');
@@ -585,7 +585,7 @@ export abstract class RendererActionBase implements IRendererAction {
      */
     protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseFormat: IFivaseForm): void {
         renderer.setProperty(element, 'innerHTML', issueFound.errorMessage);    // NOTE: errorMessage is already in HTML format
-        let severity: ValidationSeverity = issueFound.severity ?? ValidationSeverity.Error;
+        const severity: ValidationSeverity = issueFound.severity ?? ValidationSeverity.Error;
         renderer.setAttribute(element, 'data-severity', ValidationSeverity[severity].toLowerCase());
         //!!!PENDING: ARIA attributes
     }
@@ -719,7 +719,7 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions): boolean | null {
-        let vh = fivaseForm.validationManager.getFieldValueHost(valueHostName);
+        const vh = fivaseForm.validationManager.getFieldValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
@@ -788,7 +788,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     protected get outerTag(): string | null {
         return this._outerTag;
     }
-    private _outerTag: string | null;
+    private readonly _outerTag: string | null;
 
     /**
      * Provides a class for the element that surrounds the list of error messages.
@@ -797,7 +797,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     protected get outerTagCssClass(): string | null {
         return this._outerTagCssClass;
     }
-    private _outerTagCssClass: string | null;
+    private readonly _outerTagCssClass: string | null;
 
     /**
      * Provides a class for the inner tag that contains each error message in the list.
@@ -806,7 +806,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     protected get innerTagCssClass(): string | null {
         return this._innerTagCssClass;
     }
-    private _innerTagCssClass: string | null;
+    private readonly _innerTagCssClass: string | null;
 
     /**
      * Determines the inner tag for each error message in the list.
@@ -815,7 +815,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     protected get innerTag(): string {
         return this._innerTag;
     }
-    private _innerTag: string;
+    private readonly _innerTag: string;
 
 
     /**
@@ -825,7 +825,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     protected get setFocusToInput(): boolean {
         return this._setFocusToInput;
     }
-    private _setFocusToInput: boolean = false;    
+    private readonly _setFocusToInput: boolean = false;    
 
     public render(
         element: HTMLElement,
@@ -838,7 +838,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
         // Clear existing content inside the element
         renderer.setProperty(element, 'innerHTML', '');
 
-        let issuesFound = validationState.issuesFound;
+        const issuesFound = validationState.issuesFound;
         if (issuesFound && issuesFound.length > 0) {
             if (this.outerTag === null) {
                 // No outer tag, so just display the first error message
@@ -923,7 +923,7 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
      *
      * @param useFocusInOut - Determines whether to use focusin/focusout (which bubble) or focus/blur (which do not bubble).
      */
-    constructor(private useFocusInOut: boolean = false) { }
+    constructor(private readonly useFocusInOut: boolean = false) { }
 
     /**
      * Sets up focus-related event handlers on the target element.
@@ -934,14 +934,14 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
      * @param valueHostName - The name of the value host associated with this element.
      * @param fivaseForm - The FivaseForm instance to manage interactions.
      */
-    listenForFocusChanges(
+    public listenForFocusChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
         fivaseForm: IFivaseForm
     ): void {
-        this.focusHandler = () => fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_GAINED);
-        this.blurHandler = () => fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_LOST);
+        this.focusHandler = (): void => { fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_GAINED); };
+        this.blurHandler = (): void => { fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_LOST); };
 
         if (this.useFocusInOut) {
             element.addEventListener('focusin', this.focusHandler);
@@ -959,7 +959,7 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
      * @param element - The target DOM element.
      * @param renderer - The Angular Renderer2 service used to remove event listeners.
      */
-    cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void {
+    public cleanupEventHandlers(element: HTMLElement, renderer: Renderer2): void {
         if (this.useFocusInOut) {
             element.removeEventListener('focusin', this.focusHandler);
             element.removeEventListener('focusout', this.blurHandler);
@@ -973,14 +973,14 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
 /**
  * Used by FivaseForm's subscribeToValueHostMessaging system as available commands.
  */
-export const COMMAND_FOCUS_GAINED = 'focusGained';
-export const COMMAND_FOCUS_LOST = 'focusLost';
+export const COMMAND_FOCUS_GAINED = 'focusGained';  // eslint-disable-line @typescript-eslint/naming-convention
+export const COMMAND_FOCUS_LOST = 'focusLost';  // eslint-disable-line @typescript-eslint/naming-convention
 /**
  * Inputs should listen to this command to set focus on themselves.
  * It is invoked by some ErrorMessagesRenderers that respond to a click on a specific
  * error message by setting focus on the input.
  */
-export const COMMAND_SETFOCUS = 'setFocus';
+export const COMMAND_SETFOCUS = 'setFocus';  // eslint-disable-line @typescript-eslint/naming-convention
 
 /**
  * The `PopupAction` class manages the display of popup elements within a Fivase directive.
@@ -999,9 +999,9 @@ export class PopupAction implements IPopupAction {
      * @param useDisplayNone - Indicates whether to use `display: none` for hiding the element. Default is `true`.
      */
     constructor(
-        private showCssClass: string = 'popup-show',
-        private hideCssClass: string = 'popup-hide',
-        private useDisplayNone: boolean = true
+        private readonly showCssClass: string = 'popup-show',
+        private readonly hideCssClass: string = 'popup-hide',
+        private readonly useDisplayNone: boolean = true
     ) { }
 
     /**
@@ -1043,11 +1043,13 @@ export class PopupAction implements IPopupAction {
     }
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * These are used by the Fivase Directives to
  * associate themselves with the appropriate ActionFactoryBase implementations.
  */
-export const DIRECTIVE_VALIDATE_INPUT = 'fivase-ValidateInput';
+
+export const DIRECTIVE_VALIDATE_INPUT = 'fivase-ValidateInput'; 
 export const DIRECTIVE_VALIDATION_ERRORS = 'fivase-ErrorMessages';
 export const DIRECTIVE_SHOW_WHEN_ISSUES_FOUND = 'fivase-ShowWhenIssuesFound';
 export const DIRECTIVE_SHOW_WHEN_CORRECTED = 'fivase-ShowWhenCorrected';
@@ -1058,7 +1060,7 @@ export const ACTION_RENDERER = 'Renderer';
 export const ACTION_VALUE_CHANGE_LISTENER = 'ValueChangeListener';
 export const ACTION_FOCUS_LISTENER = 'FocusListener';
 export const ACTION_POPUP = 'Popup';
-
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * Interface for ActionFactoryBase without generics.
@@ -1165,7 +1167,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
     public get directiveName(): string {
         return this._directiveName;
     }
-    private _directiveName: string;
+    private readonly _directiveName: string;
 
     /**
      * The name of the Directive Action associated with this factory.
@@ -1191,7 +1193,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
     public get defaultFallback(): T {
         return this._defaultFallback;
     }
-    private _defaultFallback: T;
+    private readonly _defaultFallback: T;
 
     protected ensureValidInstance(instance: T): void {
         if (!this.isValidInstance(instance)) {
@@ -1204,7 +1206,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      * Contains instances that were registered by name.
      * Names are case insensitive and stored here in lowercase.
      */
-    private registryByName: Map<string, T> = new Map();
+    private readonly _registryByName: Map<string, T> = new Map();
 
     /**
      * Registers an instance of a directive action associated with a unique 
@@ -1218,7 +1220,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      */
     public register(name: string, instance: T): void {
         this.ensureValidInstance(instance);
-        this.registryByName.set(name.toLowerCase(), instance);
+        this._registryByName.set(name.toLowerCase(), instance);
     }
 
     /**
@@ -1232,13 +1234,13 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      */
     public resolve(element: HTMLElement, name: string | null | undefined): T {
         if (name) {
-            let instance = this.registryByName.get(name.toLowerCase());
+            const instance = this._registryByName.get(name.toLowerCase());
             if (instance)
                 return instance;
             throw new Error(`No instance found for name: ${name} in the factory ${this.constructor.name}.`);
 
         }
-        let componentInstance = this.getFromComponent(element);
+        const componentInstance = this.getFromComponent(element);
         if (componentInstance) {
             return componentInstance;
         }
@@ -1430,7 +1432,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input() valueHostName: string | undefined;
+    @Input() public valueHostName: string | undefined;
 
     /**
      * Input to support finding a specific host element for the directive action.
@@ -1438,18 +1440,18 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
      * - A string can be a CSS selector or a template reference.
      * - An object can specify either a selector or a template reference.
      */
-    @Input('fivase-target') target: string | { selector?: string } | undefined;
+    @Input('fivase-target') public target: string | { selector?: string } | undefined;
 
     constructor(
         protected el: ElementRef,
         protected renderer: Renderer2,
         protected fivaseServices: FivaseServices,
         protected fivaseForm: IFivaseForm,
-        @Optional() @SkipSelf() private valueHostNameDirective: ValueHostNameDirective,
+        @Optional() @SkipSelf() private readonly valueHostNameDirective: ValueHostNameDirective
     ) {
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this.setupDirective(this.resolveValueHostName());
         this.initializeAriaManager(); // Ensure Aria Manager is initialized after the directive setup
 
@@ -1529,7 +1531,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
 
     }
 
-    ngOnDestroy(): void {
+    public ngOnDestroy(): void {
         // not required but good form
         (this.el as any) = undefined;
         (this.fivaseServices as any) = undefined;
@@ -1576,9 +1578,9 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * Select a custom implementation of `IRendererAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-render') renderFactoryName: string | undefined;
+    @Input('fivase-render') public renderFactoryName: string | undefined;
 
-    private subscription: Subscription | null = null;
+    private _subscription: Subscription | null = null;
     protected directiveRenderer: IRendererAction | null = null;
 
     constructor(
@@ -1622,7 +1624,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * @param valueHostName 
      */
     private setupSubscription(valueHostName: string): void {
-        this.subscription = this.fivaseForm.subscribeToValueHostValidationState(valueHostName, (validationState) => {
+        this._subscription = this.fivaseForm.subscribeToValueHostValidationState(valueHostName, (validationState) => {
             this.onValueHostValidationStateChanged(this.getTargetElement(), validationState);
         });
     }
@@ -1631,7 +1633,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * Ensures the UI conforms with the current validation state
      */
     protected setupInitialRender(valueHostName: string): void {
-        let vh = this.fivaseForm.validationManager.getValidatorsValueHost(valueHostName)!;
+        const vh = this.fivaseForm.validationManager.getValidatorsValueHost(valueHostName)!;
         if (!vh)
             throw new Error(`Unknown valueHostName "${valueHostName}"`);
         this.onValueHostValidationStateChanged(this.getTargetElement(), vh.currentValidationState);
@@ -1670,7 +1672,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
             this.renderer.removeAttribute(targetElement, 'data-severity');
         } else {
             // find the highest severity and set it as data-severity
-            let highest = highestSeverity(issuesFound)!;
+            const highest = highestSeverity(issuesFound)!;
             this.renderer.setAttribute(targetElement, 'data-severity', ValidationSeverity[highest].toLowerCase());
         }
     }
@@ -1690,9 +1692,9 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     public ngOnDestroy(): void {
         this.resolveRendererFactory.unavailable(this.getFactoryElement());
 
-        if (this.subscription) {
-            this.fivaseForm.unsubscribeFromValueHostValidationState(this.subscription);
-            (this.subscription as any) = undefined;
+        if (this._subscription) {
+            this.fivaseForm.unsubscribeFromValueHostValidationState(this._subscription);
+            (this._subscription as any) = undefined;
         }
         // not required but good form
         (this.directiveRenderer as any) = undefined;
@@ -1750,34 +1752,34 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * leave this property undefined.
      */
 
-    @Input('validate') declare valueHostName: string | undefined;
+    @Input('validate') public declare valueHostName: string | undefined;
 
     /**
      * CSS class applied when validation fails (invalid state).
      * Passed along to the IRendererAction implementation.
      */
-    @Input('invalid-class') invalidCssClass: string = 'input-invalid';
+    @Input('invalid-class') public invalidCssClass: string = 'input-invalid';
 
     /**
      * CSS class applied when validation succeeds (valid state).
      * Passed along to the IRendererAction implementation.
      */
-    @Input('valid-class') validCssClass: string = 'input-valid';
+    @Input('valid-class') public validCssClass: string = 'input-valid';
 
     /**
      * Select a custom implementation of `IValueChangeListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-valuechangelistener') eventHandlerName: string | undefined;
+    @Input('fivase-valuechangelistener') public eventHandlerName: string | undefined;
 
     /**
      * Select a custom implementation of `IFocusListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-focuslistener') focusHandlerName: string | undefined;
+    @Input('fivase-focuslistener') public focusHandlerName: string | undefined;
 
 
-    private focusListener: IFocusListenerAction | null = null;
+    private _focusListener: IFocusListenerAction | null = null;
 
     constructor(
         el: ElementRef,
@@ -1810,7 +1812,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      */
     protected setupDirective(valueHostName: string): void {
         // Setup Value Change Listener
-        let eventHandler = this.resolveEventHandlerFactory
+        const eventHandler = this.resolveEventHandlerFactory
             .resolve(this.getFactoryElement(), this.eventHandlerName);
 
         if (!eventHandler)
@@ -1830,13 +1832,13 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         );
 
         // Setup Focus Listener
-        this.focusListener = this.resolveFocusListenerFactory
+        this._focusListener = this.resolveFocusListenerFactory
             .resolve(this.getFactoryElement(), this.focusHandlerName);
 
-        if (!this.focusListener) {
+        if (!this._focusListener) {
             console.warn('No focus listener was created for the directive. Proceeding without focus handling.');
         } else {
-            this.focusListener.listenForFocusChanges(
+            this._focusListener.listenForFocusChanges(
                 this.getTargetElement(),
                 this.renderer,
                 valueHostName,
@@ -1914,8 +1916,8 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         this.resolveEventHandlerFactory.unavailable(this.getFactoryElement());
 
         // Clean up Focus Listener
-        if (this.focusListener) {
-            this.focusListener.cleanupEventHandlers(this.getTargetElement(), this.renderer);
+        if (this._focusListener) {
+            this._focusListener.cleanupEventHandlers(this.getTargetElement(), this.renderer);
         }
         this.resolveFocusListenerFactory.unavailable(this.getFactoryElement());
 
@@ -1965,7 +1967,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
  * ```
  */
 @Directive({
-    selector: '[validationErrors]',
+    selector: '[validationErrors]'
 })
 export class ValidationErrorsDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
@@ -1981,19 +1983,19 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('validationErrors') declare valueHostName: string | undefined;
+    @Input('validationErrors') public declare valueHostName: string | undefined;
     /**
      * CSS class applied when validation fails (invalid state).
      * Passed along to the IRendererAction implementation.
   
      */
-    @Input('invalid-class') invalidCssClass: string = 'error-invalid';
+    @Input('invalid-class') public invalidCssClass: string = 'error-invalid';
 
     /**
      * CSS class applied when validation succeeds (valid state).
      * Passed along to the IRendererAction implementation.
      */
-    @Input('valid-class') validCssClass: string = 'error-valid';
+    @Input('valid-class') public validCssClass: string = 'error-valid';
 
     /**
      * Supplies valid and invalid CSS classes to the render.
@@ -2084,7 +2086,7 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
      * This allows the directive to either take a value directly via input or 
      * inherit it from a parent `ValueHostNameDirective`.
      */
-    @Input('showWhenCorrected') declare valueHostName: string | undefined;
+    @Input('showWhenCorrected') public declare valueHostName: string | undefined;
 }
 
 /**
@@ -2131,7 +2133,7 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('showWhenRequired') declare valueHostName: string | undefined;
+    @Input('showWhenRequired') public declare valueHostName: string | undefined;
 }
 
 /**
@@ -2163,7 +2165,7 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
 @Directive({
     selector: '[showWhenIssuesFound]'
 })
-export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
+export class ShowWhenIssuesFoundDirective extends RenderingDirectiveBase {
     protected get directiveNameInFactory(): string {
         return DIRECTIVE_SHOW_WHEN_ISSUES_FOUND;
     }
@@ -2177,7 +2179,7 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('showWhenIssuesFound') declare valueHostName: string | undefined;
+    @Input('showWhenIssuesFound') public declare valueHostName: string | undefined;
 }
 
 
@@ -2240,8 +2242,8 @@ export class ShowWhenIssuesFounddDirective extends RenderingDirectiveBase {
     selector: '[popup]' // The directive name remains [popup]
 })
 export class PopupDirective extends FivaseDirectiveBase {
-    private subscription: Subscription | null = null;
-    private popupAction: IPopupAction | null = null;
+    private _subscription: Subscription | null = null;
+    private _popupAction: IPopupAction | null = null;
 
     /**
      * The internal property that will be used in the directive to manage
@@ -2252,13 +2254,13 @@ export class PopupDirective extends FivaseDirectiveBase {
      * inherit it from a containing `ValueHostNameDirective`. If inheriting,
      * leave this property undefined.
      */
-    @Input('popup') declare valueHostName: string | undefined;
+    @Input('popup') public declare valueHostName: string | undefined;
     
     /**
      * Input to specify a custom factory name for IPopupAction.
      * This allows for a custom implementation of the popup behavior.
      */
-    @Input('fivase-popupAction') popupFactoryName: string | undefined; // Changed input name to 'fivase-popupAction'
+    @Input('fivase-popupAction') public popupFactoryName: string | undefined; // Changed input name to 'fivase-popupAction'
 
     constructor(
         el: ElementRef,
@@ -2278,25 +2280,25 @@ export class PopupDirective extends FivaseDirectiveBase {
      */
     protected setupDirective(valueHostName: string): void {
         // Resolve the popup action from the factory
-        this.popupAction = this.resolvePopupActionFactory().resolve(
+        this._popupAction = this.resolvePopupActionFactory().resolve(
             this.getFactoryElement(), this.popupFactoryName);
 
         // Check if popupAction is resolved, throw an error if not
-        if (!this.popupAction) {
+        if (!this._popupAction) {
             throw new Error('PopupAction could not be resolved for PopupDirective. Ensure a valid PopupAction is provided in the factory.');
         }
 
         // Subscribe to FivaseForm messages for this valueHostName
-        this.subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
+        this._subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
             switch (message) {
                 case 'focusGained':
                 case 'show':
-                    this.popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this._popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
                     this.updateAriaHidden(false);  
                     break;
                 case 'focusLost':
                 case 'hide':
-                    this.popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this._popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
                     this.updateAriaHidden(true); 
                     break;
                 default:
@@ -2340,14 +2342,14 @@ export class PopupDirective extends FivaseDirectiveBase {
      * removing the popup action.
      */
     public ngOnDestroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
+        if (this._subscription) {
+            this._subscription.unsubscribe();
+            this._subscription = null;
         }
 
-        if (this.popupAction) {
+        if (this._popupAction) {
             this.resolvePopupActionFactory().unavailable(this.getFactoryElement());
-            this.popupAction = null;
+            this._popupAction = null;
         }
 
         super.ngOnDestroy();
@@ -2383,32 +2385,32 @@ export class ContainsInvalidChildrenDirective {
      * An empty string means no class will be applied.
      * Defaults to 'invalidChildren'.
      */
-    @Input('invalid-class') invalidCssClass: string = 'invalidChildren';
+    @Input('invalid-class') public invalidCssClass: string = 'invalidChildren';
 
     /**
      * CSS class applied when all child elements are valid.
      * An empty string means no class will be applied.
      */
-    @Input('valid-class') validCssClass: string = '';
+    @Input('valid-class') public validCssClass: string = '';
 
-    private subscription: Subscription | null = null;
+    private _subscription: Subscription | null = null;
 
     constructor(
-        private el: ElementRef,
-        private renderer: Renderer2,
-        @Inject(FIVASE_FORM_TOKEN) private fivaseForm: IFivaseForm
+        private readonly el: ElementRef,
+        private readonly renderer: Renderer2,
+        @Inject(FIVASE_FORM_TOKEN) private readonly fivaseForm: IFivaseForm
     ) { }
 
     public ngOnInit(): void {
-        this.subscription = this.fivaseForm.subscribeToValidationState(() => {
+        this._subscription = this.fivaseForm.subscribeToValidationState(() => {
             this.checkChildValidation();
         });
     }
 
     public ngOnDestroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
+        if (this._subscription) {
+            this._subscription.unsubscribe();
+            this._subscription = null;
         }
     }
 
@@ -2417,7 +2419,7 @@ export class ContainsInvalidChildrenDirective {
      * Ingnores those that are hidden.
      */
     private checkChildValidation(): void {
-        let elements = (this.el.nativeElement as HTMLElement).querySelectorAll('[data-invalid="true"]:not([hidden])');
+        const elements = (this.el.nativeElement as HTMLElement).querySelectorAll('[data-invalid="true"]:not([hidden])');
         // remove hidden elements that were not using 'hidden' attribute.
         const invalidElements = Array.from(elements)
             .filter((el: Element) => (el as HTMLElement).offsetParent !== null);
@@ -2463,7 +2465,7 @@ export class ValueHostNameDirective {
      * Any directive that depends on valueHostName (e.g., ChildDirective) can inject it 
      * automatically, as this directive is registered in the element's injector.
      */
-    @Input('valueHostName') valueHostName!: string;
+    @Input('valueHostName') public valueHostName!: string;
 
     constructor() {
         // Optional: Initialization logic, if needed
@@ -2510,7 +2512,7 @@ export interface IFivaseForm {
  * providers: [{ provide: FIVASE_FORM_TOKEN, useValue: myFivaseFormInstance }]
  * ```
  */
-export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');
+export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');    // eslint-disable-line @typescript-eslint/naming-convention
 
 
 /**
@@ -2528,10 +2530,12 @@ export class FivaseForm implements IFivaseForm {
         this._services = services;
         this._validationManager = new ValidationManager(config);
 
-        config.onValidationStateChanged = (validationManager: IValidationManager, validationState: ValidationState) => {
+        config.onValidationStateChanged =
+            (validationManager: IValidationManager, validationState: ValidationState) : void => {
             this._validationStateSubject.next(validationState);
         };
-        config.onValueHostValidationStateChanged = (valueHost: IValueHost, validationState: ValueHostValidationState) => {
+        config.onValueHostValidationStateChanged =
+            (valueHost: IValueHost, validationState: ValueHostValidationState) : void => {
             this._valueHostValidationStateSubject.next({ valueHostName: valueHost.getName(), validationState });
         };
     }
@@ -2542,7 +2546,7 @@ export class FivaseForm implements IFivaseForm {
     public get services(): IFivaseServices {
         return this._services;
     }
-    private _services: IFivaseServices;
+    private readonly _services: IFivaseServices;
 
 
     /**
@@ -2553,7 +2557,7 @@ export class FivaseForm implements IFivaseForm {
     public get validationManager(): IValidationManager {
         return this._validationManager;
     }
-    private _validationManager: IValidationManager;
+    private readonly _validationManager: IValidationManager;
 
     /**
      * Execute validation across all ValueHosts. Same as calling `validationManager.validate(options)`.
@@ -2600,7 +2604,7 @@ export class FivaseForm implements IFivaseForm {
     /**
      * ValidationManager level validation state changes
      */
-    private _validationStateSubject = new BehaviorSubject<ValidationState>({
+    private readonly _validationStateSubject = new BehaviorSubject<ValidationState>({
         isValid: true,
         doNotSave: false,
         issuesFound: null,
@@ -2626,13 +2630,13 @@ export class FivaseForm implements IFivaseForm {
     public subscribeToValueHostValidationState(valueHostName: string, callback: (state: ValueHostValidationState) => void): Subscription {
         return this._valueHostValidationStateSubject
             .pipe(filter(forCallback => forCallback.valueHostName === valueHostName))
-            .subscribe(event => callback(event.validationState));
+            .subscribe(event => { callback(event.validationState); });
     }
 
     /**
      * Individual ValueHost level validation state changes
      */
-    private _valueHostValidationStateSubject = new BehaviorSubject<{ valueHostName: string, validationState: ValueHostValidationState }>({
+    private readonly _valueHostValidationStateSubject = new BehaviorSubject<{ valueHostName: string; validationState: ValueHostValidationState }>({
         valueHostName: '',
         validationState: {
             isValid: true,
@@ -2671,7 +2675,7 @@ export class FivaseForm implements IFivaseForm {
     public subscribeToValueHostMessaging(valueHostName: string, callback: (command: string, payload?: any) => void): Subscription {
         return this._valueHostMessagingSubject
             .pipe(filter(forCallback => forCallback.valueHostName === valueHostName))
-            .subscribe(event => callback(event.command, event.payload));
+            .subscribe(event => { callback(event.command, event.payload); });
     }
     /**
      * Unsubscribes from the value host messaging by calling the unsubscribe method on the provided subscription.
@@ -2693,7 +2697,7 @@ export class FivaseForm implements IFivaseForm {
     /**
      * ValueHost level messaging
      */
-    private _valueHostMessagingSubject = new BehaviorSubject<{ valueHostName: string, command: string, payload?: any }>({
+    private readonly _valueHostMessagingSubject = new BehaviorSubject<{ valueHostName: string; command: string; payload?: any }>({
         valueHostName: '',
         command: '',
         payload: null
@@ -2743,9 +2747,9 @@ export interface IFivaseConfigHost {
  *   after this class saves the state.
  */
 export class FivaseConfigHost implements IFivaseConfigHost {
-    private configs: Map<string, ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)> = new Map();
+    private readonly _configs: Map<string, ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)> = new Map();
 
-    constructor(private stateStore: IFivaseStateStore) { }
+    constructor(private readonly stateStore: IFivaseStateStore) { }
 
 
     /**
@@ -2763,7 +2767,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * `onValueHostInstanceStateChanged`
      */
     public getConfig(formId: string): ValidationManagerConfig {
-        const configOrFactory = this.configs.get(formId);
+        const configOrFactory = this._configs.get(formId);
 
         if (!configOrFactory) {
             throw new Error(`No configuration found for formId: ${formId}`);
@@ -2773,7 +2777,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
         const config = typeof configOrFactory === 'function'
             ? (configOrFactory as (formId: string) => ValidationManagerConfig)(formId)
             : configOrFactory;
-        let valueHostKey = `${formId}|ValueHosts`;
+        const valueHostKey = `${formId}|ValueHosts`;
 
         // Retrieve any saved state for this formId
         const savedInstanceState = this.stateStore.getState(formId);
@@ -2784,13 +2788,13 @@ export class FivaseConfigHost implements IFivaseConfigHost {
             ...config,  // do not modify the original config
             savedInstanceState: savedInstanceState ?? config.savedInstanceState ?? null,
             savedValueHostInstanceStates: savedValueHostInstanceStates ?? config.savedValueHostInstanceStates ?? null,
-            onInstanceStateChanged: (valueHostsManager, state) => {
+            onInstanceStateChanged: (valueHostsManager, state) : void => {
                 this.saveState(formId, state);
                 if (config.onInstanceStateChanged) {  // Call the original callback if it exists
                     config.onInstanceStateChanged(valueHostsManager, state);
                 }
             },
-            onValueHostInstanceStateChanged: (valueHost, state) => {
+            onValueHostInstanceStateChanged: (valueHost, state) : void => {
                 this.saveState(valueHostKey, state);
                 if (config.onValueHostInstanceStateChanged) {  // Call the original callback if it exists
                     config.onValueHostInstanceStateChanged(valueHost, state);
@@ -2823,7 +2827,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * it creates the config. The function provides a lazy loading pattern.
      */
     public register(formId: string, config: ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)): void {
-        this.configs.set(formId, config);
+        this._configs.set(formId, config);
     }
 
     /**
@@ -2925,8 +2929,8 @@ export class FivaseServices implements IFivaseServices {
         // Initialize ariaSettings with default values
         this._ariaSettings = {
             ariaEnabled: true,  // ARIA is enabled by default
-            errorMessageIdPostfix: "_errorMessages",  // Default postfix for error message IDs
-            ariaLiveSeverity: "auto",  // Default live severity is auto
+            errorMessageIdPostfix: '_errorMessages',  // Default postfix for error message IDs
+            ariaLiveSeverity: 'auto',  // Default live severity is auto
             roleDescriptions: {
                 // Default role description for the ValidationErrorDirective
                 ValidationErrorDirective: {
@@ -2944,7 +2948,7 @@ export class FivaseServices implements IFivaseServices {
      * @returns The instance created.
      */
     public createFivaseForm(formId: string): IFivaseForm {
-        let config = this.configHost.getConfig(formId);
+        const config = this.configHost.getConfig(formId);
         return new FivaseForm(config, this);
     }
     /**
@@ -2966,19 +2970,19 @@ export class FivaseServices implements IFivaseServices {
     public get configHost(): IFivaseConfigHost {
         return this._configHost;
     }
-    private _configHost: FivaseConfigHost;
+    private readonly _configHost: FivaseConfigHost;
 
 
     /**
      * Getter for the ARIA settings. This provides access to the global ARIA configuration.
      * Users can modify the settings after accessing them.
      */
-    get ariaSettings(): IAriaSettings {
+    public get ariaSettings(): IAriaSettings {
         return this._ariaSettings;
     }
 
     // Private property to store the ARIA settings
-    private _ariaSettings: IAriaSettings;
+    private readonly _ariaSettings: IAriaSettings;
 
     /**
      * Adds or replaces a factory for creating instances of Directive Actions for a directive.
@@ -2994,7 +2998,7 @@ export class FivaseServices implements IFivaseServices {
      * @param factory 
      */
     public registerFactory(factory: IActionFactory): void {
-        let key = this.resolveKey(factory.directiveName, factory.actionName);
+        const key = this.resolveKey(factory.directiveName, factory.actionName);
         this.factories.set(key, factory);
     }
 
@@ -3005,8 +3009,8 @@ export class FivaseServices implements IFivaseServices {
      * @param actionName 
      */
     public getFactory(directiveName: string, actionName: string): IActionFactory {
-        let key = this.resolveKey(directiveName, actionName);
-        let factory = this.factories.get(key);
+        const key = this.resolveKey(directiveName, actionName);
+        const factory = this.factories.get(key);
         if (!factory) {
             throw new Error(`Factory not found for ${directiveName}:${actionName}`);
         }
@@ -3048,6 +3052,8 @@ export class FivaseServices implements IFivaseServices {
 
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 /**
  * FocusListenerActionFactory uses this to select the HtmlTagFocusListener that uses focus/blur events.
  */
@@ -3062,6 +3068,8 @@ export const NAME_BUBBLING_FOCUS_LISTENER = 'bubblingFocusListener';
  * Same as new ErrorMessagesRenderer(true).
  */
 export const NAME_SETFOCUSONCLICK_ERROR_MESSAGES = 'setFocusOnClickErrorMessages';
+
+/* eslint-enable @typescript-eslint/naming-convention   */
 
 /**
  * Interface responsible for storing and retrieving any state from Fivase, 
@@ -3082,14 +3090,14 @@ export interface IFivaseStateStore {
  * A simple implementation of `IFivaseStateStore` using an in-memory map to store state.
  */
 export class InMemoryFivaseStateStore implements IFivaseStateStore {
-    private stateMap: Map<string, any> = new Map();
+    private readonly _stateMap: Map<string, any> = new Map();
 
-    getState(key: string): any {
-        return this.stateMap.get(key);
+    public getState(key: string): any {
+        return this._stateMap.get(key);
     }
 
-    saveState(key: string, state: any): void {
-        this.stateMap.set(key, state);
+    public saveState(key: string, state: any): void {
+        this._stateMap.set(key, state);
     }
 }
 
@@ -3121,7 +3129,7 @@ export interface IAriaSettings {
      * - "auto": Determines automatically based on the error severity
      * Default: "auto"
      */
-    ariaLiveSeverity: "assertive" | "polite" | "auto";
+    ariaLiveSeverity: 'assertive' | 'polite' | 'auto';
 
     /**
      * A dictionary that provides default role descriptions for each directive.
@@ -3190,7 +3198,7 @@ export class ElementAttributeManager {
      */
     public setBooleanAttribute(attrName: string, value: boolean): void {
         if (value) {
-            this.element.setAttribute(attrName, "");
+            this.element.setAttribute(attrName, '');
         } else {
             this.element.removeAttribute(attrName);
         }
@@ -3231,8 +3239,8 @@ export class ElementAttributeManager {
  * across multiple directives.
  */
 export class AriaAttributeManager extends ElementAttributeManager {
-    private ariaSettings: IAriaSettings;
-    private fivaseForm: IFivaseForm;
+    private readonly _ariaSettings: IAriaSettings;
+    private readonly _fivaseForm: IFivaseForm;
 
     /**
      * Constructor that takes an HTMLElement, IAriaSettings, and IFivaseForm to manage ARIA attributes.
@@ -3242,8 +3250,8 @@ export class AriaAttributeManager extends ElementAttributeManager {
      */
     constructor(element: HTMLElement, ariaSettings: IAriaSettings, fivaseForm: IFivaseForm) {
         super(element);
-        this.ariaSettings = ariaSettings;
-        this.fivaseForm = fivaseForm;
+        this._ariaSettings = ariaSettings;
+        this._fivaseForm = fivaseForm;
     }
 
     /**
@@ -3251,7 +3259,7 @@ export class AriaAttributeManager extends ElementAttributeManager {
      * @param isInvalid Boolean indicating whether the input is invalid.
      */
     public setAriaInvalid(isInvalid: boolean): void {
-        if (this.ariaSettings.ariaEnabled) {
+        if (this._ariaSettings.ariaEnabled) {
             this.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
         }
     }
@@ -3262,8 +3270,8 @@ export class AriaAttributeManager extends ElementAttributeManager {
      * @param inputId The input's ID used to form the error message ID.
      */
     public setAriaErrormessage(inputId: string | null | undefined): void {
-        if (this.ariaSettings.ariaEnabled && inputId) {
-            const errorMessageId = `${inputId}${this.ariaSettings.errorMessageIdPostfix}`;
+        if (this._ariaSettings.ariaEnabled && inputId) {
+            const errorMessageId = `${inputId}${this._ariaSettings.errorMessageIdPostfix}`;
             this.setAttribute('aria-errormessage', errorMessageId);
         }
     }
@@ -3274,14 +3282,14 @@ export class AriaAttributeManager extends ElementAttributeManager {
      * @param directiveName The name of the directive to retrieve the role description.
      */
     public setAriaRoleDescription(directiveName: string): void {
-        if (this.ariaSettings.ariaEnabled) {
-            const roleDescriptionConfig = this.ariaSettings.roleDescriptions[directiveName];
+        if (this._ariaSettings.ariaEnabled) {
+            const roleDescriptionConfig = this._ariaSettings.roleDescriptions[directiveName];
             if (!roleDescriptionConfig) {
                 return; // Do nothing if role description is undefined
             }
 
-            const localizedRoleDescription = this.fivaseForm.validationManager.services.textLocalizerService.localize(
-                this.fivaseForm.validationManager.services.cultureService.activeCultureId,
+            const localizedRoleDescription = this._fivaseForm.validationManager.services.textLocalizerService.localize(
+                this._fivaseForm.validationManager.services.cultureService.activeCultureId,
                 roleDescriptionConfig.l10nKey,
                 roleDescriptionConfig.text
             );
@@ -3298,7 +3306,7 @@ export class AriaAttributeManager extends ElementAttributeManager {
      * @param severity The validation severity (severe, error, warning). Use null to rmoeve
      */
     public setAriaLive(severity: ValidationSeverity | null): void {
-        if (this.ariaSettings.ariaEnabled) {
+        if (this._ariaSettings.ariaEnabled) {
             if (severity === null) {
                 this.removeAttribute('aria-live');
                 return;
@@ -3308,10 +3316,10 @@ export class AriaAttributeManager extends ElementAttributeManager {
             }
 
             let ariaLiveValue: string | null = null;
-            if (this.ariaSettings.ariaLiveSeverity === "auto") {
-                ariaLiveValue = severity === ValidationSeverity.Severe ? "assertive" : "polite";
+            if (this._ariaSettings.ariaLiveSeverity === 'auto') {
+                ariaLiveValue = severity === ValidationSeverity.Severe ? 'assertive' : 'polite';
             } else {
-                ariaLiveValue = this.ariaSettings.ariaLiveSeverity;
+                ariaLiveValue = this._ariaSettings.ariaLiveSeverity;
             }
 
             if (ariaLiveValue) {
@@ -3325,7 +3333,7 @@ export class AriaAttributeManager extends ElementAttributeManager {
      * Since this value does not change, it is hardcoded to true.
      */
     public setAriaRequired(): void {
-        if (this.ariaSettings.ariaEnabled) {
+        if (this._ariaSettings.ariaEnabled) {
             this.setAttribute('aria-required', 'true');
         }
     }

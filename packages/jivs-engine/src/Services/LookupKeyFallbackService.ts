@@ -111,7 +111,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
         if (!fallback)
             return null;
 
-        let alreadyCheckedLookupKeys = new Set<string>();
+        const alreadyCheckedLookupKeys = new Set<string>();
         let currentLK: string | null = fallback;
         alreadyCheckedLookupKeys.add(currentLK);
         while (currentLK)
@@ -125,7 +125,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
             else
                 return currentLK;
         }
-        return null
+        return null;
     }
   /**
    * Determine if the initialLookupKey can fallback to the targetLookupKey.
@@ -138,7 +138,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
         assertNotNull(initialLookupKey, 'initialLookupKey');
         assertNotNull(targetLookupKey, 'targetLookupKey');
         this.ensureBuiltIn();
-        let alreadyCheckedLookupKeys = new Set<string>();
+        const alreadyCheckedLookupKeys = new Set<string>();
 
         let lookupKey: string | null = initialLookupKey;
         alreadyCheckedLookupKeys.add(lookupKey);        

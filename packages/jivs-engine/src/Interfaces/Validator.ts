@@ -116,7 +116,7 @@ export interface ValidatorConfig {
     */
     conditionConfig: ConditionConfig | null;
 
-    /* eslint-disable @typescript-eslint/naming-convention */
+     
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionConfig>.
@@ -126,7 +126,7 @@ export interface ValidatorConfig {
      */
     conditionCreator?: ConditionCreatorHandler;
 
-    /* eslint-enable @typescript-eslint/naming-convention */
+     
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.

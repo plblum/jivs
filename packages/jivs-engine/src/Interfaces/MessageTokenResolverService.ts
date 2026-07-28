@@ -2,11 +2,10 @@
  * @module Services/Types/IMessageTokenResolverService
  */
 
-import { IMessageTokenSource } from "./MessageTokenSource";
-import { IServiceWithAccessor } from "./Services";
-import { IValidationManager } from "./ValidationManager";
-import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
-import { IValueHostResolver } from "./ValueHostResolver";
+import { IMessageTokenSource } from './MessageTokenSource';
+import { IServiceWithAccessor } from './Services';
+import { IValidationManager } from './ValidationManager';
+import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
 
 /**
  * Replaces all tokens in a message with a user friendly value.

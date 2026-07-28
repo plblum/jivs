@@ -39,7 +39,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType
     {
-        let result = this.validationManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
+        const result = this.validationManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
     /**
@@ -61,7 +61,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType
     {
-        let result = this.validationManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
+        const result = this.validationManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
 
@@ -80,7 +80,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
             this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
                     message: 'calcFn property not configured',
-                    category: LoggingCategory.Configuration,
+                    category: LoggingCategory.Configuration
                 };
             });
             return undefined;
@@ -102,7 +102,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param options 
      */
-    public setValue(value: any, options?: SetValueOptions | undefined): void {
+    public setValue(value: any, options?: SetValueOptions  ): void {
         // does nothing
         this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }
@@ -145,7 +145,7 @@ export function toICalcValueHost(source: any): ICalcValueHost | null {
  */
 export function hasICalcValueHostSpecificMembers(source: IValueHost): boolean
 {
-    let test = source as ICalcValueHost;
+    const test = source as ICalcValueHost;
     // members introduced on ICalcValueHost
     return (test.convert !== undefined &&
         test.convertToPrimitive !== undefined);    

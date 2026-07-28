@@ -5,9 +5,9 @@
  */
 
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ConfigAnalysisOptions, ISampleValues } from "./Types/ConfigAnalysis";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ConfigAnalysisOptions, ISampleValues } from './Types/ConfigAnalysis';
 
 /**
  * Supplies a sample value for any lookup key supplied,
@@ -36,24 +36,24 @@ export class SampleValues<TServices extends IValidationServices> implements ISam
     protected get options(): ConfigAnalysisOptions {
         return this._options;
     }
-    private _options: ConfigAnalysisOptions;
+    private readonly _options: ConfigAnalysisOptions;
 
     protected get services(): TServices {
         return this._services;
     }
-    private _services: TServices;
+    private readonly _services: TServices;
 
     protected get lookupKeysSampleValues(): { [key: string]: any } {
-        return this.options.lookupKeysSampleValues ?? {}
+        return this.options.lookupKeysSampleValues ?? {};
     }
     protected get valueHostsSampleValues(): { [key: string]: any } {
-        return this.options.valueHostsSampleValues ?? {}
+        return this.options.valueHostsSampleValues ?? {};
     }
 
     protected get sampleValuesCache(): Map<string, any> {
         return this._sampleValuesCache;
     }
-    private _sampleValuesCache: Map<string, any>;
+    private readonly _sampleValuesCache: Map<string, any>;
 
     /**
      * Tries to get a sample value for the lookup key or valueHost.
@@ -69,7 +69,7 @@ export class SampleValues<TServices extends IValidationServices> implements ISam
     public getSampleValue(lookupKey: string | null, valueHostConfig: ValueHostConfig | null): any {
         // value host overrides everything
         if (valueHostConfig && valueHostConfig.name) {
-            let value = this.valueHostsSampleValues[valueHostConfig.name];
+            const value = this.valueHostsSampleValues[valueHostConfig.name];
             if (value !== undefined)
                 return value;
         }
@@ -126,11 +126,11 @@ export class SampleValues<TServices extends IValidationServices> implements ISam
      */
     protected tryToIdentifyLookupKey(lookupKey: string, services: IValidationServices): any {
         // implement this
-        let dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === lookupKey);
+        const dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === lookupKey);
         if (dti)
             return dti.sampleValue();
         // try the LookupKeyFallbackService
-        let fallback = services.lookupKeyFallbackService.find(lookupKey);
+        const fallback = services.lookupKeyFallbackService.find(lookupKey);
         if (fallback)
             return this.tryToIdentifyLookupKey(fallback, services); // RECURSION
         return undefined;

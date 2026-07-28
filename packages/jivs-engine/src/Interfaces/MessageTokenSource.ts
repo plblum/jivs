@@ -2,8 +2,8 @@
  * @module Validation/Types
  */
 
-import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
-import { IValueHostResolver } from "./ValueHostResolver";
+import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValueHostResolver } from './ValueHostResolver';
 
 /**
  * Allows a class of the Validator & Condition classes to return tokens and associated
@@ -30,7 +30,7 @@ export interface IMessageTokenSource {
  */
 export function toIMessageTokenSource(source: any): IMessageTokenSource | null {
     if (source && typeof source === 'object') {
-        let test = source as IMessageTokenSource;       
+        const test = source as IMessageTokenSource;       
         if (test.getValuesForTokens !== undefined)
             return test;
     }

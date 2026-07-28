@@ -3,7 +3,6 @@
  * @module DataTypes/Types/IDataTypeConverter
  */
 
-import { SimpleValueType } from "./DataTypeConverterService";
 
 /**
  * Provides conversion between a specific data type and another.

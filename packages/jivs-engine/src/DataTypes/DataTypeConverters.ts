@@ -132,7 +132,7 @@ export class UTCDateOnlyConverter extends DataTypeConverterBase
     public convert(value: Date, sourceLookupKey: string | null, resultLookupKey: string): any {
         if (isNaN(value.getTime()))
             return undefined;        
-        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+        const dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
         return Math.floor(dateOnly.getTime() / 86400000);
     }
     public validValue(value: any): boolean {
@@ -163,7 +163,7 @@ export class LocalDateOnlyConverter extends DataTypeConverterBase
     public convert(value: Date, sourceLookupKey: string | null, resultLookupKey: string): any {
         if (isNaN(value.getTime()))
             return undefined;        
-        let dateOnly = new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        const dateOnly = new Date(value.getFullYear(), value.getMonth(), value.getDate());
         return Math.floor(dateOnly.getTime() / 86400000);
     }
     public validValue(value: any): boolean {
@@ -313,7 +313,7 @@ export class NumericStringToNumberConverter extends DataTypeConverterBase {
             num = Math.trunc(num);
         return num;
     }
-    private _regexp = /^-?\d+(\.\d+)?$/;
+    private readonly _regexp = /^-?\d+(\.\d+)?$/;
 
     /**
      * Checks if the given value is a valid string.

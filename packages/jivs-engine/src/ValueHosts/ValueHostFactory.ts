@@ -7,14 +7,14 @@
  * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
-import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
-import { FieldValueHostGenerator } from './FieldValueHost';
-import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValidationManager } from '../Interfaces/ValidationManager';
-import { StaticValueHostGenerator } from './StaticValueHost';
-import { ValueHostType, type IValueHostFactory, type IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import type { IValueHost, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
+import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import { CalcValueHostGenerator } from './CalcValueHost';
+import { FieldValueHostGenerator } from './FieldValueHost';
+import { ModelValidatorsValueHostGenerator } from './ModelValidatorsValueHost';
+import { StaticValueHostGenerator } from './StaticValueHost';
 
 /**
  * Supports creating and working with various ValueHost implementations.
@@ -30,7 +30,7 @@ export class ValueHostFactory implements IValueHostFactory {
         assertNotNull(validationManager, 'validationManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
-        let generator = this.resolveConfig(config);
+        const generator = this.resolveConfig(config);
         // // we are going to modify the state without notifying the parent.
         // // This is intentional --- removed. Leave it to caller
         // if (!state && config.InitialValue !== undefined) {

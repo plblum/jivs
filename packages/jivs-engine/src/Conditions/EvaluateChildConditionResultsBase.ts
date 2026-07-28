@@ -41,7 +41,7 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
      * @returns 
      */
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let conditions = this.conditions(validationManager);
+        const conditions = this.conditions(validationManager);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
         return this.evaluateChildren(conditions, valueHost, validationManager);

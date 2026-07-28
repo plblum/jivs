@@ -3,7 +3,7 @@
  * @module Utilities
  */
 
-import { assertNotNull } from "./ErrorHandling";
+import { assertNotNull } from './ErrorHandling';
 
 /**
  * A class for debouncing a function. That means multiple calls
@@ -21,11 +21,11 @@ import { assertNotNull } from "./ErrorHandling";
  *     globalThis.addEventListener("click", () => debouncer.forceRun());
  *     globalThis.addEventListener("dblclick", () => debouncer.cancel());
  */
-export class Debouncer<F extends (...args: any[]) => void> {
+export class Debouncer<TFunc extends (...args: any[]) => void> {
     private _timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-    private _func: F;
-    private _delay: number;
-    private _immediate: boolean;
+    private readonly _func: TFunc;
+    private readonly _delay: number;
+    private readonly _immediate: boolean;
     private _isCalled: boolean = false;
     private _disposed: boolean = false;
     /**
@@ -35,7 +35,7 @@ export class Debouncer<F extends (...args: any[]) => void> {
      * @param delay - Time in ms
      * @param immediate - when true, run immediately on the first call to run.
      */
-    constructor(func: F, delay: number, immediate: boolean = false) {
+    constructor(func: TFunc, delay: number, immediate: boolean = false) {
         assertNotNull(func, 'func');
         this._func = func;
         this._delay = delay;
@@ -52,7 +52,7 @@ export class Debouncer<F extends (...args: any[]) => void> {
      * call to run if the delay isn't finished.
      * @param args 
      */
-    public run(...args: Parameters<F>): void {
+    public run(...args: Parameters<TFunc>): void {
         if (this._disposed)
             return;
         const callNow = this._immediate && !this._isCalled;
@@ -82,7 +82,7 @@ export class Debouncer<F extends (...args: any[]) => void> {
      * After this, another call to run will work as if its the first time called.
      * @param args 
      */
-    public forceRun(...args: Parameters<F>): void {
+    public forceRun(...args: Parameters<TFunc>): void {
         if (this._disposed)
             return;
         this.clearTimeout();

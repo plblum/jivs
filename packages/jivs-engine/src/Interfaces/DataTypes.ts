@@ -28,7 +28,7 @@ export interface IDataTypeService<T> extends IServiceWithAccessor
     /**
      * Returns the full collection.
      */
-    getAll() : Array<T>  
+    getAll() : Array<T>;  
 }
 
 /**

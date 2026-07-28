@@ -2,9 +2,9 @@
  * 
  * @module Analyzer/Classes
 */
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IConfigPropertyAnalyzer, IAnalysisResultsHelper } from "../Types/Analyzers";
-import { ConfigObjectCAResultsBase } from "../Types/Results";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../Types/Analyzers';
+import { ConfigObjectCAResultsBase } from '../Types/Results';
 
 /**
  * Create instances for each property or group of properties in a TConfig object.

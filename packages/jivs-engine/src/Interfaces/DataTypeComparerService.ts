@@ -3,9 +3,9 @@
  * @module Services/Types/IDataTypeComparerService
  */
 
-import { IDataTypeComparer } from "./DataTypeComparers";
-import { IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./Services";
+import { IDataTypeComparer } from './DataTypeComparers';
+import { IDataTypeService } from './DataTypes';
+import { IServicesAccessor } from './Services';
 
 /**
  * A service for changing the comparing two values

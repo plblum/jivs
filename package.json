@@ -28,11 +28,10 @@
     "@plblum/jivs-engine": "^0.20.0"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/jest": "^29.5.12",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
     "del": "^7.1.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-typescript": "^0.14.0",
+    "eslint": "^9.0.0",
     "gulp": "^4.0.2",
     "gulp-jest": "^4.0.4",
     "jest": "^29.7.0",
@@ -45,7 +44,7 @@
     "typedoc-plugin-extras": "^4.0.1",
     "typedoc-plugin-merge-modules": "^7.0.0",
     "typescript": "~5.5.0",
-    "typescript-eslint": "^7.3.1"
+    "typescript-eslint": "^8.0.0"
   },
   "scripts": {
     "pretypedoc": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
@@ -62,14 +61,7 @@
     "bumpversion": "lerna version --no-private",
     "prepublish_library": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "publish_library": "lerna publish --no-private",
-    "retry_publish": "lerna publish from-package"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "node": true,
-      "jest": true
-    }
-  },
-  "lint": "eslint . --resolve-plugins-relative-to ."
+    "retry_publish": "lerna publish from-package",
+    "lint": "eslint ."
+  }
 }

@@ -4,9 +4,9 @@
  */
 
 
-import { CultureIdFallback, ICultureService } from "../Interfaces/CultureService";
-import { assertNotNull } from "../Utilities/ErrorHandling";
-import { ServiceBase } from "./ServiceBase";
+import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import { ServiceBase } from './ServiceBase';
 
 /**
  * Service for identifying cultures that you will use in the app,
@@ -54,7 +54,7 @@ export class CultureService extends ServiceBase implements ICultureService {
         assertNotNull(culture, 'culture');
         if (this._activeCultureId === null)
             this._activeCultureId = culture.cultureId;
-        let index = this.cultureIdFallback.findIndex((existing) => existing.cultureId === culture.cultureId);
+        const index = this.cultureIdFallback.findIndex((existing) => existing.cultureId === culture.cultureId);
         if (index < 0)
             this.cultureIdFallback.push(culture);
         else
@@ -75,7 +75,7 @@ export class CultureService extends ServiceBase implements ICultureService {
      * got the language. If no match, returns null.
      */
     public getClosestCultureId(cultureId: string): string | null {
-        let cc = this.getClosestCultureIdFallback(cultureId);
+        const cc = this.getClosestCultureIdFallback(cultureId);
         if (cc)
             return cc.cultureId;
         return null;
@@ -84,7 +84,7 @@ export class CultureService extends ServiceBase implements ICultureService {
     protected getClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
         let cc = this.find(cultureId);
         if (!cc) {
-            let lang = cultureLanguageCode(cultureId);
+            const lang = cultureLanguageCode(cultureId);
             if (lang !== cultureId) {
                 cc = this.find(lang);
             }
@@ -109,7 +109,7 @@ export class CultureService extends ServiceBase implements ICultureService {
    */
     public availableCultures(): Array<string>    
     {
-        let list: Array<string> = [];
+        const list: Array<string> = [];
         this.cultureIdFallback.forEach((cc) => {
             if (!list.includes(cc.cultureId))
                 list.push(cc.cultureId);
@@ -122,9 +122,9 @@ export class CultureService extends ServiceBase implements ICultureService {
    */
     public availableLanguages(): Array<string>
     {
-        let list: Array<string> = [];
+        const list: Array<string> = [];
         this.cultureIdFallback.forEach((cc) => {
-            let code = cultureLanguageCode(cc.cultureId);
+            const code = cultureLanguageCode(cc.cultureId);
             if (!list.includes(code))
                 list.push(code);
         });
@@ -140,7 +140,7 @@ export class CultureService extends ServiceBase implements ICultureService {
  */
 export function cultureLanguageCode(cultureId: string): string
 {
-    let pos = cultureId.indexOf('-');
+    const pos = cultureId.indexOf('-');
     if (pos > 0)
         return cultureId.substring(0, pos);
     return cultureId;

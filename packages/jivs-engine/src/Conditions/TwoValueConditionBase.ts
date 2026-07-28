@@ -6,11 +6,11 @@
  */
 
 
-import { IValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
-import { IValidationManager } from "../Interfaces/ValidationManager";
-import { OneValueConditionBaseConfig, OneValueConditionBase } from "./OneValueConditionBase";
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
+import { IValidationManager } from '../Interfaces/ValidationManager';
+import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
  * ConditionConfig for TwoValueConditionBase
@@ -43,7 +43,7 @@ export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBas
         // same order of precidence as in Evaluate
         let secondLabel: string | null = null;
         if (this.config.secondValueHostName) {
-            let vh = this.getValueHost(this.config.secondValueHostName, validationManager);
+            const vh = this.getValueHost(this.config.secondValueHostName, validationManager);
             if (vh)
                 secondLabel = vh.getLabel();
         }

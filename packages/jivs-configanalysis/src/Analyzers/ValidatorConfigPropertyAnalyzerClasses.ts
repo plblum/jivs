@@ -4,12 +4,12 @@
  */
 
 
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ConfigPropertyAnalyzerBase } from "./ConfigPropertyAnalyzerBase";
-import { IAnalysisResultsHelper } from "../Types/Analyzers";
-import { ValidatorConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from "../Types/Results";
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
+import { IAnalysisResultsHelper } from '../Types/Analyzers';
+import { ValidatorConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/Results';
 
 
 /**
@@ -58,12 +58,12 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
         vhcResults: ValidatorConfigCAResult, vhc: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
 
-        let propResults = vhcResults.properties;
+        const propResults = vhcResults.properties;
         helper.checkMessageTokens(config.errorMessage, config, vhc, 'errorMessage', propResults);
         helper.checkMessageTokens(config.summaryMessage, config, vhc,'summaryMessage', propResults);
 
         if (config.errorMessagel10n || config.summaryMessagel10n) {
-            for (let cultureId of helper.results.cultureIds) {
+            for (const cultureId of helper.results.cultureIds) {
                 let localized = helper.services.textLocalizerService.localize(
                     cultureId, config.errorMessagel10n ?? null, null);
                 if (localized)
@@ -90,7 +90,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
         helper: IAnalysisResultsHelper<IValidationServices>): void {
         function checkForOneProperty(propertyName: string, l10nValue: string | null | undefined,
             fallbackValue: any
-        )
+        ): void
         {
             let em: string | null | undefined = '';
             if (typeof fallbackValue === 'function') {
@@ -106,7 +106,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
             helper.checkLocalization(propertyName, l10nValue, em, propResults);
         }
 
-        let propResults = vhcResults.properties;
+        const propResults = vhcResults.properties;
         checkForOneProperty('errorMessage', config.errorMessagel10n, config.errorMessage);
         checkForOneProperty('summaryMessage', config.summaryMessagel10n, config.summaryMessage);
     }
@@ -121,7 +121,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
 export class ConditionCreatorConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
-        let propResult: PropertyCAResult = {
+        const propResult: PropertyCAResult = {
             feature: CAFeature.property,
             propertyName: 'conditionCreator',
             severity: undefined!,

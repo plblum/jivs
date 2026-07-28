@@ -3,12 +3,12 @@
  * @module Services/ConcreteClasses/DataTypeIdentifierService
  */
 
-import { valueForLog } from "../Utilities/Utilities";
-import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../DataTypes/DataTypeIdentifiers";
-import { IDataTypeIdentifier } from "../Interfaces/DataTypeIdentifier";
-import { IDataTypeIdentifierService } from "../Interfaces/DataTypeIdentifierService";
-import { DataTypeServiceBase } from "./DataTypeServiceBase";
-import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
+import { valueForLog } from '../Utilities/Utilities';
+import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from '../DataTypes/DataTypeIdentifiers';
+import { IDataTypeIdentifier } from '../Interfaces/DataTypeIdentifier';
+import { IDataTypeIdentifierService } from '../Interfaces/DataTypeIdentifierService';
+import { DataTypeServiceBase } from './DataTypeServiceBase';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
@@ -35,7 +35,7 @@ implements IDataTypeIdentifierService
         // any other predefined are found in create_services so users can opt out
     }
     protected indexOfExisting(item: IDataTypeIdentifier): number {
-        let itemDTK = item.dataTypeLookupKey.toLowerCase();
+        const itemDTK = item.dataTypeLookupKey.toLowerCase();
         return this.getAll().findIndex((idt) => idt.dataTypeLookupKey.toLowerCase() === itemDTK);
     }
 
@@ -43,14 +43,14 @@ implements IDataTypeIdentifierService
      * {@inheritDoc Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService.identify }
      */    
     public identify(value: any): string | null {
-        let idt = this.find(value);
-        let result = idt ? idt.dataTypeLookupKey : null;
+        const idt = this.find(value);
+        const result = idt ? idt.dataTypeLookupKey : null;
         this.logger.log(LoggingLevel.Debug, () => {
             return {
                 message: `Identified ${valueForLog(result)}`,
                 category: LoggingCategory.Result
             
-            }
+            };
         });
         return result;
     }
@@ -78,7 +78,7 @@ implements IDataTypeIdentifierService
     {
         if (caseInsensitive)
             lookupKey = lookupKey.toLowerCase();
-        let result = this.getAll().find((idt) => {
+        const result = this.getAll().find((idt) => {
             if (caseInsensitive)
                 return idt.dataTypeLookupKey.toLowerCase() === lookupKey;
             else

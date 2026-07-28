@@ -3,9 +3,9 @@
  * @module Support/CapturingLogger
  */
 
-import { LoggingLevel, LogDetails, LogOptions } from "../Interfaces/LoggerService";
-import { LoggerServiceBase } from "../Services/LoggerServiceBase";
-import { valueForLog } from "../Utilities/Utilities";
+import { LoggingLevel, LogDetails, LogOptions } from '../Interfaces/LoggerService';
+import { LoggerServiceBase } from '../Services/LoggerServiceBase';
+import { valueForLog } from '../Utilities/Utilities';
 
 
 /**
@@ -45,14 +45,14 @@ export class CapturingLogger extends LoggerServiceBase
     }
 
     protected writeLog(level: LoggingLevel, logDetails: LogDetails): void {
-        let capture = { ...logDetails, level: level } as CapturedLogDetails;
+        const capture = { ...logDetails, level: level } as CapturedLogDetails;
         this.addCaptured(capture);
     }
 
     /**
      * Count of log entries captured.
      */
-    public get entryCount(): Number
+    public get entryCount(): number
     {
         return this.captured.length;
     }
@@ -102,7 +102,7 @@ export class CapturingLogger extends LoggerServiceBase
 
             return null;
         }
-        let messageRE = toRegExp(messageSegment);
+        const messageRE = toRegExp(messageSegment);
         let typeRE: RegExp | null = null;
         let featureRE: RegExp | null = null;
         let identityRE: RegExp | null = null;
@@ -117,7 +117,7 @@ export class CapturingLogger extends LoggerServiceBase
             dataMatchObject = more.data;
         }
 
-        for (let capture of this.captured) {
+        for (const capture of this.captured) {
             if ((logLevel != null) && (capture.level !== logLevel))
                 continue;
             if ((category != null) && (capture.category !== category))
@@ -141,7 +141,7 @@ export class CapturingLogger extends LoggerServiceBase
                 if (!capture.data)
                     continue;
                 let match = true;
-                for (let key in dataMatchObject) {
+                for (const key in dataMatchObject) {
                     if (capture.data.hasOwnProperty(key)) {
                         if ((capture.data as any)[key] !== (dataMatchObject as any)[key]) {
                             match = false;
@@ -171,14 +171,14 @@ export class CapturingLogger extends LoggerServiceBase
     }
 
     public toConsole(): void {
-        for (let capture of this.captured) {
+        for (const capture of this.captured) {
             let msg = `[${LoggingLevel[capture.level]}] ${capture.message}`;
             if (capture.type)
                 msg += ` [type: ${capture.typeAsString}]`;
             if (capture.feature)
                 msg += ` [feature: ${capture.feature}]`;
             if (capture.identity)
-                msg += ` [identity: ${capture.identity}]`;
+                msg += ` [identity: ${Array.isArray(capture.identity) ? capture.identity.join(', ') : capture.identity}]`;
             if (capture.data)
                 msg += ` [data: ${JSON.stringify(capture.data)}]`;
             console.log(msg);

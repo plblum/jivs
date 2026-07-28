@@ -4,9 +4,9 @@
  * @module Services/ConcreteClasses/Services
  */
 
-import { IDisposable, toIDisposable } from "../Interfaces/General_Purpose";
-import { IServices, toIServicesAccessor } from "../Interfaces/Services";
-import { assertNotNull } from "../Utilities/ErrorHandling";
+import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
+import { IServices, toIServicesAccessor } from '../Interfaces/Services';
+import { assertNotNull } from '../Utilities/ErrorHandling';
 
 /**
  * Supplies services and factories to be used as dependency injection
@@ -46,7 +46,7 @@ export class Services implements IServices, IDisposable {
         serviceName = serviceName.toLowerCase();
         this._services[serviceName]?.dispose();
         this._services[serviceName] = service;
-        let sa = toIServicesAccessor(service);
+        const sa = toIServicesAccessor(service);
         if (sa)
             sa.services = this;
     }
@@ -59,7 +59,7 @@ export class Services implements IServices, IDisposable {
     //#endregion IServices
 
     public dispose(): void {
-        for (let name in this._services)
+        for (const name in this._services)
         {
             toIDisposable(this._services[name])?.dispose();
         }

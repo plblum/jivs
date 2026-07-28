@@ -3,7 +3,7 @@
  * @module DataTypes/Types/IDataTypeComparer
  */
 
-import { ComparersResult } from "./DataTypeComparerService";
+import { ComparersResult } from './DataTypeComparerService';
 
 /**
  * Class that compares two values to determine equality, less than, greater than.

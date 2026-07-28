@@ -6,7 +6,7 @@
  * @module Services/Types/ILoggerService
  */
 
-import { IService } from "./Services";
+import { IService } from './Services';
 
 /**
  * Provide a logging service for this system to report into.

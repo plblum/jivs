@@ -15,7 +15,6 @@ import {
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
@@ -27,7 +26,7 @@ import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
-import { ValueHostConfigBuilder } from "./ValueHostConfigBuilder";
+import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
 /**
  * The ValueHostConfig object configures one ValueHost and its validators. 
@@ -86,7 +85,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
 
     constructor(services: IValidationServices)
     constructor(config: T)
-    constructor(state: BuilderState<T>)
+    constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
     constructor(arg1: IValidationServices | T | BuilderState<T>) {
         assertNotNull(arg1);
         if (arg1 instanceof BuilderState)
@@ -94,7 +93,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
             this._state = arg1;
             return;
         }
-        let services = toIServices(arg1) as IValidationServices;
+        const services = toIServices(arg1) as IValidationServices;
         if (services) {
             this._state = new BuilderState<T>({
                 services: services,
@@ -103,7 +102,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         }
         else if (toIServicesAccessor(arg1) && // ensures we have the required 'services' property
             'valueHostConfigs' in arg1) {
-            let baseConfig = arg1 as T;
+            const baseConfig = arg1 as T;
             if (baseConfig.valueHostConfigs == null)  // null or undefined
                 baseConfig.valueHostConfigs = [];
             this._state = new BuilderState<T>(baseConfig);
@@ -153,12 +152,12 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     protected reportError(message: string | Error): void {
         if (message instanceof Error)
         {
-            let msg = message.message;
+            const msg = message.message;
             console.error(msg);
             this.logger.message(LoggingLevel.Error, () => msg);
             throw message;
         }
-        let msg = message;
+        const msg = message;
         console.error(msg);
         this.logger.message(LoggingLevel.Error, ()=> msg);
     }
@@ -193,7 +192,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
      * They will be merged into baseConfig at getValueHostsConfig();
      */
     protected addOverride(): void {
-        let valueHostConfigs: Array<ValueHostConfig> = [];
+        const valueHostConfigs: Array<ValueHostConfig> = [];
         this.overriddenValueHostConfigs.push(valueHostConfigs);
     }
 
@@ -213,13 +212,13 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
      * @returns 
      */
     public complete(): T {
-        let vhms = this.baseConfig.services.valueHostConfigMergeService;
+        const vhms = this.baseConfig.services.valueHostConfigMergeService;
 
         // merge overrides into baseConfig
-        let destination = this.baseConfig;
+        const destination = this.baseConfig;
         this.overriddenValueHostConfigs.forEach((o) => {
             o.forEach((sourceConfig) => {
-                let destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
+                const destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
                 if (destinationConfig) {
                     vhms.merge(sourceConfig, destinationConfig);    // changes destinationConfig directly
                 }
@@ -240,13 +239,13 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     public snapshot(): T {
         this.assertNotDisposed();
         
-        let destination = ValidationManager.safeConfigClone(this.baseConfig) as T;
-        let vhms = destination.services.valueHostConfigMergeService;
+        const destination = ValidationManager.safeConfigClone(this.baseConfig) as T;
+        const vhms = destination.services.valueHostConfigMergeService;
 
         this.overriddenValueHostConfigs.forEach((o) => {
             o.forEach((sourceConfig) => {
                 sourceConfig = deepClone(sourceConfig); // don't change the original
-                let destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
+                const destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
                 if (destinationConfig) {
                     vhms.merge(sourceConfig, destinationConfig);    // changes destinationConfig directly
                 }
@@ -296,7 +295,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
                 return result;
         }
 
-        let error = `ValueHost name "${valueHostName}" is not defined.`;
+        const error = `ValueHost name "${valueHostName}" is not defined.`;
         if (throwWhenNotFound)
             this.reportError(new CodingError(error));
         else
@@ -315,18 +314,18 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     protected getValueHostConfig(valueHostName: ValueHostName, throwWhenNotFound: boolean): ValueHostConfig
     {
         // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.
-        let vhToModify = this.destinationValueHostConfigs().find((item) => item.name === valueHostName) as ValidatorsValueHostBaseConfig | undefined;
+        const vhToModify = this.destinationValueHostConfigs().find((item) => item.name === valueHostName) as ValidatorsValueHostBaseConfig | undefined;
         if (vhToModify) {
             return vhToModify;
         }
         // find in earlier arrays. Clone the ValueHostConfig and add it to the current array, replacing the validator's condition
-        let vhToClone = this.getExistingValueHostConfig(valueHostName, false) as ValidatorsValueHostBaseConfig;
+        const vhToClone = this.getExistingValueHostConfig(valueHostName, false) as ValidatorsValueHostBaseConfig;
         if (vhToClone) {
-            let clonedVH = deepClone(vhToClone) as ValidatorsValueHostBaseConfig;
+            const clonedVH = deepClone(vhToClone) as ValidatorsValueHostBaseConfig;
             this.destinationValueHostConfigs().push(clonedVH);
             return clonedVH;
         }
-        let error = new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
+        const error = new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
         this.reportError(error); // throws
         throw error;    // only here to stop Typescript from demanding a return type
     }
@@ -346,8 +345,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         arg2?: Partial<TVHConfig> | string | null,
         arg3?: Partial<TVHConfig>): IManagerConfigBuilder<T> {
         assertNotNull(arg1, 'arg1');
-        let builder = this.createValueHostBuilder();
-        let vhConfig = builder.withoutValidators<TVHConfig>(valueHostType,
+        const builder = this.createValueHostBuilder();
+        const vhConfig = builder.withoutValidators<TVHConfig>(valueHostType,
             arg1 as FluentAnyValueHostConfig<TVHConfig> | ValueHostName,
             arg2 as FluentAnyValueHostParameters<TVHConfig> | string | null,
             arg3 as FluentAnyValueHostParameters<TVHConfig>);
@@ -409,8 +408,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T> {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
-        let builder = this.createValueHostBuilder();
-        let vhConfig: CalcValueHostConfig;
+        const builder = this.createValueHostBuilder();
+        let vhConfig: CalcValueHostConfig | undefined = undefined;
 
         if (isPlainObject(arg1)) {
             vhConfig = builder.calc(arg1 as CalcValueHostConfig);
@@ -467,8 +466,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
 
         this.logger.message(LoggingLevel.Debug, () => `whenToEnable("${valueHostName}")`);
         
-        let vhConfig = this.getValueHostConfig(valueHostName, true);
-        let startBuilder = new StartConditionWithOneChildBuilder(
+        const vhConfig = this.getValueHostConfig(valueHostName, true);
+        const startBuilder = new StartConditionWithOneChildBuilder(
             this.services as IValidationServices,
             null,
             (conditionConfig) => {
@@ -476,9 +475,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
                 vhConfig.enablerConfig = conditionConfig;
         });
         callback(startBuilder);
-        let conditionConfig = startBuilder.getConfig();
+        const conditionConfig = startBuilder.getConfig();
         if (!conditionConfig)
-            this.reportError(new Error(`Child builder was not used to define a Condition`));
+            this.reportError(new Error('Child builder was not used to define a Condition'));
         return this;
     }
 }

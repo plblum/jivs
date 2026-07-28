@@ -62,7 +62,7 @@ export interface IValueHostResolver extends IServicesAccessor {
 export function toIValueHostResolver(source: any): IValueHostResolver | null
 {
     if (source && typeof source === 'object') {
-        let test = source as IValueHostResolver;    
+        const test = source as IValueHostResolver;    
         if (test.getValueHost !== undefined &&
             test.getCalcValueHost !== undefined &&
             test.getStaticValueHost !== undefined &&

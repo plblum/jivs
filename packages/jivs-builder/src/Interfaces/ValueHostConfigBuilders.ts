@@ -173,8 +173,8 @@
  */
 
 import { CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { StaticValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';

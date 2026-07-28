@@ -4,11 +4,11 @@
  * @module Conditions/ConcreteConditions/NotCondition
  */
 
-import { ConditionEvaluateResult } from "../Interfaces/Conditions";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValidationManager } from "../Interfaces/ValidationManager";
-import { ConditionType } from "./ConditionTypes";
-import { ConditionWithOneChildBaseConfig, ConditionWithOneChildBase } from "./ConditionWithOneChildBase";
+import { ConditionEvaluateResult } from '../Interfaces/Conditions';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValidationManager } from '../Interfaces/ValidationManager';
+import { ConditionType } from './ConditionTypes';
+import { ConditionWithOneChildBaseConfig, ConditionWithOneChildBase } from './ConditionWithOneChildBase';
 
 /**
  * ConditionConfig for {@link NotCondition}
@@ -32,8 +32,8 @@ export class NotCondition extends ConditionWithOneChildBase<NotConditionConfig>
      * @returns 
      */
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let condition = this.condition(validationManager);
-        let result = condition.evaluate(valueHost, validationManager);
+        const condition = this.condition(validationManager);
+        const result = condition.evaluate(valueHost, validationManager);
         this.ensureNoPromise(result);
         switch (result) {
             case ConditionEvaluateResult.Match:

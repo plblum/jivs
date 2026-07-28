@@ -7,23 +7,23 @@ import {
     DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition,
     LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig,
     LessThanCondition, LessThanConditionConfig
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { createMinimalValidationServices } from "./support";
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
+import { createMinimalValidationServices } from './support';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
-import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
-import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
-import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { RulesConfigOptions } from "@plblum/jivs-builder/build/Interfaces/ModelRules";
-import { FormRulesBase } from "@plblum/jivs-builder/build/ModelRules/ModelRules";
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
+import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
+import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 
 export class DateRangeFormRules extends FormRulesBase {
@@ -42,7 +42,7 @@ export class DateRangeFormRules extends FormRulesBase {
                  }); 
         builder.field('EndDate', LookupKey.Date, { label: 'End date' });
         builder.static('NumOfDays', LookupKey.Integer, { initialValue: 10 });
-        builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);
+        builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);   // eslint-disable-line @typescript-eslint/unbound-method
     }
 
 // Here's our target function to use with a CalcValueHost. 
@@ -105,11 +105,12 @@ export function configureVMForDifferenceBetweenDates(): IValidationManager {
 }
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function demoSeveralCases(): void {
     let vm = configureVMForDifferenceBetweenDates();
     vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
-    let DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    let diffDays = vm.getValueHost('DiffDays')?.getValue();
     // DiffDays = 0
     let result = vm.validate();
     /* 
@@ -119,7 +120,7 @@ function demoSeveralCases(): void {
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
-    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    diffDays = vm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 9
     result = vm.validate();
     /* 
@@ -129,7 +130,7 @@ function demoSeveralCases(): void {
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
-    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    diffDays = vm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 10 
     result = vm.validate();
     /* 
@@ -142,7 +143,7 @@ function demoSeveralCases(): void {
     */    
 
     vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 12)));    // start > end
-    DiffDays = vm.getValueHost('DiffDays')?.getValue();
+    diffDays = vm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 1 
     result = vm.validate();
     /* 

@@ -43,19 +43,19 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
      * @returns 
      */
     public validate(options?: ValidateOptions): ValueHostValidateResult | null {
-        let result: ValueHostValidateResult = {
+        const result: ValueHostValidateResult = {
             issuesFound: null,
             status: ValidationStatus.Valid
         };
         if (this.externalIssuesFound)
         {
-            let iif: Array<IssueFound> = [];
+            const iif: Array<IssueFound> = [];
             let issueCount = 0; // used to generate unique keys in IssueCount. They are fake ConditionTypes.
             let errorFound = false;
 
-            for (let error of this.externalIssuesFound)
+            for (const error of this.externalIssuesFound)
             {
-                let errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
+                const errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
                 if (error.severity !== ValidationSeverity.Warning)
                     errorFound = true;
                 iif.push({
@@ -64,7 +64,7 @@ export class ModelValidatorsValueHost extends ValidatableValueHostBase<Validatab
                     summaryMessage: error.summaryMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
                     valueHostName: ModelValidatorsValueHostName,    // should be the same as the ValueHostName of this ValueHost, which is '*'
-                    doNotSave: error.doNotSave ?? false, // NOTE: default to false only for external issues
+                    doNotSave: error.doNotSave ?? false // NOTE: default to false only for external issues
                 });
                 issueCount++;
             }

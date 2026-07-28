@@ -18,22 +18,22 @@ export class IntegerDataTypeCheckGenerator implements IDataTypeCheckGenerator
     constructor(dataTypeLookupKey: string = LookupKey.Integer) {
         this._dataTypeLookupKey = dataTypeLookupKey;
     }
-    private _dataTypeLookupKey: string;
+    private readonly _dataTypeLookupKey: string;
 
     public supportsValue(dataTypeLookupKey: string): boolean {
         return this._dataTypeLookupKey === dataTypeLookupKey;
     }
     public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string,
         conditionfactory: IConditionFactory): Array<ICondition> {
-        let conditions: Array<ICondition> = [];
-        conditions.push(conditionfactory.create(<DataTypeCheckConditionConfig>{
+        const conditions: Array<ICondition> = [];
+        conditions.push(conditionfactory.create(({
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: valueHost.getName()
-        }));
-        conditions.push(conditionfactory.create(<DataTypeCheckConditionConfig>{
+        } as DataTypeCheckConditionConfig)));
+        conditions.push(conditionfactory.create(({
             conditionType: ConditionType.Integer,
             valueHostName: valueHost.getName()
-        }));        
+        } as DataTypeCheckConditionConfig)));        
         return conditions;
     }
 }

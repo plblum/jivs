@@ -24,7 +24,7 @@ export interface DataTypeParserOptions<TDataType>
      * Value to return if the text was only an empty string (after trimming)
      * Defaults to ''. Can be any string or null
      */
-    emptyStringResult?: TDataType | null
+    emptyStringResult?: TDataType | null;
 
     /**
      * Determines if leading and trailing whitespace is discarded.
@@ -74,13 +74,13 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
     public get supportedLookupKey(): string {
         return this._supportedLookupKey;
     }
-    private _supportedLookupKey: string;
+    private readonly _supportedLookupKey: string;
 
     protected get options(): TOptions
     {
         return this._options;
     }
-    private _options: TOptions;
+    private readonly _options: TOptions;
 
     public dispose(): void
     {
@@ -251,7 +251,7 @@ export abstract class CleanUpStringParserBase<TOptions extends CleanUpStringPars
         return '';
     }    
     
-    private _stripTheseCharactersRegExp: RegExp | null = null;
+    private readonly _stripTheseCharactersRegExp: RegExp | null = null;
 
     /**
      * Handles trimming and returning the emptyStringResult if that's what it has.
@@ -358,8 +358,8 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
         return this.getRegExp(dataTypeLookupKey, cultureId).test(text);
     }
     protected parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType> {
-        let re = this.getRegExp(dataTypeLookupKey, cultureId);
-        let pattern = re.exec(text);
+        const re = this.getRegExp(dataTypeLookupKey, cultureId);
+        const pattern = re.exec(text);
         if (pattern)
             return this.processPattern(pattern, text, dataTypeLookupKey, cultureId);
         return { errorMessage: this.patternDidNotMatchMessage() };
@@ -395,7 +395,7 @@ export abstract class SpecificCulturesPatternParserBase<TDataType, TOptions exte
     public get supportedCultures(): Array<string> {
         return this._supportedCultures;
     }
-    private _supportedCultures: Array<string>;
+    private readonly _supportedCultures: Array<string>;
 
      /**
      * Since there can be several parsers for a single lookupKey and cultureID
@@ -472,7 +472,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
     public get utc(): boolean {
         return this._utc;
     }
-    private _utc: boolean;
+    private readonly _utc: boolean;
 
      /**
      * Determines the culture specific order for year, month and day parts.
@@ -700,7 +700,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
     protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
         text = super.cleanText(text, dataTypeLookupKey, cultureId);
 
-        let isNegative = this.isNegative(text);
+        const isNegative = this.isNegative(text);
 
         if (this._stripTheseStringsRegExp === undefined)
             this._stripTheseStringsRegExp = this.createSTSRegExp();
@@ -781,8 +781,8 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
             return true;
         if (this.options.parenthesisAsNegative)
         {
-            let leftPos = text.indexOf('(');
-            let rightPos = text.indexOf(')');
+            const leftPos = text.indexOf('(');
+            const rightPos = text.indexOf(')');
             if (leftPos !== rightPos)   // we have at least one. If none, -1 === -1
                 if (leftPos === -1 ||
                     rightPos === -1 || // only 1 
@@ -841,7 +841,7 @@ export interface BooleanParserOptions extends Omit<DataTypeParserOptions<boolean
      * One or more strings that must match (case insensitive) to identify the value 
      * as true. Required
      */
-    trueValues: Array<string>
+    trueValues: Array<string>;
 
     /**
      * One or more strings that must match (case insensitive) to identify the value 
@@ -895,7 +895,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
     public get supportedCultures(): Array<string> {
         return this._supportedCultures;
     }
-    private _supportedCultures: Array<string>;
+    private readonly _supportedCultures: Array<string>;
     /**
      * Since there can be several parsers for a single lookupKey and cultureID
      * that are selected based on the text, this function is used 
@@ -910,8 +910,8 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
         return this.supportedCultures.includes(cultureId);
     }
     
-    private _trueValuesLC: Array<string>;
-    private _falseValuesLC: Array<string>;
+    private readonly _trueValuesLC: Array<string>;
+    private readonly _falseValuesLC: Array<string>;
 
     protected defaultEmptyStringResult(): boolean {
         return false;

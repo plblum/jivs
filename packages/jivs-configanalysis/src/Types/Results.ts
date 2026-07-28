@@ -3,10 +3,9 @@
  * @module Results/Types
  */
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 /**
  * Represents the analysis results of a configuration.
@@ -199,7 +198,7 @@ export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<Condi
  * an appropriate message.
  */
 export interface LookupKeyCAResult extends CAResultBase, IssueForCAResultBase {
-    feature: CAFeature.lookupKey
+    feature: CAFeature.lookupKey;
     lookupKey: string;
     /**
      * When true, the lookup key is used as a DataType.

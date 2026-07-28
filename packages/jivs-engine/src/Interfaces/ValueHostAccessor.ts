@@ -2,13 +2,13 @@
  * @module ValueHosts/Types/ValueHostAccessor
  */
 
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { ICalcValueHost } from "./CalcValueHost";
-import { IDisposable } from "./General_Purpose";
-import { IFieldValueHost } from "./FieldValueHost";
-import { IStaticValueHost } from "./StaticValueHost";
-import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
-import { IValueHost } from "./ValueHost";
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { ICalcValueHost } from './CalcValueHost';
+import { IDisposable } from './General_Purpose';
+import { IFieldValueHost } from './FieldValueHost';
+import { IStaticValueHost } from './StaticValueHost';
+import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValueHost } from './ValueHost';
 
 export interface IValueHostAccessor extends IDisposable
 {

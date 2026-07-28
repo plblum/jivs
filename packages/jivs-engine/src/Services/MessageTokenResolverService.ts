@@ -3,13 +3,13 @@
  * @module Services/ConcreteClasses/MessageTokenResolverService
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
+import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../Interfaces/LoggerService';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { assertNotNull, CodingError, ensureError } from '../Utilities/ErrorHandling';
+import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
 
 /**
@@ -36,11 +36,11 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
 
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message
-        let foundTokens = message.match(this._tokensInMessageRegEx);
+        const foundTokens = message.match(this._tokensInMessageRegEx);
         if (!foundTokens)
             return message;
 
-        let captures: Array<CapturedToken> = [];
+        const captures: Array<CapturedToken> = [];
         foundTokens.forEach((full) => {
             captures.push(new CapturedToken(full)); 
         });
@@ -48,7 +48,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
         let revised = message;
         let allTavs: Array<TokenLabelAndValue> = [];
         hosts.forEach((tokenSource, index) => {
-            let tavs = tokenSource.getValuesForTokens(valueHost, validationManager);
+            const tavs = tokenSource.getValuesForTokens(valueHost, validationManager);
             if (tavs)
                 allTavs = allTavs.concat(tavs);
         });
@@ -58,14 +58,14 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
             let resolved = false;
             for (let i = 0; !resolved && (i < allTavs.length); i++)
             {
-                let tav = allTavs[i];
+                const tav = allTavs[i];
                 if (capturedToken.isMatch(tav))
                 {
                     try {
-                        let replacement = capturedToken.replacement(tav.associatedValue, validationManager);
+                        const replacement = capturedToken.replacement(tav.associatedValue, validationManager);
                         if (replacement.value !== undefined)
                         {
-                            let finalized = this.finalizeReplacement(replacement.value, tav);
+                            const finalized = this.finalizeReplacement(replacement.value, tav);
                             revised = revised.replace(capturedToken.full, finalized);
                             resolved = true;
                         }
@@ -84,11 +84,11 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                     }
                     catch (e)
                     {
-                        let err = ensureError(e);
+                        const err = ensureError(e);
 
                         this.logger.error(err, (options?: LogOptions) => {
-                            let details: LogErrorDetails = {
-                                data: { token: capturedToken.full },
+                            const details: LogErrorDetails = {
+                                data: { token: capturedToken.full }
                             };
                             return details;
                         }); // will throw if SevereErrorBase
@@ -152,7 +152,7 @@ class CapturedToken
     private extractParts(full: string): void
     {
         full = full.substring(1, full.length - 1).toLowerCase();    // strips {}
-        let splitPos = full.indexOf(':');
+        const splitPos = full.indexOf(':');
         if (splitPos >= 0)
         {
             this.token = full.substring(0, splitPos);  // text prior to colon

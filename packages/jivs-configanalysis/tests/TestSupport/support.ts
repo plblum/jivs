@@ -74,7 +74,7 @@ export function createAnalysisArgs(services: IValidationServices,
         conditionConfigAnalyzer: null!
     };
     mockAnalysisArgs.results.cultureIds = services.cultureService.availableCultures();
-    mockAnalysisArgs.conditionConfigAnalyzer = <IConditionConfigAnalyzer<any>>{
+    mockAnalysisArgs.conditionConfigAnalyzer = <IConditionConfigAnalyzer>{
         analyze: (conditionConfig, valueHostConfig, existingResults) => {
             return {
                 feature: CAFeature.condition,
@@ -95,7 +95,7 @@ export function createAnalysisArgs(services: IValidationServices,
             }
         }
     };
-    mockAnalysisArgs.valueHostConfigAnalyzer = <IValueHostConfigAnalyzer<any>>{
+    mockAnalysisArgs.valueHostConfigAnalyzer = <IValueHostConfigAnalyzer>{
         analyze: (valueHostConfig, alt, existingResults) => {
             return {
                 feature: CAFeature.valueHost,

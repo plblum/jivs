@@ -3,10 +3,9 @@
  * @module Services/Types/IDataTypeConverterService
  */
 
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { IDataTypeConverter } from "./DataTypeConverters";
-import { IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./Services";
+import { IDataTypeConverter } from './DataTypeConverters';
+import { IDataTypeService } from './DataTypes';
+import { IServicesAccessor } from './Services';
 
 /**
  * Identifies types that are simple values. Most objects are not, but Date object really

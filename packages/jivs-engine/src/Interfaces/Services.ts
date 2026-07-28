@@ -3,8 +3,8 @@
  * @module Services/Types/IServices
  */
 
-import { CodingError } from "../Utilities/ErrorHandling";
-import { IDisposable } from "./General_Purpose";
+import { CodingError } from '../Utilities/ErrorHandling';
+import { IDisposable } from './General_Purpose';
 
 /**
  * Base interface for all services including factories
@@ -62,7 +62,7 @@ export interface IServices
  */
 export function toIServicesAccessor(source: any): IServicesAccessor | null {
     if (source && typeof source === 'object') {
-        let test = source as IServicesAccessor;       
+        const test = source as IServicesAccessor;       
         if ('services' in test)
             return test;
     }
@@ -76,7 +76,7 @@ export function toIServicesAccessor(source: any): IServicesAccessor | null {
  */
 export function toIServices(source: any): IServices | null {
     if (source && typeof source === 'object') {
-        let test = source as IServices;       
+        const test = source as IServices;       
         if ('getService' in test &&
             'setService' in test)
             return test;
@@ -104,7 +104,7 @@ export interface IServiceWithFallback<T> extends IService
  */
 export function toIServiceWithFallback(source: any): IServiceWithFallback<any> | null {
     if (source && typeof source === 'object') {
-        let test = source as IServiceWithFallback<any>;       
+        const test = source as IServiceWithFallback<any>;       
         if ('fallbackService' in test)
             return test;
     }

@@ -3,27 +3,27 @@
  * @module Builder/ConcreteClasses/ValidationManagerConfigBuilder
  */
 
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { FieldValueHostConfig, TextValueChangedHandler } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { toIServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
-import { ValueHostValidationStateChangedHandler } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { FieldValueHostConfig, TextValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
+import { ValueHostValidationStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import {
     ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState,
     ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
-} from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
-import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { IValidatorBuilder } from "../Interfaces/ChildBuilders";
+} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
+import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { IValidatorBuilder } from '../Interfaces/ChildBuilders';
 import {
     FluentFieldParameters, FluentFieldValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from "../Interfaces/ValueHostConfigBuilders";
-import { IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
-import { BuilderState, ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
-import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder";
+} from '../Interfaces/ValueHostConfigBuilders';
+import { IValidationManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
+import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
 /**
  * Access point for using ValidationManagerConfigBuilder. It wraps an instance of ValueHostsManagerConfigBuilder
@@ -34,10 +34,10 @@ import { ValidatableValueHostConfigBuilder } from "./ValueHostConfigBuilder";
  */
 export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
-        let services = (arg1 as ValidationManagerConfig).services;
+        const services = (arg1 as ValidationManagerConfig).services;
         return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as unknown as ValidationManagerConfigBuilder;
     }
-    let services = arg1 as IValidationServices;
+    const services = arg1 as IValidationServices;
     return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValidationManagerConfigBuilder;
 }
 
@@ -77,7 +77,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     
     constructor(services: IValidationServices)
     constructor(config: T)
-    constructor(state: BuilderState<T>)
+    constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
     constructor(arg1: IValidationServices | T | BuilderState<T>) {
         super(arg1 as any);
     }
@@ -161,8 +161,8 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         arg3?: Partial<TVHConfig>): IValidatorBuilder {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
-        let builder = this.createValueHostBuilder() as ValidatableValueHostConfigBuilder;
-        let config = builder.withValidators(valueHostType,
+        const builder = this.createValueHostBuilder() as ValidatableValueHostConfigBuilder;
+        const config = builder.withValidators(valueHostType,
             arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
             arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
             arg3 as FluentValidatorsValueHostParameters<TVHConfig>);

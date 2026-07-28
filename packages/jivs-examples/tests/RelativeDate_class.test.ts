@@ -1,7 +1,7 @@
 import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
-import { RelativeDataLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from '../src/RelativeDate_class';
+import { RelativeDateLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from '../src/RelativeDate_class';
 import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
 import { createMinimalValidationServices } from '../src/support';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
@@ -29,23 +29,23 @@ test('The RelativeDate class itself', () => {
 
 test('Test RelativeDateIdentifier class members for expected results', () => {
     let dti = new RelativeDateIdentifier();
-    expect(dti.dataTypeLookupKey).toBe(RelativeDataLookupKey);
+    expect(dti.dataTypeLookupKey).toBe(RelativeDateLookupKey);
     expect(dti.supportsValue(new RelativeDate(1, 0))).toBe(true);
     expect(dti.supportsValue(new Date())).toBe(false);
 });
 test('Test RelativeDateConverter class members for expected results', () => {
     let dtc = new RelativeDateConverter();
     expect(dtc.canConvert(new RelativeDate(1, 0), null, LookupKey.Date)).toBe(true);
-    expect(dtc.canConvert(new RelativeDate(1, 0), RelativeDataLookupKey, LookupKey.Date)).toBe(true);
+    expect(dtc.canConvert(new RelativeDate(1, 0), RelativeDateLookupKey, LookupKey.Date)).toBe(true);
     expect(dtc.canConvert(new RelativeDate(1, 0), 'willnotmatch', LookupKey.Date)).toBe(false);
     expect(dtc.canConvert(new Date(), null, LookupKey.Date)).toBe(false);
-    expect(dtc.canConvert(new Date(), RelativeDataLookupKey, LookupKey.Date)).toBe(false);
+    expect(dtc.canConvert(new Date(), RelativeDateLookupKey, LookupKey.Date)).toBe(false);
 });
 test('Register and test values against the RelativeDateIdentifier', () => {
     let dtis = new DataTypeIdentifierService();
     dtis.register(new RelativeDateIdentifier());
 
-    expect(dtis.identify(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
+    expect(dtis.identify(new RelativeDate(0, 1, 0))).toBe(RelativeDateLookupKey);
 });
 
 test('Register and test values against RelativeDateConverter', () => {
@@ -59,9 +59,9 @@ test('Register and test values against RelativeDateConverter', () => {
     let relativeDate1 = new RelativeDate(1, 0);
     let relativeDate2 = new RelativeDate(2, 0);
     expect(dtcs.find(relativeDate1, null, LookupKey.Date)).toBeInstanceOf(RelativeDateConverter);
-    expect(dtcs.find(relativeDate1, RelativeDataLookupKey, LookupKey.Date)).toBeInstanceOf(RelativeDateConverter);
+    expect(dtcs.find(relativeDate1, RelativeDateLookupKey, LookupKey.Date)).toBeInstanceOf(RelativeDateConverter);
     expect(dtcs.find(relativeDate1, 'willnotmatch', LookupKey.Date)).toBeNull();
     let compareService = vs.dataTypeComparerService as DataTypeComparerService;
-    expect(compareService.compare(relativeDate1, relativeDate1, RelativeDataLookupKey, RelativeDataLookupKey)).toBe(ComparersResult.Equal);
-    expect(compareService.compare(relativeDate1, relativeDate2, RelativeDataLookupKey, RelativeDataLookupKey)).toBe(ComparersResult.LessThan);
+    expect(compareService.compare(relativeDate1, relativeDate1, RelativeDateLookupKey, RelativeDateLookupKey)).toBe(ComparersResult.Equal);
+    expect(compareService.compare(relativeDate1, relativeDate2, RelativeDateLookupKey, RelativeDateLookupKey)).toBe(ComparersResult.LessThan);
 });

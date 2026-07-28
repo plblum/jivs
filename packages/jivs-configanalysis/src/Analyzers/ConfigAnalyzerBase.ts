@@ -3,21 +3,20 @@
  * @module Analyzers/Classes
  */
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { valueForLog } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
-import { IConfigAnalyzer, IConfigPropertyAnalyzer } from "../Types/Analyzers";
-import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } from "../Types/Results";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { valueForLog } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { AnalysisResultsHelper } from './AnalysisResultsHelper';
+import { IConfigAnalyzer, IConfigPropertyAnalyzer } from '../Types/Analyzers';
+import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } from '../Types/Results';
 
 /**
  * Base class for analyzing a Config object, creating a ConfigResults object.
  */
-export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
-    TServices extends IValidationServices>
-    implements IConfigAnalyzer<TConfig, TResults, TServices> {
-    constructor(helper: AnalysisResultsHelper<TServices>,
+export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>>
+    implements IConfigAnalyzer<TConfig, TResults> {
+    constructor(helper: AnalysisResultsHelper<IValidationServices>,
         propertyAnalyzers: Array<IConfigPropertyAnalyzer<TConfig, TResults>>
     ) {
         this._helper = helper;
@@ -31,15 +30,15 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
     protected get propertyAnalyzers(): Array<IConfigPropertyAnalyzer<TConfig, TResults>> {
         return this._propertyAnalyzers;
     }
-    private _propertyAnalyzers: Array<IConfigPropertyAnalyzer<TConfig, TResults>>;
+    private readonly _propertyAnalyzers: Array<IConfigPropertyAnalyzer<TConfig, TResults>>;
 
     /**
      * Supplies helper methods
      */
-    protected get helper(): AnalysisResultsHelper<TServices> {
+    protected get helper(): AnalysisResultsHelper<IValidationServices> {
         return this._helper;
     }
-    private _helper: AnalysisResultsHelper<TServices>;
+    private readonly _helper: AnalysisResultsHelper<IValidationServices>;
 
     /**
      * Analyzes the given Config object to produce the ConfigResults object describing it.
@@ -50,7 +49,7 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
      * @returns The ConfigResults for the caller to add to existingResults.
      */
     public analyze(config: TConfig, valueHostConfig: ValueHostConfig | null, existingResults: Array<TResults>): TResults {
-        let results = this.initResults(config);
+        const results = this.initResults(config);
         if (this.checkForValiability(config, results)) {
             this.checkForDuplicates(config, results, existingResults);
             this.analyzeProperties(config, results, valueHostConfig ?? (config as ValueHostConfig));
@@ -85,13 +84,13 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
                 analyzer.analyze(config, results, valueHostConfig, this.helper);
             }
             catch (e) {
-                let error = ensureError(e);
-                results.properties.push(<ErrorCAResult>{
+                const error = ensureError(e);
+                results.properties.push(({
                     feature: CAFeature.error,
                     severity: CAIssueSeverity.error,
                     message: error.message,
                     analyzerClassName: valueForLog(analyzer)
-                });
+                } as ErrorCAResult));
             }
         });
     }

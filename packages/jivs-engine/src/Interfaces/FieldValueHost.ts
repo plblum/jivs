@@ -1,10 +1,13 @@
 /**
  * @module ValueHosts/Types/FieldValueHost
  */
-import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
-import { SetValueOptions } from "./ValueHost";
-import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "./ValidatorsValueHostBase";
-import { IDataTypeParser } from "./DataTypeParsers";
+import { IDataTypeParser } from './DataTypeParsers';
+import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
+import {
+    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+    ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState
+} from './ValidatorsValueHostBase';
+import { SetValueOptions } from './ValueHost';
 
 
 /**
@@ -276,7 +279,7 @@ export function toIFieldValueHostCallbacks(source: any): IFieldValueHostCallback
 {
     if (toIValidatableValueHostBaseCallbacks(source))
     {
-        let test = source as IFieldValueHostCallbacks;
+        const test = source as IFieldValueHostCallbacks;
         if (test.onTextValueChanged !== undefined)
             return test;
     }

@@ -3,7 +3,7 @@
  * @module DataTypes/Types/IDataTypeFormatter
  */
 
-import { DataTypeResolution } from "./DataTypes";
+import { DataTypeResolution } from './DataTypes';
 
 /**
  * Provides conversion between a native type and its formatted and localized string 

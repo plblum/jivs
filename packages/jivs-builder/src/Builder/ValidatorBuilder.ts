@@ -30,10 +30,10 @@ import {
     NotNullConditionConfig, PositiveConditionConfig,
     RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
-import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
+import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import {
     CompleteConfigBuilderHandler,
     ConditionBuilderHandler,
@@ -53,15 +53,15 @@ import {
     FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
     IConditionBuilder,
     IValidatorBuilder
-} from "../Interfaces/ChildBuilders";
-import { ConditionConfig, ICondition } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
+} from '../Interfaces/ChildBuilders';
+import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { resolveErrorCode } from "@plblum/jivs-engine/build/Utilities/Validation";
-import { BuilderConfigHostBase } from "./BuilderConfigHostBase";
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
+import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 
 
 /**
@@ -107,10 +107,10 @@ export class ValidatorBuilder
         arg2?: string | null | object,
         arg3?: string | null
     ): FluentOverloadArgs<TConditionConfig> {
-        let conditionConfig: TConditionConfig | null | undefined;
-        let errorMessage: string | null | undefined;
-        let summaryMessage: string | null | undefined;
-        let validatorParameters: FluentValidatorConfig | undefined;
+        let conditionConfig: TConditionConfig | null | undefined = undefined;
+        let errorMessage: string | null | undefined = undefined;
+        let summaryMessage: string | null | undefined = undefined;
+        let validatorParameters: FluentValidatorConfig | undefined = undefined;
 
         if (typeof arg2 === 'string' || arg2 === null || arg2 === undefined) {
             errorMessage = arg2 ?? null;
@@ -120,14 +120,14 @@ export class ValidatorBuilder
             // arg3 is ignored here
             conditionConfig = { ...arg2 } as TConditionConfig;
             for (const prop of Object.keys(conditionConfig as object)) {
-                if (fluentValidatorConfigPropertyNames.includes(prop)) {
+                if (FluentValidatorConfigPropertyNames.includes(prop)) {
                     delete (conditionConfig as any)[prop];
                 }
             }
 
             validatorParameters = { ...arg2 };
             for (const prop of Object.keys(validatorParameters as object)) {
-                if (!fluentValidatorConfigPropertyNames.includes(prop)) {
+                if (!FluentValidatorConfigPropertyNames.includes(prop)) {
                     delete (validatorParameters as any)[prop];
                 }
             }
@@ -162,7 +162,7 @@ export class ValidatorBuilder
         errorMessage: string | null | undefined,
         summaryMessage: string | null | undefined,
         validatorConfig: FluentValidatorConfig | undefined | null): IValidatorBuilder {
-        let ivDesc: ValidatorConfig = validatorConfig ?
+        const ivDesc: ValidatorConfig = validatorConfig ?
             { ...validatorConfig as ValidatorConfig } :
             { conditionConfig: null };
         if (errorMessage != null)   // null or undefined
@@ -171,17 +171,17 @@ export class ValidatorBuilder
             ivDesc.summaryMessage = summaryMessage;
 
         if (conditionBuilder !== null) {
-            let conditionConfig = conditionBuilder.getConfig();
+            const conditionConfig = conditionBuilder.getConfig();
             assertNotNull(conditionConfig);
             assertNotNull(conditionConfig?.conditionType);
             if (conditionConfig)
                 ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
         }
         else if (ivDesc.conditionCreator == null)   // null or undefined
-            this.reportError(new Error(`ValidatorConfig must have either a conditionConfig or a conditionCreator.`));   // throws
+            this.reportError(new Error('ValidatorConfig must have either a conditionConfig or a conditionCreator.'));   // throws
 
         // prevent duplicate errorcodes
-        let errorCode = resolveErrorCode(ivDesc);
+        const errorCode = resolveErrorCode(ivDesc);
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
             this.reportError(new Error(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`));    // throws
 
@@ -229,9 +229,10 @@ export class ValidatorBuilder
     public customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         arg1?: FluentValidatorConfig | string | null,
         arg2?: string | null): IValidatorBuilder {
-        let { conditionConfig, errorMessage, summaryMessage, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { conditionConfig, errorMessage, summaryMessage, validatorParameters } =
             this.resolveOverloadArgs<ConditionConfig>(arg1, arg2);
-        let ivConfig: ValidatorConfig = validatorParameters ?
+        const ivConfig: ValidatorConfig = validatorParameters ?
             { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
             { conditionConfig: null };
         ivConfig.conditionCreator = conditionCreator;
@@ -269,9 +270,10 @@ export class ValidatorBuilder
         arg1?: FluentDataTypeCheckValidatorConfig | string | null,
         arg2?: string | null): IValidatorBuilder {
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty   
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<DataTypeCheckConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.dataTypeCheck();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -309,9 +311,9 @@ export class ValidatorBuilder
     public requireText(
         arg1?: string | null | FluentRequireTextValidatorConfig,
         arg2?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RequireTextConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.requireText(conditionConfig as RequireTextConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -352,9 +354,10 @@ export class ValidatorBuilder
         arg1?: string | null | FluentNotNullValidatorConfig,
         arg2?: string | null): IValidatorBuilder {
         // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty  
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotNullConditionConfig>(arg1, arg2);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notNull();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -411,94 +414,94 @@ export class ValidatorBuilder
         if (arg2 && typeof arg2 === 'string') { // then both arg2 and arg3 are errorMessage and summaryMessage
 
             // expression, error message, summary message
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg2, arg3 as string | null);
 
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         else if (arg2 && typeof arg2 === 'object') { // then arg2 is validatorParameters
             // expression, validatorParameters
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg2 as FluentRegExpValidatorConfig);
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         else if (typeof arg2 === 'boolean') { // then arg2 is ignoreCase
-            let ignoreCase = arg2 as boolean;
+            const ignoreCase = arg2 as boolean;
             if (arg3 && typeof arg3 === 'string') { // then both arg3 and arg4 are errorMessage and summaryMessage
                 // string expression, ignoreCase, error message, summary message
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+                const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-                let conditionBuilder = this.createConditionBuilder();
+                const conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
                         
             }
             else if (arg3 && typeof arg3 === 'object') { // then arg3 is validatorParameters
                 // string expression, ignoreCase, validatorParameters
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+                const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-                let conditionBuilder = this.createConditionBuilder();
+                const conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
             if (arg4 && typeof arg4 === 'string') { // because arg3 is null as a placeholder for errormessage
                 // string expression, ignoreCase, null for error message, summary message
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+                const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string);
-                let conditionBuilder = this.createConditionBuilder();
+                const conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
                 
             else {
                 // string expression, ignoreCase
-                let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+                const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                     this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-                let conditionBuilder = this.createConditionBuilder();
+                const conditionBuilder = this.createConditionBuilder();
                 conditionBuilder.regExp(expression, ignoreCase, conditionConfig as RegExpConditionConfig);
                 return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
             }
         }
         else if (arg3 && typeof arg3 === 'object') { // then arg3 is validatorParameters and arg2 is likely undefined
             // expression, undefined, validatorParameters
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as FluentRegExpValidatorConfig);
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         else if (expression instanceof RegExp && arg2 == null && (typeof arg3 === 'string') && arg4 == null) { // then arg2 is error message = null and arg3 is summaryMessage and arg4 is unused
             // RegExp expression, null for error message, string for summary message
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(null, arg3 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         else if (typeof expression === 'string' && arg3 == null && (typeof arg4 === 'string')) { // then arg2 is ignoreCase = undefined, arg3 is errorMessage = null and arg4 is summaryMessage
             // string expression, ignoreCase = undefined, errorMessage = null, summaryMessage
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(null, arg4 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         else if (arg2 == null && (typeof arg3 === 'string' || typeof arg4 === 'string')) { // then arg2 is null, arg3 is errorMessage and arg4 is summaryMessage
             // expression, null for ignoreCase, error message or null, summary message or null
-            let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+            const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
                 this.resolveOverloadArgs<RegExpConditionConfig>(arg3 as string | null, arg4 as string | null);
-            let conditionBuilder = this.createConditionBuilder();
+            const conditionBuilder = this.createConditionBuilder();
             conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
             return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         }
         // fall-thru
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RegExpConditionConfig>(null, null);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.regExp(expression, undefined, conditionConfig as RegExpConditionConfig);
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
         
@@ -543,9 +546,10 @@ export class ValidatorBuilder
         minimum: any, maximum: any,
         arg3?: string | null | FluentRangeValidatorConfig,
         arg4?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<RangeConditionConfig>(arg3, arg4);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.range(minimum, maximum);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -596,9 +600,9 @@ export class ValidatorBuilder
         secondValue: any,
         arg2?: FluentEqualToValueValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.equalToValue(secondValue, conditionConfig as EqualToValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -620,7 +624,7 @@ export class ValidatorBuilder
         secondValue: any,
         arg2?: FluentEqualToValueValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.equalToValue_common(secondValue, arg2, arg3)
+        return this.equalToValue_common(secondValue, arg2, arg3);
     }
 
     /**
@@ -669,10 +673,10 @@ export class ValidatorBuilder
         args2?: FluentEqualToValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
         
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
         
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.equalTo(secondValueHostName, conditionConfig as EqualToConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -743,10 +747,10 @@ export class ValidatorBuilder
         args2?: FluentNotEqualToValueValidatorConfig | null | string,
         args3?: string | null): IValidatorBuilder {
         
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToValueConditionConfig>(args2, args3);
         
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notEqualToValue(secondValue, conditionConfig as NotEqualToValueConditionConfig);
         
         return this.finish(conditionBuilder,
@@ -817,9 +821,9 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         args2?: FluentNotEqualToValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.notEqualTo(secondValueHostName, conditionConfig as NotEqualToConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -889,9 +893,9 @@ export class ValidatorBuilder
         secondValue: any,
         args2?: FluentLessThanValueValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanValue(secondValue, conditionConfig as LessThanValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -963,9 +967,9 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         args2?: FluentLessThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThan(secondValueHostName, conditionConfig as LessThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1036,9 +1040,9 @@ export class ValidatorBuilder
         secondValue: any,
         arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanOrEqualValue(secondValue, conditionConfig as LessThanOrEqualValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1109,9 +1113,9 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.lessThanOrEqual(secondValueHostName, conditionConfig as LessThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1182,9 +1186,9 @@ export class ValidatorBuilder
         secondValue: any,
         args2?: FluentGreaterThanValueValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanValueConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanValue(secondValue, conditionConfig as GreaterThanValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1255,9 +1259,9 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         args2?: FluentGreaterThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThan(secondValueHostName, conditionConfig as GreaterThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1327,9 +1331,9 @@ export class ValidatorBuilder
         secondValue: any,
         arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualValueConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanOrEqualValue(secondValue, conditionConfig as GreaterThanOrEqualValueConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1401,9 +1405,9 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.greaterThanOrEqual(secondValueHostName, conditionConfig as GreaterThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1470,10 +1474,10 @@ export class ValidatorBuilder
         maximum: number | null,
         arg2?: FluentStringLengthValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<StringLengthConditionConfig>(arg2, arg3);
         
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.stringLength(maximum, conditionConfig as StringLengthConditionConfig);
 
         return this.finish(conditionBuilder, errorMessage, summaryMessage, validatorParameters);
@@ -1539,9 +1543,10 @@ export class ValidatorBuilder
     protected positive_common(
         arg1?: FluentPositiveValidatorConfig | string | null,
         arg2?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<PositiveConditionConfig>(arg1, arg2);   
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.positive();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1603,9 +1608,10 @@ export class ValidatorBuilder
     protected integer_common(
         arg1?: FluentIntegerValidatorConfig | string | null,
         arg2?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<IntegerConditionConfig>(arg1, arg2);       
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.integer();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1661,9 +1667,10 @@ export class ValidatorBuilder
         maxDecimals: number,
         arg2?: FluentMaxDecimalsValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<MaxDecimalsConditionConfig>(arg2, arg3); 
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.maxDecimals(maxDecimals);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1711,9 +1718,10 @@ export class ValidatorBuilder
         childBuilder: ConditionBuilderHandler,
         arg2?: FluentNotValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<NotConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.not(childBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1785,9 +1793,10 @@ export class ValidatorBuilder
         thenBuilder: ConditionBuilderHandler,
         arg3?: FluentWhenValidatorConfig | string | null,
         arg4?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<WhenConditionConfig>(arg3, arg4);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.when(whenBuilder, thenBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1853,9 +1862,10 @@ export class ValidatorBuilder
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAllMatchValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AllMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.all(conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1915,9 +1925,10 @@ export class ValidatorBuilder
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAnyMatchValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AnyMatchConditionConfig>(arg2, arg3);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.any(conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -1991,9 +2002,10 @@ export class ValidatorBuilder
         conditionsBuilder: ConditionWithChildrenBuilderHandler,
         arg4?: FluentCountMatchesValidatorConfig | string | null,
         arg5?: string | null): IValidatorBuilder {
-        let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<CountMatchesConditionConfig>(arg4, arg5);
-        let conditionBuilder = this.createConditionBuilder();
+        const conditionBuilder = this.createConditionBuilder();
         conditionBuilder.countMatches(minimum, maximum, conditionsBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
@@ -2016,7 +2028,7 @@ export interface FluentOverloadArgs<TConditionConfig> {
 /**
  * The actual property names on the FluentValidatorConfig interface.
  */
-const fluentValidatorConfigPropertyNames: Array<string> = [
+const FluentValidatorConfigPropertyNames: Array<string> = [
     'validatorType',
     'errorCode',
     'enabled',
@@ -2026,5 +2038,5 @@ const fluentValidatorConfigPropertyNames: Array<string> = [
     'errorMessage',
     'summaryMessage',
     'errorMessagel10n',
-    'summaryMessagel10n',    
+    'summaryMessagel10n'    
 ];

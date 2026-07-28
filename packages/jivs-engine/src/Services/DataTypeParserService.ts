@@ -3,12 +3,12 @@
  * @module Services/ConcreteClasses/DataTypeParserService
  */
 
-import { valueForLog } from '../Utilities/Utilities';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotEmptyString, ensureError } from '../Utilities/ErrorHandling';
+import { valueForLog } from '../Utilities/Utilities';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 
@@ -71,23 +71,23 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         try {
             LookupKeyFallbackService.ensureRecursionSafe(lookupKey, alreadyChecked);
 
-            let parser = this.find(lookupKey, cultureId, text);
+            const parser = this.find(lookupKey, cultureId, text);
 
             if (parser) {
                 // log info level the parser selected
                 this.logger.message(LoggingLevel.Debug, () => `Parser selected: ${valueForLog(parser)}`);
-                let result = parser!.parse(text, lookupKey!, cultureId);
+                const result = parser!.parse(text, lookupKey!, cultureId);
                 if (result.value)
                     this.logger.log(LoggingLevel.Info, () => {
                         return {
                             message: `Parsed "${lookupKey}" with culture "${cultureId}"`,
                             category: LoggingCategory.Result
-                        }
+                        };
                     } );
                 return result;
             }
 
-            let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+            const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
                 this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.parseRecursive(text, fallbackLookupKey, cultureId, alreadyChecked);
@@ -95,7 +95,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
             throw new CodingError(`No DataTypeParser for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
         catch (e) {
-            let err = ensureError(e);
+            const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
             return { errorMessage: err.message };
         }
@@ -123,7 +123,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     public compatible(lookupKey: string, cultureId: string): Array<IDataTypeParser<any>> | null
     {
         this.ensureLazyLoaded();
-        let result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
+        const result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
         return result.length > 0 ? result : null;
     }
 

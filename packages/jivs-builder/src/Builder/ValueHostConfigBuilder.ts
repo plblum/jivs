@@ -2,18 +2,18 @@
  *  @module Builder/ConcreteClasses/ValidatableValueHostConfigBuilder
  */
 
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { CalculationHandler, CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IDisposable } from "@plblum/jivs-engine/build/Interfaces/General_Purpose";
-import { IServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
-import { StaticValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { CalculationHandler, CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpose';
+import { IServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
+import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 
-import { assertNotNull, CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { isPlainObject } from "@plblum/jivs-engine/build/Utilities/Utilities";
+import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { isPlainObject } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import {
     FluentAnyValueHostConfig, FluentAnyValueHostParameters,
     FluentCalcValueConfig,
@@ -22,8 +22,8 @@ import {
     FluentStaticParameters,
     FluentStaticValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from "../Interfaces/ValueHostConfigBuilders";
-import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
+} from '../Interfaces/ValueHostConfigBuilders';
+import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 
 /**
  * Starts a fluent chain for ValidationManager. Its methods start CalcValueHost (calc()),
@@ -55,7 +55,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
     }
     private _services: WeakRef<IValidationServices>;
 
-    dispose(): void {
+    public dispose(): void {
         this._services = undefined!;
         this._existingValueHostConfigs = undefined!;
     }
@@ -88,7 +88,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
         // second parameter is data type (or null/undefined)
         // third parameter is ValueHostConfig, which we'll modify to assign ValueHostType, ValueHostName and DataType
         if (this.isConfigObject(arg3)) {
-            let config = { ...arg3 as T, name: arg1 as string, valueHostType: valueHostType };
+            const config = { ...arg3 as T, name: arg1 as string, valueHostType: valueHostType };
             if (arg2)
                 config.dataType = arg2 as string;
             return config;
@@ -99,7 +99,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
         // third parameter is ignored
         if (typeof arg1 === 'string' && (typeof arg2 === 'string' || arg2 == null)) {   // null or undefined
 
-            let config = { valueHostType: valueHostType, name: arg1 } as T;
+            const config = { valueHostType: valueHostType, name: arg1 } as T;
             if (arg2)
                 config.dataType = arg2;
         
@@ -170,7 +170,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
         if (typeof arg1 === 'string') {
             if (typeof calcFn !== 'function')
                 throw new CodingError('Must supply a calculation function');
-            let config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
+            const config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
             if (dataType)
                 config.dataType = dataType;
         
@@ -244,7 +244,7 @@ export class ValidatableValueHostConfigBuilder extends ValueHostConfigBuilder
         arg2?: FluentValidatorsValueHostParameters<T> | string | null,
         arg3?: FluentValidatorsValueHostParameters<T>): ValidatorsValueHostBaseConfig
     {
-        let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
+        const config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
         if (!config.validatorConfigs)
             config.validatorConfigs = [];
         //     return this.services.buildersFactory.createValidatorBuilder(config);

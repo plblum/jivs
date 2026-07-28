@@ -8,7 +8,7 @@ import { setupHelper, createServices, checkPropertyCAResultsFromArray } from "..
 
 
 // generate a Publicify_ConfigAnalyzerBase class from ConfigAnalyzerBase
-class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestConfigResults, IValidationServices> {
+class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestConfigResults> {
 
     constructor(helper: AnalysisResultsHelper<IValidationServices>,
         propertyAnalyzers: Array<TestConfigPropertyAnalyzer>

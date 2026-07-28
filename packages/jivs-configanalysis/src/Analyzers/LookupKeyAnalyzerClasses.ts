@@ -4,18 +4,18 @@
  */
 
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ILookupKeyAnalyzer } from "../Types/Analyzers";
-import { AnalysisArgs } from "../Types/ConfigAnalysis";
-import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound, CAIssueSeverity, IssueForCAResultBase } from "../Types/Results";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ILookupKeyAnalyzer } from '../Types/Analyzers';
+import { AnalysisArgs } from '../Types/ConfigAnalysis';
+import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound, CAIssueSeverity, IssueForCAResultBase } from '../Types/Results';
 
 /**
  * Each service that has registered data associated with a key --- lookup key, condition type, etc ---
  * has a child of this class registered with the CodeAnalysisService.
  * Each provides a way to take that key and retrieve the matching object, or report an error when not found.
  */
-export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValidationServices>
+export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValidationServices>   // eslint-disable-line @typescript-eslint/no-unused-vars
     implements ILookupKeyAnalyzer {
 
         constructor(args: AnalysisArgs<TServices>) {
@@ -24,7 +24,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValidation
         public get analysisArgs(): AnalysisArgs<TServices> {
             return this._args;
         }
-        private _args: AnalysisArgs<TServices>;
+        private readonly _args: AnalysisArgs<TServices>;
     
         public get services(): TServices {
             return this.analysisArgs.services;

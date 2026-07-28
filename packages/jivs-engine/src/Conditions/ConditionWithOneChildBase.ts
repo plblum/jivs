@@ -4,12 +4,12 @@
  * @module Conditions/AbstractClasses/ConditionWithOneChildBaseConfig
  */
 
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { ConditionConfig, ICondition, ConditionCategory } from "../Interfaces/Conditions";
-import { toIDisposable } from "../Interfaces/General_Purpose";
-import { toIGatherValueHostNames } from "../Interfaces/ValueHost";
-import { IValidationManager } from "../Interfaces/ValidationManager";
-import { ConditionBase, ErrorResponseCondition } from "./ConditionBase";
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { ConditionConfig, ICondition, ConditionCategory } from '../Interfaces/Conditions';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import { toIGatherValueHostNames } from '../Interfaces/ValueHost';
+import { IValidationManager } from '../Interfaces/ValidationManager';
+import { ConditionBase, ErrorResponseCondition } from './ConditionBase';
 
 /**
  * ConditionConfig for {@link ConditionWithOneChildBase}
@@ -69,7 +69,7 @@ export abstract class ConditionWithOneChildBase<TConfig extends ConditionWithOne
 
     public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void
     {
-        let condition = this.condition(validationManager);
+        const condition = this.condition(validationManager);
 
         toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, validationManager);
     }        

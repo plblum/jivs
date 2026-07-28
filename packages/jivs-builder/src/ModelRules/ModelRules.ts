@@ -21,13 +21,13 @@
  * @module ValidationManager/ConcreteClasses
  */
 
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { createFormConfigAdapter } from "../Builder/FormConfigAdapter";
-import { ValidationManagerConfigBuilder } from "../Builder/ValidationManagerConfigBuilder";
-import { IFormConfigAdapter, IManagerConfigBuilder, IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
-import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from "../Interfaces/ModelRules";
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { createFormConfigAdapter } from '../Builder/FormConfigAdapter';
+import { ValidationManagerConfigBuilder } from '../Builder/ValidationManagerConfigBuilder';
+import { IFormConfigAdapter, IManagerConfigBuilder, IValidationManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from '../Interfaces/ModelRules';
 
 
 /**
@@ -48,7 +48,7 @@ export abstract class RulesBase implements IRules
     protected get services(): IValidationServices {
         return this._services;
     }
-    private _services: IValidationServices;
+    private readonly _services: IValidationServices;
 
     /**
      * Creates a ValidationManagerConfig object from the rules built into this class.
@@ -69,9 +69,9 @@ export abstract class RulesBase implements IRules
             this.configureRules(builder, options);
 
             const uiRules = this as Partial<IAdaptModelRulesToForm>;
-            if (typeof uiRules.adaptToForm === "function") {
+            if (typeof uiRules.adaptToForm === 'function') {
             // formAdapter is updating the same configuration data as builder itself.
-                let formAdapter = this.createFormAdapter(builder, { favorUIMessages: options?.favorUIMessages });
+                const formAdapter = this.createFormAdapter(builder, { favorUIMessages: options?.favorUIMessages });
                 uiRules.adaptToForm(formAdapter, options);
             }
 

@@ -380,7 +380,7 @@ export interface IGatherValueHostNames {
  */
 export function toIGatherValueHostNames(source: any): IGatherValueHostNames | null {
     if (source && typeof source === 'object') {
-        let test = source as IGatherValueHostNames;       
+        const test = source as IGatherValueHostNames;       
         if (test.gatherValueHostNames !== undefined)
             return test;
     }
@@ -399,7 +399,7 @@ export function toIValueHost(source: any): IValueHost | null
 {
     if (source && typeof source === 'object')
     {
-        let test = source as IValueHost;    
+        const test = source as IValueHost;    
         // some select members of IValueHost
         if (test.getDataType !== undefined &&
             test.getFromInstanceState !== undefined &&
@@ -444,7 +444,7 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
 {
     if (source && typeof source === 'object')
     {
-        let test = source as IValueHostCallbacks;     
+        const test = source as IValueHostCallbacks;     
         if (test.onValueHostInstanceStateChanged !== undefined && 
             test.onValueChanged !== undefined)
             return test;

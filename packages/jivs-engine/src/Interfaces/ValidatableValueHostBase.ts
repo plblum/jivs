@@ -4,12 +4,18 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
-    type IssueFound, StatefulValueHostValidateResult,
-    ValidationState
+    StatefulValueHostValidateResult,
+    ValidationState,
+    ValidationStatus,
+    type IssueFound,
+    type ValidateOptions, type ValueHostValidateResult
 } from './Validation';
 
-import { IGatherValueHostNames, IValueHostCallbacks, toIValueHost, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
+import {
+    IGatherValueHostNames, IValueHostCallbacks, toIValueHost,
+    toIValueHostCallbacks,
+    type IValueHost, type ValueHostConfig, type ValueHostInstanceState
+} from './ValueHost';
 
 /**
 * Manages a value that may use field validation.
@@ -266,7 +272,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 {
     if (toIValueHost(source))
     {
-        let test = source as IValidatableValueHostBase;    
+        const test = source as IValidatableValueHostBase;    
         // some select members of IValidatorsValueHostBase
         if (test.otherValueHostChangedNotification !== undefined &&
             test.validate !== undefined &&
@@ -306,7 +312,7 @@ export function toIValidatableValueHostBaseCallbacks(source: any): IValidatableV
 {
     if (toIValueHostCallbacks(source))
     {
-        let test = source as IValidatableValueHostBaseCallbacks;
+        const test = source as IValidatableValueHostBaseCallbacks;
         if (test.onValueHostValidationStateChanged !== undefined)
             return test;
     }

@@ -4,26 +4,26 @@
  */
 
 
-import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
-import { CalcValueHostConfig, CalculationHandler } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IDisposable } from "@plblum/jivs-engine/build/Interfaces/General_Purpose";
-import { StaticValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { CalcValueHostConfig, CalculationHandler } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpose';
+import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
 import {
     IValidationManagerCallbacks, ValidationManagerConfig,
     ValidationManagerInstanceState
-} from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostConfig, ValueHostInstanceState } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
+} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import type { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import {
     IBuilderConfigHost, IStartConditionBuilder,
     IStartConditionWithOneChildBuilder, IValidatorBuilder
-} from "./ChildBuilders";
+} from './ChildBuilders';
 import {
     FluentFieldParameters, FluentFieldValueConfig,
     FluentStaticParameters, FluentValidatorConfig
-} from "./ValueHostConfigBuilders";
+} from './ValueHostConfigBuilders';
 /**
  * Base interface for a ValidationManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
@@ -72,7 +72,7 @@ export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
  * A builder for preparing ValidationManagerConfig.
  */
 export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
-    extends IManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
+    extends IManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder,
     IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {
     /**
@@ -102,7 +102,7 @@ export interface BuilderOverrideOptions
      * you have a replacement in TextLocalizationService.
      * If undefined, it defaults to true.
      */
-    favorUIMessages?: boolean
+    favorUIMessages?: boolean;
 }
 
 /**
@@ -166,7 +166,7 @@ export interface IValueHostsForValidationManagerConfig<T extends ValidationManag
 /**
  * Provides value host creation functions for ValidationManagerConfigBuilder.
  */
-export interface IValueHostsForValidatorManagerConfigBuilder<T extends ValidationManagerConfig>
+export interface IValueHostsForValidatorManagerConfigBuilder
 {
     /**
      * Fluent format to create a FieldValueHostConfig.
@@ -254,7 +254,7 @@ export interface IFormConfigAdapter extends IValidationManagerConfigBuilder<Vali
      * @param adjustments - the adjustments to apply to the ValueHostConfig.
      * @returns The IModifyFieldBuilder for further modifications.
      */
-    modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
+    modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder; // eslint-disable-line @typescript-eslint/unified-signatures
 
     /**
      * Updates just the ValueHostConfig.label property.
@@ -264,7 +264,7 @@ export interface IFormConfigAdapter extends IValidationManagerConfigBuilder<Vali
      * @param label - the new label to apply to the ValueHostConfig.
      * @returns The IModifyFieldBuilder for further modifications.
      */
-    modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    
+    modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    // eslint-disable-line @typescript-eslint/unified-signatures
 }
 
 export type AdapterValueHostConfig = Omit<FieldValueHostConfig, 'validatorConfigs' | 'name' | 'dataType'>;

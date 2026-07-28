@@ -21,8 +21,8 @@
  * @module Validation/Types/ModelRules
  */
 
-import { IFormConfigAdapter } from "../Interfaces/ManagerConfigBuilder";
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { IFormConfigAdapter } from '../Interfaces/ManagerConfigBuilder';
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 
 /**
  * Extends the behavior within IRules.configure.
@@ -45,7 +45,7 @@ export interface RulesConfigOptions {
      * you have a replacement in TextLocalizationService.
      * If undefined, it defaults to true.
      */
-    favorUIMessages?: boolean
+    favorUIMessages?: boolean;
 }
 
 /**

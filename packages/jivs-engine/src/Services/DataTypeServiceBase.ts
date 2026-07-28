@@ -41,7 +41,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
     protected updateServices(services: IValidationServices): void
     {
         this.getAll().forEach((registered) => {
-            let sa = toIServicesAccessor(registered);
+            const sa = toIServicesAccessor(registered);
             if (sa)
                 sa.services = services;
         });
@@ -54,14 +54,14 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
       */
     public register(item: T): void {
         assertNotNull(item, 'item');
-        let existingPos = this.indexOfExisting(item);
+        const existingPos = this.indexOfExisting(item);
         if (existingPos < 0)
             this._registeredClasses.push(item);
         else
             this._registeredClasses[existingPos] = item;    // replace
 
         if (this.hasServices()) {
-            let sa = toIServicesAccessor(item);
+            const sa = toIServicesAccessor(item);
             if (sa)
                 sa.services = this.services;
         }        
@@ -124,7 +124,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
     {
         if (this._lazyLoader) {
             // prevent recursion by disabling the feature right away
-            let fn = this._lazyLoader;
+            const fn = this._lazyLoader;
             this._lazyLoader = null;
             fn(this);
             return true;

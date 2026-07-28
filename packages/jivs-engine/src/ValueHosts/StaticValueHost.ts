@@ -62,7 +62,7 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
             return config.valueHostType === ValueHostType.Static;
-        let test = config as unknown as ValidatorsValueHostBaseConfig;
+        const test = config as unknown as ValidatorsValueHostBaseConfig;
         if (test.validatorConfigs === undefined)
             return true;
         return false;

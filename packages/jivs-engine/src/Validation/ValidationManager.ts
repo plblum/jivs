@@ -8,7 +8,7 @@ import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../V
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay, ValidationManagerConfigChangedHandler, ValidationManagerInstanceStateChangedHandler } from '../Interfaces/ValidationManager';
+import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValidationManagerConfigChangedHandler, ValidationManagerInstanceStateChangedHandler } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
@@ -114,7 +114,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         // internalConfig.services = savedServices;
 
         // this._config = internalConfig;
-        let internalConfig = this._config = ValidationManager.safeConfigClone(config);
+        const internalConfig = this._config = ValidationManager.safeConfigClone(config);
 
         this._instanceState = internalConfig.savedInstanceState ?? {};
         if (typeof this._instanceState.stateChangeCounter !== 'number')
@@ -126,11 +126,11 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             internalConfig.savedValueHostInstanceStates.forEach((instanceState) =>
                 this._lastValueHostInstanceStates.set(instanceState.name, instanceState));
 
-        let configs = internalConfig.valueHostConfigs ?? [];
+        const configs = internalConfig.valueHostConfigs ?? [];
         
-        let saveOnChangeConfig = this.onConfigChanged;
+        const saveOnChangeConfig = this.onConfigChanged;
         this._config.onConfigChanged = null;
-        for (let item of configs) {
+        for (const item of configs) {
             this.addValueHost(item as ValueHostConfig, null);   // will get its instance state from _lastValueHostInstanceStates
         }
         this._config.onConfigChanged = saveOnChangeConfig;
@@ -138,9 +138,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
 
     public static safeConfigClone(config: ValidationManagerConfig): ValidationManagerConfig {
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        let savedServices = config.services;
+        const savedServices = config.services;
         config.services = null as any; // to ignore during DeepClone
-        let internalConfig = deepClone(config) as ValidationManagerConfig;
+        const internalConfig = deepClone(config) as ValidationManagerConfig;
         config.services = savedServices;
         internalConfig.services = savedServices;
         return internalConfig;
@@ -152,7 +152,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public dispose(): void
     {
-        this.valueHosts.forEach((vh) => vh.dispose());
+        this.valueHosts.forEach((vh) => { vh.dispose(); });
         this.valueHosts.clear();
         (this._valueHosts as any) = undefined;
 
@@ -215,7 +215,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @returns A generator that yields a tuple of [valueHostName, IValueHost]
      */
     public *enumerateValueHosts(filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
-        for (let [name, vh] of this.valueHosts) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [name, vh] of this.valueHosts) {
             if (filter && !filter(vh))
                 continue;
             yield vh;
@@ -261,8 +262,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public updateInstanceState(updater: (stateToUpdate: TState) => TState): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.instanceState);
-        let updated = updater(toUpdate);
+        const toUpdate = deepClone(this.instanceState);
+        const updated = updater(toUpdate);
         if (!deepEquals(this.instanceState, updated)) {
             updated.stateChangeCounter = typeof updated.stateChangeCounter === 'number' ? updated.stateChangeCounter + 1 : 0;
             this._instanceState = updated;
@@ -342,9 +343,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         assertNotNull(config, 'config');
 
         if (this.valueHostConfigs.has(config.name)) {
-            let destinations: Array<ValueHostConfig> = [];
+            const destinations: Array<ValueHostConfig> = [];
             this.valueHostConfigs.forEach((vhConfig) => destinations.push(vhConfig));
-            let vhcms = this.services.valueHostConfigMergeService;
+            const vhcms = this.services.valueHostConfigMergeService;
             let destinationToMerge = vhcms.identifyValueHostConflict(config, destinations);
             if (destinationToMerge)
             {
@@ -390,15 +391,15 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     protected applyConfig(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         config = deepClone(config); // our own private copy
-        let factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
+        const factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
         let state: ValueHostInstanceState | undefined = undefined;
         let existingState = initialState;
-        let defaultState = factory.createInstanceState(config);
+        const defaultState = factory.createInstanceState(config);
 
         if (!existingState)
             existingState = this._lastValueHostInstanceStates.get(config.name) ?? null;
         if (existingState) {
-            let cleanedState = deepClone(existingState) as ValueHostInstanceState;  // clone to allow changes during Cleanup
+            const cleanedState = deepClone(existingState) as ValueHostInstanceState;  // clone to allow changes during Cleanup
             factory.cleanupInstanceState(cleanedState, config);
             // User may have supplied the state without
             // all of the properties we normally use.
@@ -410,7 +411,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             state = defaultState;
         this.discardValueHost(config.name);
         
-        let vh = factory.create(this, config, state);
+        const vh = factory.create(this, config, state);
 
         this.valueHosts.set(config.name, vh);
         this.valueHostConfigs.set(config.name, config);
@@ -425,7 +426,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     {
         if (this.onConfigChanged)
         {
-            let valueHostConfigs: Array<ValueHostConfig> = [];
+            const valueHostConfigs: Array<ValueHostConfig> = [];
             this.valueHostConfigs.forEach((vhConfig) => valueHostConfigs.push(deepClone(vhConfig)));
 
             this.onConfigChanged(this, valueHostConfigs);
@@ -479,7 +480,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
         this.logger.message(LoggingLevel.Debug, ()=> `notifyOtherValueHostsOfValueChange on ${valueHostIdThatChanged}`);        
-        for (let ivh of this.validatableValueHost())
+        for (const ivh of this.validatableValueHost())
             if (ivh.getName() !== valueHostIdThatChanged)
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
@@ -497,7 +498,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
 
     protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
-        for (let [name, vh] of this.valueHosts) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        for (const [name, vh] of this.valueHosts) {
             if (vh instanceof ValidatableValueHostBase)
                 yield vh;
         }
@@ -604,10 +606,10 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         if (!options)
             options = {};
 
-        for (let vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost()) {
             vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
-        let snapshot = this.createValidationState(options);
+        const snapshot = this.createValidationState(options);
         this.notifyValidationStateChanged(snapshot, options, true);
         return snapshot;
     }
@@ -618,7 +620,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public clearValidation(options?: ValidateOptions): boolean {
         let changed = false;
-        for (let vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost()) {
             if (vh.clearValidation(options))
                 changed = true;
         }
@@ -652,7 +654,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             return;
 
         if (!this._debounceVHValidated) {
-            let delay =  this.config.notifyValidationStateChangedDelay ?? defaultNotifyValidationStateChangedDelay;
+            const delay =  this.config.notifyValidationStateChangedDelay ?? DefaultNotifyValidationStateChangedDelay;
             if (delay && !force)
                 this._debounceVHValidated = new Debouncer<notifyValidationStateChangedWorkerHandler>(
                     this.notifyValidationStateChangedWorker.bind(this),
@@ -685,7 +687,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
 
     protected calculateIsValid(options?: ValidateOptions): boolean {
-        for (let vh of this.validatableValueHost())
+        for (const vh of this.validatableValueHost())
             if (vh.groupCheck(options) && !vh.isValid)
                 return false;
         return true;
@@ -701,7 +703,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
 
     public calculateDoNotSave(options?: ValidateOptions): boolean {
-        for (let vh of this.validatableValueHost())
+        for (const vh of this.validatableValueHost())
             if (vh.groupCheck(options) && vh.doNotSave)
                 return true;
         return false;
@@ -711,7 +713,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public get asyncProcessing(): boolean
     {
-        for (let vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost()) {
             if (vh.asyncProcessing)
                 return true;
         }
@@ -719,7 +721,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
 
     protected calculateAsyncProcessing(options?: ValidateOptions): boolean {
-        for (let vh of this.validatableValueHost())
+        for (const vh of this.validatableValueHost())
             if (vh.groupCheck(options) && vh.asyncProcessing)
                 return true;
         return false;
@@ -748,12 +750,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public addExternalIssuesFound(errors: Array<IssueFound> | null, determinedLocally: boolean, options?: ValidateOptions): boolean
     {
         let changed = false;
-        for (let vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost()) {
             if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
                 changed = true;
         }
         if (errors)
-            for (let error of errors) {
+            for (const error of errors) {
                 if (this.addExternalIssueFound(error, determinedLocally, options))
                     changed = true;
             }
@@ -769,7 +771,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public clearExternalIssuesFound(options?: ValidateOptions): boolean
     {
         let changed = false;
-        for (let vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost()) {
             if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
                 changed = true;
         }
@@ -833,7 +835,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
     public getIssuesForField(valueHostName: ValueHostName): Array<IssueFound> | null {
-        let vh = this.getValueHost(valueHostName);
+        const vh = this.getValueHost(valueHostName);
         if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();
         return null;
@@ -856,8 +858,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public getIssuesFound(group?: string): Array<IssueFound> | null {
         let list: Array<IssueFound> = [];
-        for (let vh of this.validatableValueHost()) {
-            let vhIssues = vh.getIssuesFound(group);
+        for (const vh of this.validatableValueHost()) {
+            const vhIssues = vh.getIssuesFound(group);
             if (vhIssues)
                 list = list.concat(vhIssues);
         }
@@ -868,7 +870,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         // find existing by ModelValidatorsValueHostName
         // If found, return it. If not, create a new one and add it to the ValueHosts.
         // Log when creating
-        let vh = this.getValueHost(ModelValidatorsValueHostName);
+        const vh = this.getValueHost(ModelValidatorsValueHostName);
         if (vh)
             return vh as IValidatorsValueHostBase;
         this.logger.message(LoggingLevel.Info, ()=> 'Creating ModelValidatorsValueHost');
@@ -895,7 +897,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     {
         if (externalIssues && externalIssues.length > 0)
             this.addExternalIssuesFound(externalIssues, true, { skipCallback: true }); // will clear prior external issues
-        let payload = this.getIssuesFound(); // combines validator-generated IssuesFound with user-supplied External IssuesFound
+        const payload = this.getIssuesFound(); // combines validator-generated IssuesFound with user-supplied External IssuesFound
         return JSON.stringify(payload);
     }
 
@@ -917,7 +919,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean
     {
         this.clearExternalIssuesFound({ skipCallback: true }); // clear prior validation results because we are about to set new ones, and we don't want to trigger callbacks until the end.
-        let parsed: Array<IssueFound> = JSON.parse(payload);
+        const parsed: Array<IssueFound> = JSON.parse(payload);
         if (!parsed) {
             this.logger.message(LoggingLevel.Warn, () => 'No issues found in payload');
             return false;

@@ -49,9 +49,9 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
         return this._conditions;
     }
     protected generateConditions(validationManager: IValidationManager): Array<ICondition> {
-        let conditions: Array<ICondition> = [];
-        for (let condConfig of this.config.conditionConfigs) {
-            let condition = this.generateCondition(condConfig, validationManager.services);
+        const conditions: Array<ICondition> = [];
+        for (const condConfig of this.config.conditionConfigs) {
+            const condition = this.generateCondition(condConfig, validationManager.services);
             conditions.push(condition);
         }
         return conditions;
@@ -60,8 +60,8 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
 
     public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void
     {
-        let conditions = this.conditions(validationManager);
-        for (let condition of conditions)
+        const conditions = this.conditions(validationManager);
+        for (const condition of conditions)
             toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, validationManager);
     }        
     protected get defaultCategory(): ConditionCategory {

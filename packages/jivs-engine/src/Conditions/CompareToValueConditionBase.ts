@@ -50,7 +50,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
 {
     public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
-        let value = valueHost.getValue();
+        const value = valueHost.getValue();
         if (value == null)  // null/undefined
         {
             this.logNothingToEvaluate('value', validationManager.services);
@@ -63,7 +63,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
             return ConditionEvaluateResult.Undetermined;
         }
 
-        let valueDetails = this.tryConversion(value, valueHost.getDataType(),
+        const valueDetails = this.tryConversion(value, valueHost.getDataType(),
             this.config.conversionLookupKey, validationManager.services);
         if (valueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
@@ -71,12 +71,12 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
         // !!! The secondValue initially is expected to be a native data type.
         // !!! However, this isn't ideal. We should offer config.secondValueLookupKey        
         
-        let secondValueDetails = this.tryConversion(this.config.secondValue, null,   
+        const secondValueDetails = this.tryConversion(this.config.secondValue, null,   
             this.config.secondConversionLookupKey, validationManager.services);
         if (secondValueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
-        let comparison = validationManager.services.dataTypeComparerService.compare(
+        const comparison = validationManager.services.dataTypeComparerService.compare(
             valueDetails.value, secondValueDetails.value, valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
             this.logTypeMismatch(validationManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
@@ -91,7 +91,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, validationManager));
-        let secondValue = this.config.secondValue;
+        const secondValue = this.config.secondValue;
         
         list.push({
             tokenLabel: 'CompareTo',

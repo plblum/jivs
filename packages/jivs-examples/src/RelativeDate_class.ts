@@ -24,12 +24,12 @@
  * Registration is shown at the bottom of the file.
  */
 
-import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 
 
 export class RelativeDate
@@ -45,17 +45,17 @@ export class RelativeDate
     {
         return this._days;
     }
-    private _days: number;
+    private readonly _days: number;
     public get months(): number // where 0 is January
     {
         return this._months;
     }
-    private _months: number;
+    private readonly _months: number;
     public get years(): number
     {
         return this._years;
     }
-    private _years: number;
+    private readonly _years: number;
 
     public get utcToday(): Date
     {
@@ -80,33 +80,33 @@ export class RelativeDate
     }
 }
 
-export const RelativeDataLookupKey = "RelativeDate";
+export const RelativeDateLookupKey = 'RelativeDate';
 
 export class RelativeDateIdentifier implements IDataTypeIdentifier
 {
-    public get dataTypeLookupKey(): string { return RelativeDataLookupKey }
+    public get dataTypeLookupKey(): string { return RelativeDateLookupKey; }
     public supportsValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
-    public sampleValue() {
+    public sampleValue() : RelativeDate {
         return new RelativeDate(1, 0);
     }
 }
 
 export class RelativeDateConverter extends DataTypeConverterBase
 {
-    convert(value: RelativeDate, sourceLookupKey: string | null, resultLookupKey: string) {
+    public convert(value: RelativeDate, sourceLookupKey: string | null, resultLookupKey: string) : Date {
         return value.resolvedDate;
     }
     protected validValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
-    supportedResultLookupKeys(): string[] {
+    public supportedResultLookupKeys(): string[] {
         return [LookupKey.Date];
     }
-    supportedSourceLookupKeys(): (string | null)[] {
+    public supportedSourceLookupKeys(): (string | null)[] {
         // when passing null for sourceLookupKey in canConvert, it will always match using validValue()
-        return [null, RelativeDataLookupKey];
+        return [null, RelativeDateLookupKey];
     }
 
 }

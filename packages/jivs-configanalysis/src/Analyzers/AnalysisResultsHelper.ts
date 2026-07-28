@@ -2,15 +2,15 @@
  * @module Analyzers/Classes
  */
 
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ServiceName, IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValidatorConfig, IValidator } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { findCaseInsensitiveValueInStringEnum } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { IAnalysisResultsHelper, ILookupKeyAnalyzer } from "../Types/Analyzers";
-import { AnalysisArgs } from "../Types/ConfigAnalysis";
-import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResultBase, CAFeature, CAIssueSeverity, PropertyCAResult, ErrorCAResult, ClassNotFound, LocalizedPropertyCAResult, LocalizedTextResult } from "../Types/Results";
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorConfig, IValidator } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { findCaseInsensitiveValueInStringEnum } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { IAnalysisResultsHelper, ILookupKeyAnalyzer } from '../Types/Analyzers';
+import { AnalysisArgs } from '../Types/ConfigAnalysis';
+import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResultBase, CAFeature, CAIssueSeverity, PropertyCAResult, ErrorCAResult, ClassNotFound, LocalizedPropertyCAResult, LocalizedTextResult } from '../Types/Results';
 
 /**
  * Provides helper methods that collect the results data.
@@ -26,7 +26,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
     public get analysisArgs(): AnalysisArgs<TServices> {
         return this._args;
     }
-    private _args: AnalysisArgs<TServices>;
+    private readonly _args: AnalysisArgs<TServices>;
 
     public get services(): TServices {
         return this.analysisArgs.services;
@@ -46,7 +46,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
     protected get lookupKeyAnalyzers(): Map<string, ILookupKeyAnalyzer> {
         return this._lookupKeyAnalyzers;
     }
-    private _lookupKeyAnalyzers: Map<string, ILookupKeyAnalyzer> = new Map();
+    private readonly _lookupKeyAnalyzers: Map<string, ILookupKeyAnalyzer> = new Map();
 
     public hasLookupKeyAnalyzer(serviceName: ServiceName): boolean {
         return this.lookupKeyAnalyzers.has(serviceName);
@@ -94,19 +94,19 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
      */
     public registerServiceLookupKey(lookupKey: string | null | undefined,
         serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): {
-            lookupKeyResult: LookupKeyCAResult,
-            serviceResult: ServiceWithLookupKeyCAResultBase | null
+            lookupKeyResult: LookupKeyCAResult;
+            serviceResult: ServiceWithLookupKeyCAResultBase | null;
         } | null {
 
-        let lk = this.registerLookupKey(lookupKey, !serviceName || serviceName === ServiceName.identifier);
+        const lk = this.registerLookupKey(lookupKey, !serviceName || serviceName === ServiceName.identifier);
         if (!lk)
             return null;
 
-        let result: { lookupKeyResult: LookupKeyCAResult, serviceResult: ServiceWithLookupKeyCAResultBase | null } = {
+        const result: { lookupKeyResult: LookupKeyCAResult; serviceResult: ServiceWithLookupKeyCAResultBase | null } = {
             lookupKeyResult: lk,
             serviceResult: null
         };
-        let resolvedLookupKey = lk.lookupKey;
+        const resolvedLookupKey = lk.lookupKey;
         if (serviceName) {
             result.serviceResult = this.registerServiceWithLookupKey(serviceName, lk, resolvedLookupKey, valueHostConfig!);
         }
@@ -131,7 +131,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         // we accept whitespace errors here and will report them at their source
         if (lookupKey.trim().length === 0) return null;  // ignore empty strings
 
-        let realInfo = this.checkForRealLookupKeyName(lookupKey);  // lookupKey is not trimmed here as we want to capture mismatches
+        const realInfo = this.checkForRealLookupKeyName(lookupKey);  // lookupKey is not trimmed here as we want to capture mismatches
         lookupKey = realInfo.resolvedLookupKey;
         
         let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey);
@@ -139,12 +139,12 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
             // try a case insensitive match, and use the first one found, even if its not the same case as the user intended
             lk = this.results.lookupKeyResults.find(lk => lk.lookupKey.toLowerCase() === lookupKey.toLowerCase());
             if (!lk) {
-                lk = <LookupKeyCAResult>{
+                lk = {
                     feature: CAFeature.lookupKey,
                     lookupKey: lookupKey,
                     usedAsDataType: usedAsDataType,
                     serviceResults: []
-                };
+                } as LookupKeyCAResult;
                 if (realInfo.severity !== undefined)
                     lk.severity = realInfo.severity;
                 if (realInfo.message)
@@ -174,16 +174,16 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
      */
     public registerServiceWithLookupKey(serviceName: ServiceName, lookupKeyResult: LookupKeyCAResult, 
         analyzeThisLookupKey: string | null, valueHostConfig: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
-        let lookupKey = analyzeThisLookupKey ?? lookupKeyResult.lookupKey;
+        const lookupKey = analyzeThisLookupKey ?? lookupKeyResult.lookupKey;
         let si = lookupKeyResult.serviceResults.find(si => si.feature === serviceName);
         if (!si) {
-            let analyzer = this.lookupKeyAnalyzers.get(serviceName);
+            const analyzer = this.lookupKeyAnalyzers.get(serviceName);
             if (analyzer) {
                 si = analyzer.analyze(lookupKey, valueHostConfig);
                 lookupKeyResult.serviceResults.push(si);
 
                 if (si.tryFallback) {
-                    let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+                    const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                     if (fallbackLookupKey) {
                         this.registerServiceLookupKey(fallbackLookupKey, serviceName, valueHostConfig); // RECURSION
                     }
@@ -207,11 +207,11 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
      * It can report an error for the caller to assign to its Result.severity and Result.message properties.
      */
     public checkForRealLookupKeyName(lookupKey: string): {
-        resolvedLookupKey: string,
-        severity?: CAIssueSeverity,
-        message?: string
+        resolvedLookupKey: string;
+        severity?: CAIssueSeverity;
+        message?: string;
     } {
-        let trimmedLK = lookupKey.trim(); // don't report trimming errors here. They are reported with the property that supplied them
+        const trimmedLK = lookupKey.trim(); // don't report trimming errors here. They are reported with the property that supplied them
         let temp = findCaseInsensitiveValueInStringEnum(trimmedLK, LookupKey) ?? null;  // case insensitive match finds the actual match
         if (temp) {
             return { resolvedLookupKey: temp }; // no error for trimming or case insensitive match. Leave that to caller
@@ -222,7 +222,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         if (temp)
             return { resolvedLookupKey: trimmedLK };
 
-        let identifier = this.services.dataTypeIdentifierService.findByLookupKey(trimmedLK, true);
+        const identifier = this.services.dataTypeIdentifierService.findByLookupKey(trimmedLK, true);
         if (identifier) {
             return { resolvedLookupKey: identifier.dataTypeLookupKey };
         }
@@ -263,20 +263,20 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         serviceName: ServiceName | null, containingValueHostConfig: ValueHostConfig,
         properties: Array<PropertyCAResult | ErrorCAResult>,
         className?: string, servicePropertyName?: string): void {
-        let originalLK = lookupKey;
-        let slkResult = this.registerServiceLookupKey(lookupKey, serviceName, containingValueHostConfig);
+        const originalLK = lookupKey;
+        const slkResult = this.registerServiceLookupKey(lookupKey, serviceName, containingValueHostConfig);
         if (!slkResult) return;
         
         lookupKey = slkResult.lookupKeyResult?.lookupKey; // register has trimmed it and possibly changed the case
 
         let knownLK = false;
-        let inLookupKeyEnum = findCaseInsensitiveValueInStringEnum(lookupKey, LookupKey) ?? null;  // case insensitive match finds the actual match
+        const inLookupKeyEnum = findCaseInsensitiveValueInStringEnum(lookupKey, LookupKey) ?? null;  // case insensitive match finds the actual match
         if (inLookupKeyEnum) {
             lookupKey = inLookupKeyEnum;
             knownLK = true;
         }
         else {
-            let dti = this.services.dataTypeIdentifierService.findByLookupKey(lookupKey, true);
+            const dti = this.services.dataTypeIdentifierService.findByLookupKey(lookupKey, true);
             if (dti) {
                 lookupKey = dti.dataTypeLookupKey;
                 knownLK = true;
@@ -292,7 +292,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
 
         if (slkResult.serviceResult) {
             if (slkResult.serviceResult.tryFallback) {
-                let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+                const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                 if (fallbackLookupKey)
                     this.addPropertyCAResult(propertyName, CAIssueSeverity.warning,
                         `Lookup key "${lookupKey}" does not have a ${className} registered but it will also try the Lookup Key "${fallbackLookupKey}".`, properties);
@@ -329,7 +329,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         fallbackText: string | null | undefined,
         properties: Array<PropertyCAResult | ErrorCAResult>): void {
         if (l10nKey) {
-            let info: LocalizedPropertyCAResult = {
+            const info: LocalizedPropertyCAResult = {
                 feature: CAFeature.l10nProperty,
                 propertyName: propertyNamePrefix,
                 l10nPropertyName: propertyNamePrefix + 'l10n',
@@ -337,13 +337,13 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
                 cultureText: {}
             };
             properties.push(info);            
-            for (let cultureId of this.results.cultureIds) {
-                let cultureResult: LocalizedTextResult = { };
+            for (const cultureId of this.results.cultureIds) {
+                const cultureResult: LocalizedTextResult = { };
                 info.cultureText[cultureId] = cultureResult;
 
-                let msg = `${propertyNamePrefix} localization not declared in TextLocalizerService for culture "${cultureId}".`;
+                const msg = `${propertyNamePrefix} localization not declared in TextLocalizerService for culture "${cultureId}".`;
              
-                let details = this.services.textLocalizerService.localizeWithDetails(cultureId, l10nKey, fallbackText ?? null);
+                const details = this.services.textLocalizerService.localizeWithDetails(cultureId, l10nKey, fallbackText ?? null);
                 switch (details.result) {
                     case 'localized':
                         cultureResult.text = details.text;
@@ -381,15 +381,15 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
             return;
         if (typeof message === 'function')
             return;
-        let matches = message.match(this._possibleTokensInMessageRegEx);
+        const matches = message.match(this._possibleTokensInMessageRegEx);
         if (!matches)
             return;
-        for (let match of matches) {
-            let validToken = this.validateToken(match);
+        for (const match of matches) {
+            const validToken = this.validateToken(match);
             if (validToken) {
-                let parts = match.split(':');
+                const parts = match.split(':');
                 if (parts.length > 1) {
-                    let formatterKey = parts[1].substring(0, parts[1].length - 1);  // remove the closing }
+                    const formatterKey = parts[1].substring(0, parts[1].length - 1);  // remove the closing }
                     this.registerServiceLookupKey(formatterKey, ServiceName.formatter, vhc);  // uses DataTypeFormatterLookupKeyAnalyzer
                 }
             }
@@ -457,7 +457,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         if (!this.checkIsString(valueHostName, propertyName, properties)) {
             return;
         }
-        let trimmedVHN = valueHostName.trim();  // done before checkNeedsTrimming to escape if length=0
+        const trimmedVHN = valueHostName.trim();  // done before checkNeedsTrimming to escape if length=0
         if (trimmedVHN.length === 0)
             return;
         if (!this.checkNeedsTrimming(valueHostName, propertyName, properties))
@@ -465,7 +465,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         
         if (!this.analysisArgs.results.valueHostNames.includes(trimmedVHN)) {
             let msg = '';
-            let found = this.analysisArgs.results.valueHostNames.find((vhn) => vhn.toLowerCase() === trimmedVHN.toLowerCase());
+            const found = this.analysisArgs.results.valueHostNames.find((vhn) => vhn.toLowerCase() === trimmedVHN.toLowerCase());
 
             if (found) { 
                 msg = `Change to "${found}".`;
@@ -515,14 +515,14 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         }
 
         if (!valueLookupKey) {
-            let dtlk = this.services.dataTypeIdentifierService.identify(value);
+            const dtlk = this.services.dataTypeIdentifierService.identify(value);
             if (dtlk) {
                 valueLookupKey = dtlk;
             }
         }
 
         if (conversionLookupKey && conversionLookupKey !== valueLookupKey) {
-            let dtcResult = this.services.dataTypeConverterService.convertUntilResult(
+            const dtcResult = this.services.dataTypeConverterService.convertUntilResult(
                 value, valueLookupKey ?? null, conversionLookupKey);
             if (!dtcResult.resolvedValue) {
                 this.addPropertyCAResult(propertyName, CAIssueSeverity.error,
@@ -604,7 +604,7 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value === null) {
-            let result = severity === CAIssueSeverity.error ?
+            const result = severity === CAIssueSeverity.error ?
                 this.createPropertyCAResult(propertyName, severity, 'Value must not be null.') :
                 this.createPropertyCAResult(propertyName, severity, 'Value should not be null.');
             properties.push(result);
@@ -654,13 +654,13 @@ export class AnalysisResultsHelper<TServices extends IValidationServices>
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value.trim().length === 0) {
-            let result = severity === CAIssueSeverity.error ?
+            const result = severity === CAIssueSeverity.error ?
                 this.createPropertyCAResult(propertyName, severity, 'Value must not be empty string.') :
                 this.createPropertyCAResult(propertyName, severity, 'Value should not be empty string.');
             properties.push(result);
             return false;
         }
-        return true
+        return true;
     }
     
     /**

@@ -19,7 +19,7 @@ class TestValidatorConfigPropertyAnalyzer implements IValidatorConfigPropertyAna
 /**
  * Mock of ValidatorConfigAnalyzer
  */
-class MockConditionConfigAnalyzer implements IConditionConfigAnalyzer<IValidationServices> {
+class MockConditionConfigAnalyzer implements IConditionConfigAnalyzer {
     analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
         this.ranCount++;
         return <ConditionConfigCAResult>{

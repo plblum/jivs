@@ -44,8 +44,8 @@
  */
 
 
-import type { IValidationServices } from "../Interfaces/ValidationServices";
-import { ValidationServices } from "./ValidationServices";
+import type { IValidationServices } from '../Interfaces/ValidationServices';
+import { ValidationServices } from './ValidationServices';
 
 /**
  * Base class for Jivs modules that add module-owned service properties to
@@ -90,7 +90,7 @@ import { ValidationServices } from "./ValidationServices";
  * The service type exposed by the installed property.
  */
 export abstract class ModuleServicesInstaller<TService> {
-    private readonly propertyName: keyof IValidationServices;
+    private readonly _propertyName: keyof IValidationServices;
 
     /**
      * Installs a module-owned service property.
@@ -103,9 +103,9 @@ export abstract class ModuleServicesInstaller<TService> {
      * Thrown when ValidationServices.prototype already defines the property.
      */
     protected constructor(
-        propertyName: keyof IValidationServices,
+        propertyName: keyof IValidationServices
     ) {
-        this.propertyName = propertyName;
+        this._propertyName = propertyName;
         this.install();
     }
 
@@ -124,9 +124,9 @@ export abstract class ModuleServicesInstaller<TService> {
     ): TService;
 
     private getModuleService(
-        services: IValidationServices,
+        services: IValidationServices
     ): TService {
-        const serviceName = String(this.propertyName);
+        const serviceName = String(this._propertyName);
 
         const existingService =
             services.getService<TService>(serviceName);
@@ -139,7 +139,7 @@ export abstract class ModuleServicesInstaller<TService> {
 
         services.setService(
             serviceName,
-            service,
+            service
         );
 
         return service;
@@ -147,11 +147,11 @@ export abstract class ModuleServicesInstaller<TService> {
 
     private setModuleService(
         services: IValidationServices,
-        service: TService,
+        service: TService
     ): void {
         services.setService(
-            String(this.propertyName),
-            service,
+            String(this._propertyName),
+            service
         );
     }
 
@@ -165,12 +165,12 @@ export abstract class ModuleServicesInstaller<TService> {
     private _installed: boolean = false;
 
     private install(): void {
-        const propertyName = this.propertyName;
+        const propertyName = this._propertyName;
 
         const existingDescriptor =
             Object.getOwnPropertyDescriptor(
                 ValidationServices.prototype,
-                propertyName,
+                propertyName
             );
 
         if (existingDescriptor !== undefined) {
@@ -193,14 +193,14 @@ export abstract class ModuleServicesInstaller<TService> {
 
                 set(
                     this: IValidationServices,
-                    service: TService,
+                    service: TService
                 ): void {
                     installer.setModuleService(
                         this,
-                        service,
+                        service
                     );
-                },
-            },
+                }
+            }
         );
         this._installed = true;
     }
@@ -210,14 +210,14 @@ export abstract class ModuleServicesInstaller<TService> {
     public uninstall(): boolean {
         const descriptor = Object.getOwnPropertyDescriptor(
             ValidationServices.prototype,
-            this.propertyName,
+            this._propertyName
         );
 
         if (descriptor === undefined) {
             return false;
         }
 
-        return !!delete ValidationServices.prototype[this.propertyName];
+        return !!delete ValidationServices.prototype[this._propertyName];
     }
 }
 

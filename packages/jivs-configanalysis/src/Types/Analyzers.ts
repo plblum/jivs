@@ -3,18 +3,18 @@
  * @module Analyzers/Types
  */
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValidator, ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { AnalysisArgs } from "./ConfigAnalysis";
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValidator, ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { AnalysisArgs } from './ConfigAnalysis';
 import {
     ServiceWithLookupKeyCAResultBase, OneClassRetrieval, IConfigAnalysisResults,
     LookupKeyCAResult, PropertyCAResult, ErrorCAResult, CAIssueSeverity, ConfigObjectCAResultsBase,
     ValueHostConfigCAResult, ValidatorConfigCAResult, ConditionConfigCAResult
-} from "./Results";
+} from './Results';
 
 /**
  * Each service that has registered data associated with a key --- lookup key, condition type, etc ---
@@ -116,8 +116,8 @@ export interface IAnalysisResultsHelper<TServices extends IValidationServices> {
      * If there was no lookup key, returns null.
      */
     registerServiceLookupKey(lookupKey: string | null | undefined, serviceName: ServiceName | null, valueHostConfig: ValueHostConfig | null): {
-        lookupKeyResult: LookupKeyCAResult,
-        serviceResult: ServiceWithLookupKeyCAResultBase | null
+        lookupKeyResult: LookupKeyCAResult;
+        serviceResult: ServiceWithLookupKeyCAResultBase | null;
     } | null;
 
 /**
@@ -161,9 +161,9 @@ export interface IAnalysisResultsHelper<TServices extends IValidationServices> {
      * It can report an error for the caller to assign to its Result.severity and Result.message properties.
      */
     checkForRealLookupKeyName(lookupKey: string): {
-        resolvedLookupKey: string,
-        severity?: CAIssueSeverity,
-        errorMessage?: string
+        resolvedLookupKey: string;
+        severity?: CAIssueSeverity;
+        errorMessage?: string;
     };
     /**
      * Using the two properties for localization, check if the localization property (l10n) 
@@ -345,8 +345,7 @@ export interface IAnalysisResultsHelper<TServices extends IValidationServices> {
  * ValueHostConfig, ValidatorConfig, ConditionConfig.
  * @template TResults - The type of the analysis results.
  */
-export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
-    TServices extends IValidationServices> {
+export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>> {
     /**
      * Analyzes the given configuration object and returns the analysis results.
      *
@@ -363,8 +362,8 @@ export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResults
  * Represents an interface for analyzing ValueHostConfig objects,
  * creating a ValueHostConfigCAResult object for each VHC.
  */
-export interface IValueHostConfigAnalyzer<TServices extends IValidationServices>
-    extends IConfigAnalyzer<ValueHostConfig, ValueHostConfigCAResult, TServices> {
+export interface IValueHostConfigAnalyzer
+    extends IConfigAnalyzer<ValueHostConfig, ValueHostConfigCAResult> {
 }
 
 /**
@@ -372,15 +371,15 @@ export interface IValueHostConfigAnalyzer<TServices extends IValidationServices>
  * creating a ValidatorConfigCAResult object for each VC.
  */
 export interface IValidatorConfigAnalyzer
-    extends IConfigAnalyzer<ValidatorConfig, ValidatorConfigCAResult, IValidationServices> {
+    extends IConfigAnalyzer<ValidatorConfig, ValidatorConfigCAResult> {
 }
 
 
 /**
  * Analyzes a ConditionConfig object, creating a ConditionResults object.
  */
-export interface IConditionConfigAnalyzer<TServices extends IValidationServices> extends
-    IConfigAnalyzer<ConditionConfig, ConditionConfigCAResult, TServices> {
+export interface IConditionConfigAnalyzer extends
+    IConfigAnalyzer<ConditionConfig, ConditionConfigCAResult> {
 }
 
 /**

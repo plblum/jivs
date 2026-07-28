@@ -1,14 +1,14 @@
 /**
  * @module ValueHosts/Types/ValidatorsValueHostBase
  */
-import { IValidator, ValidatorConfig } from "./Validator";
+import { IValidator, ValidatorConfig } from './Validator';
 import {
     IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
     ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
     toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks
-} from "./ValidatableValueHostBase";
-import { ValueHostConfig } from "./ValueHost";
-import { ValueHostType } from "./ValueHostFactory";
+} from './ValidatableValueHostBase';
+import { ValueHostConfig } from './ValueHost';
+import { ValueHostType } from './ValueHostFactory';
 
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
@@ -55,7 +55,7 @@ export interface ValidatorsValueHostBaseConfig extends ValidatableValueHostBaseC
  */
 export function isValidatableValueHostConfig(source: ValueHostConfig): boolean
 {
-    return source.valueHostType! === ValueHostType.Field ||
+    return source.valueHostType === ValueHostType.Field ||
         (source as ValidatorsValueHostBaseConfig).validatorConfigs !== undefined;
 }
 
@@ -97,7 +97,7 @@ export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBas
 {
     if (toIValidatableValueHostBase(source))
     {
-        let test = source as IValidatorsValueHostBase;    
+        const test = source as IValidatorsValueHostBase;    
         // some select members of IValidatorsValueHostBase
         if (test.getValidator !== undefined)
             return test;

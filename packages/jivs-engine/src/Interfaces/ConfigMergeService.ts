@@ -145,11 +145,11 @@ export interface PropertyConfigMergeServiceHandlerResult
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: PropertyConfigMergeServiceAction,
+    useAction?: PropertyConfigMergeServiceAction;
     /**
      * Provide the value to set to the destination property.
      */
-    useValue?: any
+    useValue?: any;
 }
 /**
  * PropertiesConflictRules uses this as the values.
@@ -193,11 +193,11 @@ export interface ConditionConfigMergeServiceHandlerResult
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: ConditionConfigMergeServiceAction,
+    useAction?: ConditionConfigMergeServiceAction;
     /**
      * Provide the value to set to the destination property.
      */
-    useValue?: ConditionConfig
+    useValue?: ConditionConfig;
 }
 
 /**

@@ -3,7 +3,7 @@
  * @module Utilities
  */
 
-import { valueForLog } from "./Utilities";
+import { valueForLog } from './Utilities';
 
 /**
  * Classes based on this should throw their error all the way to the top.

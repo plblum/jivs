@@ -58,8 +58,8 @@ function assertPrimitive(value: any): void {
 export class BooleanDataTypeComparer implements IDataTypeComparer
 {
     public supportsValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): boolean {
-        let isBool1 = typeof value1 === 'boolean';
-        let isBool2 = typeof value2 === 'boolean';
+        const isBool1 = typeof value1 === 'boolean';
+        const isBool2 = typeof value2 === 'boolean';
         if (isBool1 && (lookupKey1 && lookupKey1 !== LookupKey.Boolean))
             return false;
         if (isBool2 && (lookupKey2 && lookupKey2 !== LookupKey.Boolean))

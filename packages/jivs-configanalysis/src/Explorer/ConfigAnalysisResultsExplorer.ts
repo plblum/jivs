@@ -3,23 +3,23 @@
  * @module Explorer/Classes
  */
 
-import { ServiceName, IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { CodingError, assertNotNull } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { deepClone } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from "./Outputters/ConfigAnalysisOutputterClasses";
-import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from "./Formatters/ConfigAnalysisOutputFormatterClasses";
+import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { CodingError, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { deepClone } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from './Outputters/ConfigAnalysisOutputterClasses';
+import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from './Formatters/ConfigAnalysisOutputFormatterClasses';
 import {
     IConfigAnalysisResultsExplorer, ICAExplorerFactory, IConfigAnalysisOutputter,
     IConfigAnalysisSearchCriteria, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData,
     ICASearcher, ICAExplorerBase, ExplorerCreatorHandler
-} from "../Types/Explorer";
+} from '../Types/Explorer';
 import {
     IConfigAnalysisResults, CAIssueSeverity, CAPathedResult, CAResultPath, CAResultBase,
     ValueHostConfigCAResult, CAFeature, ValidatorConfigCAResult, ConditionConfigCAResult,
     LookupKeyCAResult, IdentifierServiceCAResult, ConverterServiceCAResult, ComparerServiceCAResult,
     ParserServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormatterServiceCAResult,
     FormattersByCultureCAResult, PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult
-} from "../Types/Results";
+} from '../Types/Results';
 
 /**
  * Tool to explore the results of the configuration analysis.
@@ -61,7 +61,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     {
         return this._factory;
     }
-    private _factory: ICAExplorerFactory;
+    private readonly _factory: ICAExplorerFactory;
 
     /**
      * Returns true if any ConfigResult objects with severity of 'error' are found
@@ -85,19 +85,19 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
      */
     public throwOnErrors(includeCompleteResults: boolean = false, outputter?: IConfigAnalysisOutputter): void
     {
-        let reportData = this.createReportData(
+        const reportData = this.createReportData(
             { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false },
             { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false },
             includeCompleteResults);
         if ((reportData.valueHostQueryResults && reportData.valueHostQueryResults.length > 0) ||
             (reportData.lookupKeyQueryResults && reportData.lookupKeyQueryResults.length > 0)) {
-            let content: any;
+            let content: any = undefined;
             if (outputter) {
                 content = outputter.send(reportData);
             }
             if (typeof content !== 'string')
             {
-                let jsonOutputter = new JsonConfigAnalysisOutputFormatter();
+                const jsonOutputter = new JsonConfigAnalysisOutputFormatter();
                 content = jsonOutputter.format(reportData);
             }
             throw new CodingError('Errors found in configuration analysis\n' + content);
@@ -129,7 +129,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
      */
     public hasMatchInConfigResults(criteria: IConfigAnalysisSearchCriteria): boolean
     {
-        let preppedCriteria = new CASearcher(criteria);
+        const preppedCriteria = new CASearcher(criteria);
         return this.results.valueHostResults.some((configResults) => {
             const explorer = this.factory.create(configResults);
             return explorer.hasMatch(preppedCriteria, this.factory);
@@ -144,7 +144,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
      */
     public hasMatchInLookupKeyResults(criteria: IConfigAnalysisSearchCriteria): boolean
     {
-        let preppedCriteria = new CASearcher(criteria);
+        const preppedCriteria = new CASearcher(criteria);
         return this.results.lookupKeyResults.some((lookupKeyResult) => {
             const explorer = this.factory.create(lookupKeyResult);
             return explorer.hasMatch(preppedCriteria, this.factory);
@@ -159,8 +159,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
      * @param criteria
      */
     public queryValueHostResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
-        let matches: Array<CAPathedResult<any>> = [];
-        let preppedCriteria = new CASearcher(criteria);
+        const matches: Array<CAPathedResult<any>> = [];
+        const preppedCriteria = new CASearcher(criteria);
         this.results.valueHostResults.forEach((configResults) => {
             const explorer = this.factory.create(configResults);
             explorer.collect(preppedCriteria, matches, {}, this.factory);
@@ -175,8 +175,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
      * When not found, children are not evaluated.
      */
     public queryLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
-        let matches: Array<CAPathedResult<any>> = [];
-        let preppedCriteria = new CASearcher(criteria);
+        const matches: Array<CAPathedResult<any>> = [];
+        const preppedCriteria = new CASearcher(criteria);
         this.results.lookupKeyResults.forEach((lookupKeyResult) => {
             const explorer = this.factory.create(lookupKeyResult);
             explorer.collect(preppedCriteria, matches, {}, this.factory);
@@ -210,14 +210,14 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
                 return false;
             let pathValue: string | null | undefined = undefined;   // when undefined by the end, it is not a match
             let foundValue: string | null | undefined = undefined;  // when undefined by the end, it is not a match
-            for (let key in path) {
+            for (const key in path) {
                 pathValue = path[key];
                 foundValue = foundResult.path[key];
                 if (foundValue === undefined)
                 { // case insensitive matching to key
-                    let keyLC = key.toLowerCase();
-                    for (let foundKey in foundResult.path) {
-                        let foundKeyLC = foundKey.toLowerCase();
+                    const keyLC = key.toLowerCase();
+                    for (const foundKey in foundResult.path) {
+                        const foundKeyLC = foundKey.toLowerCase();
                         if (foundKeyLC === keyLC)
                         {
                             foundValue = foundResult.path[foundKey];
@@ -236,15 +236,15 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
         }
         let foundResult: CAResultBase | null = null;
         // determine that both the path and the foundResult.path have the same length
-        let pathLength = Object.keys(path).length;
+        const pathLength = Object.keys(path).length;
 
         // compare each path in the foundResults array to the path object.
         // Stop on the first found
         for (let i = 0; i < foundResults.length; i++) {
-            let thisResult = foundResults[i];
+            const thisResult = foundResults[i];
             if (pathMatches(thisResult)) {
                 foundResult = thisResult.result;
-                (foundResult as any)['index'] = i;
+                (foundResult as any).index = i;
                 break;
             }
         }
@@ -259,8 +259,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
         includeCompleteResults: boolean = false,
         space?: string | number | null): string
     {
-        let formatter = new JsonConfigAnalysisOutputFormatter(space ?? undefined);
-        let outputter = new NullConfigAnalysisOutputter(formatter);
+        const formatter = new JsonConfigAnalysisOutputFormatter(space ?? undefined);
+        const outputter = new NullConfigAnalysisOutputter(formatter);
         return this.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter);
     }
 
@@ -272,12 +272,12 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
         includeCompleteResults: boolean = false,
         space?: string | number | null): void
     {
-        let formatter: IConfigAnalysisOutputFormatter;
+        let formatter: IConfigAnalysisOutputFormatter | undefined = undefined;
         if (space == null)  // null or undefined
             formatter = new CleanedObjectConfigAnalysisOutputFormatter();
         else
             formatter = new JsonConfigAnalysisOutputFormatter(space);
-        let outputter = new ConsoleConfigAnalysisOutputter(formatter);
+        const outputter = new ConsoleConfigAnalysisOutputter(formatter);
         this.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter);
     }
 
@@ -308,7 +308,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         includeCompleteResults: boolean): ConfigAnalysisOutputReportData
     {
-        let reportData: ConfigAnalysisOutputReportData = {};
+        const reportData: ConfigAnalysisOutputReportData = {};
 
         if (valueHostCriteria !== false && valueHostCriteria !== null)
             if (valueHostCriteria === true)
@@ -338,7 +338,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
         outputter: IConfigAnalysisOutputter): any
     {
         assertNotNull(outputter, 'outputter');
-        let report = this.createReportData(valueHostCriteria, lookupKeyCriteria, includeCompleteResults);
+        const report = this.createReportData(valueHostCriteria, lookupKeyCriteria, includeCompleteResults);
         return outputter.send(report);
     }
 }
@@ -357,7 +357,7 @@ export class CASearcher implements ICASearcher {
     protected get criteria(): IConfigAnalysisSearchCriteria {
         return this._criteria;
     }
-    private _criteria: IConfigAnalysisSearchCriteria;
+    private readonly _criteria: IConfigAnalysisSearchCriteria;
     /**
      * When true, there are no criteria setup. All results are considered a match.
      */
@@ -365,7 +365,7 @@ export class CASearcher implements ICASearcher {
     {
         return this._criteria === null || Object.keys(this._criteria).length === 0;
     }
-    private _allMatch: boolean;
+    private readonly _allMatch: boolean;
 
     /**
      * When true, the search should skip children when the parent does not match.
@@ -382,9 +382,9 @@ export class CASearcher implements ICASearcher {
      */
     protected prepCriteria(criteria: IConfigAnalysisSearchCriteria | null): IConfigAnalysisSearchCriteria | null {
         if (criteria !== null) {
-            let newCriteria: any = {};
-            for (let key in criteria) {
-                let value = (criteria as any)[key];
+            const newCriteria: any = {};
+            for (const key in criteria) {
+                const value = (criteria as any)[key];
                 if (Array.isArray(value)) {
                     newCriteria[key] = value.map((item) => {
                         if (typeof item === 'string') {
@@ -541,7 +541,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
         assertNotNull(result, 'result');
         this._result = result;
     }
-    private _result: T;
+    private readonly _result: T;
 
     /**
      * Gets the result of the configuration analysis, which is an object structure
@@ -581,9 +581,9 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
      * @returns
      */
     protected addPathElement(path: CAResultPath): void {
-        let baseFeature = this.feature();
+        const baseFeature = this.feature();
         let feature = baseFeature;
-        let identifier = this.identifier();
+        const identifier = this.identifier();
         let count = 1;
         while (path[feature] !== undefined) {
             count++;
@@ -608,13 +608,13 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     public matchThis(searcher: ICASearcher): boolean | undefined {
         if (!searcher || searcher.allMatch)
             return true;
-        let fResult = this.matchFeature(searcher);
+        const fResult = this.matchFeature(searcher);
         if (fResult === false)
             return false;
-        let sResult = this.matchSeverity(searcher);
+        const sResult = this.matchSeverity(searcher);
         if (sResult === false)
             return false;
-        let wResult = this.matchThisWorker(searcher);
+        const wResult = this.matchThisWorker(searcher);
         if (wResult === false)
             return false;
         if (fResult === undefined && sResult === undefined && wResult === undefined)
@@ -672,17 +672,17 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     public findOne(searcher: ICASearcher, factory: ICAExplorerFactory,
         path: CAResultPath = {}): CAPathedResult<CAResultBase> | null
     {
-        let newPath = deepClone(path);
+        const newPath = deepClone(path);
         this.addPathElement(newPath);
 
-        let match = this.matchThis(searcher);
+        const match = this.matchThis(searcher);
         if (match)
             return { path: newPath, result: this.result };
 
         if (match !== false || !searcher.skipChildrenIfParentMismatch)
-            for (let child of this.children()) {
-                let childExplorer = factory.create(child);
-                let result = childExplorer.findOne(searcher, factory, newPath);
+            for (const child of this.children()) {
+                const childExplorer = factory.create(child);
+                const result = childExplorer.findOne(searcher, factory, newPath);
                 if (result !== null)
                     return result;
             }
@@ -704,16 +704,16 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     public collect(searcher: ICASearcher, matches: Array<CAPathedResult<T>>,
         path: CAResultPath,
         factory: ICAExplorerFactory): void {
-        let newPath = deepClone(path);
+        const newPath = deepClone(path);
         this.addPathElement(newPath);
 
-        let match = this.matchThis(searcher);
+        const match = this.matchThis(searcher);
         if (match === true) {
             matches.push({ path: newPath, result: this.result });
         }
         if (match !== false || !searcher.skipChildrenIfParentMismatch)
             this.children().forEach((child) => {
-                let childExplorer = factory.create(child);
+                const childExplorer = factory.create(child);
                 childExplorer.collect(searcher, matches, newPath, factory);
             });
     }
@@ -966,8 +966,8 @@ export class ParsersByCultureCAResultExplorer extends CAExplorerBase<ParsersByCu
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        let cultureIdMatch = searcher.matchCultureId(this.result.cultureId);
-        let serviceNameMatch = searcher.matchServiceName(ServiceName.parser);
+        const cultureIdMatch = searcher.matchCultureId(this.result.cultureId);
+        const serviceNameMatch = searcher.matchServiceName(ServiceName.parser);
         if (cultureIdMatch === undefined && serviceNameMatch === undefined)
             return undefined;
         return (cultureIdMatch ?? true) && (serviceNameMatch ?? true);
@@ -1043,8 +1043,8 @@ export class FormattersByCultureCAResultExplorer extends CAExplorerBase<Formatte
     }
 
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
-        let cultureIdMatch = searcher.matchCultureId(this.result.requestedCultureId);
-        let serviceNameMatch = searcher.matchServiceName(ServiceName.formatter);
+        const cultureIdMatch = searcher.matchCultureId(this.result.requestedCultureId);
+        const serviceNameMatch = searcher.matchServiceName(ServiceName.formatter);
         if (cultureIdMatch === undefined && serviceNameMatch === undefined)
             return undefined;
         return (cultureIdMatch ?? true) && (serviceNameMatch ?? true);
@@ -1099,11 +1099,11 @@ export class LocalizedPropertyCAResultExplorer extends CAExplorerBase<LocalizedP
         // the criteria's severity, return true.
         // This is a special case because cultureText.severity
         // is always set, and we just want to know if one of them matches.
-        let ct = this.result.cultureText;
+        const ct = this.result.cultureText;
         if (ct)
-            for (let key in ct)
+            for (const key in ct)
             {
-                let info = ct[key];
+                const info = ct[key];
                 if (info)
                     if (searcher.matchSeverity(info.severity) === true)
                         return true;
@@ -1119,8 +1119,8 @@ export class LocalizedPropertyCAResultExplorer extends CAExplorerBase<LocalizedP
      */
     protected matchThisWorker(searcher: ICASearcher): boolean | undefined {
         // if either is true, return true
-        let pResult = searcher.matchPropertyName(this.result.propertyName);
-        let lpResult = searcher.matchPropertyName(this.result.l10nPropertyName);
+        const pResult = searcher.matchPropertyName(this.result.propertyName);
+        const lpResult = searcher.matchPropertyName(this.result.l10nPropertyName);
 
         if (pResult || lpResult)
             return true;
@@ -1194,8 +1194,8 @@ export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
     public create(configResult: CAResultBase): ICAExplorerBase<CAResultBase> {
         // feature may contain extra text after the feature name, such as "Condition#2".
         // use the feature name only.
-        let feature = configResult.feature.split('#')[0];
-        let fn = this._explorers.get(feature);
+        const feature = configResult.feature.split('#')[0];
+        const fn = this._explorers.get(feature);
         if (fn) {
             return fn(configResult);
         }
@@ -1211,5 +1211,5 @@ export class ConfigAnalysisResultsExplorerFactory implements ICAExplorerFactory
     public register<T extends CAResultBase>(feature: string, explorerCreator: ExplorerCreatorHandler<T>): void {
         this._explorers.set(feature, explorerCreator);
     }
-    private _explorers: Map<string, ExplorerCreatorHandler<any>>;   // 'any' is used because CAResultBase resulted in TS2352 error due to TypeScript limitations.
+    private readonly _explorers: Map<string, ExplorerCreatorHandler<any>>;   // 'any' is used because CAResultBase resulted in TS2352 error due to TypeScript limitations.
 }

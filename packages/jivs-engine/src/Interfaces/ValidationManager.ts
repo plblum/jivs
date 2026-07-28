@@ -239,7 +239,7 @@ export interface IValidationManager extends IValueHostResolver {
      * @param externalIssues - Errors from business logic, external validators, etc.
      * @returns Package ready for HTTP/API response
      */
-    toValidationPayload(externalIssues: Array<IssueFound> | null): string
+    toValidationPayload(externalIssues: Array<IssueFound> | null): string;
 
     /**
      * Client-side: restore transferred IssueFound state from toValidationPayload().
@@ -256,7 +256,7 @@ export interface IValidationManager extends IValueHostResolver {
      called htmlEncoder(string): string so the user just drops that name in as the parameter.
     * @returns true if state changed
     */
-    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean    
+    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean;    
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
@@ -420,7 +420,7 @@ export interface IValidationManagerCallbacks
     notifyValidationStateChangedDelay?: number;        
 }
 
-export const defaultNotifyValidationStateChangedDelay = 100;
+export const DefaultNotifyValidationStateChangedDelay = 100;
 /**
  * Determines if the object implements IValidationManager.
  * @param source 
@@ -429,7 +429,7 @@ export const defaultNotifyValidationStateChangedDelay = 100;
 export function toIValidationManager(source: any): IValidationManager | null
 {
     if (source && typeof source === 'object') {
-        let test = source as IValidationManager;
+        const test = source as IValidationManager;
         if (
             test.getValueHost !== undefined &&
             test.services !== undefined &&
@@ -457,7 +457,7 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
 {
     if (toIValidatorsValueHostBaseCallbacks(source))
     {
-        let test = source as IValidationManagerCallbacks;     
+        const test = source as IValidationManagerCallbacks;     
         if (test.onInstanceStateChanged !== undefined &&
             test.onValidationStateChanged !== undefined &&
             test.onConfigChanged !== undefined)
@@ -483,7 +483,7 @@ export interface IValidationManagerAccessor
 export function toIValidationManagerAccessor(source: any): IValidationManagerAccessor | null
 {
     if (source && typeof source === 'object') {
-        let test = source as IValidationManagerAccessor;     
+        const test = source as IValidationManagerAccessor;     
         if (test.validationManager !== undefined)
             return test;
     }

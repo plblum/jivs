@@ -2,18 +2,18 @@
  * @module ValueHosts/ConcreteClasses/ValueHostAccessor
  */
 
-import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
-import { IFieldValueHost } from "../Interfaces/FieldValueHost";
-import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { toIFieldValueHost } from "./FieldValueHost";
-import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
-import { IStaticValueHost } from "../Interfaces/StaticValueHost";
-import { ICalcValueHost } from "../Interfaces/CalcValueHost";
-import { toIStaticValueHost } from "./StaticValueHost";
-import { toICalcValueHost } from "./CalcValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
+import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { CodingError, assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { toIFieldValueHost } from './FieldValueHost';
+import { IValueHost, toIValueHost } from '../Interfaces/ValueHost';
+import { IStaticValueHost } from '../Interfaces/StaticValueHost';
+import { ICalcValueHost } from '../Interfaces/CalcValueHost';
+import { toIStaticValueHost } from './StaticValueHost';
+import { toICalcValueHost } from './CalcValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 
 /**
@@ -65,7 +65,7 @@ export class ValueHostAccessor implements IValueHostAccessor
      */
     protected ensureValueHost(valueHostName: ValueHostName): IValueHost
     {
-        let vh = this.valueHostResolver.getValueHost(valueHostName);
+        const vh = this.valueHostResolver.getValueHost(valueHostName);
         if (vh)
             return vh;
         throw new CodingError(`ValueHost named ${valueHostName} is unknown.`);
@@ -81,7 +81,7 @@ export class ValueHostAccessor implements IValueHostAccessor
      */
     protected ensureCorrectValueHost<T extends IValueHost>(valueHostName: ValueHostName, fn: (vh: IValueHost) => T | null, className: string): T
     {
-        let vh = fn(this.ensureValueHost(valueHostName));
+        const vh = fn(this.ensureValueHost(valueHostName));
         if (vh)
             return vh;
         throw new CodingError(`ValueHost named ${valueHostName} is not an ${className}.`);

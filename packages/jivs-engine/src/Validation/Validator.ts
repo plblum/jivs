@@ -15,10 +15,10 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
+import type { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory } from '../Interfaces/Validator';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
@@ -81,7 +81,7 @@ export class Validator implements IValidator {
     }
 
     protected get validationManager(): IValidationManager {
-        let vm = toIValidationManagerAccessor(this.valueHost)?.validationManager;
+        const vm = toIValidationManagerAccessor(this.valueHost)?.validationManager;
         if (vm) {
             if (vm instanceof ValidationManager || toIValidationManager(vm))
                 return vm as IValidationManager;
@@ -106,7 +106,7 @@ export class Validator implements IValidator {
      */
     public dispose(): void
     {
-        function disposeStandardConfigItems(config: ValidatorConfig)
+        function disposeStandardConfigItems(config: ValidatorConfig) : void
         {
             toIDisposable(config.conditionConfig)?.dispose();
             config.conditionConfig = undefined!;
@@ -171,7 +171,7 @@ export class Validator implements IValidator {
                     throw new CodingError('Condition must be setup');
             }
             catch (e) {
-                let err = ensureError(e);
+                const err = ensureError(e);
                 this.logger.error(err);
                 throw err;
             }
@@ -180,7 +180,7 @@ export class Validator implements IValidator {
                 // errors creating these conditions are handled internally
                 // and bad conditions get replaced by ErrorResponseCondition
                 // so we can continue to execute the validation.
-                let { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.validationManager);
+                const { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.validationManager);
                 this._condition = child;
                 this._enabler = enabler;
             }
@@ -204,12 +204,13 @@ export class Validator implements IValidator {
     protected get enabler(): ICondition | null {
         if (!this._enabler)
             try {
-                let temp = this.condition;  // this will assign both _condition and _enabler if using WhenCondition 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const temp = this.condition;  // this will assign both _condition and _enabler if using WhenCondition 
             }
             // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
             catch (e) {
                  // istanbul ignore next
-                let err = ensureError(e);
+                const err = ensureError(e);
                  // istanbul ignore next
                 this.logger.error(err);
                  // istanbul ignore next
@@ -266,7 +267,7 @@ export class Validator implements IValidator {
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = this.config.errorMessagel10n as string | null;
+        const l10n = this.config.errorMessagel10n as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg);
@@ -301,7 +302,7 @@ export class Validator implements IValidator {
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = this.config.summaryMessagel10n as string | null;
+        const l10n = this.config.summaryMessagel10n as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg ?? '');
@@ -325,10 +326,10 @@ export class Validator implements IValidator {
      */
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
-        let self = this;
+        const self = this;
         this.logger.message(LoggingLevel.Debug, () => `Starting Validation for errorcode "${this.errorCode}"`);
 
-        let resultState: ValidatorValidateResult = {
+        const resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
             issueFound: null
         };
@@ -345,12 +346,12 @@ export class Validator implements IValidator {
                 return bailout('Config.enabled is false');
 
             // enabler
-            let enabler = this.enabler;
+            const enabler = this.enabler;
             if (enabler) { // Many enablers don't use the current value host.
                 // When that is the case, their ConditionConfig.valueHostName
                 // must be setup to retrieve the correct one.
                 // ValueHostName takes precedence.
-                let result = enabler.evaluate(this.valueHost, this.validationManager);
+                const result = enabler.evaluate(this.valueHost, this.validationManager);
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
@@ -359,9 +360,9 @@ export class Validator implements IValidator {
             }
 
             if (options.duringEdit && this.supportsDuringEdit()) {
-                let ivh = toIFieldValueHost(this.valueHost);
+                const ivh = toIFieldValueHost(this.valueHost);
                 if (ivh) {
-                    let text = ivh.getTextValue();
+                    const text = ivh.getTextValue();
                     if (typeof text === 'string') {
                         this.logger.message(LoggingLevel.Debug, () => 'Using DuringEdit validation');
 
@@ -372,7 +373,7 @@ export class Validator implements IValidator {
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
-            let pendingCER = this.condition.evaluate(this.valueHost, this.validationManager);
+            const pendingCER = this.condition.evaluate(this.valueHost, this.validationManager);
 
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
@@ -385,7 +386,7 @@ export class Validator implements IValidator {
 
         }
         catch (e) {
-            let err = ensureError(e);            
+            const err = ensureError(e);            
 
             this.logger.error(err);
             if (err instanceof SevereErrorBase)
@@ -399,9 +400,9 @@ export class Validator implements IValidator {
         finally {
             if (resultState.issueFound)
                 this.logger.log(LoggingLevel.Info, (options?: LogOptions) => {
-                    let details: LogDetails = {
+                    const details: LogDetails = {
                         message: `Validation errorcode "${this.errorCode}" found this issue: ${JSON.stringify(resultState.issueFound)}`,
-                        category: LoggingCategory.Result,
+                        category: LoggingCategory.Result
                     };
                     if (options?.includeData)
                         details.data = {
@@ -415,7 +416,7 @@ export class Validator implements IValidator {
         }
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
             self.logger.log(LoggingLevel.Info, (options? : LogOptions) => {
-                let details: LogDetails = {
+                const details: LogDetails = {
                     message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`,
                     category: LoggingCategory.Result
                 };
@@ -429,7 +430,7 @@ export class Validator implements IValidator {
             resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
-                    let issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
+                    const issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
                     issueFound.severity = self.severity;
                     self.updateIssueFoundWhenNoMatch(issueFound, self.valueHost);
                     resultState.issueFound = issueFound;
@@ -438,7 +439,7 @@ export class Validator implements IValidator {
             return resultState;
         }
         function processPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<ValidatorValidateResult> {
-            let wrapperPromise = new Promise<ValidatorValidateResult>((resolve, reject) => {
+            const wrapperPromise = new Promise<ValidatorValidateResult>((resolve, reject) => {
                 promiseCER.then(
                     (resultingCER) => {
                         resolve(resolveCER(resultingCER));
@@ -451,7 +452,7 @@ export class Validator implements IValidator {
             return wrapperPromise;
         }
         function bailout(errorMessage: string): ValidatorValidateResult {
-            let resultState: ValidatorValidateResult = {
+            const resultState: ValidatorValidateResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 issueFound: null
             };
@@ -484,12 +485,12 @@ export class Validator implements IValidator {
      */
     protected updateIssueFoundWhenNoMatch(issueFound: IssueFound,
         valueHost: IValueHost): void {
-        let services = this.services;
+        const services = this.services;
         issueFound.severity = this.severity;
-        let errorMessage = this.getErrorMessageTemplate();
+        const errorMessage = this.getErrorMessageTemplate();
         issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
             errorMessage, this.valueHost, this.validationManager, this);
-        let summaryMessage = this.getSummaryMessageTemplate();
+        const summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
             services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.validationManager, this) :
             undefined;
@@ -507,10 +508,10 @@ export class Validator implements IValidator {
     {
         if (externalIssueFound.errorCode === this.errorCode)
         {
-            let issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
+            const issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
             issueFound.severity = this.severity;
             this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);
-            let resultState: ValidatorValidateResult = {
+            const resultState: ValidatorValidateResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 issueFound: issueFound
             };
@@ -610,7 +611,7 @@ export class Validator implements IValidator {
         ];
         if (tlv[1].associatedValue === undefined)   // fallback to input value if available
         {
-            let ivh = toIFieldValueHost(valueHost);
+            const ivh = toIFieldValueHost(valueHost);
             if (ivh)
                 tlv[1].associatedValue = ivh?.getTextValue();
         }
@@ -644,7 +645,7 @@ export function highestSeverity(issues: IssueFound[] | null): ValidationSeverity
     if (!issues || issues.length === 0)
         return null;
     let severity: ValidationSeverity = ValidationSeverity.Warning;
-    for (let issue of issues) {
+    for (const issue of issues) {
         if (issue.severity == null)  // null/undefined
             issue.severity = ValidationSeverity.Error; // default severity
         if (issue.severity > severity)
@@ -675,7 +676,7 @@ export class ValidatorFactory implements IValidatorFactory {
     public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
         if (config.validatorType == null)   // null or undefined
             return new Validator(valueHost, config);
-        let fn = this._map.get(config.validatorType);
+        const fn = this._map.get(config.validatorType);
         if (fn)
             return fn(config) as IValidator;
         throw new CodingError(`ValidationType not supported: ${config.validatorType}`);        
