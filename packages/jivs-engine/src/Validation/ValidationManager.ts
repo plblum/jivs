@@ -103,7 +103,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * }
      * ```
      */
-    constructor(config: ValidationManagerConfig){
+    constructor(config: ValidationManagerConfig) {
         assertNotNull(config, 'config');
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
@@ -127,7 +127,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
                 this._lastValueHostInstanceStates.set(instanceState.name, instanceState));
 
         const configs = internalConfig.valueHostConfigs ?? [];
-        
+
         const saveOnChangeConfig = this.onConfigChanged;
         this._config.onConfigChanged = null;
         for (const item of configs) {
@@ -150,8 +150,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * If the user needs to abandon this instance, they should use this to 
      * clean up active resources (like timers)
      */
-    public dispose(): void
-    {
+    public dispose(): void {
         this.valueHosts.forEach((vh) => { vh.dispose(); });
         this.valueHosts.clear();
         (this._valueHosts as any) = undefined;
@@ -160,7 +159,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         this.valueHostConfigs.clear();
         (this._valueHostConfigs as any) = undefined;
 
-        toIDisposable(this._config)?.dispose();        
+        toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
 
         this._instanceState = undefined!;
@@ -176,17 +175,15 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     /**
      * Provides an API for logging, sending entries to the loggerService.
      */
-    protected get logger(): LoggerFacade
-    {
+    protected get logger(): LoggerFacade {
         if (!this._logger)
             this._logger = new LoggerFacade(this.services.loggerService,
                 'Manager', this, null, false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggerFacade | null = null;
 
-    protected get config(): ValidationManagerConfig
-    {
+    protected get config(): ValidationManagerConfig {
         return this._config;
     }
     private readonly _config: ValidationManagerConfig;
@@ -289,7 +286,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public addValueHost(config: ValueHostConfig,
         initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
-        this.logger.message(LoggingLevel.Debug, ()=> `addValueHost(${config.name})`);
+        this.logger.message(LoggingLevel.Debug, () => `addValueHost(${config.name})`);
 
         if (!this.valueHostConfigs.has(config.name)) {
             if (initialState) // need to lock in the initial state for a later update
@@ -317,7 +314,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         assertNotNull(config, 'config');
 
         if (this.valueHostConfigs.has(config.name)) {
-            this.logger.message(LoggingLevel.Debug, ()=> `addOrUpdateValueHost(${config.name})`);
+            this.logger.message(LoggingLevel.Debug, () => `addOrUpdateValueHost(${config.name})`);
             return this.applyConfig(config, initialState);
         }
         return this.addValueHost(config, initialState);
@@ -338,8 +335,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    public addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost
-    {
+    public addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
 
         if (this.valueHostConfigs.has(config.name)) {
@@ -347,8 +343,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
             this.valueHostConfigs.forEach((vhConfig) => destinations.push(vhConfig));
             const vhcms = this.services.valueHostConfigMergeService;
             let destinationToMerge = vhcms.identifyValueHostConflict(config, destinations);
-            if (destinationToMerge)
-            {
+            if (destinationToMerge) {
                 destinationToMerge = deepClone(destinationToMerge) as ValueHostConfig; // don't want to let merge change the config already in use.
                 vhcms.merge(config, destinationToMerge);
                 return this.applyConfig(destinationToMerge, initialState);
@@ -410,7 +405,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         else
             state = defaultState;
         this.discardValueHost(config.name);
-        
+
         const vh = factory.create(this, config, state);
 
         this.valueHosts.set(config.name, vh);
@@ -418,14 +413,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         this.invokeOnConfigChanged();
         return vh;
     }
-/**
- * Executes the onConfigChanged callback if it is setup.
- * Sends cloned copies of all ValueHostConfigs.
- */
-    protected invokeOnConfigChanged(): void
-    {
-        if (this.onConfigChanged)
-        {
+    /**
+     * Executes the onConfigChanged callback if it is setup.
+     * Sends cloned copies of all ValueHostConfigs.
+     */
+    protected invokeOnConfigChanged(): void {
+        if (this.onConfigChanged) {
             const valueHostConfigs: Array<ValueHostConfig> = [];
             this.valueHostConfigs.forEach((vhConfig) => valueHostConfigs.push(deepClone(vhConfig)));
 
@@ -464,14 +457,13 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * in a shortened syntax. Always throws exceptions if the value host requested
      * is unknown or not the expected type.
      */
-    public get vh(): IValueHostAccessor
-    {
+    public get vh(): IValueHostAccessor {
         if (!this._vh)
             this._vh = new ValueHostAccessor(this);
         return this._vh;
     }
     private _vh: IValueHostAccessor | undefined;
-    
+
     /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 
      * They may have Conditions that take the changed ValueHost into account and
@@ -479,7 +471,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * This goes through those ValueHosts and notifies them.
      */
     public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
-        this.logger.message(LoggingLevel.Debug, ()=> `notifyOtherValueHostsOfValueChange on ${valueHostIdThatChanged}`);        
+        this.logger.message(LoggingLevel.Debug, () => `notifyOtherValueHostsOfValueChange on ${valueHostIdThatChanged}`);
         for (const ivh of this.validatableValueHost())
             if (ivh.getName() !== valueHostIdThatChanged)
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
@@ -491,8 +483,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param valueHost 
      * @param instanceState 
      */
-    public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void
-    {
+    public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
         this.onValueHostInstanceStateChanged?.(valueHost, instanceState);
     }
@@ -508,7 +499,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     //#region IValidationManagerCallbacks
     protected resolveCallback<T>(callback: T | null | undefined, name: string): T | null {
         if (callback) {
-            this.logger.message(LoggingLevel.Info, ()=> name);            
+            this.logger.message(LoggingLevel.Info, () => name);
             return callback;
         }
         return null;
@@ -520,7 +511,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * of ValidationManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
      * discardValueHost.
      * The supplied object is a clone so modifications will not impact the ValidationManager.
-     */    
+     */
     public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
 
         return this.resolveCallback<ValidationManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
@@ -572,8 +563,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
      * Returns the instance or null if not found or found a different type of value host.
      */
-    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
-    {
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null {
         return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
     }
     /**
@@ -601,8 +591,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * pieces of information: isValid, doNotSave, and issues found.
      * The same object is provided through the OnValidated function
      */
-    public validate(options?: ValidateOptions): ValidationState
-    {
+    public validate(options?: ValidateOptions): ValidationState {
         if (!options)
             options = {};
 
@@ -629,8 +618,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return changed;
     }
 
-    protected createValidationState(options?: ValidateOptions): ValidationState
-    {
+    protected createValidationState(options?: ValidateOptions): ValidationState {
         return {
             isValid: this.calculateIsValid(options),
             doNotSave: this.calculateDoNotSave(options),
@@ -649,12 +637,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param options
      * @param force - when true, override the debouncer and execute immediately.
      */
-    public notifyValidationStateChanged(validationState : ValidationState | null, options?: ValidateOptions, force?: boolean): void {
+    public notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void {
         if (options && options.skipCallback)
             return;
 
         if (!this._debounceVHValidated) {
-            const delay =  this.config.notifyValidationStateChangedDelay ?? DefaultNotifyValidationStateChangedDelay;
+            const delay = this.config.notifyValidationStateChangedDelay ?? DefaultNotifyValidationStateChangedDelay;
             if (delay && !force)
                 this._debounceVHValidated = new Debouncer<notifyValidationStateChangedWorkerHandler>(
                     this.notifyValidationStateChangedWorker.bind(this),
@@ -667,8 +655,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         force ? this._debounceVHValidated!.forceRun(validationState, options) : this._debounceVHValidated!.run(validationState, options);
     }
 
-    protected notifyValidationStateChangedWorker(validationState : ValidationState | null, options?: ValidateOptions): void {
-        this.onValidationStateChanged?.(this, validationState ?? this.createValidationState(options));        
+    protected notifyValidationStateChangedWorker(validationState: ValidationState | null, options?: ValidateOptions): void {
+        this.onValidationStateChanged?.(this, validationState ?? this.createValidationState(options));
     }
 
     private _debounceVHValidated: Debouncer<notifyValidationStateChangedWorkerHandler> | null = null;
@@ -711,13 +699,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     /**
      * When true, an async Validator is running in any ValueHost
      */
-    public get asyncProcessing(): boolean
-    {
+    public get asyncProcessing(): boolean {
         for (const vh of this.validatableValueHost()) {
             if (vh.asyncProcessing)
                 return true;
         }
-        return false;        
+        return false;
     }
 
     protected calculateAsyncProcessing(options?: ValidateOptions): boolean {
@@ -747,8 +734,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param options - Only considers the skipCallback option.
      * @returns when true, the validation snapshot has changed.
      */
-    public addExternalIssuesFound(errors: Array<IssueFound> | null, determinedLocally: boolean, options?: ValidateOptions): boolean
-    {
+    public addExternalIssuesFound(errors: Array<IssueFound> | null, determinedLocally: boolean, options?: ValidateOptions): boolean {
         let changed = false;
         for (const vh of this.validatableValueHost()) {
             if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
@@ -768,8 +754,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param options - Only considers the skipCallback option.
      * @returns when true, the validation snapshot has changed.
      */
-    public clearExternalIssuesFound(options?: ValidateOptions): boolean
-    {
+    public clearExternalIssuesFound(options?: ValidateOptions): boolean {
         let changed = false;
         for (const vh of this.validatableValueHost()) {
             if (vh.clearExternalIssuesFound()) // no options here because changed = true results in notifyValidationStateChanged later
@@ -779,7 +764,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         if (changed)
             this.notifyValidationStateChanged(null, options, true);
         return changed;
-    }    
+    }
     /**
      * For a single external issuefound, meaning the developer's own code
      * determines there is an error and supplies it here.
@@ -813,7 +798,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
                 error.valueHostName = ModelValidatorsValueHostName;
             }
         }
-            
+
         if (vh instanceof ValidatableValueHostBase)
             if (vh.addExternalIssueFound(error, determinedLocally, options))
                 changed = true;
@@ -865,7 +850,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         }
         return list.length ? list : null;
     }
-    
+
     protected createModelValidatorsValueHost(): IValidatorsValueHostBase {
         // find existing by ModelValidatorsValueHostName
         // If found, return it. If not, create a new one and add it to the ValueHosts.
@@ -873,7 +858,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         const vh = this.getValueHost(ModelValidatorsValueHostName);
         if (vh)
             return vh as IValidatorsValueHostBase;
-        this.logger.message(LoggingLevel.Info, ()=> 'Creating ModelValidatorsValueHost');
+        this.logger.message(LoggingLevel.Info, () => 'Creating ModelValidatorsValueHost');
         return this.addValueHost({
             valueHostType: ModelValidatorsValueHostType,
             label: '*',
@@ -893,8 +878,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @param externalIssues - Errors from business logic, external validators, etc.
      * @returns Package ready for HTTP/API response
      */
-    public toValidationPayload(externalIssues: Array<IssueFound> | null): string
-    {
+    public toValidationPayload(externalIssues: Array<IssueFound> | null): string {
         if (externalIssues && externalIssues.length > 0)
             this.addExternalIssuesFound(externalIssues, true, { skipCallback: true }); // will clear prior external issues
         const payload = this.getIssuesFound(); // combines validator-generated IssuesFound with user-supplied External IssuesFound
@@ -916,8 +900,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      called htmlEncoder(string): string so the user just drops that name in as the parameter.
     * @returns true if state changed
     */
-    public fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean
-    {
+    public fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean {
         this.clearExternalIssuesFound({ skipCallback: true }); // clear prior validation results because we are about to set new ones, and we don't want to trigger callbacks until the end.
         const parsed: Array<IssueFound> = JSON.parse(payload);
         if (!parsed) {
@@ -935,7 +918,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         if (this.addExternalIssuesFound(parsed, false))
             return true;
 
-        return false; 
+        return false;
     }
     //#endregion Payload
 
@@ -968,4 +951,4 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     //#endregion IValidationManagerCallbacks
 }
 
-type notifyValidationStateChangedWorkerHandler = (validationState : ValidationState | null, options?: ValidateOptions) => void;
+type notifyValidationStateChangedWorkerHandler = (validationState: ValidationState | null, options?: ValidateOptions) => void;
