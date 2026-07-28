@@ -1,7 +1,7 @@
 // This is the new code for the new library, jivs-angular.
 // ChatGPT, we are collaborating on this source code.
 
-import { Directive, Input, ElementRef, Renderer2, OnInit, OnDestroy, Optional, SkipSelf } from '@angular/core';
+import { Directive, Input, ElementRef, Renderer2, OnInit, OnDestroy, Optional, SkipSelf, InjectionToken, Inject } from '@angular/core';
 import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from 'rxjs';
 import { ValidationManagerConfig, IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
@@ -1783,7 +1783,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         el: ElementRef,
         renderer: Renderer2,
         fivaseServices: FivaseServices,
-        fivaseForm: IFivaseForm,
+        @Inject(FIVASE_FORM_TOKEN) fivaseForm: IFivaseForm,
         valueHostNameDirective: ValueHostNameDirective
     ) {
         super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
@@ -2264,7 +2264,7 @@ export class PopupDirective extends FivaseDirectiveBase {
         el: ElementRef,
         renderer: Renderer2,
         fivaseServices: FivaseServices,
-        fivaseForm: IFivaseForm,
+        @Inject(FIVASE_FORM_TOKEN) fivaseForm: IFivaseForm,
         @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
     ) {
         super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
@@ -2396,7 +2396,7 @@ export class ContainsInvalidChildrenDirective {
     constructor(
         private el: ElementRef,
         private renderer: Renderer2,
-        private fivaseForm: IFivaseForm
+        @Inject(FIVASE_FORM_TOKEN) private fivaseForm: IFivaseForm
     ) { }
 
     public ngOnInit(): void {
@@ -2500,6 +2500,17 @@ export interface IFivaseForm {
     destroy(): void;
 
 }
+
+/**
+ * Injection token for IFivaseForm. Use this token when providing or injecting
+ * an IFivaseForm instance, since interfaces have no runtime value in Angular's DI.
+ *
+ * Example in a component:
+ * ```ts
+ * providers: [{ provide: FIVASE_FORM_TOKEN, useValue: myFivaseFormInstance }]
+ * ```
+ */
+export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');
 
 
 /**

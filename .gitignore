@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+packages/*/node_modules
 
 # compiled code - intended to be allowed at a later date
 /packages/*/build

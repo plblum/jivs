@@ -3,6 +3,7 @@ tests/
 /src/
 coverage/
 node_modules/
+Planning/
 tsconfig*.json
 typedoc.json
 gulpfile.js

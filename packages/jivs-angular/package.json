@@ -5,10 +5,10 @@
   "description": "Delivers Jivs support for Angular applications",
   "displayName": "Jivs Angular",
   "license": "MIT",
-  "main": "build/public-api.js",
-  "types": "build/public-api.d.ts",
+  "types": "build/index.d.ts",
   "scripts": {
-    "compile": "tsc",
+    "compile": "ng-packagr -p ng-package.json",
+    "build": "ng-packagr -p ng-package.json",
     "test": "jest --silent",
     "consoletest": "jest --silent --no-console --noStackTrace",
     "clean": "gulp clean"
@@ -22,9 +22,7 @@
   },
   "peerDependencies": {
     "@angular/common": "^18.2.5",
-    "@angular/core": "^18.2.5"
-  },
-  "dependencies": {
+    "@angular/core": "^18.2.5",
     "@plblum/jivs-engine": "^0.20.0"
   }
 }

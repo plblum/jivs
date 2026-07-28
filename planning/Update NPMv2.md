@@ -113,6 +113,21 @@ npm run compile --workspace packages/jivs-configanalysis
 
 **Commit after Phase 1 is green.**
 
+### Completion info
+Phase 1 is complete. Here's a summary of everything that was done and why:
+
+Files created:
+
+- ng-package.json — tells ng-packagr the entry point and output folder
+- tsconfig.lib.json — used by ng-packagr; carries forward all valid Angular compiler options from tsconfig.json and adds "compilationMode": "partial" (partial-Ivy); drops the two deprecated options (annotateForClosureCompiler, skipTemplateCodegen)
+
+Files modified:
+
+- package.json — compile now runs ng-packagr; added build alias; moved @plblum/jivs-engine from dependencies to peerDependencies (ng-packagr requires this); corrected types field to index.d.ts; removed stale main field
+- .npmignore — added Planning to fix pre-existing leak of design docs into the tarball
+- workproduct.ts — added InjectionToken + Inject to the Angular import; exported FIVASE_FORM_TOKEN; added @Inject(FIVASE_FORM_TOKEN) to the three concrete directive constructors that were injecting IFivaseForm by interface type (a real bug that plain tsc was masking)
+
+Result: ng-packagr builds successfully, produces proper partial-Ivy ESM output, and the tarball is clean.
 ---
 
 ## Phase 2: Move Angular dependencies to jivs-angular
