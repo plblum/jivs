@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/Conditions
+ * @module Analyzers/ConcreteClasses/Conditions
  */
 
 import { CompareToSecondValueHostConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToSecondValueHostConditionBase';
@@ -13,7 +13,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
-import { ConditionConfigCAResult, CAIssueSeverity } from '../Types/Results';
+import { ConditionConfigCAResult, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 import { IAnalysisResultsHelper } from '../Types/Analyzers';
 
 /**

@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses
+ *  @module Builders/AbstractClasses
  */
 
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';

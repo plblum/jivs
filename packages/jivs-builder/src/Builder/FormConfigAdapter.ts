@@ -81,7 +81,7 @@
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
  *     .disable();
  * ``` 
- * @module Builder/ConcreteClasses/FormConfigAdapter
+ * @module Builders/ConcreteClasses
  */
 
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';

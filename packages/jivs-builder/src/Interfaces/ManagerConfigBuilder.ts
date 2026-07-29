@@ -1,6 +1,6 @@
 /**
  * Interfaces for a ManagerConfigBuilders
- * @module Builder/Types/ManagerConfigBuilder
+ * @module Builders/Types
  */
 
 

@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses/ValidatableValueHostConfigBuilder
+ *  @module Builders/ConcreteClasses
  */
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
@@ -26,7 +26,7 @@ import {
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 
 /**
- * Starts a fluent chain for ValidationManager. Its methods start CalcValueHost (calc()),
+ * Starts a fluent chain for a ValueHostConfig. Its methods start CalcValueHost (calc()),
  * and StaticValueHost (static())
  */
 export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor

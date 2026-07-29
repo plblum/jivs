@@ -1,6 +1,6 @@
 /**
  * Interfaces and types used by Analyzers to represent the results.
- * @module Results/Types
+ * @module ConfigAnalysis/Types
  */
 
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';

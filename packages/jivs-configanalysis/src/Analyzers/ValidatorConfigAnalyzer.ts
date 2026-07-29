@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/ValidatorConfig
+ * @module Analyzers/ConcreteClasses/ValidatorConfig
  */
 
 
@@ -11,7 +11,7 @@ import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer } from '../Types/Analyzers';
-import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity } from '../Types/Results';
+import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ValidatorConfig object, with results in a ValidatorConfigCAResult object.

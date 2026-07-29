@@ -164,12 +164,13 @@
  *          return new YourConditionBuilder(parentBuilder, completed);
  *      });
  *      ```
- * @module Builder/Fluent
+ * 
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
  * allows replacing the ValidatorBuilder and ConditionBuilder classes with your own.
  * Just register them within the BuilderFactory in ValidationServices.
+ * @module Builders/ConcreteClasses
  */
 
 import { CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';

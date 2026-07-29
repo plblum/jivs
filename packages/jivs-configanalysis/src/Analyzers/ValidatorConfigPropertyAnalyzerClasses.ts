@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/ValidatorConfig
+ * @module Analyzers/ConcreteClasses/ValidatorConfig
  */
 
 
@@ -9,7 +9,7 @@ import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator'
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
 import { IAnalysisResultsHelper } from '../Types/Analyzers';
-import { ValidatorConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/Results';
+import { ValidatorConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/ConfigAnalysisResults';
 
 
 /**

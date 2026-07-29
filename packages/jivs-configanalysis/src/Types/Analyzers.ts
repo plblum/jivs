@@ -14,7 +14,7 @@ import {
     ServiceWithLookupKeyCAResultBase, OneClassRetrieval, IConfigAnalysisResults,
     LookupKeyCAResult, PropertyCAResult, ErrorCAResult, CAIssueSeverity, ConfigObjectCAResultsBase,
     ValueHostConfigCAResult, ValidatorConfigCAResult, ConditionConfigCAResult
-} from './Results';
+} from './ConfigAnalysisResults';
 
 /**
  * Each service that has registered data associated with a key --- lookup key, condition type, etc ---

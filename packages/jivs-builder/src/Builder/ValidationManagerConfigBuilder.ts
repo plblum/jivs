@@ -1,6 +1,6 @@
 /**
- * @inheritDoc Builder/ConcreteClasses/ValidationManagerConfigBuilder!ValidationManagerConfigBuilder
- * @module Builder/ConcreteClasses/ValidationManagerConfigBuilder
+ * @inheritDoc Builders/ConcreteClasses!ValidationManagerConfigBuilder:class
+ * @module Builders/ConcreteClasses
  */
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
@@ -26,8 +26,7 @@ import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBa
 import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
 /**
- * Access point for using ValidationManagerConfigBuilder. It wraps an instance of ValueHostsManagerConfigBuilder
- * and lets you start using its functions, which are often chained.
+ * Access point for using ValidationManagerConfigBuilder.
  * We recommend that you choose another approach: create your own subclass of ModelRulesBase, 
  * and use its builder property to configure your ValidationManagerConfig.
  * @returns 

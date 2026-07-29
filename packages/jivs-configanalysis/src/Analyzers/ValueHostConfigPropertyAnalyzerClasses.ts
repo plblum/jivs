@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/ValueHostConfig
+ * @module Analyzers/ConcreteClasses/ValueHostConfig
  */
 
 import { CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
@@ -11,7 +11,7 @@ import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
 import { IAnalysisResultsHelper } from '../Types/Analyzers';
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/Results';
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 
 /**

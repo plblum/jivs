@@ -1,6 +1,6 @@
 /**
- * @inheritDoc Builder/AbstractClasses/ManagerConfigBuilderBase!ManagerConfigBuilderBase:class
- * @module Builder/AbstractClasses/ManagerConfigBuilderBase
+ * @inheritDoc Builders/AbstractClasses!ManagerConfigBuilderBase:class
+ * @module Builders/AbstractClasses
  */
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';

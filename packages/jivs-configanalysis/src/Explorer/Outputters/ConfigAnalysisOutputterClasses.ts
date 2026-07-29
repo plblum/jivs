@@ -1,6 +1,6 @@
 /**
  * 
- * @module Explorer/Classes/Outputters
+ * @module Explorer/ConcreteClasses/Outputters
  */
 
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from '../Formatters/ConfigAnalysisOutputFormatterClasses';

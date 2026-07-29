@@ -6,7 +6,7 @@
 import {
     IConfigAnalysisResults, CAPathedResult, CAResultPath,
     CAResultBase, CAFeature, CAIssueSeverity
-} from './Results';
+} from './ConfigAnalysisResults';
 
 /**
  * Tool to explore the results of the configuration analysis. 

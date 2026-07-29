@@ -1,5 +1,5 @@
 /**
- * @module Analyzers/Classes/LookupKeys
+ * @module Analyzers/ConcreteClasses/LookupKeys
  */
 
 import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypeParsers';
@@ -7,7 +7,7 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { MultipleClassesPerLookupKeyAnalyzer } from './LookupKeyAnalyzerClasses';
-import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, ParserFoundCAResult } from '../Types/Results';
+import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, ParserFoundCAResult } from '../Types/ConfigAnalysisResults';
 import { AnalysisArgs } from '../Types/ConfigAnalysis';
 
 /**

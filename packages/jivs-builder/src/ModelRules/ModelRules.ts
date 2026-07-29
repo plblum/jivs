@@ -18,7 +18,7 @@
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     const vm = new ValidationManager(config);
     ```
- * @module ValidationManager/ConcreteClasses
+ * @module ModelRules/ConcreteClasses
  */
 
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';

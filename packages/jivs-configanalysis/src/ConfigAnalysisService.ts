@@ -1,3 +1,8 @@
+/**
+ * 
+ * @module ConfigAnalysis/Classes
+ */
+
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 import type { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import type { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
@@ -20,7 +25,7 @@ import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IVa
 import { ConfigAnalysisOptions, IConfigAnalysis } from './Types/ConfigAnalysis';
 import { CONFIG_ANALYSIS_SERVICE_NAME, IConfigAnalysisService } from './Types/ConfigAnalysisService';
 import { IConfigAnalysisResultsExplorer } from './Types/Explorer';
-import { CAIssueSeverity } from './Types/Results';
+import { CAIssueSeverity } from './Types/ConfigAnalysisResults';
 
 /**
  * ConfigAnalysisService supplies the ConfigAnalysis object.

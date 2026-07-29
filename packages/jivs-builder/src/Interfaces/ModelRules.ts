@@ -18,7 +18,7 @@
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     const vm = new ValidationManager(config);
     ```
- * @module Validation/Types/ModelRules
+ * @module ModelRules/Types
  */
 
 import { IFormConfigAdapter } from '../Interfaces/ManagerConfigBuilder';

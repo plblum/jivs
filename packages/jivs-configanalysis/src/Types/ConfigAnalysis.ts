@@ -13,7 +13,7 @@ import {
     IConditionConfigAnalyzer, IDataTypeComparerAnalyzer
 } from './Analyzers';
 import { IConfigAnalysisResultsExplorer } from './Explorer';
-import { IConfigAnalysisResults } from './Results';
+import { IConfigAnalysisResults } from './ConfigAnalysisResults';
 
 /**
  * A tool to ensure that your configuration is as expected,

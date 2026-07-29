@@ -1,5 +1,5 @@
 /**
- * @module Analyzers/Classes
+ * @module Analyzers/ConcreteClasses
  */
 
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
@@ -10,7 +10,7 @@ import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { findCaseInsensitiveValueInStringEnum } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { IAnalysisResultsHelper, ILookupKeyAnalyzer } from '../Types/Analyzers';
 import { AnalysisArgs } from '../Types/ConfigAnalysis';
-import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResultBase, CAFeature, CAIssueSeverity, PropertyCAResult, ErrorCAResult, ClassNotFound, LocalizedPropertyCAResult, LocalizedTextResult } from '../Types/Results';
+import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResultBase, CAFeature, CAIssueSeverity, PropertyCAResult, ErrorCAResult, ClassNotFound, LocalizedPropertyCAResult, LocalizedTextResult } from '../Types/ConfigAnalysisResults';
 
 /**
  * Provides helper methods that collect the results data.

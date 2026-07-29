@@ -28,7 +28,7 @@
  *    initialValue: 3.14159,
  * ...and more...
  * };
- * 
+ * ```
  * @module ValueHosts/Types/StaticValueHost
  */
 

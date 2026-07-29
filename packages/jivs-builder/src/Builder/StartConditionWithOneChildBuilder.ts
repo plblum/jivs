@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses/StartConditionWithOneChildBuilder
+ *  @module Builders/ConcreteClasses
  */
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { SetConfigOptions, IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';

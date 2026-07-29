@@ -1,7 +1,7 @@
 /**
  * Provides data type and valueHost specific values for the ConfigAnalysis 
  * to use in its analysis.
- * @module Services/ConcreteClasses/ConfigAnalysis
+ * @module ConfigAnalysis/Classes
  */
 
 

@@ -1,12 +1,12 @@
 /**
- * @module Analyzers/Classes/LookupKeys
+ * @module Analyzers/ConcreteClasses/LookupKeys
  */
 
 import { IDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverters';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { OneClassPerLookupKeyAnalyzer } from './LookupKeyAnalyzerClasses';
-import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult, CAFeature } from '../Types/Results';
+import { ServiceWithLookupKeyCAResultBase, ConverterServiceCAResult, CAFeature } from '../Types/ConfigAnalysisResults';
 import { AnalysisArgs } from '../Types/ConfigAnalysis';
 
 /**

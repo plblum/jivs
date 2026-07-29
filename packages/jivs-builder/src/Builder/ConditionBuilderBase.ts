@@ -9,42 +9,42 @@
  *    This is handled by ValidatorBuilder,
  *    where each condition is wired into validator builder.
  * 2. As a stand-alone Condition object, with these use cases:
- *   a. ValueHost's enabler, which is a condition to determine whether the ValueHost is enabled or disabled.
- *      ```ts
- *      config: FieldValueHostConfig {
- *          name: 'Field1',
- *          dataType: LookupKey.String,
- *          enablerConfig: // here
- *          { 
- *              conditionType: ConditionType.EqualTo,
- *              secondValueHostName: 'Field2'
- *          }
- *      }
- *      ```
- *   b. An array of Condition config objects to satisify the AllCondition, AnyCondition, and CountMatchesCondition.
- *      ```ts
- *      config: AllConditionConfig {
- *         conditionType: ConditionType.All,
- *         conditionConfigs: [
- *          { ... child Config 1 ...}
- *       ]
- *      ```
- *   c. A condition config object to satisfy the NotCondition.
- *      ```ts
- *      config: NotConditionConfig {
- *          conditionType: ConditionType.Not,
- *          childConditionConfig: { ... child Config 1 ...}
- *      }
- *      ```
- *   d. Two condition configs to satisfy the whenToEnableConfig and thenConfig properties
- *      of WhenCondition.
- *      ```ts
- *      config: WhenConditionConfig {
- *          conditionType: ConditionType.When,
- *          whenToEnableConfig: { ... child Config 1 ...},
- *          thenConfig: { ... child Config 2 ...}
- *      }
- *      ```
+ *    a. ValueHost's enabler, which is a condition to determine whether the ValueHost is enabled or disabled.
+ *       ```ts
+ *       config: FieldValueHostConfig {
+ *           name: 'Field1',
+ *           dataType: LookupKey.String,
+ *           enablerConfig: // here
+ *           { 
+ *               conditionType: ConditionType.EqualTo,
+ *               secondValueHostName: 'Field2'
+ *           }
+ *       }
+ *       ```
+ *    b. An array of Condition config objects to satisify the AllCondition, AnyCondition, and CountMatchesCondition.
+ *       ```ts
+ *       config: AllConditionConfig {
+ *          conditionType: ConditionType.All,
+ *          conditionConfigs: [
+ *           { ... child Config 1 ...}
+ *        ]
+ *       ```
+ *    c. A condition config object to satisfy the NotCondition.
+ *       ```ts
+ *       config: NotConditionConfig {
+ *           conditionType: ConditionType.Not,
+ *           childConditionConfig: { ... child Config 1 ...}
+ *       }
+ *       ```
+ *    d. Two condition configs to satisfy the whenToEnableConfig and thenConfig properties
+ *       of WhenCondition.
+ *       ```ts
+ *       config: WhenConditionConfig {
+ *           conditionType: ConditionType.When,
+ *           whenToEnableConfig: { ... child Config 1 ...},
+ *           thenConfig: { ... child Config 2 ...}
+ *       }
+ *       ```
  * 
  * The cases for b, c, and d are used within the Fluent validator syntax.
  * ```ts
@@ -71,10 +71,11 @@
  * 1. Any condition that has a valueHostName property needs to know its value, whether its a 
  *    a value host name string, or null/undefined which means the parent value host is used.
  *    These conditions require the source is expressed before the condition.
- *      ```ts
+ *     ```ts
  *     condBuilder.parentValue().equalTo("Value1") // parentValue() is the source for equalTo
  *     \\ or
  *     condBuilder.fieldValue("Field1").equalTo("Value1") // fieldValue() is the source for equalTo
+ *     ```
  * 2. The remaining conditions - AllCondition, AnyCondition, CountMatchesCondition, NotCondition, and WhenCondition -
  *    don't require parentValue() or fieldValue().
  *      ```ts
@@ -118,7 +119,7 @@
  *    and other conditions that can have child conditions. It fully creates the condition config.
  *    It gathers all child condition configs and attaches them to the parent condition config
  *    through its setConfig method.
- *  @module Builder/ConcreteClasses/ConditionBuilderBase
+ *  @module Builders/AbstractClasses
  */
 
 import { CountMatchesConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';

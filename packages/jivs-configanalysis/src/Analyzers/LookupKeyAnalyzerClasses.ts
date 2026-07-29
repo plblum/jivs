@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/LookupKeys
+ * @module Analyzers/ConcreteClasses/LookupKeys
  */
 
 
@@ -8,7 +8,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { ILookupKeyAnalyzer } from '../Types/Analyzers';
 import { AnalysisArgs } from '../Types/ConfigAnalysis';
-import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound, CAIssueSeverity, IssueForCAResultBase } from '../Types/Results';
+import { IConfigAnalysisResults, ServiceWithLookupKeyCAResultBase, ClassNotFound, CAIssueSeverity, IssueForCAResultBase } from '../Types/ConfigAnalysisResults';
 
 /**
  * Each service that has registered data associated with a key --- lookup key, condition type, etc ---

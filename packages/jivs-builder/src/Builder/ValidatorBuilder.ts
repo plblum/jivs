@@ -14,7 +14,7 @@
  * is the typical use case.
  * Each validator is added to the parent ValidatableValueHostBaseConfig.validatorConfigs array.
  * 
- * @module Builder/ConcreteClasses/ValidatorBuilder
+ * @module Builders/ConcreteClasses
  */
 
 import {
@@ -68,7 +68,7 @@ import { BuilderConfigHostBase } from './BuilderConfigHostBase';
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
  * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
  * 
- * See {@link Builder/ConcreteClasses/ValidationManagerConfigBuilder | Fluent Overview}
+ * See {@link Builders/ConcreteClasses!ValidationManagerConfigBuilder:class | Builder Overview}
  */
 export class ValidatorBuilder
     extends BuilderConfigHostBase<object>

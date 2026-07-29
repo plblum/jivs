@@ -16,7 +16,7 @@ import {
 } from './Types/Analyzers';
 import { IConfigAnalysis, ConfigAnalysisOptions, AnalysisArgs } from './Types/ConfigAnalysis';
 import { IConfigAnalysisResultsExplorer } from './Types/Explorer';
-import { IConfigAnalysisResults } from './Types/Results';
+import { IConfigAnalysisResults } from './Types/ConfigAnalysisResults';
 import { AnalysisResultsHelper } from './Analyzers/AnalysisResultsHelper';
 import { ConditionConfigAnalyzer } from './Analyzers/ConditionConfigAnalyzer';
 import { DataTypeComparerAnalyzer } from './Analyzers/DataTypeComparerAnalyzer';

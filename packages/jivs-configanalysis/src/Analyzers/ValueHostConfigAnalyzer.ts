@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/ValueHostConfig
+ * @module Analyzers/ConcreteClasses/ValueHostConfig
  */
 
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
@@ -10,7 +10,7 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer } from '../Types/Analyzers';
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/Results';
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ValueHostConfig object, creating a ValueHostResults object.

@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses/StartConditionWithChildrenBuilder
+ *  @module Builders/ConcreteClasses
 */
 
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';

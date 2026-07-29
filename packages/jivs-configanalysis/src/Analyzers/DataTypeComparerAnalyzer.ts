@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/LookupKeys
+ * @module Analyzers/ConcreteClasses/LookupKeys
  */
 
 import { defaultComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
@@ -12,7 +12,7 @@ import { InvalidTypeError } from '@plblum/jivs-engine/build/Utilities/ErrorHandl
 import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { IDataTypeComparerAnalyzer } from '../Types/Analyzers';
-import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../Types/Results';
+import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 
 /**

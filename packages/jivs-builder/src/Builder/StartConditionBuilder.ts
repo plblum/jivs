@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses/StartConditionBuilder
+ *  @module Builders/ConcreteClasses
  */
 
 import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';

@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes
+ * @module Analyzers/AbstractClasses
  */
 
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -9,7 +9,7 @@ import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { valueForLog } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { IConfigAnalyzer, IConfigPropertyAnalyzer } from '../Types/Analyzers';
-import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } from '../Types/Results';
+import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 /**
  * Base class for analyzing a Config object, creating a ConfigResults object.

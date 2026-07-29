@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/Classes/Conditions
+ * @module Analyzers/ConcreteClasses/Conditions
  */
 
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
@@ -13,7 +13,7 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from '../Types/Analyzers';
-import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/Results';
+import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ConditionConfig object, creating a ConditionResults object.

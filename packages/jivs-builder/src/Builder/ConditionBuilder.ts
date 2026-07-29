@@ -1,5 +1,5 @@
 /**
- *  @module Builder/ConcreteClasses/ConditionBuilder
+ *  @module Builders/ConcreteClasses
 */
 
 import {
