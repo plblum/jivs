@@ -499,7 +499,7 @@ export interface ICAExplorerBase<T extends CAResultBase> {
      * amongst itself and all of its children.
      * @param searcher 
      * @param factory 
-     * @path Collects feature/identifier pairs to form the path to this object.
+     * @param path Collects feature/identifier pairs to form the path to this object.
      * 
      * @returns The first ConfigResults object that matches the criteria,
      * or null if no match is found.

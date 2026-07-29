@@ -4,7 +4,7 @@
 // The typedoc.json file points to this file.
 {
     "extends":  "./tsconfig_common.json",
-    "configureOptions":
+    "compilerOptions":
     {
         "baseUrl": ".",
         "outDir": "./global_build/",
@@ -18,7 +18,9 @@
     "emitDecoratorMetadata": true
     },    
     "include": [
-      "packages"
+      "packages/jivs-engine",
+      "packages/jivs-builder",
+      "packages/jivs-configanalysis"
     ],
     "exclude": [ 
         "./*.js", 
@@ -28,5 +30,12 @@
         "docs",
         "starter_code",
         "typedoc",
-        "typedoc_output"]
+        "typedoc_output",
+        "packages/*/build",
+        "packages/*/tests",
+        "packages/*/coverage",
+        "packages/*/node_modules",
+        "packages/*/examples",
+        "packages/*/planning",
+        "planning"]
 }

@@ -70,7 +70,7 @@ export interface ICalcValueHost extends IValueHost
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be.
+     * @param resultLookupKey - The lookup key that the result should be.
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType;
@@ -88,7 +88,7 @@ export interface ICalcValueHost extends IValueHost
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be
+     * @param resultLookupKey - The lookup key that the result should be
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType;        

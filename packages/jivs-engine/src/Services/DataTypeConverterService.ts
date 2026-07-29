@@ -80,7 +80,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns An object identifying the converter used and the converted value. Its 
      * value parameter is undefined when the value was not converted.

@@ -3,10 +3,17 @@
     "tsconfig": "tsconfig_root_compile.json",
     "name": "Jivs",
     "entryPoints": [
-        "packages/jivs-engine/src/"
+        "packages/jivs-engine/src/",
+        "packages/jivs-builder/src/",
+        "packages/jivs-configanalysis/src/"
     ],
     "readme": "README.md",
     "entryPointStrategy": "expand",
+    "exclude": [
+        "**/*.js",
+        "**/*.js.map",
+        "**/*.d.ts"
+    ],
     "out": "typedoc_output",
     "useTsLinkResolution": true,
     "customCss": "typedoc/jivstheme.css",

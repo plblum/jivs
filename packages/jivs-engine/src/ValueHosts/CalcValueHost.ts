@@ -34,7 +34,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be.
+     * @param resultLookupKey - The lookup key that the result should be.
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType
@@ -55,7 +55,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns The converted value. If the value is not convertable, return undefined.
      */

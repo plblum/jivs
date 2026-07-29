@@ -667,7 +667,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * there may be warning issues found (in IssuesFound),
      * an async validator is still running,
      * validator evaluated as Undetermined.
-     * So check @link doNotSave|doNotSave  as the ultimate guide to saving.
+     * So check {@link doNotSave|doNotSave} as the ultimate guide to saving.
      * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
