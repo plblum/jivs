@@ -210,8 +210,8 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
      * Executes a condition only when another condition is satisfied.
      * When the "when" condition is satisfied, the "then" condition is evaluated.
      * When the "when" condition is not satisfied, the "then" condition is not evaluated,
-     * @param whenToEnable -
-     * @param thenCallback 
+     * @param whenToEnableCallback - The callback that defines the "when" condition.
+     * @param thenCallback - The callback that defines the "then" condition.
      */
     public when(whenToEnableCallback: ConditionBuilderHandler, thenCallback: ConditionBuilderHandler): void {
         assertNotNull(whenToEnableCallback, 'whenToEnableCallback');

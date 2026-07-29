@@ -146,8 +146,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
      * Captures an error in the configuration and throws an exception
      * if the message is an instance of Error.
      * Always writes to the console and to the logger.
-     * @param message - The error message to report.
-     * @param throwsError - If true, an exception will be thrown after reporting the error.
+     * @param message - The error message to report. If it is an instance of Error, it will be thrown after logging.
      */
     protected reportError(message: string | Error): void {
         if (message instanceof Error)

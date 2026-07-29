@@ -15,7 +15,7 @@ import { ConfigAnalysisOptions, ISampleValues } from './Types/ConfigAnalysis';
  * For example, make the "Integer" lookup key return "100" as a sample value.
  * 
  * Also allows the user to supply valueHost specific values through the options parameter
- * of ConfigAnalysis.analyze(). See {@link Services/Types/ConfigAnalysis!ConfigAnalysisOptions}.
+ * of ConfigAnalysis.analyze(). See {@link ConfigAnalysis/Types!ConfigAnalysisOptions}.
 
  * For example, make the "Last Name" ValueHost return "Smith" as a sample value.
  * 

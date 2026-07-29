@@ -63,7 +63,7 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
      * This does not execute validation logic.
      * Returns null when the issue does not align to this validator.
      * Returns a ValidatorValidateResult that can be stored in validator-owned state when it does.
-     * @param issueFound 
+     * @param externalIssueFound - The issue found that is being checked for alignment with this validator. 
      * @returns if null, it did not handle the ExternalIssueFound. If a ValidatorValidateResult,
      * it should be used in the ValueHost's state of validation.
      */

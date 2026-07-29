@@ -86,7 +86,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
     //#region InstanceState
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedInstanceState
      */
     public get savedInstanceState(): ValidationManagerInstanceState | null {
         return this.baseConfig.savedInstanceState ?? null;
@@ -95,7 +95,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         this.baseConfig.savedInstanceState = value;
     }
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
      */
     public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
         return this.baseConfig.savedValueHostInstanceStates ?? null;
@@ -225,7 +225,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onInstanceStateChanged
+     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onInstanceStateChanged
      */
 
     public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
@@ -236,7 +236,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!IValidationManagerCallbacks.onConfigChanged
+     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onConfigChanged
      */
     public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
         return this.baseConfig.onConfigChanged ?? null;

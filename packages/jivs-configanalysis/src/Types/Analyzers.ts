@@ -39,8 +39,6 @@ export interface ILookupKeyAnalyzer {
  * Represents an interface for a data type comparer analyzer.
  * This interface provides methods to check condition configurations for the need of a comparer
  * and to register additional condition types that require a comparer.
- * 
- * @typeparam TServices - The type of value host services.
  */
 export interface IDataTypeComparerAnalyzer {
      /**

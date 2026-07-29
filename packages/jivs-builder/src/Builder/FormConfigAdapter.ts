@@ -637,7 +637,6 @@ export class ModifyValidatorBuilder
      * Otherwise, it will create a new All/AnyMatchCondition with the existing and new conditions as children
      * and fully replace getConfig().conditionConfig.
      * @param conditionType 
-     * @param errorCode 
      * @param builderCallback 
      * @returns 
      */

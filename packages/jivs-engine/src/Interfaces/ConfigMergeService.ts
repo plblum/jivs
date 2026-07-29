@@ -131,7 +131,7 @@ export type PropertyConfigMergeServiceSetting =
 /**
  * This handler is an alternative to PropertyConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
- * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
 export type PropertyConfigMergeServiceHandler<T> = (source: T, destination: T, propertyName: string, identity: MergeIdentity) => PropertyConfigMergeServiceHandlerResult;
 
@@ -179,7 +179,7 @@ export type ConditionConfigMergeServiceAction =
 /**
  * This handler is an alternative to ConditionConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
- * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
 export type ConditionConfigMergeServiceHandler = (source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity) => ConditionConfigMergeServiceHandlerResult;
 
@@ -215,6 +215,10 @@ export interface MergeIdentity
  * is in conflict with a destination ValidatorConfig. If one is identified,
  * it is returned and the caller should use ValidatorConfigMergeService.resolve
  * to determine how to handle the conflict.
+ * @param validatorSrc - The ValidatorConfig from the source that is being merged into the destination.
+ * @param validatorsInDest - The ValidatorConfigs in the destination that are being merged into.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @returns - The ValidatorConfig in the destination that is in conflict with the source, or undefined if none are found.
  */
 export type ConditionConflictIdentifierHandler = (validatorSrc: ValidatorConfig,
     validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity) =>

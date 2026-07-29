@@ -48,7 +48,7 @@
   },
   "scripts": {
     "compile": "lerna run compile",
-    "pretypedoc": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
+    "pretypedoc": "lerna run compile",
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",
     "test": "jest --silent --passWithNoTests",

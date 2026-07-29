@@ -121,11 +121,6 @@ export interface IBuildersFactory extends IServiceWithAccessor
      * @param parentBuilder - The Builder requesting this one.
      * It will consume the config generated either through the completed
      * callback or by calling getConfig().
-     * @param completed - Optional callback that occurs when 
-     * this builder has finished creating the config. It notifies
-     * the builder with the config so it can consume it.
-     * This is usually consumed by calling parentBuilder to use the child
-     * builder's config.
      */
     createStartConditionWithChildrenBuilder
         (parentBuilder: IBuilderConfigHost<object>, 

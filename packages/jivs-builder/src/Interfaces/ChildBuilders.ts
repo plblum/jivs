@@ -171,7 +171,6 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      * ```ts
@@ -201,7 +200,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
       * If null, it will expect to be setup by one of several other sources including
       * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
       * @param summaryMessage - optional summary message.
-      * @param validatorParameters 
+
       * Additional ways to customize the Validator, including localized error messages,
       * severity, and the enabler.
       * ```ts
@@ -238,7 +237,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
+
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
@@ -263,15 +262,15 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
      * ```
      * @param expression - The regular expression to match against the value being validated. 
-     * Can be a RegExp object or a string.
-     * @param ignoreCase - optional flag to indicate if the regular expression should ignore case. Only applicable when the expression is a string.
+     * Can be a RegExp object or a string. If a string, there is a second parameter, ignoreCase,
+     * which is a boolean indicating whether to ignore case when matching.
      * @param errorMessage 
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
+
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
@@ -279,6 +278,31 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         expression: RegExp,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a RegExp condition to the validator builder.
+     * RegExp ensures that the value being validated matches the specified regular expression.
+     * The value can be of any type that can be tested against a regular expression.
+     * Example usage:
+     * ```ts
+     * regExp(/^[a-z]+$/);
+     * regExp("^[a-z]+$", false);
+     * regExp("^[a-z]+$", true, "Error message"); // true = ignore case
+     * regExp(/^[a-z]+$/, "Error message");
+     * regExp(/^[a-z]+$/, "Error message", "Summary message");
+     * regExp(/^[a-z]+$/, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * ```
+     * @param expression - The regular expression as a RegExp object to match against the value being validated. 
+     * @param errorMessage 
+     * The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+
+     * Additional ways to customize the Validator, including localized error messages,
+     * severity, and the enabler.
+     */    
     regExp(
         expression: string,
         ignoreCase?: boolean,
@@ -312,7 +336,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
+
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
@@ -345,7 +369,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     equalToValue(
@@ -387,7 +411,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     equalTo(
@@ -429,7 +453,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     notEqualToValue(
@@ -471,7 +495,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     notEqualTo(
@@ -513,7 +537,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanValue(
@@ -555,7 +579,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     lessThan(
@@ -600,7 +624,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanOrEqualValue(
@@ -642,7 +666,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanOrEqual(
@@ -687,7 +711,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     greaterThanValue(
@@ -729,7 +753,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     greaterThan(
@@ -773,7 +797,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     greaterThanOrEqualValue(
@@ -816,7 +840,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     greaterThanOrEqual(
@@ -854,7 +878,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     stringLength(
@@ -898,7 +922,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     positive(
@@ -937,7 +961,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     integer(
@@ -976,7 +1000,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     maxDecimals(
@@ -1010,13 +1034,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      *      });
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child condition to be negated.
+     * @param childBuilder - The condition builder handler that defines the child condition to be negated.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     not(
@@ -1067,16 +1091,16 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      *     });	
      * ```
      *
-     * @param WhenToEnableBuilderHandler - The handler function that defines the condition 
+     * @param whenBuilder - The handler function that defines the condition 
      * under which the validator should be evaluated.
-     * @param ThenBuilderHandler - The handler function that defines the validation logic 
+     * @param thenBuilder - The handler function that defines the validation logic 
      * to be executed when the WhenToEnable condition is met.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     when(
@@ -1127,7 +1151,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * );
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1135,15 +1159,15 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
     all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAllMatchValidatorConfig): IValidatorBuilder;
 
     /**
@@ -1178,7 +1202,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * );
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1186,15 +1210,15 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
     any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAnyMatchValidatorConfig): IValidatorBuilder;
 
     /**
@@ -1237,7 +1261,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * @param minimum - The minimum number of matches required. If null, there is no minimum.
      * @param maximum - The maximum number of matches allowed. If null, there is no maximum.
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1245,19 +1269,19 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
+- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */            
     countMatches(
         minimum: number | null,
         maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
     countMatches(
         minimum: number | null,
         maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentCountMatchesValidatorConfig): IValidatorBuilder;    
 }
 
@@ -1359,8 +1383,8 @@ export interface IConditionBuilderBase<TConfig extends ConditionConfig = Conditi
      * Executes a condition only when another condition is satisfied.
      * When the "when" condition is satisfied, the "then" condition is evaluated.
      * When the "when" condition is not satisfied, the "then" condition is not evaluated,
-     * @param whenToEnable -
-     * @param thenCallback 
+     * @param whenToEnableCallback - The callback that defines the "when" condition.
+     * @param thenCallback - The callback that defines the "then" condition.
      */
     when(whenToEnableCallback: ConditionBuilderHandler, thenCallback: ConditionBuilderHandler): void;
 
@@ -1368,7 +1392,7 @@ export interface IConditionBuilderBase<TConfig extends ConditionConfig = Conditi
      * Considers a match to be when all child conditions match. If any child does not match, the parent does not match.
      * If any child is undetermined, the parent ignores it.
      * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
-     * @param callback 
+     * @param callback - The callback that defines the child conditions to be evaluated. Each child condition is defined as a separate call to the callback.
      */
     all(callback: ConditionWithChildrenBuilderHandler): void;
 
@@ -1377,7 +1401,7 @@ export interface IConditionBuilderBase<TConfig extends ConditionConfig = Conditi
      * If all child conditions do not match, the parent does not match.
      * If any child is undetermined, the parent ignores it.
      * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
-     * @param callback 
+     * @param callback - The callback that defines the child conditions to be evaluated. Each child condition is defined as a separate call to the callback.
      */
     any(callback: ConditionWithChildrenBuilderHandler): void;
 
@@ -1389,7 +1413,7 @@ export interface IConditionBuilderBase<TConfig extends ConditionConfig = Conditi
      * If no child conditions are supplied or all child conditions are undetermined, the parent is undetermined.
      * @param minimum 
      * @param maximum 
-     * @param callback 
+     * @param callback - The callback that defines the child conditions to be evaluated. Each child condition is defined as a separate call to the callback.
      */
     countMatches(minimum: number | null, maximum: number | null,
         callback: ConditionWithChildrenBuilderHandler): void;
@@ -1740,9 +1764,9 @@ export interface IStartConditionWithOneChildBuilder extends IStartConditionBuild
  * Allows a child to create its own condition, through the supplied StartConditionBuilder.
  * The caller gets the result when the child code calls its builder's setConfig().
  */
-export type ConditionBuilderHandler = (conditionsBuilder: IStartConditionBuilder) => void;
+export type ConditionBuilderHandler = (childrenBuilder: IStartConditionBuilder) => void;
 export type ConditionWithChildrenBuilderHandler =
-    (conditionsBuilder: IStartConditionWithChildrenBuilder) => void;
+    (childrenBuilder: IStartConditionWithChildrenBuilder) => void;
 
 export interface SetConfigOptions {
     /**

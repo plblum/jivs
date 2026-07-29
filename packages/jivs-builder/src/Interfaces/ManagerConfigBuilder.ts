@@ -76,12 +76,12 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
     IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedInstanceState
      */
     savedInstanceState?: ValidationManagerInstanceState | null;
 
     /**
-     * @inheritDoc ValueHosts/Types/ValidationManager!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
 }
@@ -282,11 +282,19 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      * as errorcode overrides conditionType.
      * @param errorMessage - optional. If specified, it will override the existing error message.
      * @param summaryMessage - optional. If specified, it will override the existing summary message.
-     * @param adjustments - optional. If specified, it will override the existing validator configuration,
-     * including errormessage and summarymessage.
      * @returns The IModifyValidatorBuilder for further modifications.
      */
     validator(conditionType: string, errorMessage?: string | null, summaryMessage?: string | null): IModifyValidatorBuilder;
+    /**
+     * Identifies an existing validator to modify. Returns the IModifyValidatorBuilder for further modifications.
+     * It does not change the ValidatorConfig directly.
+     * @param conditionType - the type of the validator condition to modify. Same as 'errorCode'
+     * and if using an error code on the validator, you must specify it explicitly
+     * as errorcode overrides conditionType.
+     * @param adjustments - All properties of the ValidatorConfig to adjust. It will override the existing properties.
+     * @returns The IModifyValidatorBuilder for further modifications.
+     */
+
     validator(conditionType: string, adjustments: FluentValidatorConfig): IModifyValidatorBuilder;
 
     /**

@@ -30,7 +30,7 @@ import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } f
 import { SampleValues } from './SampleValues';
 
 /**
- * @inheritdoc Types!IConfigAnalysis:interface
+ * @inheritdoc ConfigAnalysis/Types!IConfigAnalysis:interface
  */
 export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig, TServices extends IValidationServices>
     implements IConfigAnalysis {

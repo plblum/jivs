@@ -252,7 +252,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.reportIntoJson
+     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.reportIntoJson
      */
     public reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -265,7 +265,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.reportToConsole
+     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.reportToConsole
      */
     public reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -330,7 +330,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Services/Types/ConfigAnalysis!IConfigAnalysisResultsExplorer.report
+     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.report
      */
     public report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,

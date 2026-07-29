@@ -68,7 +68,7 @@ import { BuilderConfigHostBase } from './BuilderConfigHostBase';
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
  * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
  * 
- * See {@link Builder/Fluent | Fluent Overview}
+ * See {@link Builder/ConcreteClasses/ValidationManagerConfigBuilder | Fluent Overview}
  */
 export class ValidatorBuilder
     extends BuilderConfigHostBase<object>
@@ -147,15 +147,12 @@ export class ValidatorBuilder
      * Finishes the creation of a Validator's condition. Each condition function within this Builder
      * only has to prepare the parameters, then call this to add the condition config
      * and get back the same ValidatorBuilder for chaining.
-     * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
-     * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
-     * in conditionConfig, assign them to conditionConfig.
+     * @param conditionBuilder - The condition builder that has the condition config to add to the validatorConfig.
      * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
      * supplied.
      * @param summaryMessage - optional summary message. Will overwrite any from validatorConfig if
      * supplied.
-     * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
-     * will be replaced when conditionConfig is not null.
+     * @param validatorConfig - any validator level parameters to add to the validatorConfig. 
      * @returns The current instance of ValidatorBuilder to allow for method chaining.
      */
     protected finish(conditionBuilder: IConditionBuilder | null,
@@ -244,15 +241,7 @@ export class ValidatorBuilder
      * Adds a DataTypeCheck condition to the fluent validator builder.
      * DataTypeCheck ensures that the value being validated matches the expected data type.
      * In many cases, it is automatically added by the ValueHost based on the dataType field value.
-     * @param errorMessage 
-     * The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
-     * Additional ways to customize the Validator, including localized error messages,
-     * severity, and the enabler.
+     * Example usage:
      * ```ts
      * dataTypeCheck();
      * dataTypeCheck('Error message');
@@ -260,10 +249,31 @@ export class ValidatorBuilder
      * dataTypeCheck(null, 'Summary message');
      * dataTypeCheck({ errorMessage: 'Error message'});
      * ```
+     * @param errorMessage 
+     * The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
      */
     public dataTypeCheck(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a DataTypeCheck condition to the fluent validator builder.
+     * DataTypeCheck ensures that the value being validated matches the expected data type.
+     * In many cases, it is automatically added by the ValueHost based on the dataType field value.
+     * Example usage:
+     * ```ts
+     * dataTypeCheck();
+     * dataTypeCheck('Error message');
+     * dataTypeCheck('Error message', 'Summary message');
+     * dataTypeCheck(null, 'Summary message');
+     * dataTypeCheck({ errorMessage: 'Error message'});
+     * ```
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */    
     public dataTypeCheck(
         validatorParameters: FluentDataTypeCheckValidatorConfig): IValidatorBuilder;
     public dataTypeCheck(
@@ -286,15 +296,7 @@ export class ValidatorBuilder
       * When evaluating against null, set its nullValueResult parameter to determine
       * whether the condition should evaluate as NoMatch, Match, or Undetermined.
       * If not supplied, null is treated as NoMatch.
-      * @param errorMessage 
-      * The error message "template" that will appear on screen when the condition is NoMatch.
-      * It can use tokens, which are resolved with current data at the time of validation.
-      * If null, it will expect to be setup by one of several other sources including
-      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-      * @param summaryMessage - optional summary message.
-      * @param validatorParameters 
-      * Additional ways to customize the Validator, including localized error messages,
-      * severity, and the enabler.
+      * Example usage:
       * ```ts
       * requireText();
       * requireText('Error message');
@@ -302,10 +304,38 @@ export class ValidatorBuilder
       * requireText(null, 'Summary message');
       * requireText({ errorMessage: 'Error message'});
       * ```
+      * @param errorMessage 
+      * The error message "template" that will appear on screen when the condition is NoMatch.
+      * It can use tokens, which are resolved with current data at the time of validation.
+      * If null, it will expect to be setup by one of several other sources including
+      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+      * @param summaryMessage - optional summary message.
+      * Additional ways to customize the Validator, including localized error messages,
+      * severity, and the enabler.
       */
     public requireText(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+      * Adds a RequireText condition to the fluent validator builder.
+      * RequireText ensures that the value being validated is not empty.
+      * The value must be a string or null or it evaluates as Undetermined.
+      * When evaluating against null, set its nullValueResult parameter to determine
+      * whether the condition should evaluate as NoMatch, Match, or Undetermined.
+      * If not supplied, null is treated as NoMatch.
+      * Example usage:
+      * ```ts
+      * requireText();
+      * requireText('Error message');
+      * requireText('Error message', 'Summary message');
+      * requireText(null, 'Summary message');
+      * requireText({ errorMessage: 'Error message'});
+      * ```
+      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+      * Additional ways to customize the Validator, including localized error messages,
+      * severity, and the enabler.
+      */    
     public requireText(
         validatorParameters: FluentRequireTextValidatorConfig): IValidatorBuilder;
     public requireText(
@@ -341,13 +371,30 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
      */
     public notNull(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a NotNull condition to the fluent validator builder.
+     * NotNull ensures that the value being validated is not null.
+     * The value can be of any type.
+     * This condition is useful for ensuring that required fields are not left null.
+     * If the value is a string and you want to ensure both not null and a non-empty string,
+     * use requireText instead.
+     * 
+     * Example usage:
+     * ```ts
+     * notNull();
+     * notNull('Error message');
+     * notNull('Error message', 'Summary message');
+     * notNull({ errorMessage: 'Error message' });
+     * ```
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */    
     public notNull(
         validatorParameters: FluentNotNullValidatorConfig): IValidatorBuilder;
     public notNull(
@@ -377,8 +424,33 @@ export class ValidatorBuilder
      * regExp(/^[a-z]+$/, { errorMessage: "Error message", summaryMessage: "Summary message" });
      * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
      * ```
-     * @param expression - The regular expression to match against the value being validated. 
-     * Can be a RegExp object or a string.
+     * @param expression - The regular expression as a RegExp object to match against the value being validated. 
+     * @param errorMessage 
+     * The error message "template" that will appear on screen when the condition is NoMatch.
+     * It can use tokens, which are resolved with current data at the time of validation.
+     * If null, it will expect to be setup by one of several other sources including
+     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * @param summaryMessage - optional summary message.
+     */
+    public regExp(
+        expression: RegExp,
+        errorMessage?: string | null,
+        summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a RegExp condition to the fluent validator builder.
+     * RegExp ensures that the value being validated matches the specified regular expression.
+     * The value can be of any type that can be tested against a regular expression.
+     * Example usage:
+     * ```ts
+     * regExp(/^[a-z]+$/);
+     * regExp("^[a-z]+$", false);
+     * regExp("^[a-z]+$", true, "Error message"); // true = ignore case
+     * regExp(/^[a-z]+$/, "Error message");
+     * regExp(/^[a-z]+$/, "Error message", "Summary message");
+     * regExp(/^[a-z]+$/, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * ```
+     * @param expression - The regular expression as a string to match against the value being validated. 
      * @param ignoreCase - optional flag to indicate if the regular expression should ignore case. Only applicable when the expression is a string.
      * @param errorMessage 
      * The error message "template" that will appear on screen when the condition is NoMatch.
@@ -386,22 +458,52 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
-     * Additional ways to customize the Validator, including localized error messages,
-     * severity, and the enabler.
      */
-    public regExp(
-        expression: RegExp,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
     public regExp(
         expression: string,
         ignoreCase?: boolean,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a RegExp condition to the fluent validator builder.
+     * RegExp ensures that the value being validated matches the specified regular expression.
+     * The value can be of any type that can be tested against a regular expression.
+     * Example usage:
+     * ```ts
+     * regExp(/^[a-z]+$/);
+     * regExp("^[a-z]+$", false);
+     * regExp("^[a-z]+$", true, "Error message"); // true = ignore case
+     * regExp(/^[a-z]+$/, "Error message");
+     * regExp(/^[a-z]+$/, "Error message", "Summary message");
+     * regExp(/^[a-z]+$/, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * ```
+     * @param expression - The regular expression as a RegExp object to match against the value being validated. 
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */    
     public regExp(
         expression: RegExp,
         validatorParameters: FluentRegExpValidatorConfig): IValidatorBuilder;
+    /**
+     * Adds a RegExp condition to the fluent validator builder.
+     * RegExp ensures that the value being validated matches the specified regular expression.
+     * The value can be of any type that can be tested against a regular expression.
+     * Example usage:
+     * ```ts
+     * regExp(/^[a-z]+$/);
+     * regExp("^[a-z]+$", false);
+     * regExp("^[a-z]+$", true, "Error message"); // true = ignore case
+     * regExp(/^[a-z]+$/, "Error message");
+     * regExp(/^[a-z]+$/, "Error message", "Summary message");
+     * regExp(/^[a-z]+$/, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * regExp("^[a-z]+$", false, { errorMessage: "Error message", summaryMessage: "Summary message" });
+     * ```
+     * @param expression - The regular expression as a string to match against the value being validated. 
+     * @param ignoreCase - optional flag to indicate if the regular expression should ignore case. Only applicable when the expression is a string.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */    
     public regExp(
         expression: string,
         ignoreCase: boolean,
@@ -528,15 +630,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters 
-     * Additional ways to customize the Validator, including localized error messages,
-     * severity, and the enabler.
      */
     public range(
         minimum: any,
         maximum: any,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a range condition to the validator.
+     * Range condition ensures that the value falls within the specified minimum and maximum bounds.
+     * @example
+     * ```ts
+     * range(1, 10);
+     * range(1, 10, "Value must be between {minimum} and {maximum}")
+     * range(1, 10, "Value must be between {minimum} and {maximum}", "Summary message");
+     * range(1, 10, { 
+     *      errorMessage: "Value must be between {minimum} and {maximum}",
+     *      summaryMessage: "Summary message" });
+     * ```
+     * @param minimum - The minimum value of the range.
+     * @param maximum - The maximum value of the range.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */    
     public range(
         minimum: any,
         maximum: any,
@@ -557,7 +673,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is equal to the specified second value.
-     * 
      * @example
      * ```ts
      * equalToValue(42);
@@ -567,19 +682,33 @@ export class ValidatorBuilder
      *      errorMessage: "Value must be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
-     * 
      * @param secondValue - The value to compare against the current value.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     public equalToValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is equal to the specified second value.
+     * @example
+     * ```ts
+     * equalToValue(42);
+     * equalToValue(42, "Value must be {value}.");
+     * equalToValue(42, "Value must be 42.", "Summary message");
+     * equalToValue(42, {
+     *      errorMessage: "Value must be 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */    
     public equalToValue(
         secondValue: any,
         validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
@@ -610,13 +739,19 @@ export class ValidatorBuilder
 
     /**
      * Alias for equalToValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public eqValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for equalToValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public eqValue(
         secondValue: any,
         validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
@@ -629,7 +764,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is equal to the second value host.
-     * 
      * @example
      * ```ts
      * equalTo('fieldname2');
@@ -646,12 +780,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public equalTo(
         secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+        errorMessage?: string | null,
+        summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is equal to the second value host.
+     * @example
+     * ```ts
+     * equalTo('fieldname2');
+     * equalTo('fieldname2', "Value must be {value}.");
+     * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
+     * equalTo('fieldname2', {
+     *      errorMessage: "Value must be same as {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public equalTo(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
@@ -684,13 +835,19 @@ export class ValidatorBuilder
     }
     /**
      * Alias for equalTo
-     * @param secondValueHostName 
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public eq(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for equalTo
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public eq(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
@@ -703,7 +860,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
-     * 
      * @example
      * ```ts
      * notEqualToValue(42);
@@ -720,12 +876,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     public notEqualToValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is not equal to the specified second value.
+     * @example
+     * ```ts
+     * notEqualToValue(42);
+     * notEqualToValue(42, "Value must not be {Value}.");
+     * notEqualToValue(42, "Value must not be 42.", "Summary message");
+     * notEqualToValue(42, {
+     *      errorMessage: "Value must not be 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */    
     public notEqualToValue(
         secondValue: any,
         validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
@@ -759,13 +931,19 @@ export class ValidatorBuilder
 
     /**
      * Alias for notEqualToValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public neqValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for notEqualToValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public neqValue(
         secondValue: any,
         validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
@@ -778,7 +956,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is not equal to the second value host.
-     * 
      * @example
      * ```ts
      * notEqualTo('fieldname2');
@@ -795,12 +972,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     public notEqualTo(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is not equal to the second value host.
+     * @example
+     * ```ts
+     * notEqualTo('fieldname2');
+     * notEqualTo('fieldname2', "Value must not be equal to {value}.");
+     * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
+     * notEqualTo('fieldname2', {
+     *      errorMessage: "Value must not be same as {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */    
     public notEqualTo(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
@@ -830,13 +1023,19 @@ export class ValidatorBuilder
     }
     /**
      * Alias for notEqualTo
-     * @param secondValueHostName 
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public neq(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+/**
+ * Alias for notEqualTo
+ * @param secondValueHostName - The valueHostName containing the value for the right operand.
+ * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+ * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+ */    
     public neq(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
@@ -849,7 +1048,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is less than the specified second value.
-     * 
      * @example
      * ```ts
      * lessThanValue(42);
@@ -866,12 +1064,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public lessThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is less than the specified second value.
+     * @example
+     * ```ts
+     * lessThanValue(42);
+     * lessThanValue(42, "Value must be less than {value}.");
+     * lessThanValue(42, "Value must be less than 42.", "Summary message");
+     * lessThanValue(42, {
+     *      errorMessage: "Value must be less than 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public lessThanValue(
         secondValue: any,
         validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
@@ -903,13 +1117,19 @@ export class ValidatorBuilder
 
     /**
      * Alias for lessThanValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public ltValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for lessThanValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public ltValue(
         secondValue: any,
         validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
@@ -922,7 +1142,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is less than the second value host.
-     * 
      * @example
      * ```ts
      * lessThan('fieldname2');
@@ -939,13 +1158,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public lessThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is less than the second value host.
+     * @example
+     * ```ts
+     * lessThan('fieldname2');
+     * lessThan('fieldname2', "Value must be less than {value}.");
+     * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
+     * lessThan('fieldname2', {
+     *      errorMessage: "Value must be less than {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public lessThan(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
@@ -977,7 +1212,7 @@ export class ValidatorBuilder
 
     /**
      * Alias for lessThan
-     * @param secondValueHostName 
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
      * @param errorMessage 
      * @param summaryMessage 
      */
@@ -985,6 +1220,12 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for lessThan
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public lt(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
@@ -997,7 +1238,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is less than or equal to the specified second value.
-     * 
      * @example
      * ```ts
      * lessThanOrEqualValue(42);
@@ -1014,12 +1254,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public lessThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is less than or equal to the specified second value.
+     * @example
+     * ```ts
+     * lessThanOrEqualValue(42);
+     * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
+     * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
+     * lessThanOrEqualValue(42, {
+     *      errorMessage: "Value must be less than or equal to 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public lessThanOrEqualValue(
         secondValue: any,
         validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
@@ -1049,13 +1305,19 @@ export class ValidatorBuilder
     }
     /**
      * Alias for lessThanOrEqualValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public lteValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for lessThanOrEqualValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public lteValue(
         secondValue: any,
         validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
@@ -1068,7 +1330,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is less than or equal to the second value host.
-     * 
      * @example
      * ```ts
      * lessThanOrEqual('fieldname2');
@@ -1085,13 +1346,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is less than or equal to the second value host.
+     * @example
+     * ```ts
+     * lessThanOrEqual('fieldname2');
+     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
+     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
+     * lessThanOrEqual('fieldname2', {
+     *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public lessThanOrEqual(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
@@ -1123,7 +1400,7 @@ export class ValidatorBuilder
 
     /**
      * Alias for lessThanOrEqual
-     * @param secondValueHostName 
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
      * @param errorMessage 
      * @param summaryMessage 
      */
@@ -1131,6 +1408,12 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for lessThanOrEqual
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public lte(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
@@ -1143,7 +1426,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is greater than the specified second value.
-     * 
      * @example
      * ```ts
      * greaterThanValue(42);
@@ -1160,12 +1442,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     public greaterThanValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is greater than the specified second value.
+     * @example
+     * ```ts
+     * greaterThanValue(42);
+     * greaterThanValue(42, "Value must be greater than {value}.");
+     * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
+     * greaterThanValue(42, {
+     *      errorMessage: "Value must be greater than 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */    
     public greaterThanValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
@@ -1196,13 +1494,19 @@ export class ValidatorBuilder
 
     /**
      * Alias for greaterThanValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public gtValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for greaterThanValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public gtValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
@@ -1215,7 +1519,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is greater than the second value host.
-     * 
      * @example
      * ```ts
      * greaterThan('fieldname2');
@@ -1232,13 +1535,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public greaterThan(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is greater than the second value host.
+     * @example
+     * ```ts
+     * greaterThan('fieldname2');
+     * greaterThan('fieldname2', "Value must be greater than {value}.");
+     * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
+     * greaterThan('fieldname2', {
+     *      errorMessage: "Value must be greater than {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public greaterThan(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
@@ -1268,7 +1586,7 @@ export class ValidatorBuilder
     }
     /**
      * Alias for greaterThan
-     * @param secondValueHostName 
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
      * @param errorMessage 
      * @param summaryMessage 
      */
@@ -1276,6 +1594,12 @@ export class ValidatorBuilder
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for greaterThan
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public gt(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
@@ -1288,7 +1612,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
-     * 
      * @example
      * ```ts
      * greaterThanOrEqualValue(42);
@@ -1305,12 +1628,28 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public greaterThanOrEqualValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is greater than or equal to the specified second value.
+     * @example
+     * ```ts
+     * greaterThanOrEqualValue(42);
+     * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
+     * greaterThanOrEqualValue(42, {
+     *      errorMessage: "Value must be greater than or equal to 42.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * 
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public greaterThanOrEqualValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
@@ -1341,13 +1680,19 @@ export class ValidatorBuilder
 
     /**
      * Alias for greaterThanOrEqualValue
-     * @param secondValue 
+     * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
     public gteValue(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for greaterThanOrEqualValue
+     * @param secondValue - The value to compare against the current value.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public gteValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
@@ -1360,7 +1705,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the second value host.
-     * 
      * @example
      * ```ts
      * greaterThanOrEqual('fieldname2');
@@ -1377,13 +1721,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is greater than or equal to the second value host.
+     * @example
+     * ```ts
+     * greaterThanOrEqual('fieldname2');
+     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
+     * greaterThanOrEqual('fieldname2', {
+     *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public greaterThanOrEqual(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
@@ -1413,10 +1773,22 @@ export class ValidatorBuilder
             errorMessage, summaryMessage, validatorParameters);
     }
 
+    /**
+     * Alias for greaterThanOrEqual
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param errorMessage 
+     * @param summaryMessage 
+     */
     public gte(
         secondValueHostName: ValueHostName,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for greaterThanOrEqual
+     * @param secondValueHostName - The valueHostName containing the value for the right operand.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public gte(
         secondValueHostName: ValueHostName,
         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
@@ -1429,7 +1801,6 @@ export class ValidatorBuilder
 
     /**
      * Adds a validator that ensures the text length is within limits.
-     * 
      * @example
      * ```ts
      * stringLength(10);
@@ -1446,13 +1817,29 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public stringLength(
         maximum: number | null,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the text length is within limits.
+     * @example
+     * ```ts
+     * stringLength(10);
+     * stringLength(10, "Text has exceeded  {maximum} characters.");
+     * stringLength(10, "Text has exceeded  {maximum} characters.", "Summary message");
+     * stringLength(10, {
+     *      errorMessage: "Text has exceeded  {maximum} characters.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param maximum - The maximum length allowed for the string.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public stringLength(
         maximum: number | null,
         validatorParameters: FluentStringLengthValidatorConfig): IValidatorBuilder;
@@ -1484,7 +1871,7 @@ export class ValidatorBuilder
     }
     /**
      * Alias for stringLength
-     * @param maximum 
+     * @param maximum - The maximum length allowed for the string.
      * @param errorMessage 
      * @param summaryMessage 
      */
@@ -1492,6 +1879,12 @@ export class ValidatorBuilder
         maximum: number | null,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for stringLength
+     * @param maximum - The maximum length allowed for the string.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     */
     public len(
         maximum: number | null,
         validatorParameters: FluentStringLengthValidatorConfig): IValidatorBuilder;
@@ -1504,7 +1897,6 @@ export class ValidatorBuilder
     /**
      * Adds a validator that ensures the value is 0 or higher.
      * It returns Undetermined if the value is not a number.
-     * 
      * @example
      * ```ts
      * positive();
@@ -1520,12 +1912,27 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public positive(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is 0 or higher.
+     * It returns Undetermined if the value is not a number.
+     * @example
+     * ```ts
+     * positive();
+     * positive("Value must be 0 or higher.");
+     * positive("Value must be 0 or higher.", "Summary message");
+     * positive({
+     *      errorMessage: "Value must be 0 or higher.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public positive(
         validatorParameters: FluentPositiveValidatorConfig): IValidatorBuilder;
     public positive(
@@ -1559,6 +1966,12 @@ export class ValidatorBuilder
     public pos(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for positive
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public pos(
         validatorParameters: FluentPositiveValidatorConfig): IValidatorBuilder;
     public pos(
@@ -1570,7 +1983,6 @@ export class ValidatorBuilder
     /**
      * Adds a validator that ensures the value is an integer.
      * It requires a numeric value, or it evaluates as Undetermined.
-     * 
      * @example
      * ```ts
      * integer();
@@ -1586,12 +1998,27 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public integer(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the value is an integer.
+     * It requires a numeric value, or it evaluates as Undetermined.
+     * @example
+     * ```ts
+     * integer();
+     * integer("Value must be an integer.");
+     * integer("Value must be an integer.", "Summary message");
+     * integer({
+     *      errorMessage: "Value must be an integer.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public integer(
         validatorParameters: FluentIntegerValidatorConfig): IValidatorBuilder;
     public integer(
@@ -1625,6 +2052,12 @@ export class ValidatorBuilder
     public int(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Alias for integer
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public int(
         validatorParameters: FluentIntegerValidatorConfig): IValidatorBuilder;
     public int(
@@ -1636,7 +2069,6 @@ export class ValidatorBuilder
     /**
      * Adds a validator that ensures the number of decimal places is limited to the specified maximum.
      * The value must be a number or it will be evaluated as Undetermined.
-     * 
      * @example
      * ```ts
      * maxDecimals(2);
@@ -1653,13 +2085,30 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public maxDecimals(
         maxDecimals: number,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Adds a validator that ensures the number of decimal places is limited to the specified maximum.
+     * The value must be a number or it will be evaluated as Undetermined.
+     * @example
+     * ```ts
+     * maxDecimals(2);
+     * maxDecimals(2, "Value has too many decimal places.");
+     * maxDecimals(2, "Value has too many decimal places.", "Summary message");
+     * maxDecimals(2, {
+     *      errorMessage: "Value has too many decimal places.", 
+     *      summaryMessage: "Summary message" });
+     * ```
+     *
+     * @param maxDecimals - The maximum number of decimal places allowed for the number.
+     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public maxDecimals(
         maxDecimals: number,
         validatorParameters: FluentMaxDecimalsValidatorConfig): IValidatorBuilder;
@@ -1698,19 +2147,45 @@ export class ValidatorBuilder
      *      });
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child condition to be negated.
+     * @param childBuilder - The condition builder handler that defines the child condition to be negated.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     public not(
         childBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Builds a validator around a condition and negates the validation result
+     * of the condition. When the condition result is NoMatch, the overall validation will pass, and vice versa.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').not(
+     *     (childBuilder) =>
+     *         childBuilder.parentValue().requireText()
+     * )
+     * ```
+     * 
+     * ```ts
+     * not(childBuilderHandler);
+     * not(childBuilderHandler, 
+     *      "Error message", "Summary message");
+     * not(childBuilderHandler, 
+     *      {
+     *          errorMessage: "Error message", 
+     *          summaryMessage: "Summary message" 
+     *      });
+     * ```
+     *
+     * @param childBuilder - The condition builder handler that defines the child condition to be negated.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public not(
         childBuilder: ConditionBuilderHandler,
         validatorParameters: FluentNotValidatorConfig): IValidatorBuilder;
@@ -1767,16 +2242,15 @@ export class ValidatorBuilder
      *     });	
      * ```
      *
-     * @param WhenToEnableBuilderHandler - The handler function that defines the condition 
+     * @param whenBuilder - The handler function that defines the condition 
      * under which the validator should be evaluated.
-     * @param ThenBuilderHandler - The handler function that defines the validation logic 
+     * @param thenBuilder - The handler function that defines the validation logic 
      * to be executed when the WhenToEnable condition is met.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public when(
@@ -1784,6 +2258,54 @@ export class ValidatorBuilder
         thenBuilder: ConditionBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Builds a validator that must only be evaluated based on another condition.
+     * Consider this a "when" -> "then" process, where the condition to evaluate
+     * is the "then" part.
+     * 
+     * @example
+     * ```ts
+     * when(
+     *      (whenToEnableBuilder) => 
+     *          whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *      (thenBuilder) =>
+     *          thenBuilder.parentValue().requireText()
+     *  )
+     * ```
+     * 
+     * ```ts
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText()
+     * );
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText(),
+     *     'error message', 'summary message'
+     * );
+     * when(
+     *     (whenToEnableBuilder) => 
+     *         whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+     *     (thenBuilder) =>
+     *         thenBuilder.parentValue().requireText(),
+     *     { 
+     *         errorMessage: 'error message',
+     *         summaryMessage: 'summary message',
+     *     });	
+     * ```
+     *
+     * @param whenBuilder - The handler function that defines the condition 
+     * under which the validator should be evaluated.
+     * @param thenBuilder - The handler function that defines the validation logic 
+     * to be executed when the WhenToEnable condition is met.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public when(
         whenBuilder: ConditionBuilderHandler,
         thenBuilder: ConditionBuilderHandler,
@@ -1805,15 +2327,14 @@ export class ValidatorBuilder
     /**
      * Builds a validator that contains child conditions, and evaluates as Match
      * when all child conditions are satisfied.
-     * 
      * @example
      * ```ts
-     * builder.field('fieldname').all((childBuilder)=>{
-     *     childBuilder.parentValue().requireText();
-     *     childBuilder.fieldValue('fieldname2').requireText(parameters);
-     *     childBuilder.fieldValue('fieldname2').regExp('^[A-D]');
-     *     childBuilder.fieldValue('fieldname3').equalTo('fieldname4');
-     *     childBuilder.any((grandchildBuilder)=> {
+     * builder.field('fieldname').all((childrenBuilder)=>{
+     *     childrenBuilder.parentValue().requireText();
+     *     childrenBuilder.fieldValue('fieldname2').requireText(parameters);
+     *     childrenBuilder.fieldValue('fieldname2').regExp('^[A-D]');
+     *     childrenBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childrenBuilder.any((grandchildBuilder)=> {
      *         grandchildBuilder.fieldValue('fieldname10').requireText();
      *         grandchildBuilder.fieldValue('fieldname11').requireText();
      *     })
@@ -1840,7 +2361,7 @@ export class ValidatorBuilder
      * );
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1848,25 +2369,68 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */        
     public all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when all child conditions are satisfied.
+     * @example
+     * ```ts
+     * builder.field('fieldname').all((childrenBuilder)=>{
+     *     childrenBuilder.parentValue().requireText();
+     *     childrenBuilder.fieldValue('fieldname2').requireText(parameters);
+     *     childrenBuilder.fieldValue('fieldname2').regExp('^[A-D]');
+     *     childrenBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childrenBuilder.any((grandchildBuilder)=> {
+     *         grandchildBuilder.fieldValue('fieldname10').requireText();
+     *         grandchildBuilder.fieldValue('fieldname11').requireText();
+     *     })
+     * });
+     * ```
+     * 
+     * ```ts
+     * all(childBuilderHandler);
+     * all(childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * all(childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     *
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAllMatchValidatorConfig): IValidatorBuilder;
     public all(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAllMatchValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AllMatchConditionConfig>(arg2, arg3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.all(conditionsBuilder);
+        conditionBuilder.all(childrenBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
@@ -1877,9 +2441,9 @@ export class ValidatorBuilder
      * 
      * @example
      * ```ts
-     * builder.field('fieldname').any((childBuilder)=>{
-     *    childBuilder.fieldValue('fieldname3').requireText();
-     *    childBuilder.fieldValue('fieldname4').requireText();
+     * builder.field('fieldname').any((childrenBuilder)=>{
+     *    childrenBuilder.fieldValue('fieldname3').requireText();
+     *    childrenBuilder.fieldValue('fieldname4').requireText();
      * });
      * ```
      * 
@@ -1903,7 +2467,7 @@ export class ValidatorBuilder
      * );
      * ```
      *
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1911,25 +2475,62 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
     public any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when any of the child conditions are satisfied.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').any((childrenBuilder)=>{
+     *    childrenBuilder.fieldValue('fieldname3').requireText();
+     *    childrenBuilder.fieldValue('fieldname4').requireText();
+     * });
+     * ```
+     * 
+     * ```ts
+     * any(childBuilderHandler);
+     * any(childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * any(childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     *
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */    
     public any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentAnyMatchValidatorConfig): IValidatorBuilder;
     public any(
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         arg2?: FluentAnyMatchValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<AnyMatchConditionConfig>(arg2, arg3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.any(conditionsBuilder);
+        conditionBuilder.any(childrenBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
@@ -1943,13 +2544,13 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * builder.field('fieldname').countMatches(2, 4,
-     * (childBuilder)=>{
-     *    childBuilder.fieldValue('fieldname1').requireText();
-     *    childBuilder.fieldValue('fieldname2').requireText();
-     *    childBuilder.fieldValue('fieldname3').requireText();
-     *    childBuilder.fieldValue('fieldname4').requireText();
-     *    childBuilder.fieldValue('fieldname5').requireText();
-     *    childBuilder.fieldValue('fieldname6').requireText();
+     * (childrenBuilder)=>{
+     *    childrenBuilder.fieldValue('fieldname1').requireText();
+     *    childrenBuilder.fieldValue('fieldname2').requireText();
+     *    childrenBuilder.fieldValue('fieldname3').requireText();
+     *    childrenBuilder.fieldValue('fieldname4').requireText();
+     *    childrenBuilder.fieldValue('fieldname5').requireText();
+     *    childrenBuilder.fieldValue('fieldname6').requireText();
      * });
      * ```
      * 
@@ -1974,7 +2575,7 @@ export class ValidatorBuilder
      * ```
      * @param minimum - The minimum number of matches required. If null, there is no minimum.
      * @param maximum - The maximum number of matches allowed. If null, there is no maximum.
-     * @param childBuilderHandler - The condition builder handler that defines the child conditions 
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
      * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
      * They cannot be chained.
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1982,31 +2583,76 @@ export class ValidatorBuilder
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-     * @param validatorParameters - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */            
     public countMatches(
         minimum: number | null,
         maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
+    /**
+     * Builds a validator that contains child conditions, and evaluates as Match
+     * when a specified number of child conditions are satisfied. You supply
+     * a minimum and maximum number of child conditions that must be satisfied 
+     * for the validator to evaluate as a match.
+     * 
+     * @example
+     * ```ts
+     * builder.field('fieldname').countMatches(2, 4,
+     * (childrenBuilder)=>{
+     *    childrenBuilder.fieldValue('fieldname1').requireText();
+     *    childrenBuilder.fieldValue('fieldname2').requireText();
+     *    childrenBuilder.fieldValue('fieldname3').requireText();
+     *    childrenBuilder.fieldValue('fieldname4').requireText();
+     *    childrenBuilder.fieldValue('fieldname5').requireText();
+     *    childrenBuilder.fieldValue('fieldname6').requireText();
+     * });
+     * ```
+     * 
+     * ```ts
+     * countMatches(minimum, maximum, childBuilderHandler);
+     * countMatches(minimum, maximum, childBuilderHandler,
+     *     errorMessage?, summaryMessage?);
+     * countMatches(minimum, maximum, childBuilderHandler,
+     *     { // these are the validator parameters
+     *         errorMessage?: null | string | ((host) => string);
+     *         errorMessagel10n?: null | string;
+     *         summaryMessage?: null | string | ((host) => string);
+     *         summaryMessagel10n?: null | string;
+     *         
+     *         severity?: ValidationSeverity | ((host) => ValidationSeverity);
+     *         errorCode?: string; 
+     *         enabled?: boolean | ((host) => boolean);
+     *     // condition properties:
+     *         treatUndeterminedAs?: ConditionEvaluateResult;
+     *     }
+     * );
+     * ```
+     * @param minimum - The minimum number of matches required. If null, there is no minimum.
+     * @param maximum - The maximum number of matches allowed. If null, there is no maximum.
+     * @param childrenBuilder - The condition builder handler that defines the child conditions 
+     * to be evaluated. Each child condition is defined as a separate call to the child builder handler.
+     * They cannot be chained.
+     * @param validatorParameters - Optional validator configuration parameters.
+     * @returns The current instance of ValidatorBuilder for method chaining.
+     */
     public countMatches(
         minimum: number | null,
         maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         validatorParameters: FluentCountMatchesValidatorConfig): IValidatorBuilder;    
     public countMatches(
         minimum: number | null,
         maximum: number | null,
-        conditionsBuilder: ConditionWithChildrenBuilderHandler,
+        childrenBuilder: ConditionWithChildrenBuilderHandler,
         arg4?: FluentCountMatchesValidatorConfig | string | null,
         arg5?: string | null): IValidatorBuilder {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
             this.resolveOverloadArgs<CountMatchesConditionConfig>(arg4, arg5);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.countMatches(minimum, maximum, conditionsBuilder);
+        conditionBuilder.countMatches(minimum, maximum, childrenBuilder);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
