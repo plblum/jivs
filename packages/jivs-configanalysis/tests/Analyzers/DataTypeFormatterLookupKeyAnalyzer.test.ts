@@ -7,7 +7,7 @@ import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTyp
 import { NumberFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, createAnalysisArgs, createServices } from '../TestSupport/support';
 import { DataTypeFormatterLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeFormatterLookupKeyAnalyzer';
-import { FormatterServiceCAResult, CAFeature } from '../../src/Types/Results';
+import { FormatterServiceCAResult, CAFeature } from '../../src/Types/ConfigAnalysisResults';
 describe('DataTypeFormatterLookupKeyAnalyzer', () => {
     const toConvertToNumberLookupKey = 'ToConvertToNumber';
     class ToConvertToNumber {

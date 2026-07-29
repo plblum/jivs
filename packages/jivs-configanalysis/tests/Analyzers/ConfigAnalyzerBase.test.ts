@@ -3,7 +3,7 @@ import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost"
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
 import { ConfigAnalyzerBase } from "../../src/Analyzers/ConfigAnalyzerBase";
 import { IConfigPropertyAnalyzer } from "../../src/Types/Analyzers";
-import { CAFeature, CAIssueSeverity, ConfigObjectCAResultsBase } from "../../src/Types/Results";
+import { CAFeature, CAIssueSeverity, ConfigObjectCAResultsBase } from "../../src/Types/ConfigAnalysisResults";
 import { setupHelper, createServices, checkPropertyCAResultsFromArray } from "../TestSupport/support";
 
 

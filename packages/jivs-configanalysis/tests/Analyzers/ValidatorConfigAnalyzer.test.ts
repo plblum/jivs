@@ -6,7 +6,7 @@ import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper
 import { ValidatorConfigAnalyzer } from './../../src/Analyzers/ValidatorConfigAnalyzer';
 import { IValidatorConfigPropertyAnalyzer, IConditionConfigAnalyzer } from '../../src/Types/Analyzers';
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from './../../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
-import { ValidatorConfigCAResult, ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ValidatorConfigCAResult, ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { setupHelper, createServices, checkPropertyCAResultsFromArray, checkLocalizedPropertyResultFromArray } from '../TestSupport/support';
 
 class TestValidatorConfigPropertyAnalyzer implements IValidatorConfigPropertyAnalyzer {

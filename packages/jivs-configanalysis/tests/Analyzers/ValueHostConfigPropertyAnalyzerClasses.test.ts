@@ -10,7 +10,7 @@ import { DataTypeParserService } from "@plblum/jivs-engine/build/Services/DataTy
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
 import { DataTypeParserLookupKeyAnalyzer } from "../../src/Analyzers/DataTypeParserLookupKeyAnalyzer";
 import { ValueHostTypePropertyAnalyzer, ValueHostNamePropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, CalcFnPropertyAnalyzer } from "../../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses";
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, LocalizedPropertyCAResult } from "../../src/Types/Results";
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, LocalizedPropertyCAResult } from "../../src/Types/ConfigAnalysisResults";
 import { setupHelper, createServices, checkValueHostConfigResults, checkPropertyCAResultsFromArray, checkLocalizedPropertyResult, checkLookupKeyResultsForService, checkServiceInfoForCultureSpecificParserRetrieval } from "../TestSupport/support";
 
 /**

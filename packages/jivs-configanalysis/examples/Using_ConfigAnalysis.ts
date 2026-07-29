@@ -14,7 +14,7 @@ import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Inte
 import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
 import { ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
-import { CAIssueSeverity } from '../src/Types/Results';
+import { CAIssueSeverity } from '../src/Types/ConfigAnalysisResults';
 import { createValidationServices } from './Config_example_common_code';
 
 new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype

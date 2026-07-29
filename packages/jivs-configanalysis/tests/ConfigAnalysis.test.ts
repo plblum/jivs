@@ -37,7 +37,7 @@ import {
     ServiceWithLookupKeyCAResultBase,
     ValidatorConfigCAResult,
     ValueHostConfigCAResult
-} from '../src/Types/Results';
+} from '../src/Types/ConfigAnalysisResults';
 
 
 

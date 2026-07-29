@@ -23,8 +23,6 @@ import { ValidationServices } from '@plblum/jivs-engine/build/Services/Validatio
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
-    CAExplorerBase,
-    CASearcher,
     ComparerServiceCAResultExplorer,
     ConditionConfigCAResultExplorer,
     ConfigAnalysisResultsExplorer,
@@ -72,7 +70,7 @@ import {
     ParserServiceCAResult,
     ParsersByCultureCAResult,
     PropertyCAResult
-} from '../../src/Types/Results';
+} from '../../src/Types/ConfigAnalysisResults';
 
 import { ConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import {
@@ -85,6 +83,8 @@ import {
     createPropertyCAResult, createValidatorConfigResult,
     createValueHostCAResult
 } from '../TestSupport/support';
+import { CAExplorerBase } from '../../src/Explorer/CAExplorerBase';
+import { CASearcher } from '../../src/Explorer/CASearcher';
 
 beforeAll(() => {
     new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype

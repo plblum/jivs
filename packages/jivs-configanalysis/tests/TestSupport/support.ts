@@ -22,7 +22,7 @@ import {
     ValidatorConfigCAResult, IdentifierServiceCAResult, ComparerServiceCAResult,
     ConverterServiceCAResult, FormatterServiceCAResult, FormattersByCultureCAResult,
     ParserServiceCAResult, ParserFoundCAResult
-} from "../../src/Types/Results";
+} from "../../src/Types/ConfigAnalysisResults";
 
 new BuildersFactoryInstaller();
 /**

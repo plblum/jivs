@@ -17,7 +17,7 @@ import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper
 import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnalyzer';
 import { ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionCategoryPropertyAnalyzer, ConditionWithChildrenPropertyAnalyzer, ConditionWithOneChildPropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithSecondValuePropertyAnalyzer } from '../../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeConverterLookupKeyAnalyzer';
-import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createServices, setupHelper, checkPropertyCAResultsFromArray } from '../TestSupport/support';
 
 function createServicesForTheseTests(options?: CvstOptions): IValidationServices {

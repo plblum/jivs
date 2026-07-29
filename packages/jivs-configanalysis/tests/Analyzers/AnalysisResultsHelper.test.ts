@@ -21,7 +21,7 @@ import { AnalysisArgs } from '../../src/Types/ConfigAnalysis';
 import {
     IConfigAnalysisResults, PropertyCAResult, ServiceWithLookupKeyCAResultBase, LookupKeyCAResult,
     CAFeature, CAIssueSeverity, ErrorCAResult, FormatterServiceCAResult
-} from '../../src/Types/Results';
+} from '../../src/Types/ConfigAnalysisResults';
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import {
     createServices, createAnalysisArgs, MockAnalyzer, MockAnalyzerWithFallback, checkPropertyCAResultsFromArray,

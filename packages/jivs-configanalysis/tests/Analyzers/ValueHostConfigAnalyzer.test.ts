@@ -17,7 +17,7 @@ import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnal
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';
 import { DataTypeParserLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeParserLookupKeyAnalyzer';
 import { IValueHostConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IConditionConfigPropertyAnalyzer } from '../../src/Types/Analyzers';
-import { ValueHostConfigCAResult, ValidatorConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ValueHostConfigCAResult, ValidatorConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { setupHelper, createServices, checkPropertyCAResultsFromArray, checkLookupKeyResultsForService, checkServiceInfoForCultureSpecificParserRetrieval, checkLocalizedPropertyResultFromArray } from '../TestSupport/support';
 
 class MockValueHostConfigPropertyAnalyzer implements IValueHostConfigPropertyAnalyzer {

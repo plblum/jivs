@@ -19,7 +19,7 @@ import {
 import { createMinimalValidationServices } from '../../examples/support';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
-import { CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 
 
 /**

@@ -8,7 +8,7 @@ import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/Dat
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
 import { DataTypeFormatterLookupKeyAnalyzer } from "../../src/Analyzers/DataTypeFormatterLookupKeyAnalyzer";
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "../../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses";
-import { ValidatorConfigCAResult, CAFeature, IConfigAnalysisResults, PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult } from "../../src/Types/Results";
+import { ValidatorConfigCAResult, CAFeature, IConfigAnalysisResults, PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult } from "../../src/Types/ConfigAnalysisResults";
 import { createServices, setupHelper, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkSyntaxError, checkLocalizedPropertyResultFromArray, checkPropertyCAResultsFromArray } from "../TestSupport/support";
 
 
