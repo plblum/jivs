@@ -31,7 +31,10 @@ Starting within Terminal at the workspace root ('jivs').
 ## 🔨 Compile
 
 ### Entire Workspace
-No single command - compile packages individually as needed
+```bash
+cd /<root>
+npm run compile
+```
 
 ### Individual Package
 ```bash
@@ -79,12 +82,15 @@ npm run bumpversion        # Bump version across all packages (uses lerna)
 npm run publish_library    # Publish to npm (uses lerna)
 npm run retry_publish      # Retry if publish fails
 ```
+NPM is not updated from github merges. You must run it manually.
+The resulting libraries are published here: https://www.npmjs.com/settings/plblum/packages
 
 ## 📚 Documentation (from root only)
 
 ```bash
 npm run typedoc           # Generate API documentation
 ```
+Documentation is deployed to http://jivs.peterblum.com/typedoc when merging a PR into Master.
 
 ## 📝 Notes
 
