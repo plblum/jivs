@@ -255,7 +255,7 @@ Please use these documents:
 - [Learning Jivs](./docs/Learning.md)
 - [Configuring the Validation Manager](./docs/Configuring.md)
 - [The API](./docs/Jivs_API.md)
-  + [Conditions - the validation rules](./docs/Jivs_API.md#conditions---the-validation-rules)
+  + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)
   + [ValueHosts](./docs/Jivs_API.md#valuehosts)
   + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
   + [ValidationManager](./docs/Jivs_API.md#validationmanager)

@@ -140,7 +140,7 @@ The form _should_ subclass from the model's rules class and implement the `IAdap
 > Form Configuration Adapter is designed to _prevent_ you from modifying the validation rules, while _allowing_
 changes to whatever impacts the UI.
 
-- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#define-rules-for-the-model).
+- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#rules).
 - Modify many aspects of existing ValueHosts through the `modify(valueHostName)` method including:
     + labels
     + parsers 

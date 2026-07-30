@@ -1,5 +1,5 @@
 /**
- * @module Explorer/ConcreteClasses
+ * @module jivs-configanalysis/Explorer/ConcreteClasses
  */
 import { ICASearcher, IConfigAnalysisSearchCriteria } from '../Types/Explorer';
 import { CAIssueSeverity } from '../Types/ConfigAnalysisResults';

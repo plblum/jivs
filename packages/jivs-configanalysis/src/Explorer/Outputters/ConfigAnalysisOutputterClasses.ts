@@ -1,6 +1,6 @@
 /**
  * 
- * @module Explorer/ConcreteClasses/Outputters
+ * @module jivs-configanalysis/Explorer/ConcreteClasses/Outputters
  */
 
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from '../Formatters/ConfigAnalysisOutputFormatterClasses';

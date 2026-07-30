@@ -1,6 +1,6 @@
 /**
  * 
- * @module Explorer/ConcreteClasses/Formatters
+ * @module jivs-configanalysis/Explorer/ConcreteClasses/Formatters
  */
 
 import { cleanForLogging, deepCleanForJson } from '@plblum/jivs-engine/build/Utilities/Utilities';

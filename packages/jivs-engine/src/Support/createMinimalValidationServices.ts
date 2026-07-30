@@ -5,7 +5,7 @@
  * 
  * Remember that once you get the result of the createMinimalValidationServices() function, you can
  * replace the services with your own objects, and populate the factories.
- * @module Support/CreateMinimalValidationServices
+ * @module jivs-engine/Support/CreateMinimalValidationServices
  */
 
 import { DataTypeCheckConditionConfig, DataTypeCheckCondition } from '../Conditions/ConcreteConditions';

@@ -1,6 +1,6 @@
 /**
  * Interfaces and types used by ConfigAnalysisResultsExplorer.
- * @module Explorer/Types
+ * @module jivs-configanalysis/Explorer/Types
  */
 
 import {

@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/ConcreteClasses/LookupKeys
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/LookupKeys
  */
 
 

@@ -5,9 +5,19 @@
     "entryPoints": [
         "packages/jivs-engine/src/",
         "packages/jivs-builder/src/",
-        "packages/jivs-configanalysis/src/"
+        "packages/jivs-configanalysis/src/",
+        "docs/Terminology.md",
+        "docs/Learning.md",
+        "docs/Configuring.md",
+        "docs/Jivs_API.md"
     ],
     "readme": "README.md",
+    "projectDocuments": [
+        "docs/Terminology.md",
+        "docs/Learning.md",
+        "docs/Configuring.md",
+        "docs/Jivs_API.md"
+    ],
     "entryPointStrategy": "expand",
     "exclude": [
         "**/*.js",
@@ -24,6 +34,7 @@
     "footerLastModified": true,      //typedoc-plugin-extras
     "mergeModulesRenameDefaults": false, // typedoc-plugin-merge-modules
     "mergeModulesMergeMode": "module",   // typedoc-plugin-merge-modules
+    "sortEntryPoints": false,
     "sort": [
         "kind",
         "instance-first",

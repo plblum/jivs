@@ -47,7 +47,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 <img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
 Topics:
-- [Conditions - the validation rules](#conditions---the-validation-rules)
+- [Conditions - the validation rules](#conditions--the-validation-rules)
 - [ValueHosts](#valuehosts)
 - [Validators](#validators-connecting-conditions-to-error-messages)
 - [ValidationManager](#validationmanager)
@@ -146,16 +146,16 @@ Here are the Condition-building functions of the Builder API:
 - [Positive](./Conditions.md#positive)
 - [Integer](./Conditions.md#integer)
 - [MaxDecimals](./Conditions.md#maxdecimals)
-- [All](./Conditions.md#all-any-countmatches)
-- [Any](./Conditions.md#all-any-countmatches)
-- [CountMatches](./Conditions.md#all-any-countmatches)
-- [When](./Conditions.md#when---using-one-condition-to-enable-another)
-- [Not](./Conditions.md#not---negate-the-result)
-- [CustomRule](#customrule---you-create-the-condition-on-demand)
+- [All](./Conditions.md#all-any-and-countmatches-conditions)
+- [Any](./Conditions.md#all-any-and-countmatches-conditions)
+- [CountMatches](./Conditions.md#all-any-and-countmatches-conditions)
+- [When](./Conditions.md#when-using-one-condition-to-enable-another)
+- [Not](./Conditions.md#not-negate-the-result)
+- [CustomRule](#custom-rule-you-create-the-condition-on-demand)
 
 
-### Condition: CustomRule - you create the condition on demand
-If you want to create the actual condition object and drop it into the Builder, use customRule().
+### Custom Rule: You create the condition on demand
+If you want to create the actual condition object and drop it into the Builder, use `customRule()`.
 It takes a function where you return the condition instance.
 ```ts
  (requestor: ValidatorConfig)=> ICondition | null

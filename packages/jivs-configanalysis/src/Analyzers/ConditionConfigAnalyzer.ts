@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/ConcreteClasses/Conditions
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/Conditions
  */
 
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';

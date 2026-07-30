@@ -1,6 +1,6 @@
 /**
  * 
- * @module ConfigAnalysis/Classes
+ * @module jivs-configanalysis/ConfigAnalysis/Classes
  */
 
 
@@ -30,7 +30,7 @@ import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } f
 import { SampleValues } from './SampleValues';
 
 /**
- * @inheritdoc ConfigAnalysis/Types!IConfigAnalysis:interface
+ * @inheritDoc jivs-configanalysis/ConfigAnalysis/Types!IConfigAnalysis:interface
  */
 export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig, TServices extends IValidationServices>
     implements IConfigAnalysis {

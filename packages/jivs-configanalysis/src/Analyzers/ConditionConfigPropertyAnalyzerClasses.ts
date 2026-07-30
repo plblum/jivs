@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/ConcreteClasses/Conditions
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/Conditions
  */
 
 import { CompareToSecondValueHostConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToSecondValueHostConditionBase';

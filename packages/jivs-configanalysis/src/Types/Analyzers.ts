@@ -1,6 +1,6 @@
 /**
  * Interfaces and types for Analyzers.
- * @module Analyzers/Types
+ * @module jivs-configanalysis/Analyzers/Types
  */
 
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';

@@ -23,11 +23,12 @@ _Index_
 - [Positive](#positive)
 - [Integer](#integer)
 - [MaxDecimals](#maxdecimals)
-- [All](#all-any-countmatches)
-- [Any](#all-any-countmatches)
-- [CountMatches](#all-any-countmatches)
-- [When](#when---using-one-condition-to-enable-another)
-- [Not](#not---negate-the-result)
+- [Combining conditions](#combining-conditions-with-all-any-and-countmatches)
+    + [All](#all-any-and-countmatches-conditions)
+    + [Any](#all-any-and-countmatches-conditions)
+    + [CountMatches](#all-any-and-countmatches-conditions)
+- [When](#when--using-one-condition-to-enable-another)
+- [Not](#not--negate-the-result)
 
 ## RequireText
 Use when the value is a string. Reports an error when the string is empty or null.
@@ -526,7 +527,7 @@ interface DataTypeCheckConditionConfig = {
     valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
 }
 ```
-### Conditions: Combining others with all, any, and countMatches
+## Combining Conditions with all, any, and countMatches
 Complex logic is often the result of using boolean expressions against existing conditions. These three conditions can evaluate two or more conditions together to determine a single result. 
 - `all()` - the `AllMatchesCondition` requires that all child conditions evaluate as a match to be considered valid. Think of this as an "AND" operator.
 - `any()` - the `AnyMatchesCondition` requires that at least one child condition evaluates as a match to be considered valid.
@@ -534,7 +535,7 @@ Complex logic is often the result of using boolean expressions against existing 
 
 You might also use these to bury several conditions under a single error message.
 
-#### Requirements for children of all, any, and countMatches
+### Requirements for children of all, any, and countMatches
 Let's focus on the structure of setting up children using all() as an example:
 ```ts
 builder.field('fieldname').all((childBuilder)=>{
@@ -555,7 +556,7 @@ builder.field('fieldname').all((childBuilder)=>{
 - `when()` employs the `WhenCondition` to selectively enable a single child condition.
 - `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
 
-#### Conditions: All, Any, CountMatches
+### All, Any, and CountMatches Conditions
 ```ts
 all(childBuilderHandler);
 all(childBuilderHandler,
@@ -610,7 +611,7 @@ interface EvaluateChildConditionResultsBaseConfig = {
     treatUndeterminedAs?: ConditionEvaluateResult; // When a child condition evaluates as Undetermined, this indicates how to handle it.Defaults to Undetermined.
 }
 ```
-## When - using one condition to enable another
+## When: Using one condition to enable another
 When you have a condition that shouldn't be evaluated until another condition is met, use the WhenCondition. Think of this as "when"->"then" logic.
 
 Suppose that you have a textbox and a nearby checkbox that is used to enable/disable the textbox. Since a disabled textbox should not be validated, we use the When condition.
@@ -698,7 +699,7 @@ builder.field('PostalCode')
         (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}$/));
 ```
 
-## Not - negate the result
+## Not: Negate the result
 Negates the result of a single child condition. Does nothing if the child condition
 results in Undetermined.
 ```ts

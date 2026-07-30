@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/AbstractClasses
+ * @module jivs-configanalysis/Analyzers/AbstractClasses
 */
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { IConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../Types/Analyzers';

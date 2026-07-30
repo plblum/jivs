@@ -12,7 +12,7 @@
  * - DisposableCondition: Returns a result supplied in the config and implements IDisposable
  * 
  * Add to an existing ValidationService by calling registerTestingOnlyConditions(services.conditionsFactory).
- * @module Support/ConditionsForTesting
+ * @module jivs-engine/Support/ConditionsForTesting
  */
 import { ConditionFactory } from '../Conditions/ConditionFactory';
 import {

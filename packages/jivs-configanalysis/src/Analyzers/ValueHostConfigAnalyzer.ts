@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/ConcreteClasses/ValueHostConfig
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/ValueHostConfig
  */
 
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';

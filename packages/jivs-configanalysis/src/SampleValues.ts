@@ -1,7 +1,7 @@
 /**
  * Provides data type and valueHost specific values for the ConfigAnalysis 
  * to use in its analysis.
- * @module ConfigAnalysis/Classes
+ * @module jivs-configanalysis/ConfigAnalysis/Classes
  */
 
 
@@ -15,7 +15,7 @@ import { ConfigAnalysisOptions, ISampleValues } from './Types/ConfigAnalysis';
  * For example, make the "Integer" lookup key return "100" as a sample value.
  * 
  * Also allows the user to supply valueHost specific values through the options parameter
- * of ConfigAnalysis.analyze(). See {@link ConfigAnalysis/Types!ConfigAnalysisOptions}.
+ * of ConfigAnalysis.analyze(). See {@link jivs-configanalysis/ConfigAnalysis/Types!ConfigAnalysisOptions}.
 
  * For example, make the "Last Name" ValueHost return "Smith" as a sample value.
  * 

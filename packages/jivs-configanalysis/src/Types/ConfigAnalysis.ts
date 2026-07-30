@@ -1,6 +1,6 @@
 /**
  * Interfaces and types for ConfigAnalysis class.
- * @module ConfigAnalysis/Types
+ * @module jivs-configanalysis/ConfigAnalysis/Types
  */
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';

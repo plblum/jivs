@@ -1,5 +1,5 @@
 /**
- * @module ConfigAnalysis/Types
+ * @module jivs-configanalysis/ConfigAnalysis/Types
  */
 
 import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from './Analyzers';

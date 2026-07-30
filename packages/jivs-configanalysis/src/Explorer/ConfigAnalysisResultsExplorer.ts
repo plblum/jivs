@@ -1,6 +1,6 @@
 /**
  *
- * @module Explorer/ConcreteClasses
+ * @module jivs-configanalysis/Explorer/ConcreteClasses
  */
 
 import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
@@ -253,7 +253,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.reportIntoJson
+     * @inheritDoc jivs-configanalysis/Explorer/Types!IConfigAnalysisResultsExplorer.reportIntoJson
      */
     public reportIntoJson(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -266,7 +266,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.reportToConsole
+     * @inheritDoc jivs-configanalysis/Explorer/Types!IConfigAnalysisResultsExplorer.reportToConsole
      */
     public reportToConsole(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -331,7 +331,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices
     }
 
     /**
-     * @inheritdoc Explorer/Types!IConfigAnalysisResultsExplorer.report
+     * @inheritDoc jivs-configanalysis/Explorer/Types!IConfigAnalysisResultsExplorer.report
      */
     public report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null,
         lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,

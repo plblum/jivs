@@ -1,5 +1,5 @@
 /**
- * @module Analyzers/ConcreteClasses
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses
  */
 
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';

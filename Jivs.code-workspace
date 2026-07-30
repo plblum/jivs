@@ -77,8 +77,26 @@
 			"/*.js": true,
 			"/*.json": true,
 			"CHANGELOG.md": true,
-			"docs": true
+			".nx/**": true,
+			"**/dist/**": true,
+			"**/global_build/**": true,
+			"**/node_modules/**": true,
+			"**/temp/**": true,
+			"**/typedoc_output/**": true,
+			"*.d.ts": true,
+			"*.js": true,
+			"*.map": true
 		},
+		"files.watcherExclude": {
+			" **/coverage/**": true,
+			".nx/**": true,
+			"**/build/**": true,
+			"**/dist/**": true,
+			"**/global_build/**": true,
+			"**/node_modules/**": true,
+			"**/temp/**": true,
+			"**/typedoc_output/**": true
+		},		
 		"notebook.find.scope": {
 			"markupSource": true,
 			"markupPreview": true,

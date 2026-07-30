@@ -1,6 +1,6 @@
 /**
  * 
- * @module ConfigAnalysis/Classes
+ * @module jivs-configanalysis/ConfigAnalysis/Classes
  */
 
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';

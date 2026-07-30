@@ -1,6 +1,6 @@
 /**
  * 
- * @module Analyzers/ConcreteClasses/ValidatorConfig
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/ValidatorConfig
  */
 
 

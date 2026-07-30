@@ -1,5 +1,5 @@
 /**
- * @module Explorer/AbstractClasses
+ * @module jivs-configanalysis/Explorer/AbstractClasses
  */
 
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
