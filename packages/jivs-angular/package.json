@@ -1,6 +1,9 @@
 {
   "name": "@plblum/jivs-angular",
   "private": true,
+  "publishConfig": {
+    "access": "public"
+  },  
   "type": "module",
   "version": "0.20.1",
   "description": "Delivers Jivs support for Angular applications",
