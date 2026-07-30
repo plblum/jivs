@@ -1,7 +1,7 @@
 {
   "name": "@plblum/jivs-angular",
   "type": "module",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "description": "Delivers Jivs support for Angular applications",
   "displayName": "Jivs Angular",
   "license": "MIT",
@@ -20,7 +20,6 @@
       "jest": true
     }
   },
-
   "peerDependencies": {
     "@angular/animations": "^19.0.0",
     "@angular/common": "^19.0.0",
