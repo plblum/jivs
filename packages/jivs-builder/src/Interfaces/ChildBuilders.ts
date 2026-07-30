@@ -8,7 +8,7 @@
  * - IStartConditionWithOneChildBuilder: Interface for the starting point of condition builders that can have exactly one child condition.
  * - IConditionBuilder: Interface for builders that create condition configs.
  * 
- *  @module Builders/Types
+ *  @module jivs-builder/Builders/Types
  */
 
 

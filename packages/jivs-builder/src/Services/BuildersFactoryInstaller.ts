@@ -1,5 +1,5 @@
 /**
- * @module jivs-engine/Services/ConcreteClasses
+ * @module jivs-builder/Services/ConcreteClasses
  */
 
 import type {

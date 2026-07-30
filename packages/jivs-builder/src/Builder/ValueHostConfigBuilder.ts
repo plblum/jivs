@@ -1,5 +1,5 @@
 /**
- *  @module Builders/ConcreteClasses
+ *  @module jivs-builder/Builders/ConcreteClasses
  */
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';

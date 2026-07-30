@@ -119,7 +119,7 @@
  *    and other conditions that can have child conditions. It fully creates the condition config.
  *    It gathers all child condition configs and attaches them to the parent condition config
  *    through its setConfig method.
- *  @module Builders/AbstractClasses
+ *  @module jivs-builder/Builders/AbstractClasses
  */
 
 import { CountMatchesConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';

@@ -1,6 +1,6 @@
 /**
- * @inheritDoc Builders/ConcreteClasses!ValidationManagerConfigBuilder:class
- * @module Builders/ConcreteClasses
+ * @inheritDocjivs-builder/Builders/ConcreteClasses!ValidationManagerConfigBuilder:class
+ * @module jivs-builder/Builders/ConcreteClasses
  */
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';

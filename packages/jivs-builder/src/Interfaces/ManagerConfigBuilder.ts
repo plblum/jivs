@@ -1,6 +1,6 @@
 /**
  * Interfaces for a ManagerConfigBuilders
- * @module Builders/Types
+ * @module jivs-builder/Builders/Types
  */
 
 

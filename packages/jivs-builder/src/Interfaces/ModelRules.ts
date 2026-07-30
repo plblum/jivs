@@ -18,7 +18,7 @@
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     const vm = new ValidationManager(config);
     ```
- * @module ModelRules/Types
+ * @module jivs-builder/ModelRules/Types
  */
 
 import { IFormConfigAdapter } from '../Interfaces/ManagerConfigBuilder';

@@ -1,5 +1,5 @@
 /**
- * @module jivs-engine/Services/Types
+ * @module jivs-builder/Services/Types
  */
 
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
