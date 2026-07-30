@@ -1,7 +1,7 @@
 /**
  * Supplies services and factories to be used as dependency injection
  * into the classes of this system.
- * @module Services/ConcreteClasses/Services
+ * @module jivs-engine/Services/ConcreteClasses/Services
  */
 
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';

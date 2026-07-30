@@ -16,7 +16,7 @@
  *   get the Validators objects involved.
  * - ValidatorsValueHostBase - introduces Validators and completes the overall validation feature.
  *   FieldValueHosts inherit from this 
- * @module ValueHosts/Types/ValueHost
+ * @module jivs-engine/ValueHosts/Types/ValueHost
  */
 
 
@@ -87,7 +87,7 @@ export interface IValueHost extends IValidationManagerAccessor, IDisposable {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     * See the {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
     getDataType(): string | null;
 
@@ -326,7 +326,7 @@ export interface ValueHostConfig {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
+     * See {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
      * If null, the current value's type (ValueHostInstanceState.Value) is used and must be string, number, boolean, or date.
      */
     dataType?: string;

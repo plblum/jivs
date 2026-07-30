@@ -9,7 +9,7 @@
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to ValidatorsValueHostBases through their ValidatorsValueHostBaseConfig.
-  * @module Validator/ConcreteClasses
+  * @module jivs-engine/Validator/ConcreteClasses
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

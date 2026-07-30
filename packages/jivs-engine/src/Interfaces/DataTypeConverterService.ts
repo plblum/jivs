@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService:interface }
- * @module Services/Types/IDataTypeConverterService
+ * {@inheritDoc jivs-engine/Services/Types/IDataTypeConverterService!IDataTypeConverterService:interface }
+ * @module jivs-engine/Services/Types/IDataTypeConverterService
  */
 
 import { IDataTypeConverter } from './DataTypeConverters';
@@ -16,7 +16,7 @@ export type SimpleValueType = number | Date | string | null | boolean | undefine
 /**
  * Service for changing the original value into 
  * something that you want a condition to evaluate
- * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
  */
 export interface IDataTypeConverterService extends IDataTypeService<IDataTypeConverter>, IServicesAccessor {
     /**
@@ -68,7 +68,7 @@ export interface IDataTypeConverterService extends IDataTypeService<IDataTypeCon
     convertUntilResult(value: any, sourceLookupKey: string | null, resultLookupKey: string): ConversionResult;
 
     /**
-     * Finds the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
+     * Finds the first {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
      * that supports the value, or null if none are found.
      * @param value - The value to be converted. Check its type and possibly its content.
      * @param sourceLookupKey - The value can represent several other values, such as a Date 

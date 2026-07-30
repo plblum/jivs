@@ -1,6 +1,6 @@
 /**
  * Interfaces built around the concept of data validation.
- * @module Validation/Types
+ * @module jivs-engine/Validation/Types
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatorValidateResult } from './Validator';

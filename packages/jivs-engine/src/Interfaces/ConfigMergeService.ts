@@ -1,6 +1,6 @@
 /**
  * 
- * @module Services/Types/ConfigMergeService
+ * @module jivs-engine/Services/Types/ConfigMergeService
  */
 import { ConditionConfig } from './Conditions';
 import { ValidatorConfig } from './Validator';
@@ -9,7 +9,7 @@ import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
 import { IServiceWithAccessor } from './Services';
 
 /**
- * @inheritdoc Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
+ * @inheritDoc jivs-engine/Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
  */
 export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
 

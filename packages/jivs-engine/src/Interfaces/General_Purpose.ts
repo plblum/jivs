@@ -1,5 +1,5 @@
 /**
- * @module Utilities
+ * @module jivs-engine/Utilities
 */
 
 /**

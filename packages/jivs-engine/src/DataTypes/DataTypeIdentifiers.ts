@@ -4,7 +4,7 @@
  * This interface is implemented for number as "Number", Date as "Date",
  * Boolean as "Boolean", and String as "String".
  * Each instance is registered with the dataTypeIdentifierService.
- * @module DataTypes/ConcreteClasses/DataTypeIdentifiers
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeIdentifiers
  */
 import { IDataTypeIdentifier } from '../Interfaces/DataTypeIdentifier';
 import { LookupKey } from './LookupKeys';

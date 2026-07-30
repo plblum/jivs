@@ -1,7 +1,7 @@
 /**
  * The fundamentals of managing ValueHosts involve just the ability
  * to get a ValueHost and provide the Services (for dependency injection).
- * @module Validation/Types/ValueHostResolver
+ * @module jivs-engine/Validation/Types/ValueHostResolver
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

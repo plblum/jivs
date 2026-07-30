@@ -1,6 +1,6 @@
 /**
  * Base class for Logger services. This class is abstract and should be extended to provide a concrete implementation.
- * @module Services/AbstractClasses/LoggerServiceBase
+ * @module jivs-engine/Services/AbstractClasses/LoggerServiceBase
  */
 import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ILoggerService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';

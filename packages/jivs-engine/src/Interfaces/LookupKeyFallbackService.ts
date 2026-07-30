@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/Types/ILookupKeyFallbackService!ILookupKeyFallbackService:interface } 
- * @module Services/Types/ILookupKeyFallbackService
+ * {@inheritDoc jivs-engine/Services/Types/ILookupKeyFallbackService!ILookupKeyFallbackService:interface } 
+ * @module jivs-engine/Services/Types/ILookupKeyFallbackService
  */
 
 import { IService } from './Services';

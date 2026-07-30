@@ -1,5 +1,5 @@
 /**
- * @module Validation/Types
+ * @module jivs-engine/Validation/Types
  */
 
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
@@ -49,7 +49,7 @@ export interface TokenLabelAndValue {
      * The value to be used as a replacement. It will be run through a formatter
      * based on either the specified formatterKey or the data type of this value,
      * by using DataTypeIdentifierService.
-     * {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} classes.
+     * {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} classes.
      */
     associatedValue: any;
     /**

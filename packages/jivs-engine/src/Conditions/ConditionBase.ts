@@ -1,7 +1,7 @@
 /**
- * ConditionBase is the base implementation of {@link Conditions/Types!ICondition | ICondition}, 
- * tying it to {@link Conditions/Types!ConditionConfig | ConditionConfig}
- * @module Conditions/AbstractClasses/ConditionBase
+ * ConditionBase is the base implementation of {@link jivs-engine/Conditions/Types!ICondition | ICondition}, 
+ * tying it to {@link jivs-engine/Conditions/Types!ConditionConfig | ConditionConfig}
+ * @module jivs-engine/Conditions/AbstractClasses/ConditionBase
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc ValueHosts/Types/CalcValueHost}
- * @module ValueHosts/ConcreteClasses/CalcValueHost
+ * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost}
+ * @module jivs-engine/ValueHosts/ConcreteClasses/CalcValueHost
  */
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
@@ -14,7 +14,7 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 
 
 /**
- * {@inheritDoc ValueHosts/Types/CalcValueHost} 
+ * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost} 
  */
 export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
     implements ICalcValueHost

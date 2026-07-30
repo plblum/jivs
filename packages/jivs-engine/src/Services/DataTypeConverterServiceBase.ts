@@ -1,6 +1,6 @@
 /**
  * Base classes for developing Services around data types.
- * @module Services/AbstractClasses/DataTypeConverterServiceBase
+ * @module jivs-engine/Services/AbstractClasses/DataTypeConverterServiceBase
  */
 
 import { CodingError } from '../Utilities/ErrorHandling';

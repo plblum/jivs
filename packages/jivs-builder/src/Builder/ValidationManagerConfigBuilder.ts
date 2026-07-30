@@ -85,7 +85,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
     //#region InstanceState
     /**
-     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
      */
     public get savedInstanceState(): ValidationManagerInstanceState | null {
         return this.baseConfig.savedInstanceState ?? null;
@@ -94,7 +94,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         this.baseConfig.savedInstanceState = value;
     }
     /**
-     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
      */
     public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
         return this.baseConfig.savedValueHostInstanceStates ?? null;
@@ -176,7 +176,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
 
     //#region IValidationManagerCallbacks
     /**
-     * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
      */
     public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null | undefined {
         return this.baseConfig.onValueHostInstanceStateChanged;
@@ -185,7 +185,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         this.baseConfig.onValueHostInstanceStateChanged = value;
     }
     /**
-     * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
      */
     public get onValueChanged(): ValueChangedHandler | null {
         return this.baseConfig.onValueChanged ?? null;
@@ -195,7 +195,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
      */
     public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
         return this.baseConfig.onValueHostValidationStateChanged ?? null;
@@ -205,7 +205,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onValidationStateChanged
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onValidationStateChanged
      */
     public get onValidationStateChanged(): ValidationStateChangedHandler | null {
         return this.baseConfig.onValidationStateChanged ?? null;
@@ -214,7 +214,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         this.baseConfig.onValidationStateChanged = value;
     }
     /**
-     * @inheritDoc ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
+     * @inheritDoc jivs-engine/ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
      */
     public get onTextValueChanged(): TextValueChangedHandler | null {
         return this.baseConfig.onTextValueChanged ?? null;
@@ -224,7 +224,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onInstanceStateChanged
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onInstanceStateChanged
      */
 
     public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
@@ -235,7 +235,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onConfigChanged
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onConfigChanged
      */
     public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
         return this.baseConfig.onConfigChanged ?? null;
@@ -245,7 +245,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
   
     /**
-     * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
      */
     public get notifyValidationStateChangedDelay(): number {
         return this.baseConfig.notifyValidationStateChangedDelay ?? 0;

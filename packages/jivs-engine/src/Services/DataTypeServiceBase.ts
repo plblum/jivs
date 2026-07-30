@@ -1,6 +1,6 @@
 /**
  * Base classes for developing Services around data types.
- * @module Services/AbstractClasses/DataTypeServiceBase
+ * @module jivs-engine/Services/AbstractClasses/DataTypeServiceBase
  */
 
 import { toIServicesAccessor } from '../Interfaces/Services';

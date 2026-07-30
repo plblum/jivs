@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeFormatterService!DataTypeFormatterService:class}
- * @module Services/ConcreteClasses/DataTypeFormatterService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeFormatterService!DataTypeFormatterService:class}
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeFormatterService
  */
 
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
@@ -13,7 +13,7 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 
 /**
  * A service for formatting data types used within tokens of error messages
- * using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  * 
  * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
@@ -21,7 +21,7 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
  */
 export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeFormatter>
     implements IDataTypeFormatterService {
@@ -38,7 +38,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     }
     
     /**
-     * {@inheritDoc Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
      */    
     public format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
         return this.formatRecursive(value, lookupKey, new Set<string>());
@@ -96,7 +96,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
         }
     }
     /**
-     * Removes the first {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
+     * Removes the first {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * that supports both parameters.
      * @param lookupKey 
      * @param cultureID 
@@ -108,7 +108,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     }
 
     /**
-     * Finds the {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
+     * Finds the {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * associated with the lookup key and this class's own CultureID.
      * Runs the lazyloader if setup and the first search fails.
      * @param lookupKey

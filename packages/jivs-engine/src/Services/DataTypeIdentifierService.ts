@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeIdentifierService!DataTypeIdentifierService:class }
- * @module Services/ConcreteClasses/DataTypeIdentifierService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeIdentifierService!DataTypeIdentifierService:class }
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeIdentifierService
  */
 
 import { valueForLog } from '../Utilities/Utilities';
@@ -12,9 +12,9 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
- * using {@link DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
  * 
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices.dataTypeIdentifierService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices.dataTypeIdentifierService}.
  */
 export class DataTypeIdentifierService extends DataTypeServiceBase<IDataTypeIdentifier>
 implements IDataTypeIdentifierService
@@ -40,7 +40,7 @@ implements IDataTypeIdentifierService
     }
 
     /**
-     * {@inheritDoc Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService.identify }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService.identify }
      */    
     public identify(value: any): string | null {
         const idt = this.find(value);

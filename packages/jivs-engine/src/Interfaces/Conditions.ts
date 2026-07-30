@@ -18,7 +18,7 @@
  *   the ConditionConfig, for implementing conditions that are configured
  *   through the Config. Most Condition classes supplied in this library
  *   implement this interface.
- * @module Conditions/Types
+ * @module jivs-engine/Conditions/Types
  */
 
 import { IValueHost } from './ValueHost';

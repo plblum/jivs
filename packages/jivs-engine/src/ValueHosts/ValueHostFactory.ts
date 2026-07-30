@@ -4,7 +4,7 @@
  * Most apps will use the ValueHost and FieldValueHost class implementations.
  * When adding a new ValueHost class, implement an IValueHostGenerator and register it
  * with the ValueHostFactory.
- * @module ValueHosts/ConcreteClasses/ValueHostFactory
+ * @module jivs-engine/ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
 import type { IValidationManager } from '../Interfaces/ValidationManager';

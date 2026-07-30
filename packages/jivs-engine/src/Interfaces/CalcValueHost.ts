@@ -42,7 +42,7 @@
  *  .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
-* @module ValueHosts/Types/CalcValueHost
+* @module jivs-engine/ValueHosts/Types/CalcValueHost
  */
 
 import { LookupKey } from '../DataTypes/LookupKeys';

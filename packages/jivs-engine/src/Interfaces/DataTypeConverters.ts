@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeConverter!IDataTypeConverter:interface }
- * @module DataTypes/Types/IDataTypeConverter
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeConverter
  */
 
 

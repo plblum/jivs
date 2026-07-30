@@ -6,7 +6,7 @@
  * - A list of Validators, each for a single validation rule and containing their own error messages
  * - An additional value that can be validated, the value directly from the Input, which is often
  *   quite different from the value intended to be stored in the Model/Entity.
- * @module ValueHosts/ConcreteClasses/FieldValueHost
+ * @module jivs-engine/ValueHosts/ConcreteClasses/FieldValueHost
  */
 import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';

@@ -1,6 +1,6 @@
 /**
- * @inheritdoc {@link Support/CapturingLogger!CapturingLogger }
- * @module Support/CapturingLogger
+ * @inheritdoc jivs-engine/Support/CapturingLogger!CapturingLogger
+ * @module jivs-engine/Support/CapturingLogger
  */
 
 import { LoggingLevel, LogDetails, LogOptions } from '../Interfaces/LoggerService';

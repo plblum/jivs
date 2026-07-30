@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
- * @module DataTypes/Types/IDataTypeCheckGenerator
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeCheckGenerator
  */
 
 import { IConditionFactory, ICondition } from './Conditions';

@@ -1,6 +1,6 @@
 /**
  * Internal caching through the ICachingService interface.
- * @module Services/ConcreteClasses/CachingService
+ * @module jivs-engine/Services/ConcreteClasses/CachingService
  */
 
 import { ICachingService } from '../Interfaces/CachingService';

@@ -2,7 +2,7 @@
  * Base for Conditions that takes 2 values to evaluate properly, and the second 
  * value comes from another ValueHost identified in TwoValueConditionBaseConfig.secondValueHostName.
  * 
- * @module Conditions/AbstractClasses/TwoValueConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/TwoValueConditionBase
  */
 
 

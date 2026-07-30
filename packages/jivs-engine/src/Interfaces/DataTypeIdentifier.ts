@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier:interface }
- * @module DataTypes/Types/IDataTypeIdentifier
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeIdentifier
  */
 
 /**

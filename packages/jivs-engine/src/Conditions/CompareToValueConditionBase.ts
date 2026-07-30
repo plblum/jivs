@@ -2,7 +2,7 @@
  * Base for Conditions that compare the ValueHost's against a second value, supplied in 
  * CompareToValueConditionBaseConfig.secondValue.
  * The Config introduces valueHostName.
- * @module Conditions/AbstractClasses/CompareToValueConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/CompareToValueConditionBase
  */
 
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';

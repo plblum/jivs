@@ -1,7 +1,7 @@
 /**
  * Base for Conditions that compare the ValueHost's value 
  * against a second ValueHost, from CompareToSecondValueHostConditionBaseConfig.secondValueHostName.
- * @module Conditions/AbstractClasses/CompareToSecondValueHostConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/CompareToSecondValueHostConditionBase
  */
 
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';

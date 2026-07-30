@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeComparerService!DataTypeComparerService}
- * @module Services/ConcreteClasses/DataTypeComparerService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeComparerService!DataTypeComparerService}
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeComparerService
  */
 
 import { BooleanDataTypeComparer, defaultComparer } from '../DataTypes/DataTypeComparers';
@@ -14,13 +14,13 @@ import { DataTypeConverterServiceBase } from './DataTypeConverterServiceBase';
 
 /**
  * A service for changing the comparing two values
- * using {@link DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} instances.
  * 
  * Used by Conditions to compare two values when those values don't naturally work
  * with the JavaScript comparison operators. Due to the Converter's ability to prepare
  * most values for the default comparison function, these aren't often created.
  *
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeComparerService | ValidationServices.dataTypeComparerService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeComparerService | ValidationServices.dataTypeComparerService}.
  */
 export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataTypeComparer>
     implements IDataTypeComparerService
@@ -40,7 +40,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
         return -1;  // register does not replace
     }
     /**
-     * {@inheritDoc Services/Types/IDataTypeComparerService!IDataTypeComparerService.compare }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeComparerService!IDataTypeComparerService.compare }
      */    
     public compare(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
 

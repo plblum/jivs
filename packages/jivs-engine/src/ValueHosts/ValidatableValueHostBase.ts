@@ -1,6 +1,6 @@
 /**
  * Expands upon ValueHost to provide the basics of validation.
- * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
+ * @module jivs-engine/ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { cleanString, deepEquals, groupsMatch, valueForLog } from '../Utilities/Utilities';

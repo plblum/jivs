@@ -1,6 +1,6 @@
 /**
  * A class for debouncing a function.
- * @module Utilities
+ * @module jivs-engine/Utilities
  */
 
 import { assertNotNull } from './ErrorHandling';

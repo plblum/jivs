@@ -12,7 +12,7 @@
  * Default comparison is the DefaultComparer function below.
  * 
  * Expectation: Dates are handled by IDataTypeConverters. Thus no Comparer exists here.
- * @module DataTypes/ConcreteClasses/DataTypeComparers
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeComparers
  */
 
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';

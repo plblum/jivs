@@ -1,12 +1,12 @@
 /**
- * Concrete implementations of {@link Conditions/Types!ICondition | ICondition}, and their companion 
- * {@link Conditions/Types!ConditionConfig | ConditionConfig}.
+ * Concrete implementations of {@link jivs-engine/Conditions/Types!ICondition | ICondition}, and their companion 
+ * {@link jivs-engine/Conditions/Types!ConditionConfig | ConditionConfig}.
  * 
  * The conditions found here all use an ConditionConfig for supplying 
  * their configuration. Most Condition classes have a specific interface
  * for their Config, such as {@link RangeConditionConfig} for {@link RangeCondition}.
  * 
- * @module Conditions/ConcreteConditions
+ * @module jivs-engine/Conditions/ConcreteConditions
  */
 
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';

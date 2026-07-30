@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/Types/ValidatorsValueHostBase
+ * @module jivs-engine/ValueHosts/Types/ValidatorsValueHostBase
  */
 import { IValidator, ValidatorConfig } from './Validator';
 import {

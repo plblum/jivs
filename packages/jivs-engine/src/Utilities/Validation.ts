@@ -1,6 +1,6 @@
 /**
  * Various classes, types and functions to support Validation.
- * @module Utilities
+ * @module jivs-engine/Utilities
  */
 
 import { WhenConditionConfig } from '../Conditions/WhenCondition';

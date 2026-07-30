@@ -1,7 +1,7 @@
 /**
  * Base for Conditions that evaluate a number value. All other values are treated as ConditionEvaluateResult.Undetermined.
  * The value can be from an object that has a DataTypeConverter to make it into a number.
- * @module Conditions/AbstractClasses/NumberConditionBaseConfig
+ * @module jivs-engine/Conditions/AbstractClasses/NumberConditionBaseConfig
  */
 
 import { LookupKey } from '../DataTypes/LookupKeys';

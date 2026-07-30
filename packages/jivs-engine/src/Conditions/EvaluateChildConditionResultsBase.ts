@@ -4,7 +4,7 @@
  * 
  * In this Condition, the value of the current input field/element passed into 
  * evaluate(vh) is passed along to child Conditions that do not specify a ValueHost.
- * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
+ * @module jivs-engine/Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';

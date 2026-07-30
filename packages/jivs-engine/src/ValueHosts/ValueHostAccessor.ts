@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/ConcreteClasses/ValueHostAccessor
+ * @module jivs-engine/ValueHosts/ConcreteClasses/ValueHostAccessor
  */
 
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';

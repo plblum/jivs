@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc ValueHosts/Types/ValueHost }
- * @module ValueHosts/AbstractClasses/ValueHostBase
+ * {@inheritDoc jivs-engine/ValueHosts/Types/ValueHost }
+ * @module jivs-engine/ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
@@ -191,7 +191,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     }
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     * See the {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
     public getDataType(): string | null {
         return this.config.dataType ?? null;

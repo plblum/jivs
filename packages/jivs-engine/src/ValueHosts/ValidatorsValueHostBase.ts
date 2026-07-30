@@ -1,6 +1,6 @@
 /**
  * A ValueHost that uses the Validator class to provide validation.
- * @module ValueHosts/AbstractClasses/ValidatorsValueHostBase
+ * @module jivs-engine/ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';

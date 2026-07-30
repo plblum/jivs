@@ -40,7 +40,7 @@
  * }
  * ```
  * 
- * @module Services/ConcreteClasses/ExtendingServices
+ * @module jivs-engine/Services/ConcreteClasses/ExtendingServices
  */
 
 

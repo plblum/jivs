@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/Types/ICultureService!ICultureService:interface } 
- * @module Services/Types/ICultureService
+ * {@inheritDoc jivs-engine/Services/Types/ICultureService!ICultureService:interface } 
+ * @module jivs-engine/Services/Types/ICultureService
  */
 
 import { IService } from './Services';
@@ -56,7 +56,7 @@ export interface ICultureService extends IService {
 /**
  * Identifies a CultureID ('en', 'en-US', 'en-GB', etc) that you are supporting.
  * Supplies a fallback CultureID if the culture requested did not have any support.
- * Used by {@link Services/ConcreteClasses/CultureService!CultureService | CultureService}. 
+ * Used by {@link jivs-engine/Services/ConcreteClasses/CultureService!CultureService | CultureService}. 
  * Pass an array of these into the CultureService constructor.
  */
 export interface CultureIdFallback {

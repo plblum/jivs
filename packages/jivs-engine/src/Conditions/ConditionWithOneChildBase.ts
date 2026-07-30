@@ -1,7 +1,7 @@
 /**
  * Base class for Conditions that have a single child condition.
  * 
- * @module Conditions/AbstractClasses/ConditionWithOneChildBaseConfig
+ * @module jivs-engine/Conditions/AbstractClasses/ConditionWithOneChildBaseConfig
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

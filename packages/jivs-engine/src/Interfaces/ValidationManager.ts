@@ -20,7 +20,7 @@
  * - Report a list of Issues Found for the entire system for a UI 
  *   element often known as "Validation Summary".
  * 
- * @module ValidationManager/Types
+ * @module jivs-engine/ValidationManager/Types
  */
 
 

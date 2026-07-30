@@ -1,6 +1,6 @@
 /**
  * Provides a dependency injection approach to this library.
- * @module Services/Types/IServices
+ * @module jivs-engine/Services/Types/IServices
  */
 
 import { CodingError } from '../Utilities/ErrorHandling';

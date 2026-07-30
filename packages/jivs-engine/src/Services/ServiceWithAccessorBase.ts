@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/AbstractClasses/ServiceWithAccessorBase!ServiceWithAccessorBase}
- * @module Services/AbstractClasses/ServiceWithAccessorBase
+ * {@inheritDoc jivs-engine/Services/AbstractClasses/ServiceWithAccessorBase!ServiceWithAccessorBase}
+ * @module jivs-engine/Services/AbstractClasses/ServiceWithAccessorBase
  */
 
 import { IServicesAccessor } from '../Interfaces/Services';

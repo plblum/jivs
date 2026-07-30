@@ -1,6 +1,6 @@
 /**
  * @inheritDoc ITextLocalizerService
- * @module Services/Types/ITextLocalizerService
+ * @module jivs-engine/Services/Types/ITextLocalizerService
  */
 
 import { IServiceWithFallback } from './Services';

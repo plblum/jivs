@@ -2,7 +2,7 @@
  * Base Condition for evaluating the results from a list of Conditions, where a rule determines what to
  * do with their results. 
  * 
- * @module Conditions/AbstractClasses/ConditionWithChildrenBase
+ * @module jivs-engine/Conditions/AbstractClasses/ConditionWithChildrenBase
  */
 
 import { toIDisposable } from '../Interfaces/General_Purpose';

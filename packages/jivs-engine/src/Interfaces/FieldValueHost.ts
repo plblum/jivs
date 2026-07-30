@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/Types/FieldValueHost
+ * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
 import { IDataTypeParser } from './DataTypeParsers';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';

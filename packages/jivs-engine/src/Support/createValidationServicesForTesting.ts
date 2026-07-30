@@ -1,6 +1,6 @@
 /**
- * @inheritdoc {@link Support/CreateValidationServicesForTesting!createValidationServicesForTesting }
- * @module Support/CreateValidationServicesForTesting
+ * @inheritdoc jivs-engine/Support/CreateValidationServicesForTesting!createValidationServicesForTesting
+ * @module jivs-engine/Support/CreateValidationServicesForTesting
  */
 
 import {

@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeParserService!IDataTypeParserService:interface }
- * @module DataTypes/Types/IDataTypeParserService
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParserService!IDataTypeParserService:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeParserService
  */
 
 import { IDataTypeParser } from './DataTypeParsers';
@@ -9,7 +9,7 @@ import { DataTypeResolution, IDataTypeService } from './DataTypes';
 
 /**
  * A service for parsing strings into the native data type
- * using {@link DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
  */
 export interface IDataTypeParserService extends IDataTypeService<IDataTypeParser<any>>
 {

@@ -29,7 +29,7 @@
  * ...and more...
  * };
  * ```
- * @module ValueHosts/Types/StaticValueHost
+ * @module jivs-engine/ValueHosts/Types/StaticValueHost
  */
 
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';

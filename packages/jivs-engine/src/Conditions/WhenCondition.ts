@@ -1,6 +1,6 @@
 /**
- * @inheritDoc Conditions/ConcreteConditions/WhenCondition!WhenCondition:class
- * @module Conditions/ConcreteConditions/WhenCondition
+ * @inheritDoc jivs-engine/Conditions/ConcreteConditions/WhenCondition!WhenCondition:class
+ * @module jivs-engine/Conditions/ConcreteConditions/WhenCondition
  */
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';

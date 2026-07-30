@@ -2,7 +2,7 @@
  * Factory for generating classes that implement IValueHost that use ValueHostConfig.
  * ValueHostConfig identifies the desired ValueHost class.
  * Most apps will use the standard FieldValueHost class.
- * @module ValueHosts/Types/ValueHostFactory
+ * @module jivs-engine/ValueHosts/Types/ValueHostFactory
  */
 
 import { ValueHostConfig, ValueHostInstanceState, IValueHost } from './ValueHost';

@@ -1,5 +1,5 @@
 /**
- * @module DataTypes/Types
+ * @module jivs-engine/DataTypes/Types
  */
 
 import { IServiceWithAccessor } from './Services';

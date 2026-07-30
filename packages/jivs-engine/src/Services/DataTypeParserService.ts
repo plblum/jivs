@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeParserService!DataTypeParserService:class}
- * @module Services/ConcreteClasses/DataTypeParserService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeParserService!DataTypeParserService:class}
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeParserService
  */
 
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
@@ -14,9 +14,9 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 
 /**
  * A service for parsing strings into the native data type
- * using {@link DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
  * 
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeParserService | ValidationServices.dataTypeParserService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeParserService | ValidationServices.dataTypeParserService}.
  */
 export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<any>>
     implements IDataTypeParserService {

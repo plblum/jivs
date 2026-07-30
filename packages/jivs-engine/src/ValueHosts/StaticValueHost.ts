@@ -1,6 +1,6 @@
 /**
  * {@inheritDoc StaticValueHost}
- * @module ValueHosts/ConcreteClasses/StaticValueHost
+ * @module jivs-engine/ValueHosts/ConcreteClasses/StaticValueHost
  */
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';

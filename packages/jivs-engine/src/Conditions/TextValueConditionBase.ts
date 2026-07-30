@@ -1,7 +1,7 @@
 /**
  * Base for Conditions that use the value from ValueHost.getTextValue().
  * Most classes use ValueHost.getValue() (the native value).
- * @module Conditions/AbstractClasses/TextValueConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/TextValueConditionBase
  */
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';

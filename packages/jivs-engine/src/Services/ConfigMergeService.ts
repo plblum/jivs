@@ -1,5 +1,5 @@
 /**
- * @module Services/ConcreteClasses/ConfigMergeService
+ * @module jivs-engine/Services/ConcreteClasses/ConfigMergeService
  */
 
 import { CodingError } from '../Utilities/ErrorHandling';

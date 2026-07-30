@@ -1,7 +1,7 @@
 
 /**
- * @inheritDoc Conditions/ConcreteConditions/NotCondition!NotCondition:class
- * @module Conditions/ConcreteConditions/NotCondition
+ * @inheritDoc jivs-engine/Conditions/ConcreteConditions/NotCondition!NotCondition:class
+ * @module jivs-engine/Conditions/ConcreteConditions/NotCondition
  */
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';

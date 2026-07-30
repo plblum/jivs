@@ -1,6 +1,6 @@
 /**
  * Internal caching through the ICachingService interface.
- * @module Services/Types/CachingService
+ * @module jivs-engine/Services/Types/CachingService
  */
 
 /**

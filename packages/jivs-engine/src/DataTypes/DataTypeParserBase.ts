@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
- * @module DataTypes/AbstractClasses/DataTypeParsers
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * @module jivs-engine/DataTypes/AbstractClasses/DataTypeParsers
  */
 
 import { IServicesAccessor } from '../Interfaces/Services';

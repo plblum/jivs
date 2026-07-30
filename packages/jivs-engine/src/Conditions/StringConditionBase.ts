@@ -1,6 +1,6 @@
 /**
  * Base Condition to evaluating the native value only a string.
- * @module Conditions/AbstractClasses/StringConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/StringConditionBase
  */
 
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';

@@ -1,7 +1,7 @@
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  * Those errors do not specify a ValueHostName associated with any ValueHost registered.
- * @module ValueHosts/ConcreteClasses/ModelValidatorsValueHost
+ * @module jivs-engine/ValueHosts/ConcreteClasses/ModelValidatorsValueHost
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

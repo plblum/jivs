@@ -1,6 +1,6 @@
 /**
- * @inheritDoc ValueHosts/AbstractClasses/ValidatableValueHostBase!
- * @module ValueHosts/Types/ValidatableValueHostBase
+ * @inheritDoc jivs-engine/ValueHosts/AbstractClasses/ValidatableValueHostBase!
+ * @module jivs-engine/ValueHosts/Types/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {

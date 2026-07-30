@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/Types/ValueHostAccessor
+ * @module jivs-engine/ValueHosts/Types/ValueHostAccessor
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';

@@ -16,7 +16,7 @@
  *   That comes from specifying a Lookup Key as part of the token like this: "{Value:AbbrevDate}" and "{Minimum:Uppercase}"
  * - Conditions that compare two values have a ConversionLookupKey property to override any default conversion. 
  *   Example: comparing two strings case insensitively using "CaseInsensitive" lookup key.
- * @module DataTypes/Types/LookupKey
+ * @module jivs-engine/DataTypes/Types/LookupKey
  */
 
 export enum LookupKey {

@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
- * @module DataTypes/ConcreteClasses/DataTypeCheckGenerators
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */
 import { IConditionFactory, ICondition } from '../Interfaces/Conditions';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';

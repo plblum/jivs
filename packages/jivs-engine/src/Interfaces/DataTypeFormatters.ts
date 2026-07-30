@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter:interface }
- * @module DataTypes/Types/IDataTypeFormatter
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeFormatter
  */
 
 import { DataTypeResolution } from './DataTypes';

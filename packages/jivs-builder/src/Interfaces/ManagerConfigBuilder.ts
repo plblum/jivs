@@ -76,12 +76,12 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
     IValidationManagerCallbacks, IValidationManagerConfigExtensions
 {
     /**
-     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
      */
     savedInstanceState?: ValidationManagerInstanceState | null;
 
     /**
-     * @inheritDoc ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
 }

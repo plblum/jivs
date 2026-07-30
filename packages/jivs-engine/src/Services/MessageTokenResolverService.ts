@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
- * @module Services/ConcreteClasses/MessageTokenResolverService
+ * {@inheritDoc jivs-engine/Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
+ * @module jivs-engine/Services/ConcreteClasses/MessageTokenResolverService
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../Interfaces/LoggerService';
@@ -13,7 +13,7 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
 
 /**
- * {@inheritDoc Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
+ * {@inheritDoc jivs-engine/Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
  */
 export class MessageTokenResolverService extends ServiceWithAccessorBase implements IMessageTokenResolverService
 {

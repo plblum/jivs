@@ -2,7 +2,7 @@
  * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your fields and their validation rules.
  * Its methods provide validation and the results of validation.
- * @module ValidationManager/ConcreteClasses
+ * @module jivs-engine/ValidationManager/ConcreteClasses
  */
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';

@@ -1,5 +1,5 @@
 /**
- * @module Services/ConcreteClasses/TextLocalizerService
+ * @module jivs-engine/Services/ConcreteClasses/TextLocalizerService
  */
 import { CultureToText, ITextLocalizerService, LocalizedDetailsResult } from '../Interfaces/TextLocalizerService';
 import { cultureLanguageCode } from '../Services/CultureService';

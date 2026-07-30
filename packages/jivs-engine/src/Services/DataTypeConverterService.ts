@@ -1,6 +1,6 @@
 /**
-  * {@inheritDoc Services/ConcreteClasses/DataTypeConverterService!DataTypeConverterService:class}
-  * @module Services/ConcreteClasses/DataTypeConverterService
+  * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeConverterService!DataTypeConverterService:class}
+  * @module jivs-engine/Services/ConcreteClasses/DataTypeConverterService
  */
 
 import { LoggingLevel, LoggingCategory, LogDetails } from '../Interfaces/LoggerService';
@@ -13,12 +13,12 @@ import { valueForLog } from '../Utilities/Utilities';
 /**
  * A service for changing the original value into 
  * something that you want a condition to evaluate
- * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
  * 
  * This is essential for comparison Conditions. Comparison works automatically
  * with string, number, and boolean native types. Converters exist to take a Date
  * or user defined class to a string, number, or boolean.
- * They are built on {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}.
+ * They are built on {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}.
  */
 export class DataTypeConverterService extends DataTypeConverterServiceBase<IDataTypeConverter>
     implements IDataTypeConverterService {
@@ -28,7 +28,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     }
 
     /**
-     * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
      */
     public convert(valueToConvert: any, sourceLookupKey: string | null, resultLookupKey: string): ConversionResult {
 
@@ -287,7 +287,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     }    
 
     /**
-     * Gets the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
+     * Gets the first {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
      *  that supports the value, or null if none are found.
      * Runs the lazyloader if setup and the first search fails.
      * @param value 

@@ -1,7 +1,7 @@
 /**
  * Base for Conditions that get a value from a ValueHost,
  * identified in OneValueConditionBase.valueHostName.
- * @module Conditions/AbstractClasses/OneValueConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/OneValueConditionBase
  */
 import { CodingError } from '../Utilities/ErrorHandling';
 import { ValueHostName } from '../DataTypes/BasicTypes';

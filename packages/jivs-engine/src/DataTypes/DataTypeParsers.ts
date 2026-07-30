@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
- * @module DataTypes/ConcreteClasses/DataTypeParsers
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers
  */
 
 import { DataTypeResolution } from '../Interfaces/DataTypes';

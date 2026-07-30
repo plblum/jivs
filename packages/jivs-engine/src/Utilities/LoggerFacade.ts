@@ -1,7 +1,7 @@
 /**
  * LoggerFacade provides a simplified API for logging messages and exceptions.
  * It encapsulates the LoggerService object.
- * @module Utilities
+ * @module jivs-engine/Utilities
  */
 
 import {

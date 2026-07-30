@@ -1,5 +1,5 @@
 /** 
- * @module Conditions/Types
+ * @module jivs-engine/Conditions/Types
  */
 
 /**
