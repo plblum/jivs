@@ -1,6 +1,6 @@
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
 import { ConfigAnalysisOutputReportData } from '../../src/Types/Explorer';
-import { CAPathedResult, CAFeature } from '../../src/Types/Results';
+import { CAPathedResult, CAFeature } from '../../src/Types/ConfigAnalysisResults';
 import { createBasicConfigAnalysisResults, createServices } from '../TestSupport/support';
 import { ConfigAnalysisResultsExplorerFactory } from './../../src/Explorer/ConfigAnalysisResultsExplorer';
 

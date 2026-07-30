@@ -1,19 +1,24 @@
 /**
- * @inheritDoc ValueHosts/AbstractClasses/ValidatableValueHostBase!
- * @module ValueHosts/Types/ValidatableValueHostBase
+ * @inheritDoc jivs-engine/ValueHosts/AbstractClasses/ValidatableValueHostBase!
+ * @module jivs-engine/ValueHosts/Types/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
-    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
+    StatefulValueHostValidateResult,
     ValidationState,
-    SetIssuesFoundErrorCodeMissingBehavior
+    ValidationStatus,
+    type IssueFound,
+    type ValidateOptions, type ValueHostValidateResult
 } from './Validation';
 
-import { IGatherValueHostNames, IValueHostCallbacks, toIValueHost, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
+import {
+    IGatherValueHostNames, IValueHostCallbacks, toIValueHost,
+    toIValueHostCallbacks,
+    type IValueHost, type ValueHostConfig, type ValueHostInstanceState
+} from './ValueHost';
 
 /**
-* Manages a value that may use input validation.
+* Manages a value that may use field validation.
 */
 export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
 
@@ -49,6 +54,14 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
     clearValidation(options?: ValidateOptions): boolean;
 
     /**
+     * Determines if the ValueHost is matches to a specific group, or if no group is supplied,
+     * it is always matches.
+     * Allows loops through valueHosts to take options.group into account.
+     */
+    groupCheck(options?: ValidateOptions): boolean;
+
+
+    /**
      * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false when instanceState.status is Invalid. Any other instanceState.status
      * return true.
@@ -78,31 +91,11 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
 
     /**
      * Exposes the current validation state for the ValueHost.
-     * It combines other properties and issuesFound.
+     * It combines other properties and all issuesFound from both validators and external sources.
      * The same value is delivered to the onValueHostValidationStateChanged callback.
      */
     currentValidationState: ValueHostValidationState;
 
-    /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * @param error - A business logic error to show. If it has an errorCode assigned and the same
-     * errorCode is already recorded here, the new entry replaces the old one.
-     * @param options - Only supports the skipCallback option.
-     * @returns true when a change was made to the known validation state.
-     */
-    setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean;
-
-    /**
-     * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
-     * @param options - Only supports the skipCallback option.
-     * @returns true when a change was made to the known validation state.
-     */
-    clearBusinessLogicErrors(options?: ValidateOptions): boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
@@ -117,21 +110,24 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
     corrected: boolean;    
 
     /**
-     * The results of validation specific to one condiiton Type.
-     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
+     * The results of validation specific to one error code or condition type.
+     * Searches both IssuesFound and externalIssuesFound.
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The issue or null if none.
-     */
+     */    
     getIssueFound(errorCode: string): IssueFound | null;
 
     /**
-     * A list of all issues found.
-     * @param group - Omit or null to ignore groups. Otherwise this will match to Validatable ValueHosts with 
-     * the same group (case insensitive match).
+     * Lists all issues found (error messages and supporting info) for a single Validatable ValueHost
+     * so the input field/element can show error messages and adjust its appearance.
+     * Includes both the issues found from validation (IssuesFound) and any external issues found (externalIssuesFound).
+     * @param group - a filter on the validator issuesFound matching to validation group.
+     * Has no impact on externalIssuesFound since they are not generated by validators.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - valueHostName - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
@@ -140,25 +136,52 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      *   is returned.
      */
     getIssuesFound(group?: string): Array<IssueFound> | null;
-  
+
     /**
-     * Adds or replaces all IssueFound items that are associated with this ValueHost.
-     * It ignores those with another ValueHost name, allowing for the same list to be culled
-     * by all ValueHosts. (As a result, it never changes the values sent in, or the array itself.) 
-     * Replacement when the errorCode is the same.
-     * Always invokes the onValueHostValidationStateChanged callback.
+     * For a list of external issuesfound, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * These will survive through clearValidation() and validate() since they are not generated by validators, 
+     * but they will be cleared by clearExternalIssuesFound().
      * 
-     * Use case: client-side getting server-side Jivs-generated IssuesFound,
-     * so the UI can incorporate it.
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
      * @param issuesFound 
-     * @param behavior - keep or omit an issueFound that does not have a matching validator
-     * based on the errorCode.
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. 
+     * Only used when issueFound.doNotSave is not already set, as it takes precedence. 
+     * If IssueFound.severity is Warning and issueFound.doNotSave is not set, it defaults doNotSave to false regardless of this value.
+     * Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
+     * @param options - Only considers the skipCallback option.
      */
-    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;
+    addExternalIssuesFound(issuesFound: Array<IssueFound>, determinedLocally: boolean, options?: ValidateOptions): boolean;
+
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issueFound 
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. 
+     * Only used when issueFound.doNotSave is not already set, as it takes precedence. 
+     * If IssueFound.severity is Warning and issueFound.doNotSave is not set, it defaults doNotSave to false regardless of this value.
+     * Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
+     * @param options - Only considers the skipCallback option.
+     */
+    addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean;    
+    /**
+     * Removes existing external issues found.
+     * Has no impact on issues found from validators, which are only cleared by clearValidation() or validate().
+     * @param options - Only supports the skipCallback option.
+     * @returns true when a change was made to the known validation state.
+     */
+    clearExternalIssuesFound(options?: ValidateOptions): boolean;    
 }
 
 /**
- * Just the data that is used to describe this input value.
+ * Just the data that is used to describe this ValueHost.
  * It should not contain any supporting functions or services.
  * It should be generatable from JSON, and simply gets typed to ValidatableValueHostConfig.
  * This provides the backing data for each ValidatableValueHost.
@@ -205,10 +228,10 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
      */
     group?: string;
     /**
-     * If there are any business logic errors, they are kept here.
+     * If there are any external errors, they are kept here.
      * If not, this is undefined.
      */
-    businessLogicErrors?: Array<BusinessLogicError>;
+    externalIssuesFound?: Array<IssueFound>;
 
     /**
      * When true, an async Validator is running
@@ -222,7 +245,7 @@ export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableVal
 
 /**
  * The value returned by onValueHostValidationStateChanged.
- * It includes all issuesfound and businesslogicerrors
+ * It includes all issuesfound and externalIssuesFound
  * as compared to validate() which is limited to just the issuesfound.
  */
 export interface ValueHostValidationState extends ValidationState
@@ -249,7 +272,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 {
     if (toIValueHost(source))
     {
-        let test = source as IValidatableValueHostBase;    
+        const test = source as IValidatableValueHostBase;    
         // some select members of IValidatorsValueHostBase
         if (test.otherValueHostChangedNotification !== undefined &&
             test.validate !== undefined &&
@@ -269,8 +292,8 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks {
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
-     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
-     * clearBusinessLogicErrors() and a few edge cases.
+     * That includes validate(), clearValidation(), addExternalIssuesFound(), 
+     * clearExternalIssuesFound() and a few edge cases.
      * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.
@@ -289,7 +312,7 @@ export function toIValidatableValueHostBaseCallbacks(source: any): IValidatableV
 {
     if (toIValueHostCallbacks(source))
     {
-        let test = source as IValidatableValueHostBaseCallbacks;
+        const test = source as IValidatableValueHostBaseCallbacks;
         if (test.onValueHostValidationStateChanged !== undefined)
             return test;
     }

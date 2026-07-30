@@ -1,39 +1,38 @@
 /**
  * 
- * @module ConfigAnalysis/Classes
+ * @module jivs-configanalysis/ConfigAnalysis/Classes
  */
 
 
-import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/ValueHosts/ManagerConfigBuilderBase";
-import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
+import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import {
     IAnalysisResultsHelper, IValueHostConfigPropertyAnalyzer,
     IValidatorConfigPropertyAnalyzer, IConditionConfigPropertyAnalyzer
-} from "./Types/Analyzers";
-import { IConfigAnalysis, ConfigAnalysisOptions, AnalysisArgs } from "./Types/ConfigAnalysis";
-import { IConfigAnalysisResultsExplorer } from "./Types/Explorer";
-import { IConfigAnalysisResults } from "./Types/Results";
-import { AnalysisResultsHelper } from "./Analyzers/AnalysisResultsHelper";
-import { ConditionConfigAnalyzer } from "./Analyzers/ConditionConfigAnalyzer";
-import { DataTypeComparerAnalyzer } from "./Analyzers/DataTypeComparerAnalyzer";
-import { DataTypeConverterLookupKeyAnalyzer } from "./Analyzers/DataTypeConverterLookupKeyAnalyzer";
-import { DataTypeFormatterLookupKeyAnalyzer } from "./Analyzers/DataTypeFormatterLookupKeyAnalyzer";
-import { DataTypeIdentifierLookupKeyAnalyzer } from "./Analyzers/DataTypeIdentifierLookupKeyAnalyzer";
-import { DataTypeParserLookupKeyAnalyzer } from "./Analyzers/DataTypeParserLookupKeyAnalyzer";
-import { ValidatorConfigAnalyzer } from "./Analyzers/ValidatorConfigAnalyzer";
-import { ValueHostConfigAnalyzer } from "./Analyzers/ValueHostConfigAnalyzer";
-import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from "./Explorer/ConfigAnalysisResultsExplorer";
-import { SampleValues } from "./SampleValues";
+} from './Types/Analyzers';
+import { IConfigAnalysis, ConfigAnalysisOptions, AnalysisArgs } from './Types/ConfigAnalysis';
+import { IConfigAnalysisResultsExplorer } from './Types/Explorer';
+import { IConfigAnalysisResults } from './Types/ConfigAnalysisResults';
+import { AnalysisResultsHelper } from './Analyzers/AnalysisResultsHelper';
+import { ConditionConfigAnalyzer } from './Analyzers/ConditionConfigAnalyzer';
+import { DataTypeComparerAnalyzer } from './Analyzers/DataTypeComparerAnalyzer';
+import { DataTypeConverterLookupKeyAnalyzer } from './Analyzers/DataTypeConverterLookupKeyAnalyzer';
+import { DataTypeFormatterLookupKeyAnalyzer } from './Analyzers/DataTypeFormatterLookupKeyAnalyzer';
+import { DataTypeIdentifierLookupKeyAnalyzer } from './Analyzers/DataTypeIdentifierLookupKeyAnalyzer';
+import { DataTypeParserLookupKeyAnalyzer } from './Analyzers/DataTypeParserLookupKeyAnalyzer';
+import { ValidatorConfigAnalyzer } from './Analyzers/ValidatorConfigAnalyzer';
+import { ValueHostConfigAnalyzer } from './Analyzers/ValueHostConfigAnalyzer';
+import { ConfigAnalysisResultsExplorer, ConfigAnalysisResultsExplorerFactory } from './Explorer/ConfigAnalysisResultsExplorer';
+import { SampleValues } from './SampleValues';
 
 /**
- * @inheritdoc Types!IConfigAnalysis:interface
+ * @inheritDoc jivs-configanalysis/ConfigAnalysis/Types!IConfigAnalysis:interface
  */
-export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IValueHostsServices>
+export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig, TServices extends IValidationServices>
     implements IConfigAnalysis {
 
     /**
@@ -43,13 +42,13 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
      */
     public analyze(config: TConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
-     * Analyze the configuration found in the Builder or Modifier object
+     * Analyze the configuration found in the Builder object
      * @param builder 
      * @param options 
      */
     public analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     public analyze(arg1: TConfig | ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer {
-        let config: TConfig;
+        let config: TConfig | undefined = undefined;
         if (arg1 instanceof ManagerConfigBuilderBase)
             config = arg1.snapshot();
         else
@@ -57,16 +56,16 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
         if (!options)
             options = {};
         
-        let results = this.createConfigAnalysisResults(config);
-        let analysisArgs = this.createAnalysisArgs(config, results, options);
-        let helper = this.createHelper(analysisArgs);
+        const results = this.createConfigAnalysisResults(config!);
+        const analysisArgs = this.createAnalysisArgs(config!, results, options);
+        const helper = this.createHelper(analysisArgs);
         this.resolveConfigAnalyzers(analysisArgs, helper);
         
         // Analyze the config and populate the results object
-        config.valueHostConfigs.forEach(vhConfig => {
-            let dtFixed = this.tryFixDataTypeLookupKey(vhConfig, helper);
+        config!.valueHostConfigs.forEach(vhConfig => {
+            const dtFixed = this.tryFixDataTypeLookupKey(vhConfig, helper);
 
-            let result = analysisArgs.valueHostConfigAnalyzer!.analyze(vhConfig, null, results.valueHostResults);
+            const result = analysisArgs.valueHostConfigAnalyzer!.analyze(vhConfig, null, results.valueHostResults);
             results.valueHostResults.push(result);
             
             if (dtFixed)
@@ -76,7 +75,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
         this.gatherDataTypeIdentifierLookupKeys(helper);
 
         return new ConfigAnalysisResultsExplorer<TServices>(results,
-            new ConfigAnalysisResultsExplorerFactory(), config.services as TServices);
+            new ConfigAnalysisResultsExplorerFactory(), config!.services as TServices);
     }
 
     /**
@@ -85,7 +84,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
      * @returns The configuration analysis results.
      */
     protected createConfigAnalysisResults(config: TConfig): IConfigAnalysisResults {
-        let results: IConfigAnalysisResults = {
+        const results: IConfigAnalysisResults = {
             cultureIds: [],
             valueHostNames: [],
             lookupKeyResults: [],
@@ -105,12 +104,12 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
      * @returns The analysis arguments.
      */
     protected createAnalysisArgs(config: TConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<TServices> {
-        let analysisArgs: AnalysisArgs<TServices> = {
+        const analysisArgs: AnalysisArgs<TServices> = {
             valueHostConfigs: config.valueHostConfigs,
             results,
             services: config.services as TServices,
             options: options,
-            sampleValues: new SampleValues<TServices>(config.services as TServices, options),
+            sampleValues: new SampleValues<TServices>(config.services as TServices, options)
         };        
         return analysisArgs;
     }
@@ -153,9 +152,9 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
         helper: IAnalysisResultsHelper<TServices>): boolean {
 
         if (!valueHostConfig.dataType) {
-            let sampleValue = helper.getSampleValue(null, valueHostConfig);
+            const sampleValue = helper.getSampleValue(null, valueHostConfig);
             if (sampleValue) {
-                let dtlk = helper.services.dataTypeIdentifierService.identify(sampleValue);
+                const dtlk = helper.services.dataTypeIdentifierService.identify(sampleValue);
                 if (dtlk) {
                     valueHostConfig.dataType = dtlk;
                     return true;
@@ -185,7 +184,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
         // rare, and if supplied, they probably are intended to be used.
         const builtInIdentifiers: Array<string> = [LookupKey.Number, LookupKey.String, LookupKey.Boolean, LookupKey.Date];
 
-        for (let idt of helper.services.dataTypeIdentifierService.getAll()) {
+        for (const idt of helper.services.dataTypeIdentifierService.getAll()) {
             if (!builtInIdentifiers.includes(idt.dataTypeLookupKey) ||
                 helper.results.lookupKeyResults.find(lk => lk.lookupKey === idt.dataTypeLookupKey))
                 helper.registerServiceLookupKey(idt.dataTypeLookupKey, ServiceName.identifier, null);   // uses DataTypeIdentifierLookupKeyAnalyzer
@@ -200,14 +199,14 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     {
         if (this._valueHostConfigPropertyAnalyzersLoader)
         {
-            let analyzers = this._valueHostConfigPropertyAnalyzersLoader();
-            for (let analyzer of analyzers)
+            const analyzers = this._valueHostConfigPropertyAnalyzersLoader();
+            for (const analyzer of analyzers)
                 this._valueHostConfigPropertyAnalyzers.push(analyzer);            
             this._valueHostConfigPropertyAnalyzersLoader = undefined;
         }
         return this._valueHostConfigPropertyAnalyzers;
     }
-    private _valueHostConfigPropertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
+    private readonly _valueHostConfigPropertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
 
     /**
      * Lazyloads all ValueHostConfigPropertyAnalyzers.
@@ -219,7 +218,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     public registerValueHostConfigPropertyAnalyzers(lazyLoadAnalyzers: () => Array<IValueHostConfigPropertyAnalyzer>) :  void {
         this._valueHostConfigPropertyAnalyzersLoader = lazyLoadAnalyzers;
     }
-    private _valueHostConfigPropertyAnalyzersLoader: (() => Array<IValueHostConfigPropertyAnalyzer>) | undefined = undefined
+    private _valueHostConfigPropertyAnalyzersLoader: (() => Array<IValueHostConfigPropertyAnalyzer>) | undefined = undefined;
     
 
     /**
@@ -231,14 +230,14 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     {
         if (this._validatorConfigPropertyAnalyzersLoader)
         {
-            let analyzers = this._validatorConfigPropertyAnalyzersLoader();
-            for (let analyzer of analyzers)
+            const analyzers = this._validatorConfigPropertyAnalyzersLoader();
+            for (const analyzer of analyzers)
                 this._validatorConfigPropertyAnalyzers.push(analyzer);            
             this._validatorConfigPropertyAnalyzersLoader = undefined;
         }
         return this._validatorConfigPropertyAnalyzers;
     }
-    private _validatorConfigPropertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
+    private readonly _validatorConfigPropertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
 
     /**
      * Lazyloads all ValidatorConfigPropertyAnalyzers.
@@ -250,7 +249,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     public registerValidatorConfigPropertyAnalyzers(lazyLoadAnalyzers: () => Array<IValidatorConfigPropertyAnalyzer>) :  void {
         this._validatorConfigPropertyAnalyzersLoader = lazyLoadAnalyzers;
     }
-    private _validatorConfigPropertyAnalyzersLoader: (() => Array<IValidatorConfigPropertyAnalyzer>) | undefined = undefined
+    private _validatorConfigPropertyAnalyzersLoader: (() => Array<IValidatorConfigPropertyAnalyzer>) | undefined = undefined;
 
 
     /**
@@ -262,14 +261,14 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     {
         if (this._conditionConfigPropertyAnalyzersLoader)
         {
-            let analyzers = this._conditionConfigPropertyAnalyzersLoader();
-            for (let analyzer of analyzers)
+            const analyzers = this._conditionConfigPropertyAnalyzersLoader();
+            for (const analyzer of analyzers)
                 this._conditionConfigPropertyAnalyzers.push(analyzer);            
             this._conditionConfigPropertyAnalyzersLoader = undefined;
         }
         return this._conditionConfigPropertyAnalyzers;
     }
-    private _conditionConfigPropertyAnalyzers: Array<IConditionConfigPropertyAnalyzer> = [];
+    private readonly _conditionConfigPropertyAnalyzers: Array<IConditionConfigPropertyAnalyzer> = [];
 
     /**
      * Lazyloads all ConditionConfigPropertyAnalyzers.
@@ -281,20 +280,7 @@ export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig
     public registerConditionConfigPropertyAnalyzers(lazyLoadAnalyzers: () => Array<IConditionConfigPropertyAnalyzer>) :  void {
         this._conditionConfigPropertyAnalyzersLoader = lazyLoadAnalyzers;
     }
-    private _conditionConfigPropertyAnalyzersLoader: (() => Array<IConditionConfigPropertyAnalyzer>) | undefined = undefined
-}
-
-/**
- * ValueHostsManagerConfig analysis service.
- */
-export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
-    protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
-        let helper = new AnalysisResultsHelper<IValueHostsServices>(args);
-
-        helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));
-        helper.registerLookupKeyAnalyzer(ServiceName.identifier, new DataTypeIdentifierLookupKeyAnalyzer(args));
-        return helper;
-    }
+    private _conditionConfigPropertyAnalyzersLoader: (() => Array<IConditionConfigPropertyAnalyzer>) | undefined = undefined;
 }
 
 /**
@@ -302,7 +288,7 @@ export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHos
  */
 export class ValidationManagerConfigAnalysis extends ConfigAnalysisBase<ValidationManagerConfig, IValidationServices> {
     protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
-        let helper = new AnalysisResultsHelper<IValidationServices>(args);
+        const helper = new AnalysisResultsHelper<IValidationServices>(args);
         helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));
         helper.registerLookupKeyAnalyzer(ServiceName.parser, new DataTypeParserLookupKeyAnalyzer(args));
         helper.registerLookupKeyAnalyzer(ServiceName.formatter, new DataTypeFormatterLookupKeyAnalyzer(args));

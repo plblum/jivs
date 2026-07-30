@@ -4,10 +4,10 @@ import {
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
+import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValueHostsManager, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
-import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
-import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
+import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
@@ -18,9 +18,10 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
-import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
-import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { FieldValueHostConfig } from "../../src/Interfaces/FieldValueHost";
+import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -33,10 +34,10 @@ interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
  */
 class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostInstanceState>
 {
-    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
+        super(validationManager, config, state);
     }
-    public get exposeServices(): IValueHostsServices {
+    public get exposeServices(): IValidationServices {
         return this.services;
     }
 
@@ -48,15 +49,15 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
         return this.instanceState;
     }
     public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        super.logger.log(level, gatherFn);
+        this.logger.log(level, gatherFn);
     }
 
     public publicify_logMessage(level: LoggingLevel, messageFn: () => string): void {
-        super.logger.message(level, messageFn);
+        this.logger.message(level, messageFn);
 
     }
     public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
-        super.logger.error(error, gatherFn);
+        this.logger.error(error, gatherFn);
     }
 
 }
@@ -67,8 +68,8 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === testValueHostType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
-        return new PublicifiedValueHostBase(valueHostsManager, config, state);
+    public create(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
+        return new PublicifiedValueHostBase(validationManager, config, state);
     }
     public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
         state.counter = 0;
@@ -156,7 +157,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -169,7 +170,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.exposeConfig).toBe(vhConfig);
         expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.exposeState.enabled).toBeUndefined();
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () => {
@@ -222,7 +223,7 @@ describe('constructor and resulting property values', () => {
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
-            config, state)).toThrow(/valueHostsManager/);
+            config, state)).toThrow(/validationManager/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
             null!, state)).toThrow(/config/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
@@ -779,19 +780,21 @@ describe('isEnabled and related enabled', () => {
     ): {
         vh: PublicifiedValueHostBase,
         logger: CapturingLogger,
-        vm: ValueHostsManager<ValueHostsManagerInstanceState>
+        vm: ValidationManager<ValidationManagerInstanceState>
     } {
         let services = new MockValidationServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
-        let builder = new ValueHostsManagerConfigBuilder(services);
+
+        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: LookupKey.String
+        });
         if (stateChangeCallback)
-            builder.onValueHostInstanceStateChanged = stateChangeCallback;
-        builder.static('Field1');
-
-
+            vmConfig.onValueHostInstanceStateChanged = stateChangeCallback;
         if (enablerConfig !== undefined)
-            builder.enabler('Field1', enablerConfig);
-
+            vmConfig.valueHostConfigs[0].enablerConfig = enablerConfig;
         let state: IPublicifiedValueHostInstanceState = {
             name: 'Field1',
             counter: 0,
@@ -799,10 +802,29 @@ describe('isEnabled and related enabled', () => {
         };
         if (stateEnabled !== undefined)
             state.enabled = stateEnabled;
-        builder.savedValueHostInstanceStates = [];
-        builder.savedValueHostInstanceStates.push(state);
+        vmConfig.savedValueHostInstanceStates = [];
+        vmConfig.savedValueHostInstanceStates.push(state);
 
-        let vm = new ValueHostsManager(builder);
+        // let builder = new ValidationManagerConfigBuilder(services);
+        // if (stateChangeCallback)
+        //     builder.onValueHostInstanceStateChanged = stateChangeCallback;
+        // builder.static('Field1');
+
+
+        // if (enablerConfig !== undefined)
+        //     builder.whenToEnable('Field1', (childBuilder)=> childBuilder.conditionConfig(enablerConfig));
+
+        // let state: IPublicifiedValueHostInstanceState = {
+        //     name: 'Field1',
+        //     counter: 0,
+        //     value: undefined
+        // };
+        // if (stateEnabled !== undefined)
+        //     state.enabled = stateEnabled;
+        // builder.savedValueHostInstanceStates = [];
+        // builder.savedValueHostInstanceStates.push(state);
+
+        let vm = new ValidationManager(vmConfig);
 
         return {
             vm: vm,

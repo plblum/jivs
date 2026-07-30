@@ -1,13 +1,13 @@
 /**
  * Base Condition to evaluating the native value only a string.
- * @module Conditions/AbstractClasses/StringConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/StringConditionBase
  */
 
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
@@ -27,8 +27,8 @@ export interface StringConditionBaseConfig extends OneValueConditionBaseConfig {
     /**
      * Removes leading and trailing whitespace before evaluating the string.
      * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
+     * comes from the text value, which is actively being edited.
+     * Your parser that moves data from text to native values is expected
      * to do its own trimming, leaving the DuringEdit = false no need to trim.
      */
     trim?: boolean;    
@@ -45,19 +45,19 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
-     * @param valueHostsManager 
+     * @param validationManager 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
-        let value = this.resolveValue(valueHost);
+    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+        const value = this.resolveValue(valueHost);
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        let text = value as string;
+        const text = value as string;
         // trimming is not appropriate since we are evaluating an already cleaned up native value
         // if (this.config.trim ?? true)
         //     text = text.trim();
-        return this.evaluateString(text, valueHost, valueHostsManager.services);
+        return this.evaluateString(text, valueHost, validationManager.services);
     }
     /**
      * Applies the business rule against the string value (already trimmed if 
@@ -66,7 +66,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @param valueHost
      * @param services 
      */
-    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValueHostsServices):
+    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValidationServices):
         ConditionEvaluateResult;
     /**
      * Runs when Config.supportsDuringEdit is true and validateOptions.DuringEdit is true
@@ -77,7 +77,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns When supportsDuringEdit is false, returns undetermined. Otherwise it follows
      * the rules from the Config.
      */
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValueHostsServices): ConditionEvaluateResult{
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult{
         if (this.config.supportsDuringEdit !== false)
         {
             if (this.config.trim ?? true)
@@ -93,7 +93,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns 
      */
     protected resolveValue(valueHost: IValueHost): string | undefined {
-        let value = valueHost.getValue();
+        const value = valueHost.getValue();
         if (typeof value !== 'string')
             return undefined;
         return value;

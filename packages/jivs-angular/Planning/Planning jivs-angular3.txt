@@ -1,0 +1,295 @@
+# Angular Validation Service Integration Project
+
+## Overview
+
+This project is part of our ongoing collaboration to integrate the Jivs validation service with Angular. Jivs, a TypeScript-based validation library without any UI components, can be found at [https://www.github.com/plblum/jivs](https://www.github.com/plblum/jivs). Our goal is to build a TypeScript-based NPM library that connects Jivs to Angular, providing UI-specific validation capabilities while leveraging Jivs' flexible validation logic.
+
+We'll refer to this library as jivs-angular.
+
+## Key Objectives
+
+- Integrate the Jivs validation library with Angular to deliver a seamless validation solution for forms and inputs.
+- Build reusable Angular directives that observe and respond to validation states managed by Jivs.
+- Directives should work with a variety of targets: different HTML tags and different components, but have no actual knowledge of them,
+  requiring something more from the user to connect directive to tag or component.
+- Develop services for Angular applications that allow developers to configure Jivs both globally and on a form-by-form basis, ensuring flexible setup options.
+- Ensure the solution is modular and maintainable, with the potential for expansion to other UI frameworks in the future.
+- Create a TypeScript-based NPM library that extends Jivs specifically for Angular, providing a reusable validation service that can scale with complex applications.
+- Develop the library with a strong emphasis on Object-Oriented Programming (OOP) principles, incorporating patterns such as:
+  - Single Responsibility objects to ensure each class has a clear, focused purpose.
+  - Dependency Injection (DI) for easy configuration, testing, and modularity.
+  - Services and Factories to abstract logic and create reusable components.
+  - Interfaces for DI and comprehensive testing support, ensuring flexibility and maintainability.
+- Define a user-friendly API, ensuring that:
+  - Class and interface names are intuitive and continue to work well as the system evolves over time.
+  - Consumers of the library can easily understand and work with the resulting directives, custom attributes, and services.
+  - The API remains clear and approachable, even as the library grows in complexity, enabling developers to integrate the validation service without confusion or awkward naming conventions.
+- The project will be coded entirely in TypeScript and will make heavy use of **TSDoc** comments to ensure clear and thorough documentation for developers, aiding both usage and future maintenance of the codebase.
+
+## Project names
+"Jivs" and "Fivase" are both names for this project. "Jivs" is the current name. "Fivase" is the future name. So while we talk, I'll refer to Jivs, but in actual code, I want that final name "Fivase".
+
+
+
+
+# Notes list for me to work out
+1. Support a subscription command 'setFocus' to let a click on an validationsummary error message notify the input associated with that message to show itself and set focus.
+2. Work on ValidationSummary. It will use RenderingActions but needs to show the summaryMessage. It will monitor validation callbacks.
+
+5. Provide localizable tooltip strings available for various directives. Will be used by Required, Corrected, and IssueFound Directives so the user knows their purpose.
+
+
+7. Add a directive on a submit button to disable it or handle validation. Or at least document the use cases for submitting:
+   - Explicit (save button)
+   - Click on a tab. Validate current view and prevent moving to new tab if errors.
+   - Wizard style next/prev clicks. Validate current view and prevent moving to new tab if errors.
+   - Discuss when to use groups: a single model has fields grouped under tabs or wizard views. Each is a group. That's because 
+     there is a single list of ValueHosts for that model. If there are separate models for each view, they can each have their
+     own ValidationManager and can be validated independently.
+8. Developing components
+   - Provide several prototypes of components that show an error message, required indicator, corrected indicator, validation summary, and a complete field input enclosed in a box.
+   - Document how to configure any component to support Jivs. Sending input data in. Getting issues out.
+   - Develop examples of custom components and custom HTML elements. Use the model of a quantity tool on a shopping site with minus and plus commands and the current count. There will be different ways to supply events, including DOM events and Angular listeners. The plan includes using DOM Shadow API and actual Angular components. DirectiveActions will be used to reach into them to get the current value or attach a listener. Custom DOM events will deliver the target element, QuantityHtmlElement, with a Value property that is a number.
+9. Documentation: section on Use cases:
+   - Optional conditions using WhenCondition
+   - Inverting the value of conditions using NotCondition
+   - Complex logic using AnyCondition and/or AllConditions
+   - Validation while you type: setInputValue(duringEdit: true) and conditions that implement IEvaluateConditionDuringEdits
+   - When to use validation groups vs using separate ValidationManagers
+   - When to invoke form level validation: Submit button, tabs, wizards
+   - Supporting clicks on error messages to set focus to input
+
+
+
+# Some key types from Jivs that will be consumed by jivs-angular 
+```ts
+/**
+ * ValidationManager is the central object for using this system.
+ * It is where you describe the shape of your inputs and their validation
+ * through the Config classes.
+ * Once setup, it has a list of ValueHost objects, one for each
+ * config that was supplied. Those that are ValidatorsValueHostBases
+ * contain validators.
+ * 
+ * ValidationManager's job is:
+ * - Create and retain all ValueHosts.
+ * - Provide access to all ValueHosts with its getValueHost() function.
+ * - Retain InstanceState objects that reflects the states of all ValueHost instances.
+ *   This system can operate in a stateless way, so long as you keep
+ *   these objects and pass them back via the Configuration object.
+ *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
+ *   provide the latest InstanceState objects to you.
+ * - Execute validation on demand to the consuming system, going
+ *   through all eligible ValidatorsValueHostBases.
+ * - Report a list of Issues Found for an individual UI element.
+ * - Report a list of Issues Found for the entire system for a UI 
+ *   element often known as "Validation Summary".
+ * 
+ * @module ValidationManager/Types
+ */
+interface IValidationManager {
+    services: IValidationServices;
+    isValid: boolean;
+    doNotSave: boolean;
+    asyncProcessing?: boolean;
+    vh: IValueHostAccessor;
+    dispose(): void;
+
+    validate(options?): ValidationState;
+    clearValidation(options?): boolean;
+    setExternalIssuesFound(errors, options?): boolean;
+    getIssuesForInput(valueHostName): null | IssueFound[];
+    getIssuesFound(group?): null | IssueFound[];
+    setIssuesFound(issuesFound, behavior): boolean;
+}
+```
+
+```ts
+/**
+Supplies services and tools to be used as dependency injection into the classes of this system. There are many configuration choices involved. Its best to have a function that creates a ValidationService with its configuration together. Copy the /starter_code/create_services.ts file into your app. It contains such a function, createValidationServices(). Edit that file to adjust your configuration.
+*/
+
+interface IValidationServices {
+// Placeholder for specific service methods used internally
+    getService<T>(serviceName): null | T;
+    setService(serviceName, service): void;
+	
+	textLocalizerService: ITextLocalizerService;
+	cultureSerivce: ICultureService;
+	// NOTE: There are MANY more properties that I've omitted.
+}
+```
+
+```ts
+/**
+ * A service to offer text alternatives to the default text
+ * based on cultureId.
+ */
+export interface ITextLocalizerService extends IServiceWithFallback<ITextLocalizerService>
+{
+    /**
+     * Returns the localized version of the text for the given culture.
+     * If nothing is matched, it returns the fallback text.
+     * @param cultureIdToMatch - The cultureID.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested. If null or '', no localization is requested.
+     * @param fallback - Used when there was no match for the culture.
+     * Only supply '' if you are sure that registered data will always supply a value.
+     * @returns The localized text or the fallback text.
+     */
+    localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
+
+    /**
+     * Registers a lookup key with the culture specific text.
+     * Replaces an already registered entry with the same l10nKey.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested.
+     * @param cultureToText - keys are language codes from cultureId, like 'en'.
+     * values are the actual text to output.
+     */
+    register(l10nKey: string, cultureToText: CultureToText): void;
+   
+}
+
+```
+
+```ts
+/**
+ * Service for identifying cultures that you will use in the app,
+ * by their CultureID  ('en', 'en-US', 'en-GB', etc), and provides
+ * fallbacks for when a requested CultureID is not found.
+ */
+export interface ICultureService extends IService {
+  /**
+   * The culture shown to the user in the app. Its the ISO language-region format.
+     This value is the starting point to search through localizations.
+   */
+  activeCultureId: string;
+
+}
+```
+
+```ts
+/**
+Exposes values from the consuming system to the validation engine. Each instance represents a single value from the consuming system. Each also has an name, used to lookup the ValueHost, and a Label, which is a UI friendly way to tell the user the source of a validation error. There are several types of ValueHosts:
+
+- InputValueHost - reflects values from user input. These have validation capability.
+- PropertyValueHost - reflects values from a Model. These have validation capability.
+- StaticValueHost - reflects values that are needed by validation but are not editable by the user. Often these are properties from the same Model being edited.
+- CalcValueHost - Its value is calculated when its getValue() method is called. You supply a function callback in its CalcValueHostConfig to set it up.
+
+Base class Validators:
+
+- ValidatableValueHostBase - introduces the framework for validation but does not get the Validators objects involved.
+- ValidatorsValueHostBase - introduces Validators and completes the overall validation feature. InputValueHosts inherit from this
+
+*/
+interface IValueHost {
+    getName(): string;
+    getType(): string;
+    setValue(value: any, options?: SetValueOptions): void;
+    validate(options?): ValidationState;
+    getInstanceState(): ValueHostInstanceState;
+}
+export interface SetValueOptions {
+    forceValidation?: boolean;
+    asyncProcessing?: boolean;
+}
+export interface IValidatableValueHostBase extends IValueHost {
+    isValid: boolean;
+    asyncProcessing?: boolean;
+    corrected?: boolean;
+	currentValidationState: ValueHostValidationState;
+}
+export interface IInputValueHost extends IValidatableValueHostBase {
+    setInputValue(nativeValue: any, inputValue: string, options?: SetValueOptions): void;
+	requiresInput: boolean;
+}
+export interface IStaticValueHost extends IValueHost {
+    // Static value-specific behavior
+}
+export interface ICalcValueHost extends IValueHost {
+    // Calculated value-specific behavior
+}
+
+```
+
+```ts
+/**
+Provides the configuration for the ValidationManager constructor.
+This is where validation rules are placed, making validation rules
+independent of any layer.
+*/
+interface ValidationManagerConfig {
+    services: IValidationServices;
+	
+	// valuehost configurations
+    valueHostConfigs: ValueHostConfig[];
+
+	// current state
+    savedInstanceState?: null | ValidationManagerInstanceState;
+    savedValueHostInstanceStates?: null | ValueHostInstanceState[];
+	
+	// callbacks
+    onInputValueChanged?: null | InputValueChangedHandler;
+    onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
+    onValidationStateChanged?: null | ValidationStateChangedHandler;
+    onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
+    onValueChanged?: null | ValueChangedHandler;
+    onInstanceStateChanged?: null | ValueHostsManagerInstanceStateChangedHandler;
+    onConfigChanged?: null | ValueHostsManagerConfigChangedHandler;
+}
+
+
+type ValueHostValidationStateChangedHandler: ((valueHost, validationState: ValueHostValidationState) => void)
+interface ValueHostValidationState {
+    status: ValidationStatus;
+    corrected: boolean;
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+type ValidationStateChangedHandler: ((validationManager, validationState: ValidationState) => void)
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+
+type ValueHostsManagerInstanceStateChangedHandler: ((ValidationManager, stateToRetain: ValidationManagerInstanceState) => void)
+interface ValidationManagerInstanceState {
+    stateChangeCounter?: number;
+}
+
+type ValueHostInstanceStateChangedHandler: ((valueHost, stateToRetain: ValueHostInstanceState) => void)
+interface ValueHostInstanceState {
+    name: string;
+    // more
+}
+
+```
+
+```ts
+/**
+Packages key values of the state of validation to be returned by validate() and in the onValidationStateChanged callback. The same values are also available directly on ValidationManager.
+*/
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+/**
+Snapshot of the results of validate() when there are errors/warnings ("Issues")
+*/
+interface IssueFound {
+    valueHostName: string;
+    errorCode: string;
+    severity: ValidationSeverity;
+    errorMessage: string;
+    summaryMessage?: string;
+}
+```
+

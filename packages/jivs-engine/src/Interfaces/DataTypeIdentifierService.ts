@@ -1,13 +1,13 @@
 /**
- * {@inheritDoc Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService:interface }
- * @module Services/Types/IDataTypeIdentifierService
+ * {@inheritDoc jivs-engine/Services/Types/IDataTypeIdentifierService!IDataTypeIdentifierService:interface }
+ * @module jivs-engine/Services/Types/IDataTypeIdentifierService
  */
-import { IDataTypeIdentifier } from "./DataTypeIdentifier";
-import { IDataTypeService } from "./DataTypes";
+import { IDataTypeIdentifier } from './DataTypeIdentifier';
+import { IDataTypeService } from './DataTypes';
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
- * using {@link DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
  */
 export interface IDataTypeIdentifierService extends IDataTypeService<IDataTypeIdentifier> {
 
@@ -17,7 +17,7 @@ export interface IDataTypeIdentifierService extends IDataTypeService<IDataTypeId
      * string and Date object.
      * 
      * You can add your own data types by implementing IDataTypeIdentifier
-     * and registered you class with the {@link Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices#dataTypeIdentifierService}.
+     * and registered you class with the {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices#dataTypeIdentifierService}.
      * @param value 
      * @returns the Data Type Lookup Key if found or null if no match.
      */

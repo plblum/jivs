@@ -11,7 +11,8 @@ import {
     RegExpConditionConfig, RegExpCondition,
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
-    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig,
+    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig,
+    NotNullCondition, NotNullConditionConfig,
     EqualToConditionConfig,
     NotEqualToConditionConfig,
     GreaterThanConditionConfig,
@@ -37,7 +38,10 @@ import {
     MaxDecimalsCondition,
     MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
-import { LogDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
+import {
+    LogDetails, LoggingCategory, LoggingLevel,
+    logGatheringErrorHandler, logGatheringHandler
+} from "../../src/Interfaces/LoggerService";
 
 import {
     MockValidationServices, MockValidationManager,
@@ -48,7 +52,8 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import {
-    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable,
+    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType,
+    EvaluatesAsPromiseConditionType, makeDisposable,
     DisposableConditionType
 } from "../../src/Support/conditionsForTesting";
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
@@ -58,15 +63,14 @@ import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Condit
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { NumberConditionBaseConfig, NumberConditionBase } from "../../src/Conditions/NumberConditionBase";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
-import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { CodingError, InvalidTypeError } from '../../src/Utilities/ErrorHandling';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
-import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
 
 function setupServicesAndVM(): {
@@ -85,10 +89,10 @@ function setupServicesAndVM(): {
 function setupWithValueHost(): {
     services: IValidationServices,
     vm: MockValidationManager,
-    vh: IInputValueHost
+    vh: IFieldValueHost
 } {
     let setup = setupServicesAndVM();
-    let vh = setup.vm.addMockInputValueHost(
+    let vh = setup.vm.addMockFieldValueHost(
         'Property1', LookupKey.String, 'Label');
     return { ...setup, vh };
 }
@@ -110,12 +114,12 @@ describe('ConditionBase class', () => {
         constructor(config: ConditionConfig) {
             super(config);
         }
-        public publicify_generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
+        public publicify_generateCondition(config: ConditionConfig, services: IValidationServices): ICondition {
             return super.generateCondition(config, services);
         }
 
         public publicify_convertValueAndLookupKey(value: any, valueLookupKey: string | null | undefined,
-            conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+            conversionLookupKey: string | null | undefined, services: IValidationServices): {
                 value?: any,
                 lookupKey?: string | null,
                 failed: boolean
@@ -123,32 +127,32 @@ describe('ConditionBase class', () => {
             return super.tryConversion(value, valueLookupKey, conversionLookupKey, services);
         }
 
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error('Method not implemented.');
         }
         protected get defaultCategory(): ConditionCategory {
             return ConditionCategory.Contents;
         }
-        public gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+        public gatherValueHostNames(collection: Set<string>, validationManager: IValidationManager): void {
             throw new Error('Method not implemented.');
         }
         public publicify_ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
             return super.ensureNoPromise(result);
         }
-        public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel : LoggingLevel): void {
+        public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValidationServices, logLevel : LoggingLevel): void {
             super.logInvalidPropertyData(propertyName, errorMessage, services, logLevel);
         }
-        public publicify_logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+        public publicify_logTypeMismatch(services: IValidationServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
             super.logTypeMismatch(services, propertyName, propertyName2, propertyValue, propertyValue2);
         }
 
-        public publicify_log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        public publicify_log(services: IValidationServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
             super.logger(services).log(level, gatherFn);
         }
-        public publicify_logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: () => string): void {
+        public publicify_logQuick(services: IValidationServices, level: LoggingLevel, messageFn: () => string): void {
             super.logger(services).message(level, messageFn);
         }
-        public publicify_logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
+        public publicify_logError(services: IValidationServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
             super.logger(services).error(error, gatherFn);
         }
     }
@@ -182,10 +186,10 @@ describe('ConditionBase class', () => {
                 super(config);
                 throw new Error('Test Error');
             }
-            evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
                 throw new Error('Method not implemented.');
             }
-            gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+            gatherValueHostNames(collection: Set<string>, validationManager: IValidationManager): void {
                 throw new Error('Method not implemented.');
             }
             protected get defaultCategory(): ConditionCategory {
@@ -204,7 +208,7 @@ describe('ConditionBase class', () => {
     
     });
     describe('convertValueAndLookupKey', () => {
-        test('With null conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+        test('With null conversionLookupKey returns text value and valueLookupKey, with false=false', () => {
             let setup = setupTest();
             let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', null, setup.services);
             expect(result.value).toBe(10);
@@ -216,7 +220,7 @@ describe('ConditionBase class', () => {
             expect(result.failed).toBeFalsy();
         });
 
-        test('With undefined conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+        test('With undefined conversionLookupKey returns text value and valueLookupKey, with false=false', () => {
             let setup = setupTest();
             let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', undefined, setup.services);
             expect(result.value).toBe(10);
@@ -400,14 +404,14 @@ describe('OneValueConditionBase class', () => {
         constructor(config: OneValueConditionBaseConfig) {
             super(config);
         }
-        public publicify_ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): IValueHost {
-            return super.ensurePrimaryValueHost(valueHost, valueHostsManager);
+        public publicify_ensurePrimaryValueHost(valueHost: IValueHost | null, validationManager: IValidationManager): IValueHost {
+            return super.ensurePrimaryValueHost(valueHost, validationManager);
         }
-        public publicify_getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
-            return super.getValueHost(valueHostName, valueHostsManager);
+        public publicify_getValueHost(valueHostName: ValueHostName, validationManager: IValidationManager): IValueHost | null {
+            return super.getValueHost(valueHostName, validationManager);
         }
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-            let vh = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+        public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            let vh = this.ensurePrimaryValueHost(valueHost, validationManager);
             return ConditionEvaluateResult.Undetermined;
         }
         protected get defaultCategory(): ConditionCategory {
@@ -535,7 +539,7 @@ describe('class DataTypeCheckCondition', () => {
     test('DefaultConditionType', () => {
         expect(DataTypeCheckCondition.DefaultConditionType).toBe(ConditionType.DataTypeCheck);
     });
-    test('evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
+    test('evaluate returns Match when text value is not undefined and native Value is not undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -553,7 +557,7 @@ describe('class DataTypeCheckCondition', () => {
         setup.vh.setValues(false, 'NO');
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate returns NoMatch when InputValue is not undefined but native Value is undefined', () => {
+    test('evaluate returns NoMatch when text value is not undefined but native Value is undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -561,12 +565,12 @@ describe('class DataTypeCheckCondition', () => {
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
-        setup.vh.setInputValue('A');    // at this moment, setValue is undefined
+        setup.vh.setTextValue('A');    // at this moment, setValue is undefined
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
         setup.vh.setValues(undefined, '10');
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate returns Undetermined when InputValue is undefined', () => {
+    test('evaluate returns Undetermined when text value is undefined', () => {
         let setup = setupWithValueHost();
 
         let config: DataTypeCheckConditionConfig = {
@@ -576,7 +580,7 @@ describe('class DataTypeCheckCondition', () => {
         let testItem = new DataTypeCheckCondition(config);
         // at this moment, setValue is undefined
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
-        setup.vh.setValue(10);    // doesn't change InputValue...
+        setup.vh.setValue(10);    // doesn't change text value...
         expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Using Unknown property', () => {
@@ -697,7 +701,7 @@ describe('class RequireTextCondition', () => {
     test('evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -715,7 +719,7 @@ describe('class RequireTextCondition', () => {
     test('evaluate returns NoMatch', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -728,7 +732,7 @@ describe('class RequireTextCondition', () => {
     test('evaluate with value of null and config.nullValueResult is undefined, returns NoMatch', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -741,7 +745,7 @@ describe('class RequireTextCondition', () => {
     test('evaluate not influenced by Config.trim=true because trim is for evaluateDuringEdit', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -763,7 +767,7 @@ describe('class RequireTextCondition', () => {
     {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -787,7 +791,7 @@ describe('class RequireTextCondition', () => {
     test('evaluate returns Undetermined for undefined, and non-string types', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -806,7 +810,7 @@ describe('class RequireTextCondition', () => {
     test('evaluateDuringEdits returns Match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -820,7 +824,7 @@ describe('class RequireTextCondition', () => {
     test('evaluateDuringEdits returns NoMatch', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -835,7 +839,7 @@ describe('class RequireTextCondition', () => {
     test('Config.trim undefined works like Trim=true', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
@@ -903,7 +907,7 @@ describe('class RegExpConditionBase', () => {
     test('Text contains "ABC" somewhere (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -924,7 +928,7 @@ describe('class RegExpCondition', () => {
     test('Text contains "ABC" somewhere (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -948,7 +952,7 @@ describe('class RegExpCondition', () => {
     test('Text contains "ABC" somewhere (case insensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -973,7 +977,7 @@ describe('class RegExpCondition', () => {
     test('Text contains "ABC" as the complete text (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -998,7 +1002,7 @@ describe('class RegExpCondition', () => {
     test('Text contains "ABC" somewhere in multiline text (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1023,7 +1027,7 @@ describe('class RegExpCondition', () => {
     test('Uses RegExp instance with case insensitive. Text contains "ABC" somewhere in multiline text (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1047,7 +1051,7 @@ describe('class RegExpCondition', () => {
     test('evaluate not influenced by Config.trim=true', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: RegExpConditionConfig = {
@@ -1063,31 +1067,10 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
-    test('evaluate returns Undetermined for null, undefined, and non-string types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,
-            valueHostName: 'Property1',
-            expressionAsString: 'ABC'
-        };
-        let testItem = new RegExpCondition(config);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(10);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-    });
-
     test('Config lacks both expression and expressionAsString. Throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1101,7 +1084,7 @@ describe('class RegExpCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=true, text must exactly match ABC case insensitively for match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1123,7 +1106,7 @@ describe('class RegExpCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=false, always return Undetermined', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1145,7 +1128,7 @@ describe('class RegExpCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=true and trim=false, text must exactly match trimmed ABC case insensitively for match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1212,7 +1195,7 @@ describe('class RegExpCondition', () => {
     test('dispose', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
             conditionType: ConditionType.RegExp,
@@ -1234,7 +1217,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Min/Max assigned to string returns Match inside of range; NoMatch outside of range', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1243,7 +1226,7 @@ describe('class RangeCondition', () => {
             maximum: 'G'
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('B');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('C');
@@ -1265,7 +1248,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Min/Max assigned to number returns Match inside of range; NoMatch outside of range', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1274,7 +1257,7 @@ describe('class RangeCondition', () => {
             maximum: 25
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(0);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(-9);
@@ -1294,7 +1277,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Min/Max assigned to date returns Match inside of range; NoMatch outside of range', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Date, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1303,7 +1286,7 @@ describe('class RangeCondition', () => {
             maximum: new Date(Date.UTC(2000, 5, 30))
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(Date.UTC(2000, 4, 31)));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(new Date(Date.UTC(2000, 5, 1)));
@@ -1320,7 +1303,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Min is unassigned and Max assigned to string returns Match less than or equal to Max; NoMatch otherwise', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1329,7 +1312,7 @@ describe('class RangeCondition', () => {
             maximum: 'G'
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('.');   // some ascii before A
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('B');
@@ -1348,7 +1331,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Min is assigned and Max unassigned to string returns Match greater than or equal to Min; NoMatch otherwise', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1357,7 +1340,7 @@ describe('class RangeCondition', () => {
             maximum: null   // should work like undefined
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('.');   // some ascii before A
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('B');
@@ -1380,7 +1363,7 @@ describe('class RangeCondition', () => {
     test('evaluate returns Undetermined for null or undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1405,7 +1388,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Minimum is different data type from Value', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1428,7 +1411,7 @@ describe('class RangeCondition', () => {
     test('evaluate when Maximum is different data type from Value', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1451,7 +1434,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         (services.dataTypeConverterService as DataTypeConverterService).register(new IntegerConverter());
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1461,7 +1444,7 @@ describe('class RangeCondition', () => {
             conversionLookupKey: LookupKey.Integer
         };
         let testItem = new RangeCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1.99);  // will round down to 1, below the minimum
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(6.1);   // will round down to 6, below the maximum
@@ -1473,7 +1456,7 @@ describe('class RangeCondition', () => {
     test('getValuesForTokens with non-null values for parameters', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1500,7 +1483,7 @@ describe('class RangeCondition', () => {
     test('getValuesForTokens with null values for parameters', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
             conditionType: ConditionType.Range,
@@ -1589,7 +1572,7 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
     test('getValuesForTokens with secondValueHostName assigned supports {SecondLabel} token', () => {
         let setup = setupWithValueHost();
 
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Second label');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1645,9 +1628,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.Number, 'Label2');
         vh2.setValue(5);
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1679,9 +1662,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.Number, 'Label1');
         vh1.setValue(100);
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.String, 'Label2');
         vh2.setValue('8');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1713,9 +1696,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.String, 'Label2');
         vh2.setValue('8');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1763,9 +1746,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
     test('Using conversionLookupKey assigned to invalid value, evaluate to  Undetermined and log.', () => {
         let setup = setupServicesAndVM();
         // NumericStringToNumberConverter is not registered
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.Number, 'Label2');
         vh2.setValue(5);
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1789,9 +1772,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
     test('Using secondConversionLookupKey assigned to invalid value, evaluate to  Undetermined and log.', () => {
         let setup = setupServicesAndVM();
         // NumericStringToNumberConverter is not registered
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.Number, 'Label1');
         vh1.setValue(100);
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.String, 'Label2');
         vh2.setValue('5');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1813,9 +1796,9 @@ describe('CompareToSecondValueHostConditionBase class additional cases', () => {
 
     test('evaluate throws an error when passed an invalid value type that is not either number or string because it cannot be converted to string or number', () => {
         let setup = setupServicesAndVM();
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Boolean, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.Boolean, 'Label1');
         vh1.setValue(true);
-        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        let vh2 = setup.vm.addMockFieldValueHost('Property2', LookupKey.Number, 'Label2');
         vh2.setValue(5);
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: baseConditionType,
@@ -1837,9 +1820,9 @@ describe('class EqualToCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh1 = vm.addMockInputValueHost(
+        let vh1 = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1847,7 +1830,7 @@ describe('class EqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(false);
         vh2.setValue(false);
         expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
@@ -1861,9 +1844,9 @@ describe('class EqualToCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1871,8 +1854,8 @@ describe('class EqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -1886,9 +1869,9 @@ describe('class EqualToCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1920,9 +1903,9 @@ describe('class EqualToCondition', () => {
         let vm = new MockValidationManager(services);
         let dsc = services.dataTypeConverterService as DataTypeConverterService;
         dsc.register(new IntegerConverter());        
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1932,7 +1915,7 @@ describe('class EqualToCondition', () => {
         };
         let testItem = new EqualToCondition(config);
         vh2.setValue(100);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
@@ -1950,9 +1933,9 @@ describe('class EqualToCondition', () => {
         let dsc = services.dataTypeConverterService as DataTypeConverterService;
         dsc.register(new IntegerConverter());
 
-        let vh1 = vm.addMockInputValueHost(
+        let vh1 = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1962,7 +1945,7 @@ describe('class EqualToCondition', () => {
             secondConversionLookupKey: LookupKey.Integer        // converts with Math.trunc
         };
         let testItem = new EqualToCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(100);
         
         vh2.setValue(99.1);
@@ -1980,9 +1963,9 @@ describe('class EqualToCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -2009,9 +1992,9 @@ describe('class EqualToCondition', () => {
     test('getValuesForTokens with null value', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
@@ -2094,9 +2077,9 @@ describe('class NotEqualToCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: NotEqualToConditionConfig = {
             conditionType: ConditionType.NotEqualTo,
@@ -2104,7 +2087,7 @@ describe('class NotEqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
@@ -2118,9 +2101,9 @@ describe('class NotEqualToCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: NotEqualToConditionConfig = {
             conditionType: ConditionType.NotEqualTo,
@@ -2128,8 +2111,8 @@ describe('class NotEqualToCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2144,9 +2127,9 @@ describe('class NotEqualToCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: NotEqualToConditionConfig = {
             conditionType: ConditionType.NotEqualTo,
@@ -2176,7 +2159,7 @@ describe('class NotEqualToCondition', () => {
     test('getValuesForTokens using secondValueHostName', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addMockValueHost(
             'Property2', LookupKey.Number, 'Label2');
@@ -2205,7 +2188,7 @@ describe('class NotEqualToCondition', () => {
     test('getValuesForTokens using null', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToConditionConfig = {
             conditionType: ConditionType.NotEqualTo,
@@ -2287,9 +2270,9 @@ describe('class GreaterThanCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: GreaterThanConditionConfig = {
             conditionType: ConditionType.GreaterThan,
@@ -2307,9 +2290,9 @@ describe('class GreaterThanCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
             conditionType: ConditionType.GreaterThan,
@@ -2317,8 +2300,8 @@ describe('class GreaterThanCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2333,9 +2316,9 @@ describe('class GreaterThanCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
             conditionType: ConditionType.GreaterThan,
@@ -2354,9 +2337,9 @@ describe('class GreaterThanCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
             conditionType: ConditionType.GreaterThan,
@@ -2383,7 +2366,7 @@ describe('class GreaterThanCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanConditionConfig = {
             conditionType: ConditionType.GreaterThan,
@@ -2464,9 +2447,9 @@ describe('class GreaterThanOrEqualCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
             conditionType: ConditionType.GreaterThanOrEqual,
@@ -2487,9 +2470,9 @@ describe('class GreaterThanOrEqualCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
             conditionType: ConditionType.GreaterThanOrEqual,
@@ -2497,8 +2480,8 @@ describe('class GreaterThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2512,9 +2495,9 @@ describe('class GreaterThanOrEqualCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
 
         let config: GreaterThanOrEqualConditionConfig = {
@@ -2546,9 +2529,9 @@ describe('class GreaterThanOrEqualCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
             conditionType: ConditionType.GreaterThanOrEqual,
@@ -2575,7 +2558,7 @@ describe('class GreaterThanOrEqualCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualConditionConfig = {
             conditionType: ConditionType.GreaterThanOrEqual,
@@ -2656,9 +2639,9 @@ describe('class LessThanCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
             conditionType: ConditionType.LessThan,
@@ -2678,9 +2661,9 @@ describe('class LessThanCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         
         let config: LessThanConditionConfig = {
@@ -2703,9 +2686,9 @@ describe('class LessThanCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
             conditionType: ConditionType.LessThan,
@@ -2713,8 +2696,8 @@ describe('class LessThanCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2728,9 +2711,9 @@ describe('class LessThanCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
             conditionType: ConditionType.LessThan,
@@ -2758,9 +2741,9 @@ describe('class LessThanCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
             conditionType: ConditionType.LessThan,
@@ -2787,7 +2770,7 @@ describe('class LessThanCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanConditionConfig = {
             conditionType: ConditionType.LessThan,
@@ -2869,9 +2852,9 @@ describe('class LessThanOrEqualCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
             conditionType: ConditionType.LessThanOrEqual,
@@ -2879,7 +2862,7 @@ describe('class LessThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -2893,9 +2876,9 @@ describe('class LessThanOrEqualCondition', () => {
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
             conditionType: ConditionType.LessThanOrEqual,
@@ -2903,8 +2886,8 @@ describe('class LessThanOrEqualCondition', () => {
             secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh2.setInputValue('---- Second does not matter ---');
+        vh.setTextValue('---- does not matter ----');
+        vh2.setTextValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
 
         vh.setValue(101);
@@ -2918,9 +2901,9 @@ describe('class LessThanOrEqualCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
             conditionType: ConditionType.LessThanOrEqual,
@@ -2952,9 +2935,9 @@ describe('class LessThanOrEqualCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost(
+        let vh2 = vm.addMockFieldValueHost(
             'Property2', LookupKey.Number, 'Label2');        
         let config: LessThanOrEqualConditionConfig = {
             conditionType: ConditionType.LessThanOrEqual,
@@ -2981,7 +2964,7 @@ describe('class LessThanOrEqualCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualConditionConfig = {
             conditionType: ConditionType.LessThanOrEqual,
@@ -3066,9 +3049,9 @@ describe('CompareToValueConditionBase class additional cases', () => {
     test('getValuesForTokens supports {CompareTo} token', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost('Property2', LookupKey.Number, 'Second label');
+        let vh2 = vm.addMockFieldValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToValueConditionBaseConfig= {
             conditionType: baseConditionType,
@@ -3105,7 +3088,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
 
         let config: CompareToValueConditionBaseConfig = {
@@ -3138,7 +3121,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.Number, 'Label1');
         vh1.setValue(100);
 
         let config: CompareToValueConditionBaseConfig = {
@@ -3171,7 +3154,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let setup = setupServicesAndVM();
         setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         // vh1 will have a string that needs converting. vh2 does not need converting
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
 
         let config: CompareToValueConditionBaseConfig = {
@@ -3220,7 +3203,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
     test('Using conversionLookupKey assigned to invalid value, evaluate to Undetermined and log.', () => {
         let setup = setupServicesAndVM();
         // NumericStringToNumberConverter is not registered
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.String, 'Label1');
         vh1.setValue('100');
 
         let config: CompareToValueConditionBaseConfig = {
@@ -3245,7 +3228,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
     test('Using secondConversionLookupKey assigned to invalid value, evaluate to Undetermined and log.', () => {
         let setup = setupServicesAndVM();
         // NumericStringToNumberConverter is not registered
-        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        let vh1 = setup.vm.addMockFieldValueHost('Property1', LookupKey.Number, 'Label1');
         vh1.setValue(100);
 
         let config: CompareToValueConditionBaseConfig = {
@@ -3270,7 +3253,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         // compares a number to a boolean, which cannot be converted to number without a converter
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: CompareToValueConditionBaseConfig= {
             conditionType: baseConditionType,
@@ -3290,7 +3273,7 @@ describe('class EqualToValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3298,7 +3281,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: 100
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3310,7 +3293,7 @@ describe('class EqualToValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3318,7 +3301,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: false,
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(false);
@@ -3328,7 +3311,7 @@ describe('class EqualToValueCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3349,7 +3332,7 @@ describe('class EqualToValueCondition', () => {
         let vm = new MockValidationManager(services);
         let dsc = services.dataTypeConverterService as DataTypeConverterService;
         dsc.register(new IntegerConverter());        
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3358,7 +3341,7 @@ describe('class EqualToValueCondition', () => {
             secondValue: 100,
         };
         let testItem = new EqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
@@ -3375,7 +3358,7 @@ describe('class EqualToValueCondition', () => {
         let dsc = setup.services.dataTypeConverterService as DataTypeConverterService;
         dsc.register(new IntegerConverter());
 
-        let vh1 = setup.vm.addMockInputValueHost(
+        let vh1 = setup.vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
 
         let config: EqualToValueConditionConfig= {
@@ -3386,7 +3369,7 @@ describe('class EqualToValueCondition', () => {
             secondConversionLookupKey: LookupKey.Integer
         };
         let testItem = new EqualToValueCondition(config);
-        vh1.setInputValue('---- does not matter ----');
+        vh1.setTextValue('---- does not matter ----');
         vh1.setValue(100);
         expect(testItem.evaluate(vh1, setup.vm)).toBe(ConditionEvaluateResult.Match);
         vh1.setValue(100.2);
@@ -3396,7 +3379,7 @@ describe('class EqualToValueCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3417,7 +3400,7 @@ describe('class EqualToValueCondition', () => {
     test('getValuesForTokens with null value', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
@@ -3462,7 +3445,7 @@ describe('class NotEqualToValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
             conditionType: ConditionType.NotEqualToValue,
@@ -3470,7 +3453,7 @@ describe('class NotEqualToValueCondition', () => {
             secondValue: 100
         };
         let testItem = new NotEqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3482,7 +3465,7 @@ describe('class NotEqualToValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: NotEqualToValueConditionConfig= {
             conditionType: ConditionType.NotEqualToValue,
@@ -3490,7 +3473,7 @@ describe('class NotEqualToValueCondition', () => {
             secondValue: false
         };
         let testItem = new NotEqualToValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(false);
@@ -3500,7 +3483,7 @@ describe('class NotEqualToValueCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
             conditionType: ConditionType.NotEqualToValue,
@@ -3518,7 +3501,7 @@ describe('class NotEqualToValueCondition', () => {
     test('getValuesForTokens using secondValue', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
             conditionType: ConditionType.NotEqualToValue,
@@ -3540,7 +3523,7 @@ describe('class NotEqualToValueCondition', () => {
     test('getValuesForTokens using null', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
             conditionType: ConditionType.NotEqualToValue,
@@ -3586,7 +3569,7 @@ describe('class GreaterThanValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
             conditionType: ConditionType.GreaterThanValue,
@@ -3594,7 +3577,7 @@ describe('class GreaterThanValueCondition', () => {
             secondValue: 100
         };
         let testItem = new GreaterThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3606,7 +3589,7 @@ describe('class GreaterThanValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: GreaterThanValueConditionConfig= {
             conditionType: ConditionType.GreaterThanValue,
@@ -3614,7 +3597,7 @@ describe('class GreaterThanValueCondition', () => {
             secondValue: false
         };
         let testItem = new GreaterThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is GT
@@ -3624,7 +3607,7 @@ describe('class GreaterThanValueCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
             conditionType: ConditionType.GreaterThanValue,
@@ -3642,7 +3625,7 @@ describe('class GreaterThanValueCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
             conditionType: ConditionType.GreaterThanValue,
@@ -3663,7 +3646,7 @@ describe('class GreaterThanValueCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
             conditionType: ConditionType.GreaterThanValue,
@@ -3708,7 +3691,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -3716,7 +3699,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             secondValue: 100
         };
         let testItem = new GreaterThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100);
@@ -3728,7 +3711,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -3736,7 +3719,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             secondValue: false
         };
         let testItem = new GreaterThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is GTE
@@ -3746,7 +3729,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -3764,7 +3747,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -3785,7 +3768,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -3831,7 +3814,7 @@ describe('class LessThanValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanValueConditionConfig= {
             conditionType: ConditionType.LessThanValue,
@@ -3839,7 +3822,7 @@ describe('class LessThanValueCondition', () => {
             secondValue: 100
         };
         let testItem = new LessThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3851,7 +3834,7 @@ describe('class LessThanValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: LessThanValueConditionConfig= {
             conditionType: ConditionType.LessThanValue,
@@ -3859,7 +3842,7 @@ describe('class LessThanValueCondition', () => {
             secondValue: false
         };
         let testItem = new LessThanValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
@@ -3868,7 +3851,7 @@ describe('class LessThanValueCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanValueConditionConfig= {
             conditionType: ConditionType.LessThanValue,
@@ -3905,7 +3888,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -3913,7 +3896,7 @@ describe('class LessThanOrEqualValueCondition', () => {
             secondValue: 100
         };
         let testItem = new LessThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -3925,7 +3908,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -3933,7 +3916,7 @@ describe('class LessThanOrEqualValueCondition', () => {
             secondValue: false
         };
         let testItem = new LessThanOrEqualValueCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is LTE
@@ -3942,7 +3925,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -3960,7 +3943,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     test('evaluate throws an error when passed an invalid value type that is not either number or string because it cannot be converted to string or number', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -3974,7 +3957,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -3995,7 +3978,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
             conditionType: ConditionType.LessThanOrEqualValue,
@@ -4043,7 +4026,7 @@ describe('class StringLengthCondition', () => {
     test('evaluate when both Min/Max are assigned returns Match inside of stringlength; NoMatch outside of stringlength', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4052,7 +4035,7 @@ describe('class StringLengthCondition', () => {
             maximum: 5
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('1');
@@ -4075,7 +4058,7 @@ describe('class StringLengthCondition', () => {
     test('evaluate when Min is assigned, Max is null. Match when >= Min', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4084,7 +4067,7 @@ describe('class StringLengthCondition', () => {
             maximum: null
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('1');
@@ -4099,7 +4082,7 @@ describe('class StringLengthCondition', () => {
     test('evaluate when Max is assigned, Min is null. Match when <= Max', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4108,7 +4091,7 @@ describe('class StringLengthCondition', () => {
             maximum: 5
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('1');
@@ -4128,7 +4111,7 @@ describe('class StringLengthCondition', () => {
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4149,7 +4132,7 @@ describe('class StringLengthCondition', () => {
     test('evaluate when Trim is false', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4159,7 +4142,7 @@ describe('class StringLengthCondition', () => {
             trim: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(' ');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(' 1');
@@ -4172,7 +4155,7 @@ describe('class StringLengthCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=true and trim undefined (means true) match according to the rules, ', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4183,7 +4166,7 @@ describe('class StringLengthCondition', () => {
             // trim: undefined means enabled
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
@@ -4198,7 +4181,7 @@ describe('class StringLengthCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=true and trim = false, match according to the rules, ', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4209,7 +4192,7 @@ describe('class StringLengthCondition', () => {
             trim: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.Match);
@@ -4224,7 +4207,7 @@ describe('class StringLengthCondition', () => {
     test('With duringEdit = true and supportsDuringEdit=false, always return Undetermined, ', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4234,7 +4217,7 @@ describe('class StringLengthCondition', () => {
             supportsDuringEdit: false
         };
         let testItem = new StringLengthCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
         expect(testItem.evaluateDuringEdits('12', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
         expect(testItem.evaluateDuringEdits('123456', vh, services)).toBe(ConditionEvaluateResult.Undetermined);              
@@ -4243,7 +4226,7 @@ describe('class StringLengthCondition', () => {
     test('getValuesForTokens without calling evaluate and establishing length', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4275,7 +4258,7 @@ describe('class StringLengthCondition', () => {
     test('getValuesForTokens with evaluating a string length of 5', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4309,7 +4292,7 @@ describe('class StringLengthCondition', () => {
     test('getValuesForTokens with null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
             conditionType: ConditionType.StringLength,
@@ -4388,15 +4371,15 @@ describe('class StringLengthCondition', () => {
 
 describe('class AllMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(AllMatchCondition.DefaultConditionType).toBe(ConditionType.And);
+        expect(AllMatchCondition.DefaultConditionType).toBe(ConditionType.All);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -4405,10 +4388,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4419,10 +4402,10 @@ describe('class AllMatchCondition', () => {
     test('With 4 child conditions that evaluate as Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4442,10 +4425,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             }]
@@ -4456,10 +4439,10 @@ describe('class AllMatchCondition', () => {
     test('With 4 child conditions where the last evaluates as NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4479,10 +4462,10 @@ describe('class AllMatchCondition', () => {
     test('With 4 child conditions where the first evaluates as NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             },
@@ -4502,10 +4485,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined and treatUndeterminedAs not supplied, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             }]
@@ -4516,10 +4499,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined and treatUndeterminedAs=Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4532,10 +4515,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined and treatUndeterminedAs=NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4548,10 +4531,10 @@ describe('class AllMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined and treatUndeterminedAs=Undetermined, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
             }],
@@ -4563,10 +4546,10 @@ describe('class AllMatchCondition', () => {
     test('With 4 child conditions where the first evaluates as Undetermined but treatUndeterminedAs=Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             },
@@ -4587,10 +4570,10 @@ describe('class AllMatchCondition', () => {
     test('Parent ValueHost used by child RequireTextCondition', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: ConditionType.RequireText,
                 // valueHostName omitted meaning it must use parent ValueHost
@@ -4611,7 +4594,7 @@ describe('class AllMatchCondition', () => {
     test('With 1 child that has invalid conditionConfig that evaluates as Undetermined and logs an error', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
             conditionType: ConditionType.All,
@@ -4628,7 +4611,7 @@ describe('class AllMatchCondition', () => {
     test('With 1 child whose evaluate() function returns a Promise throws', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
             conditionType: ConditionType.All,
@@ -4642,7 +4625,7 @@ describe('class AllMatchCondition', () => {
     });
     test('category is Children', () => {
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -4650,7 +4633,7 @@ describe('class AllMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -4662,7 +4645,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         };
         let condition = new AllMatchCondition(config);
@@ -4675,7 +4658,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4704,7 +4687,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4732,7 +4715,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -4760,7 +4743,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [
                 { conditionType: AlwaysMatchesConditionType },
                 { conditionType: NeverMatchesConditionType }
@@ -4774,10 +4757,10 @@ describe('class AllMatchCondition', () => {
     test('dispose followed by calls throws TypeErrors', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4790,10 +4773,10 @@ describe('class AllMatchCondition', () => {
     test('dispose with IDisposable on childConfigs', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.And,
+            conditionType: ConditionType.All,
             conditionConfigs: [{
                 conditionType: DisposableConditionType
             }]
@@ -4807,15 +4790,15 @@ describe('class AllMatchCondition', () => {
 });
 describe('class AnyMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(AnyMatchCondition.DefaultConditionType).toBe(ConditionType.Or);
+        expect(AnyMatchCondition.DefaultConditionType).toBe(ConditionType.Any);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -4824,10 +4807,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             }]
@@ -4838,10 +4821,10 @@ describe('class AnyMatchCondition', () => {
     test('With 4 child conditions that evaluate as Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4861,10 +4844,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             }]
@@ -4875,10 +4858,10 @@ describe('class AnyMatchCondition', () => {
     test('With 4 child conditions where the last evaluates as NoMatch, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4898,10 +4881,10 @@ describe('class AnyMatchCondition', () => {
     test('With 4 child conditions where the first evaluates as Match and the rest NoMatch, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: AlwaysMatchesConditionType
             },
@@ -4922,10 +4905,10 @@ describe('class AnyMatchCondition', () => {
     test('With 4 child conditions where all evaluate as NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: NeverMatchesConditionType
             },
@@ -4945,10 +4928,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined Or treatUndeterminedAs not supplied, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             }]
@@ -4959,10 +4942,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined Or treatUndeterminedAs=Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4975,10 +4958,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined Or treatUndeterminedAs=NoMatch, evaluates as NoMatch', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
 
@@ -4991,10 +4974,10 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child condition that evaluates as Undetermined Or treatUndeterminedAs=Undetermined, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType,
             }],
@@ -5006,10 +4989,10 @@ describe('class AnyMatchCondition', () => {
     test('With 4 child conditions where the first evaluates as Undetermined but treatUndeterminedAs=Match, evaluates as Match', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [{
                 conditionType: IsUndeterminedConditionType
             },
@@ -5030,7 +5013,7 @@ describe('class AnyMatchCondition', () => {
     test('With 1 child that has invalid conditionConfig that evaluates as Undetermined and logs an error', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
             conditionType: ConditionType.Any,
@@ -5046,7 +5029,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -5054,7 +5037,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -5066,7 +5049,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: []
         };
         let condition = new AnyMatchCondition(config);
@@ -5079,7 +5062,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -5108,7 +5091,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -5136,7 +5119,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            conditionType: ConditionType.Or,
+            conditionType: ConditionType.Any,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
@@ -5170,7 +5153,7 @@ describe('class CountMatchesCondition', () => {
         treatUndeterminedAs?: ConditionEvaluateResult): void {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: CountMatchesConditionConfig = {
             conditionType: ConditionType.CountMatches,
@@ -5375,7 +5358,7 @@ describe('class NotNullCondition', () => {
     {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotNullConditionConfig = {
             conditionType: ConditionType.NotNull,
@@ -5467,7 +5450,7 @@ describe('class NotNullCondition', () => {
 describe('NumberConditionBase', () => {
     class TestNumberConditionBase extends NumberConditionBase<NumberConditionBaseConfig>
     {
-        protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        protected evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
         }
         protected get defaultCategory(): ConditionCategory {
@@ -5499,14 +5482,14 @@ describe('NumberConditionBase', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
 
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: PositiveConditionConfig = {
             conditionType: ConditionType.Positive,
             valueHostName: 'Property1'
         };
         let testItem = new TestNumberConditionBase(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5626,14 +5609,14 @@ describe('PositiveCondition', () => {
     test('evaluate numbers; when 0 or higher, Match. When negative, NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: PositiveConditionConfig = {
             conditionType: ConditionType.Positive,
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0.1);
@@ -5652,14 +5635,14 @@ describe('PositiveCondition', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
 
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: PositiveConditionConfig = {
             conditionType: ConditionType.Positive,
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5672,14 +5655,14 @@ describe('PositiveCondition', () => {
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: PositiveConditionConfig = {
             conditionType: ConditionType.Positive,
             valueHostName: 'Property1'
         };
         let testItem = new PositiveCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
@@ -5716,14 +5699,14 @@ describe('IntegerCondition', () => {
     test('evaluate numbers; when an integer, Match. When with decimals, noMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: IntegerConditionConfig = {
             conditionType: ConditionType.Integer,
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0);
@@ -5744,14 +5727,14 @@ describe('IntegerCondition', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
         
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: IntegerConditionConfig = {
             conditionType: ConditionType.Integer,
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('10');
@@ -5766,14 +5749,14 @@ describe('IntegerCondition', () => {
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: IntegerConditionConfig = {
             conditionType: ConditionType.Integer,
             valueHostName: 'Property1'
         };
         let testItem = new IntegerCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
@@ -5834,7 +5817,7 @@ describe('MaxDecimalsCondition', () => {
     test('evaluate numbers using maxDecimals=1; when integer or 1 decimal, match. All others NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: MaxDecimalsConditionConfig = {
             conditionType: ConditionType.MaxDecimals,
@@ -5842,7 +5825,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(0);
@@ -5869,7 +5852,7 @@ describe('MaxDecimalsCondition', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
 
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: MaxDecimalsConditionConfig = {
             conditionType: ConditionType.MaxDecimals,
@@ -5877,7 +5860,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);         
         vh.setValue('10');
@@ -5891,7 +5874,7 @@ describe('MaxDecimalsCondition', () => {
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: MaxDecimalsConditionConfig = {
             conditionType: ConditionType.MaxDecimals,
@@ -5899,7 +5882,7 @@ describe('MaxDecimalsCondition', () => {
             maxDecimals: 1
         };
         let testItem = new MaxDecimalsCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh.setTextValue('---- does not matter ----');
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);

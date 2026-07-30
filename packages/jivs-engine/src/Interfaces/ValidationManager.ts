@@ -1,6 +1,6 @@
 /**
  * ValidationManager is the central object for using this system.
- * It is where you describe the shape of your inputs and their validation
+ * It is where you describe the shape of your fields and their validation
  * through the Config classes.
  * Once setup, it has a list of ValueHost objects, one for each
  * config that was supplied. Those that are ValidatorsValueHostBases
@@ -20,31 +20,88 @@
  * - Report a list of Issues Found for the entire system for a UI 
  *   element often known as "Validation Summary".
  * 
- * @module ValidationManager/Types
+ * @module jivs-engine/ValidationManager/Types
  */
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
-import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
-import { ValueHostInstanceState } from './ValueHost';
-import { ValueHostsManagerInstanceState } from './ValueHostsManager';
-import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
+import { ValidateOptions, IssueFound, ValidationState } from './Validation';
+import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+
+import {
+    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+    toIValidatorsValueHostBaseCallbacks
+} from './ValidatorsValueHostBase';
 import { IValidationServices } from './ValidationServices';
-import { IInputValueHost } from './InputValueHost';
-import { IPropertyValueHost } from './PropertyValueHost';
-import { ValidationManagerConfigModifier } from '../Validation/ValidationManagerConfigModifier';
+import { IFieldValueHost, IFieldValueHostChangedCallback } from './FieldValueHost';
+import { IValueHostResolver } from './ValueHostResolver';
+
 
 /**
  * Interface from which to implement a ValidationManager.
  */
-export interface IValidationManager extends IValueHostsManager {
+export interface IValidationManager extends IValueHostResolver {
     /**
      * Provides access to ValidationServices (override IServices).
      */
     readonly services: IValidationServices; 
+    /**
+     * Adds a ValueHostConfig for a ValueHost not previously added. 
+     * Does not trigger any notifications.
+     * Exception when the same ValueHostConfig.name already exists.
+     * @param config 
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     * When null, the state supplied in the ValidationManager constructor will be used if available.
+     * When neither state was supplied, a default state is created.
+     */
+    addValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;    
+    
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost. It does not merge.
+     * If merging is required, use addOrMergeValueHost().
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config 
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
 
-    startModifying(): ValidationManagerConfigModifier;
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost.
+     * It merges the new config with the existing one using the ValueHostConfigMergeService.
+     * The goal is to protect important business logic settings while allowing the UI
+     * to inject new property values where appropriate.
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config 
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;    
+
+    /**
+     * Discards a ValueHost. 
+     * Does not trigger any notifications.
+     * @param valueHostName 
+     */
+    discardValueHost(valueHostName: ValueHostName): void;    
+
+
     /**
      * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
@@ -53,19 +110,11 @@ export interface IValidationManager extends IValueHostsManager {
     getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null;    
 
     /**
-     * Retrieves the InputValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the InputValueHostConfig.name property
+     * Retrieves the FieldValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the FieldValueHostConfig.name property
      * Returns the instance or null if not found or found a different type of value host.
      */
-    getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
-
-    /**
-     * Retrieves the PropertyValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the PropertyValueHostConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
-
+    getFieldValueHost(valueHostName: ValueHostName): IFieldValueHost | null;
 
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
@@ -107,21 +156,49 @@ export interface IValidationManager extends IValueHostsManager {
      * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
+    
     /**
+     * For a list of external errors, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * These will survive through clearValidation() and validate() since they are not generated by validators, 
+     * but they will be cleared by clearExternalIssuesFound().
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+    
      * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
+     * If its own business rule has been violated or there is another issue, 
+     * it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time its called, all previous business logic errors are abandoned.
-     * @param errors - A list of business logic errors to show or null to indicate no errors.
+     * by specifying that valueHostName in ValueHostName.
+     * Each time its called, all previous external errors are abandoned.
+     * @param errors - A list of external errors to show or null to indicate no errors.
      * @param options - Only considers the skipCallback option.
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
      * @returns when true, the validation snapshot has changed.
      */
-    setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean;
+    addExternalIssuesFound(errors: Array<IssueFound> | null, determinedLocally: boolean, options?: ValidateOptions): boolean;
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * These will survive through clearValidation() and validate() since they are not generated by validators, 
+     * but they will be cleared by clearExternalIssuesFound().
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+
+     * @param error - The IssueFound to add to the list of external IssuesFound.
+     * @param options - Only considers the skipCallback option.
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
+     * @returns when true, the validation snapshot has changed.
+     */
+    addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean;
 
     /**
-     * Lists all issues found (error messages and supporting info) for a single ValidatorsValueHostBase
-     * so the input field/element can show error messages and adjust its appearance.
+     * Lists all issues found (error messages and supporting info) for a single FieldValueHost.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
@@ -133,7 +210,7 @@ export interface IValidationManager extends IValueHostsManager {
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null;
+    getIssuesForField(valueHostName: ValueHostName): Array<IssueFound> | null;
 
     /**
      * A list of all issues from all ValidatorsValueHostBases optionally for a given group.
@@ -154,16 +231,32 @@ export interface IValidationManager extends IValueHostsManager {
     getIssuesFound(group?: string): Array<IssueFound> | null;
 
     /**
-     * Adds or replaces all IssueFound items to the appropriate ValueHosts.
-     * Each ValueHost will invoke the onValueHostValidationStateChanged callback if needed.
-     * 
-     * Use case: client-side getting server-side Jivs-generated IssuesFound,
-     * so the UI can incorporate it.
-     * @param issuesFound 
-     * @param behavior - keep or omit an issueFound that does not have a matching validator
-     * based on the errorCode.
+     * Server-side: package validation results for transfer to the client as a string.
+     * The client can pass that string to fromValidationPayload to restore issue state.
+     * The consumer can then transfer this string to the client and use fromValidationPayload to restore the state of validation.
+     * The internals are not intended for use by the consumer.
+     * Combines validator-generated IssuesFound with user-supplied external IssueFound.
+     * @param externalIssues - Errors from business logic, external validators, etc.
+     * @returns Package ready for HTTP/API response
      */
-    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;    
+    toValidationPayload(externalIssues: Array<IssueFound> | null): string;
+
+    /**
+     * Client-side: restore transferred IssueFound state from toValidationPayload().
+     * Imported issues are routed through addExternalIssueFound().
+     * Issues may align to validator-owned state by errorCode during import.
+     * If they align, the validator's IssueFound shape is used instead of the imported one, 
+     * allowing the UI to use the validator's errorMessage with tokens replaced.
+     * If they do not align, the imported IssueFound is used as-is, but with doNotSave=false 
+     * to allow the next validation attempt to clear it.
+     * Optionally applies an encoding function to the error messages, such as HTML encoding for safe display on the client.
+     * @param payload - Validation data from server
+     * @param encode - Targets HTML encoding. When supplied, the function takes the 
+     original errorMessage and returns a revised one. We will supply a function
+     called htmlEncoder(string): string so the user just drops that name in as the parameter.
+    * @returns true if state changed
+    */
+    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean;    
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
@@ -175,7 +268,24 @@ export interface IValidationManager extends IValueHostsManager {
      * @param options
      * @param force - when true, override the debouncer and execute immediately.
      */
-    notifyValidationStateChanged(validationState : ValidationState | null, options?: ValidateOptions, force?: boolean): void;   
+    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void;   
+    
+    
+    /**
+     * Upon changing the value of a ValueHost, other ValueHosts need to know. 
+     * They may have Conditions that take the changed ValueHost into account and
+     * will want to revalidate or set up a state to force revalidation.
+     * This goes through those ValueHosts and notifies them.
+     */
+    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void;
+    
+    /**
+     * Report that a ValueHost had its instance state changed.
+     * Invokes onValueHostInstanceStateChanged if setup.
+     * @param valueHost 
+     * @param instanceState 
+     */
+    notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void;    
 }
 
 /**
@@ -187,21 +297,34 @@ export interface IValidationManager extends IValueHostsManager {
  * The SPA may keep an instance of ValidationManager for the duration needed.
  * Each entry in ValueHostInstanceStates must have a companion in ValueHosts and ValueHostConfigs.
  */
-export interface ValidationManagerInstanceState extends ValueHostsManagerInstanceState {
-
+export interface ValidationManagerInstanceState {
+    /**
+     * Mostly here to provide a way to detect a change in the state quickly.
+     * This value starts at 0 and is incremented each time ValidationManager
+     * stores a changed state.
+     */
+    stateChangeCounter?: number;
 }
 
 /**
  * Provides the configuration for the ValidationManager constructor
  */
-export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValidationManagerCallbacks
+export interface ValidationManagerConfig extends IValidationManagerCallbacks
 {
 
     /**
-     * (An override)
      * Services that are needed by ValidationManager
      */
     services: IValidationServices;
+
+    /**
+     * Initial list of ValueHostConfigs. Here's where all of the action is!
+     * Each ValueHostConfig describes one ValueHost (which is info about one value in your app),
+     * plus its validation rules.
+     * If rules need to be changed later, either create a new instance of ValidationManager
+     * or use its addValueHost, addOrUpdateValueHost, discardValueHost methods.
+     */
+    valueHostConfigs: Array<ValueHostConfig>;    
 
     /**
      * The InstanceState for the ValidationManager itself.
@@ -228,19 +351,50 @@ export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValid
     savedValueHostInstanceStates?: Array<ValueHostInstanceState> | null;
 }
 
-export type ValidationStateChangedHandler = (validationManager: IValidationManager, validationState: ValidationState) => void;
+export type ValidationStateChangedHandler
+    = (validationManager: IValidationManager, validationState: ValidationState) => void;
 
+export type ValidationManagerInstanceStateChangedHandler
+    = (ValidationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState) => void;
 
+export type ValidationManagerConfigChangedHandler
+    = (validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>) => void;
+ 
 /**
  * Provides callback hooks for the consuming system to supply to ValidationManager.
  * This instance is supplied in the constructor of ValidationManager.
  */
-export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks, IValidatorsValueHostBaseCallbacks {
+export interface IValidationManagerCallbacks
+    extends IValueHostCallbacks,
+    IValidatorsValueHostBaseCallbacks,
+    IFieldValueHostChangedCallback
+{
+
+    /**
+     * Called when the ValidationManager's InstanceState has changed.
+     * React example: React component useState feature retains this value
+     * and needs to know when to call the setState function with the stateToRetain
+     */
+    onInstanceStateChanged?: ValidationManagerInstanceStateChangedHandler | null;
+
+    /**
+     * Use this when caching the configuration for a later creation of ValidationManager.
+     * 
+     * Called when the configuration of ValueHosts has been changed, by these members
+     * of ValidationManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
+     * discardValueHost.
+     * The supplied object is a clone so modifications will not impact the ValidationManager.
+     * 
+     * Note that where a ValueHostConfig has a property that references a function,
+     * you will have to retain that reference in some way to reuse it.
+     * In particular, ValidatorConfig.conditionCreator.
+     */
+    onConfigChanged?: ValidationManagerConfigChangedHandler | null;
 
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
-     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
-     * clearBusinessLogicErrors() and a few edge cases.
+     * That includes validate(), clearValidation(), addExternalIssuesFound(), 
+     * clearExternalIssuesFound() and a few edge cases.
      * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
@@ -266,7 +420,7 @@ export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks
     notifyValidationStateChangedDelay?: number;        
 }
 
-export const defaultNotifyValidationStateChangedDelay = 100;
+export const DefaultNotifyValidationStateChangedDelay = 100;
 /**
  * Determines if the object implements IValidationManager.
  * @param source 
@@ -274,16 +428,20 @@ export const defaultNotifyValidationStateChangedDelay = 100;
  */
 export function toIValidationManager(source: any): IValidationManager | null
 {
-    if (toIValueHostsManager(source))
-    {
-        let test = source as IValidationManager;     
-        if (test.validate !== undefined &&
+    if (source && typeof source === 'object') {
+        const test = source as IValidationManager;
+        if (
+            test.getValueHost !== undefined &&
+            test.services !== undefined &&
+            test.addValueHost !== undefined &&
+            test.addOrUpdateValueHost !== undefined &&
+            test.getFieldValueHost !== undefined &&
+            test.validate !== undefined &&
             test.clearValidation !== undefined &&
             test.isValid !== undefined &&
             test.doNotSave !== undefined &&
-            test.getIssuesFound !== undefined &&
-            test.getInputValueHost !== undefined &&
-            test.getPropertyValueHost !== undefined)
+            test.getIssuesFound !== undefined
+        )
             return test;
     }
     return null;
@@ -299,10 +457,34 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
 {
     if (toIValidatorsValueHostBaseCallbacks(source))
     {
-        let test = source as IValidationManagerCallbacks;     
+        const test = source as IValidationManagerCallbacks;     
         if (test.onInstanceStateChanged !== undefined &&
             test.onValidationStateChanged !== undefined &&
             test.onConfigChanged !== undefined)
+            return test;
+    }
+    return null;
+}
+
+/**
+ * Allows classes to expose their reference to an IValidationManager
+ * (which is usually the ValidationManager).
+ */
+export interface IValidationManagerAccessor
+{
+    readonly validationManager: IValidationManager;
+}
+
+/**
+ * Determines if the object implements IValidationManagerAccessor.
+ * @param source 
+ * @returns source typecasted to IValidationManagerAccessor if appropriate or null if not.
+ */
+export function toIValidationManagerAccessor(source: any): IValidationManagerAccessor | null
+{
+    if (source && typeof source === 'object') {
+        const test = source as IValidationManagerAccessor;     
+        if (test.validationManager !== undefined)
             return test;
     }
     return null;

@@ -23,50 +23,46 @@
     "starter_code/*"
   ],
   "dependencies": {
-    "@plblum/jivs-engine": "^0.16.1"
+    "@plblum/jivs-builder": "^0.20.0",
+    "@plblum/jivs-configanalysis": "^0.20.0",
+    "@plblum/jivs-engine": "^0.20.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "del": "^7.1.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-typescript": "^0.14.0",
-    "gulp": "^4.0.2",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/jest": "^30.0.0",
+    "del": "^8.0.1",
+    "eslint": "^9.0.0",
+    "gulp": "^5.0.1",
     "gulp-jest": "^4.0.4",
-    "jest": "^29.7.0",
-    "lerna": "^8.1.2",
-    "prettier": "^3.2.5",
-    "prettier-eslint": "^16.3.0",
-    "ts-jest": "^29.1.2",
-    "typedoc": "^0.25.12",
-    "typedoc-plugin-extras": "^3.0.0",
-    "typedoc-plugin-merge-modules": "^5.1.0",
-    "typescript": "^5.4.3",
-    "typescript-eslint": "^7.3.1"
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "lerna": "^9.0.7",
+    "prettier": "^3.9.6",
+    "prettier-eslint": "^17.1.1",
+    "ts-jest": "^29.4.12",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-extras": "^4.0.1",
+    "typedoc-plugin-merge-modules": "^7.0.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.0.0"
   },
   "scripts": {
-    "pretypedoc": "npm --prefix ./packages/jivs-engine run compile",
+    "compile": "lerna run compile",
+    "pretypedoc": "lerna run compile",
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",
-    "test": "jest --silent",
+    "test": "jest --silent --passWithNoTests",
     "preconsoletest": "npm --prefix ./packages/jivs-engine run compile",
     "consoletest": "jest --no-console --noStackTrace --silent",
-    "pretest:github": "npm --prefix ./packages/jivs-engine run compile",
+    "pretest:github": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "test:github": "jest --silent --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
     "gulp": "node gulpfile.mjs",
     "clean": "gulp clean",
-    "prebumpversion": "npm --prefix ./packages/jivs-engine run compile",
+    "prebumpversion": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "bumpversion": "lerna version --no-private",
-    "prepublish_library": "npm --prefix ./packages/jivs-engine run compile",
+    "prepublish_library": "npm --prefix ./packages/jivs-engine run compile && npm --prefix ./packages/jivs-builder run compile && npm --prefix ./packages/jivs-configanalysis run compile",
     "publish_library": "lerna publish --no-private",
-    "retry_publish": "lerna publish from-package"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "node": true,
-      "jest": true
-    }
-  },
-  "lint": "eslint . --resolve-plugins-relative-to ."
+    "retry_publish": "lerna publish from-package",
+    "lint": "eslint ."
+  }
 }

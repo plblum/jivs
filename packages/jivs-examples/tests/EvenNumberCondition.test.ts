@@ -1,22 +1,22 @@
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
-import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
-import { createMinimalValidationServices } from "../src/support";
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
+import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { EvenNumberCondition, EvenNumberConditionConfig, EvenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
+import { createMinimalValidationServices } from "../src/support";
 
 describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
-        let builder = build(services);
-        builder.input('Field1', LookupKey.Number);
+        let builder = createConfigBuilder(services);
+        builder.field('Field1', LookupKey.Number);
 
-        let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vm = new ValidationManager(builder.complete());
+        let vh = vm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
-            conditionType: evenNumberConditionType,
+            conditionType: EvenNumberConditionType,
             valueHostName: 'Field1',
         };
         let testItem = new EvenNumberCondition(config);
@@ -44,11 +44,11 @@ describe('EvenNumberCondition tests', () => {
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
-        let builder = build(services);
-        builder.input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
+        let builder = createConfigBuilder(services);
+        builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vm = new ValidationManager(builder.complete());
+        let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);
         let valResult = vh.validate();

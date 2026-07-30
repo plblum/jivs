@@ -1,3 +1,9 @@
+// Example: Data Types for enumerated types, where the native value is an integer.
+// Shows:
+// - Lookup Key - create one for each enum type
+// - Formatter, converts number to localized text
+// - Parser, converts text to number
+
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
@@ -6,11 +12,6 @@ import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTy
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
-// Example: Data Types for enumerated types, where the native value is an integer.
-// Shows:
-// - Lookup Key - create one for each enum type
-// - Formatter, converts number to localized text
-// - Parser, converts text to number
 
 // We'll demonstrate with this type:
 export enum PhoneType
@@ -46,13 +47,13 @@ export class EnumByNumberFormatter extends DataTypeFormatterBase
     {
         return this._lookupKey;
     }
-    private _lookupKey: string;
+    private readonly _lookupKey: string;
 
     protected get enumValueInfos(): Array<EnumValueInfo>
     {
         return this._enumValueInfos;
     }
-    private _enumValueInfos: Array<EnumValueInfo>;
+    private readonly _enumValueInfos: Array<EnumValueInfo>;
 
     protected get expectedLookupKeys(): string | string[] {
         return this.lookupKey;
@@ -71,7 +72,7 @@ export class EnumByNumberFormatter extends DataTypeFormatterBase
             if (valueInfo) {
                 let localized = this.services.textLocalizerService.localize(cultureId, valueInfo.textl10n ?? null, valueInfo.text);
                 if (localized)
-                    return { value: localized }
+                    return { value: localized };
             }
             // There are several ways to handle missing values, including returning returning the empty string
             // We've chosen to use an error message instead so the issue gets logged.
@@ -83,11 +84,11 @@ export class EnumByNumberFormatter extends DataTypeFormatterBase
 
 export type EnumValueInfo = {
     // When the value is this, use the text
-    value: number,
+    value: number;
     // The default text for this value
-    text: string,
+    text: string;
     // The localization lookup key to replace the default text.
-    textl10n?: string
+    textl10n?: string;
 }
 
 
@@ -123,13 +124,13 @@ export class EnumByNumberParser
             throw new CodingError('Must have at least one entry');       
         
         this._enumValueInfos = options.caseInsensitive ?
-            enumValueInfos.map((item) => { return { text: item.text.toLowerCase(), value: item.value } } ) :
+            enumValueInfos.map((item) => { return { text: item.text.toLowerCase(), value: item.value }; } ) :
             enumValueInfos;
         
         this._hasLocalizedValues = enumValueInfos.find((item) => item.textl10n != null /* null or undefined */) !== undefined;
 
     }
-    dispose(): void {
+    public dispose(): void {
         super.dispose();
     // not absolutely required but Jivs supports on demand cleanup
         (this._cultureToEnumValuesMap as any) = undefined;
@@ -146,9 +147,9 @@ export class EnumByNumberParser
     {
         return this._enumValueInfos;
     }
-    private _enumValueInfos: Array<EnumValueInfo>;
+    private readonly _enumValueInfos: Array<EnumValueInfo>;
 
-    private _hasLocalizedValues: boolean;
+    private readonly _hasLocalizedValues: boolean;
 
 
     /**
@@ -164,7 +165,7 @@ export class EnumByNumberParser
  * This is a cache for the results.
  * Key is cultureId
  */
-    private _cultureToEnumValuesMap: Map<string, Array<EnumValueInfo>> = new Map();
+    private readonly _cultureToEnumValuesMap: Map<string, Array<EnumValueInfo>> = new Map();
     
     /**
      * At this point, we've handled trimming lead/trailing spaces and returned a value for the empty string.
@@ -217,7 +218,7 @@ export class EnumByNumberParser
     }
 }
 
-export const phoneTypeEnumValues: Array<EnumValueInfo> = [
+export const PhoneTypeEnumValues: Array<EnumValueInfo> = [
     {
         value: PhoneType.Landline,
         text: PhoneType[PhoneType.Landline],
@@ -237,7 +238,7 @@ export const phoneTypeEnumValues: Array<EnumValueInfo> = [
         value: PhoneType.Other,
         text: PhoneType[PhoneType.Other],
         textl10n: 'PhoneType_10'
-    },
+    }
 ];
 
 
@@ -247,8 +248,8 @@ export function registerEnumDataTypes(validationServices: IValidationServices): 
 
     let dtfs = validationServices.dataTypeFormatterService as DataTypeFormatterService;
     // or move just this line into registerDataTypeFormatter() function         
-    dtfs.register(new EnumByNumberFormatter(PhoneTypeLookupKey, phoneTypeEnumValues)); 
+    dtfs.register(new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues)); 
     let dtps = validationServices.dataTypeParserService as DataTypeParserService;
     // or move just this line into registerDataTypeParser() function         
-    dtps.register(new EnumByNumberParser(PhoneTypeLookupKey, phoneTypeEnumValues, { caseInsensitive: true }));     
+    dtps.register(new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, { caseInsensitive: true }));     
 }

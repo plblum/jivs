@@ -1,9 +1,9 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
- * @module DataTypes/ConcreteClasses/DataTypeParsers
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers
  */
 
-import { DataTypeResolution } from "../Interfaces/DataTypes";
+import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { escapeRegExp } from '../Utilities/Utilities';
 import {
     CleanUpStringParserBase, CleanUpStringParserOptions, DatePatternParserBase, DateTimeCultureInfo,
@@ -47,7 +47,7 @@ export class ShortDatePatternParser extends DatePatternParserBase<DateTimeCultur
         this._escapedShortDateSeparator = escapeRegExp(format.shortDateSeparator);
     }
 
-    private _escapedShortDateSeparator: string;
+    private readonly _escapedShortDateSeparator: string;
 
     /**
      * Returns an expression with 3 groups of digits where 1 group has 4 digits
@@ -75,7 +75,7 @@ export class ShortDatePatternParser extends DatePatternParserBase<DateTimeCultur
         let m: number = 0;
         let d: number = 0;
         let groupLocation = 1;
-        for (let char of this.order) {
+        for (const char of this.order) {
             switch (char) {
                 case 'y':
                     y = parseInt(pattern[groupLocation], 10);
@@ -153,7 +153,7 @@ export class PercentageParser extends PercentageParserBase
     }
 
     protected parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
-        let result = super.parseCleanedText(text, dataTypeLookupKey, cultureId);
+        const result = super.parseCleanedText(text, dataTypeLookupKey, cultureId);
         if (typeof result.value === 'number')
             result.value = result.value / 100.0;
         return result;

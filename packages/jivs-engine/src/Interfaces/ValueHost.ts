@@ -4,38 +4,35 @@
  * Each also has an name, used to lookup the ValueHost,
  * and a Label, which is a UI friendly way to tell the user the source of a validation error.
  * There are several types of ValueHosts:
- * - InputValueHost - reflects values from user input. 
- *   These have validation capability.
- * - PropertyValueHost - reflects values from a Model.
+ * - FieldValueHost - reflects values from user input and model properties. 
  *   These have validation capability.
  * - StaticValueHost - reflects values that are needed by validation
- *   but are not editable by the user. Often these are properties from the same
- *   Model being edited.
+ *   but are not editable by the user.
  * - CalcValueHost - Its value is calculated when its getValue() method is called. 
- *   You supply a function callback in its CalcValueHostConfig to set it up.
+ *   You supply a function callback for the calculation.
  * 
  * Base class Validators:
  * - ValidatableValueHostBase - introduces the framework for validation but does not
  *   get the Validators objects involved.
  * - ValidatorsValueHostBase - introduces Validators and completes the overall validation feature.
- *   InputValueHosts inherit from this 
- * @module ValueHosts/Types/ValueHost
+ *   FieldValueHosts inherit from this 
+ * @module jivs-engine/ValueHosts/Types/ValueHost
  */
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValueHostsManager, IValueHostsManagerAccessor } from './ValueHostsManager';
+import { IValidationManagerAccessor } from './ValidationManager';
 import { IDisposable } from './General_Purpose';
 import { ConditionConfig } from './Conditions';
 /**
  * Interface for creating ValueHosts.
  */
-export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
+export interface IValueHost extends IValidationManagerAccessor, IDisposable {
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
+     * for which they will transfer a value, via ValidationManager.getValueHost(this name)
      */
     getName(): ValueHostName;
 
@@ -46,34 +43,37 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     getLabel(): string;
 
     /**
-     * Gets the value. It is expected to be in its native data type,
-     * capable of being stored or used without conversion by the caller.
-     * For example, a Date object or Number type.
-     * Returns undefined if the native value could not be resolved
-     * from the input value.
+     * Gets the typed value in its native form,
+     * ready for use by the caller without string conversion.
+     * For example, a Date object or a number.
+     * Returns undefined when the typed value could not be resolved
+     * from the text value.
      */
     getValue(): any;
 
     /**
-     * Replaces the value and optionally validates.
-     * Call when the value was changed in the system consumer.
-     * @param value - Can be undefined to indicate the value could not be resolved
-    * from the input field/element's value, such as inability to convert a string to a date.
-    * All other values, including null and the empty string, are considered real data.
-    * When undefined, IsChanged will still be changed to true unless options.Reset = true.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+    * Replaces the typed value and optionally validates in subclasses
+    * that implement IValidatableValueHostBase. 
+    * Call when the typed value was changed directly by consuming code.
+    * @param value - The typed value to store. Use undefined to indicate that the
+    * typed value could not be resolved from the text value, such as when parsing fails.
+    * All other values, including null and the empty string, are treated as real data.
+    * When undefined, IsChanged is still set to true unless options.Reset = true.
+    * @param options -
+    *    * validate - Invoke validation after setting the value.
+    *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
+    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
+    *      provide a user-facing error message here. It will appear in the Category=Require
+    *      validator within the {ConversionError} token.
+    *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
+    *      OnValueChanged property.
     */
     setValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Identifies that the value is undetermined. For example,
      * the user's input cannot be converted into its native data type
-     * or the input is empty.
+     * or the textbox is empty.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
     * @param options - 
@@ -87,7 +87,7 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     * See the {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
     getDataType(): string | null;
 
@@ -278,18 +278,17 @@ export interface ValueHostConfig {
     /**
      * Identifies the type of ValueHost that will be created to 
      * support the Config. Can use the enumeration ValueHostType to get these strings.
-     * InputValueHost - 'Input'
-     * PropertyValueHost - 'Property'
+     * FieldValueHost - 'Field'
      * StaticValueHost - 'Static'
      * CalcValueHost - 'Calc'
-     * If left null, the ValueHostFactory will determine between StaticValueHost and InputValueHost
-     * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
+     * If left null, the ValueHostFactory will determine between StaticValueHost and FieldValueHost
+     * by checking for inclusion of the FieldValueHostConfig.validationConfigs property.
      */
     valueHostType?: string;
     
     /**
      * Provides a unique name for this ValueHost, within the scope of one
-     * ValueHostsManager instance.
+     * ValidationManager instance.
      * Consuming systems use this name to locate the ValueHost
      * for which they will access a Value.
      * Its up to the consuming system to define unique names.
@@ -327,7 +326,7 @@ export interface ValueHostConfig {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
+     * See {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
      * If null, the current value's type (ValueHostInstanceState.Value) is used and must be string, number, boolean, or date.
      */
     dataType?: string;
@@ -381,7 +380,7 @@ export interface IGatherValueHostNames {
  */
 export function toIGatherValueHostNames(source: any): IGatherValueHostNames | null {
     if (source && typeof source === 'object') {
-        let test = source as IGatherValueHostNames;       
+        const test = source as IGatherValueHostNames;       
         if (test.gatherValueHostNames !== undefined)
             return test;
     }
@@ -400,7 +399,7 @@ export function toIValueHost(source: any): IValueHost | null
 {
     if (source && typeof source === 'object')
     {
-        let test = source as IValueHost;    
+        const test = source as IValueHost;    
         // some select members of IValueHost
         if (test.getDataType !== undefined &&
             test.getFromInstanceState !== undefined &&
@@ -445,7 +444,7 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
 {
     if (source && typeof source === 'object')
     {
-        let test = source as IValueHostCallbacks;     
+        const test = source as IValueHostCallbacks;     
         if (test.onValueHostInstanceStateChanged !== undefined && 
             test.onValueChanged !== undefined)
             return test;

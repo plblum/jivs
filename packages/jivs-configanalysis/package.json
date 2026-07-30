@@ -1,7 +1,7 @@
 {
   "name": "@plblum/jivs-configanalysis",
   "type": "module",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "description": "Tools for analyzing and validating Jivs configuration objects to find setup issues early on.",
   "displayName": "Jivs Configuration Analysis",
   "license": "MIT",
@@ -21,7 +21,8 @@
     }
   },
   "dependencies": {
-    "@plblum/jivs-engine": "^0.19.0"
+    "@plblum/jivs-builder": "file:../jivs-builder",
+    "@plblum/jivs-engine": "file:../jivs-engine"
   },
   "gitHead": "14a1e8e3245c01937f747dd3859194b3769bdb52"
 }

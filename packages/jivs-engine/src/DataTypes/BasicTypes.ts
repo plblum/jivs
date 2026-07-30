@@ -1,5 +1,5 @@
 /**
- * @module DataTypes/Types
+ * @module jivs-engine/DataTypes/Types
  */
 /**
  * Alias for a string that is used when defining a ValueHost's name.

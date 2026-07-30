@@ -4,7 +4,7 @@
  * This interface is implemented for number as "Number", Date as "Date",
  * Boolean as "Boolean", and String as "String".
  * Each instance is registered with the dataTypeIdentifierService.
- * @module DataTypes/ConcreteClasses/DataTypeIdentifiers
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeIdentifiers
  */
 import { IDataTypeIdentifier } from '../Interfaces/DataTypeIdentifier';
 import { LookupKey } from './LookupKeys';
@@ -22,8 +22,8 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
         return typeof value === 'string';
     }
 
-    public sampleValue() {
-        return "sample";
+    public sampleValue() : string {
+        return 'sample';
     }
     
 }
@@ -41,7 +41,7 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
         return typeof value === 'number';
     }
     
-    public sampleValue() {
+    public sampleValue() : number {
         return 1;
     }
 }
@@ -60,7 +60,7 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
         return typeof value === 'boolean';
     }
 
-    public sampleValue() {
+    public sampleValue() : boolean {
         return true;
     }
     
@@ -83,7 +83,7 @@ export class DateDataTypeIdentifier implements IDataTypeIdentifier
         return value instanceof Date;
     }
 
-    public sampleValue() {
+    public sampleValue() : Date {
         return new Date(2000, 1, 15, 0, 0, 0, 0); // Feb 15, 2000 isn't particularly meaningful
     }
     

@@ -1,18 +1,19 @@
 /**
  * 
- * @module Analyzers/Classes/Conditions
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/Conditions
  */
 
-import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
+import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
-import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
-import { IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from "../Types/Analyzers";
-import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from "../Types/Results";
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+
+import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { AnalysisResultsHelper } from './AnalysisResultsHelper';
+import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
+import { IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from '../Types/Analyzers';
+import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ConditionConfig object, creating a ConditionResults object.
@@ -23,9 +24,9 @@ import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from "../Types/Re
  * There are no tests for duplicates.
  * There are no child configs to check.
  */
-export class ConditionConfigAnalyzer<TServices extends IValueHostsServices>
-    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult, IValueHostsServices>
-implements IConditionConfigAnalyzer<TServices> {
+export class ConditionConfigAnalyzer<TServices extends IValidationServices>
+    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult>
+implements IConditionConfigAnalyzer {
 
     constructor(helper: AnalysisResultsHelper<TServices>,
         conditionConfigPropertyAnalyzers: Array<IConditionConfigPropertyAnalyzer>
@@ -42,9 +43,9 @@ implements IConditionConfigAnalyzer<TServices> {
         };
     }    
     public analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
-        let result = super.analyze(config, valueHostConfig, existingResults);
+        const result = super.analyze(config, valueHostConfig, existingResults);
         if (valueHostConfig && this.helper.analysisArgs.comparerAnalyzer) {
-            let checkResult = this.helper.analysisArgs.comparerAnalyzer.checkConditionConfig(config, valueHostConfig);
+            const checkResult = this.helper.analysisArgs.comparerAnalyzer.checkConditionConfig(config, valueHostConfig);
             if (checkResult && checkResult.message) {
                 result.severity = checkResult.severity;
                 result.message = 'Comparison configuration: ' + checkResult.message;
@@ -64,7 +65,7 @@ implements IConditionConfigAnalyzer<TServices> {
             results.instance = this.helper.services.conditionFactory.create(config);
         }
         catch (e) {
-            let error = ensureError(e);
+            const error = ensureError(e);
             results.severity = CAIssueSeverity.error;
             results.message = error.message;
             return false;

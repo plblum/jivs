@@ -3,7 +3,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { NumberParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
@@ -17,7 +17,7 @@ import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnal
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';
 import { DataTypeParserLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeParserLookupKeyAnalyzer';
 import { IValueHostConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IConditionConfigPropertyAnalyzer } from '../../src/Types/Analyzers';
-import { ValueHostConfigCAResult, ValidatorConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ValueHostConfigCAResult, ValidatorConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { setupHelper, createServices, checkPropertyCAResultsFromArray, checkLookupKeyResultsForService, checkServiceInfoForCultureSpecificParserRetrieval, checkLocalizedPropertyResultFromArray } from '../TestSupport/support';
 
 class MockValueHostConfigPropertyAnalyzer implements IValueHostConfigPropertyAnalyzer {
@@ -417,11 +417,11 @@ describe('ValueHostConfigAnalyzer', () => {
             ]);
 
         });
-        // with all available ValueHostPropertyAnalyzers, check a fully populated InputValueHostConfig
+        // with all available ValueHostPropertyAnalyzers, check a fully populated FieldValueHostConfig
         // Two tests: one without any issues, one with issues for every analyzer
-        test('should analyze a fully populated InputValueHostConfig without any issues', () => {
-            const testValueHostConfig: InputValueHostConfig = {
-                valueHostType: ValueHostType.Input,
+        test('should analyze a fully populated FieldValueHostConfig without any issues', () => {
+            const testValueHostConfig: FieldValueHostConfig = {
+                valueHostType: ValueHostType.Field,
                 name: 'testValueHost',
                 dataType: LookupKey.Number,
                 label: 'Test',
@@ -457,9 +457,9 @@ describe('ValueHostConfigAnalyzer', () => {
 
         });
         // same but with issues for each analyzer
-        test('should analyze a fully populated InputValueHostConfig with issues for each analyzer', () => {
+        test('should analyze a fully populated FieldValueHostConfig with issues for each analyzer', () => {
             const testValueHostConfig: any ={
-                valueHostType: ' Input ',   // ValueHostTypePropertyAnalyzer
+                valueHostType: ' Field ',   // ValueHostTypePropertyAnalyzer
                 name: ' whitespace ',   // ValueHostNamePropertyAnalyzer
                 dataType: ' Number  ', // DataTypePropertyAnalyzer
                 label: '{Token:bad',    // LabelPropertiesAnalyzer syntax error

@@ -1,18 +1,18 @@
 /**
- * @module Analyzers/Classes/LookupKeys
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/LookupKeys
  */
 
-import { IDataTypeParser } from "@plblum/jivs-engine/build/Interfaces/DataTypeParsers";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
-import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, ParserFoundCAResult } from "../Types/Results";
-import { AnalysisArgs } from "../Types/ConfigAnalysis";
+import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypeParsers';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { MultipleClassesPerLookupKeyAnalyzer } from './LookupKeyAnalyzerClasses';
+import { ServiceWithLookupKeyCAResultBase, ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, ParserFoundCAResult } from '../Types/ConfigAnalysisResults';
+import { AnalysisArgs } from '../Types/ConfigAnalysis';
 
 /**
  * Handles IDataTypeParser objects through the DataTypeParserService.
- * The requested key is the lookup key for the parser, from InputValueHostConfig.parserLookupKey.
+ * The requested key is the lookup key for the parser, from FieldValueHostConfig.parserLookupKey.
  * The ValueHostConfig.dataType will be used if the parser key is not supplied.
  * The analysis is based on DataTypeParserService.format function,
  * although it does not use the LookupKeyFallbackService to continue its search.
@@ -63,28 +63,28 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
 
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
-        let info: ParserServiceCAResult = {
+        const info: ParserServiceCAResult = {
             feature: CAFeature.parser,
             results: []
         };
-        let lookupKey = key ?? container.dataType;
+        const lookupKey = key ?? container.dataType;
         if (lookupKey) {
             info.tryFallback = true;
             this.results.cultureIds.forEach(cultureId => {
                 try {
-                    let analysis = this.analyzeForCulture(lookupKey, cultureId);
+                    const analysis = this.analyzeForCulture(lookupKey, cultureId);
                     info.results.push(analysis);
                     if (analysis.parserResults.length > 0)
                         info.tryFallback = false;
                 }
                 catch (e) {
                     info.tryFallback = false;
-                    let errorInfo: ParsersByCultureCAResult = {
+                    const errorInfo: ParsersByCultureCAResult = {
                         feature: CAFeature.parsersByCulture,
                         cultureId: cultureId,
                         notFound: true,
                         parserResults: []
-                    }
+                    };
                     info.results.push(errorInfo);
                     this.errorThrown(errorInfo, ensureError(e));                    
                 }
@@ -103,19 +103,19 @@ export class DataTypeParserLookupKeyAnalyzer extends MultipleClassesPerLookupKey
      * @returns 
      */
     public analyzeForCulture(lookupKey: string, startingCultureId: string): ParsersByCultureCAResult {
-        let info: ParsersByCultureCAResult = {
+        const info: ParsersByCultureCAResult = {
             feature: CAFeature.parsersByCulture,
             cultureId: startingCultureId,
             parserResults: []
         };
 
-        let parsersFound = this.services.dataTypeParserService.compatible(lookupKey, startingCultureId);
+        const parsersFound = this.services.dataTypeParserService.compatible(lookupKey, startingCultureId);
         if (parsersFound) {
             parsersFound.forEach(parser => {
-                let sci: ParserFoundCAResult = {
+                const sci: ParserFoundCAResult = {
                     classFound: parser.constructor.name,
                     instance: parser,
-                    feature: CAFeature.parserFound,
+                    feature: CAFeature.parserFound
                     //!!FUTURE                    dataExamples: []
                 };
                 info.parserResults.push(sci);

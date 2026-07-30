@@ -19,7 +19,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -36,7 +36,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -53,7 +53,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -70,7 +70,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -89,7 +89,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -108,7 +108,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: NotConditionConfig = {
@@ -176,7 +176,7 @@ describe('NotCondition', () => {
     test('dispose', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotConditionConfig = {
             conditionType: ConditionType.Not,
@@ -191,7 +191,7 @@ describe('NotCondition', () => {
         let services = new MockValidationServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
+        let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotConditionConfig = {
             conditionType: ConditionType.Not,

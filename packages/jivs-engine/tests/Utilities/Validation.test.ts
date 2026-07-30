@@ -1,4 +1,5 @@
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { ValidatorConfig } from "../../src/Interfaces/Validator";
 import { resolveErrorCode } from "../../src/Utilities/Validation";
 
@@ -21,11 +22,11 @@ describe('resolveErrorCode', () => {
         expect(resolveErrorCode(validatorConfig)).toEqual('SOME_CONDITION_TYPE');
     });
 
-    it('should return the childConditionConfig\'s ConditionType for WhenCondition', () => {
+    it('should return the thenConfig\'s ConditionType for WhenCondition', () => {
         const validatorConfig = {
-            conditionConfig: {
+            conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: 'CHILD_CONDITION_TYPE'
                 }
             }

@@ -1,5 +1,6 @@
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
@@ -21,8 +22,9 @@ import {
     ValidatorConfigCAResult, IdentifierServiceCAResult, ComparerServiceCAResult,
     ConverterServiceCAResult, FormatterServiceCAResult, FormattersByCultureCAResult,
     ParserServiceCAResult, ParserFoundCAResult
-} from "../../src/Types/Results";
+} from "../../src/Types/ConfigAnalysisResults";
 
+new BuildersFactoryInstaller();
 /**
  * 
  * @param options - When cultures = undefined, it adds 'en'.
@@ -72,7 +74,7 @@ export function createAnalysisArgs(services: IValidationServices,
         conditionConfigAnalyzer: null!
     };
     mockAnalysisArgs.results.cultureIds = services.cultureService.availableCultures();
-    mockAnalysisArgs.conditionConfigAnalyzer = <IConditionConfigAnalyzer<any>>{
+    mockAnalysisArgs.conditionConfigAnalyzer = <IConditionConfigAnalyzer>{
         analyze: (conditionConfig, valueHostConfig, existingResults) => {
             return {
                 feature: CAFeature.condition,
@@ -93,7 +95,7 @@ export function createAnalysisArgs(services: IValidationServices,
             }
         }
     };
-    mockAnalysisArgs.valueHostConfigAnalyzer = <IValueHostConfigAnalyzer<any>>{
+    mockAnalysisArgs.valueHostConfigAnalyzer = <IValueHostConfigAnalyzer>{
         analyze: (valueHostConfig, alt, existingResults) => {
             return {
                 feature: CAFeature.valueHost,
@@ -601,9 +603,9 @@ export function createExtensiveConfigAnalysisResults(): IConfigAnalysisResults {
     // 'ValueHost2' is an input value host with an integer lookup key
     // It has 3 validators. One has an error message.
     // It has a warning message for l10nProperty.
-    let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Input, LookupKey.Integer,
+    let vh2Result = createValueHostCAResult('ValueHost2', ValueHostType.Field, LookupKey.Integer,
         ['dataType', 'labell10n']);
-    let ivhc = vh2Result.config as InputValueHostConfig;
+    let ivhc = vh2Result.config as FieldValueHostConfig;
     ivhc.parserLookupKey = LookupKey.Minutes;
     ivhc.label = 'ValueHost2Label';
     ivhc.labell10n = 'ValueHost2LabelL10n';

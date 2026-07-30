@@ -1,22 +1,22 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeParserService!DataTypeParserService:class}
- * @module Services/ConcreteClasses/DataTypeParserService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeParserService!DataTypeParserService:class}
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeParserService
  */
 
-import { valueForLog } from '../Utilities/Utilities';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotEmptyString, ensureError } from '../Utilities/ErrorHandling';
+import { valueForLog } from '../Utilities/Utilities';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 
 /**
  * A service for parsing strings into the native data type
- * using {@link DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
  * 
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeParserService | ValidationServices.dataTypeParserService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeParserService | ValidationServices.dataTypeParserService}.
  */
 export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<any>>
     implements IDataTypeParserService {
@@ -39,7 +39,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     private _enabled: boolean = true;    
     /**
      * Returns true if enabled and there is at least one parser registered.
-     * Used by InputValueHost.setInputValue instead of enabled.
+     * Used by FieldValueHost.setTextValue instead of enabled.
      */
     public isActive(): boolean
     {
@@ -71,23 +71,23 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         try {
             LookupKeyFallbackService.ensureRecursionSafe(lookupKey, alreadyChecked);
 
-            let parser = this.find(lookupKey, cultureId, text);
+            const parser = this.find(lookupKey, cultureId, text);
 
             if (parser) {
                 // log info level the parser selected
                 this.logger.message(LoggingLevel.Debug, () => `Parser selected: ${valueForLog(parser)}`);
-                let result = parser!.parse(text, lookupKey!, cultureId);
+                const result = parser!.parse(text, lookupKey!, cultureId);
                 if (result.value)
                     this.logger.log(LoggingLevel.Info, () => {
                         return {
                             message: `Parsed "${lookupKey}" with culture "${cultureId}"`,
                             category: LoggingCategory.Result
-                        }
+                        };
                     } );
                 return result;
             }
 
-            let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+            const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
                 this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.parseRecursive(text, fallbackLookupKey, cultureId, alreadyChecked);
@@ -95,7 +95,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
             throw new CodingError(`No DataTypeParser for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
         catch (e) {
-            let err = ensureError(e);
+            const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
             return { errorMessage: err.message };
         }
@@ -123,7 +123,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     public compatible(lookupKey: string, cultureId: string): Array<IDataTypeParser<any>> | null
     {
         this.ensureLazyLoaded();
-        let result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
+        const result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
         return result.length > 0 ? result : null;
     }
 

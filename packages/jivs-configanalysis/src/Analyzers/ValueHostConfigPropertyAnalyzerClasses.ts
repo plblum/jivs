@@ -1,17 +1,17 @@
 /**
  * 
- * @module Analyzers/Classes/ValueHostConfig
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/ValueHostConfig
  */
 
-import { CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { ensureError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { ConfigPropertyAnalyzerBase } from "./ConfigPropertyAnalyzerBase";
-import { IAnalysisResultsHelper } from "../Types/Analyzers";
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity } from "../Types/Results";
+import { CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
+import { IAnalysisResultsHelper } from '../Types/Analyzers';
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 
 /**
@@ -46,7 +46,7 @@ export class ValueHostTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
         try {
             helper.services.valueHostFactory.ensureRegistered(config);  // this will throw if there is an error in the config
         } catch (e) {
-            let error = ensureError(e);
+            const error = ensureError(e);
             results.properties.push({
                 feature: CAFeature.property,
                 propertyName: 'valueHostType',
@@ -105,7 +105,7 @@ export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBas
                 feature: CAFeature.property,
                 propertyName: 'dataType',
                 severity: CAIssueSeverity.info,
-                message: `No dataType assigned. LookupKeys that depend on dataType will not be checked. Otherwise this is a valid configuration, where the actual runtime value will be used to determine the lookup key.`
+                message: 'No dataType assigned. LookupKeys that depend on dataType will not be checked. Otherwise this is a valid configuration, where the actual runtime value will be used to determine the lookup key.'
             });
         }
     }
@@ -138,7 +138,7 @@ export class ParserLookupKeyPropertyAnalyzer extends ValueHostConfigPropertyAnal
      * @param valueHostConfig - The value host configuration object.
      * @param helper - The analysis result helper.
      */
-    public analyze(config: InputValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: FieldValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         if (config.parserLookupKey !== undefined)
             helper.checkLookupKeyProperty('parserLookupKey', config.parserLookupKey,
                 ServiceName.parser, config, results.properties,

@@ -1,5 +1,5 @@
 /** 
- * @module Conditions/Types
+ * @module jivs-engine/Conditions/Types
  */
 
 /**
@@ -114,19 +114,9 @@ export enum ConditionType
     All = 'All',
 
     /**
-     * Associated with AllMatchCondition class. Alias to 'All'
-     */
-    And = 'And',
-
-    /**
      * Associated with AnyMatchCondition class.
      */
     Any = 'Any', 
-
-    /**
-     * Associated with AnyMatchCondition class. Always to 'Any'
-     */
-    Or = 'Or',
     
     /**
      * Associated with CountMatchesCondition class.

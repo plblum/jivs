@@ -1,12 +1,11 @@
 /**
- * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService:interface }
- * @module Services/Types/IDataTypeConverterService
+ * {@inheritDoc jivs-engine/Services/Types/IDataTypeConverterService!IDataTypeConverterService:interface }
+ * @module jivs-engine/Services/Types/IDataTypeConverterService
  */
 
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { IDataTypeConverter } from "./DataTypeConverters";
-import { IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./Services";
+import { IDataTypeConverter } from './DataTypeConverters';
+import { IDataTypeService } from './DataTypes';
+import { IServicesAccessor } from './Services';
 
 /**
  * Identifies types that are simple values. Most objects are not, but Date object really
@@ -17,7 +16,7 @@ export type SimpleValueType = number | Date | string | null | boolean | undefine
 /**
  * Service for changing the original value into 
  * something that you want a condition to evaluate
- * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
  */
 export interface IDataTypeConverterService extends IDataTypeService<IDataTypeConverter>, IServicesAccessor {
     /**
@@ -34,7 +33,7 @@ export interface IDataTypeConverterService extends IDataTypeService<IDataTypeCon
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns An object identifying the converter used and the converted value. Its 
      * value parameter is undefined when the value was not converted.
@@ -58,7 +57,7 @@ export interface IDataTypeConverterService extends IDataTypeService<IDataTypeCon
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns An object identifying the converter used and the converted value. Its 
      * value parameter is undefined when the value was not converted.
@@ -69,7 +68,7 @@ export interface IDataTypeConverterService extends IDataTypeService<IDataTypeCon
     convertUntilResult(value: any, sourceLookupKey: string | null, resultLookupKey: string): ConversionResult;
 
     /**
-     * Finds the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
+     * Finds the first {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
      * that supports the value, or null if none are found.
      * @param value - The value to be converted. Check its type and possibly its content.
      * @param sourceLookupKey - The value can represent several other values, such as a Date 
@@ -78,7 +77,7 @@ export interface IDataTypeConverterService extends IDataTypeService<IDataTypeCon
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns 
      */

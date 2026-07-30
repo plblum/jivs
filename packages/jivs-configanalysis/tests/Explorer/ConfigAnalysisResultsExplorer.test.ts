@@ -1,52 +1,94 @@
 import { jest } from '@jest/globals';
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
-import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
-import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
-import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
+import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import {
-    RequireTextConditionConfig, RequireTextCondition, LessThanOrEqualValueCondition,
-    LessThanOrEqualValueConditionConfig
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig,
+    RequireTextCondition,
+    RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
-import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
+import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
+import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
+import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
-    CASearcher, CAExplorerBase, ConfigAnalysisResultsExplorerFactory, ValueHostConfigCAResultExplorer,
-    ValidatorConfigCAResultExplorer, ConditionConfigCAResultExplorer, LookupKeyCAResultExplorer, IdentifierServiceCAResultExplorer,
-    ConverterServiceCAResultExplorer, ComparerServiceCAResultExplorer, ParserServiceCAResultExplorer,
-    ParsersByCultureCAResultExplorer, ParserFoundCAResultExplorer, FormatterServiceCAResultExplorer,
-    FormattersByCultureCAResultExplorer, PropertyCAResultExplorer, LocalizedPropertyCAResultExplorer,
-    ErrorCAResultExplorer, ConfigAnalysisResultsExplorer
+    ComparerServiceCAResultExplorer,
+    ConditionConfigCAResultExplorer,
+    ConfigAnalysisResultsExplorer,
+    ConfigAnalysisResultsExplorerFactory,
+    ConverterServiceCAResultExplorer,
+    ErrorCAResultExplorer,
+    FormatterServiceCAResultExplorer,
+    FormattersByCultureCAResultExplorer,
+    IdentifierServiceCAResultExplorer,
+    LocalizedPropertyCAResultExplorer,
+    LookupKeyCAResultExplorer,
+    ParserFoundCAResultExplorer,
+    ParserServiceCAResultExplorer,
+    ParsersByCultureCAResultExplorer,
+    PropertyCAResultExplorer,
+    ValidatorConfigCAResultExplorer,
+    ValueHostConfigCAResultExplorer
 } from '../../src/Explorer/ConfigAnalysisResultsExplorer';
-import { NullConfigAnalysisOutputter, JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
+import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
+import { JsonConsoleConfigAnalysisOutputter, NullConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import {
-    ICASearcher, IConfigAnalysisSearchCriteria, ICAExplorerFactory,
-    IConfigAnalysisOutputter, ConfigAnalysisOutputReportData
+    ConfigAnalysisOutputReportData,
+    ICAExplorerFactory,
+    ICASearcher,
+    IConfigAnalysisOutputter,
+    IConfigAnalysisSearchCriteria
 } from '../../src/Types/Explorer';
 import {
-    CAIssueSeverity, CAResultBase, IssueForCAResultBase, CAPathedResult, CAResultPath,
-    CAFeature, ParserServiceCAResult, FormatterServiceCAResult, IdentifierServiceCAResult, ConverterServiceCAResult,
-    ComparerServiceCAResult, ParsersByCultureCAResult, ParserFoundCAResult, FormattersByCultureCAResult,
-    PropertyCAResult, LocalizedPropertyCAResult, ErrorCAResult, IConfigAnalysisResults, ConditionConfigCAResult
-} from '../../src/Types/Results';
-import { JsonConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+    CAFeature,
+    CAIssueSeverity,
+    CAPathedResult,
+    CAResultBase,
+    CAResultPath,
+    ComparerServiceCAResult,
+    ConditionConfigCAResult,
+    ConverterServiceCAResult,
+    ErrorCAResult,
+    FormatterServiceCAResult,
+    FormattersByCultureCAResult,
+    IConfigAnalysisResults,
+    IdentifierServiceCAResult,
+    IssueForCAResultBase,
+    LocalizedPropertyCAResult,
+    ParserFoundCAResult,
+    ParserServiceCAResult,
+    ParsersByCultureCAResult,
+    PropertyCAResult
+} from '../../src/Types/ConfigAnalysisResults';
 
+import { ConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import {
-    createValueHostCAResult, createPropertyCAResult, createValidatorConfigResult, createConditionConfigResult,
-    createLookupKeyCAResult, createBasicConfigAnalysisResults, createExtensiveConfigAnalysisResults,
-    attachSeverity, createIdentifierServiceCAResult
+    attachSeverity,
+    createBasicConfigAnalysisResults,
+    createConditionConfigResult,
+    createExtensiveConfigAnalysisResults,
+    createIdentifierServiceCAResult,
+    createLookupKeyCAResult,
+    createPropertyCAResult, createValidatorConfigResult,
+    createValueHostCAResult
 } from '../TestSupport/support';
-import { analyze } from '../../src/Runner';
+import { CAExplorerBase } from '../../src/Explorer/CAExplorerBase';
+import { CASearcher } from '../../src/Explorer/CASearcher';
+
+beforeAll(() => {
+    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+});
 
 describe('CASearcher class', () => {
     describe('matchFeature', () => {
@@ -2901,14 +2943,14 @@ describe('ConfigAnalysisResultExplorer class', () => {
         expect(notFound).toHaveLength(0);
     }
     describe('Constructor and setup', () => {
-        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValueHostsServices> {
-            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValueHostsServices) {
+        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValidationServices> {
+            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValidationServices) {
                 super(results, factory, services);
             }
             public get publicify_factory(): ICAExplorerFactory {
                 return this.factory;
             }
-            public get publicify_services(): IValueHostsServices {
+            public get publicify_services(): IValidationServices {
                 return this.services;
             }
         }
@@ -2940,7 +2982,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/factory/);
         });
         test('constructor throws when services is null', () => {
-            let services: IValueHostsServices = null as any;
+            let services: IValidationServices = null as any;
             expect(() => new Publicify_ConfigAnalysisResultsExplorer(
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/services/);
         });
@@ -4007,26 +4049,27 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
     });
     describe('other tests', () => {
-        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
+        test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
-            builder.input('NewField', LookupKey.Date, 
+            builder.field('NewField', LookupKey.Date, 
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
                 }
             )
-            let explorer = analyze(builder);
+            let configAnalysisService = new ConfigAnalysisService(services);
+            let explorer = configAnalysisService.analyze(builder);
 //            explorer.reportToConsole(true, true, true, 2);
             //            expect(explorer.hasErrors()).toBe(true);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });
-        test('Build an InputValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
+        test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
             let services = new ValidationServices();
             services.cultureService.register({ cultureId: 'en' });
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
@@ -4039,23 +4082,24 @@ describe('ConfigAnalysisResultExplorer class', () => {
                     twoDigitYearBreak: 29
                 }));            
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
-            builder.input('NewField', LookupKey.Date,
+            builder.field('NewField', LookupKey.Date,
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
                 }
             );
-            let explorer = analyze(builder);
+            let configAnalysisService = new ConfigAnalysisService(services);
+            let explorer = configAnalysisService.analyze(builder);
 //            explorer.reportToConsole(true, true, true, 2);
             //            expect(explorer.hasErrors()).toBe(true);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });        
-        // InputValueHost with a RequireTextValidator, using TextLocalizerService to get
+        // FieldValueHost with a RequireTextValidator, using TextLocalizerService to get
         // errorMessagel10n value for 'en' and 'es', but only 'en' is registered.
         // Should report error for 'es' not found.
-        test('Build an InputValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
+        test('Build an FieldValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4070,16 +4114,17 @@ describe('ConfigAnalysisResultExplorer class', () => {
             });
 
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
-            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
-            let explorer = analyze(builder);
+            builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
+            let configAnalysisService = new ConfigAnalysisService(services);
+            let explorer = configAnalysisService.analyze(builder);
             explorer.reportToConsole({ severities: [CAIssueSeverity.error, null], features: [CAFeature.l10nProperty], skipChildrenIfParentMismatch: false }, false, true, 2);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
         });
         // same but both 'en' and 'es' are entries in TextLocalizerService.
         // Should not throw
-        test('Build an InputValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
+        test('Build an FieldValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
             let services = new ValidationServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4094,10 +4139,11 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 'es': 'Esto es necesario'
             });
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
 
-            builder.input('NewField').requireText(null, null, { errorMessagel10n: 'RequireEM' });
-            let explorer = analyze(builder);
+            builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
+            let configAnalysisService = new ConfigAnalysisService(services);
+            let explorer = configAnalysisService.analyze(builder);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).not.toThrow();
         });
         test('Report shows Converter for LessThanEqualValue in LookupKeyResults', () => {
@@ -4111,11 +4157,12 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 ConditionType.LessThanOrEqualValue,
                 (config) => new LessThanOrEqualValueCondition(config));
 
-            let builder = services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
-            builder.input('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            builder.field('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
                 conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
             });
-            let explorer = analyze(builder);
+            let configAnalysisService = new ConfigAnalysisService(services);
+            let explorer = configAnalysisService.analyze(builder);
             
             const includeValueHostResults = false;
             const includeLookupKeyResults = true;

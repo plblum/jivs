@@ -1,7 +1,7 @@
 /**
  * The fundamentals of managing ValueHosts involve just the ability
  * to get a ValueHost and provide the Services (for dependency injection).
- * @module Validation/Types/ValueHostResolver
+ * @module jivs-engine/Validation/Types/ValueHostResolver
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -62,7 +62,7 @@ export interface IValueHostResolver extends IServicesAccessor {
 export function toIValueHostResolver(source: any): IValueHostResolver | null
 {
     if (source && typeof source === 'object') {
-        let test = source as IValueHostResolver;    
+        const test = source as IValueHostResolver;    
         if (test.getValueHost !== undefined &&
             test.getCalcValueHost !== undefined &&
             test.getStaticValueHost !== undefined &&

@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc Services/Types/ILookupKeyFallbackService!ILookupKeyFallbackService:interface } 
- * @module Services/Types/ILookupKeyFallbackService
+ * {@inheritDoc jivs-engine/Services/Types/ILookupKeyFallbackService!ILookupKeyFallbackService:interface } 
+ * @module jivs-engine/Services/Types/ILookupKeyFallbackService
  */
 
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
@@ -16,7 +16,7 @@ import { ServiceBase } from './ServiceBase';
  * This service keeps these relationships. The DataTypeFormatterService and DataTypeParserService
  * consume this as they try to find the best fitting Formatter or Parser.
  * 
- * Suppose that your InputValueHost has its datatype="PositiveInteger".
+ * Suppose that your FieldValueHost has its datatype="PositiveInteger".
  * Initially DataTypeFormatterService and DataTypeParserService look for a Formatter
  * or Parser whose LookupKey is "PositiveInteger". If not found, we don't want to 
  * force the user to either create a new class or register a map with "PositiveInteger"
@@ -111,7 +111,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
         if (!fallback)
             return null;
 
-        let alreadyCheckedLookupKeys = new Set<string>();
+        const alreadyCheckedLookupKeys = new Set<string>();
         let currentLK: string | null = fallback;
         alreadyCheckedLookupKeys.add(currentLK);
         while (currentLK)
@@ -125,7 +125,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
             else
                 return currentLK;
         }
-        return null
+        return null;
     }
   /**
    * Determine if the initialLookupKey can fallback to the targetLookupKey.
@@ -138,7 +138,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
         assertNotNull(initialLookupKey, 'initialLookupKey');
         assertNotNull(targetLookupKey, 'targetLookupKey');
         this.ensureBuiltIn();
-        let alreadyCheckedLookupKeys = new Set<string>();
+        const alreadyCheckedLookupKeys = new Set<string>();
 
         let lookupKey: string | null = initialLookupKey;
         alreadyCheckedLookupKeys.add(lookupKey);        

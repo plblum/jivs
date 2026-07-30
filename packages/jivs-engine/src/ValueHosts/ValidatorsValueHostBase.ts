@@ -1,13 +1,13 @@
 /**
  * A ValueHost that uses the Validator class to provide validation.
- * @module ValueHosts/AbstractClasses/ValidatorsValueHostBase
+ * @module jivs-engine/ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -46,7 +46,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     {
         this.config.validatorConfigs = undefined!;
         super.dispose();
-        this._validators?.forEach((validator) => validator.dispose());
+        this._validators?.forEach((validator) => { validator.dispose(); });
         this._validators = undefined!;
     }
     /**
@@ -81,7 +81,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             this.logger.message(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);            
             return null;
         }
-        let self = this;
+        const self = this;
         if (!options)
             options = {};
         this.logger.message(LoggingLevel.Debug, ()=> `Validating ValueHost "${this.getName()}"`);
@@ -90,23 +90,23 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         // Its properties collect all validator results, including those delayed by async.
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
-        let result: ValueHostValidateResult = {
+        const result: ValueHostValidateResult = {
             status: ValidationStatus.Undetermined,
             issuesFound: null
         };
 
         if (!this.groupsMatch(options.group, false))
-            return bailout(`Group names do not match "${options.group}" vs "${this.config.group}"`);
+            return bailout(`Group names do not match "${options.group}" vs "${this.config.group as any}"`);
 
         try {
             try {
-                let validators = this.validators();
+                const validators = this.validators();
                 let stop = false;
                 let validatorsInUse = 0;
 
                 for (let i = 0; !stop && i < validators.length; i++) {
-                    let iv = validators[i];
-                    let potentialIVR = iv.validate(options);
+                    const iv = validators[i];
+                    const potentialIVR = iv.validate(options);
                     // promises will update the results later
                     // All other validators in this loop will still finish
                     // by updating the state. The state is just missing the results
@@ -116,31 +116,35 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         continue;
                     }
                     // synchronous (normal) processing
-                    let inputValResult = potentialIVR as ValidatorValidateResult;
-                    if (inputValResult.skipped)
+                    const fieldValResult = potentialIVR as ValidatorValidateResult;
+                    if (fieldValResult.skipped)
                         continue;
-                    validatorsInUse++;
-                    if (inputValResult.issueFound) {
-                        switch (inputValResult.issueFound.severity) {
+                    validatorsInUse++;    // eslint-disable-line @typescript-eslint/no-unused-vars
+                    if (fieldValResult.issueFound) {
+                        fieldValResult.issueFound.doNotSave = true;
+                        switch (fieldValResult.issueFound.severity) {
                             case ValidationSeverity.Error:
+                                result.status = ValidationStatus.Invalid;
+                                break;
                             case ValidationSeverity.Severe:
                                 result.status = ValidationStatus.Invalid;
+                                stop = true;
                                 break;
                             case ValidationSeverity.Warning:
                                 if (result.status === ValidationStatus.Undetermined)
                                     result.status = ValidationStatus.Valid;
+                                fieldValResult.issueFound.doNotSave = false;
                                 break;
                         }
 
                         if (!result.issuesFound)
                             result.issuesFound = [];
-                        let issueFound = inputValResult.issueFound;
+                        const issueFound = fieldValResult.issueFound;
                         result.issuesFound.push(issueFound);
-                        if (issueFound.severity === ValidationSeverity.Severe)
-                            stop = true;
+                            
                     }
                     else if (result.status === ValidationStatus.Undetermined)
-                        if (inputValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
+                        if (fieldValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
                             result.status = ValidationStatus.Valid;    // may be overwritten by a later validator
 
                 }
@@ -150,7 +154,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
             }
             catch (e) {
-                let err = ensureError(e);                
+                const err = ensureError(e);                
 
                 logError(err.message);
                 if (err instanceof SevereErrorBase)
@@ -202,8 +206,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 // We use result.Pending == null to mean no async processes remain.
                 // If Pending is null already, an external action has abandoned the current validation run
                 if (result.pending && result.pending.includes(promise)) {
-                    let index = result.pending.indexOf(promise);
-                    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
+                    const index = result.pending.indexOf(promise);
+                     
                     result.pending.splice(index, 1);
                     if (result.pending.length === 0)
                         delete result.pending;
@@ -295,10 +299,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * @returns 
      */
     protected generateValidators(): Array<IValidator> {
-        let factory = this.services.validatorFactory;
-        let validators: Array<IValidator> = [];
+        const factory = this.services.validatorFactory;
+        const validators: Array<IValidator> = [];
         this.config.validatorConfigs?.forEach((valDesc) => {
-            let pv = factory.create(this, valDesc);
+            const pv = factory.create(this, valDesc);
             validators.push(pv);
         });
         return validators;
@@ -310,45 +314,49 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * @returns 
      */
     protected orderValidators(unordered: Array<IValidator>): Array<IValidator> {
-        let fn = (a: IValidator, b: IValidator): number => a.condition.category - b.condition.category;
+        const fn = (a: IValidator, b: IValidator): number => a.condition.category - b.condition.category;
+         /* istanbul ignore if */
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else        /* istanbul ignore next */ // we don't run our unit tests in pre-ES2016 mode required to test this.
             return unordered.sort(fn);
     }
 
-    /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidationStateChanged if there was a changed to the state.
-     * 
-     * In this class, we first see if the errorcode in the error matches an existing validator.
-     * If so, we use that validator, and add an IssueFound from that validator.
-     * 
-     * @param error - A business logic error to show. If it has an errorCode assigned and the same
-     * errorCode is already recorded here, the new entry replaces the old one.
-     * @returns true when a change was made to the known validation state.
+    /*
+    * An IssueFound normally arrives in the externalIssuesFound array via addExternalIssueFound. 
+    * However, it may be overridden by the presence of a Validator already setup with the same errorcode.
+    * In that case, we add or replace an IssueFound in instanceState.issuesFound previously setup.
+    * Our intent: preserve the validator's error messages, and severity (can be overridden).
+    * The validator may not have found the issue on the client side, but the server did, 
+    * so we act like the client-side validator found it, preserving the error message from the client side.
      */
-    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
+    public addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
+    {
         if (error) {
             if (!this.isEnabled())
             {
-                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);                
+                this.logger.message(LoggingLevel.Warn, () => `IssueFound applied on disabled ValueHost "${this.getName()}"`);                
             }
         
-            // see if the error code matches an existing validator.
-            // If so, use that validator's ValidatorValidateResult instead.
+            // If the errorCode aligns to a validator, create that validator's IssueFound shape instead.
+            // From this point on, the issue is treated as a validator result, not as an external issue.
+            // That means validator semantics apply, including the validator's doNotSave behavior.
+            // The external IssueFound likely starts with doNotSave = false
             if (error.errorCode)
                 for (let i = 0; i < this.validators().length; i++) {
-                    let validator = this.validators()[i];
-                    let valResult = validator.tryValidatorSwap(error);
+                    const validator = this.validators()[i];
+                    const valResult = validator.tryValidatorSwap(error);
                     if (valResult) {
-                        if (error.severity)
+                // We are replacing the external issue with a validator-owned IssueFound.
+                // Preserve an explicit severity override from the external issue, and if that
+                // override makes the issue a warning, also make it non-blocking.
+                        if (error.severity !== undefined) {
                             valResult.issueFound!.severity = error.severity;
-                        let changed = this.updateInstanceState((stateToUpdate) => {
+                            if (error.severity == ValidationSeverity.Warning)
+                                valResult.issueFound!.doNotSave = false;
+                        }
+
+                        const changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
                               /* istanbul ignore next */ // defensive. Current code always sets this up
@@ -376,7 +384,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }
                 }
         }
-        return super.setBusinessLogicError(error, options);
+        return super.addExternalIssueFound(error, determinedLocally, options);        
     }
 
     /**
@@ -384,8 +392,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * Config.
      */
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
-        let validators = this.validators();
-        for (let validator of validators)
+        const validators = this.validators();
+        for (const validator of validators)
             validator.gatherValueHostNames(collection, valueHostResolver);
     }
 
@@ -395,9 +403,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * @returns The Validator or null if the condition type does not match.
      */
     public getValidator(errorCode: string): IValidator | null {
-        let ec = cleanString(errorCode);
+        const ec = cleanString(errorCode);
         if (ec)
-            for (let iv of this.validators())
+            for (const iv of this.validators())
                 if (iv.errorCode === ec)
                     return iv;
         return null;
@@ -422,21 +430,21 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
         let issuesFound: Array<IssueFound> | null = null;
 
         if (state.issuesFound) {
-            let oldState = state.issuesFound;
+            const oldState = state.issuesFound;
 
             config.validatorConfigs?.forEach((valConfig) => {
                 let errorCode: string | null = cleanString(valConfig.errorCode);
                 if (!errorCode && valConfig.conditionConfig)
                     errorCode = valConfig.conditionConfig.conditionType;
                 else if (valConfig.conditionCreator) {
-                    let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition
+                    const cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition
                     if (cond)
                         errorCode = cond.conditionType;
                 }
                 if (!errorCode)
                     /* istanbul ignore next */  // defensive. Current code always establishes an error code
                     errorCode = ConditionType.Unknown;
-                let found = oldState.find((value) => value.errorCode === errorCode);
+                const found = oldState.find((value) => value.errorCode === errorCode);
                 if (found) {
                     if (!issuesFound)
                         issuesFound = [];
@@ -456,7 +464,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
             let vr = ValidationStatus.NeedsValidation;
             let warningFound = false;
             if (issuesFound) {
-                for (let issueFound of state.issuesFound!) {
+                for (const issueFound of state.issuesFound!) {
                     if (issueFound.severity !== ValidationSeverity.Warning) {
                         vr = ValidationStatus.Invalid;
                         break;

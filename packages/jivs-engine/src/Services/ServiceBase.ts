@@ -1,8 +1,8 @@
 /**
- * @module Services/AbstractClasses/ServiceBase
+ * @module jivs-engine/Services/AbstractClasses/ServiceBase
  */
 
-import { IService } from "../Interfaces/Services";
+import { IService } from '../Interfaces/Services';
 
 export abstract class ServiceBase implements IService
 {

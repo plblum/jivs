@@ -1,9 +1,9 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeComparer!IDataTypeComparer:interface }
- * @module DataTypes/Types/IDataTypeComparer
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeComparer!IDataTypeComparer:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeComparer
  */
 
-import { ComparersResult } from "./DataTypeComparerService";
+import { ComparersResult } from './DataTypeComparerService';
 
 /**
  * Class that compares two values to determine equality, less than, greater than.

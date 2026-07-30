@@ -1,15 +1,15 @@
 /**
- * {@inheritDoc Services/Types/IDataTypeComparerService!IDataTypeComparerService:interface }
- * @module Services/Types/IDataTypeComparerService
+ * {@inheritDoc jivs-engine/Services/Types/IDataTypeComparerService!IDataTypeComparerService:interface }
+ * @module jivs-engine/Services/Types/IDataTypeComparerService
  */
 
-import { IDataTypeComparer } from "./DataTypeComparers";
-import { IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./Services";
+import { IDataTypeComparer } from './DataTypeComparers';
+import { IDataTypeService } from './DataTypes';
+import { IServicesAccessor } from './Services';
 
 /**
  * A service for changing the comparing two values
- * using {@link DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} instances.
  * 
  * Used by Conditions to compare two values when those values don't naturally work
  * with the JavaScript comparison operators. Due to the Converter's ability to prepare
@@ -63,9 +63,9 @@ export interface IDataTypeComparerService extends IDataTypeService<IDataTypeComp
     * 
     * ## Configuring with DataTypeComparers are DataTypeConverters
     * - The system is preconfigured to handle numbers and strings using a default comparer and
-    *   booleans with the BooleanComparer. Create your own {@link DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} 
+    *   booleans with the BooleanComparer. Create your own {@link jivs-engine/DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} 
     *   for custom data types if the conversion solution below is not sufficient.
-    * - Register {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances 
+    * - Register {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances 
     *   with the DataTypeConverterService to handle conversions between
     *   custom data types and base types, and between lookup keys, such as LookupKey.Date to LookupKey.Month
     *   with a custom DataTypeConverter.

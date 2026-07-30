@@ -15,6 +15,198 @@ Jivs-ConfigAnalysis does the following:
 - For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
+## Problem it solves
+When you code with services and dependency injection, the code becomes very disconnected.
+In classic programming, a ValueHost might have been setup like this:
+
+```ts
+let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
+birthDateVH.parser = new DateParser();
+birthDateVH.formatter = new DateFormatter();
+```
+The parser and formatter were explicitly chosen knowing the data type is LookupKey.Date, and the code is side-by-side with the object they configure.
+
+When services own the Parsers, Formatters, Conditions, etc, you no longer see the configuration going into the ValueHost side-by-side.
+
+```ts
+let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
+// when birthDate needs a parser, it asks ValidationServices to get it one by LookupKey.Date.
+// same for formatter.
+```
+Similar issues arise with regard to error messages, which are expected to be localized
+and potentially looked up from a master list when not directly supplied.
+
+The jivs-configanalysis tool attempts to reconnect the ValueHost to its configuration
+through a report.
+
+## Examples
+
+### Adding to app
+```ts
+// this is the normal setup for any ModelRules used to configure...
+let services = createValidationServices('en');
+let rules = new YourModelRules();
+let config = rules.configure();
+
+// now insert the jivs-configanalysis tool
+ if (isAppRunningInDevelopment())  // this line depends on your app
+ {
+    let configAnalysisService = installConfigAnalysisService(services);
+    let explorer = configAnalysisService.analyze(config, {});
+    explorer.throwOnErrors(false, new ConsoleConfigAnalysisOutputter());  // injects a report into the console and throws
+ }
+ // back to normal
+ let vm = new ValidationManager(config);
+```
+### Your first Jest unit test
+We recommend that you create unit tests for each ModelRules subclass
+that uses your production version of ValidationServices.
+```ts
+test('Check YourModelRules against the services', () => {
+    let services = createValidationServices();    // your production services 
+    let rules = new YourModelRules(services);
+    let config = rules.configure();
+
+    let configAnalysisService = installConfigAnalysisService(services);
+    let explorer = configAnalysisService.analyze(config, {});
+    if (explorer.hasErrors())
+    {
+      // dump a report into the console before triggering the unit test error
+      const includeValueHostResults = { severities: [CAIssueSeverity.error] };
+      const includeLookupKeyResults = { severities: [CAIssueSeverity.error] };
+      const includeCompleteResults = false;
+      explorer.reportToConsole(
+          includeValueHostResults,
+          includeLookupKeyResults,
+          includeCompleteResults, 2);      
+    }
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the validationservices.
+});
+```
+### Sample output: Conditions are not registered
+```ts
+explorer.reportToConsole({ severities: [CAIssueSeverity.error] }, 
+    { severities: [CAIssueSeverity.error]}, false, 2);
+```
+```json
+{
+  "valueHostQueryResults": [
+      {
+          "path": {
+              "ValueHost": "StartDate",
+              "Validator": "LessThan",
+              "Condition": "LessThan"
+          },
+          "result": {
+              "feature": "Condition",
+              "conditionType": "LessThan",
+              "config": {
+                  "secondValueHostName": "EndDate",
+                  "conditionType": "LessThan"
+              },
+              "properties": [],
+              "severity": "error",
+              "message": "ConditionType not registered: LessThan"
+          }
+      },
+      {
+          "path": {
+              "ValueHost": "StartDate",
+              "Validator": "NumOfDays",
+              "Condition": "LessThanOrEqual"
+          },
+          "result": {
+              "feature": "Condition",
+              "conditionType": "LessThanOrEqual",
+              "config": {
+                  "valueHostName": "DiffDays",
+                  "secondValueHostName": "NumOfDays",
+                  "conditionType": "LessThanOrEqual"
+              },
+              "properties": [],
+              "severity": "error",
+              "message": "ConditionType not registered: LessThanOrEqual"
+          }
+      }
+  ],
+  "lookupKeyQueryResults": []
+}
+```
+### Sample output: Missing the parser
+```ts
+explorer.reportToConsole({ severities: [CAIssueSeverity.error] }, 
+    { severities: [CAIssueSeverity.error]}, false, 2);
+```
+```json
+{
+  "valueHostQueryResults": [
+    {
+      "path": {
+        "ValueHost": "NewField",
+        "Property": "parserLookupKey"
+      },
+      "result": {
+        "feature": "Property",
+        "propertyName": "parserLookupKey",
+        "severity": "error",
+        "message": "Not found. Please register a DataTypeParser to dataTypeParserService."
+      }
+    }
+  ],
+  "lookupKeyQueryResults": [
+    {
+      "path": {
+        "LookupKey": "Date",
+        "Parser": null,
+        "ParsersByCulture": "en"
+      },
+      "result": {
+        "feature": "ParsersByCulture",
+        "cultureId": "en",
+        "parserResults": [],
+        "notFound": true,
+        "severity": "error",
+        "message": "No DataTypeParser for LookupKey \"Date\" with culture \"en\""
+      }
+    }
+  ]
+}
+```        
+
+### Sample output: Localized error messages that will be used
+```ts
+explorer.reportToConsole({ features: [CAFeature.l10nProperty] }, false, false, 2);
+```
+```json
+{
+  "valueHostQueryResults": [
+    {
+      "path": {
+        "ValueHost": "Field1",
+        "Validator": "RequireText",
+        "l10nProperty": "errorMessagel10n"
+      },
+      "result": {
+        "feature": "l10nProperty",
+        "propertyName": "errorMessage",
+        "l10nPropertyName": "errorMessagel10n",
+        "l10nKey": "RequiredEM",
+        "cultureText": {
+          "en": {
+            "text": "This field is required.",
+            "severity": "info"
+          },
+          "es": {
+            "text": "Este campo es obligatorio.",
+            "severity": "info"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
 ## Installing Jivs-ConfigAnalysis
 Jivs-ConfigAnalysis targets your testing projects. Install it there and built tests around it. If you need to test within your app at runtime, you can install it there too. Just be sure to disable calls to it when not in use.
 
@@ -25,33 +217,25 @@ npm install --save @plblum/jivs-configanalysis
 [Source code](https://github.com/plblum/jivs/packages/jivs-configanalysis) is open source on GitHub.
 
 ## Using Jivs-ConfigAnalysis
-Run Jivs-ConfigAnalysis on either the `Builder object` or `ValidationManagerConfig object`, once fully configured, but prior to creating ValidationManager. In both cases, just call the `analyze() function` found in the Runner module.
+Call the `analyze() function` on `ConfigAnalysisServices` after configuring, but before creating
+the `ValidationManager`.
 
-With `Builder object`:
 ```ts
-import { analyze } from "@plblum/jivs-configanalysis/build/runner";
+import { analyze } from "@plblum/jivs-configanalysis/build/ConfigAnalysisService";
 
-let builder = build(createValidationServices());
-... configure builder ...
-let explorer = analyze(builder);
-... test against the explorer object ...
-let vm = new ValidationManager(builder);
-```
-With `ValidationManagerConfig object`:
-```ts
-import { analyze } from "@plblum/jivs-configanalysis/build/runner";
+let services = createValidationServices('en');
+let rules = new YourModelRules();
+let config = rules.configure();
 
-let config: ValidationConfigManager = { 
-  services: createValidationServices(),
-  valueHostConfigs: [],
-};
-... configure ValueHosts in valueHostConfigs ...
-let explorer = analyze(config);
+let configAnalysisService = installConfigAnalysisService(services);
+let explorer = configAnalysisService.analyze(config);
 ... test against the explorer object ...
 let vm = new ValidationManager(config);
 ```
 ### explorer: ConfigAnalysisResultsExplorer
-*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions.
+*explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to manually navigate. So ConfigAnalysisResultsExplorer includes a number of helper functions to focus on specific information.
+Those functions are especially useful within unit tests. It generates a report from that tree, outputting
+it to the console or other tools.
 
 ```ts
 interface IConfigAnalysisResultsExplorer {
@@ -80,7 +264,7 @@ interface IConfigAnalysisResultsExplorer {
   report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults, outputter): any;
 }
 ```
-- results - The raw results, where valueHostResults and lookupKeyResults have a tree.
+- `results` - The raw results, where valueHostResults and lookupKeyResults each have a tree of their own.
 	```ts
 	interface IConfigAnalysisResults {
 	  cultureIds: string[];
@@ -89,8 +273,8 @@ interface IConfigAnalysisResultsExplorer {
 	  lookupKeyResults: LookupKeyCAResult[];
 	}
 	```
-  This data is optionally included in the 3 report functions, when includeCompleteResults is true. Use the reports and query functions to search valueHostResults and lookupKeyResults.
-- hasErrors - When true, at least one error was found. While there may also be warnings and info level data, they are ignored here.
+  This data is optionally included in the 3 _report_ functions, when `includeCompleteResults` is true. Use the reports and query functions to search valueHostResults and lookupKeyResults.
+- `hasErrors` - When true, at least one error was found. While there may also be warnings and info level data, they are ignored here.
 	```ts
 	if (explorer.hasErrors())
 	{
@@ -98,7 +282,7 @@ interface IConfigAnalysisResultsExplorer {
 	   explorer.reportToConsole({ severities: [CAIssueSeverity.error] }, { severities: [CAIssueSeverity.error] });
 	}
 	```
-- throwOnErrors - Throws an error and optionally writes to the console if at least one error was found. 
+- `throwOnErrors` - Throws an error and optionally writes to the console if at least one error was found. 
 	```ts
 	// exception will contain a JSON object with the errors
 	explorer.throwOnErrors();
@@ -106,40 +290,59 @@ interface IConfigAnalysisResultsExplorer {
 	explorer.throwOnErrors(false, new ConsoleConfigAnalysisOutputter());
 	// That outputter parameter allows you to write to anything that implements IConfigAnalysisOutputter
 	```
-- hasMatchInConfigResults - Returns true if your query has at least one match within results.valueHostResults. See "Supplying criteria" below.
-- countConfigResults - Returns a count of matches to your query within results.valueHostResults. See "Supplying criteria" below.
-- queryValueHostResults - Returns an array of matches or null if none. The array is a flattened version of results.valueHostResults. See "Supplying criteria" below.
-- hasMatchInLookupKeyResults - Returns true if your query has at least one match within results.lookupKeyResults. See "Supplying criteria" below.
-- countLookupKeyResults - Returns a count of matches to your query within results.lookupKeyResults. See "Supplying criteria" below.
-- queryLookupKeyResults - Returns an array of matches or null if none. The array is a flattened version of results.lookupKeyResults. See "Supplying criteria" below.
-- reportIntoJson - Outputs data in JSON format. Parameters are:
-	+ valueHostCriteria - To include all valueHostResults, supply true. To omit valueHostResults, supply false or null. To supply a query, see "Supplying criteria" below.
-	+ lookupKeyCriteria - To include all lookupKeyResults, supply true. To omit lookupKeyResults, supply false or null. To supply a query, see "Supplying criteria" below.
-	+ includeCompleteResults - When true, include the complete explorer.results object.
+- `hasMatchInConfigResults` - Returns true if your query has at least one match within `results.valueHostResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `countConfigResults` - Returns a count of matches to your query within `results.valueHostResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `queryValueHostResults` - Returns an array of matches or null if none. The array is a flattened version of `results.valueHostResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `hasMatchInLookupKeyResults` - Returns true if your query has at least one match within `results.lookupKeyResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `countLookupKeyResults` - Returns a count of matches to your query within `results.lookupKeyResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `queryLookupKeyResults` - Returns an array of matches or null if none. The array is a flattened version of `results.lookupKeyResults`. See ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+- `reportIntoJson` - Outputs data in JSON format. Parameters are:
+	+ `valueHostCriteria` - To include all valueHostResults, supply true. To omit valueHostResults, supply false or null. To supply a query, see ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+	+ `lookupKeyCriteria` - To include all lookupKeyResults, supply true. To omit lookupKeyResults, supply false or null. To supply a query, see ["Supplying criteria"](#supplying-criteria-to-query-the-explorer) below.
+	+ `includeCompleteResults` - When true, include the complete explorer.results object.
 	
-- reportToConsole - Outputs data to console. See reportIntoJson() for parameters. In addition:
-	+ space - When a number or string, it is passed to JSON.stringify() to specify indentation. When null or undefined, it is sent to console in object form, allowing the browser to provide a drill down UI.
-- report - Both reportIntoJson() and reportToConsole() use this, and supply a specific value to its outputter parameter. If you want to chose a different format or destination, use this function with a suitable outputter object. See reportIntoJson() for parameters. In addition:
-	+ outputter - An implementation of IConfigAnalysisOutputter that takes the report data, formats it and sends it to the destination. Here are classes already included with Jivs:
-		* ConsoleConfigAnalysisOutputter - Use the supplied formatter and send the result to the console.
-		* LoggerConfigAnalsysOutputter - Use the supplied formatter and send the result to the LoggerService.
-		* NullConfigAnalysisOutputter - The report() function returns the formatted result. If you don't want to output it but intend to capture the function result, use this and supply a formatter.
-		* JsonConfigAnalysisOutputFormatter - A formatter object that converts the report data into JSON.
-		* CleanedObjectConfigAnalysisOutputFormatter - A formatter object that creates a variation of the report data object, without some internal properties. Generally use this if you want to return the report data as an object from the report() function.
+- `reportToConsole` - Outputs data to console. See `reportIntoJson()` for parameters. In addition:
+	+ `space` - When a number or string, it is passed to JSON.stringify() to specify indentation. When null or undefined, it is sent to console in object form, allowing the browser to provide a drill down UI.
+- `report` - Both `reportIntoJson()` and `reportToConsole()` use this, and supply a specific value to its outputter parameter. If you want to chose a different format or destination, use this function with a suitable outputter object. See `reportIntoJson()` for parameters. In addition:
+	+ `outputter` - An implementation of `IConfigAnalysisOutputter` that takes the report data, formats it and sends it to the destination. Here are classes already included with Jivs:
+		* `ConsoleConfigAnalysisOutputter` - Use the supplied formatter and send the result to the console.
+		* `LoggerConfigAnalsysOutputter` - Use the supplied formatter and send the result to the LoggerService.
+		* `NullConfigAnalysisOutputter` - The `report()` function returns the formatted result. If you don't want to output it but intend to capture the function result, use this and supply a formatter.
+		* `JsonConfigAnalysisOutputFormatter` - A formatter object that converts the report data into JSON.
+		* `CleanedObjectConfigAnalysisOutputFormatter` - A formatter object that creates a variation of the report data object, without some internal properties. Generally use this if you want to return the report data as an object from the `report()` function.
 		
 ### Supplying criteria to query the explorer
-Many functions on ConfigAnalysisResultsExplorer query the results, and depend on you to supply criteria.
+Many functions on `ConfigAnalysisResultsExplorer` query the results, and depend on you to supply criteria.
 
 #### Example
 Let's suppose that you wanted to see all errors, and one was found, where you had requested a parser that was not registered.
 ```ts
-builder.input('NewField', LookupKey.Date, 
+class MyModelRules extends ModelRulesBase
 {
-   parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
-});
-let explorer = builder.analyze();	
-let valHostCriteria: IConfigAnalysisSearchCriteria = { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false };
-let lookupKeyCriteria: IConfigAnalysisSearchCriteria = { severities: [CAIssueSeverity.error], skipChildrenIfParentMismatch: false };
+  constructor(services: IValidationServices) {
+      super(services);
+  }
+  protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+    builder.input('NewField', LookupKey.Date, 
+    {
+      parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
+    });
+  }
+
+}
+let services = createValidationServices('en');
+let rules = new MyModelRules(services);
+let config = rules.configure();
+
+let configAnalysisService = installConfigAnalysisService(services);
+let explorer = configAnalysisService.analyze(config);	
+
+let valHostCriteria: IConfigAnalysisSearchCriteria = { 
+  severities: [CAIssueSeverity.error], 
+  skipChildrenIfParentMismatch: false };
+let lookupKeyCriteria: IConfigAnalysisSearchCriteria = { 
+  severities: [CAIssueSeverity.error], 
+  skipChildrenIfParentMismatch: false };
 explorer.reportToConsole(valHostCriteria, lookupKeyCriteria, false);
 ```
 Console output:
@@ -179,7 +382,7 @@ Console output:
 }
 ```
 #### Understanding the criteria: IConfigAnalysisSearchCriteria
-This is the criteria object. Aside from the first, each property is named to match a property on results. So if you wanted to narrow to a culture ID, use the cultureIds property.
+This is the criteria structure, `IConfigAnalysisSearchCriteria`. Aside from the first, each property is named to match a property on results. So if you wanted to narrow to a culture ID, use the cultureIds property.
 ```ts
 interface IConfigAnalysisSearchCriteria {
   skipChildrenIfParentMismatch?: boolean;
@@ -205,21 +408,21 @@ If any array has two or more, any must be matched.
 ```ts
 { severities: [CAIssueSeverity.error, CSIssueSeverity.warning] } => error or warning
 ```
-- skipChildrenIfParentMismatch - When true, if a parent does not match, don't check its children for matches. When false, still check the children. When omitted, it defaults to true.
-- features - Each result has a property called 'feature' which has these possible values: `ValueHost`, `Validator`, `Condition`, `LookupKey`, `Identifier`, `Converter`, `Comparer`, `Parser`, `ParsersByCulture`, `ParserFound`, `Formatter`, `FormattersByCulture`, `Property`, `l10nProperty`, `Error`
-- severities - Use when looking at the severity property. Specify `error`, `warning`, `info` or add use null to match when there is no severity assigned.
+- `skipChildrenIfParentMismatch` - When true, if a parent does not match, don't check its children for matches. When false, still check the children. When omitted, it defaults to true.
+- `features` - Each result has a property called 'feature' which has these possible values: `ValueHost`, `Validator`, `Condition`, `LookupKey`, `Identifier`, `Converter`, `Comparer`, `Parser`, `ParsersByCulture`, `ParserFound`, `Formatter`, `FormattersByCulture`, `Property`, `l10nProperty`, `Error`
+- `severities` - Use when looking at the severity property. Specify `error`, `warning`, `info` or add use null to match when there is no severity assigned.
 	```ts
 	{ severities: [CAIssueSeverity.info, null] } => info or no severity assigned
 	```
-- propertyNames - Use when matching to the propertyName property.
-- valueHostNames - Use when matching to valueHostName property, which is only found in `ValueHost` features.
-- errorCodes - Use when matching to the errorCode property, which is only found in `Validator` features.
-- conditionTypes - Use when matching to the conditionType property, which is only found on `Condition` features.
-- lookupKeys - Use when matching to the lookupKey property, which is only found in `LookupKey` features.
-- serviceNames - Use when matching to the serviceName property, which is only found service-oriented feature.
-- cultureIds - Use when matching to the culture related properties, found in some services.
+- `propertyNames` - Use when matching to the `propertyName` property.
+- `valueHostNames` - Use when matching to `valueHostName` property, which is only found in `ValueHost` features.
+- `errorCodes` - Use when matching to the `errorCode` property, which is only found in `Validator` features.
+- `conditionTypes` - Use when matching to the `conditionType` property, which is only found on `Condition` features.
+- `lookupKeys` - Use when matching to the `lookupKey` property, which is only found in `LookupKey` features.
+- `serviceNames` - Use when matching to the `serviceName` property, which is only found service-oriented feature.
+- `cultureIds` - Use when matching to the culture related properties, found in some services.
 #### Structure of each result
-Queries return a reference to a node in the explorer.results.valueHostResults or explorer.results.lookupKeyResults tree. The provide a path to the node, and an object describing the result.
+Queries return a reference to a node in the `explorer.results.valueHostResults` or `explorer.results.lookupKeyResults` tree. The provide a path to the node, and an object describing the result.
 ```ts
 interface CAPathedResult<T> {
   path: CAResultPath; // path within the tree where the result was found
@@ -227,7 +430,7 @@ interface CAPathedResult<T> {
 }
 ```
 In the earlier example, there were two results with these paths:
-```jsn
+```json
 "path": {
   "ValueHost": "NewField",
   "Property": "parserLookupKey"
@@ -235,7 +438,7 @@ In the earlier example, there were two results with these paths:
 
 ```
 ValueHost="NewField" contains Property="parserLookupKey"
-```jsn
+```json
 "path": {
   "LookupKey": "Date",
   "Parser": null,
@@ -244,3 +447,10 @@ ValueHost="NewField" contains Property="parserLookupKey"
 
 ```
 LookupKey="Date with a Parser service where the culture of the service = "en"
+```json
+"path": {
+  "LookupKey": "Date",
+  "Parser": null,
+  "ParsersByCulture": "en"
+},
+```

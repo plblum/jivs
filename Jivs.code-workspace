@@ -10,14 +10,24 @@
 			"path": "packages/jivs-examples"
 		},
 		{
+			"path": "packages/jivs-builder"
+		},
+		{
 			"path": "packages/jivs-configanalysis"
+		},
+		{
+			"path": "packages/jivs-angular"
+		},
+		{
+			"path": "packages/jivs-react"
 		}
 	],
 	"settings": {
 		/* VSCode will use TSC only on workspaces, not the global level */
-		"typescript.tsdk": "./node_modules/typescript/lib",
-		"typescript.enablePromptUseWorkspaceTsdk": true,
-		"typescript.enablePromptUseGlobalTsdk": false,		
+		"js/ts.tsdk.path": "./node_modules/typescript/lib",
+		"js/ts.tsdk.promptToUseWorkspaceVersion": true,
+
+		"typescript.enablePromptUseGlobalTsdk": false,
 		"explorerExclude.backup": {},
 		"files.exclude": {
 			"**/.git": false,
@@ -40,23 +50,25 @@
 		},
 		"explorerExclude.showPicker": false,
 		"explorer.excludeGitIgnore": false,
-
 		"jestrunner.configPath": "./jest.config.json",
 		"jestrunner.debugOptions": {
 			"runtimeArgs": [
-			  "--experimental-vm-modules"
+				"--experimental-vm-modules"
 			]
-		},		
+		},
+		"jestrunner.enableESM": true,
 		"jest.runMode": {
 			"type": "on-demand",
-			"coverage": true			
+			"coverage": true
 		},
-		"typescript.preferences.autoImportFileExcludePatterns": [
-			"**/build/**"
-		],
+		"jest.jestCommandLine": "npx jest",
+		"jest.nodeEnv": {
+			"NODE_OPTIONS": "--experimental-vm-modules --disable-warning ExperimentalWarning"
+		},
+
 		"terminal.integrated.env.windows": {
 			"NODE_OPTIONS": "--experimental-vm-modules --disable-warning ExperimentalWarning"
-		},		
+		},
 		"search.exclude": {
 			"**/.git": true,
 			"**/build": true,
@@ -65,22 +77,77 @@
 			"/*.js": true,
 			"/*.json": true,
 			"CHANGELOG.md": true,
-			"docs": true
+			".nx/**": true,
+			"**/dist/**": true,
+			"**/global_build/**": true,
+			"**/node_modules/**": true,
+			"**/temp/**": true,
+			"**/typedoc_output/**": true,
+			"*.d.ts": true,
+			"*.js": true,
+			"*.map": true
 		},
+		"files.watcherExclude": {
+			" **/coverage/**": true,
+			".nx/**": true,
+			"**/build/**": true,
+			"**/dist/**": true,
+			"**/global_build/**": true,
+			"**/node_modules/**": true,
+			"**/temp/**": true,
+			"**/typedoc_output/**": true
+		},		
 		"notebook.find.scope": {
-
 			"markupSource": true,
 			"markupPreview": true,
 			"codeSource": true,
 			"codeOutput": true
 		},
-		"javascript.preferences.importModuleSpecifier": "relative",
-		"typescript.preferences.importModuleSpecifier": "relative",
+
 		"eslint.enable": true,
 		"coverage-gutters.customizable.status-bar-toggler-watchCoverageAndVisibleEditors-enabled": true,
 		"coverage-gutters.showLineCoverage": false,
 		"coverage-gutters.showRulerCoverage": true,
 		"coverage-gutters.showGutterCoverage": false,
+		"testing.coverageToolbarEnabled": false,
+		"coverage-gutters.highlightlight": "rgba(0, 255, 64, 0.3)",
+		"coverage-gutters.highlightdark": "rgba(0, 122, 30, 0.5)",
+		"testing.showCoverageInExplorer": false,
 
+		"editor.formatOnSave": false,
+		"editor.formatOnPaste": true,
+		"editor.formatOnType": true,
+		"[jsonc]": {
+			"editor.defaultFormatter": "vscode.json-language-features"
+		},
+		"[typescript]": {
+			"editor.defaultFormatter": "vscode.typescript-language-features"
+		},
+		"[javascript]": {
+			"editor.defaultFormatter": "vscode.typescript-language-features"
+		},
+		"js/ts.format.placeOpenBraceOnNewLineForControlBlocks": true,
+		"js/ts.format.placeOpenBraceOnNewLineForFunctions": true,
+		"js/ts.format.insertSpaceAfterCommaDelimiter": true,
+		"js/ts.format.insertSpaceAfterSemicolonInForStatements": true,
+		"js/ts.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+		"js/ts.format.insertSpaceAfterKeywordsInControlFlowStatements": true,
+		"js/ts.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": true,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": true,
+		"js/ts.format.insertSpaceAfterTypeAssertion": true,
+		"js/ts.format.insertSpaceBeforeFunctionParenthesis": false,
+		"js/ts.format.semicolons": "insert",
+		"js/ts.format.indentSwitchCase": true,
+		"js/ts.format.insertSpaceAfterConstructor": false,
+		"js/ts.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+		"js/ts.preferences.quoteStyle": "single",		
+		"js/ts.preferences.importModuleSpecifier": "relative",
+		"js/ts.preferences.autoImportFileExcludePatterns": [
+			"**/build/**"
+		]
 	}
 }

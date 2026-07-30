@@ -13,30 +13,35 @@
 
 
 */
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
+import {
+    DataTypeCheckCondition,
+    DataTypeCheckConditionConfig,
+    LessThanCondition,
+    LessThanConditionConfig,
+    LessThanOrEqualCondition,
+    LessThanOrEqualConditionConfig,
+    NotNullCondition,
+    NotNullConditionConfig,
+    RequireTextCondition,
+    RequireTextConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
+import { CleanUpStringParser, ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
+import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
-import { createMinimalValidationServices } from "./support";
-import {
-    DataTypeCheckConditionConfig, DataTypeCheckCondition,
-    LessThanConditionConfig, LessThanCondition,
-    NotNullConditionConfig, NotNullCondition,
-    RequireTextConditionConfig, RequireTextCondition,
-    LessThanOrEqualConditionConfig, LessThanOrEqualCondition
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
-import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
-import { ShortDatePatternParser, CleanUpStringParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
-import { DateTimeCultureInfo } from "@plblum/jivs-engine/build/DataTypes/DataTypeParserBase";
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
-import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
+import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
+import { createMinimalValidationServices } from './support';
 
 // Our model
 export interface FilterDatesModel {
@@ -56,12 +61,16 @@ export interface FilterDatesModel {
     timeZone: string;
 }
 
-export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
+export const TimeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
-export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
-    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), null, LookupKey.TotalDays);
-    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), null, LookupKey.TotalDays);
+export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+    let totalDays1 = callingValueHost.convert(
+        findValueHosts.getValueHost('startDate')?.getValue(),
+        null, LookupKey.TotalDays);
+    let totalDays2 = callingValueHost.convert(
+        findValueHosts.getValueHost('endDate')?.getValue(),
+        null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
         return undefined;   // can log with findValueHosts.services.logger.log();
     return Math.abs(totalDays2 - totalDays1);
@@ -73,6 +82,7 @@ export function differenceBetweenDates(callingValueHost: ICalcValueHost, findVal
 // Here we show how to prepare it from scratch configured
 // for this example.
 export function createValidationServices(cultureID: string): ValidationServices {
+    new BuildersFactoryInstaller();
     let services = createMinimalValidationServices(cultureID);
     // We are expecting to use Data Types: Date, Integer, String. 
     // Jivs preconfigures Date and String.
@@ -128,8 +138,8 @@ export function createValidationServices(cultureID: string): ValidationServices 
         '*': 'The dates must be less than {compareTo} days apart'
     });
 
-    // enable parsing so HTML change events can pass their raw value into the InputValueHost
-    // through setInputValue, and the parser converts it to the native value
+    // enable parsing so HTML change events can pass their raw value into the FieldValueHost
+    // through setTextValue, and the parser converts it to the native value
 
     let dtps = services.dataTypeParserService as DataTypeParserService;
     dtps.enabled = true;
@@ -154,14 +164,38 @@ export function createValidationServices(cultureID: string): ValidationServices 
 // Callback functions used by ValidationManager.
 
 // Builder.onValueChanged is called each time any ValueHost's value changes.
-// Here we want a change in the timeZone ValueHost to trigger a change in the startDate ValueHost's label.
-// It demonstrates the use of the Modifier API
-export function onValueChangedUsingModifierAPI(vh: IValueHost, oldValue: any) : void {
+export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {
     if (vh.getName() === 'timeZone')
     {
-        let vm = vh.valueHostsManager as IValidationManager;
-        let modifier = vm.startModifying();
-        modifier.input('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` });
-        modifier.apply();
+        // do something
     }
+}
+
+export class MockHTMLSelectElement {
+    constructor(id: string, initiaValue: string = 'UTC+1') {
+        this.id = id;
+        this.value = initiaValue;
+    }
+    public id: string;
+    public value: string;
+    public addEventListener(event: string, callback: (e: Event) => void): void {
+        if (event === 'change') {
+            this._onchangeCallback = callback;
+
+        }
+    }
+    public onchange(event: Event): void {
+        this._onchangeCallback(event);
+    }
+    private _onchangeCallback: (event: Event) => void = () => { };
+}
+export class MockDocument {
+    public getElementById(id: string): MockHTMLSelectElement | null {
+        switch (id) {
+            case 'timeZonePicker':
+                return this._timeZonePicker;
+        }
+        return null;
+    }
+    private readonly _timeZonePicker = new MockHTMLSelectElement('timeZonePicker', 'UTC+1');
 }

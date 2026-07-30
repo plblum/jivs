@@ -259,8 +259,19 @@ describe('Utilities.groupsMatch', () => {
         expect(groupsMatch(['A'], ['B'])).toBe(false);
         expect(groupsMatch(['A'], ['B', 'C'])).toBe(false);
         expect(groupsMatch(['A', 'C'], ['B'])).toBe(false);
+    });   
+    test('treats "." as an ordinary explicit group name', () => {
+        expect(groupsMatch('.', '.')).toBe(true);
+        expect(groupsMatch('.', 'A')).toBe(false);
+        expect(groupsMatch('A', '.')).toBe(false);
+        expect(groupsMatch(['.', 'A'], ['.'])).toBe(true);
+    });   
+    test('treats wildcard-like values inside requested group arrays as always match', () => {
+        expect(groupsMatch(['*'], ['A'])).toBe(true);
+        expect(groupsMatch([''], ['A'])).toBe(true);
     });    
 });
+
 
 describe('valueForLog', () => {
     test('Results are as expected', () => {

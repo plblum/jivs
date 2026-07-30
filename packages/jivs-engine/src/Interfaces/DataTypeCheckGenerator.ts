@@ -1,24 +1,24 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
- * @module DataTypes/Types/IDataTypeCheckGenerator
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeCheckGenerator
  */
 
-import { IConditionFactory, ICondition } from "./Conditions";
-import { IInputValueHost } from "./InputValueHost";
+import { IConditionFactory, ICondition } from './Conditions';
+import { IFieldValueHost } from './FieldValueHost';
 
 /**
  * Used to automatically generate a Condition used for Data Type Check
- * based on the DataTypeLookupKey. Only supports IInputValueHost.
+ * based on the DataTypeLookupKey. Only supports IFieldValueHost.
  * 
  * By default, automatic generation uses the DataTypeCheckCondition.
  * 
- * That condition determines an error when ValueHost.NativeValue is undefined,
- * which is a result of a conversion of InputValue fails.
+ * That condition determines an error when ValueHost.value is undefined,
+ * which is a result of a conversion from text to the native value fails.
  * 
  * There are other ways to check a data type. Strings with a well 
  * defined pattern will often be the same as they were between
- * InputValue and NativeValue, aside from trimming spaces.
- * So the NativeValue is a string that will need to be checked against
+ * text and native value, aside from trimming spaces.
+ * So the ValueHost.value is a string that will need to be checked against
  * a regular expression or some other rule that confirms the string matches requirements.
  * 
  * Thats when you create one of these and register it with
@@ -50,6 +50,6 @@ export interface IDataTypeCheckGenerator
  * @param conditionFactory
  * @returns An array of Condition instances to use or empty array auto-generation.
  */
-    createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string,
+    createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string,
         conditionFactory: IConditionFactory): Array<ICondition>;
 }

@@ -1,11 +1,11 @@
 /**
- * {@inheritDoc ValueHosts/Types/CalcValueHost}
- * @module ValueHosts/ConcreteClasses/CalcValueHost
+ * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost}
+ * @module jivs-engine/ValueHosts/ConcreteClasses/CalcValueHost
  */
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
@@ -14,14 +14,14 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 
 
 /**
- * {@inheritDoc ValueHosts/Types/CalcValueHost} 
+ * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost} 
  */
 export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
     implements ICalcValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
+    constructor(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
     {
-        super(valueHostsManager, config, state);
+        super(validationManager, config, state);
     }
 
     /**
@@ -34,12 +34,12 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be.
+     * @param resultLookupKey - The lookup key that the result should be.
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType
     {
-        let result = this.valueHostsManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
+        const result = this.validationManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
     /**
@@ -55,13 +55,13 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     public convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType
     {
-        let result = this.valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
+        const result = this.validationManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
 
@@ -75,12 +75,12 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
         try {
             this._reentrantCount++;
             if (this.config.calcFn)
-                return this.config.calcFn(this, this.valueHostsManager);
+                return this.config.calcFn(this, this.validationManager);
 
             this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
                     message: 'calcFn property not configured',
-                    category: LoggingCategory.Configuration,
+                    category: LoggingCategory.Configuration
                 };
             });
             return undefined;
@@ -102,7 +102,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param options 
      */
-    public setValue(value: any, options?: SetValueOptions | undefined): void {
+    public setValue(value: any, options?: SetValueOptions  ): void {
         // does nothing
         this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }
@@ -116,8 +116,8 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Calc;
     }
-    public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
-        return new CalcValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
+        return new CalcValueHost(validationManager, config, state);
     }
 
     public cleanupInstanceState(state: CalcValueHostInstanceState, config: CalcValueHostConfig): void {
@@ -145,7 +145,7 @@ export function toICalcValueHost(source: any): ICalcValueHost | null {
  */
 export function hasICalcValueHostSpecificMembers(source: IValueHost): boolean
 {
-    let test = source as ICalcValueHost;
+    const test = source as ICalcValueHost;
     // members introduced on ICalcValueHost
     return (test.convert !== undefined &&
         test.convertToPrimitive !== undefined);    

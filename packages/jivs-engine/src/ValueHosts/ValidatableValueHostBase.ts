@@ -1,6 +1,6 @@
 /**
  * Expands upon ValueHost to provide the basics of validation.
- * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
+ * @module jivs-engine/ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { cleanString, deepEquals, groupsMatch, valueForLog } from '../Utilities/Utilities';
@@ -9,10 +9,9 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
+import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
-import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
@@ -38,12 +37,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             throw new CodingError('ValueHost requires ValidationManager');        
     }
 
-    public get valueHostsManager(): IValidationManager {
-        return super.valueHostsManager as IValidationManager;
-    }
 
-
-    //#endregion IValueHostsManagerAccessor
+    //#endregion IValidationManagerAccessor
     
     protected get services(): IValidationServices
     {
@@ -62,15 +57,20 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     //#region IValidatableValueHostBase
     /**
-      * System consumer assigns the native value to make it available
-      * to most Conditions during validation.
-      * @param value 
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+    * Replaces the typed value and optionally validates.
+    * Call when the typed value was changed directly by consuming code.
+    * @param value - The typed value to store. Use undefined to indicate that the
+    * typed value could not be resolved from the text value, such as when parsing fails.
+    * All other values, including null and the empty string, are treated as real data.
+    * When undefined, IsChanged is still set to true unless options.Reset = true.
+    * @param options -
+    *    * validate - Invoke validation after setting the value.
+    *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
+    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
+    *      provide a user-facing error message here. It will appear in the Category=Require
+    *      validator within the {ConversionError} token.
+    *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
+    *      OnValueChanged property.
     */
     public setValue(value: any, options?: SetValueOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
@@ -84,8 +84,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
             this.logger.message(LoggingLevel.Warn, () => 'setValue does not support duringEdit option');
         }
-        let oldValue: any = this.instanceState.value;
-        let changed = !deepEquals(value, oldValue);
+        const oldValue: any = this.instanceState.value;
+        const changed = !deepEquals(value, oldValue);
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -115,7 +115,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     protected notifyOthersOfChange(options: SetValueOptions): void {
-        toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
+        toIValidationManager(this.validationManager)?.notifyOtherValueHostsOfValueChange?.(
             this.getName(), options.validate === true);
     }
     /**
@@ -139,7 +139,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             // it assumes that the Config is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
             this._associatedValueHostNames = new Set<ValueHostName>();
-            this.gatherValueHostNames(this._associatedValueHostNames, this.valueHostsManager);
+            this.gatherValueHostNames(this._associatedValueHostNames, this.validationManager);
         }
 
         if (this._associatedValueHostNames.has(valueHostIdThatChanged)) {
@@ -170,10 +170,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * If the Enabler condition changes the state to enabled, it remains up to the user
      * to call validate() again to get the new state.
      * While disabled, some validation activity can still happen:
-     * - BusinessLogicErrors can be set, but will not be available with
+     * - ExternalIssuesFound can be set, but will not be available with
      *   getIssuesFound() until the ValueHost is enabled again.
      * - The onValueHostValidationStateChanged event will be raised
-     *   on actions that change the state, such as setting a BusinessLogicError.
+     *   on actions that change the state, such as setting a external IssueFound.
      * Otherwise all calls to get ValidationStatus will act as if the ValueHost 
      * has no errors, except for ValidationState which is set to Disabled.
      * @param enabled 
@@ -235,9 +235,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (!this.isEnabled())
             return ValidationStatus.Disabled;
 
-        // any business logic errors that aren't warnings override ValidationStatus with Invalid.
-        if (this.businessLogicErrors)
-            for (let error of this.businessLogicErrors)
+        // any external issues that aren't warnings override ValidationStatus with Invalid.
+        if (this.externalIssuesFound)
+            for (const error of this.externalIssuesFound)
                 if (error.severity !== ValidationSeverity.Warning)
                     return ValidationStatus.Invalid;
         return this.instanceState.status;
@@ -263,7 +263,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public clearValidation(options?: ValidateOptions): boolean {
         let changed = false;
         if (options)
-            if (!this.groupsMatch(options.group, true))
+            if (!this.groupCheck(options))
                 return false;
         changed = this.updateInstanceState((stateToUpdate) => {
             this.clearValidationDataFromInstanceState(stateToUpdate);
@@ -273,6 +273,18 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             if (!options || !options?.skipCallback)
                 this.invokeOnValueHostValidationStateChanged(options);
         return changed;
+    }
+
+    /**
+     * Determines if the ValueHost is matches to a specific group, or if no group is supplied,
+     * it is always matches.
+     * Allows loops through valueHosts to take options.group into account.
+     */
+    public groupCheck(options?: ValidateOptions): boolean
+    {
+        if (!options || !options.group)
+            return true;
+        return this.groupsMatch(options.group, true);
     }
 
     /**
@@ -287,8 +299,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let expectedGroup: string[] | string | null | undefined = undefined;
         if (fromLastValidation)
             expectedGroup = this.instanceState.group;
+
+        // Every ValueHost has an effective group name of '.' if not specified, so use that for matching purposes.
+        // Rules for group matching when requestedGroup is undefined:
+        // - If requestedGroup is null, undefined, or '', groupsMatch will always return true.
+        // - If requestedGroup has text or an array of text, the expected group must exactly match.
+        //   By supplying expectedGroup = '.', we anticipate NO MATCH (knowing that the only way to have a group of '.' is to explicitly set it, which is uncommon and not the default).
         if (expectedGroup === undefined)
-            expectedGroup = this.config.group;    // may still be undefined
+            expectedGroup = this.config.group ?? '.'; 
 
         return groupsMatch(requestedGroup, expectedGroup);
     }
@@ -297,21 +315,36 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         stateToUpdate.status = ValidationStatus.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
-        delete stateToUpdate.businessLogicErrors;
+        delete stateToUpdate.externalIssuesFound;
         delete stateToUpdate.corrected;
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationStatus is Invalid or NeedsValidation.
+     * Rules are:
+     *   asyncProcessing=true, doNotSave=true
+     *   ValidationStatus=NeedsValidation, doNotSave=true
+     *   ValidationStatus=Disabled, doNotSave=false
+     *   Any IssuesFound or ExternalIssuesFound with doNotSave=true, doNotSave=true (overridden by ValidationStatus and asyncProcessing)
+     *   otherwise false
      */
     public get doNotSave(): boolean {
+        if (this.instanceState.asyncProcessing) // async running so long as not null
+            return true;
         switch (this.validationStatus) {
-            case ValidationStatus.Invalid:
             case ValidationStatus.NeedsValidation:
                 return true;
+            case ValidationStatus.Disabled:
+                return false;
             default:
-                if (this.instanceState.asyncProcessing) // async running so long as not null
-                    return true;
+                // check IssuesFound in both instanceState and externalIssuesFound. If any have doNotSave = true, return true.
+                if (this.instanceState.issuesFound)
+                    for (const issue of this.instanceState.issuesFound)
+                        if (issue.doNotSave)
+                            return true;
+                if (this.externalIssuesFound)
+                    for (const issue of this.externalIssuesFound)
+                        if (issue.doNotSave)
+                            return true;
                 return false;
         }
     }
@@ -325,42 +358,86 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     //#endregion validation
     //#region business logic errors
+ 
     /**
-     * When Business Logic gathers data from the UI, it runs its own final validation.
-     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
-     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidationStateChanged if there was a changed to the state.
-     * @param error - A business logic error to show. If it has an errorCode assigned and the same
-     * errorCode is already recorded here, the new entry replaces the old one.
-     * @returns true when a change was made to the known validation state.
+     * For a list of external issuesfound, meaning the developer's own code
+     * determines there is an error and supplies a list of them here.
+     * These will survive through clearValidation() and validate() since they are not generated by validators, 
+     * but they will be cleared by clearExternalIssuesFound().
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issuesFound 
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. 
+     * Only used when issueFound.doNotSave is not already set, as it takes precedence. 
+     * If IssueFound.severity is Warning and issueFound.doNotSave is not set, it defaults doNotSave to false regardless of this value.
+     * Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
+     * @param options - Only considers the skipCallback option.
      */
-    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
-        if (error) {
+    public addExternalIssuesFound(issuesFound: Array<IssueFound>, determinedLocally: boolean, options?: ValidateOptions): boolean
+    {
+        let changed = false;
+        if (issuesFound && issuesFound.length)
+        {
+            for (const issue of issuesFound) {      
+                if (this.addExternalIssueFound(issue, determinedLocally, options)) {
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * For a single external issuefound, meaning the developer's own code
+     * determines there is an error and supplies it here.
+     * These will survive through clearValidation() and validate() since they are not generated by validators, 
+     * but they will be cleared by clearExternalIssuesFound().
+     * 
+     * Invokes the onValueHostValidationStateChanged callback unless skipCallback is true.
+     * @param issueFound 
+     * @param determinedLocally - when true, your app's code figured out this issue and the error will be
+     * revised by the next local validation. When false, for everything else. 
+     * Only used when issueFound.doNotSave is not already set, as it takes precedence. 
+     * If IssueFound.severity is Warning and issueFound.doNotSave is not set, it defaults doNotSave to false regardless of this value.
+     * Allows post validation errors
+     * generated by a server to avoid blocking the next attempt to save. Internally sets IssueFound.doNotSave to 
+     * this value.
+     * @param options - Only considers the skipCallback option.
+     */
+    public addExternalIssueFound(issueFound: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
+    {
+        if (issueFound) {
             if (!this.isEnabled())
             {
-                this.logger.message(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);
+                this.logger.message(LoggingLevel.Warn, () => `External IssueFound applied on disabled ValueHost "${this.getName()}"`);
             }
+            if (issueFound.doNotSave === undefined)
+                if (issueFound.severity === ValidationSeverity.Warning)
+                    issueFound.doNotSave = false; // default to false for warnings
+                else
+                    issueFound.doNotSave = determinedLocally;
     
             // check for existing with the same errorcode and replace
             let replacementIndex = -1;
-            if (error.errorCode && this.instanceState.businessLogicErrors) 
-                for (let i = 0; i < this.instanceState.businessLogicErrors.length; i++)
+            if (issueFound.errorCode && this.instanceState.externalIssuesFound) 
+                for (let i = 0; i < this.instanceState.externalIssuesFound.length; i++)
                 {
-                    if (this.instanceState.businessLogicErrors[i].errorCode === error.errorCode)
+                    if (this.instanceState.externalIssuesFound[i].errorCode === issueFound.errorCode)
                     {
                         replacementIndex = i;
                         break;
                     }
                 }
-            let changed = this.updateInstanceState((stateToUpdate) => {
-                if (!stateToUpdate.businessLogicErrors)
-                    stateToUpdate.businessLogicErrors = [];
+            const changed = this.updateInstanceState((stateToUpdate) => {
+                if (!stateToUpdate.externalIssuesFound)
+                    stateToUpdate.externalIssuesFound = [];
                 if (replacementIndex === -1)
-                    stateToUpdate.businessLogicErrors.push(error);
+                    stateToUpdate.externalIssuesFound.push(issueFound);
                 else
-                    stateToUpdate.businessLogicErrors[replacementIndex] = error;
+                    stateToUpdate.externalIssuesFound[replacementIndex] = issueFound;
                 delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
@@ -369,19 +446,19 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 return true;
             }
         }
-        return false;
+        return false;        
     }
     /**
-     * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * Removes existing external issues found.
+     * Has no impact on issues found from validators, which are only cleared by clearValidation() or validate().
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    public clearBusinessLogicErrors(options?: ValidateOptions): boolean {
-        if (this.businessLogicErrors) {
-            let changed = this.updateInstanceState((stateToUpdate) => {
-                delete stateToUpdate.businessLogicErrors;
+    public clearExternalIssuesFound(options?: ValidateOptions): boolean {
+        if (this.externalIssuesFound) {
+            const changed = this.updateInstanceState((stateToUpdate) => {
+                delete stateToUpdate.externalIssuesFound;
                 delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
@@ -395,7 +472,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     /**
      * Helper to call onValueHostValidationStateChanged due to a change in the state associated
-     * with Validate itself or BusinessLogicErrors.
+     * with Validate itself or ExternalIssuesFound.
      * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      * 
@@ -413,13 +490,13 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         // To unit test the debounce feature of notifyValidationStateChanged, we need
         // the call to notify to be queued inside of debounce by the time onValueHostValidationStateChanged is invoked,
         // so we can leverage the onValueHostValidationStateChanged to advance the mock timer. (Ugh)
-        toIValidationManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this, this.currentValidationState);
+        toIValidationManager(this.validationManager)?.notifyValidationStateChanged(null, options);
+        toIValidationManagerCallbacks(this.validationManager)?.onValueHostValidationStateChanged?.(this, this.currentValidationState);
     }
 
     /**
      * Exposes the current validation state for the ValueHost.
-     * It combines other properties and issuesFound.
+     * It combines other properties and all issuesFound from both validators and external sources.
      * The same value is delivered to the onValueHostValidationStateChanged callback.
      */
     public get currentValidationState(): ValueHostValidationState {
@@ -430,54 +507,70 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             asyncProcessing: this.asyncProcessing,
             status: this.validationStatus,
             corrected: this.corrected
-        }
+        };
     }
     
     /**
-     * exposes the Business Logic Errors list. If none, it is null.
+     * Exposes the external issues found list. If none, it is null.
      */
-    protected get businessLogicErrors(): Array<BusinessLogicError> | null {
-        return this.instanceState.businessLogicErrors ?? null;
+    protected get externalIssuesFound(): Array<IssueFound> | null {
+        return this.instanceState.externalIssuesFound ?? null;
     }
 
     //#endregion business logic errors
 
     //#region access to validation results    
     /**
-     * The results of validation specific to one condiiton Type.
+     * The results of validation specific to one error code or condition type.
+     * Searches both IssuesFound and externalIssuesFound.
      * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The issue or null if none.
      */    
     public getIssueFound(errorCode: string): IssueFound | null {
-        if (!this.isEnabled())
-        {
+        if (!this.isEnabled()) {
             this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);
             return null;
         }
-    
-        let ec = cleanString(errorCode);
+
+        const ec = cleanString(errorCode);
         if (!ec)
             return null;
 
-        return this.instanceState.issuesFound ?
-            (this.instanceState.issuesFound.find((value) =>
-                value.errorCode === ec) ?? null) :
-            null;
+        const validatorIssue = this.instanceState.issuesFound?.find((value) => value.errorCode === ec);
+        if (validatorIssue)
+            return validatorIssue;
+
+        if (this.externalIssuesFound) {
+            let issueCount = 0;
+            for (const error of this.externalIssuesFound) {
+                const normalizedErrorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
+                if (normalizedErrorCode === ec) {
+                    return this.externalToInternalIssueFound(error, issueCount);
+                }
+                issueCount++;
+            }
+        }
+
+        return null;
     }
 
     /**
      * Lists all issues found (error messages and supporting info) for a single Validatable ValueHost
      * so the input field/element can show error messages and adjust its appearance.
+     * Includes both the issues found from validation (IssuesFound) and any external issues found (externalIssuesFound).
+     * @param group - a filter on the validator issuesFound matching to validation group.
+     * Has no impact on externalIssuesFound since they are not generated by validators.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - valueHostName - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
+     * - doNotSave - When true, this issue should block saving the data. This is useful for errors that are generated outside of validation, such as server-side validation after an attempted save. It is also useful for client-side errors that are not fixed by the user changing the value, such as a missing required attachment.
      */
     public getIssuesFound(group?: string): Array<IssueFound> | null {
         if (!this.isEnabled())
@@ -485,96 +578,67 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
             return null;
         }        
-        let list: Array<IssueFound> = [];
+        const list: Array<IssueFound> = [];
 
         if (this.instanceState.issuesFound && this.groupsMatch(group, true)) {
-            for (let issue of this.instanceState.issuesFound) {
+            for (const issue of this.instanceState.issuesFound) {
                 list.push(issue);
             }
         }
-        this.addBusinessLogicErrorsToSnapshotList(list);
+        this.addExternalIssuesFoundToSnapshotList(list);
 
         return list.length ? list : null;
     }
 
-    private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
-        if (this.businessLogicErrors) {
+    private addExternalIssuesFoundToSnapshotList(list: Array<IssueFound>): void {
+        if (this.externalIssuesFound) {
             let issueCount = 0;
-            for (let error of this.businessLogicErrors) {
-                list.push({
-                    valueHostName: this.getName(),
-                    errorCode: cleanString(error.errorCode)  ?? `GENERATED_${issueCount}`,
-                    severity: error.severity ?? ValidationSeverity.Error,
-                    errorMessage: error.errorMessage,
-                    summaryMessage: error.errorMessage
-                });
+            for (const error of this.externalIssuesFound) {
+                list.push(this.externalToInternalIssueFound(error, issueCount));
                 issueCount++;
             }
         }
     }
-
-    /**
-     * Adds or replaces all IssueFound items that are associated with this ValueHost.
-     * It ignores those with another ValueHost name, allowing for the same list to be culled
-     * by all ValueHosts. (As a result, it never changes the values sent in, or the array itself.) 
-     * Replacement when the errorCode is the same.
-     * This call invokes the onValueHostValidationStateChanged callback if there were IssueFound items applied.
-     * 
-     * Use case: client-side getting server-side Jivs-generated IssuesFound,
-     * so the UI can incorporate it.
-     * @param issuesFound 
-     * @param behavior - keep or omit an issueFound that does not have a matching validator
-     * based on the errorCode. Defaults to Keep.
-     */
-    public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
-    {
-        assertNotNull(issuesFound, 'issuesFound');
-        let changed = false;
-        let thisName = this.getName();
-        for (let issueFound of issuesFound)
-        {
-            if (issueFound.valueHostName === thisName)
-                if (this.setIssueFound(issueFound, behavior))
-                    changed = true;
-        }
-        if (changed)
-            this.invokeOnValueHostValidationStateChanged(undefined);
-        return changed;
+    /*
+    * Provide an IssueFound from the externalIssuesFound and this creates
+    * an immutable IssueFound with all properties set, such as doNotSave.
+    */
+    private externalToInternalIssueFound(issueFound: IssueFound, issueCount: number): IssueFound {
+        const severity = issueFound.severity ?? ValidationSeverity.Error;
+        return {
+                valueHostName: this.getName(),
+                errorCode: cleanString(issueFound.errorCode)  ?? `GENERATED_${issueCount}`,
+                severity: severity,
+                errorMessage: issueFound.errorMessage,
+                summaryMessage: (issueFound.summaryMessage && issueFound.summaryMessage.length) ?
+                    issueFound.summaryMessage : issueFound.errorMessage,
+                doNotSave: issueFound.doNotSave ?? severity !== ValidationSeverity.Warning
+            };        
     }
 
+
     /**
-     * Adds or replaces an IssueFound. 
+     * Adds or replaces an IssueFound that was generated through validation.
      * Replacement when the errorCode is the same.
      * This does NOT invoke the onValueHostValidated callback.
      * 
-     * Use case: client-side getting server-side Jivs-generated IssuesFound,
-     * so the UI can incorporate it.
+     * Use case: targets testing primarily, so we can skip the validation step.
      * @param issueFound 
      */
-    protected setIssueFound(issueFound: IssueFound, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+
+    protected setIssueFound(issueFound: IssueFound): boolean
     {
         assertNotNull(issueFound, 'issueFound');
-        let errorMsg: string | null = null;
-        if (!issueFound.errorCode)
-            errorMsg = 'IssueFound needs an errorCode';
-        /* istanbul ignore next */ // defensive. Does not get called with the current implementation
-        if (issueFound.valueHostName !== this.getName())
-            errorMsg = 'IssueFound has wrong valueHostName';
-        if (errorMsg)
-        {
-            let error = new CodingError(errorMsg);
-            this.logger.error(error);
-            throw error;            
-        }
 
-        if (!this.handlesErrorCode(issueFound.errorCode))
+        if (issueFound.valueHostName !== this.getName())
         {
-            switch (behavior)
-            {
-                case SetIssuesFoundErrorCodeMissingBehavior.Omit:
-                    return false;
-            }
+            this.logger.message(LoggingLevel.Warn, () => `Attempted to set IssueFound with valueHostName "${issueFound.valueHostName}" on ValueHost "${this.getName()}". Ignoring this issueFound.`);
+            return false;
         }
+        if (issueFound.severity === undefined)
+            issueFound.severity = ValidationSeverity.Error;
+        if (issueFound.doNotSave === undefined)
+            issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning;
 
         // we'll be replacing the entire this.instanceState.issuesFound array
         // during updateState. For now, initialize with the existing IssueFound objects.
@@ -582,16 +646,18 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let updating: Array<IssueFound> = [];
         if (this.instanceState.issuesFound)
             updating = updating.concat(this.instanceState.issuesFound);
-        let pos = updating.findIndex((item) => item.errorCode === issueFound.errorCode);
+        let pos = -1;
+        if (issueFound.errorCode)
+            pos = updating.findIndex((item) => item.errorCode === issueFound.errorCode);
         if (pos >= 0)
             updating[pos] = issueFound;
         else
             updating.push(issueFound);
-        let changed = this.updateInstanceState((stateToUpdate) => {
+        const changed = this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.issuesFound = updating;
             if (issueFound.severity !== ValidationSeverity.Warning)
                 stateToUpdate.status = ValidationStatus.Invalid;
-            //!!!PENDING: Clean up async work done against the same error code?
+
             return stateToUpdate;
         }, this);
 
@@ -613,7 +679,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
         return source as IValidatableValueHostBase;
     if (source && typeof source === 'object')
     {
-        let test = source as IValidatableValueHostBase;    
+        const test = source as IValidatableValueHostBase;    
         // some select members of IValidatableValueHostBase
         if (test.validate !== undefined &&
             test.getIssuesFound !== undefined)
@@ -625,7 +691,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
+    public abstract create(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.

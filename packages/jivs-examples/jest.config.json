@@ -14,18 +14,24 @@
     ],
     "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
-        "/build/"
+        "/node_modules/", 
+        "build", 
+        "docs",
+        "coverage",
+        "temp",
+        "TestSupport"
     ],
-    "modulePaths": [
-        "<rootDir>/src/"
-    ],
-    "moduleFileExtensions": [
-        "ts",
-        "js"
-    ],
+    "modulePaths": ["<rootDir>/src/"],
+    "moduleFileExtensions": ["ts", "js"],
     "collectCoverage": false,
     "verbose": false,
     "coveragePathIgnorePatterns": [
-        "tests"
+        "tests", 
+        "build", 
+        "docs",
+        "coverage",
+        "temp",    
+        "TestSupport",
+        "src/Support"
     ]
 }
