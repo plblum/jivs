@@ -6,8 +6,8 @@
 ### As focus leaves an Input and its value changed
 * Use the onchange event to tell the `ValidationManager` about the data change and run validation. 
   * You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-  * Jivs lets you assign a parser to each FieldValueHost. Just use: `validationManager.vh.field('name').setTextValue(inputValue, { validate: true });`
-  * If you want to handle parsing elsewhere, use: `validationManager.vh.field('name').setValues(nativeValue, inputValue, { validate: true });`
+  * Jivs lets you assign a parser to each FieldValueHost. Just use: `validationManager.vh.field('name').setTextValue(textValue, { validate: true });`
+  * If you want to handle parsing elsewhere, use: `validationManager.vh.field('name').setValues(nativeValue, textValue, { validate: true });`
 * The `ValidationManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -65,17 +65,17 @@ This code sets up the onchange event with built-in parsing:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
-    let inputValue = evt.target.value;
-    vm.vh.field('FirstName').setTextValue(inputValue, { validate: true });
+    let textValue = evt.target.value;
+    vm.vh.field('FirstName').setTextValue(textValue, { validate: true });
 });
 ```
 This code sets up the onchange event with your own parsing:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
-    let inputValue = evt.target.value;
-    let { nativeValue, errorMessage } = myParser(inputValue);	// return nativeValue=undefined when there is an error
-    vm.vh.field('FirstName').setValues(nativeValue, inputValue, { 
+    let textValue = evt.target.value;
+    let { nativeValue, errorMessage } = myParser(textValue);	// return nativeValue=undefined when there is an error
+    vm.vh.field('FirstName').setValues(nativeValue, textValue, { 
         validate: true, 
         conversionErrorTokenValue: errorMessage 
     });
@@ -253,7 +253,7 @@ ValidationManager.getValueHost('FirstName').setValues(nativeValue, raw string);
 ```
 When parsing fails, you report the error along with the raw string like this:
 ```ts
-ValidationManager.getValueHost('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
+ValidationManager.getValueHost('FirstName').setValues(undefined, textValue, { conversionErrorTokenValue: errorMessage });
 ```
 
 ### Showing all errors in a ValidationSummary

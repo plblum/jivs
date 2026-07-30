@@ -1055,14 +1055,14 @@ builder.static("NumOfDays", LookupKey.Number, { initialValue: 30 });
 const validationManager = new ValidationManager(builder);
 
 startDateInput.addEventListener("change", () => {
-    validationManager.vh.input("StartDate").setInputValue(
+    validationManager.vh.input("StartDate").setTextValue(
         startDateInput.value,
         { validate: true }
     );
 });
 
 endDateInput.addEventListener("change", () => {
-    validationManager.vh.input("EndDate").setInputValue(
+    validationManager.vh.input("EndDate").setTextValue(
         endDateInput.value,
         { validate: true }
     );
@@ -1100,14 +1100,14 @@ const rulesService = new DateRangeRulesService(services);
 const validationManager = rulesService.configure();
 
 startDateInput.addEventListener("change", () => {
-    validationManager.vh.input("StartDate").setInputValue(
+    validationManager.vh.input("StartDate").setTextValue(
         startDateInput.value,
         { validate: true }
     );
 });
 
 endDateInput.addEventListener("change", () => {
-    validationManager.vh.input("EndDate").setInputValue(
+    validationManager.vh.input("EndDate").setTextValue(
         endDateInput.value,
         { validate: true }
     );

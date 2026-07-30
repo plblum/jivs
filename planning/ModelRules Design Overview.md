@@ -309,7 +309,7 @@ ValidationState is an object representing the state of validation as a result of
 * issuesFound - null or an array of IssueFound, including both validation and external generation.
 
 ### 4.5 ValueHostValidateResult
-ValueHostValidateResult is an object representing the state of validation from a single Validatable ValueHost (implementation of IValidatableValueHostBase including InputValueHost and PropertyValueHost). It includes these values:
+ValueHostValidateResult is an object representing the state of validation from a single Validatable ValueHost (implementation of IValidatableValueHostBase including TextValueHost and PropertyValueHost). It includes these values:
 
 * status - enumerated type providing a sense of lifecycle: NotAttempted, NeedsValidation (because the input changed), Undetermined, Invalid, Valid, Disabled.
 * issuesFound - null or an error of IssueFound, limited to those

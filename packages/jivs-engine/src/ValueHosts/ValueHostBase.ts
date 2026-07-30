@@ -189,6 +189,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         if (changed && (!options || !options.skipValueChangedCallback))
             toIValueHostCallbacks(this.validationManager)?.onValueChanged?.(this, oldValue);
     }
+
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
      * See the {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"

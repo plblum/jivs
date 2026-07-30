@@ -267,28 +267,28 @@ Conceptually, JivsField exposes:
 | Member            | Description                                                                                                                            |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `fieldName`       | The field identifier.                                                                                                                  |
-| `setInputValue()` | Updates the current input value associated with the field.                                                                             |
+| `setTextValue()` | Updates the current input value associated with the field.                                                                             |
 | `setValue()`      | Updates the field using a native value. Use this when working with non-string values or values already converted to their native type. |
 | `validate()`      | Invokes validation of the field.                                                                                                       |
 | `getValueHost()`  | Returns the underlying ValueHost associated with the field.                                                                            |
 
 The exact API surface is defined elsewhere. This document focuses on how React components interact with a JivsField.
 
-### setInputValue()
+### setTextValue()
 
 ```ts
-setInputValue(
+setTextValue(
    value: any,
-   options?: SetInputValueOptions
+   options?: SetTextValueOptions
 ): void
 ```
 
-`setInputValue()` is intended for values received directly from UI components. It is typically wired to DOM `onChange` or `onInput` events.
+`setTextValue()` is intended for values received directly from UI components. It is typically wired to DOM `onChange` or `onInput` events.
 
 Conceptually:
 
 ```ts
-field.setInputValue(inputValue);
+field.setTextValue(textValue);
 ```
 
 The first parameter contains the value supplied by the component.
@@ -298,12 +298,12 @@ If conversion from a string or other input representation to the field's native 
 * Configure a parser as part of Jivs validation configuration.
 * Perform the conversion before calling JivsField and use `setValue()` instead.
 
-By default, calling `setInputValue()` triggers validation.
+By default, calling `setTextValue()` triggers validation.
 
 An optional second parameter may be supplied to control behavior:
 
 ```ts
-field.setInputValue(inputValue, {
+field.setTextValue(textValue, {
    validate: false
 });
 ```
@@ -377,12 +377,12 @@ function FirstNameField(initialValue: string)
          <input
             id={field.fieldName}
             onChange={e =>
-               field.setInputValue(
+               field.setTextValue(
                   e.target.value
                )
             }
             onInput={e =>
-               field.setInputValue(
+               field.setTextValue(
                   e.target.value,
                   { duringEdit: true }
                )
@@ -472,12 +472,12 @@ function FirstNameField(initialValue: string)
    return (
       <input
          onChange={e =>
-            field.setInputValue(
+            field.setTextValue(
                e.target.value
             )
          }
          onInput={e =>
-            field.setInputValue(
+            field.setTextValue(
                e.target.value,
                { duringEdit: true }
             )
@@ -626,12 +626,12 @@ function AnyTextBox(fieldName: string, initialValue: any)
                : "invalid"
          }
          onChange={e =>
-            field.setInputValue(
+            field.setTextValue(
                e.target.value
             )
          }
          onInput={e =>
-            field.setInputValue(
+            field.setTextValue(
                e.target.value,
                { duringEdit: true }
             )

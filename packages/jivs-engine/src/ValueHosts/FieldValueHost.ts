@@ -12,7 +12,7 @@ import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, SetTextValueOptions } from '../Interfaces/FieldValueHost';
+import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, FieldValueHostSetValueOptions, toIFieldValueHostCallbacks } from '../Interfaces/FieldValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -63,7 +63,86 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     constructor(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
         super(validationManager, config, state);
     }
+    
 
+    /**
+     * Called by setValue() to determine if a formatter is setup and the value is formattable.
+     * If so, it determines the text value, and calls upon setValues() to handle it all.
+     * Supports config.formatterDataType and config.formatterCreator.
+     * Also supports options.disableFormatter to skip formatting.
+     * @param value 
+     * @param options 
+     * @returns When true, it used the formatter and finished with setValues. No further work is needed.
+     * When false, setValue() should continue.
+     */
+    protected override tryFormatToText(value: any, options?: FieldValueHostSetValueOptions): boolean
+    {
+        /**
+         * 
+         * @param resolution 
+         * @returns when true, it successfully sent
+         */
+        function sendResultAlong(resolution: DataTypeResolution<string>): boolean
+        {
+            if (resolution.errorMessage)
+            {
+                self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${resolution.errorMessage}`);
+                return false;
+            }
+            self.logger.message(LoggingLevel.Debug, ()=> 'Formatter used. Switching to setValues()');
+            self.setValues(value, resolution.value, options); 
+            return true;
+        }
+        let self = this;
+        // similar to tryParser.
+        if (value === undefined)
+            return false;
+        if (options?.disableFormatter)
+        {
+            this.logger.message(LoggingLevel.Debug, () => 'option.disableFormatter=true');
+            return false;
+        }
+        if (this.config.formatterLookupKey || this.config.formatterCreator)
+        {
+        
+            this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+            const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+            if (this.config.formatterCreator)
+            {
+                // unlike with tryParser, we don't check formatter.supports
+                // because we want to let the formatter decide 
+                // if it can handle the value or not. It may have its own fallback behavior.
+                const formatter = this.config.formatterCreator?.(this);
+                if (formatter)
+                { // in this case, we have to let the formatter function deal with
+                    // any fallback behavior and we'll supply a null lookupKey.
+                    const cultureId = this.services.cultureService.activeCultureId;
+                    const result = formatter.format(value, lookupKey!, cultureId);
+                    return sendResultAlong(result);
+
+                }
+            }
+            // if neither formatterCreator nor formatterLookupKey is configured, we cannot format.
+            // and let setValue() continue as normal. It will set the text value to undefined.
+            if (!this.config.formatterLookupKey)
+            {
+                this.logger.message(LoggingLevel.Info, () => 'No formatterLookupKey or formatterCreator configured. Cannot format.');
+                return false;
+            }
+
+            const dtfs = this.services.dataTypeFormatterService;
+            const result = dtfs.format(value, lookupKey);
+            return sendResultAlong(result);
+        }
+
+        return false;
+    }
+
+    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
+    {
+        if (changed && (!options || !options.skipValueChangedCallback))
+            toIFieldValueHostCallbacks(this.validationManager)?.onTextValueChanged?.(this, oldValue);
+    }    
     //#region IFieldValueHost
     /**
      * Gets the current text value exactly as last provided.
@@ -116,7 +195,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      *   may also set conversionErrorTokenValue when it reports an error.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setTextValue(textValue: string | undefined, options?: SetTextValueOptions): void {  
+    public setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void {  
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
 
         if (!options)
@@ -140,7 +219,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         }, this);
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
-        this.useOnValueChanged(changed, oldValue, options);
+        this.useOnTextValueChanged(changed, oldValue, options);
 
     }
 
@@ -157,7 +236,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @returns True used the parser and finished with setValues. No further work is needed.
      * False means the parser is not used, and setTextValue should continue.
      */
-    protected tryParse(textValue: any, options: SetTextValueOptions): boolean
+    protected tryParse(textValue: any, options: FieldValueHostSetValueOptions): boolean
     {
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
@@ -276,7 +355,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(nativeChanged, oldNative, options);
-        this.useOnValueChanged(textChanged, oldText, options);
+        this.useOnTextValueChanged(textChanged, oldText, options);
     }
 
     protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {

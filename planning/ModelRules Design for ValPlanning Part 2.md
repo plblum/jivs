@@ -47,9 +47,9 @@ A strongly typed object may already have the needed conversion applied.
 
 Even then, parser-based assignment may still be supported when appropriate.
 
-### Use `setInputValue()` when the source value should be treated as input text or other input-form data
+### Use `setTextValue()` when the source value should be treated as input text or other input-form data
 
-`ValueHost.setInputValue(inputValue)` is the Jivs-specific path that automatically runs a supplied parser to convert the input value into the native value stored for validation.
+`ValueHost.setTextValue(textValue)` is the Jivs-specific path that automatically runs a supplied parser to convert the input value into the native value stored for validation.
 
 This is the natural fit when the source data is still in its input form, especially string-based input such as:
 
@@ -57,11 +57,11 @@ This is the natural fit when the source data is still in its input form, especia
 * string values from JSON that still need parsing
 * other incoming values that should be processed through Jivs parsing rules
 
-`setInputValue()` will get the parser from the Validation configuration specific to the data type lookup key. The ValueHost.setInputValue() also supports options that can supply parser-related behavior there.
+`setTextValue()` will get the parser from the Validation configuration specific to the data type lookup key. The ValueHost.setTextValue() also supports options that can supply parser-related behavior there.
 
 ### Use other assignment paths when the native value is already available
 
-When server-side code already has the native value in the form needed for validation, it may assign that value without relying on parser-based conversion. It should use ValueHost.setValue() instead of ValueHost.setInputValue().
+When server-side code already has the native value in the form needed for validation, it may assign that value without relying on parser-based conversion. It should use ValueHost.setValue() instead of ValueHost.setTextValue().
 
 That case is more likely with:
 
@@ -122,7 +122,7 @@ That guidance is especially important for:
     * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
     * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
     * When incoming values are strings or otherwise need conversion before validation, parsers may be used to prepare native values for the `ValueHosts`.
-    * `ValueHost.setInputValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
+    * `ValueHost.setTextValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
 11. Server runs Jivs validation
 
     * Developer chooses whether to stop now when Jivs `IssuesFound` exist, or continue into later non-Jivs checks.
@@ -176,7 +176,7 @@ That guidance is especially important for:
 * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
 * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
 * When incoming values are strings or otherwise need conversion before validation, parsers may be used to prepare native values for the `ValueHosts`.
-* `ValueHost.setInputValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
+* `ValueHost.setTextValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
 
 11. Server runs Jivs validation
 
@@ -219,7 +219,7 @@ That guidance is especially important for:
    * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
    * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
    * When incoming values are strings or otherwise need conversion before validation, parsers may be used to prepare native values for the `ValueHosts`.
-   * `ValueHost.setInputValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
+   * `ValueHost.setTextValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
 4. Server runs Jivs validation
 
    * Developer chooses whether to stop now when Jivs `IssuesFound` exist, or continue into later non-Jivs checks.
@@ -563,7 +563,7 @@ Use this workflow when the server uses Jivs to perform server-side validation an
    * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
    * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
    * When incoming values are strings or otherwise need conversion before validation, parsers may be used to prepare native values for the `ValueHosts`.
-   * `ValueHost.setInputValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
+   * `ValueHost.setTextValue()` already supports parser-driven conversion from input value to native value. Parsers prepare values for the `ValueHost`; they do not update the original source object.
 
 4. Server runs Jivs validation
 

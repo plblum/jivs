@@ -1,6 +1,7 @@
 /**
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
+import { IDataTypeFormatter } from './DataTypeFormatters';
 import { IDataTypeParser } from './DataTypeParsers';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
 import {
@@ -94,7 +95,7 @@ export interface IFieldValueHost extends IValidatorsValueHostBase {
      *   may also set conversionErrorTokenValue when it reports an error.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    setTextValue(textValue: string | undefined, options?: SetTextValueOptions): void;
+    setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
 
     /**
      * Replaces both the typed value and the text value at the same time,
@@ -207,6 +208,46 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
     parserCreator?: (valueHost: IFieldValueHost) => IDataTypeParser<any> | null;
 
     /**
+     * A DataTypeFormatter object is used when calling setValue() to convert
+     * the native value into the text value when supplied.
+     * Effectively if setup, setValue() will call the formatter and then
+     * call setValues() with both native and text values instead of setValue() alone.
+     * 
+     * The value here is a lookup key, and is usually one of the Data Type lookup keys, 
+     * like LookupKey.Integer for an integer-specific formatter. However, individual
+     * DataTypeFormatter classes may have a unique lookup key to assign here.
+     * - Assign to the lookup key to use a formatter that supports the lookup key.
+     * - Leave it undefined/null to AVOID using a formatter at all,
+     * meaning that setValue will never call setValues() with both native and text values, 
+     * and the text value will remain unchanged.
+     * 
+     * Note that the options object for setValue has a property called disableFormatter
+     * which if set to true will prevent formatting too.
+     * 
+     * Alternatively, you can leave this undefined and use formatterCreator 
+     * to create the DataTypeFormatter instance you want.
+     */
+    formatterLookupKey?: string | null;
+
+    /**
+     * Alternative to formatterLookupKey that establishes a formatter used when calling setValue()
+     * to convert the native value into the text value.
+     * 
+     * It provides a callback function that is expected to create an object that 
+     * implements IDataTypeFormatter or return null if no formatter is appropriate.
+     * 
+     * Your formatter object's supports() method will be called. If it returns false, your
+     * object won't be used, and it will fallback to the formatterLookupKey.
+     * 
+     * Note that the options object for setValue has a property called disableFormatter
+     * which if set to true will prevent formatting too.
+     * @param valueHost
+     * @returns Object that implements IDataTypeFormatter
+     * or return null if no formatter is appropriate
+     */
+    formatterCreator?: (valueHost: IFieldValueHost) => IDataTypeFormatter | null;
+
+    /**
      * The actual property name on the model. If its the same as Config.name,
      * this can be undefined.
      * Helps mapping between model and valuehost.
@@ -262,12 +303,19 @@ export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback
 /**
  * Additional options for setTextValue().
  */
-export interface SetTextValueOptions extends SetValueOptions
+export interface FieldValueHostSetValueOptions extends SetValueOptions
 {
     /**
-     * When true, do not use the DataTypeParser to convert the input value into its native value.
+     * When true, do not use the DataTypeParser to convert 
+     * the input value into its native value with setTextValue().
      */
     disableParser?: boolean;
+
+    /**
+     * When true, do not use the DataTypeFormatter to convert 
+     * the native value into its text value with setValue().
+     */
+    disableFormatter?: boolean;
 }
 
 /**

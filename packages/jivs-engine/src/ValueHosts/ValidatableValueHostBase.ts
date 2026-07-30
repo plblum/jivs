@@ -57,10 +57,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     //#region IValidatableValueHostBase
     /**
-    * Replaces the typed value and optionally validates.
-    * Call when the typed value was changed directly by consuming code.
-    * @param value - The typed value to store. Use undefined to indicate that the
-    * typed value could not be resolved from the text value, such as when parsing fails.
+    * Replaces the native value and optionally validates.
+    * Call when the native value was changed directly by consuming code.
+    * @param value - The native value to store. Use undefined to indicate that the
+    * native value could not be resolved from the text value, such as when parsing fails.
     * All other values, including null and the empty string, are treated as real data.
     * When undefined, IsChanged is still set to true unless options.Reset = true.
     * @param options -
@@ -84,6 +84,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
             this.logger.message(LoggingLevel.Warn, () => 'setValue does not support duringEdit option');
         }
+        if (this.tryFormatToText(value, options))
+            return; // derived class handled the formatting and called setValues() instead of setValue()
+        
         const oldValue: any = this.instanceState.value;
         const changed = !deepEquals(value, oldValue);
         let valStateChanged = false;
@@ -101,6 +104,21 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
+    }
+
+    /**
+     * Called by setValue to allow derived classes to replace the functionality
+     * of setValue() when formatters are setup on the ValueHost.
+     * In that case, we want to format then use setValues() with both native
+     * and text values instead of setValue().
+     * @param value - The native value to store. Use undefined to indicate that 
+     * there is no native value.
+     * @param options - The options for setting the value.
+     * @returns When true, it used setValues() and setValue() should not continue. 
+     * When false, setValue() continues as normal.
+     */
+    protected tryFormatToText(value: any, options?: SetValueOptions): boolean {
+        return false;
     }
 
     protected processValidationOptions(options: SetValueOptions, valStateChanged: boolean): void {

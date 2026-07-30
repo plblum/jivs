@@ -73,7 +73,7 @@ When ExternalIssueFound.errorCode matches an existing validator:
 ```
 ValidatableValueHostBase
 └── ValidatorsValueHostBase (validators + field-level features)
-    ├── InputValueHost
+    ├── TextValueHost
     ├── PropertyValueHost
     └── BusinessLogicErrorsValueHost (no validators, just errors)
 ```
@@ -83,7 +83,7 @@ ValidatableValueHostBase
 ValidatableValueHostBase
 └── ValidatorsValueHostBase (NEW - validators only)
     ├── FieldValidatorsValueHostBase (RENAMED - field-level features)
-    │   ├── InputValueHost
+    │   ├── TextValueHost
     │   └── PropertyValueHost
     └── ModelValidatorsValueHost (RENAMED - model-level + validators)
 ```
@@ -199,12 +199,12 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 2. Rename old ValidatorsValueHostBase → FieldValidatorsValueHostBase
    - Keep field-specific features
    - Extend new ValidatorsValueHostBase
-3. Update InputValueHost, PropertyValueHost to extend FieldValidatorsValueHostBase
+3. Update TextValueHost, PropertyValueHost to extend FieldValidatorsValueHostBase
 4. Run full test suite
 
 **Files affected:**
 - ValidatorsValueHostBase.ts (split into two files)
-- InputValueHost.ts, PropertyValueHost.ts (update extends)
+- TextValueHost.ts, PropertyValueHost.ts (update extends)
 - All related interfaces
 
 ### Phase 3: Rename & Enhance BusinessLogicErrorsValueHost

@@ -143,7 +143,7 @@ changes to whatever impacts the UI.
 - Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#rules).
 - Modify many aspects of existing ValueHosts through the `modify(valueHostName)` method including:
     + labels
-    + parsers 
+    + parsers and formatters
     + enabling
     + validation groups
     ```ts
@@ -305,7 +305,7 @@ class ValidationManagerConfigBuilder {
     onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
     onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
-    onInputValueChanged?: null | InputValueChangedHandler;
+    onTextValueChanged?: null | TextValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
     onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
     onConfigChanged?: null: ValueHostsManagerConfigChangedHandler;
@@ -341,8 +341,8 @@ class ValidationManagerConfigBuilder {
     ```
 ### Callbacks    
 - `onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
-- `onValueChanged` notifies you when a `ValueHost` had its value changed.
-- `onInputValueChanged` notifies you when an `FieldValueHost` had its Input Value changed.
+- `onValueChanged` notifies you when a `ValueHost` had its value changed. On a FieldValueHost, this is the native value, not the text value.
+- `onTextValueChanged` notifies you when an `FieldValueHost` had its text value changed.
 - `onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
 - `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValueHostsManager.
 ### State
@@ -429,14 +429,15 @@ Let’s go through these types.
     ```  
     
 - `modify()` provides access to an existing ValueHost. Specify the value host name and optionally an object
-that includes label, group, enabling tools, parsers, and more. 
+that includes label, group, enabling tools, parsers, formatters, and more. 
     ```ts
     adapter.modify('Field1');
     adapter.modify('Field1', 'New Label');  // update the label
     adapter.modify('Field1', {
         label: 'New Label',
         group: 'group name',
-        parserLookupKey: 'MyParser'
+        parserLookupKey: 'MyParser',
+        formatterLookupKey: LookupKey.Currency
     });
     ```
 

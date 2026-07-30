@@ -6,7 +6,7 @@ import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from '
 import { ValidationManagerConfig, IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { SetTextValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';
@@ -2487,7 +2487,7 @@ export interface IFivaseForm {
     readonly services: IFivaseServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
-    setTextValue(valueHostName: string, textValue: string, options?: SetTextValueOptions): void;
+    setTextValue(valueHostName: string, textValue: string, options?: FieldValueHostSetValueOptions): void;
 
     subscribeToValidationState(callback: (state: ValidationState) => void): Subscription;
     unsubscribeFromValidationState(subscription: Subscription): void;
@@ -2588,7 +2588,7 @@ export class FivaseForm implements IFivaseForm {
      * @param textValue 
      * @param options 
      */
-    public setTextValue(valueHostName: string, textValue: string, options?: SetTextValueOptions): void {
+    public setTextValue(valueHostName: string, textValue: string, options?: FieldValueHostSetValueOptions): void {
         this.validationManager.vh.field(valueHostName).setTextValue(textValue, options);
     }
 

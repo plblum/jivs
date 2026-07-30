@@ -409,7 +409,7 @@ The Jivs Engine operates on ValueHosts.
 
 A ValueHost represents a value participating in the Jivs Engine.
 
-Some ValueHosts represent values that are validated directly, such as InputValueHosts and PropertyValueHosts.
+Some ValueHosts represent values that are validated directly, such as TextValueHosts and PropertyValueHosts.
 
 Other ValueHosts exist to supply values consumed by validation rules, such as CalcValueHosts and StaticValueHosts.
 

@@ -36,7 +36,9 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   [`Validator class`](#validators-connecting-conditions-to-error-messages) – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
 - [`ValidationServices class`](#validationservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
-    - `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
+    - `IDataTypeFormatter` – Two use cases:
+        + FieldValueHost can convert the native value into its text value when using `ValueHost.setValue()`.
+        + Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
     - `IDataTypeConverter` – For these use cases:
         + Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
         + Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
@@ -295,7 +297,7 @@ interface IFieldValueHost extends IValueHost
 {
     getTextValue(): any;
     setTextValue(value, options?): void;	// value from the UI's editor
-    setValues(nativeValue, inputValue, options?): void;	// both values
+    setValues(nativeValue, textValue, options?): void;	// both values
     
     validate(options): ValueHostValidateResult;
     isValid: boolean;
@@ -361,7 +363,7 @@ class PersonEditFormRules
         adapter: IFormConfigAdapter,
         options?: RulesConfigOptions): void {
     // PENDING WORK...
-    // make changes to labels, error messages, severity, parsers and more
+    // make changes to labels, error messages, severity, parsers, formatters and more
     // add new validation rules or combine UI logic with business logic rules
     // add new ValueHosts
     }
@@ -405,6 +407,8 @@ The [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder
         initialEnabled?: boolean;
         parserLookupKey?: null | string;
         parserCreator?: ((valueHost) => null | IDataTypeParser<any>);
+        formatterLookupKey?: null | string;
+        formatterCreator?: ((valueHost) => null | IDataTypeFormatter<any>);
         group?: null | string | string[];
         propertyName?: string;
     }
@@ -493,6 +497,8 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to validate() that share the group. The name matching is case insensitive.
 - `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
 - `parserCreator` – An alternative to `parserLookupKey` that provides a function callback to create the parser object. The function has this definition: `(valueHost: IFieldValueHost) => IDataTypeParser | null;`
+- `formatterLookupKey` – When calling setValue(), it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the DataTypeFormatterService.
+- `formatterCreator` – An alternative to `formatterLookupKey` that provides a function callback to create the formatter object. The function has this definition: `(valueHost: IFieldValueHost) => IDataTypeFormatter | null;`
 - `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
 
 ### Getting a ValueHost
@@ -924,9 +930,9 @@ interface IValidationServices {
 
 // these are all factories where you may register objects  
     conditionFactory: IConditionFactory;    
-    dataTypeFormatterService: IDataTypeFormatterService;
     dataTypeConverterService: IDataTypeConverterService;
     dataTypeParserService: IDataTypeParserService;
+    dataTypeFormatterService: IDataTypeFormatterService;
     // less frequently modified factories
     dataTypeIdentifierService: IDataTypeIdentifierService;
     dataTypeComparerService: IDataTypeComparerService;
@@ -1050,6 +1056,26 @@ Consider these *Use Cases*:
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
 
 ### DataTypeFormatters
+Two use cases:
++ Convert the native value into a text value when calling FieldValueHost.setValue().
++ Localized tokens in error messages.
+
+#### Convert native to text value
+When you call the FieldValueHost.setValue() function, it takes only a native value. 
+Normally it does not attempt to update the companion text value that is shown in the data entry field.
+
+Assign the FieldValueHostConfig.formatterLookupKey and you get a different result.
+- The native value is formatted with the supplied formatter.
+- The text value is set
+- The ValidationManager.onTextValueChanged callback is triggered, allowing you to wire up your data entry field to intake the new string.
+```ts
+vm.onTextValueChanged = (fieldValueHost, oldValue)=>{
+    let newTextValue = fieldValueHost.getTextValue();
+    // assign it to the input's value attribute
+    document.getElementById('FirstName').value = newTextValue;
+}
+```
+#### Localized tokens in error messages
 Formatters provide localized strings for the tokens within error messages with implementations of `IDataTypeFormatter`. For example, if validating a date against a range, your error message may look like this: 
 
 `"The value must be between {Minimum} and {Maximum}."`
@@ -1081,7 +1107,7 @@ Parsers are used:
     - In the client-side in response to the onchange event of a form \<input>.
     - In the node.js server that uses Jivs to validate. See [Validation in Node.Js](#using-jivs-on-a-nodejs-server).
 - when the input value is a string (even if the native value is also a string).
-- automatically, so long as a `IDataTypeParser` is setup for the lookup key assigned to InputValueHostConfig.dataType or InputValueHostConfig.parserLookupKey. Alternatively, pass a function to create the parser in InputValueHostConfig.parserCreator.
+- automatically, so long as a `IDataTypeParser` is setup for the lookup key assigned to TextValueHostConfig.dataType or TextValueHostConfig.parserLookupKey. Alternatively, pass a function to create the parser in TextValueHostConfig.parserCreator.
 
 #### Error reporting
 Jivs has been designed so that you have a parser do very limited error reporting, leaving most cases to validators. Suppose that your native value is expected to be a positive integer. Our NumberParser will convert the input into a number, including negatives and floating point. You add two Validators with these conditions: PositiveCondition and IntegerCondition. This lets you supply specific error messages to the user.
@@ -1394,10 +1420,10 @@ When a ValueHosts' value changed, call its `validate()` function or pass the `{ 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=> {
-    let inputValue = evt.target.value;
-    let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
+    let textValue = evt.target.value;
+    let nativeValue = YourConvertToNativeCode(textValue);  // return undefined if cannot convert
     let valueHost = vm.vh.field('FirstName');	// or vm.getTextValueHost('FirstName')
-    valueHost.setValues(nativeValue, inputValue);
+    valueHost.setValues(nativeValue, textValue);
     valueHost.validate();
 });	
 firstNameFld.attachEventListener('oninput', (evt)=> {
@@ -1424,9 +1450,9 @@ The `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` f
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=> {
-    let inputValue = evt.target.value;
-    let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-    vm.vh.field('FirstName').setValues(nativeValue, inputValue, { validate: true });
+    let textValue = evt.target.value;
+    let nativeValue = YourConvertToNativeCode(textValue);  // return undefined if cannot convert
+    vm.vh.field('FirstName').setValues(nativeValue, textValue, { validate: true });
 });	
 firstNameFld.attachEventListener('oninput', (evt)=> {
     vm.vh.field('FirstName').setTextValue(evt.target.value, { validate: true, duringEdit: true });
@@ -1442,6 +1468,12 @@ interface SetValueOptions {
     skipValueChangedCallback?: boolean;
     overrideDisabled?: boolean;
 }
+// FieldValueHosts extend the above
+export interface FieldValueHostSetValueOptions extends SetValueOptions
+{
+    disableParser?: boolean;
+    disableFormatter?: boolean;
+}
 ```
 These properties are all related to validation:
 - validate - When true, invoke validation but only if the value changed.
@@ -1450,9 +1482,9 @@ These properties are all related to validation:
     ```ts
     let firstNameFld = document.getElementById('FirstName');
     firstNameFld.attachEventListener('onchange', (evt)=> {
-        let inputValue = evt.target.value;
-        let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
-        vm.vh.field('FirstName').setValues(nativeValue, inputValue, { 
+        let textValue = evt.target.value;
+        let [nativeValue, errorMessage] = YourConvertToNativeCode(textValue);  
+        vm.vh.field('FirstName').setValues(nativeValue, textValue, { 
             validate: true, 
             conversionErrorTokenValue: errorMessage 
         });
@@ -1679,6 +1711,8 @@ Without the actual values, you cannot validate. This section covers ways to supp
 You will set values as you initialize the ValidationManager and as the values are changed. Most of the time, you will use `valueHost.setValue()` and `valueHost.setValueToUndefined()`. 
 ```ts
 setValue(value: any, options?: SetValueOptions): void;
+setValue(value: any, options?: FieldValueHostSetValueOptions): void;    // on FieldValueHosts
+
 setValueToUndefined(options?: SetValueOptions): void;
 ```
 Use `setValueToUndefined()` (or call `setValue(undefined)`) to indicate that the value cannot be determined. For example, the user's input could not be converted into its native data type.
@@ -1713,21 +1747,28 @@ interface SetValueOptions {
     duringEdit?: boolean;
     conversionErrorTokenValue?: string;
 }
+export interface FieldValueHostSetValueOptions extends SetValueOptions
+{
+    disableParser?: boolean;
+    disableFormatter?: boolean;
+}
 ```
 These properties are all related to validation:
 - `validate` - When true, invoke validation but only if the value changed. Only supported by validatable ValueHosts.
 - `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
-- `skipValueChangedCallback` - When true, the onValueChanged and onInputValueChanged callbacks will not be invoked.
+- `skipValueChangedCallback` - When true, the onValueChanged and onTextValueChanged callbacks will not be invoked.
 - `overrideDisabled` - When true, it forces the change to the value even when the ValueHost is disabled.
 ValueHost is disabled when `isEnabled()` returns false.
 **Use case**: You may want to initialize a ValueHost with a value that is disabled. See [Disabling a ValueHost](#disabling-a-valuehost).
+- disableParser - When true, do not allow the parser to run on this ValueHost.
+- disableFormatter - When true, do not allow the parser to run on this ValueHost.
 - The other two are special cases covered elsewhere.
 
 ### Setting values on FieldValueHosts
 FieldValueHosts have two values: the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setTextValue()`.
 ```ts
-setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
+setValues(nativeValue: any, textValue: any, options?: SetValueOptions): void;
 setTextValue(value: any, options?: SetValueOptions): void;
 ```
 
@@ -1760,9 +1801,9 @@ getTextValue(): any;
 ```
 ```ts
 let lastNameVH = vm.getValueHost("LastName");
-let inputValue = lastNameVH.getTextValue();
+let textValue = lastNameVH.getTextValue();
 // or
-let  inputValue = vm.vh.any("LastName").getTextValue();
+let  textValue = vm.vh.any("LastName").getTextValue();
 ```
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
@@ -2149,7 +2190,7 @@ even before you create a ValidationManager object from it.
 
 ConfigAnalysis does the following:
 - Validates the properties throughout your ValueHostConfig objects, including:
-  - Requested Lookup Keys have an associated class registered with the factories, taking cultures into account. (Lookup Keys are used to identify	data types, parsers, formatters, converters, and more.)
+  - Requested Lookup Keys have an associated class registered with the factories, taking cultures into account. (Lookup Keys are used to identify data types, parsers, formatters, converters, and more.)
 	> When using dependency injection, it is not immediately apparent if the object
 	that you want is the one you get, especially because Jivs provides fallbacks for cultures and Lookup Keys.
   - Requested Condition Types are registered in the ConditionFactory.
