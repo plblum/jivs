@@ -85,6 +85,16 @@ npm run retry_publish      # Retry if publish fails
 NPM is not updated from github merges. You must run it manually.
 The resulting libraries are published here: https://www.npmjs.com/settings/plblum/packages
 
+### Updating access tokens
+Granular access tokens are currently managed under the plblum account.
+They must be read/write and currently expire after 90 days.
+
+1. Create and capture the token here: [https://www.npmjs.com/settings/plblum/tokens/]
+2. Save the token like this:
+    ```bash
+    npm set //registry.npmjs.org/:_authToken=<YOUR_TOKEN>
+    ```
+
 ## 📚 Documentation (from root only)
 
 ```bash
