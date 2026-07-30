@@ -12,7 +12,7 @@ import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
-import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
 
@@ -37,15 +37,15 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
         }
 
         protected publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-            super.logger.log(level, gatherFn);
+            this.logger.log(level, gatherFn);
         }
 
         public publicify_mergeConfigs(source: object, destination: object, identity: MergeIdentity): void {
-            super.mergeConfigs(source, destination, identity);
+            this.mergeConfigs(source, destination, identity);
         }
         public publicify_mergeProperty(propertyName: string, rule: PropertyConflictRule<object>,
             source: object, destination: object, identity: MergeIdentity): void {
-            super.mergeProperty(propertyName, rule, source, destination, identity);
+            this.mergeProperty(propertyName, rule, source, destination, identity);
         }
 
     }
@@ -383,34 +383,9 @@ describe('ValueHostConfigMergeService', () => {
                     initialValue: 'not in source'
                 });
         });
-        test('InputValueHost is source and PropertyValueHost is destination. ValueHostType changed to Input', () => {
+        test('FieldValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
             testResolve({
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                dataType: LookupKey.Date,
-                label: 'Birthdate',
-                labell10n: 'BD'
-            },
-                {
-                    valueHostType: ValueHostType.Property,
-                    name: 'Field1',
-                    dataType: LookupKey.DateTime,
-                    label: 'Field 1',
-                    initialValue: 'not in source'
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.Date,
-                    label: 'Birthdate',
-                    labell10n: 'BD',
-                    initialValue: 'not in source'
-                },
-                'valueHostType replaced');
-        });
-        test('InputValueHost is source and StaticValueHost is destination. ValueHostType not changed and reported in log', () => {
-            testResolve({
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 dataType: LookupKey.Date,
                 label: 'Birthdate',
@@ -431,7 +406,7 @@ describe('ValueHostConfigMergeService', () => {
                     labell10n: 'BD',
                     initialValue: 'not in source'
                 },
-                'Will not change ValueHostType from Static to Input.');
+                'Will not change ValueHostType from Static to Field.');
         });
         test('dataType of source is null. No change to the destination datatype', () => {
             testResolve({
@@ -484,8 +459,8 @@ describe('ValueHostConfigMergeService', () => {
         //NOTE: Most of the testing of validatorConfigs is deferred to ValidatorConfigMergeService tests
         // This mostly demonstrates the interchange between ValueHostConfigMergeService and ValidatorConfigMergeService
         test('No conflicting validators. Copies everything except valueHostType and valueHostName', () => {
-            testResolve(<InputValueHostConfig>{
-                valueHostType: ValueHostType.Input,
+            testResolve(<FieldValueHostConfig>{
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 dataType: LookupKey.Date,
                 label: 'Birthdate',
@@ -500,8 +475,8 @@ describe('ValueHostConfigMergeService', () => {
                     }
                 ]
             },
-                <InputValueHostConfig>{
-                    valueHostType: ValueHostType.Input,
+                <FieldValueHostConfig>{
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.DateTime,
                     label: 'Field 1',
@@ -514,8 +489,8 @@ describe('ValueHostConfigMergeService', () => {
                         }
                     ]
                 },
-                <InputValueHostConfig>{
-                    valueHostType: ValueHostType.Input,
+                <FieldValueHostConfig>{
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.Date,
                     label: 'Birthdate',
@@ -542,22 +517,22 @@ describe('ValueHostConfigMergeService', () => {
     describe('identifyValueHostConflict', () => {
         test('Matches based on the field name. Matches return the actual instance found. Non-matches return undefined.', () => {
             let testItem = new ValueHostConfigMergeService();
-            const source: InputValueHostConfig = {
+            const source: FieldValueHostConfig = {
                 name: 'Field1',
                 dataType: 'String',
                 validatorConfigs: null
             };
-            const dest1: InputValueHostConfig = {
+            const dest1: FieldValueHostConfig = {
                 name: 'Field1',
                 dataType: 'Number', // intentionally different from source
                 validatorConfigs: []
             };
-            const dest2: InputValueHostConfig = {
+            const dest2: FieldValueHostConfig = {
                 name: 'Field2',
                 dataType: 'Number', 
                 validatorConfigs: []
             };            
-            const destinations: Array<InputValueHostConfig> = [
+            const destinations: Array<FieldValueHostConfig> = [
                 dest1, dest2
             ];
             expect(testItem.identifyValueHostConflict(source, destinations)).toBe(dest1);
@@ -576,7 +551,8 @@ describe('ValidatorConfigMergeService', () => {
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorCode')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorMessage')).toBeUndefined();
-            expect(testItem.identifyHandler).toBe(testItem.identifyValidatorConflict);
+            // identityValidatorConflict is using the Bind() function, so match by name, not instance
+            expect(testItem.identifyHandler.name).toContain(testItem.identifyValidatorConflict.name);
         });
 
         test('identityHandler set should be returned on get', () => {
@@ -680,18 +656,18 @@ describe('ValidatorConfigMergeService', () => {
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: undefined!
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: undefined!
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: undefined!
@@ -700,18 +676,18 @@ describe('ValidatorConfigMergeService', () => {
         test('Source and destination has ValidatorConfigs=null leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: null
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: null
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: null
@@ -720,18 +696,18 @@ describe('ValidatorConfigMergeService', () => {
         test('Source and destination has ValidatorConfigs=[] leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: []
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: []
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: []
@@ -740,7 +716,7 @@ describe('ValidatorConfigMergeService', () => {
         test('Source has 2 and destination has ValidatorConfigs=null creates validatorConfigs with the 1 item in destination', () => {
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
                     [{
@@ -755,13 +731,13 @@ describe('ValidatorConfigMergeService', () => {
                     }]
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: null
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [{
@@ -779,7 +755,7 @@ describe('ValidatorConfigMergeService', () => {
         test('Source and destination non-conflicting Validators adds the source into destination', () => {
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
                     [{
@@ -789,7 +765,7 @@ describe('ValidatorConfigMergeService', () => {
                     }]
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
@@ -800,7 +776,7 @@ describe('ValidatorConfigMergeService', () => {
                         }]
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
@@ -819,10 +795,10 @@ describe('ValidatorConfigMergeService', () => {
         test('Source and destination conflicting Validators merges validatorConfigs except nochange for conditionConfig', () => {
             //!! NOTE: There is an override for conditionConfig. It involves passing a special flag
             // through the ValidatorConfig. The ValidatorConfigMergeService respects that flag and replaces.
-            // That capability is tested in the Builder and Modifier code tests.
+            // That capability is tested in the Builder code tests.
             let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
+                valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
                     [{
@@ -833,7 +809,7 @@ describe('ValidatorConfigMergeService', () => {
                     }]
             },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
@@ -844,7 +820,7 @@ describe('ValidatorConfigMergeService', () => {
                         }]
                 },
                 {
-                    valueHostType: ValueHostType.Input,
+                    valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [

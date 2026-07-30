@@ -1,0 +1,4 @@
+/**
+ * @hidden
+ * @module jivs-builder
+ */

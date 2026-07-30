@@ -1,12 +1,12 @@
 /**
  * Factory for generating classes that implement IValueHost that use ValueHostConfig.
  * ValueHostConfig identifies the desired ValueHost class.
- * Most apps will use the standard InputValueHost class.
- * @module ValueHosts/Types/ValueHostFactory
+ * Most apps will use the standard FieldValueHost class.
+ * @module jivs-engine/ValueHosts/Types/ValueHostFactory
  */
 
 import { ValueHostConfig, ValueHostInstanceState, IValueHost } from './ValueHost';
-import { IValueHostsManager } from './ValueHostsManager';
+import { IValidationManager } from './ValidationManager';
 
 /**
  * Interface for creating ValueHostFactory classes.
@@ -14,11 +14,11 @@ import { IValueHostsManager } from './ValueHostsManager';
 export interface IValueHostFactory {
     /**
      * Creates the instance.
-     * @param valueHostsManager 
+     * @param validationManager 
      * @param config - determines the class. All classes supported here must ValueHostConfig to get their setup.
      * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createInstanceState() to create an initial value.
      */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
+    create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
@@ -54,11 +54,11 @@ export interface IValueHostGenerator {
     canCreate(config: ValueHostConfig): boolean;
     /**
      * Creates the instance.
-     * @param valueHostsManager 
+     * @param validationManager 
      * @param config 
      * @param state 
      */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
+    create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
@@ -81,17 +81,13 @@ export interface IValueHostGenerator {
 export enum ValueHostType
 {
 /**
+ * Associated with FieldValueHost
+ */    
+    Field = 'Field',
+/**
  * Associated with StaticValueHost
  */    
     Static = 'Static',
-/**
- * Associated with InputValueHost
- */    
-    Input = 'Input',
-/**
- * Associated with PropertyValueHost
- */    
-    Property = 'Property',
 /**
  * Associated with CalcValueHost
  */    

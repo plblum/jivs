@@ -1,14 +1,13 @@
 /**
- * {@inheritDoc Services/AbstractClasses/ServiceWithAccessorBase!ServiceWithAccessorBase}
- * @module Services/AbstractClasses/ServiceWithAccessorBase
+ * {@inheritDoc jivs-engine/Services/AbstractClasses/ServiceWithAccessorBase!ServiceWithAccessorBase}
+ * @module jivs-engine/Services/AbstractClasses/ServiceWithAccessorBase
  */
 
-import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
-import { IValidationServices } from "../Interfaces/ValidationServices";
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../Interfaces/LoggerService";
-import { ServiceBase } from "./ServiceBase";
-import { IServicesAccessor } from "../Interfaces/Services";
-import { LoggerFacade } from "../Utilities/LoggerFacade";
+import { IServicesAccessor } from '../Interfaces/Services';
+import { IValidationServices } from '../Interfaces/ValidationServices';
+import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { ServiceBase } from './ServiceBase';
 
 /**
  * Abstract base class for building a service with a reference back to the IServices object.

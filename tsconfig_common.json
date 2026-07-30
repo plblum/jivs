@@ -2,7 +2,7 @@
   // NOTE: Most path related options are in package-specific tsconfig files.
   "compilerOptions": {
     "rootDir": "./",
-    "target": "ES6",
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
@@ -20,6 +20,7 @@
     "isolatedModules": true,
     "sourceMap": true,
     "typeRoots": ["./types", "./node_modules/@types/"],
+    "types": ["jest", "node"],
 
     /* Strict Type-Checking Options */
     "strict": true /* Enable all strict type-checking options. */,

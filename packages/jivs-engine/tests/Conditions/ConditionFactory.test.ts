@@ -5,10 +5,8 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { FluentConditionBuilder } from "../../src/ValueHosts/Fluent";
-import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 
 describe('ConditionFactory.create', () => {
     test('create with registered Condition creates the correct instance', () => {
@@ -55,15 +53,7 @@ describe('ConditionFactory.create', () => {
 
     });    
 });
-describe('enableFluentConditions', () => {
-    test('First call works and second call does not throw', () => {
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeUndefined();
-        enableFluentConditions();
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
-        expect(() => enableFluentConditions()).not.toThrow();
-        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
-    });
-});
+
 describe('dispose()', () => {
     test('using functions after dispose throw TypeError', () => {
         let factory = new ConditionFactory();
@@ -80,7 +70,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'Normal'};
         conditionType: string = 'Normal';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;
@@ -89,7 +79,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'LazyLoad'};
         conditionType: string = 'LazyLoad';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;

@@ -1,19 +1,19 @@
 /**
  * 
- * @module Analyzers/Classes/LookupKeys
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/LookupKeys
  */
 
-import { defaultComparer } from "@plblum/jivs-engine/build/DataTypes/DataTypeComparers";
-import { ConditionCategory, ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { ComparersResult } from "@plblum/jivs-engine/build/Interfaces/DataTypeComparerService";
-import { ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { InvalidTypeError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
-import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
-import { IDataTypeComparerAnalyzer } from "../Types/Analyzers";
-import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from "../Types/Results";
+import { defaultComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
+import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
+import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { InvalidTypeError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { AnalysisResultsHelper } from './AnalysisResultsHelper';
+import { IDataTypeComparerAnalyzer } from '../Types/Analyzers';
+import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 
 /**
  * Handles IDataTypeComparer objects through the DataTypeComparerService.
@@ -68,7 +68,7 @@ import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from "../Types/Re
  * ```
  */
 
-export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
+export class DataTypeComparerAnalyzer<TServices extends IValidationServices>
     implements IDataTypeComparerAnalyzer {
     constructor(helper: AnalysisResultsHelper<TServices>) {
         this._helper = helper;
@@ -80,7 +80,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
     protected get helper(): AnalysisResultsHelper<TServices> {
         return this._helper;
     }
-    private _helper: AnalysisResultsHelper<TServices>;
+    private readonly _helper: AnalysisResultsHelper<TServices>;
 
     /**
      * All ConditionConfigs are passed to this method. They will be evaluated
@@ -100,7 +100,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
     public checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig):
         ComparerServiceCAResult | null {
 // anything to disqualify this condition from the check?
-        let cleanCT = cleanString(conditionConfig.conditionType);
+        const cleanCT = cleanString(conditionConfig.conditionType);
         if (!cleanCT)
             return null;
         let lookupKey = this.identifyLookupKey(conditionConfig, valueHostConfig);
@@ -109,25 +109,25 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         if (!this.conditionUsesComparer(conditionConfig))
             return null;
 
-        let lookupKeyResults = this.helper.results.lookupKeyResults;        
+        const lookupKeyResults = this.helper.results.lookupKeyResults;        
 
-        let realInfo = this.helper.checkForRealLookupKeyName(lookupKey);
+        const realInfo = this.helper.checkForRealLookupKeyName(lookupKey);
         lookupKey = realInfo.resolvedLookupKey;
         let lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey);
         if (!lookupKeyResult)
         {
-            let srkResult = this.helper.registerServiceLookupKey(lookupKey, null, valueHostConfig);
+            const srkResult = this.helper.registerServiceLookupKey(lookupKey, null, valueHostConfig);
             // istanbul ignore next // defensive. We should always find the lookup key.
             if (!srkResult)
                 return null;
             lookupKey = srkResult.lookupKeyResult.lookupKey;
             lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey)!;
         }
-        let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceCAResult;
+        const serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceCAResult;
         // if we have already found a comparer, we don't need to do anything.
         if (serviceInfo)
             return serviceInfo;
-        let results: ComparerServiceCAResult = {
+        const results: ComparerServiceCAResult = {
             feature: CAFeature.comparer
         };
         // we'll add the remaining fields in the remaining code
@@ -143,7 +143,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             return results;
         }
         // find a matching Comparer. Its likely there isn't one, and we'll progress onto using the default Comparer against the sample values.
-        let dtcs = this.helper.services.dataTypeComparerService;
+        const dtcs = this.helper.services.dataTypeComparerService;
         let comparer = dtcs.find(sampleValue, sampleValue, lookupKey, lookupKey);
         if (comparer) {
             results.classFound = comparer.constructor.name;
@@ -152,8 +152,8 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             return results;
         }
         // like with DataTypeComparerService, we'll try the lookup key fallbacks to find a comparer.
-        let lkfs = this.helper.services.lookupKeyFallbackService;
-        let lookupKeyFallback = lkfs.fallbackToDeepestMatch(lookupKey) ?? lookupKey;
+        const lkfs = this.helper.services.lookupKeyFallbackService;
+        const lookupKeyFallback = lkfs.fallbackToDeepestMatch(lookupKey) ?? lookupKey;
         if (lookupKeyFallback !== lookupKey) {
             comparer = dtcs.find(sampleValue, sampleValue, lookupKeyFallback, lookupKeyFallback);
             if (comparer) {
@@ -164,23 +164,31 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             }
         }
 
-        try {
-            let compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
-            if (compareResult !== ComparersResult.Undetermined) {
-                results.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
-                results.dataExamples = [sampleValue];
-                return results;
+        for (let i = 0; i < 2; i++) {
+            try {
+                if (i === 1) {
+                    // try again using available converters
+                    const conversionResult = this.helper.services.dataTypeConverterService.convertUntilResult(sampleValue, lookupKey, LookupKey.Number);
+                    if (conversionResult.resolvedValue !== undefined)
+                        sampleValue = conversionResult.resolvedValue;
+                }
+                const compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
+                if (compareResult !== ComparersResult.Undetermined) {
+                    results.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
+                    results.dataExamples = [sampleValue];
+                    return results;
+                }
             }
-        }
-        catch (e)
-        {
-            // defaultComparer throws InvalidTypeError(value) for any non-primitive  
-            // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
-            if (!(e instanceof InvalidTypeError))
-            {
-                results.message = (e as Error).message;
-                results.severity = CAIssueSeverity.error;
-                return results;
+            catch (e) {
+                // defaultComparer throws InvalidTypeError(value) for any non-primitive  
+                // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
+                if (!(e instanceof InvalidTypeError)) {
+                    results.message = (e as Error).message;
+                    results.severity = CAIssueSeverity.error;
+                    return results;
+                }
+                // if i == 0, this is the one time the loop will execute again
+                // and it will now try to convert the sampleValue to a primitive value, if possible.
             }
         }
         // none found. We'll report an warning.
@@ -201,7 +209,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
      * @returns A boolean indicating whether the condition uses a comparer.
      */
     public conditionUsesComparer(conditionConfig: ConditionConfig): boolean {
-        let cleanCT = cleanString(conditionConfig.conditionType);
+        const cleanCT = cleanString(conditionConfig.conditionType);
         if (!cleanCT) {
             return false;
         }
@@ -209,13 +217,13 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             return true;
 
         try {
-            let basicConfig: ConditionConfig = {
+            const basicConfig: ConditionConfig = {
                 conditionType: cleanCT!
-            }
-            let condition = this.helper.services.conditionFactory.create(basicConfig);
+            };
+            const condition = this.helper.services.conditionFactory.create(basicConfig);
             return condition.category === ConditionCategory.Comparison;
         }
-        catch (e) {
+        catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
             // all errors are caught and ignored. We just return false.
         }
         return false;
@@ -233,12 +241,12 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         let lookupKey = cleanString(valueHostConfig.dataType);
         // let conversionLookupKey or secondConversionLookupKey override the lookupKey, even if they are different from each other.
         // These actions are blind to the source config. We only need to know if the property name is there.
-        let conlk = cleanString((conditionConfig as any)['conversionLookupKey']);
+        const conlk = cleanString((conditionConfig as any).conversionLookupKey);
         if (conlk) {
             lookupKey = conlk;
         }
         else {
-            let sconlk = cleanString((conditionConfig as any)['secondConversionLookupKey']);
+            const sconlk = cleanString((conditionConfig as any).secondConversionLookupKey);
             if (sconlk) {
                 lookupKey = sconlk;
             }

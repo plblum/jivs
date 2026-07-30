@@ -1,24 +1,24 @@
 /**
-  * {@inheritDoc Services/ConcreteClasses/DataTypeConverterService!DataTypeConverterService:class}
-  * @module Services/ConcreteClasses/DataTypeConverterService
+  * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeConverterService!DataTypeConverterService:class}
+  * @module jivs-engine/Services/ConcreteClasses/DataTypeConverterService
  */
 
-import { LoggingLevel, LoggingCategory, LogDetails } from "../Interfaces/LoggerService";
-import { ConversionResult, IDataTypeConverterService } from "../Interfaces/DataTypeConverterService";
-import { IDataTypeConverter } from "../Interfaces/DataTypeConverters";
-import { DataTypeConverterServiceBase } from "./DataTypeConverterServiceBase";
-import { CodingError, ensureError } from "../Utilities/ErrorHandling";
-import { valueForLog } from "../Utilities/Utilities";
+import { LoggingLevel, LoggingCategory, LogDetails } from '../Interfaces/LoggerService';
+import { ConversionResult, IDataTypeConverterService } from '../Interfaces/DataTypeConverterService';
+import { IDataTypeConverter } from '../Interfaces/DataTypeConverters';
+import { DataTypeConverterServiceBase } from './DataTypeConverterServiceBase';
+import { CodingError, ensureError } from '../Utilities/ErrorHandling';
+import { valueForLog } from '../Utilities/Utilities';
 
 /**
  * A service for changing the original value into 
  * something that you want a condition to evaluate
- * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
  * 
  * This is essential for comparison Conditions. Comparison works automatically
  * with string, number, and boolean native types. Converters exist to take a Date
  * or user defined class to a string, number, or boolean.
- * They are built on {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}.
+ * They are built on {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}.
  */
 export class DataTypeConverterService extends DataTypeConverterServiceBase<IDataTypeConverter>
     implements IDataTypeConverterService {
@@ -28,11 +28,11 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     }
 
     /**
-     * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
      */
     public convert(valueToConvert: any, sourceLookupKey: string | null, resultLookupKey: string): ConversionResult {
 
-        let result: ConversionResult = { sourceLookupKey: sourceLookupKey, resultLookupKey: resultLookupKey};
+        const result: ConversionResult = { sourceLookupKey: sourceLookupKey, resultLookupKey: resultLookupKey};
         if (valueToConvert == null) // null or undefined
         {   
             result.value = valueToConvert;
@@ -41,7 +41,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             return result;
         }
         try {
-            let dtc = this.find(valueToConvert, sourceLookupKey, resultLookupKey);
+            const dtc = this.find(valueToConvert, sourceLookupKey, resultLookupKey);
 
             if (dtc) {
                 result.converter = valueForLog(dtc);    // before convert, in case it throws
@@ -80,7 +80,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns An object identifying the converter used and the converted value. Its 
      * value parameter is undefined when the value was not converted.
@@ -98,7 +98,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             return result;
         }    
         try {
-            let iResult = this.convertRecursively(valueToConvert, sourceLookupKey, resultLookupKey, null, new Set<string>());
+            const iResult = this.convertRecursively(valueToConvert, sourceLookupKey, resultLookupKey, null, new Set<string>());
             if (iResult.resolvedValue) {   
                 // found a value. Update 'result'
                 if (!iResult.earlierResult) {
@@ -153,7 +153,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     /**
      * This function attempts to convert a given value to a target lookup key specified by resultLookupKey,
      * potentially through multiple intermediate conversion steps. It operates recursively, attempting
-     * to find a chain of converters that collectively can transform the input value into the desired
+     * to find a chain of converters that collectively can transform the text value into the desired
      * output format. 
      * 
      * Each converter is capable of converting values to one or more output lookup keys,
@@ -208,12 +208,12 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
         intermediateResultLK: string | null,
         alreadyCheckedResultLK: Set<string>): ConversionResult {
         
-        let tryingLookupKey = intermediateResultLK ?? resultLookupKey;
+        const tryingLookupKey = intermediateResultLK ?? resultLookupKey;
         let result: ConversionResult = { sourceLookupKey: sourceLookupKey, resultLookupKey: tryingLookupKey }; 
 
         // NOTE: Did not use dataTypeConverterService.convert() directly
         // because we want to take a different action if no DataTypeConverter is found
-        let dtc = this.find(valueToConvert, sourceLookupKey, tryingLookupKey);
+        const dtc = this.find(valueToConvert, sourceLookupKey, tryingLookupKey);
         if (dtc) {
             this.logConverterFound(dtc, sourceLookupKey, tryingLookupKey);
             try {
@@ -221,7 +221,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
                 // It always returns a value, even if it is undefined.
                 // Retain 'result' with all of the details.
                 // If this is the final step, return it.
-                let newValue = dtc.convert(valueToConvert, sourceLookupKey, tryingLookupKey);
+                const newValue = dtc.convert(valueToConvert, sourceLookupKey, tryingLookupKey);
                 result.converter = valueForLog(dtc); // only when we plan to use the result
                 result.value = newValue;       
                 result.resolvedValue = true;
@@ -241,7 +241,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
                 if (newValue !== undefined) {
                     result.earlierResult = null;    // this activates it as completed step. Should be undefined otherwise                
                     // now that we have a new value, try to convert it to the resultLookupKey
-                    let iResult = this.convertRecursively(newValue, tryingLookupKey, resultLookupKey, null, alreadyCheckedResultLK);
+                    const iResult = this.convertRecursively(newValue, tryingLookupKey, resultLookupKey, null, alreadyCheckedResultLK);
                     if (iResult.resolvedValue) {
                         // we found resultLookupKey amongst the children. Need to insert our value after it
                         // and return it.
@@ -266,13 +266,13 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
         {
             // try to work toward resultLookupKey through intermediate DTCs.
             // This is a tree search, using the supportedResultLookupKeys as the branches.
-            let intermediateConverters = this.compatibleSources(valueToConvert, sourceLookupKey);
-            for (let intermediate of intermediateConverters) {
-                for (let intermediateResultLK of intermediate.supportedResultLookupKeys()) {
+            const intermediateConverters = this.compatibleSources(valueToConvert, sourceLookupKey);
+            for (const intermediate of intermediateConverters) {
+                for (const intermediateResultLK of intermediate.supportedResultLookupKeys()) {
                     // not the right lookup key. Try to drill down this branch.
                     if (!alreadyCheckedResultLK.has(intermediateResultLK)) {
                         alreadyCheckedResultLK.add(intermediateResultLK);
-                        let iResult = this.convertRecursively(valueToConvert, sourceLookupKey, resultLookupKey, intermediateResultLK, alreadyCheckedResultLK);  //!!! recursion
+                        const iResult = this.convertRecursively(valueToConvert, sourceLookupKey, resultLookupKey, intermediateResultLK, alreadyCheckedResultLK);  //!!! recursion
                         if (iResult.resolvedValue) {    // some converter was successful, even if it set value to undefined
                             return iResult;
                         }
@@ -287,7 +287,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     }    
 
     /**
-     * Gets the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
+     * Gets the first {@link jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
      *  that supports the value, or null if none are found.
      * Runs the lazyloader if setup and the first search fails.
      * @param value 
@@ -323,11 +323,11 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      */
     protected logSuccess(result: ConversionResult): void {
         this.logger.log(LoggingLevel.Info, (options) => {
-            let logDetails = <LogDetails>{
+            const logDetails = {
                 message: result.value === null ? 'Converted to null' :
                     `Converted to type "${result.resultLookupKey}"`,
                 category: LoggingCategory.Result
-            }
+            } as LogDetails;
             if (options?.includeData) {
                 this.addPath(result);
                 logDetails.data = result;
@@ -350,10 +350,10 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             if (current)
                 converterName = current.converter;
 
-            let logDetails = <LogDetails>{
+            const logDetails = {
                 message: `Converter "${converterName}" failed to convert the value to "${result.resultLookupKey}"`,
                 category: LoggingCategory.Result
-            }
+            } as LogDetails;
             if (options?.includeData) {
                 this.addPath(result);
                 logDetails.data = result;
@@ -399,12 +399,12 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
                 sourceLookupKey = this.resolveLookupKey(sourceValue, null, 'DataTypeConverterService.convert');
             if (sourceLookupKey)
                 sourceLookupKeyMsg = ` from "${sourceLookupKey}"`;
-            let msg = `Need a DataTypeConverter to convert${sourceLookupKeyMsg} into "${result.resultLookupKey}"`;
+            const msg = `Need a DataTypeConverter to convert${sourceLookupKeyMsg} into "${result.resultLookupKey}"`;
 
-            let logDetails = <LogDetails>{
+            const logDetails = {
                 message: msg,
                 category: LoggingCategory.Result
-            }
+            } as LogDetails;
             if (options?.includeData) {
                 logDetails.data = result;
         
@@ -418,10 +418,10 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      */
     protected logValueNull(result: ConversionResult): void {
         this.logger.log(LoggingLevel.Info, (options) => {
-            let logDetails = <LogDetails>{
-                message: `Nothing to convert. The value is null or undefined.`,
+            const logDetails = {
+                message: 'Nothing to convert. The value is null or undefined.',
                 category: LoggingCategory.Result
-            }
+            } as LogDetails;
             if (options?.includeData) {
                 logDetails.data = result;
         
@@ -439,8 +439,8 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
         if (!result.error)  // istanbul ignore next // defensive programming
             throw new CodingError('logWithError called without an error');
         this.logger.error(result.error, (options) => {
-            let logDetails = <LogDetails>{
-            }
+            const logDetails = {
+            } as LogDetails;
             if (options?.includeData) {
                 logDetails.data = result;
             }

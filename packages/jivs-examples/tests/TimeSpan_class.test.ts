@@ -4,7 +4,7 @@ import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/Dat
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import {
     TimeSpan, TimeSpanIdentifier, TimeSpanConverter,
-    timeSpanLookupKey, timeSpanAsSecondsLookupKey, timeSpanAsHoursLookupKey,
+    TimeSpanLookupKey, TimeSpanAsSecondsLookupKey, TimeSpanAsHoursLookupKey,
 } from '../src/TimeSpan_class';
 import { createMinimalValidationServices } from '../src/support';
 
@@ -29,22 +29,22 @@ test('The TimeSpan class itself', () => {
 
 test('Test TimeSpanIdentifier class members for expected results', () => {
     let dti = new TimeSpanIdentifier();
-    expect(dti.dataTypeLookupKey).toBe(timeSpanLookupKey);
+    expect(dti.dataTypeLookupKey).toBe(TimeSpanLookupKey);
     expect(dti.supportsValue(new TimeSpan(1, 0))).toBe(true);
     expect(dti.supportsValue(1)).toBe(false);
 });
 test('Test TimeSpanConverter class members for expected results', () => {
     let dtc = new TimeSpanConverter();
-    expect(dtc.canConvert(new TimeSpan(1, 0), null, timeSpanAsHoursLookupKey)).toBe(true);
-    expect(dtc.canConvert(new TimeSpan(1, 0), timeSpanLookupKey, timeSpanAsHoursLookupKey)).toBe(true);
-    expect(dtc.canConvert(new TimeSpan(1, 0), null, timeSpanAsSecondsLookupKey)).toBe(true);
-    expect(dtc.canConvert(new TimeSpan(1, 0), timeSpanLookupKey, timeSpanAsSecondsLookupKey)).toBe(true);
-    expect(dtc.canConvert(new TimeSpan(1, 0), 'willnotmatch', timeSpanAsHoursLookupKey)).toBe(false);
-    expect(dtc.canConvert(new Date(), null, timeSpanAsHoursLookupKey)).toBe(false);
-    expect(dtc.canConvert(new Date(), timeSpanLookupKey, timeSpanAsHoursLookupKey)).toBe(false);
-    expect(dtc.canConvert(0, timeSpanLookupKey, timeSpanAsHoursLookupKey)).toBe(false);
+    expect(dtc.canConvert(new TimeSpan(1, 0), null, TimeSpanAsHoursLookupKey)).toBe(true);
+    expect(dtc.canConvert(new TimeSpan(1, 0), TimeSpanLookupKey, TimeSpanAsHoursLookupKey)).toBe(true);
+    expect(dtc.canConvert(new TimeSpan(1, 0), null, TimeSpanAsSecondsLookupKey)).toBe(true);
+    expect(dtc.canConvert(new TimeSpan(1, 0), TimeSpanLookupKey, TimeSpanAsSecondsLookupKey)).toBe(true);
+    expect(dtc.canConvert(new TimeSpan(1, 0), 'willnotmatch', TimeSpanAsHoursLookupKey)).toBe(false);
+    expect(dtc.canConvert(new Date(), null, TimeSpanAsHoursLookupKey)).toBe(false);
+    expect(dtc.canConvert(new Date(), TimeSpanLookupKey, TimeSpanAsHoursLookupKey)).toBe(false);
+    expect(dtc.canConvert(0, TimeSpanLookupKey, TimeSpanAsHoursLookupKey)).toBe(false);
     expect(dtc.canConvert(new TimeSpan(1, 0), null, 'willnotmatch')).toBe(false);
-    expect(dtc.canConvert(new TimeSpan(1, 0), timeSpanLookupKey, 'willnotmatch')).toBe(false);
+    expect(dtc.canConvert(new TimeSpan(1, 0), TimeSpanLookupKey, 'willnotmatch')).toBe(false);
 
 });
 
@@ -52,7 +52,7 @@ test('Register and test values against the TimeSpanIdentifier', () => {
     let dtis = new DataTypeIdentifierService();
     dtis.register(new TimeSpanIdentifier());
 
-    expect(dtis.identify(new TimeSpan(0, 1, 0))).toBe(timeSpanLookupKey);
+    expect(dtis.identify(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
 });
 
 test('Register and test values against TimeSpanConverter', () => {
@@ -61,12 +61,12 @@ test('Register and test values against TimeSpanConverter', () => {
     dtcs.register(new TimeSpanConverter());
     let timeSpan1 = new TimeSpan(1, 0);
     let timeSpan2 = new TimeSpan(2, 0);
-    expect(dtcs.find(timeSpan1, null, timeSpanAsHoursLookupKey)).toBeInstanceOf(TimeSpanConverter);
-    expect(dtcs.find(timeSpan1, timeSpanLookupKey, timeSpanAsHoursLookupKey)).toBeInstanceOf(TimeSpanConverter);
-    expect(dtcs.find(timeSpan1, null, timeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanConverter);
-    expect(dtcs.find(timeSpan1, timeSpanLookupKey, timeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanConverter);
-    expect(dtcs.find(timeSpan1, 'willnotmatch', timeSpanAsHoursLookupKey)).toBeNull();
+    expect(dtcs.find(timeSpan1, null, TimeSpanAsHoursLookupKey)).toBeInstanceOf(TimeSpanConverter);
+    expect(dtcs.find(timeSpan1, TimeSpanLookupKey, TimeSpanAsHoursLookupKey)).toBeInstanceOf(TimeSpanConverter);
+    expect(dtcs.find(timeSpan1, null, TimeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanConverter);
+    expect(dtcs.find(timeSpan1, TimeSpanLookupKey, TimeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanConverter);
+    expect(dtcs.find(timeSpan1, 'willnotmatch', TimeSpanAsHoursLookupKey)).toBeNull();
     let compareService = vs.dataTypeComparerService as DataTypeComparerService;
-    expect(compareService.compare(timeSpan1, timeSpan1, timeSpanLookupKey, timeSpanLookupKey)).toBe(ComparersResult.Equal);
-    expect(compareService.compare(timeSpan1, timeSpan2, timeSpanLookupKey, timeSpanLookupKey)).toBe(ComparersResult.LessThan);
+    expect(compareService.compare(timeSpan1, timeSpan1, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.Equal);
+    expect(compareService.compare(timeSpan1, timeSpan2, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.LessThan);
 });

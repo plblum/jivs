@@ -10,7 +10,7 @@ import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnal
 import { ConditionTypeConfigPropertyAnalyzer, ConditionCategoryPropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';
 import { IConditionConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../../src/Types/Analyzers';
-import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createServices, setupHelper, MockAnalyzer, checkPropertyCAResultsFromArray } from '../TestSupport/support';
 
 

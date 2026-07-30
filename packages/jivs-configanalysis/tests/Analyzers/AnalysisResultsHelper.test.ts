@@ -1,5 +1,3 @@
-import { IValueHostsServices } from '@plblum/jivs-engine/build/Interfaces/ValueHostsServices';
-
 import { CultureService } from '@plblum/jivs-engine/build/Services/CultureService';
 import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -23,7 +21,7 @@ import { AnalysisArgs } from '../../src/Types/ConfigAnalysis';
 import {
     IConfigAnalysisResults, PropertyCAResult, ServiceWithLookupKeyCAResultBase, LookupKeyCAResult,
     CAFeature, CAIssueSeverity, ErrorCAResult, FormatterServiceCAResult
-} from '../../src/Types/Results';
+} from '../../src/Types/ConfigAnalysisResults';
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import {
     createServices, createAnalysisArgs, MockAnalyzer, MockAnalyzerWithFallback, checkPropertyCAResultsFromArray,
@@ -39,7 +37,7 @@ interface IAnalysisResultsHelperCommon {
 
 describe('AnalysisResultsHelper', () => {
 
-    class Publicify_AnalysisResultsHelper<TServices extends IValueHostsServices>
+    class Publicify_AnalysisResultsHelper<TServices extends IValidationServices>
         extends AnalysisResultsHelper<TServices>
         implements IAnalysisResultsHelperCommon
     {
@@ -48,14 +46,14 @@ describe('AnalysisResultsHelper', () => {
         }
     
         public get publicify_services(): TServices {
-            return super.services;
+            return this.services;
         }
     
         public get publicify_args(): AnalysisArgs<TServices> {
-            return super.analysisArgs;
+            return this.analysisArgs;
         }
         public get publicify_results(): IConfigAnalysisResults {
-            return super.results;
+            return this.results;
         }   
 
         public publicify_checkMessageTokens(message: string | null | undefined | ((validator: IValidator) => string),

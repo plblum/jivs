@@ -1,36 +1,34 @@
 /**
- * @module ValueHosts/ConcreteClasses/ValueHostAccessor
+ * @module jivs-engine/ValueHosts/ConcreteClasses/ValueHostAccessor
  */
 
-import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { toIInputValueHost } from "./InputValueHost";
-import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
-import { IStaticValueHost } from "../Interfaces/StaticValueHost";
-import { ICalcValueHost } from "../Interfaces/CalcValueHost";
-import { toIStaticValueHost } from "./StaticValueHost";
-import { toICalcValueHost } from "./CalcValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
-import { IPropertyValueHost } from "../Interfaces/PropertyValueHost";
-import { toIPropertyValueHost } from "./PropertyValueHost";
+import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { CodingError, assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { toIFieldValueHost } from './FieldValueHost';
+import { IValueHost, toIValueHost } from '../Interfaces/ValueHost';
+import { IStaticValueHost } from '../Interfaces/StaticValueHost';
+import { ICalcValueHost } from '../Interfaces/CalcValueHost';
+import { toIStaticValueHost } from './StaticValueHost';
+import { toICalcValueHost } from './CalcValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 
 /**
  * Used by ValueHostResolver's vm property to make it easier for the user
  * to get strongly typed ValueHosts, compared to ValueHostResolver.getValueHost().
  * 
- * It simplies this syntax, shown for getting a value from a InputValueHost:
+ * It simplies this syntax, shown for getting a value from a FieldValueHost:
  * ```ts
- * let ivh = vm.getValueHost("valuehostname") as IInputValueHost;
+ * let ivh = vm.getValueHost("valuehostname") as IFieldValueHost;
  * if (ivh)
- *    x = ivh.getInputValue();
+ *    x = ivh.getTextValue();
  * ```
  * The improved syntax:
  * ```ts
- * x = vm.vh.input("valuehostname").getInputValue();
+ * x = vm.vh.field("valuehostname").getTextValue();
  * ```
  * A key difference is that getValueHost may return null. The ValueHostAccessor treats
  * unknown valuehosts and those that don't typecast correctly as exceptions.
@@ -67,7 +65,7 @@ export class ValueHostAccessor implements IValueHostAccessor
      */
     protected ensureValueHost(valueHostName: ValueHostName): IValueHost
     {
-        let vh = this.valueHostResolver.getValueHost(valueHostName);
+        const vh = this.valueHostResolver.getValueHost(valueHostName);
         if (vh)
             return vh;
         throw new CodingError(`ValueHost named ${valueHostName} is unknown.`);
@@ -83,30 +81,22 @@ export class ValueHostAccessor implements IValueHostAccessor
      */
     protected ensureCorrectValueHost<T extends IValueHost>(valueHostName: ValueHostName, fn: (vh: IValueHost) => T | null, className: string): T
     {
-        let vh = fn(this.ensureValueHost(valueHostName));
+        const vh = fn(this.ensureValueHost(valueHostName));
         if (vh)
             return vh;
         throw new CodingError(`ValueHost named ${valueHostName} is not an ${className}.`);
     }
 
     /**
-     * Returns the associated InputValueHost or throws an error when
-     * the valueHostName is unknown or not an InputValueHost.
+     * Returns the associated FieldValueHost or throws an error when
+     * the valueHostName is unknown or not an FieldValueHost.
      * @param valueHostName 
      */
-    public input(valueHostName: ValueHostName): IInputValueHost
+    public field(valueHostName: ValueHostName): IFieldValueHost
     {
-        return this.ensureCorrectValueHost(valueHostName, toIInputValueHost, 'InputValueHost');
+        return this.ensureCorrectValueHost(valueHostName, toIFieldValueHost, 'FieldValueHost');
     }
-    /**
-     * Returns the associated PropertyValueHost or throws an error when
-     * the valueHostName is unknown or not an PropertyValueHost.
-     * @param valueHostName 
-     */
-    public property(valueHostName: ValueHostName): IPropertyValueHost
-    {
-        return this.ensureCorrectValueHost(valueHostName, toIPropertyValueHost, 'PropertyValueHost');
-    }    
+
     /**
      * Returns the associated StaticValueHost or throws an error when
      * the valueHostName is unknown or not an StaticValueHost.
@@ -136,7 +126,7 @@ export class ValueHostAccessor implements IValueHostAccessor
     }         
 
     // NOT USED to avoid confusion with "validators" as they both are supporting
-    // the same major implementations: InputValueHost and PropertyValueHost.
+    // the same major implementations: FieldValueHost and PropertyValueHost.
     // So why would the user consider this one?    
     // /**
     //  * Returns the associated Validatable ValueHost or throws an error when
@@ -152,7 +142,7 @@ export class ValueHostAccessor implements IValueHostAccessor
     /**
      * Returns the associated Validatable ValueHost that supports validators or throws an error when
      * the valueHostName is unknown or does not implement IValidatorsValueHostBase.
-     * Includes InputValueHost and PropertyValueHost.
+     * Includes FieldValueHost and PropertyValueHost.
      * @param valueHostName 
      */
     public validators(valueHostName: ValueHostName): IValidatorsValueHostBase

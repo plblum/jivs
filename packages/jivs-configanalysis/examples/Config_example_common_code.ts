@@ -34,7 +34,7 @@ import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/Dat
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 
 // Our model
 export interface FilterDatesModel {
@@ -57,7 +57,7 @@ export interface FilterDatesModel {
 export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
-export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
+export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
     let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), null, LookupKey.TotalDays);
     let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
@@ -126,8 +126,8 @@ export function createValidationServices(cultureID: string): ValidationServices 
         '*': 'The dates must be less than {compareTo} days apart'
     });
 
-    // enable parsing so HTML change events can pass their raw value into the InputValueHost
-    // through setInputValue, and the parser converts it to the native value
+    // enable parsing so HTML change events can pass their raw value into the FieldValueHost
+    // through setTextValue, and the parser converts it to the native value
 
     let dtps = services.dataTypeParserService as DataTypeParserService;
     dtps.enabled = true;

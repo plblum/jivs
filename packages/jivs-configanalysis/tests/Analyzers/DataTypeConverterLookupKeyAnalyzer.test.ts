@@ -4,7 +4,7 @@ import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost"
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeConverterLookupKeyAnalyzer';
-import { ConverterServiceCAResult, CAIssueSeverity } from '../../src/Types/Results';
+import { ConverterServiceCAResult, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { createAnalysisArgs, sampleValueByLookupKey } from '../TestSupport/support';
 

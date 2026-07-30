@@ -1,8 +1,14 @@
 /**
- * @module ValueHosts/Types/ValidatorsValueHostBase
+ * @module jivs-engine/ValueHosts/Types/ValidatorsValueHostBase
  */
-import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
+import { IValidator, ValidatorConfig } from './Validator';
+import {
+    IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
+    ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
+    toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks
+} from './ValidatableValueHostBase';
+import { ValueHostConfig } from './ValueHost';
+import { ValueHostType } from './ValueHostFactory';
 
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
@@ -18,7 +24,7 @@ export interface IValidatorsValueHostBase extends IValidatableValueHostBase {
     getValidator(errorCode: string): IValidator | null;
 }
 /**
- * Just the data that is used to describe this input value.
+ * Just the data that is used to describe this ValueHost.
  * It should not contain any supporting functions or services.
  * It should be generatable from JSON, and simply gets typed to ValidatorsValueHostBaseConfig.
  * This provides the backing data for each ValidatorsValueHostBase.
@@ -39,6 +45,18 @@ export interface ValidatorsValueHostBaseConfig extends ValidatableValueHostBaseC
      * such as parser error converting "abc" to number.
      */
     validatorConfigs: Array<ValidatorConfig> | null;
+}
+
+
+/**
+ * Determines if the given ValueHostConfig represents a ValidatableValueHost.
+ * @param source 
+ * @returns 
+ */
+export function isValidatableValueHostConfig(source: ValueHostConfig): boolean
+{
+    return source.valueHostType === ValueHostType.Field ||
+        (source as ValidatorsValueHostBaseConfig).validatorConfigs !== undefined;
 }
 
 /**
@@ -79,7 +97,7 @@ export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBas
 {
     if (toIValidatableValueHostBase(source))
     {
-        let test = source as IValidatorsValueHostBase;    
+        const test = source as IValidatorsValueHostBase;    
         // some select members of IValidatorsValueHostBase
         if (test.getValidator !== undefined)
             return test;

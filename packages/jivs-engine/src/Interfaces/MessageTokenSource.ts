@@ -1,9 +1,9 @@
 /**
- * @module Validation/Types
+ * @module jivs-engine/Validation/Types
  */
 
-import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
-import { IValueHostResolver } from "./ValueHostResolver";
+import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValueHostResolver } from './ValueHostResolver';
 
 /**
  * Allows a class of the Validator & Condition classes to return tokens and associated
@@ -30,7 +30,7 @@ export interface IMessageTokenSource {
  */
 export function toIMessageTokenSource(source: any): IMessageTokenSource | null {
     if (source && typeof source === 'object') {
-        let test = source as IMessageTokenSource;       
+        const test = source as IMessageTokenSource;       
         if (test.getValuesForTokens !== undefined)
             return test;
     }
@@ -49,7 +49,7 @@ export interface TokenLabelAndValue {
      * The value to be used as a replacement. It will be run through a formatter
      * based on either the specified formatterKey or the data type of this value,
      * by using DataTypeIdentifierService.
-     * {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} classes.
+     * {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} classes.
      */
     associatedValue: any;
     /**

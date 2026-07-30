@@ -1,17 +1,17 @@
 /**
  * 
- * @module Analyzers/Classes/ValidatorConfig
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/ValidatorConfig
  */
 
 
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
-import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { AnalysisResultsHelper } from './AnalysisResultsHelper';
+import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer } from "../Types/Analyzers";
-import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity } from "../Types/Results";
+import { IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer } from '../Types/Analyzers';
+import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ValidatorConfig object, with results in a ValidatorConfigCAResult object.
@@ -20,7 +20,7 @@ import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity }
  * Requires no duplicates of error codes amongst all ValidatorConfigCAResult objects.
  */
 export class ValidatorConfigAnalyzer
-    extends ConfigAnalyzerBase<ValidatorConfig, ValidatorConfigCAResult, IValidationServices>
+    extends ConfigAnalyzerBase<ValidatorConfig, ValidatorConfigCAResult>
     implements IValidatorConfigAnalyzer {
 
     constructor(helper: AnalysisResultsHelper<IValidationServices>,
@@ -29,7 +29,7 @@ export class ValidatorConfigAnalyzer
         super(helper, validatorConfigPropertyAnalyzers);
     }
     protected initResults(config: ValidatorConfig): ValidatorConfigCAResult {
-        let vcResults: ValidatorConfigCAResult = {
+        const vcResults: ValidatorConfigCAResult = {
             feature: CAFeature.validator,
             errorCode: null!,   // will be assigned in resolveErrorCode
             config: config,
@@ -65,7 +65,7 @@ export class ValidatorConfigAnalyzer
      */
     protected resolveErrorCode(config: ValidatorConfig,
         vcResults: ValidatorConfigCAResult): void {
-        let propResult: PropertyCAResult = {
+        const propResult: PropertyCAResult = {
             feature: CAFeature.property,
             propertyName: 'errorCode',
             severity: undefined!,
@@ -73,7 +73,7 @@ export class ValidatorConfigAnalyzer
         };
         // we'll only add propResult if severity is changed by the end of the function
 
-        let valc = config;
+        const valc = config;
         let resolvedErrorCode = cleanString(valc.errorCode);
 
         // check syntax which is disallows spaces
@@ -83,7 +83,7 @@ export class ValidatorConfigAnalyzer
             propResult.message = 'Error code must not contain whitespace.';
         }        
         if (!resolvedErrorCode && valc.conditionConfig) {
-            let ct = cleanString(valc.conditionConfig.conditionType);
+            const ct = cleanString(valc.conditionConfig.conditionType);
             if (ct) {
                 resolvedErrorCode = ct;
                 propResult.severity = CAIssueSeverity.info;
@@ -94,7 +94,7 @@ export class ValidatorConfigAnalyzer
             if (valc.conditionCreator) {
                 resolvedErrorCode = '[Unknown at this time]';
                 propResult.severity = CAIssueSeverity.warning;
-                propResult.message = `conditionCreator is setup and will supply an error code when used.`;
+                propResult.message = 'conditionCreator is setup and will supply an error code when used.';
             }
             else {
                 resolvedErrorCode = '[Missing]';
@@ -141,10 +141,10 @@ export class ValidatorConfigAnalyzer
      */
     protected checkForDuplicates(config: ValidatorConfig, results: ValidatorConfigCAResult, existingResults: ValidatorConfigCAResult[]): void {
         if (results.errorCode[0] !== '[') {
-            let lcEC = results.errorCode.toLowerCase().trim();
+            const lcEC = results.errorCode.toLowerCase().trim();
             if (existingResults.find(vr => (vr !== results) &&
                 vr.errorCode.toLowerCase() === lcEC)) {
-                let propResult: PropertyCAResult = {
+                const propResult: PropertyCAResult = {
                     feature: CAFeature.property,
                     propertyName: 'errorCode',
                     severity: CAIssueSeverity.error,

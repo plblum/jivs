@@ -1,6 +1,9 @@
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { EnumByNumberFormatter, EnumByNumberParser, EnumByNumberParserOptions, PhoneType, PhoneTypeLookupKey, phoneTypeEnumValues } from '../src/EnumByNumberDataTypes';
+import {
+    EnumByNumberFormatter, EnumByNumberParser, EnumByNumberParserOptions, PhoneType,
+    PhoneTypeLookupKey, PhoneTypeEnumValues
+} from '../src/EnumByNumberDataTypes';
 import { createMinimalValidationServices } from "../src/support";
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
 
@@ -11,25 +14,25 @@ function addLocalizedTextForCulture(services: IValidationServices): void
 
     let tls = services.textLocalizerService as TextLocalizerService;
     
-    tls.register(phoneTypeEnumValues[0].textl10n!, {
+    tls.register(PhoneTypeEnumValues[0].textl10n!, {
         '*': '0_*',
         'en': '0_en',
         'fr': '0_fr',
         'de': '0_de',
     });
-    tls.register(phoneTypeEnumValues[1].textl10n!, {
+    tls.register(PhoneTypeEnumValues[1].textl10n!, {
         '*': '1_*',
         'en': '1_en',
         'fr': '1_fr',
 // omitted to use fallback           'de': '1_de',
     });
-    tls.register(phoneTypeEnumValues[2].textl10n!, {
+    tls.register(PhoneTypeEnumValues[2].textl10n!, {
         '*': '2_*',
         'en': '2_en',
 // omitted to use non-localized text            'fr': '2_fr',
         'de': '2_de',
     });
-    tls.register(phoneTypeEnumValues[3].textl10n!, {
+    tls.register(PhoneTypeEnumValues[3].textl10n!, {
         '*': '10_*',
         'en': '10_en',
         'fr': '10_fr',
@@ -39,7 +42,7 @@ function addLocalizedTextForCulture(services: IValidationServices): void
 describe('EnumByNumberParser using PhoneType enum', () => {
     function testParseMatches(text: string, expectedValue: any, options: EnumByNumberParserOptions = {}): void
     {
-        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, phoneTypeEnumValues, options);
+        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, options);
         testItem.services = createMinimalValidationServices('en');
         
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
@@ -49,7 +52,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
     }
     function testParseInvalid(text: string, options: EnumByNumberParserOptions = {}): void
     {
-        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, phoneTypeEnumValues, options);
+        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, options);
         testItem.services = createMinimalValidationServices('en');
         
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
@@ -59,7 +62,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
     }    
 
     test('supports', () => {
-        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, phoneTypeEnumValues, {});
+        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, {});
         expect(testItem.supports(PhoneTypeLookupKey, 'en', 'anything')).toBe(true);
         expect(testItem.supports(PhoneTypeLookupKey, 'fr', 'anything')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en', 'anything')).toBe(false);   
@@ -106,7 +109,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
 
     function testParseLocalized(text: string, cultureId: string, expectedValue: any, options: EnumByNumberParserOptions = {}): void
     {
-        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, phoneTypeEnumValues, {});
+        let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, {});
         testItem.services = createMinimalValidationServices('en');
         addLocalizedTextForCulture(testItem.services);
         
@@ -145,7 +148,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
 describe('EnumByNumberFormatter using PhoneType enum', () => {
     function testFormatMatches(value: number, expectedText: string): void
     {
-        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, phoneTypeEnumValues);
+        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
         testItem.services = createMinimalValidationServices('en');
         
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
@@ -155,7 +158,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
     }
     function testFormatInvalid(value: number): void
     {
-        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, phoneTypeEnumValues);
+        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
         testItem.services = createMinimalValidationServices('en');
         
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
@@ -165,7 +168,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
     }    
 
     test('supports', () => {
-        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, phoneTypeEnumValues);
+        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
         expect(testItem.supports(PhoneTypeLookupKey, 'en')).toBe(true);
         expect(testItem.supports(PhoneTypeLookupKey, 'fr')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(false);   
@@ -188,7 +191,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
 
     function testFormatLocalized(value: number, cultureId: string, expectedValue: any): void
     {
-        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, phoneTypeEnumValues);
+        let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
         testItem.services = createMinimalValidationServices('en');
         addLocalizedTextForCulture(testItem.services);
         

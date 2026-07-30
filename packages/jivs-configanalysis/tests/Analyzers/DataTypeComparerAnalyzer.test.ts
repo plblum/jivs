@@ -8,7 +8,7 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToValueConditionBase';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { BooleanDataTypeComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
-import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/Results';
+import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { setupHelper } from '../TestSupport/support';
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';

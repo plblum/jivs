@@ -1,6 +1,6 @@
 /**
  * Interfaces built around the concept of data validation.
- * @module Validation/Types
+ * @module jivs-engine/Validation/Types
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatorValidateResult } from './Validator';
@@ -97,7 +97,7 @@ export enum ValidationStatus {
      */
     NotAttempted,
     /**
-     * Indicates that either Value or InputValue was changed
+     * Indicates that either native value or text value was changed
      * but has yet to be validated.
      */
     NeedsValidation,
@@ -157,21 +157,31 @@ export enum ValidationSeverity {
  */
 export interface IssueFound {
     /**
-     * Containing ValueHostName
+     * Containing ValueHostName.
+     * If used internally, it should be the same as the ValueHostName of the ValueHost that generated it.
+     * If the developer is supplying it externally, it should be the ValueHostName of the ValueHost they want to associate the error with
+     * or left null or empty to associated with the ModelValidatorsValueHost
      */
-    valueHostName: ValueHostName;
+    valueHostName?: ValueHostName;
     /**
+     * Identifies the issue type.
      * Error code is either what was supplied on ValidatorConfig.errorCode
      * or Condition.ConditionType.
+     * Used to align an external or imported IssueFound with a validator's IssueFound shape.
+     * Internally generated IssueFounds must always supply it based on ValidatorConfig.errorCode
+     * or Condition.ConditionType.
+     * If the developer is supplying it externally, it can be null/undefined and the system will generate one.
+     * In doing so, the developer opts out of validator alignment.
      */
-    errorCode: string;
+    errorCode?: string;
 
     /**
      * Determines how a Validator will behave when a Condition evaluates as NoMatch.
      * It may show error messages, prevent further evaluation of conditions
      * on the same ValueHost, and block saving.
+     * When unassigned, it uses ValidationSeverity.Error.
     */
-    severity: ValidationSeverity;
+    severity?: ValidationSeverity;
 
     /**
      * The error message nearby the input field/element, ready to display in the UI.
@@ -187,45 +197,22 @@ export interface IssueFound {
      * If null/undefined, summary viewer should use errorMessage.
      */
     summaryMessage?: string;
+
+    /**
+     * Determines if this IssueFound contributes to ValidationState.doNotSave.
+     * ValidationState.doNotSave becomes true for at least one IssueFound with doNotSave true.
+     * (It becomes true for other reasons too.)
+     * Internal validation should always set this to true unless the Severity is warning.
+     * External validation should set this to true if the error was determined by the client app's code and 
+     * thus likely to be revised by the next local validation.
+     * Set to false when the error was determined by other factors such as the server, which allows the error message to be shown to the user
+     * without blocking the next attempt to save, which is important when the user can only clear the error after the next call to the server.
+     * Defaults to true when undefined.
+     */
+    doNotSave?: boolean;
 }
 
 
-/**
- * When Business Logic gathers data from the UI, it runs its own final validation.
- * If its own business rule has been violated, it should be recorded with this interface
- * and passed to ValidationManager.setBusinessLogicErrors where it becomes exposed to 
- * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
- * by specifying that valueHostName in AssociatedValueHostName.
- */
-export interface BusinessLogicError {
-    /**
-     * The error message to show to the user. It should be fully realized, no tokens
-     * or language conversion expected to be handled by the ValidationManager.
-     * The same message will be shown in the ValidationSummary and a ValueHost's validation.
-     */
-    errorMessage: string;
-    /**
-     * If the message is associated with a ValueHost, assign the ValueHostName.
-     * That makes the message available to the ValueHost's validation.
-     * The Summary can take advantage of it to establish a hyperlink on the message
-     * that jumps to the ValueHost's input field/element.
-     */
-    associatedValueHostName?: string;
-
-    /**
-     * Provides the severity. When unassigned, it uses ValidationSeverity.Error.
-     * Values of Error and Severe will change the ValidationReport to Invalid.
-     */
-    severity?: ValidationSeverity;
-    /**
-     * Optional information about the error to pass along to the ValidationSummary.
-     * It should be a short error code as a string. It will be used in the IssueFound instance
-     * returned from validate() and getIssuesFound().
-     * Same as ConditionType unless you set the ValidatorConfig.errorCode property.
-     * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
-     */
-    errorCode?: string;
-}
 
 
 /**
@@ -252,7 +239,7 @@ export interface ValidationState
 
     /**
      * All issues current found (except ValueHosts not matching the validation group which are excluded.)
-     * Includes issues found by setBusinessLogicErrors too.
+     * Includes issues found by addExternalIssuesFound too.
      * If none, it is null
      */
     issuesFound: Array<IssueFound> | null;
@@ -263,21 +250,3 @@ export interface ValidationState
     asyncProcessing: boolean;    
 }
 
-
-/**
- * setIssuesFound parameter value to determine how to handle when the supplied IssueFound
- * does not match a validator on the ValueHost based on IssueFound.errorCode.
- */
-export enum SetIssuesFoundErrorCodeMissingBehavior
-{
-    /**
-     * Add the IssueFound. It will be available for the UI, both on the ValueHost and ValidationSummary.
-     * However, the next time you validate or clear validation, its removed.
-     */
-    Keep,    
-    /**
-     * Do not use the IssueFound. Use this when you do not want errors that are not supported
-     * through local validators.
-     */
-    Omit
-}

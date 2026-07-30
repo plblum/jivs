@@ -1,15 +1,15 @@
 /**
- * {@inheritDoc Services/Types/IDataTypeFormatterService!IDataTypeFormatterService:interface } 
- * @module Services/Types/IDataTypeFormatterService
+ * {@inheritDoc jivs-engine/Services/Types/IDataTypeFormatterService!IDataTypeFormatterService:interface } 
+ * @module jivs-engine/Services/Types/IDataTypeFormatterService
  */
 
-import { IDataTypeFormatter } from "./DataTypeFormatters";
-import { DataTypeResolution, IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./Services";
+import { IDataTypeFormatter } from './DataTypeFormatters';
+import { DataTypeResolution, IDataTypeService } from './DataTypes';
+import { IServicesAccessor } from './Services';
 
 /**
  * Service for formatting data types used within tokens of error messages
- * using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  */
 export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFormatter>, IServicesAccessor {
 
@@ -33,7 +33,7 @@ export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFor
 
 
     /**
-     * Finds the {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
+     * Finds the {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * associated with the lookup key and this class's own CultureID.
      * @param lookupKey
      * @returns A matching IDataTypeFormatter or null if none match.

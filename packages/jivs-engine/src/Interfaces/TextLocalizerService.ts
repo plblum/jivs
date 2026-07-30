@@ -1,9 +1,9 @@
 /**
  * @inheritDoc ITextLocalizerService
- * @module Services/Types/ITextLocalizerService
+ * @module jivs-engine/Services/Types/ITextLocalizerService
  */
 
-import { IServiceWithFallback } from "./Services";
+import { IServiceWithFallback } from './Services';
 
 /**
  * A service to offer text alternatives to the default text
@@ -160,8 +160,8 @@ export interface LocalizedDetailsResult {
 }
 export interface LocalizedDetailsResult
 {
-    text?: string,
+    text?: string;
     result: 'localized' | 'fallback' | 'notFound';
-    requestedCultureId: string,
-    actualCultureId?: string
+    requestedCultureId: string;
+    actualCultureId?: string;
 };

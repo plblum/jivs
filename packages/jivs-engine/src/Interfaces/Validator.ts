@@ -1,16 +1,16 @@
 /**
- * {@inheritDoc Validator/ConcreteClasses!}
- * @module Validator/Types
+ * {@inheritDoc jivs-engine/Validator/ConcreteClasses!}
+ * @module jivs-engine/Validator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
 import { IDisposable } from './General_Purpose';
 
 /**
- * Represents a single validator for the value of an InputValueHost.
+ * Represents a single validator for the value of an FieldValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
@@ -49,8 +49,8 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
 
     /**
      * Use to change the enabled option. It overrides the value from ValidatorConfig.enabled.
-     * Use case: the list of validators on InputValueHost might change while the form is active.
-     * Add all possible cases to InputValueHost and change their enabled flag here when needed.
+     * Use case: the list of validators on FieldValueHost might change while the form is active.
+     * Add all possible cases to FieldValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
      * ValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
@@ -59,17 +59,15 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
     setEnabled(enabled: boolean): void;    
 
     /**
-     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
-     * list of Validators through this. This function determines if the businessLogicError is
-     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
-     * like calling validate() itself.
-     * The idea is to use the UI's representation of the validator, including its error messages
-     * with its own tokens, instead of those supplied by the business logic.
-     * @param businessLogicError 
-     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * Creates a validator-aligned IssueFound when the supplied issue has the same errorCode.
+     * This does not execute validation logic.
+     * Returns null when the issue does not align to this validator.
+     * Returns a ValidatorValidateResult that can be stored in validator-owned state when it does.
+     * @param externalIssueFound - The issue found that is being checked for alignment with this validator. 
+     * @returns if null, it did not handle the ExternalIssueFound. If a ValidatorValidateResult,
      * it should be used in the ValueHost's state of validation.
      */
-    tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null;
+    tryValidatorSwap(externalIssueFound: IssueFound): ValidatorValidateResult | null;
 
 }
 
@@ -118,7 +116,7 @@ export interface ValidatorConfig {
     */
     conditionConfig: ConditionConfig | null;
 
-    /* eslint-disable @typescript-eslint/naming-convention */
+     
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionConfig>.
@@ -128,7 +126,7 @@ export interface ValidatorConfig {
      */
     conditionCreator?: ConditionCreatorHandler;
 
-    /* eslint-enable @typescript-eslint/naming-convention */
+     
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.

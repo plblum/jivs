@@ -23,7 +23,7 @@ describe('DataTypeCheckGenerator concrete classes', () => {
         test('createConditions', () => {
             let services = new MockValidationServices(true, true);
             let vm = new MockValidationManager(services);
-            let vh = vm.addMockInputValueHost('Field1', LookupKey.Integer, 'Field 1');
+            let vh = vm.addMockFieldValueHost('Field1', LookupKey.Integer, 'Field 1');
             let testItem = new IntegerDataTypeCheckGenerator();
             let results: Array<ICondition> = [];
 

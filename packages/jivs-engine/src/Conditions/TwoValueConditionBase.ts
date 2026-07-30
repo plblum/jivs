@@ -2,15 +2,15 @@
  * Base for Conditions that takes 2 values to evaluate properly, and the second 
  * value comes from another ValueHost identified in TwoValueConditionBaseConfig.secondValueHostName.
  * 
- * @module Conditions/AbstractClasses/TwoValueConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/TwoValueConditionBase
  */
 
 
-import { IValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
-import { ValueHostName } from "../DataTypes/BasicTypes";
-import { TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
-import { IValueHostsManager } from "../Interfaces/ValueHostsManager";
-import { OneValueConditionBaseConfig, OneValueConditionBase } from "./OneValueConditionBase";
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
+import { IValidationManager } from '../Interfaces/ValidationManager';
+import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
  * ConditionConfig for TwoValueConditionBase
@@ -31,19 +31,19 @@ export interface TwoValueConditionBaseConfig extends OneValueConditionBaseConfig
  */
 export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
-        super.gatherValueHostNames(collection, valueHostsManager);
+    public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void {
+        super.gatherValueHostNames(collection, validationManager);
         if (this.config.secondValueHostName)
             collection.add(this.config.secondValueHostName);
     }
 
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
+        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
         // same order of precidence as in Evaluate
         let secondLabel: string | null = null;
         if (this.config.secondValueHostName) {
-            let vh = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
+            const vh = this.getValueHost(this.config.secondValueHostName, validationManager);
             if (vh)
                 secondLabel = vh.getLabel();
         }

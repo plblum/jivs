@@ -1,6 +1,6 @@
 /**
  * Concrete implemenation of ILogger that provides logging to the Console.
- * @module Services/ConcreteClasses/LoggerService
+ * @module jivs-engine/Services/ConcreteClasses/LoggerService
  */
 import { ILoggerService, LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggerService';
 import { LoggerServiceBase } from './LoggerServiceBase';

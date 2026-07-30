@@ -1,19 +1,19 @@
 /**
- * {@inheritDoc Services/ConcreteClasses/DataTypeFormatterService!DataTypeFormatterService:class}
- * @module Services/ConcreteClasses/DataTypeFormatterService
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/DataTypeFormatterService!DataTypeFormatterService:class}
+ * @module jivs-engine/Services/ConcreteClasses/DataTypeFormatterService
  */
 
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError, SevereErrorBase, ensureError } from '../Utilities/ErrorHandling';
+import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 
 /**
  * A service for formatting data types used within tokens of error messages
- * using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
+ * using {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  * 
  * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
@@ -21,7 +21,7 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
  */
 export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeFormatter>
     implements IDataTypeFormatterService {
@@ -38,7 +38,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     }
     
     /**
-     * {@inheritDoc Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
+     * {@inheritDoc jivs-engine/Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
      */    
     public format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
         return this.formatRecursive(value, lookupKey, new Set<string>());
@@ -57,28 +57,28 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
 
             let cultureId: string | null = this.services.cultureService.activeCultureId;
             while (cultureId) {
-                let cc = this.services.cultureService.find(cultureId);
+                const cc = this.services.cultureService.find(cultureId);
                 /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
                 if (!cc)
                     throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
                 this.logger.message(LoggingLevel.Debug, () => `Trying cultureId: ${cultureId}`);
-                let dtlf = this.find(lookupKey, cultureId);
+                const dtlf = this.find(lookupKey, cultureId);
                 if (dtlf) {
                     this.logger.message(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`);
-                    let result = dtlf.format(value, lookupKey, cultureId);
+                    const result = dtlf.format(value, lookupKey, cultureId);
                     if (result.value)
                         this.logger.log(LoggingLevel.Info, () => {
                             return {
                                 message: `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`,
                                 category: LoggingCategory.Result
-                            }
+                            };
                         });                    
                     return result;
                 }
 
                 cultureId = cc.fallbackCultureId ?? null;
             }
-            let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+            const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
                 this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.formatRecursive(value, fallbackLookupKey, alreadyChecked);
@@ -87,7 +87,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             throw new CodingError(`No DataTypeFormatter for LookupKey "${lookupKey}" with culture "${this.services.cultureService.activeCultureId}"`);
         }
         catch (e) {
-            let err = ensureError(e);
+            const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
             return {
                 errorMessage: err.message,
@@ -96,19 +96,19 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
         }
     }
     /**
-     * Removes the first {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
+     * Removes the first {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * that supports both parameters.
      * @param lookupKey 
      * @param cultureID 
      * @returns 
      */
     public unregister(lookupKey: string, cultureID: string): boolean {
-        let index = this.getAll().findIndex((dtlf) => dtlf.supports(lookupKey, cultureID));
+        const index = this.getAll().findIndex((dtlf) => dtlf.supports(lookupKey, cultureID));
         return this.unregisterByIndex(index);
     }
 
     /**
-     * Finds the {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
+     * Finds the {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * associated with the lookup key and this class's own CultureID.
      * Runs the lazyloader if setup and the first search fails.
      * @param lookupKey

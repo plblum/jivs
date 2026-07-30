@@ -1,24 +1,21 @@
 /**
  * {@inheritDoc StaticValueHost}
- * @module ValueHosts/ConcreteClasses/StaticValueHost
+ * @module jivs-engine/ValueHosts/ConcreteClasses/StaticValueHost
  */
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { CalcValueHost, hasICalcValueHostSpecificMembers } from './CalcValueHost';
 import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 
 
 /**
- * ValueHost implementation that does not handle validation. (See InputValueHost and PropertyValueHost for validation)
- * Use ValueHostConfig.valueHostType = "Static" for the ValidationManager to use this class.
- * 
- * Generally create these when:
- * - Expose a value from the UI that doesn't need validation, but its value is used by 
- *   other validators.
+* StaticValueHost is a specialized ValueHost designed to hold a fixed/static value.
+ * It has several uses:
+ * - A value from the Model that is needed by validation but not edited in the UI.
  * - Expose a global value - something not part of the form - that can be used by your
  *   Conditions, such as the current Country code used to select the right regular expression
  *   for postal codes, phone numbers, etc.
@@ -28,33 +25,50 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
  *   into the UI elements. Since ValidationManager needs those same values, you can build
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
+
+ * You assign it during configuration or by calling its setValue() method.
+ * 
+ * When configuring the ValidationManager for a StaticValueHost, use the builder's static() method.
+ * ```ts
+ * builder.static("pi", LookupKey.Number, { initialValue: 3.14159, label: 'Pi' });
+ * builder.static("today", LookupKey.Date); // use vm.getValueHost("today").setValue(new Date()); after creating the ValidationManager
+ * ```
+ * If configuring directly from a Config object, use the ValueHostType.Static type and provide a list of ValidatorConfigs.
+ * ```ts
+ * const config: FieldValueHostConfig = <FieldValueHostConfig>{
+ *    valueHostType: ValueHostType.Static,
+ *    name: "pi",
+ *    dataType: LookupKey.Number,
+ *    initialValue: 3.14159,
+ * ...and more...
+ * };
  */
 export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostInstanceState>
     implements IStaticValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
+    constructor(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
     {
-        super(valueHostsManager, config, state);
+        super(validationManager, config, state);
     }
 }
 
 /**
  * Supports StaticValueHost class. Used when the Config.valueHostType = ValueHostType.Static
  * or when the Type property is null/undefined and there are no ValidatorsValueHostBase-specific
- * properties, like ValidationConfigs or InputValue.
+ * properties, like validationConfigs.
  */
 export class StaticValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
             return config.valueHostType === ValueHostType.Static;
-        let test = config as unknown as ValidatorsValueHostBaseConfig;
+        const test = config as unknown as ValidatorsValueHostBaseConfig;
         if (test.validatorConfigs === undefined)
             return true;
         return false;
     }
-    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
-        return new StaticValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
+        return new StaticValueHost(validationManager, config, state);
     }
 
     public cleanupInstanceState(state: StaticValueHostInstanceState, config: StaticValueHostConfig): void {

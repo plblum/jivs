@@ -81,33 +81,33 @@ describe('DataTypeParserBase', () => {
     });
 
     // emptyStringResult
-    test('parse() should return empty string if input is empty string by default', () => {
+    test('parse() should return empty string if text is empty string by default', () => {
         const parser = new TestDataTypeParserBase('lookupKey', {});
         const text = '';
         const result = parser.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('');
     });
-    test('parse() should return empty string if input is empty string and emptyStringResult = the empty string', () => {
+    test('parse() should return empty string if text is empty string and emptyStringResult = the empty string', () => {
         const parser = new TestDataTypeParserBase('lookupKey', { emptyStringResult: ''});
         const text = '';
         const result = parser.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('');
     });
-    test('parse() should return ! if input is empty string and emptyStringResult = !', () => {
+    test('parse() should return ! if text is empty string and emptyStringResult = !', () => {
         const parser = new TestDataTypeParserBase('lookupKey', { emptyStringResult: '!'});
         const text = '';
         const result = parser.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('!');
     });
-    test('parse() should return null if input is empty string and emptyStringResult = null', () => {
+    test('parse() should return null if text is empty string and emptyStringResult = null', () => {
         const parser = new TestDataTypeParserBase('lookupKey', { emptyStringResult: null});
         const text = '';
         const result = parser.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe(null);
     });
 
-    // Should return empty string result if input is only whitespace
-    test('parse() should return empty string result when input is only whitespace', () => {
+    // Should return empty string result if text is only whitespace
+    test('parse() should return empty string result when text is only whitespace', () => {
         const parser = new TestDataTypeParserBase('lookupKey', {});
         const text = '     ';
         const result = parser.parse(text, 'lookupKey', 'en-US');
@@ -138,8 +138,8 @@ describe('DataTypeParserBase', () => {
 
 describe('CleanUpStringParser', () => {
 
-    // Should remove specified characters from input string
-    test('parse() should remove specified characters from input string', () => {
+    // Should remove specified characters from text string
+    test('parse() should remove specified characters from text string', () => {
         const testItem = new CleanUpStringParser('lookupKey', { stripTheseCharacters: '-!'});
         const text = '!203 - 533 - (3999)';
         const result = testItem.parse(text, 'lookupKey', 'en-US');
@@ -175,32 +175,32 @@ describe('CleanUpStringParser', () => {
         expect(result.value).toBe('example-text-is-here');
     });
 
-    // Should convert input string to lowercase
-    test('parse() should convert input string to lowercase when convertCase is set to \'lower\'', () => {
+    // Should convert text string to lowercase
+    test('parse() should convert text string to lowercase when convertCase is set to \'lower\'', () => {
         const testItem = new CleanUpStringParser('lookupKey', { convertCase: 'lower'});
         const text = 'EXAMPLE TEXT';
         const result = testItem.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('example text');
     });
 
-    // Should convert input string to uppercase
-    test('parse() should convert input string to uppercase when convertCase is set to \'upper\'', () => {
+    // Should convert text string to uppercase
+    test('parse() should convert text string to uppercase when convertCase is set to \'upper\'', () => {
         const testItem = new CleanUpStringParser('lookupKey', { convertCase: 'upper'});
         const text = 'example text';
         const result = testItem.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('EXAMPLE TEXT');
     });
 
-    // Should return empty string if input is only whitespace and emptyStringResult is null
-    test('parse() should return empty string if input is only whitespace and emptyStringResult is null', () => {
+    // Should return empty string if text is only whitespace and emptyStringResult is null
+    test('parse() should return empty string if text is only whitespace and emptyStringResult is null', () => {
         const testItem = new CleanUpStringParser('lookupKey', { emptyStringResult: null});
         const text = '   ';
         const result = testItem.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBeNull();
     });
 
-    // The test should check if the original string is returned when the replaceWhitespace property is null and the input contains whitespace.
-    test('parse() should return the original string if replaceWhitespace is null and input contains whitespace', () => {
+    // The test should check if the original string is returned when the replaceWhitespace property is null and the text contains whitespace.
+    test('parse() should return the original string if replaceWhitespace is null and text contains whitespace', () => {
         const testItem = new CleanUpStringParser('lookupKey', {replaceWhitespace: null});
         const text = 'e x a m p l e ';
         const result = testItem.parse(text, 'lookupKey', 'en-US');
@@ -964,7 +964,7 @@ describe('PercentageParser', () => {
             percentSymbol: ''
         })).toThrow(/percentSymbol option required/);
     });
-    test('parse() returns the input value divided by 100', () => {
+    test('parse() returns the text value divided by 100', () => {
         let testItem = new PercentageParser(['en'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
@@ -1003,7 +1003,7 @@ describe('Percentage100Parser', () => {
             percentSymbol: ''
         })).toThrow(/percentSymbol option required/);
     });
-    test('parse() returns the input value without modification', () => {
+    test('parse() returns the text value without modification', () => {
         let testItem = new Percentage100Parser(['en'], 
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
@@ -1047,7 +1047,7 @@ describe('BooleanParser', () => {
         expect(testItem.supports('WRONGKEY', 'en', 'YES')).toBe(false);
     });
 
-    test('parse() returns true, false or error message depending on the input', () => {
+    test('parse() returns true, false or error message depending on the text', () => {
         let testItem = new BooleanParser(['en'], { trueValues: ['YES', 'TRUE'], falseValues: ['NO', 'FALSE', ''] });
         expect(testItem.parse('YES', LookupKey.Boolean, 'en')).toEqual({ value: true });
         expect(testItem.parse('TRUE', LookupKey.Boolean, 'en')).toEqual({ value: true });
@@ -1071,7 +1071,7 @@ describe('EmptyStringIsFalseParser', () => {
         expect(testItem.supports('KEY', 'does not matter', 'does not matter')).toBe(true);
         expect(testItem.supports('WRONGKEY', 'does not matter', 'does not matter')).toBe(false);        
     });
-    test('parse() returns true, false or error message depending on the input', () => {
+    test('parse() returns true, false or error message depending on the text', () => {
         let testItem = new EmptyStringIsFalseParser('KEY');
         expect(testItem.parse('', 'KEY', 'en')).toEqual({ value: false });
         expect(testItem.parse('   ', 'KEY', 'en')).toEqual({ value: false });        

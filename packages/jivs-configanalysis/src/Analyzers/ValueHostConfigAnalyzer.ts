@@ -1,16 +1,16 @@
 /**
  * 
- * @module Analyzers/Classes/ValueHostConfig
+ * @module jivs-configanalysis/Analyzers/ConcreteClasses/ValueHostConfig
  */
 
-import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { cleanString } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
-import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
-import { IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer } from "../Types/Analyzers";
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from "../Types/Results";
+import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { AnalysisResultsHelper } from './AnalysisResultsHelper';
+import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
+import { IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer } from '../Types/Analyzers';
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/ConfigAnalysisResults';
 
 /**
  * Analyzes a ValueHostConfig object, creating a ValueHostResults object.
@@ -19,9 +19,9 @@ import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult }
  * - Confirms properties with lookup keys using gatherer.tryAdd()
  * - Each condition class may have its own tests, although many are generalized in this class.
  */
-export class ValueHostConfigAnalyzer<TServices extends IValueHostsServices>
-    extends ConfigAnalyzerBase<ValueHostConfig, ValueHostConfigCAResult, IValueHostsServices>
-implements IValueHostConfigAnalyzer<TServices> {
+export class ValueHostConfigAnalyzer<TServices extends IValidationServices>
+    extends ConfigAnalyzerBase<ValueHostConfig, ValueHostConfigCAResult>
+implements IValueHostConfigAnalyzer {
 
     constructor(helper: AnalysisResultsHelper<TServices>,
         conditionConfigPropertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer>
@@ -29,7 +29,7 @@ implements IValueHostConfigAnalyzer<TServices> {
         super(helper, conditionConfigPropertyAnalyzers);
     }
     protected initResults(config: ValueHostConfig): ValueHostConfigCAResult {
-        let result: ValueHostConfigCAResult = {
+        const result: ValueHostConfigCAResult = {
             feature: CAFeature.valueHost,
             valueHostName: cleanString(config.name) ?? '',
             properties: [],
@@ -46,7 +46,7 @@ implements IValueHostConfigAnalyzer<TServices> {
             results.severity = CAIssueSeverity.error;
             return false;
         }
-        return true
+        return true;
     }
     /**
      * Confirm the name is not a case insensitive matched to existing results.
@@ -57,26 +57,26 @@ implements IValueHostConfigAnalyzer<TServices> {
     protected checkForDuplicates(config: ValueHostConfig, results: ValueHostConfigCAResult, existingResults: ValueHostConfigCAResult[]): void {
         // look for duplicate names using case insensitive match
         if (results.valueHostName !== '[Missing]') {
-            let lc = results.valueHostName.toLowerCase();
-            let duplicate = existingResults.find(vhc => vhc.valueHostName.toLowerCase() === lc);
+            const lc = results.valueHostName.toLowerCase();
+            const duplicate = existingResults.find(vhc => vhc.valueHostName.toLowerCase() === lc);
 
             if (duplicate) {
-                results.properties.push(<PropertyCAResult>{
+                results.properties.push(({
                     feature: CAFeature.property,
                     propertyName: 'valueHostName',
                     severity: CAIssueSeverity.error,
                     message: `The ValueHostConfig name "${config.name}" is a case insensitive match to another. It must be unique.`
-                });
+                } as PropertyCAResult));
             }
         }
     }
 
     protected checkChildConfigs(config: ValueHostConfig, valueHostConfig: ValueHostConfig | null, results: ValueHostConfigCAResult): void {
-        let valValueHostConfig = config as ValidatorsValueHostBaseConfig;
+        const valValueHostConfig = config as ValidatorsValueHostBaseConfig;
         if (valValueHostConfig.validatorConfigs) {
             results.validatorResults = [];
-            for (let validatorConfig of valValueHostConfig.validatorConfigs) {
-                let childResults = this.helper.analysisArgs.validatorConfigAnalyzer!.analyze(
+            for (const validatorConfig of valValueHostConfig.validatorConfigs) {
+                const childResults = this.helper.analysisArgs.validatorConfigAnalyzer!.analyze(
                     validatorConfig, valValueHostConfig, results.validatorResults);
                 results.validatorResults.push(childResults);
             }

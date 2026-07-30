@@ -6,7 +6,7 @@
  * 
  * Classes should be registered in the ConditionFactory.
  * 
- * Conditions can get data from any ValueHost registered in the ValueHostsManager.
+ * Conditions can get data from any ValueHost registered in the ValidationManager.
  * They can also be implemented specific to the consuming system, such as 
  * calling an API function, and using the result to determine how evaluation went.
  * 
@@ -18,13 +18,13 @@
  *   the ConditionConfig, for implementing conditions that are configured
  *   through the Config. Most Condition classes supplied in this library
  *   implement this interface.
- * @module Conditions/Types
+ * @module jivs-engine/Conditions/Types
  */
 
 import { IValueHost } from './ValueHost';
 import { IValidationServices } from './ValidationServices';
-import { IInputValueHost } from './InputValueHost';
-import { IValueHostsManager } from './ValueHostsManager';
+import { IFieldValueHost } from './FieldValueHost';
+import { IValidationManager } from './ValidationManager';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -51,27 +51,27 @@ export interface ICondition {
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
      * the data was consistent or violates the rules, or the data couldn't be used to run the rule. 
-     * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
-     * Conditions can look them up using ValueHostsManager.getValueHost().getValue() or getInputValue().
+     * @param valueHost - Most values are found amongst the ValueHosts in the ValidationManager.
+     * Conditions can look them up using ValidationManager.getValueHost().getValue() or getTextValue().
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostName when creating the Condition instance.
      * Validator.validate() knows to pass the ValueHostName that hosts the Validator.
      * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
-     * @param valueHostsManager - Its primary use is to lookup ValueHosts to get their data.
+     * @param validationManager - Its primary use is to lookup ValueHosts to get their data.
      * @returns Any of these values:
      * - Match - consistent with the rule
      * - NoMatch - violates the rule
      * - Undetermined - Cannot invoke the rule. Usually data incompatible with use within the rule,
      *    like the value is null, undefined, or the wrong data type.
      */
-    evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
      *   placing Require first and DataTypeCheck second.
-     * * Sets InputValueHostConfig.requiresInput.
+     * * Sets FieldValueHostConfig.required.
      * * Sets ValidatorConfig.severity when undefined, where Require
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
@@ -154,7 +154,7 @@ export enum ConditionEvaluateResult {
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Require and DataTypeCheck have special meaning.
- * Require - the InputValueHostConfig.requiresInput property is set if this is found.
+ * Require - the FieldValueHostConfig.required property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
  *   When Require, ValidatorConfig.severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
@@ -235,12 +235,12 @@ export interface SupportsDataTypeConverter extends ConditionConfig
 
 /**
  * Implement this interface when your condition should evaluate the text
- * of your Input as its being edited. Your evaluateDuringEdit() function
+ * of your Input element as its being edited. Your evaluateDuringEdit() function
  * is called by the Validator.validate() function instead of the 
  * ICondition.evaluate() when validateOption.DuringEdit is true.
  * This is a specialized validator, and not part of model validation.
- * Instead, it takes a string that is provided by the UI Input (via
- * InputValueHost.setInputValue()) and determines if the content is valid.
+ * Instead, it takes a string that is provided by the Input element (via
+ * FieldValueHost.setTextValue()) and determines if the content is valid.
  * Most validation is based on the already converted native value, 
  * like comparing two values. This validation should be limitd to rules
  * that are limited to a string that is likely not in good enough shape
@@ -256,18 +256,18 @@ export interface SupportsDataTypeConverter extends ConditionConfig
 export interface IEvaluateConditionDuringEdits extends ICondition
 {
     /**
-     * Evaluates the text from an Input that is actively being edited to determine if it violates
+     * Evaluates the text from an Input element that is actively being edited to determine if it violates
      * the rules of this condition. However, this implementation is often very different from
-     * the implementation built around the native value. It works with a string value from the Input,
+     * the implementation built around the native value. It works with a string value from the Input element,
      * and you aren't expected to retrieve any other value from a ValueHost host. 
-     * @param text - Current Input Value from InputValueHost. It has not been modified, so if
+     * @param text - Current Text Value from FieldValueHost. It has not been modified, so if
      * you need to work with trimmed (lead and trail whitespace removed) text, you must take
      * care of that yourself.
      * @param valueHost - the ValueHost that invoked this.
      * @param services - just in case, your logic needs more info. However, if the data you need
      * is constant, add a property to your condition's ConditionConfig to supply it.
      */
-    evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult;
+    evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult;
 }
 
 /**
@@ -277,7 +277,7 @@ export interface IEvaluateConditionDuringEdits extends ICondition
  */
 export function toIEvaluateConditionDuringEdits(source: any): IEvaluateConditionDuringEdits | null {
     if (source && typeof source === 'object') {
-        let test = source as IEvaluateConditionDuringEdits;       
+        const test = source as IEvaluateConditionDuringEdits;       
         if (test.evaluateDuringEdits !== undefined)
             return test;
     }

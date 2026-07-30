@@ -1,9 +1,9 @@
 /**
  * Various classes, types and functions to support the overall tool.
- * @module Utilities
+ * @module jivs-engine/Utilities
  */
 
-import { valueForLog } from "./Utilities";
+import { valueForLog } from './Utilities';
 
 /**
  * Classes based on this should throw their error all the way to the top.

@@ -1,25 +1,25 @@
 
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, EmailAddressConditionType, EmailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
-        let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey);
+        let builder = createConfigBuilder(services);
+        builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vm = new ValidationManager(builder.complete());
+        let vh = vm.getFieldValueHost('Field1')!;
 
         let config: RegExpConditionConfig = {
-            conditionType: emailAddressConditionType,
+            conditionType: EmailAddressConditionType,
             valueHostName: 'Field1',
         };
         let testItem = new EmailAddressCondition(config);
@@ -40,31 +40,31 @@ describe('EmailAddressCondition tests', () => {
 describe('EmailAddressDataTypeCheckGenerator tests', () => {
     test('supportsValue() function', () => {
         let testItem = new EmailAddressDataTypeCheckGenerator();
-        expect(testItem.supportsValue(emailAddressLookupKey)).toBe(true);
+        expect(testItem.supportsValue(EmailAddressLookupKey)).toBe(true);
         expect(testItem.supportsValue(LookupKey.String)).toBe(false);
     });
     test('createCondition() function (only supports EmailAddressLookupKey)', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);        
-        let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey);
+        let builder = createConfigBuilder(services);
+        builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vm = new ValidationManager(builder.complete());
+        let vh = vm.getFieldValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
-        let result = testItem.createConditions(vh, emailAddressLookupKey, services.conditionFactory);
+        let result = testItem.createConditions(vh, EmailAddressLookupKey, services.conditionFactory);
         expect(result.length).toBe(1);
         expect(result[0]).toBeInstanceOf(EmailAddressCondition);
     });    
     test('Using fluent syntax, demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
-        let builder = build(services);
-        builder.input('Field1', emailAddressLookupKey).emailAddress();
+        let builder = createConfigBuilder(services);
+        builder.field('Field1', EmailAddressLookupKey).emailAddress();
 
-        let vm = new ValidationManager(builder);
-        let vh = vm.getInputValueHost('Field1')!;
+        let vm = new ValidationManager(builder.complete());
+        let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');
         let valResult = vh.validate();

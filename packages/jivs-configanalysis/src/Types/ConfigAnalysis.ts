@@ -1,19 +1,19 @@
 /**
  * Interfaces and types for ConfigAnalysis class.
- * @module ConfigAnalysis/Types
+ * @module jivs-configanalysis/ConfigAnalysis/Types
  */
-import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { ManagerConfigBuilderBase } from "@plblum/jivs-engine/build/ValueHosts/ManagerConfigBuilderBase";
+import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 
 import {
     IValueHostConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer,
     IConditionConfigPropertyAnalyzer, IValueHostConfigAnalyzer, IValidatorConfigAnalyzer,
     IConditionConfigAnalyzer, IDataTypeComparerAnalyzer
-} from "./Analyzers";
-import { IConfigAnalysisResultsExplorer } from "./Explorer";
-import { IConfigAnalysisResults } from "./Results";
+} from './Analyzers';
+import { IConfigAnalysisResultsExplorer } from './Explorer';
+import { IConfigAnalysisResults } from './ConfigAnalysisResults';
 
 /**
  * A tool to ensure that your configuration is as expected,
@@ -45,13 +45,13 @@ export interface IConfigAnalysis {
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
+    analyze(config: ValidationManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
-     * Analyze the configuration found in the Builder or Modifier object
+     * Analyze the configuration found in the Builder object
      * @param builder 
      * @param options 
      */
-    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;    
+    analyze(builder: ManagerConfigBuilderBase<any>, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;   // eslint-disable-line @typescript-eslint/unified-signatures  
 
     /**
      * Lazyloads all ValueHostConfigPropertyAnalyzers.
@@ -88,9 +88,9 @@ export interface IConfigAnalysis {
  */
 /**
  * Represents the arguments for analysis in the ConfigAnalysis.
- * @template TServices - The type of services provided by IValueHostsServices.
+ * @template TServices - The type of services provided by IValidationServices.
  */
-export interface AnalysisArgs<TServices extends IValueHostsServices> {
+export interface AnalysisArgs<TServices extends IValidationServices> {
     valueHostConfigs: Array<ValueHostConfig>;
     results: IConfigAnalysisResults;
     services: TServices;
@@ -102,7 +102,7 @@ export interface AnalysisArgs<TServices extends IValueHostsServices> {
      * that the valueHostType is in the ValueHostFactory, it
      * uses the valueHostConfigPropertyAnalyzers to check the properties.
      */
-    valueHostConfigAnalyzer?: IValueHostConfigAnalyzer<TServices>;
+    valueHostConfigAnalyzer?: IValueHostConfigAnalyzer;
     /**
      * Analyzer for any ValidatorConfig object. In addition to checking
      * that the validatorType is in the ValidatorFactory, it
@@ -115,7 +115,7 @@ export interface AnalysisArgs<TServices extends IValueHostsServices> {
      * that the conditionType is in the ConditionFactory, it
      * uses the conditionConfigPropertyAnalyzers to check the properties.
      */
-    conditionConfigAnalyzer?: IConditionConfigAnalyzer<TServices>;
+    conditionConfigAnalyzer?: IConditionConfigAnalyzer;
 
     /**
      * Analyzer for identifying if a ConditionConfig needs a comparer.
@@ -160,13 +160,13 @@ export interface ConfigAnalysisOptions {
     valueHostsSampleValues?: { [valueHostName: string]: unknown };
 
     /**
-     * Allows the user to help the service find the Input values
+     * Allows the user to help the service find the text values
      * to use when testing the parsers.
      * 
-     * If there is no Input Value for a ValueHost, the analysis will
+     * If there is no text Value for a ValueHost, the analysis will
      * not check its parser for errors.
      */
-    inputValueHostSampleValues?: { [valueHostName: string]: unknown };
+    fieldValueHostSampleValues?: { [valueHostName: string]: unknown };
 }
 
 /**

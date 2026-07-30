@@ -1,3 +1,17 @@
+**Alert**: Due to this software being actively developed to finalize the architecture, please expect breaking changes along the way.
+The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
+by bumping the major version number. [here].0.0.
+
+## 0.20.0
+- **Breaking API change** - The Builder features are in a separate module, jivs-builder.
+- **Major feature** - Introduce IRules, ModelRulesBase, and FormRulesBase, which are the new way to configure the ValidationManager. It still uses the builder API,
+but by having you subclass ModelRulesBase, you can package your configuration in a reusable and testable way.
+- **Breaking API change** - We've merged InputValueHost and PropertyValueHost into a single one called FieldValueHost. Input and Property were very similar
+and with pending work on the server side story, PropertyValueHost needed to support both text and native values like InputValueHost.
+For the most part, you should be able to rename these builder properties: builder.input() and builder.property() to builder.field().
+- Provide a way for Jivs on the server side to supply its validation IssuesFound to the client. See ValidationManager.fromValidationPayload and toValidationPayload.
+- Revise how external errors are handled. REPLACED setBusinessLogicErrors and its ExternalIssueFound class with addExternalIssuesFound that takes IssueFound.
+
 ## 0.19.0
 - Introduce a new library, jivs-configanalysis, that is part of the overall source code [here](https://github.com/plblum/jivs). It focuses on testing that your configuration is going to deliver as expected when you create a ValidationManager from it.
 - jivs-engine contains numerous minor changes to support jivs-configanalysis.

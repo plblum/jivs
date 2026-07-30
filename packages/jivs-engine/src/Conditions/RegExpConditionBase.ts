@@ -6,7 +6,7 @@
  * 
  * This base class is often used to develop specific Conditions that have a built-in regular expression,
  * such as USPhoneNumberCondition and EmailAddressCondition. Both are good examples of "DataTypeCheck" conditions.
- * @module Conditions/AbstractClasses/RegExpConditionBase
+ * @module jivs-engine/Conditions/AbstractClasses/RegExpConditionBase
  */
 
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';

@@ -1,9 +1,8 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeConverter!IDataTypeConverter:interface }
- * @module DataTypes/Types/IDataTypeConverter
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeConverter!IDataTypeConverter:interface }
+ * @module jivs-engine/DataTypes/Types/IDataTypeConverter
  */
 
-import { SimpleValueType } from "./DataTypeConverterService";
 
 /**
  * Provides conversion between a specific data type and another.
@@ -78,7 +77,7 @@ export interface IDataTypeConverter {
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns true when its own convert() method should handle the value.
       */
@@ -92,7 +91,7 @@ export interface IDataTypeConverter {
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be. When handling conditions,
+     * @param resultLookupKey - The lookup key that the result should be. When handling conditions,
      * this is usually from conditionConfig.conversionLookupKey or secondConversionLookupKey.
      * @returns The converted value. If the value is not convertable, return undefined.
      */

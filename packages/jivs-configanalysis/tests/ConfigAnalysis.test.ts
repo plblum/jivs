@@ -1,45 +1,49 @@
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { ValidationManagerConfigBuilder } from "@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder";
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
+import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { IValueHostsServices } from "@plblum/jivs-engine/build/Interfaces/ValueHostsServices";
-import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
-import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-engine/build/ValueHosts/ValueHostsManagerConfigBuilder";
-import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
-import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
-import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
-import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
 
 import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
     checkLookupKeyResultsForService, createServices
 } from "./TestSupport/support";
 
-import { ConfigAnalysisBase, ValidationManagerConfigAnalysis, ValueHostsManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { AnalysisResultsHelper } from '../src/Analyzers/AnalysisResultsHelper';
-import { SampleValues } from '../src/SampleValues';
-import { IValueHostConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IConditionConfigPropertyAnalyzer, IAnalysisResultsHelper } from '../src/Types/Analyzers';
-import { AnalysisArgs, ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
-import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
-import {
-    ServiceWithLookupKeyCAResultBase, IConfigAnalysisResults, CAFeature, ValueHostConfigCAResult,
-    ValidatorConfigCAResult, PropertyCAResult, CAIssueSeverity
-} from '../src/Types/Results';
 import { DataTypeComparerAnalyzer } from '../src/Analyzers/DataTypeComparerAnalyzer';
 import { ValueHostConfigAnalyzer } from '../src/Analyzers/ValueHostConfigAnalyzer';
 import {
     DataTypePropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase,
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
 } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { registerConfigAnalyzers } from "../src/Runner";
+import { ConfigAnalysisBase, ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
+import { ConfigAnalysisService } from '../src/ConfigAnalysisService';
+import { SampleValues } from '../src/SampleValues';
+import { IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from '../src/Types/Analyzers';
+import { AnalysisArgs, ConfigAnalysisOptions } from '../src/Types/ConfigAnalysis';
+import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
+import {
+    CAFeature,
+    CAIssueSeverity,
+    IConfigAnalysisResults,
+    PropertyCAResult,
+    ServiceWithLookupKeyCAResultBase,
+    ValidatorConfigCAResult,
+    ValueHostConfigCAResult
+} from '../src/Types/ConfigAnalysisResults';
+
+
 
 describe('ConfigAnalysisBase class', () => {
-    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValueHostsManagerConfig, IValueHostsServices> {
-        protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValidationManagerConfig, IValidationServices> {
+        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             let helper = new AnalysisResultsHelper(args);
             this._helper = helper;
             helper.registerLookupKeyAnalyzer(ServiceName.converter, new MockAnalyzer(ServiceName.converter, {} as ServiceWithLookupKeyCAResultBase));
@@ -50,20 +54,20 @@ describe('ConfigAnalysisBase class', () => {
         /**
          * Expose the helper for testing
          */
-        public get publicify_helper(): AnalysisResultsHelper<IValueHostsServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
 
         public get publicify_options(): ConfigAnalysisOptions | null | undefined {
             return this._options;
         }
         private _options: ConfigAnalysisOptions | null | undefined = undefined;
 
-        public publicify_getValueHostNames(config: ValueHostsManagerConfig): string[] {
+        public publicify_getValueHostNames(config: ValidationManagerConfig): string[] {
             return this.getValueHostNames(config);
         }
-        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IValueHostsServices>): void {
+        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IValidationServices>): void {
             this.gatherDataTypeIdentifierLookupKeys(helper);
         }
         public get publicify_valueHostConfigPropertyAnalyzers(): Array<IValueHostConfigPropertyAnalyzer> {
@@ -75,22 +79,22 @@ describe('ConfigAnalysisBase class', () => {
         public get publicify_conditionConfigPropertyAnalyzers(): Array<IConditionConfigPropertyAnalyzer> {
             return this.conditionConfigPropertyAnalyzers;
         }
-        public publicify_createConfigAnalysisResults(config: ValueHostsManagerConfig): IConfigAnalysisResults {
+        public publicify_createConfigAnalysisResults(config: ValidationManagerConfig): IConfigAnalysisResults {
             return this.createConfigAnalysisResults(config);
         }
-        public publicify_createAnalysisArgs(config: ValueHostsManagerConfig,
-            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+        public publicify_createAnalysisArgs(config: ValidationManagerConfig,
+            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             return this.createAnalysisArgs(config, results, options);
         }
-        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValueHostsServices>, helper: AnalysisResultsHelper<IValueHostsServices>): void {
+        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValidationServices>, helper: AnalysisResultsHelper<IValidationServices>): void {
             this.resolveConfigAnalyzers(analysisArgs, helper);
 
         }
-        public publicify_createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+        public publicify_createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             return this.createHelper(args);
         }
         // just to expose options
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             this._options = options;
             return super.createAnalysisArgs(config, results, options);
 
@@ -114,13 +118,13 @@ describe('ConfigAnalysisBase class', () => {
     }
     function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
         testItem: Publicify_ConfigAnalysisBase,
-        services: IValueHostsServices,
-        helper: AnalysisResultsHelper<IValueHostsServices>,
-        analysisArgs: AnalysisArgs<IValueHostsServices>,
+        services: IValidationServices,
+        helper: AnalysisResultsHelper<IValidationServices>,
+        analysisArgs: AnalysisArgs<IValidationServices>,
         results: IConfigAnalysisResults,
     } {
         let services = createServices(serviceOptions);
-        let valueHostManagerConfig: ValueHostsManagerConfig = {
+        let valueHostManagerConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: createValueHostConfigs(expectedDataTypes)
         };
@@ -136,7 +140,7 @@ describe('ConfigAnalysisBase class', () => {
     describe('createConfigAnalysisResults()', () => {
         test('Creates a new results object with the config and feature set', () => {
             let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
@@ -154,7 +158,7 @@ describe('ConfigAnalysisBase class', () => {
         // same with 0 valueHostConfigs
         test('Creates a new results object with the config and feature set with 0 valueHostConfigs', () => {
             let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: []
             };
@@ -173,7 +177,7 @@ describe('ConfigAnalysisBase class', () => {
     describe('createAnalysisArgs()', () => {
         test('Creates a new AnalysisArgs object with the config, results, and options set', () => {
             let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
@@ -199,7 +203,7 @@ describe('ConfigAnalysisBase class', () => {
     describe('resolveConfigAnalyzers()', () => {
         test('Resolves the config analyzers for each ValueHostConfig', () => {
             let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
@@ -221,7 +225,7 @@ describe('ConfigAnalysisBase class', () => {
     describe('getValueHostNames()', () => {
         test('Returns the names of all ValueHostConfigs', () => {
             let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'fr' }]});
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([null, null])
             };
@@ -365,7 +369,7 @@ describe('ConfigAnalysisBase class', () => {
         // with no valueHostConfigs, the results should be empty
         test('With no valueHostConfigs, the results should be empty', () => {
             let services = createServices();
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: []
             };
@@ -386,7 +390,7 @@ describe('ConfigAnalysisBase class', () => {
         // should create a lookup key info entry for LookupKey.Number
         test('With one valueHostConfig with a dataType of LookupKey.Number and just the DataTypePropertyAnalyzer, there should be a lookup key info entry for LookupKey.Number and one entry in valueHostResults', () => {
             let services = createServices();
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([LookupKey.Number])
             };
@@ -431,7 +435,7 @@ describe('ConfigAnalysisBase class', () => {
         // no testing anything else after calling analyze
         test('Confirm that when options = undefined, it internally becomes {}', () => {
             let services = createServices();
-            let valueHostManagerConfig: ValueHostsManagerConfig = {
+            let valueHostManagerConfig: ValidationManagerConfig = {
                 services: services,
                 valueHostConfigs: createValueHostConfigs([LookupKey.Number])
             };
@@ -449,7 +453,7 @@ describe('ConfigAnalysisBase class', () => {
         // effectively matching an earlier test
         test('With a ManagerConfigBuilder as the source of configuration, there should be a lookup key info entry for LookupKey.Number and one entry in valueHostResults', () => {
             let services = createServices();
-            let builder = new ValueHostsManagerConfigBuilder(services);
+            let builder = new ValidationManagerConfigBuilder(services);
             builder.static('testValueHost1', LookupKey.Number);
             let testItem = new Publicify_ConfigAnalysisBase();
 
@@ -492,7 +496,7 @@ describe('ConfigAnalysisBase class', () => {
         // it should resolve to the dataType and cause the lookup key info entry to be created.
         test('ValueHostConfig.dataType = undefined should not have a lookup Key entry, and dataType property has an info message', () => {
             let services = createServices();
-            let builder = new ValueHostsManagerConfigBuilder(services);
+            let builder = new ValidationManagerConfigBuilder(services);
             builder.static('testValueHost1');
             let testItem = new Publicify_ConfigAnalysisBase();
 
@@ -522,7 +526,7 @@ describe('ConfigAnalysisBase class', () => {
         // This should cause the lookup key info entry to be created and no info message about the missing dataType.
         test('ValueHostConfig.dataType = undefined but SampleValues has a Number value for the ValueHostConfig. LookupKey has an entry for Number and dataType property result is empty. Meanwhile, the valueHostConfig.dataType property still appears unassigned', () => {
             let services = createServices();
-            let builder = new ValueHostsManagerConfigBuilder(services);
+            let builder = new ValidationManagerConfigBuilder(services);
             builder.static('testValueHost1');
             let testItem = new Publicify_ConfigAnalysisBase();
 
@@ -561,27 +565,27 @@ describe('ConfigAnalysisBase class', () => {
         });
     });
 });
-describe('ValueHostsManagerConfigAnalysis', () => {
-    class Publicify_ValueHostsManagerConfigAnalysis extends ValueHostsManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IValueHostsServices>): AnalysisResultsHelper<IValueHostsServices> {
+describe('ValidationManagerConfigAnalysis', () => {
+    class Publicify_ValidationManagerConfigAnalysis extends ValidationManagerConfigAnalysis {
+        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
         }
-        public get publicify_helper(): AnalysisResultsHelper<IValueHostsServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValueHostsServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValueHostsServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
-        public get publicify_AnalysisArgs(): AnalysisArgs<IValueHostsServices> | undefined {
+        public get publicify_AnalysisArgs(): AnalysisArgs<IValidationServices> | undefined {
 
             return this._analysisArgs;
         }
-        private _analysisArgs: AnalysisArgs<IValueHostsServices> | undefined = undefined;
+        private _analysisArgs: AnalysisArgs<IValidationServices> | undefined = undefined;
     }
 
     // test a very simple configuration of 1 valueHostConfig
@@ -592,9 +596,9 @@ describe('ValueHostsManagerConfigAnalysis', () => {
     // of ValueHostConfigAnalyzer only, with the other two undefined.
     test('Check the predefined LookupKeyAnalyzers and ConfigAnalyzers to ensure they have the expected values', () => {
         let services = createServices();
-        let builder = new ValueHostsManagerConfigBuilder(services);
+        let builder = new ValidationManagerConfigBuilder(services);
         builder.static('testValueHost1');
-        let testItem = new Publicify_ValueHostsManagerConfigAnalysis();
+        let testItem = new Publicify_ValidationManagerConfigAnalysis();
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();
@@ -605,7 +609,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         expect(args.comparerAnalyzer).toBeDefined();
         expect(args.valueHostConfigAnalyzer).toBeDefined();
         expect(args.conditionConfigAnalyzer).toBeDefined();
-        expect(args.validatorConfigAnalyzer).toBeUndefined();
+        expect(args.validatorConfigAnalyzer).toBeDefined();
 
         expect(testItem.publicify_helper).toBeDefined();
         let helper = testItem.publicify_helper!;
@@ -613,13 +617,13 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         expect(helper.hasLookupKeyAnalyzer(ServiceName.comparer)).toBe(false);  // yes, false
         expect(helper.hasLookupKeyAnalyzer(ServiceName.identifier)).toBe(true);
         // check a few more to ensure they are false
-        expect(helper.hasLookupKeyAnalyzer(ServiceName.formatter)).toBe(false);
-        expect(helper.hasLookupKeyAnalyzer(ServiceName.parser)).toBe(false);
+        expect(helper.hasLookupKeyAnalyzer(ServiceName.formatter)).toBe(true);
+        expect(helper.hasLookupKeyAnalyzer(ServiceName.parser)).toBe(true);
 
     });
 
     // time for a complex configuration that has no errors to report.
-    // We'll use the Builder again. Since it uses ValueHostsManagerConfig,
+    // We'll use the Builder again. Since it uses ValidationManagerConfig,
     // it will have no validators nor ValueHostTypes other than Static and Calc.
     // 2 ValueHostConfigs,
     // 1st is ValueHostType=Static with a dataType of LookupKey.Number
@@ -629,10 +633,10 @@ describe('ValueHostsManagerConfigAnalysis', () => {
     test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {
         let services = createServices();
 
-        let builder = new ValueHostsManagerConfigBuilder(services);
+        let builder = new ValidationManagerConfigBuilder(services);
         builder.static('testValueHost1', LookupKey.Number);
         builder.static('testValueHost2', LookupKey.String);
-        let testItem = new ValueHostsManagerConfigAnalysis();
+        let testItem = new ValidationManagerConfigAnalysis();
 
         testItem.registerValueHostConfigPropertyAnalyzers(() => [
             new ValueHostTypePropertyAnalyzer(),
@@ -734,7 +738,7 @@ describe('ValidationManagerConfigAnalysis', () => {
     });    
     // time for a complex configuration that has no errors to report. 
     // We'll use the Builder again.
-    // 2 ValueHostConfigs, each for ValueHostType="Input".
+    // 2 ValueHostConfigs, each for ValueHostType="Field".
     // 1st has a dataType of LookupKey.Number,
     //   a parserKey of LookupKey.Number,
     //   and 2 ValidatorConfigs each with a ConditionConfig: 
@@ -748,7 +752,7 @@ describe('ValidationManagerConfigAnalysis', () => {
     //   ConditionType.RegExp and ConditionConfig.expression of /^\d+$/.
     // It will need parsers and converters to handle 1st.
     // So services must have NumberParser and NumberConverter registered.
-    // Because we are using ValueHostType.Input and validators,
+    // Because we are using ValueHostType.Field and validators,
     // we'll use IValidationServices and ValidationManagerConfigBuilder.
     // Our helper must have registered the DataTypeParserLookupKeyAnalyzer added.
     // Write that test.
@@ -763,15 +767,15 @@ describe('ValidationManagerConfigAnalysis', () => {
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());
 
         let builder = new ValidationManagerConfigBuilder(services);
-        builder.input('testValueHost1', LookupKey.String, {
+        builder.field('testValueHost1', LookupKey.String, {
             parserLookupKey: LookupKey.Number,
         }).requireText().lessThan('testValueHost2', {
             secondConversionLookupKey: LookupKey.Number,
         });
-        builder.input('testValueHost2', LookupKey.String).regExp(/^\d+$/);
+        builder.field('testValueHost2', LookupKey.String).regExp(/^\d+$/);
 
-        let testItem = new ValidationManagerConfigAnalysis();    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
-        registerConfigAnalyzers(testItem);
+
+        let testItem = new ConfigAnalysisService(services);    // preconfigures ConfigAnalyzers for ValueHosts, Validator, and Condition
 
         let analysisOutput: IConfigAnalysisResultsExplorer | null = null;
         expect(() => analysisOutput = testItem.analyze(builder, {})).not.toThrow();

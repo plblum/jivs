@@ -1,9 +1,9 @@
 /**
- * {@inheritDoc DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
- * @module DataTypes/ConcreteClasses/DataTypeCheckGenerators
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
+ * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */
 import { IConditionFactory, ICondition } from '../Interfaces/Conditions';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IDataTypeCheckGenerator } from '../Interfaces/DataTypeCheckGenerator';
 import { LookupKey } from './LookupKeys';
 import { DataTypeCheckConditionConfig } from '../Conditions/ConcreteConditions';
@@ -18,22 +18,22 @@ export class IntegerDataTypeCheckGenerator implements IDataTypeCheckGenerator
     constructor(dataTypeLookupKey: string = LookupKey.Integer) {
         this._dataTypeLookupKey = dataTypeLookupKey;
     }
-    private _dataTypeLookupKey: string;
+    private readonly _dataTypeLookupKey: string;
 
     public supportsValue(dataTypeLookupKey: string): boolean {
         return this._dataTypeLookupKey === dataTypeLookupKey;
     }
-    public createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string,
+    public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string,
         conditionfactory: IConditionFactory): Array<ICondition> {
-        let conditions: Array<ICondition> = [];
-        conditions.push(conditionfactory.create(<DataTypeCheckConditionConfig>{
+        const conditions: Array<ICondition> = [];
+        conditions.push(conditionfactory.create(({
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: valueHost.getName()
-        }));
-        conditions.push(conditionfactory.create(<DataTypeCheckConditionConfig>{
+        } as DataTypeCheckConditionConfig)));
+        conditions.push(conditionfactory.create(({
             conditionType: ConditionType.Integer,
             valueHostName: valueHost.getName()
-        }));        
+        } as DataTypeCheckConditionConfig)));        
         return conditions;
     }
 }

@@ -1,6 +1,6 @@
 /**
  * 
- * @module Services/Types/ConfigMergeService
+ * @module jivs-engine/Services/Types/ConfigMergeService
  */
 import { ConditionConfig } from './Conditions';
 import { ValidatorConfig } from './Validator';
@@ -9,7 +9,7 @@ import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
 import { IServiceWithAccessor } from './Services';
 
 /**
- * @inheritdoc Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
+ * @inheritDoc jivs-engine/Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
  */
 export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
 
@@ -25,8 +25,6 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
     /**
      * Exposes property names that are not expected to be changed by the rules.
      * Ignores rules with functions. 
-     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
-     * to strip out instead of allowing them to make it into the merge code.
      * @returns 
      */
     getNoChangePropertyNames(): Array<string>;    
@@ -133,7 +131,7 @@ export type PropertyConfigMergeServiceSetting =
 /**
  * This handler is an alternative to PropertyConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
- * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
 export type PropertyConfigMergeServiceHandler<T> = (source: T, destination: T, propertyName: string, identity: MergeIdentity) => PropertyConfigMergeServiceHandlerResult;
 
@@ -147,11 +145,11 @@ export interface PropertyConfigMergeServiceHandlerResult
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: PropertyConfigMergeServiceAction,
+    useAction?: PropertyConfigMergeServiceAction;
     /**
      * Provide the value to set to the destination property.
      */
-    useValue?: any
+    useValue?: any;
 }
 /**
  * PropertiesConflictRules uses this as the values.
@@ -181,7 +179,7 @@ export type ConditionConfigMergeServiceAction =
 /**
  * This handler is an alternative to ConditionConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
- * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
 export type ConditionConfigMergeServiceHandler = (source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity) => ConditionConfigMergeServiceHandlerResult;
 
@@ -195,11 +193,11 @@ export interface ConditionConfigMergeServiceHandlerResult
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: ConditionConfigMergeServiceAction,
+    useAction?: ConditionConfigMergeServiceAction;
     /**
      * Provide the value to set to the destination property.
      */
-    useValue?: ConditionConfig
+    useValue?: ConditionConfig;
 }
 
 /**
@@ -217,6 +215,10 @@ export interface MergeIdentity
  * is in conflict with a destination ValidatorConfig. If one is identified,
  * it is returned and the caller should use ValidatorConfigMergeService.resolve
  * to determine how to handle the conflict.
+ * @param validatorSrc - The ValidatorConfig from the source that is being merged into the destination.
+ * @param validatorsInDest - The ValidatorConfigs in the destination that are being merged into.
+ * @param identity - Identifies either the ValueHostName or ErrorCode of the containing Config object.
+ * @returns - The ValidatorConfig in the destination that is in conflict with the source, or undefined if none are found.
  */
 export type ConditionConflictIdentifierHandler = (validatorSrc: ValidatorConfig,
     validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity) =>

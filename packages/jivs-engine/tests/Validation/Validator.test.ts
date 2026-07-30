@@ -7,65 +7,63 @@ import {
 
 } from "../../src/Conditions/ConcreteConditions";
 
-import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
+import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
+import { MockValidationManager, MockValidationServices, MockFieldValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
-import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
-import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
+import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { createValidationServicesForTesting, registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
+import { registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { AlwaysMatchesCondition, AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { ErrorResponseCondition } from "../../src/Conditions/ConditionBase";
-import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
-import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
+
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
 class PublicifiedValidator extends Validator {
-    public ExposeConfig(): ValidatorConfig {
+    public exposeConfig(): ValidatorConfig {
         return this.config;
     }
-    public ExposeServices(): IValidationServices {
+    public exposeServices(): IValidationServices {
         return this.services;
     }
-    public ExposeValidationManager(): IValidationManager {
+    public exposeValidationManager(): IValidationManager {
         return this.validationManager;
     }
-    public ExposeValueHost(): IValidatorsValueHostBase {
+    public exposeValueHost(): IValidatorsValueHostBase {
         return this.valueHost;
     }
 
-    public ExposeEnabler(): ICondition | null {
+    public exposeEnabler(): ICondition | null {
         return this.enabler;
     }
-    public ExposeSeverity(): ValidationSeverity {
+    public exposeSeverity(): ValidationSeverity {
         return this.severity;
     }
-    public ExposeGetErrorMessageTemplate(): string {
+    public exposeGetErrorMessageTemplate(): string {
         return this.getErrorMessageTemplate();
     }
-    public ExposeGetSummaryMessageTemplate(): string {
+    public exposeGetSummaryMessageTemplate(): string {
         return this.getSummaryMessageTemplate();
     }
 }
 /**
  * Returns an Validator (PublicifiedValidator subclass) ready for testing.
- * The returned ValidationManager includes two InputValueHosts with IDs "Field1" and "Field2".
+ * The returned ValidationManager includes two FieldValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * ConditionConfig - RequireTextConditiontType, ValueHostName: null
@@ -78,15 +76,15 @@ class PublicifiedValidator extends Validator {
 function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     vm: MockValidationManager,
     services: MockValidationServices,
-    valueHost1: MockInputValueHost,
-    valueHost2: MockInputValueHost,
+    valueHost1: MockFieldValueHost,
+    valueHost2: MockFieldValueHost,
     config: ValidatorConfig,
     validator: PublicifiedValidator
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
-    let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
-    let vh2 = vm.addMockInputValueHost('Field2', LookupKey.String, 'Label2');
+    let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
@@ -137,7 +135,7 @@ export class ConditionWithPromiseTester implements ICondition {
         });
     }
 }
-// constructor(valueHost: IInputValueHost, config: ValidatorConfig)
+// constructor(valueHost: IFieldValueHost, config: ValidatorConfig)
 describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
         let config: ValidatorConfig = {
@@ -149,26 +147,17 @@ describe('Validator.constructor and initial property values', () => {
     test('config parameter null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = new MockInputValueHost(vm, '', '',);
+        let vh = new MockFieldValueHost(vm, '', '',);
         expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
     test('Valid parameters create and setup supporting properties', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: { conditionType: '' },
         });
-        expect(setup.validator.ExposeConfig()).toBe(setup.config);
-        expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
+        expect(setup.validator.exposeConfig()).toBe(setup.config);
+        expect(setup.validator.exposeValidationManager()).toBe(setup.vm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
-    test('ValueHostsManager used with Validator throws when trying to access ValidationManager or Services', () => {
-        let services = createValidationServicesForTesting();
-        let builder = new ValueHostsManagerConfigBuilder(services);
-        let vm = new ValueHostsManager(builder);
-        let vh = new MockInputValueHost(vm, '', '',);
-        let testItem = new PublicifiedValidator(vh, { conditionConfig: { conditionType: 'Test' } });
-
-        expect(()=> testItem.ExposeValidationManager()).toThrow('ValueHost.services must contain IValidationManager');
-    });    
 });
 describe('errorCode', () => {
     test('Value assigned is returned regardless of ConditionType', () => {
@@ -290,18 +279,18 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({});
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
     test('Successful creation of EqualToCondition', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <EqualToConditionConfig>{
+                whenToEnableConfig: <EqualToConditionConfig>{
                     conditionType: ConditionType.EqualTo,
                     valueHostName: null
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -310,7 +299,7 @@ describe('Validator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
         expect(enabler).toBeInstanceOf(EqualToCondition);
     });
@@ -318,17 +307,17 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: 'UnknownType'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
             }            
         });
 
-        expect(() => setup.validator.ExposeEnabler()).toThrow(/ConditionType/);
+        expect(() => setup.validator.exposeEnabler()).toThrow(/ConditionType/);
 
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
@@ -337,10 +326,10 @@ describe('Validator.enabler', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: {
+                whenToEnableConfig: {
                     conditionType: AlwaysMatchesConditionType
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType:  'UnknownType'
                 }
             }            
@@ -349,7 +338,7 @@ describe('Validator.enabler', () => {
         expect(() => child = setup.validator.condition).toThrow(/ConditionType/);
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull(); // because of the error
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
@@ -360,7 +349,7 @@ describe('Validator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
 });
@@ -417,21 +406,21 @@ describe('Validator.severity', () => {
             severity: ValidationSeverity.Error
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = Warning, severity=Warning', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Warning
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
     });
     test('Config.severity = Severe, severity=Severe', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Severe
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
     });  
     test('Conditions that use severity=Severe when Config.severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string, ) {
@@ -443,7 +432,7 @@ describe('Validator.severity', () => {
             });
             registerAllConditions((setup.services.conditionFactory as ConditionFactory));
 
-            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
@@ -459,7 +448,7 @@ describe('Validator.severity', () => {
                 severity: undefined
             });
 
-            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
@@ -469,8 +458,8 @@ describe('Validator.severity', () => {
         checkDefaultSeverity(ConditionType.GreaterThanOrEqual);
         checkDefaultSeverity(ConditionType.LessThan);
         checkDefaultSeverity(ConditionType.LessThanOrEqual);
-        checkDefaultSeverity(ConditionType.And);
-        checkDefaultSeverity(ConditionType.Or);
+        checkDefaultSeverity(ConditionType.All);
+        checkDefaultSeverity(ConditionType.Any);
         checkDefaultSeverity(ConditionType.CountMatches);
 
     });
@@ -482,17 +471,17 @@ describe('Validator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                conditionType: ConditionType.And
+                conditionType: ConditionType.All
             },
             severity: undefined
         });
 
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = function, severity= result of function', () => {
         let setup = setupWithField1AndField2({
@@ -500,11 +489,11 @@ describe('Validator.severity', () => {
         });
 
         let severityForFn: ValidationSeverity = ValidationSeverity.Warning;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
         severityForFn = ValidationSeverity.Error;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
         severityForFn = ValidationSeverity.Severe;
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
     });
 });
 
@@ -533,7 +522,7 @@ describe('Validator.getErrorMessageTemplate', () => {
             errorMessage: 'Test',
         });
 
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe('Test');
     });
 
     test('Config.errorMessage = function, getErrorMessageTemplate= result of function', () => {
@@ -542,38 +531,38 @@ describe('Validator.getErrorMessageTemplate', () => {
         });
 
         let errorMessageForFn = 'Test';
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe('Test');
     });
     test('Config.errorMessage = function, throws when function returns static error message', () => {
         let setup = setupWithField1AndField2({
             errorMessage: (iv: IValidator) => null!
         });
 
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
+        expect(setup.validator.exposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('esErrorMessage');
     });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
 
     test('TextLocalizationService.GetErrorMessage used because errorMessage is not supplied', () => {
@@ -588,7 +577,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });    
     test('TextLocalizationService.GetErrorMessage is not used because errorMessage is supplied', () => {
       
@@ -603,7 +592,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('supplied');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('supplied');
     });        
     test('TextLocalizationService.GetErrorMessage together with both Condition Type and DataTypeLookupKey', () => {
       
@@ -621,7 +610,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });        
     test('TextLocalizationService.GetErrorMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
@@ -643,7 +632,7 @@ describe('Validator.getErrorMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     }); 
 });
 describe('Validator.GetSummaryMessageTemplate', () => {
@@ -653,7 +642,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: 'Summary',
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = null, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -661,7 +650,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = undefined, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -669,7 +658,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: undefined
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
         let setup = setupWithField1AndField2({
@@ -678,7 +667,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         });
 
         let summaryMessageForFn = 'Summary';
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = function that returns null GetSummaryMessageTemplate = errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -686,31 +675,31 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: (iv: IValidator) => null!
         });
 
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
     });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
     test('TextLocalizationService.GetSummaryMessage used because summaryMessage is not supplied', () => {
       
@@ -724,7 +713,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });    
     test('TextLocalizationService.GetSummaryMessage is not used because summaryMessage is supplied', () => {
       
@@ -739,7 +728,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('supplied');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('supplied');
     });        
     test('TextLocalizationService.GetSummaryMessage together with both Condition Type and DataTypeLookupKey', () => {
       
@@ -757,7 +746,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });        
     test('TextLocalizationService.GetSummaryMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
@@ -779,7 +768,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
-        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+        expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
 
 });
@@ -882,11 +871,11 @@ describe('Validator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
+                whenToEnableConfig: <RequireTextConditionConfig>{
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -897,11 +886,11 @@ describe('Validator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
+                whenToEnableConfig: <RequireTextConditionConfig>{
                     conditionType: IsUndeterminedConditionType,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -937,12 +926,12 @@ describe('Validator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                enablerConfig: <RequireTextConditionConfig>{
-                // the input value is 'ABC', which causes this condition to return Match
+                whenToEnableConfig: <RequireTextConditionConfig>{
+                // the text value is 'ABC', which causes this condition to return Match
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },
-                childConditionConfig: {
+                thenConfig: {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 }
@@ -978,12 +967,12 @@ describe('Validator.validate', () => {
     });
 
     function testDuringEditIsTrue(configChanges: Partial<ValidatorConfig>,
-        inputValue: string, 
+        textValue: string, 
         loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
-        setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
+        setup.valueHost1.setTextValue(textValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({ duringEdit: true})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -1024,12 +1013,12 @@ describe('Validator.validate', () => {
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
         vm: MockValidationManager,
         services: MockValidationServices,
-        vh: IInputValueHost,
+        vh: IFieldValueHost,
         testItem: Validator
     } {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Field 1');
+        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
             conditionConfig: null,
@@ -1078,7 +1067,8 @@ describe('Validator.validate', () => {
                     errorMessage: 'Local',
                     summaryMessage: 'Summary',
                     severity: ValidationSeverity.Error,
-                    valueHostName: 'Field1'
+                    valueHostName: 'Field1',
+                    doNotSave: true
                 }
             });
         });
@@ -1137,7 +1127,7 @@ describe('getValuesForTokens', () => {
                 valueHostName: null
             }
         });
-        setup.valueHost1.setInputValue('Value1');
+        setup.valueHost1.setTextValue('Value1');
         let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
@@ -1169,7 +1159,7 @@ describe('getValuesForTokens', () => {
         });
         (setup.services.conditionFactory as ConditionFactory).register<RangeConditionConfig>(
             ConditionType.RegExp, (config) => new RangeCondition(config));                
-        setup.valueHost1.setInputValue('C');
+        setup.valueHost1.setTextValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
@@ -1206,14 +1196,14 @@ describe('getValuesForTokens', () => {
 describe('ValidatorFactory.create', () => {
     function setupValidatorFactory(): {
         vm: MockValidationManager,
-        vh: MockInputValueHost,
+        vh: MockFieldValueHost,
         validatorConfig: ValidatorConfig,
         factory: ValidatorFactory
     }
     {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
+        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1232,7 +1222,7 @@ describe('ValidatorFactory.create', () => {
     }
     class TestValidator extends Validator
     {
-        constructor(valueHost: IInputValueHost, validatorConfig: ValidatorConfig)
+        constructor(valueHost: IFieldValueHost, validatorConfig: ValidatorConfig)
         {
             super(valueHost, validatorConfig);
         }
@@ -1283,7 +1273,7 @@ describe('toIMessageTokenSource', () => {
     });
     test('Valid object with getValuesForTokens assigned returns it', () => {
         let test: IMessageTokenSource = {
-            getValuesForTokens: (vh: IInputValueHost, vhr: IValueHostResolver) => []
+            getValuesForTokens: (vh: IFieldValueHost, vhr: IValueHostResolver) => []
         };
         expect(toIMessageTokenSource(test)).toBe(test);
     });    
@@ -1325,4 +1315,64 @@ describe('dispose', () => {
 
     });               
 
+});
+
+describe('highestSeverity', () => {
+    // Tests the highestSeverity function against an array of IssueFound objects, 0 IssueFound, or null.
+    function createIF(severity: ValidationSeverity): IssueFound {
+        return {
+            valueHostName: 'name',
+            errorCode: 'code',
+            severity: severity,
+            errorMessage: '',
+            summaryMessage: undefined,
+            doNotSave: severity !== ValidationSeverity.Warning   // just to have some difference in the objects based on severity
+        };
+    }
+    
+    test('highestSeverity returns the highest severity from an array of issues', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Error),
+            createIF(ValidationSeverity.Severe)
+        ];
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Severe);
+    });
+    test('highestSeverity returns null when passed an empty array', () => {
+        expect(highestSeverity([])).toBeNull();
+    });
+    test('highestSeverity returns null when passed null', () => {
+        expect(highestSeverity(null)).toBeNull();
+    }); 
+    test('highestSeverity returns the severity when passed a single IssueFound', () => {
+        let issue: IssueFound = createIF(ValidationSeverity.Warning);
+        expect(highestSeverity([issue])).toBe(ValidationSeverity.Warning);
+    }); 
+    test('highestSeverity returns the Warning severity when passed 3 warning IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Warning);
+    });
+    test('highestSeverity returns the Error severity when passed 2 warning and one Error IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Error)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Error);
+    });    
+    test('highestSeverity returns the Severe severity when passed 2 warning and 1 severe IssueFounds', () => {
+        let issues: IssueFound[] = [
+            createIF(ValidationSeverity.Severe),
+            createIF(ValidationSeverity.Warning),
+            createIF(ValidationSeverity.Warning)
+        ];
+
+        expect(highestSeverity(issues)).toBe(ValidationSeverity.Severe);
+    });    
 });

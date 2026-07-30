@@ -1,12 +1,10 @@
 /**
  * Base classes for developing Services around data types.
- * @module Services/AbstractClasses/DataTypeConverterServiceBase
+ * @module jivs-engine/Services/AbstractClasses/DataTypeConverterServiceBase
  */
 
-import { LoggingLevel } from "../Interfaces/LoggerService";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { isSupportedAsValue, valueForLog } from "../Utilities/Utilities";
-import { DataTypeServiceBase } from "./DataTypeServiceBase";
+import { CodingError } from '../Utilities/ErrorHandling';
+import { DataTypeServiceBase } from './DataTypeServiceBase';
 
 /**
  * Provides tooling that support both ConverterServices and ComparerServices

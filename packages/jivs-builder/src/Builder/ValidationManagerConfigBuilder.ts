@@ -1,0 +1,259 @@
+/**
+ * @inheritDocjivs-builder/Builders/ConcreteClasses!ValidationManagerConfigBuilder:class
+ * @module jivs-builder/Builders/ConcreteClasses
+ */
+
+import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { FieldValueHostConfig, TextValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
+import { ValueHostValidationStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
+import {
+    ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState,
+    ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
+} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
+import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { IValidatorBuilder } from '../Interfaces/ChildBuilders';
+import {
+    FluentFieldParameters, FluentFieldValueConfig,
+    FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
+} from '../Interfaces/ValueHostConfigBuilders';
+import { IValidationManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
+import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
+
+/**
+ * Access point for using ValidationManagerConfigBuilder.
+ * We recommend that you choose another approach: create your own subclass of ModelRulesBase, 
+ * and use its builder property to configure your ValidationManagerConfig.
+ * @returns 
+ */
+export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
+    if (toIServicesAccessor(arg1)) {
+        const services = (arg1 as ValidationManagerConfig).services;
+        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as unknown as ValidationManagerConfigBuilder;
+    }
+    const services = arg1 as IValidationServices;
+    return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValidationManagerConfigBuilder;
+}
+
+/**
+ * For building the ValidationManagerConfig
+ * 
+ * ```ts
+ * let builder = new ValidationManagerConfigBuilder(createValidationServices());
+ * builder.field('Field1').requireText();
+ * let vmConfig = builder.complete();
+ * 
+ * let vm = new ValidationManager(vmConfig);
+ * ```
+ * instead of
+ * ```ts
+ * let vmConfig: ValidationManagerConfig = {
+ *      services: createValidationServices(),
+ *      valueHostConfigs: [
+ *          {
+ *              valueHostType: ValueHostType.Field,
+ *              name: 'Field1',
+ *              validatorConfigs: [
+ *                  {
+ *                      conditionConfig: { conditionType: ConditionType.RequireText }
+ *                  }
+ *              ]
+ *          }
+ *      ]
+ * }
+ * 
+ * let vm = new ValidationManager(vmConfig);
+ * ```
+ */
+
+export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig> extends ManagerConfigBuilderBase<T>
+    implements IValidationManagerConfigBuilder<T> {
+    
+    constructor(services: IValidationServices)
+    constructor(config: T)
+    constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
+    constructor(arg1: IValidationServices | T | BuilderState<T>) {
+        super(arg1 as any);
+    }
+    public get services(): IValidationServices {
+        return this.baseConfig.services;
+    }
+    //#region InstanceState
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     */
+    public get savedInstanceState(): ValidationManagerInstanceState | null {
+        return this.baseConfig.savedInstanceState ?? null;
+    }
+    public set savedInstanceState(value: ValidationManagerInstanceState | null) {
+        this.baseConfig.savedInstanceState = value;
+    }
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     */
+    public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
+        return this.baseConfig.savedValueHostInstanceStates ?? null;
+    }
+    public set savedValueHostInstanceStates(value: Array<ValueHostInstanceState> | null) {
+        this.baseConfig.savedValueHostInstanceStates = value;
+    }
+    
+    //#endregion InstanceState
+    protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
+        return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
+    }
+    //#region validation oriented ValueHost support
+    /**
+     * Fluent format to create a FieldValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
+     */
+    public field(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentFieldParameters): IValidatorBuilder;
+    /**
+     * Fluent format to create a FieldValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
+     */
+    public field(valueHostName: ValueHostName, parameters: FluentFieldParameters): IValidatorBuilder;
+    /**
+     * Fluent format to create a FieldValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param config - Supply the entire FieldValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
+     */
+    public field(config: FluentFieldValueConfig): IValidatorBuilder;
+    // overload resolution
+    public field(arg1: ValueHostName | FluentFieldValueConfig,
+        arg2?: FluentFieldParameters | string | null,
+        arg3?: FluentFieldParameters): IValidatorBuilder {
+        return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
+    }
+
+    //#region utilities for ValidationManager-based subclasses
+    // These utilities should all be protected. The ValidationManager subclass will create a public version of it.
+    /**
+     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * Protected because ValueHostManager does not support FieldValueHost. 
+     * ValidationManager offers a public interface.
+     * @param valueHostType - the ValueHostType to configure
+     * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a FieldValueHostConfig.
+     * @returns ValidatorBuilder for chaining validators to initial FieldValueHost
+     */
+    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
+        valueHostType: ValueHostType | string,
+        arg1: Partial<TVHConfig> | ValueHostName,
+        arg2?: Partial<TVHConfig> | string | null,
+        arg3?: Partial<TVHConfig>): IValidatorBuilder {
+        this.assertNotDisposed();
+        assertNotNull(arg1, 'arg1');
+        const builder = this.createValueHostBuilder() as ValidatableValueHostConfigBuilder;
+        const config = builder.withValidators(valueHostType,
+            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
+            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
+            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
+
+        this.applyConfig(config);
+        return this.services.buildersFactory.createValidatorBuilder(config);        
+  //    return builder;
+    }
+
+    //#endregion validation oriented ValueHost support
+
+
+    //#region IValidationManagerCallbacks
+    /**
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
+     */
+    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null | undefined {
+        return this.baseConfig.onValueHostInstanceStateChanged;
+    }
+    public set onValueHostInstanceStateChanged(value: ValueHostInstanceStateChangedHandler | null) {
+        this.baseConfig.onValueHostInstanceStateChanged = value;
+    }
+    /**
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
+     */
+    public get onValueChanged(): ValueChangedHandler | null {
+        return this.baseConfig.onValueChanged ?? null;
+    }
+    public set onValueChanged(value: ValueChangedHandler | null) {
+        this.baseConfig.onValueChanged = value;
+    }
+
+    /**
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
+     */
+    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
+        return this.baseConfig.onValueHostValidationStateChanged ?? null;
+    }
+    public set onValueHostValidationStateChanged(value: ValueHostValidationStateChangedHandler | null) {
+        this.baseConfig.onValueHostValidationStateChanged = value;
+    }
+
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onValidationStateChanged
+     */
+    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
+        return this.baseConfig.onValidationStateChanged ?? null;
+    }
+    public set onValidationStateChanged(value: ValidationStateChangedHandler | null) {
+        this.baseConfig.onValidationStateChanged = value;
+    }
+    /**
+     * @inheritDoc jivs-engine/ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
+     */
+    public get onTextValueChanged(): TextValueChangedHandler | null {
+        return this.baseConfig.onTextValueChanged ?? null;
+    }
+    public set onTextValueChanged(value: TextValueChangedHandler | null) {
+        this.baseConfig.onTextValueChanged = value;
+    }
+
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onInstanceStateChanged
+     */
+
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+        return this.baseConfig.onInstanceStateChanged ?? null;
+    }
+    public set onInstanceStateChanged(value: ValidationManagerInstanceStateChangedHandler | null) {
+        this.baseConfig.onInstanceStateChanged = value;
+    }
+
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onConfigChanged
+     */
+    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+        return this.baseConfig.onConfigChanged ?? null;
+    }
+    public set onConfigChanged(value: ValidationManagerConfigChangedHandler | null) {
+        this.baseConfig.onConfigChanged = value;
+    }
+  
+    /**
+     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
+     */
+    public get notifyValidationStateChangedDelay(): number {
+        return this.baseConfig.notifyValidationStateChangedDelay ?? 0;
+    }
+    public set notifyValidationStateChangedDelay(value: number) {
+        this.baseConfig.notifyValidationStateChangedDelay = value;
+    }
+    //#endregion IValidationManagerCallbacks
+}
+
+

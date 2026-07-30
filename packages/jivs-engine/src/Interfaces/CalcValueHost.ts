@@ -1,7 +1,7 @@
 /**
  * CalcValueHost is a specialized ValueHost whose value is calculated
- * when its getValue method is called. You supply a function callback
- * in its CalcValueHostConfig to set it up.
+ * when its getValue method is called. You provide a function callback
+ * which is called to perform the calculation.
  * 
  * Calculations allow you to expand what is available to Conditions
  * without having to create new rules. This class was inspired by this use case:
@@ -14,13 +14,17 @@
  * 
  * CalcValueHost has nifty conversion functions built in, that 
  * can be used to prepare the values it needs, the same way the comparison conditions do.
+ * ```ts
  * let totalDays = vh.convert(value, 'TotalDays'); // 'TotalDays' is a lookup key
+ * ```
  * Internally CalcValueHost uses Jivs' DataTypeConverters and DataTypeIdentifiers
  * to convert the original value into the value demanded by its own dataType property.
  * 
- * Here is pseudo code for configuring the CalcValueHost used in this example.
+ * Here is pseudo code for configuring the CalcValueHost used in this example. It assumes
+ * that you have a builder object, and that is provided so long as you are writing configuration 
+ * code using the ModelRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
  * ```ts
- * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
+ * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager)
  * : SimpleValueType
  * {
  *      let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
@@ -31,26 +35,25 @@
  * }
  * 
  * // create the CalcValueHostConfig to supply to the ValidationManager
- * let builder = build(services);
  * builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
- * // create the 'StartDate' input with a LessThanCondition
- * builder.input('StartDate', 'Date', { label: 'Start date' })
+ * // create the 'StartDate' field with a LessThanCondition
+ * builder.field('StartDate', 'Date', { label: 'Start date' })
  *  .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
-* @module ValueHosts/Types/CalcValueHost
+* @module jivs-engine/ValueHosts/Types/CalcValueHost
  */
 
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { SimpleValueType } from "./DataTypeConverterService";
-import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostsManager";
+import { LookupKey } from '../DataTypes/LookupKeys';
+import { SimpleValueType } from './DataTypeConverterService';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+import { IValidationManager } from './ValidationManager';
 
 /**
  * Function definition for calculation functions used by CalcValueHost
  */
-export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => SimpleValueType;
+export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => SimpleValueType;
 
 /**
  * Structure of CalcValueHost
@@ -67,7 +70,7 @@ export interface ICalcValueHost extends IValueHost
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be.
+     * @param resultLookupKey - The lookup key that the result should be.
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType;
@@ -85,7 +88,7 @@ export interface ICalcValueHost extends IValueHost
      * such as checking its class (using 'instanceof') or for properties of an interface
      * that you are using.
      * This is often the dataType property of the ValueHost.
-     * @resultLookupKey - The lookup key that the result should be
+     * @param resultLookupKey - The lookup key that the result should be
      * @returns The converted value. If the value is not convertable, return undefined.
      */
     convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType;        

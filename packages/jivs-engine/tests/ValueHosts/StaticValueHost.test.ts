@@ -2,10 +2,9 @@ import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost }
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
-import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
+import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
@@ -23,7 +22,7 @@ describe('StaticValueHost constructor', () => {
             value: undefined
         })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.validationManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
@@ -165,9 +164,9 @@ describe('toIStaticValueHost function', () => {
             });
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
-    test('Passing actual InputValueHost returns null.', () => {
+    test('Passing actual FieldValueHost returns null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new InputValueHost(vm, {
+        let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []
@@ -194,7 +193,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });        
     class TestIStaticValueHostImplementation implements IStaticValueHost {
-        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
+        validationManager: IValidationManager = {} as IValidationManager;
         dispose(): void {}
         getName(): string {
             throw new Error("Method not implemented.");
@@ -238,24 +237,10 @@ describe('toIStaticValueHost function', () => {
 
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
-    test('PropertyValueHost return null.', () => {
+ 
+    test('FieldValueHost return null.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new PropertyValueHost(vm, {
-                name: 'Field1',
-                label: 'Label1',
-                validatorConfigs: []
-            },
-            {
-                name: 'Field1',
-                value: undefined,
-                issuesFound: null,
-                status: ValidationStatus.NotAttempted
-            });
-        expect(toIStaticValueHost(testItem)).toBeNull();
-    });            
-    test('InputValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new InputValueHost(vm, {
+        let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []

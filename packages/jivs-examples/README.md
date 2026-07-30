@@ -1,9 +1,10 @@
 # Examples of using and extending Jivs
 The following examples are found here, with separate files for source code and unit tests.
 ## Configuration
-- Config_with_BusinessLogic_using_Builder - Using the Builder API to create a ValidationManager configuration from business logic.
-- Config_with_BusinessLogic_using_code_generator - Using a code generator to convert business logic validation rules into Jivs validation rules
-- Config_entirely_in_UI_Layer - Using the Builder API to create a ValidationManager configuration entirely in the UI Layer.
+- Config_with_a_model - Create a subclass of ModelRulesBase to configure your model's 
+business logic rules.
+- Config_without_a_model - Create a subclass of FormRulesBase to configure fields
+on a form when you don't have a model.
 ## Conditions
 - EvenNumberCondition - Create a new Condition that will require even numbers.
   Introduces a ConditionType ("EvenNumber"), a Condition class, and support within the Builder object.

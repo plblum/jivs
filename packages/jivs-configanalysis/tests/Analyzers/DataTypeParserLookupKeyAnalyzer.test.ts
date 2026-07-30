@@ -5,7 +5,7 @@ import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypePa
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { CultureService } from '@plblum/jivs-engine/build/Services/CultureService';
 import { DataTypeParserLookupKeyAnalyzer } from './../../src/Analyzers/DataTypeParserLookupKeyAnalyzer';
-import { ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, CAIssueSeverity, ParserFoundCAResult, IssueForCAResultBase } from "../../src/Types/Results";
+import { ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, CAIssueSeverity, ParserFoundCAResult, IssueForCAResultBase } from "../../src/Types/ConfigAnalysisResults";
 import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
 import { createAnalysisArgs } from "../TestSupport/support";
 

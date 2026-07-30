@@ -1,10 +1,10 @@
 /**
  * 
- * @module Explorer/Classes/Formatters
+ * @module jivs-configanalysis/Explorer/ConcreteClasses/Formatters
  */
 
-import { cleanForLogging, deepCleanForJson } from "@plblum/jivs-engine/build/Utilities/Utilities";
-import { ConfigAnalysisOutputReportData, IConfigAnalysisOutputFormatter } from "../../Types/Explorer";
+import { cleanForLogging, deepCleanForJson } from '@plblum/jivs-engine/build/Utilities/Utilities';
+import { ConfigAnalysisOutputReportData, IConfigAnalysisOutputFormatter } from '../../Types/Explorer';
 
 /**
  * Builds an object that contains up to all 3 result objects, each a property declared
@@ -54,7 +54,7 @@ export class JsonConfigAnalysisOutputFormatter extends ConfigAnalysisOutputForma
     public get space(): string | number {
         return this._space;
     }
-    private _space: string | number = 4;
+    private readonly _space: string | number = 4;
 
     /**
      * Uses JSON.stringify() to convert the reportData into a JSON string.
@@ -63,7 +63,7 @@ export class JsonConfigAnalysisOutputFormatter extends ConfigAnalysisOutputForma
      */
     public format(reportData: ConfigAnalysisOutputReportData): any
     {
-        let cleaned = this.deepCleanForJson(reportData);
+        const cleaned = this.deepCleanForJson(reportData);
         return JSON.stringify(cleaned, null, this.space);
     }
 }

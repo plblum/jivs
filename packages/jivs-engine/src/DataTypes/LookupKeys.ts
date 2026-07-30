@@ -16,7 +16,7 @@
  *   That comes from specifying a Lookup Key as part of the token like this: "{Value:AbbrevDate}" and "{Minimum:Uppercase}"
  * - Conditions that compare two values have a ConversionLookupKey property to override any default conversion. 
  *   Example: comparing two strings case insensitively using "CaseInsensitive" lookup key.
- * @module DataTypes/Types/LookupKey
+ * @module jivs-engine/DataTypes/Types/LookupKey
  */
 
 export enum LookupKey {
@@ -30,7 +30,7 @@ export enum LookupKey {
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
-     * @Group Native Data Type
+     * @group Native Data Type
      * @remarks
      * This is used when no Lookup Key is supplied.
      */
@@ -44,7 +44,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | NumberFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
-     * @Group Native Data Type
+     * @group Native Data Type
      * @remarks
      * This is used when no Lookup Key is supplied.
      */
@@ -58,7 +58,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | BooleanFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | BooleanDataTypeComparer, returns only Equal and NotEqual
-     * @Group Native Data Type
+     * @group Native Data Type
      * @remarks
      * This is used when no Lookup Key is supplied.
      * If used, BooleanFormatter needs your configuration to know the supported 
@@ -74,7 +74,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | DateFormatter
      * | IDataTypeConverter             | UTCDateOnlyConverter
      * | IDataTypeComparer              | default
-     * @Group Native Data Type
+     * @group Native Data Type
      * @remarks
      * Just the date part of a Date object. Assumes UTC. 
      * This is used when no Lookup Key is supplied because its a much more common case to use just dates.
@@ -90,7 +90,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | DateTimeFormatter
      * | IDataTypeConverter             | DateTimeConverter
      * | IDataTypeComparer              | default
-     * @Group Native Data Type
+     * @group Native Data Type
      */
     DateTime = 'DateTime',
     /**
@@ -102,7 +102,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | DateFormatter
      * | IDataTypeConverter             | LocalDateOnlyConverter
      * | IDataTypeComparer              | default
-     * @Group Native Data Type
+     * @group Native Data Type
      * @remarks
      * For when the Date is not in UTC.
      */
@@ -118,7 +118,7 @@ export enum LookupKey {
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * First letter of a string is converted to uppercase.
      */
@@ -133,7 +133,7 @@ export enum LookupKey {
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * String is converted to uppercase.
      */
@@ -148,7 +148,7 @@ export enum LookupKey {
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * String is converted to Lowercase.
      */
@@ -162,7 +162,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | IntegerFormatter, uses Intl API
      * | IDataTypeConverter             | IntegerConverter, uses Math.trunc()
      * | IDataTypeComparer              | default
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * When number is a whole number
      */
@@ -176,7 +176,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | CurrencyFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * CurrencyFormatter needs your configuration to know the app's supported cultures
      * and associated currency codes (like USD, EUR).
@@ -191,7 +191,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | PercentageFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * When number is a percentage, where 1.0 = 100%.
      */
@@ -205,7 +205,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | Percentage100Formatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * When number is a percentage, where 100 = 100%.
      */
@@ -220,7 +220,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | DateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized short date pattern, 1 or 2 digit month and day, 4 digit year.
      */
@@ -234,7 +234,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | AbbrevDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized abbreviated date pattern, month name to 3 letters.
      */
@@ -248,7 +248,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | LongDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized long date pattern, with complete month names.
      */
@@ -262,7 +262,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | AbbrevDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized abbreviated date pattern and the day of week, month and DOW name to 3 letters.
      */
@@ -276,7 +276,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | LongDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized Strings in an long date pattern and the day of week, complete month and DOW names.
      */
@@ -290,7 +290,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | TimeOfDayFormatter, uses Intl API
      * | IDataTypeConverter             | TimeOfDayOnlyConverter, as total minutes
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized time of day part of date without seconds
      */
@@ -304,7 +304,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | TimeOfDayHMSFormatter, uses
      * | IDataTypeConverter             | TimeOfDayHMSOnlyConverter, as total seconds
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Localized time of day part of date with seconds
      */
@@ -319,7 +319,7 @@ export enum LookupKey {
      * | IDataTypeFormatter             | YesNoBooleanFormatter
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
-     * @Group Formatter
+     * @group Formatter
      * @remarks
      * Converts boolean into "yes" and "no".
      * This LookupKey is a model for the user to create more language specific boolean values.
@@ -337,7 +337,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | TotalDaysConverter
      * | IDataTypeComparer              | default
-     * @Group Converter
+     * @group Converter
      * @remarks
      * For converting the Date into a number of days since Jan 1 1970.
      * Helps with comparing the difference between two dates. 
@@ -353,7 +353,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | DateTimeConverter
      * | IDataTypeComparer              | default
-     * @Group Converter
+     * @group Converter
      * @remarks
      * For converting the Date into a number of milliseconds since Jan 1 1970
      * (basically calling getTime() on the Date object)
@@ -369,7 +369,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | TimeOfDayHMSOnlyDateTimeConverter
      * | IDataTypeComparer              | default
-     * @Group Converter
+     * @group Converter
      * @remarks
      * For converting the Date into a number of seconds since Jan 1 1970
      * Helps with comparing the difference between two dates. 
@@ -384,7 +384,7 @@ export enum LookupKey {
      * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | TimeOfDayOnlyConverter
      * | IDataTypeComparer              | default
-     * @Group Converter
+     * @group Converter
      * @remarks
      * For converting the Date into a number of minutes since Jan 1 1970
      * Helps with comparing the difference between two dates. 
@@ -401,7 +401,7 @@ export enum LookupKey {
      * | IDataTypeConverter             | CaseInsensitiveConverter
      * | IDataTypeComparer              | default
      * 
-     * @Group Converter
+     * @group Converter
      * @remarks
      * For case insensitive string comparisons. Generally set this on the ConditionConfig's
      * ConversionLookupKey and SecondConversionLookupKey properties.
