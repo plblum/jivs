@@ -1,7 +1,7 @@
 {
   "name": "@plblum/jivs-engine",
   "type": "module",
-  "version": "0.20.0",
+  "version": "0.20.2",
   "description": "The Jivs service itself, and required by other Jivs libraries. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
   "displayName": "JavaScript Input Validation Service",
   "license": "MIT",
@@ -20,5 +20,5 @@
       "jest": true
     }
   },
-  "gitHead": "14a1e8e3245c01937f747dd3859194b3769bdb52"
+  "gitHead": "40ffa6281d0ae6fac525ec2c0b77fcea237ba216"
 }
