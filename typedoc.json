@@ -10,7 +10,8 @@
         "docs/Learning.md",
         "docs/Configuring.md",
         "docs/Jivs_API.md",
-        "docs/Testing_Configurations.md"
+        "docs/Testing_Configurations.md",
+        "docs/Understanding_Builder.md"
     ],
     "readme": "README.md",
     "projectDocuments": [
@@ -18,7 +19,8 @@
         "docs/Learning.md",
         "docs/Configuring.md",
         "docs/Jivs_API.md",
-        "docs/Testing_Configurations.md"
+        "docs/Testing_Configurations.md",
+        "docs/Understanding_Builder.md"
     ],
     "entryPointStrategy": "expand",
     "exclude": [
