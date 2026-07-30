@@ -9,14 +9,16 @@
         "docs/Terminology.md",
         "docs/Learning.md",
         "docs/Configuring.md",
-        "docs/Jivs_API.md"
+        "docs/Jivs_API.md",
+        "docs/Testing_Configurations.md"
     ],
     "readme": "README.md",
     "projectDocuments": [
         "docs/Terminology.md",
         "docs/Learning.md",
         "docs/Configuring.md",
-        "docs/Jivs_API.md"
+        "docs/Jivs_API.md",
+        "docs/Testing_Configurations.md"
     ],
     "entryPointStrategy": "expand",
     "exclude": [

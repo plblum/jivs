@@ -2160,8 +2160,8 @@ ConfigAnalysis does the following:
 - For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
-Jivs-ConfigAnalysis is a separate library, available within npm.
+`Jivs-ConfigAnalysis` is a separate library, available within npm.
 
-Go to [Jivs-ConfigAnalysis documentation](../packages/jivs-configanalysis/).
+Go to [Jivs-ConfigAnalysis documentation](../docs/Testing_Configurations.md).
 
 Go to [Jivs-ConfigAnalysis npm page](https://www.npmjs.com/package/@plblum/jivs-configanalysis).
