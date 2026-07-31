@@ -90,8 +90,8 @@ import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/buil
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
 
 // If you need to omit the jivs-builder module later, comment out these next two lines.
-import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
-new BuildersFactoryInstaller();  // install the buildersFactory service property on JivsServices
+import { BuildersFactory } from '@plblum/jivs-builder/build/Services/BuildersFactory';
+new BuildersFactoryInstaller();  // install the buildersFactory service property on ValidationServices
 // 
 
 /**
