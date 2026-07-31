@@ -11,13 +11,14 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import {
     IFieldValueHost, TextValueChangedHandler,
-    FieldValueHostConfig, FieldValueHostInstanceState
+    FieldValueHostConfig, FieldValueHostInstanceState,
+    FieldValueHostSetValueOptions
 } from "../../src/Interfaces/FieldValueHost";
 import {
     ValidateOptions, ValueHostValidateResult,
     ValidationStatus, IssueFound, ValidationState
 } from "../../src/Interfaces/Validation";
-import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
+import { InjectedError, IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import {
     IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig,
     ValueHostsManagerConfigChangedHandler,
@@ -165,6 +166,7 @@ export class MockFieldValueHost extends MockValueHost
 
     _textValue: string | undefined = undefined;
     _conversionErrorMessage: string | undefined;
+    _injectedError: InjectedError | undefined;
     _parserLookupKey: string | null | undefined;
 
     public get config(): FieldValueHostConfig
@@ -176,8 +178,12 @@ export class MockFieldValueHost extends MockValueHost
         };
     }    
 
-    public override setValue(value: any, options?: SetValueOptions | undefined): void {
+    public override setValue(value: any, options?: FieldValueHostSetValueOptions | undefined): void {
         super.setValue(value, options);
+        if (value === undefined && options && options.injectedError)
+            this._injectedError = options.injectedError;
+        else
+            this._injectedError = undefined;
         if (value === undefined && options && options.conversionErrorTokenValue)
             this._conversionErrorMessage = options.conversionErrorTokenValue;
         else
@@ -187,13 +193,18 @@ export class MockFieldValueHost extends MockValueHost
     public getTextValue() : string | undefined {
         return this._textValue;
     }
-    setTextValue(value: string | undefined, options?: SetValueOptions | undefined): void {
+    setTextValue(value: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
         this._textValue = value;
         this._conversionErrorMessage = undefined;
+        this._injectedError = undefined;
     }
-    setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions | undefined): void {
+    setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
         this.setValue(nativeValue);
         this.setTextValue(textValue);
+        if (nativeValue === undefined && options && options.injectedError)
+            this._injectedError = options.injectedError;
+        else
+            this._injectedError = undefined;
         if (nativeValue === undefined && options && options.conversionErrorTokenValue)
             this._conversionErrorMessage = options.conversionErrorTokenValue;
         else
@@ -242,7 +253,10 @@ export class MockFieldValueHost extends MockValueHost
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }    
-
+    public getInjectedError(): InjectedError | null
+    {
+        return this._injectedError ?? null;
+    }
     public getConversionErrorMessage(): string | null
     {
         return this._conversionErrorMessage ?? null;

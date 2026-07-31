@@ -16,7 +16,7 @@ import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, Fie
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
-import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
+import { InjectedError, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
@@ -84,6 +84,12 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
          */
         function sendResultAlong(resolution: DataTypeResolution<string>): boolean
         {
+            if (resolution.errorDetails)
+            {
+                self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${ resolution.errorDetails!.errorMessage }`);
+                return false;
+            }
+//!!!OBSOLETE
             if (resolution.errorMessage)
             {
                 self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${resolution.errorMessage}`);
@@ -189,10 +195,12 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * reset - Clear validation state, unless validate = true, and set IsChanged to false.
      * disableParser - When true, do not use the DataTypeParser to resolve the typed value
      *   from the text value.
-     * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *   resolved from the text value, provide a user-friendly error message here. It will appear
-     *   in the Category=Require validator within the {ConversionError} token. A DataTypeParser
-     *   may also set conversionErrorTokenValue when it reports an error.
+     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *      an error. Assign this object to contain the error message and other info.
+     *      Internally Jivs will provide a Validator with the error message to report the error.
+     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      use the errorCode value of 'InjectedError' to localize the error message. 
+     *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     public setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void {  
@@ -227,7 +235,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * Determines if parsing is setup and the value is parsable (must be a string). 
      * If so, it determines the native value, and calls upon setValues() to handle it all.
      * If the parser detects an error, the native value will be set to undefined
-     * and options.conversionErrorTokenValue gets set to the parser's reported error info.
+     * and options.injectedError gets set to the parser's reported error info.
      * Supports config.parserDataType and config.parserCreator.
      * 
      * @param textValue 
@@ -241,10 +249,17 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
             const nativeValue = resolution.value; // may be undefined which indicates a parser error
-            if (resolution.errorMessage)
+            if (resolution.errorDetails)
+                options.injectedError = resolution.errorDetails;
+            else if (resolution.errorMessage)   //!!!OBSOLETE
                 options.conversionErrorTokenValue = resolution.errorMessage;
             self.logger.log(LoggingLevel.Debug, (options) => {
-                if (resolution.errorMessage)
+                if (resolution.errorDetails)
+                    return {
+                        message: `Parser reported error and assigned the native value to undefined: ${resolution.errorDetails!.errorMessage}`,
+                        data: resolution
+                    };
+                if (resolution.errorMessage)    // !!!OBSOLETE
                     return {
                         message: `Parser reported error and assigned the native value to undefined: ${resolution.errorMessage}`,
                         data: resolution
@@ -321,12 +336,17 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @param options -
      *    * validate - Invoke validation after setting the values.
      *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     *    * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *    *    resolved from the text value, provide a user-friendly error message here. It will
-     *    *    appear in the Category=Require validator within the {ConversionError} token.
+     *    * injectedError - If you handle parsing or formatting before calling setValues(), 
+     *          your parser or formatter may have returned an error. 
+     *          Assign this object to contain the error message and other info.
+     *          Internally Jivs will provide a Validator with the error message to report the error.
+     *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *          use the errorCode value of 'InjectedError' to localize the error message. 
+     *          You can also provide a summaryMessage for use in a summary of validation errors.
+
      *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions): void {    
+    public setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions): void {    
         this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
         options = options ?? {};
         if (!this.canChangeValueCheck(options))
@@ -357,9 +377,23 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         this.useOnValueChanged(nativeChanged, oldNative, options);
         this.useOnTextValueChanged(textChanged, oldText, options);
     }
+/**
+ * Ensures options type change is available.
+ * @param options 
+ */
+    public override setValueToUndefined(options?: FieldValueHostSetValueOptions): void
+    {
+        super.setValueToUndefined(options);
+    }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: FieldValueHostSetValueOptions): void {
         super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
+        if (options && options.injectedError)
+            stateToUpdate.injectedError = options.injectedError;
+        else
+            delete stateToUpdate.injectedError;
+
+//!!!OBSOLETE
         if (options && (stateToUpdate.value === undefined) && options.conversionErrorTokenValue)
             stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
         else
@@ -371,7 +405,8 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
 
     protected clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
         super.clearValidationDataFromInstanceState(stateToUpdate);
-        delete stateToUpdate.conversionErrorTokenValue;
+        delete stateToUpdate.injectedError;
+        delete stateToUpdate.conversionErrorTokenValue; //!!!OBSOLETE
     }
 
     /**
@@ -430,6 +465,14 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
             (validators[0].condition.category === ConditionCategory.Require);
     }
 
+    /**
+     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
+     * Its null when not supplied or has been cleared.
+     */
+    public getInjectedError(): InjectedError | null {
+        return this.instanceState.injectedError ?? null;
+    }
+//!!!OBSOLETE
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
      * to setValue() or setValues(). Its null when not supplied or has been cleared.

@@ -28,7 +28,7 @@ import
     } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
+import { InjectedError, IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import
     {
         IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -271,34 +271,118 @@ describe('constructor and resulting property values', () => {
     });    
 });
 
-describe('setValue', () => {
+describe('setValue', () =>
+{
+    //!!!OBSOLETE
+    describe('setValue with options to test ConversionErrorTokenValue', () =>
+    {
+        test('ConversionErrorTokenValue supplied and is ignored by setValue.', () =>
+        {
+            let setup = setupFieldValueHost();
 
-    test('ConversionErrorTokenValue supplied and is ignored by setValue.', () => {
-        let setup = setupFieldValueHost();
+            expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+        });
+        test('ConversionErrorTokenValue supplied but is not saved because value is defined', () =>
+        {
+            let setup = setupFieldValueHost();
 
-        expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+            expect(() => setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        });
+        test('ConversionErrorTokenValue supplied in one call which saves it but a follow up call without it abandons it', () =>
+        {
+            let setup = setupFieldValueHost();
+
+            expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' });
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        });
+        test('Use both ConversionErrorTokenValue and Reset options will setup the error message and IsChanged is false', () =>
+        {
+            let setup = setupFieldValueHost();
+
+            expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR', reset: true })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+            expect(setup.valueHost.isChanged).toBe(false);
+        });
     });
-    test('ConversionErrorTokenValue supplied but is not saved because value is defined', () => {
-        let setup = setupFieldValueHost();
+    describe('setValue with options to test options.injectErrors', () =>
+    {
+        test('InjectedError added to state when value supplied is undefined.', () =>
+        {
+            let setup = setupFieldValueHost();
 
-        expect(() => setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
-    });
-    test('ConversionErrorTokenValue supplied in one call which saves it but a follow up call without it abandons it', () => {
-        let setup = setupFieldValueHost();
+            setup.valueHost.setValue(undefined, <FieldValueHostSetValueOptions>{
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBeUndefined();
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        test('InjectedError added to state when value supplied is supplied.', () =>
+        {
+            let setup = setupFieldValueHost();
 
-        expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        setup.valueHost.setValue(10, { conversionErrorTokenValue: 'ERROR' });
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
-    });
-    test('Use both ConversionErrorTokenValue and Reset options will setup the error message and IsChanged is false', () => {
-        let setup = setupFieldValueHost();
+            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });        
+        // full set of properties on injectedError
+        test('InjectedError added to state and all properties are retained.', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
+                injectedError: {
+                    errorMessage: 'ERROR',
+                    errorCode: 'ERROR_CODE',
+                    errorMessagel10n: 'l10n',
+                    summaryMessage: 'SUMMARY',
+                    summaryMessagel10n: 'SUMMARY_L10N',
+                }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        }); 
 
-        expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR', reset: true })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
-        expect(setup.valueHost.isChanged).toBe(false);
+        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
+        {
+            let setup = setupFieldValueHost();
+
+            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            setup.valueHost.setValue(20);
+            expect(setup.valueHost.getValue()).toBe(20);
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        });
+        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
+        {
+            let setup = setupFieldValueHost();
+
+            expect(() => setup.valueHost.setValue(undefined, <FieldValueHostSetValueOptions> {
+                injectedError: { errorMessage: 'ERROR' },
+                reset: true
+            })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+            expect(setup.valueHost.isChanged).toBe(false);
+        });
     });
+
     test('Value was changed. OnValueChanged called. (confirm ancestor was not broken)', () => {
         let setup = setupFieldValueHost();
         let testItem = setup.valueHost;
@@ -434,29 +518,65 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.valueHost.getIssuesFound()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
-    test('ConversionErrorTokenValue supplied and is applied because native value is undefined', () => {
-        let setup = setupFieldValueHost();
-        setup.services.dataTypeParserService.enabled = false;
+    //!!!OBSOLETE
+    describe('setTextValue with options to test ConversionErrorTokenValue', () =>
+    {
+        test('ConversionErrorTokenValue supplied and is applied because native value is undefined', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
 
-        expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+            expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+        });
+        test('ConversionErrorTokenValue supplied and is ignored because native value is defined', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
+            setup.valueHost.setValue('ABC');
+            expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        });
+        test('ConversionErrorTokenValue supplied in previous setValueToUndefined, and retained by setTextValue despite not setting native value here', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
+
+            setup.valueHost.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
+
+            expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+            expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+        });
     });
-    test('ConversionErrorTokenValue supplied and is ignored because native value is defined', () => {
-        let setup = setupFieldValueHost();
-        setup.services.dataTypeParserService.enabled = false;
-        setup.valueHost.setValue('ABC');
-        expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+    describe('setTextValue with options to test injectedError', () =>
+    {
+        test('injectedError supplied and is saved in state when value is assigned', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
+
+            expect(() => setup.valueHost.setTextValue("ABC", { injectedError: { errorMessage: 'ERROR' } })).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+            expect(setup.valueHost.getValue()).toBeUndefined();
+            expect(setup.valueHost.getTextValue()).toBe("ABC");
+        });
+        test('injectedError supplied in setTextValue and then setValue without it does not retain it', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
+            expect(() => setup.valueHost.setTextValue("ABC", { injectedError: { errorMessage: 'ERROR' } })).not.toThrow();
+            setup.valueHost.setValue('ABC');
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+        });
+        test('injectedError supplied in state using setValueToUndefined', () =>
+        {
+            let setup = setupFieldValueHost();
+            setup.services.dataTypeParserService.enabled = false;
+
+            setup.valueHost.setValueToUndefined({ injectedError: { errorMessage: 'ERROR' } });
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+        });
     });    
-    test('ConversionErrorTokenValue supplied in previous setValueToUndefined, and retained by setTextValue despite not setting native value here', () => {
-        let setup = setupFieldValueHost();
-        setup.services.dataTypeParserService.enabled = false;
-
-        setup.valueHost.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
-
-        expect(() => setup.valueHost.setTextValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
-    });
     test('Log call when Level=Debug.', () => {
         const initialValue = 'A';
         const finalValue = 'B';
@@ -1592,7 +1712,6 @@ describe('toIFieldValueHost function', () => {
         expect(toIFieldValueHost(testItem)).toBe(testItem);
     });
     class TestIFieldValueHostImplementation implements IFieldValueHost {
-
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;       
         dispose(): void { }
         groupCheck(options?: ValidateOptions | undefined): boolean {
@@ -1651,7 +1770,11 @@ describe('toIFieldValueHost function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
-
+        getInjectedError(): InjectedError | null
+        {
+            throw new Error('Method not implemented.');
+        }
+        //!!!OBSOLETE
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }

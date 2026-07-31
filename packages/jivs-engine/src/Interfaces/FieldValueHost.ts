@@ -4,11 +4,12 @@
 import { IDataTypeFormatter } from './DataTypeFormatters';
 import { IDataTypeParser } from './DataTypeParsers';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
+import type { InjectedError } from './Validator';
 import {
     IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
     ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState
 } from './ValidatorsValueHostBase';
-import { SetValueOptions } from './ValueHost';
+import type { SetValueOptions } from './ValueHost';
 
 
 /**
@@ -45,7 +46,15 @@ import { SetValueOptions } from './ValueHost';
  * };
  * ```
 */
-export interface IFieldValueHost extends IValidatorsValueHostBase {
+export interface IFieldValueHost extends IValidatorsValueHostBase
+{
+    /**
+     * Override the default setValue() to provide additional options for FieldValueHost.
+     * @param value 
+     * @param options 
+     */
+    setValue(value: any, options?: FieldValueHostSetValueOptions): void;
+
     /**
      * Gets the current text value exactly as last provided.
      * This is the string representation before parsing into the typed value.
@@ -119,16 +128,26 @@ export interface IFieldValueHost extends IValidatorsValueHostBase {
      *    *    appear in the Category=Require validator within the {ConversionError} token.
      *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions): void;
+    setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
 
-
+    /**
+     * Overrides the default setValueToUndefined() to provide additional options for FieldValueHost.
+     * @param options 
+     */
+    setValueToUndefined(options?: FieldValueHostSetValueOptions): void;
     /**
      *Returns true for a condition with Category=Require. UI can use it to 
      * display a "requires a value" indicator.
      */
     required: boolean;
 
+    /**
+     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
+     * Its null when not supplied or has been cleared.
+     */
+    getInjectedError(): InjectedError | null;
 
+    //!!!OBSOLETE
      /**
       * Returns the ConversionErrorTokenValue supplied by the latest call
       * to setValue() or setValues(). Its null when not supplied or has been cleared.
@@ -269,7 +288,7 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      */
     textValue?: string | undefined;
 
-
+//!!!OBSOLETE
     /**
      * When converting the input field/element value to native and there is an error
      * it should be saved here. It can be displayed as part of the DataTypeCheckCondition's
@@ -277,6 +296,12 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      * Cleared when setting the value without an error.
      */
     conversionErrorTokenValue?: string;
+
+    /**
+     * Supplied by options.injectedError when calling setValue() or setValues() to provide a way to inject.
+     * If they use formatting or parsing, the injectedError will be set to the errorDetails from the DataTypeFormatter or DataTypeParser.
+     */
+    injectedError?: InjectedError;
 
 }
 
@@ -305,6 +330,15 @@ export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback
  */
 export interface FieldValueHostSetValueOptions extends SetValueOptions
 {
+    /**
+     * Provides a way to inject non-condition related error information into the validation system.
+     * Create this object with at least one of the properties. It will be used to create an IssueFound object
+     * even though no condition is setup. The object supplies localization keys
+     * so you can set up the error message and summary message for the current culture
+     * in the TextLocalizerService. The errorCode is used to identify the error in the consuming system.
+     */
+    injectedError?: InjectedError;
+    
     /**
      * When true, do not use the DataTypeParser to convert 
      * the input value into its native value with setTextValue().
