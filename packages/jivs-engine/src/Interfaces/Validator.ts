@@ -15,7 +15,7 @@ import { IDisposable } from './General_Purpose';
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
- * That data ends up in the ValidationManager as part of its state,
+ * That data ends up in the ValueHostsManager as part of its state,
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  */

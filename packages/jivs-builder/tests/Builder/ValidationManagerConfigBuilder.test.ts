@@ -4,25 +4,25 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { IValidatableValueHostBase, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
-import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 
 
-function createVMConfig(): ValidationManagerConfig {
-    let vmConfig: ValidationManagerConfig = {
+function createVMConfig(): ValueHostsManagerConfig {
+    let vmConfig: ValueHostsManagerConfig = {
         services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
     return vmConfig;
 }
 
-class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBuilder
+class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBuilder
 {
-    constructor(vmConfig: ValidationManagerConfig)
+    constructor(vmConfig: ValueHostsManagerConfig)
     {
         super(vmConfig);
     }
@@ -31,7 +31,7 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValidationManagerConfig
+    public get publicify_baseConfig(): ValueHostsManagerConfig
     {
         return this.baseConfig;
     }
@@ -52,9 +52,9 @@ beforeAll(() => {
 
 
 describe('constructor', () => {
-    test('Creates a ValidationManagerConfigBuilder with the supplied JivsServices', () => {
+    test('Creates a ValueHostsManagerConfigBuilder with the supplied JivsServices', () => {
         let services = createJivsServicesForTesting();
-        let testItem = new ValidationManagerConfigBuilder(services);
+        let testItem = new ValueHostsManagerConfigBuilder(services);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.savedInstanceState).toBeNull();
@@ -65,13 +65,13 @@ describe('constructor', () => {
         expect(testItem.onValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });
-    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
+    test('Creates a ValueHostsManagerConfigBuilder with the supplied ValueHostsManagerConfig', () => {
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: []
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.savedInstanceState).toBeNull();
@@ -85,11 +85,11 @@ describe('constructor', () => {
 });
 
 describe('function build()', () => {
-    test('Creates a ValidationManagerConfigBuilder with the supplied JivsServices', () => {
+    test('Creates a ValueHostsManagerConfigBuilder with the supplied JivsServices', () => {
         let services = createJivsServicesForTesting();
-        let testItem: ValidationManagerConfigBuilder;
+        let testItem: ValueHostsManagerConfigBuilder;
         expect(() => testItem = createConfigBuilder(services)).not.toThrow();
-        expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
+        expect(testItem!).toBeInstanceOf(ValueHostsManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);
         expect(result.valueHostConfigs).toEqual([]);
@@ -104,15 +104,15 @@ describe('function build()', () => {
         expect(result.onValueChanged).toBeUndefined();
         expect(result.onValueHostValidationStateChanged).toBeUndefined();        
     });
-    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
+    test('Creates a ValueHostsManagerConfigBuilder with the supplied ValueHostsManagerConfig', () => {
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: []
         };
-        let testItem: ValidationManagerConfigBuilder;
+        let testItem: ValueHostsManagerConfigBuilder;
         expect(() => testItem = createConfigBuilder(vmConfig)).not.toThrow();
-        expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
+        expect(testItem!).toBeInstanceOf(ValueHostsManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);   
         expect(result.valueHostConfigs).toEqual([]);
@@ -129,20 +129,20 @@ describe('function build()', () => {
 });
 describe('instance state properties', () => {
     test('savedInstanceState', () => {
-        const initialState: ValidationManagerInstanceState = {
+        const initialState: ValueHostsManagerInstanceState = {
             stateChangeCounter: 10
         };
-        const replacementState: ValidationManagerInstanceState = {
+        const replacementState: ValueHostsManagerInstanceState = {
             stateChangeCounter: 20,
         };
 
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             savedInstanceState: initialState
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.savedInstanceState).toBe(initialState);
         testItem.savedInstanceState = replacementState;
         expect(testItem.savedInstanceState).toBe(replacementState);
@@ -154,12 +154,12 @@ describe('instance state properties', () => {
         const replacementState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'B' }];
 
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             savedValueHostInstanceStates: initialState
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.savedValueHostInstanceStates).toBe(initialState);
         testItem.savedValueHostInstanceStates = replacementState;
         expect(testItem.savedValueHostInstanceStates).toBe(replacementState);
@@ -179,12 +179,12 @@ describe('Callbacks get and set', () => {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValueHostInstanceStateChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onValueHostInstanceStateChanged).toBe(handler);
         testItem.onValueHostInstanceStateChanged = replacementHandler;
         expect(testItem.onValueHostInstanceStateChanged).toBe(replacementHandler);
@@ -201,12 +201,12 @@ describe('Callbacks get and set', () => {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValueChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onValueChanged).toBe(handler);
         testItem.onValueChanged = replacementHandler;
         expect(testItem.onValueChanged).toBe(replacementHandler);
@@ -224,12 +224,12 @@ describe('Callbacks get and set', () => {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onTextValueChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onTextValueChanged).toBe(handler);
         testItem.onTextValueChanged = replacementHandler;
         expect(testItem.onTextValueChanged).toBe(replacementHandler);
@@ -239,21 +239,21 @@ describe('Callbacks get and set', () => {
     
     
     test('onInstanceStateChanged', () => {
-        function handler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
+        function handler(valueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
         {
             
         }
-        function replacementHandler(validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState): void
+        function replacementHandler(valueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
         {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onInstanceStateChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onInstanceStateChanged).toBe(handler);
         testItem.onInstanceStateChanged = replacementHandler;
         expect(testItem.onInstanceStateChanged).toBe(replacementHandler);
@@ -261,21 +261,21 @@ describe('Callbacks get and set', () => {
         expect(result.onInstanceStateChanged).toBe(replacementHandler);
     });
     test('onConfigChanged', () => {
-        function handler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
+        function handler(valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
         {
             
         }
-        function replacementHandler(validationManager: IValidationManager, valueHostConfigs: Array<ValueHostConfig>): void
+        function replacementHandler(valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
         {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onConfigChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onConfigChanged).toBe(handler);
         testItem.onConfigChanged = replacementHandler;
         expect(testItem.onConfigChanged).toBe(replacementHandler);
@@ -292,12 +292,12 @@ describe('Callbacks get and set', () => {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValueHostValidationStateChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onValueHostValidationStateChanged).toBe(handler);
         testItem.onValueHostValidationStateChanged = replacementHandler;
         expect(testItem.onValueHostValidationStateChanged).toBe(replacementHandler);
@@ -306,21 +306,21 @@ describe('Callbacks get and set', () => {
     });
     
     test('onValidationStateChanged', () => {
-        function handler(validationManager: IValidationManager, validationState: ValidationState): void
+        function handler(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
         {
             
         }
-        function replacementHandler(validationManager: IValidationManager, validationState: ValidationState): void
+        function replacementHandler(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
         {
             
         }
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             onValidationStateChanged: handler
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onValidationStateChanged).toBe(handler);
         testItem.onValidationStateChanged = replacementHandler;
         expect(testItem.onValidationStateChanged).toBe(replacementHandler);
@@ -332,12 +332,12 @@ describe('Callbacks get and set', () => {
     test('notifyValidationStateChangedDelay', () => {
 
         let services = createJivsServicesForTesting();
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
             notifyValidationStateChangedDelay: 5
         };
-        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.notifyValidationStateChangedDelay).toBe(5);
         testItem.notifyValidationStateChangedDelay = 10;
         expect(testItem.notifyValidationStateChangedDelay).toBe(10);
@@ -351,7 +351,7 @@ describe('complete', () => {
 
     test('Using service, add 1 valueHost then override and add 2 with one matching the first name returns vmConfig with 2 valueHostConfigs with the first merged', () => {
         let vmConfig = createVMConfig();
-        let testItem = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         testItem.static('Field1');
         testItem.publicify_addOverride();
         testItem.static('Field1', LookupKey.String, { label: 'Field 1' });
@@ -380,7 +380,7 @@ describe('complete', () => {
 describe('Fluent chaining on build(vmConfig).field', () => {
     test('build(vmConfig).field: Add RequireTest condition to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').requireText('Error');
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
@@ -390,7 +390,7 @@ describe('Fluent chaining on build(vmConfig).field', () => {
     });
     test('build(vmConfig).field: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1')
             .requireText('Error')
             .regExp('\\d', true, 'Error2');
@@ -407,7 +407,7 @@ describe('Fluent chaining on build(vmConfig).field', () => {
 describe('customRule', () => {
     test('customRule(fn, error message, summary message), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
                 return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
             },
@@ -423,7 +423,7 @@ describe('customRule', () => {
     });
     test('customRule(fn), creates a ValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
@@ -438,7 +438,7 @@ describe('customRule', () => {
     // customRule(fn, error message, null)
     test('customRule(fn, error message, null), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
@@ -455,7 +455,7 @@ describe('customRule', () => {
     // customRule(fn, null, summary message)
     test('customRule(fn, null, summary message), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
@@ -472,7 +472,7 @@ describe('customRule', () => {
     // customRule(fn, { error message, summary message })
     test('customRule(fn, { error message, summary message }), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
@@ -491,7 +491,7 @@ describe('customRule', () => {
     // customRule(fn, { })
     test('customRule(fn, { }), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
@@ -508,7 +508,7 @@ describe('customRule', () => {
     // customRule(fn, null)
     test('customRule(fn, null), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
-        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let builder = new Publicify_ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.field('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },

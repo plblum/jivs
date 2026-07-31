@@ -35,8 +35,8 @@ The goal is to make this the primary structured Jivs configuration story:
 A validation target has a ModelRulesService.
 The ModelRulesService uses Builder.
 The Builder creates the configuration object tree.
-The ValidationManager consumes that configuration.
-The ModelRulesService validates through ValidationManager, then applies business errors through ValidationManager.
+The ValueHostsManager consumes that configuration.
+The ModelRulesService validates through ValueHostsManager, then applies business errors through ValueHostsManager.
 ```
 
 This gives overview-level documentation one mainstream structured path while preserving lower-level direct Builder usage.
@@ -75,8 +75,8 @@ Main story:
 ```txt
 Use ModelRulesService first when you want a reusable, testable, UI-independent configuration class.
 Use Builder inside ModelRulesService.
-Use ValidationManager as the configured execution engine.
-Use lower-level Builder / ValidationManager APIs directly for simpler or lower-level scenarios.
+Use ValueHostsManager as the configured execution engine.
+Use lower-level Builder / ValueHostsManager APIs directly for simpler or lower-level scenarios.
 ```
 
 This does not replace Builder.
@@ -167,10 +167,10 @@ UI-only validation may also use Builder directly without `IModelRulesService` wh
 interface IModelRulesService {
     configure(
         params?: ModelRulesConfigureParams
-    ): ValidationManager;
+    ): ValueHostsManager;
 
     validate(
-        validationManager: ValidationManager,
+        valueHostsManager: ValueHostsManager,
         params?: ModelRulesValidateParams
     ): Promise<ValidationState>;
 }
@@ -181,10 +181,10 @@ Important decisions:
 ```txt
 No generics are used in this service area to identify model. Model is identified by an abstract method to supply a string for the model identifier.
 configure() params are optional.
-validate() requires ValidationManager as an explicit direct parameter.
-ValidationManager is not part of options.
+validate() requires ValueHostsManager as an explicit direct parameter.
+ValueHostsManager is not part of options.
 ModelRulesService is stateless.
-ValidationManager owns validation session state.
+ValueHostsManager owns validation session state.
 ```
 
 ---
@@ -225,10 +225,10 @@ class CustomRulesService implements IModelRulesService {
 Builder orchestration
 Business/UI configuration sequencing
 Configuration caching through JivsServices.cacheService
-ValidationManager validation
+ValueHostsManager validation
 Async Jivs validation completion
-ExternalIssueFound application through ValidationManager.setExternalIssuesFound()
-Final ValidationState retrieval through ValidationManager.getValidationState()
+ExternalIssueFound application through ValueHostsManager.setExternalIssuesFound()
+Final ValidationState retrieval through ValueHostsManager.getValidationState()
 Logging through JivsServices.logService
 ```
 
@@ -356,7 +356,7 @@ class ModelRulesServiceBase {
 
 Diagnostics belong to the existing Jivs logging system.
 
-`configure()` should return only `ValidationManager`.
+`configure()` should return only `ValueHostsManager`.
 
 It should not return cache/debug/config-analysis metadata.
 
@@ -373,7 +373,7 @@ JivsServices.logService
 Public entry point:
 
 ```ts
-configure(params?: ModelRulesConfigureParams): ValidationManager
+configure(params?: ModelRulesConfigureParams): ValueHostsManager
 ```
 
 `configure()` params do not include model identity.
@@ -438,13 +438,13 @@ Login
 
 ```ts
 protected configureBusinessRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     params?: ModelRulesConfigureParams
 ): void {
 }
 
 protected configureUIRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     params?: ModelRulesConfigureParams
 ): void {
 }
@@ -455,14 +455,14 @@ Ordering:
 ```txt
 1. Create or retrieve configuration from cache.
 2. If not cached:
-   a. Create ValidationManagerConfigBuilder.
+   a. Create ValueHostsManagerConfigBuilder.
    b. Call configureBusinessRules(builder, params).
    c. Call builder.startUILayerConfig().
    d. Call configureUIRules(builder, params).
-   e. Finalize builder into ValidationManagerConfig.
+   e. Finalize builder into ValueHostsManagerConfig.
    f. Store config in cache if allowed.
-3. Create a new ValidationManager from config.
-4. Return ValidationManager.
+3. Create a new ValueHostsManager from config.
+4. Return ValueHostsManager.
 ```
 
 Important rule:
@@ -504,13 +504,13 @@ interface ICacheService {
 
 `ModelRulesService.configure()` orchestrates cache lookup and storage.
 
-The cache stores `ValidationManagerConfig`, not `ValidationManager`.
+The cache stores `ValueHostsManagerConfig`, not `ValueHostsManager`.
 
 Important distinction:
 
 ```txt
 Configuration can be cached.
-ValidationManager instances are new per configure() call.
+ValueHostsManager instances are new per configure() call.
 ```
 
 ---
@@ -628,7 +628,7 @@ Public entry point:
 
 ```ts
 validate(
-    validationManager: ValidationManager,
+    valueHostsManager: ValueHostsManager,
     params?: ModelRulesValidateParams
 ): Promise<ValidationState>
 ```
@@ -668,7 +668,7 @@ Stage 2: Business rules validation when not short-circuited
 
 ```txt
 1. Run validateJivsRules().
-2. ValidationManager.validate() creates fresh ValidationState and IssuesFound array.
+2. ValueHostsManager.validate() creates fresh ValidationState and IssuesFound array.
 3. Await async Jivs validation completion.
 4. Inspect the returned ValidationState.
 5. Determine short-circuit behavior from options.shortCircuitWhenDoNotSave.
@@ -676,18 +676,18 @@ Stage 2: Business rules validation when not short-circuited
 6. If short-circuiting applies and ValidationState.doNotSave is true:
    a. Call applyExternalIssuesFound(..., null, ...).
    b. If that returns false, return the original ValidationState.
-   c. If that returns true, return ValidationManager.getValidationState().
+   c. If that returns true, return ValueHostsManager.getValidationState().
 7. Run validateBusinessRules().
 8. Call applyExternalIssuesFound(..., businessErrors, ...).
 9. If that returns false, return the original ValidationState from step 2.
-10. If that returns true, return ValidationManager.getValidationState().
+10. If that returns true, return ValueHostsManager.getValidationState().
 ```
 
 Important async behavior:
 
 ```txt
 validate() awaits completion of async Jivs validators.
-ValidationManager hooks still fire as individual validators complete.
+ValueHostsManager hooks still fire as individual validators complete.
 UI consumers can receive progressive callbacks while validate() awaits final completion.
 The short-circuit decision is made only after the Jivs validation stage completes.
 ```
@@ -705,12 +705,12 @@ Important business-error behavior:
 
 ```txt
 ModelRulesServiceBase does not manually merge ExternalIssueFound into IssueFound.
-ValidationManager.setExternalIssuesFound() performs business-error integration.
+ValueHostsManager.setExternalIssuesFound() performs business-error integration.
 Business errors are attached to associated ValueHosts when possible.
-Unassociated business errors are represented through the ValidationManager’s business-logic error handling mechanism.
-The final combined issue list is exposed by ValidationManager after setExternalIssuesFound().
-ModelRulesServiceBase does not call ValidationManager.validate() a second time after applying business errors.
-Instead it reads the final combined ValidationState through ValidationManager.getValidationState() only when state changed after the initial Jivs validation result.
+Unassociated business errors are represented through the ValueHostsManager’s business-logic error handling mechanism.
+The final combined issue list is exposed by ValueHostsManager after setExternalIssuesFound().
+ModelRulesServiceBase does not call ValueHostsManager.validate() a second time after applying business errors.
+Instead it reads the final combined ValidationState through ValueHostsManager.getValidationState() only when state changed after the initial Jivs validation result.
 ```
 
 Important callback behavior:
@@ -731,17 +731,17 @@ Candidate protected methods:
 
 ```ts
 protected validateJivsRules(
-    validationManager: ValidationManager,
+    valueHostsManager: ValueHostsManager,
     params?: ModelRulesValidateParams
 ): Promise<ValidationState>;
 
 protected validateBusinessRules(
-    validationManager: ValidationManager,
+    valueHostsManager: ValueHostsManager,
     params?: ModelRulesValidateParams
 ): Promise<Array<ExternalIssueFound> | null>;
 
 protected applyExternalIssuesFound(
-    validationManager: ValidationManager,
+    valueHostsManager: ValueHostsManager,
     businessErrors: Array<ExternalIssueFound> | null,
     params?: ModelRulesValidateParams
 ): boolean;
@@ -754,7 +754,7 @@ validateJivsRules() is overridable.
 validateBusinessRules() is overridable.
 applyExternalIssuesFound() is overridable.
 validateBusinessRules() returns null when there are no business errors.
-applyExternalIssuesFound() remains a thin wrapper around ValidationManager.setExternalIssuesFound().
+applyExternalIssuesFound() remains a thin wrapper around ValueHostsManager.setExternalIssuesFound().
 applyExternalIssuesFound() returns boolean so validate() can decide whether to reuse the original ValidationState or call getValidationState().
 Both short-circuit and non-short-circuit paths use applyExternalIssuesFound().
 ```
@@ -765,24 +765,24 @@ Both short-circuit and non-short-circuit paths use applyExternalIssuesFound().
 
 ## 19. Final ValidationState
 
-After applying business errors, `ModelRulesServiceBase.validate()` returns a `ValidationState` from `ValidationManager`.
+After applying business errors, `ModelRulesServiceBase.validate()` returns a `ValidationState` from `ValueHostsManager`.
 
 Accepted direction:
 
 ```ts
-validationManager.getValidationState(options?: ValidateOptions): ValidationState
+valueHostsManager.getValidationState(options?: ValidateOptions): ValidationState
 ```
 
-`ValidationManager.getValidationState()` is a public wrapper around the existing internal state-building behavior.
+`ValueHostsManager.getValidationState()` is a public wrapper around the existing internal state-building behavior.
 
 Known facts:
 
 ```txt
-ValidationManager.validate() creates a fresh ValidationState when Jivs validation runs.
-ValidationManager.setExternalIssuesFound() applies business errors but does not itself return ValidationState.
-The final state should come from ValidationManager, not from manual merging inside ModelRulesServiceBase.
-ModelRulesServiceBase should not call ValidationManager.validate() a second time after applying business errors.
-ValidationManager.getValidationState() is a pure read operation.
+ValueHostsManager.validate() creates a fresh ValidationState when Jivs validation runs.
+ValueHostsManager.setExternalIssuesFound() applies business errors but does not itself return ValidationState.
+The final state should come from ValueHostsManager, not from manual merging inside ModelRulesServiceBase.
+ModelRulesServiceBase should not call ValueHostsManager.validate() a second time after applying business errors.
+ValueHostsManager.getValidationState() is a pure read operation.
 It does not re-run validators and does not trigger callbacks.
 It accepts the full ValidateOptions type.
 ```
@@ -791,7 +791,7 @@ Decision rule:
 
 ```txt
 If nothing changed manager state after the initial Jivs validation, ModelRulesServiceBase.validate() may return the original ValidationState.
-If business logic errors were applied or cleared and state changed, ModelRulesServiceBase.validate() returns ValidationManager.getValidationState().
+If business logic errors were applied or cleared and state changed, ModelRulesServiceBase.validate() returns ValueHostsManager.getValidationState().
 ```
 
 ---
@@ -810,7 +810,7 @@ Example:
 
 ```ts
 await personRulesService.validate(
-    validationManager,
+    valueHostsManager,
     {
         model: person
     }
@@ -822,7 +822,7 @@ However, `model` is optional.
 `validateBusinessRules()` can also inspect current data through:
 
 ```ts
-validationManager.vh
+valueHostsManager.vh
 ```
 
 Two valid validation styles:
@@ -832,7 +832,7 @@ Model-based validation:
 Business rules inspect params.model.
 
 ValueHost-based validation:
-Business rules inspect validationManager.vh.
+Business rules inspect valueHostsManager.vh.
 ```
 
 This supports both business-model-driven and UI-only validation targets.
@@ -854,7 +854,7 @@ Promise<Array<ExternalIssueFound> | null>
 `ModelRulesService.validate()` applies results through:
 
 ```ts
-validationManager.setExternalIssuesFound(
+valueHostsManager.setExternalIssuesFound(
     businessErrors,
     params?.options
 );
@@ -886,15 +886,15 @@ Recommended path:
 1. Validate through IModelRulesService.validate().
 2. If valid, attempt save.
 3. If save fails, convert server/save failures into ExternalIssueFound objects.
-4. Apply those ExternalIssueFound objects to ValidationManager using the same business-error mechanism.
-5. Read the updated ValidationState from ValidationManager.
+4. Apply those ExternalIssueFound objects to ValueHostsManager using the same business-error mechanism.
+5. Read the updated ValidationState from ValueHostsManager.
 ```
 
 Current direction:
 
 ```txt
-Post-save issue handling should probably use ValidationManager.setExternalIssuesFound().
-A separate public helper may still be useful, but it should likely accept ValidationManager, not only a detached ValidationState.
+Post-save issue handling should probably use ValueHostsManager.setExternalIssuesFound().
+A separate public helper may still be useful, but it should likely accept ValueHostsManager, not only a detached ValidationState.
 ```
 
 Exact helper remains open.
@@ -910,7 +910,7 @@ Structured path:
 ```txt
 1. Create JivsServices.
 2. Resolve or instantiate a ModelRulesService.
-3. Configure a ValidationManager through the service.
+3. Configure a ValueHostsManager through the service.
 4. Set values into ValueHosts.
 5. Validate through the service.
 6. Read ValidationState and IssuesFound.
@@ -921,9 +921,9 @@ Lower-level path:
 ```txt
 1. Create JivsServices.
 2. Use Builder directly.
-3. Create ValidationManager.
+3. Create ValueHostsManager.
 4. Set values into ValueHosts.
-5. Validate through ValidationManager.
+5. Validate through ValueHostsManager.
 6. Read ValidationState and IssuesFound.
 ```
 
@@ -931,7 +931,7 @@ Detailed child documents can cover:
 
 ```txt
 Builder API
-ValidationManager
+ValueHostsManager
 ValueHosts
 Conditions
 Validators
@@ -954,9 +954,9 @@ J-002: validateBusinessRules() returns null when there are no business errors.
 J-003: setExternalIssuesFound() replace/clear behavior is used.
 J-004: ModelRulesValidateOptions extends ValidateOptions.
 J-005: No existing base options type for configuration.
-J-006: configure() returns ValidationManager only; diagnostics use logService.
+J-006: configure() returns ValueHostsManager only; diagnostics use logService.
 J-007: configure() params are optional.
-J-008: validate() takes ValidationManager as direct explicit parameter.
+J-008: validate() takes ValueHostsManager as direct explicit parameter.
 J-009: Factory returns new service instances.
 J-010: Caching is through JivsServices.cacheService.
 J-011: Service identity uses a stable string name.
@@ -972,9 +972,9 @@ J-020: Factory supports both string and constructor identifiers.
 J-021: configure() always calls both phases; base methods are empty.
 J-022: ModelRulesValidationMode was considered but abandoned.
 J-023: validate() always begins with Jivs validation and may then run business validation.
-J-024: validate() starts fresh through ValidationManager.validate().
+J-024: validate() starts fresh through ValueHostsManager.validate().
 J-025: validate() awaits completion of async Jivs validation.
-J-026: Business errors are integrated through ValidationManager.setExternalIssuesFound().
+J-026: Business errors are integrated through ValueHostsManager.setExternalIssuesFound().
 J-027: No generics are used in this service area.
 J-028: ModelRulesServiceBase is non-generic.
 J-029: UI-only rules-service subclasses are valid and may leave business methods empty.
@@ -984,14 +984,14 @@ J-032: If shortCircuitWhenDoNotSave is undefined, it behaves as true.
 J-033: When short-circuiting on doNotSave, prior business errors are cleared.
 J-034: In the short-circuit path, if clearing business errors does not change state, validate() may return the original ValidationState.
 J-035: In the normal path, applyExternalIssuesFound() determines whether validate() reuses the original ValidationState or calls getValidationState().
-J-036: ValidationManager exposes getValidationState() as a public wrapper over internal state creation.
+J-036: ValueHostsManager exposes getValidationState() as a public wrapper over internal state creation.
 J-037: validateJivsRules(), validateBusinessRules(), and applyExternalIssuesFound() are all overridable.
 J-038: applyExternalIssuesFound() remains a thin wrapper with overridability.
 J-039: Both short-circuit and non-short-circuit paths use applyExternalIssuesFound().
 J-040: Two notification waves are accepted in the normal two-stage flow.
-J-041: ValidationManager is a reusable stateful session object.
+J-041: ValueHostsManager is a reusable stateful session object.
 J-042: ModelRulesServiceBase is stateless.
-J-043: ValidationManager.getValidationState() is core to the architecture.
+J-043: ValueHostsManager.getValidationState() is core to the architecture.
 J-044: Just use ExternalIssueFound.
 ```
 
@@ -1004,7 +1004,7 @@ J-047: Define exact registration/resolution mechanics in IModelRulesServiceFacto
 J-048: Determine whether a public helper for post-save/server errors is needed.
 J-050: How to handle hooking up with jivs-configanalysis
 J-051: Capturing IssuesFound generated by a call to the server, such as the result of saving. As you know, saving must also run all validation to avoid attacks. It must provide that info to the client for display of validators.
-J-052: Restoring ValidationManager state after a page posts back and redraws
+J-052: Restoring ValueHostsManager state after a page posts back and redraws
 ```
 
 ---
@@ -1017,14 +1017,14 @@ J-052: Restoring ValidationManager state after a page posts back and redraws
 const rulesService =
     services.modelRulesServiceFactory.create(PersonModel);
 
-const validationManager = rulesService.configure({
+const valueHostsManager = rulesService.configure({
     options: {
         variantName: "Edit"
     }
 });
 
 const validationState = await rulesService.validate(
-    validationManager,
+    valueHostsManager,
     {
         model: person,
         options: {
@@ -1052,23 +1052,23 @@ builder.input("EndDate", LookupKey.Date, { label: "End date" });
 builder.calc("DiffDays", LookupKey.Number, calculateDiffDays);
 builder.static("NumOfDays", LookupKey.Number, { initialValue: 30 });
 
-const validationManager = new ValidationManager(builder);
+const valueHostsManager = new ValueHostsManager(builder);
 
 startDateInput.addEventListener("change", () => {
-    validationManager.vh.input("StartDate").setTextValue(
+    valueHostsManager.vh.input("StartDate").setTextValue(
         startDateInput.value,
         { validate: true }
     );
 });
 
 endDateInput.addEventListener("change", () => {
-    validationManager.vh.input("EndDate").setTextValue(
+    valueHostsManager.vh.input("EndDate").setTextValue(
         endDateInput.value,
         { validate: true }
     );
 });
 
-const validationState = validationManager.validate();
+const validationState = valueHostsManager.validate();
 ```
 
 ### UI-only `ModelRulesService` example
@@ -1080,7 +1080,7 @@ class DateRangeRulesService extends ModelRulesServiceBase {
     }
 
     protected override configureUIRules(
-        builder: IValidationManagerConfigBuilder
+        builder: IValueHostsManagerConfigBuilder
     ): void {
         builder
             .input("StartDate", LookupKey.Date, { label: "Start date" })
@@ -1097,24 +1097,24 @@ class DateRangeRulesService extends ModelRulesServiceBase {
 }
 
 const rulesService = new DateRangeRulesService(services);
-const validationManager = rulesService.configure();
+const valueHostsManager = rulesService.configure();
 
 startDateInput.addEventListener("change", () => {
-    validationManager.vh.input("StartDate").setTextValue(
+    valueHostsManager.vh.input("StartDate").setTextValue(
         startDateInput.value,
         { validate: true }
     );
 });
 
 endDateInput.addEventListener("change", () => {
-    validationManager.vh.input("EndDate").setTextValue(
+    valueHostsManager.vh.input("EndDate").setTextValue(
         endDateInput.value,
         { validate: true }
     );
 });
 
 const validationState = await rulesService.validate(
-    validationManager
+    valueHostsManager
 );
 ```
 
@@ -1124,7 +1124,7 @@ const validationState = await rulesService.validate(
 
 `IModelRulesService` and `ModelRulesServiceBase` give Jivs a clearer structured story.
 
-They keep Builder and ValidationManager as the underlying engine, but package them into a service-oriented workflow that supports:
+They keep Builder and ValueHostsManager as the underlying engine, but package them into a service-oriented workflow that supports:
 
 ```txt
 Business-model-driven validation
@@ -1133,7 +1133,7 @@ Configuration caching
 Async validator completion
 Short-circuiting before business validation when doNotSave is already true
 ExternalIssueFound integration
-Final ValidationState retrieval through ValidationManager.getValidationState()
+Final ValidationState retrieval through ValueHostsManager.getValidationState()
 Stable string-based service identity
 Factory-based service resolution for string and constructor identifiers
 ```
@@ -1153,7 +1153,7 @@ interface JivsServices {
 }
 
 
-class ValidationManager {
+class ValueHostsManager {
 
     public getValidationState(_options?: ValidateOptions): ValidationState {
         return this.createValidationState(_options);
@@ -1178,10 +1178,10 @@ interface ModelRulesValidateParams {
 }
 
 interface IModelRulesService {
-    configure(params?: ModelRulesConfigureParams): ValidationManager;
+    configure(params?: ModelRulesConfigureParams): ValueHostsManager;
 
     validate(
-        validationManager: ValidationManager,
+        valueHostsManager: ValueHostsManager,
         params?: ModelRulesValidateParams
     ): Promise<ValidationState>;
 }
@@ -1202,17 +1202,17 @@ abstract class ModelRulesServiceBase {
         ].join("|");
     }
 
-    public configure(_params?: ModelRulesConfigureParams): ValidationManager {
+    public configure(_params?: ModelRulesConfigureParams): ValueHostsManager {
         // ... not fully shown here ...
-        return new ValidationManager();
+        return new ValueHostsManager();
     }
 
     public async validate(
-        validationManager: ValidationManager,
+        valueHostsManager: ValueHostsManager,
         params?: ModelRulesValidateParams
     ): Promise<ValidationState> {
         const jivsState = await this.validateJivsRules(
-            validationManager,
+            valueHostsManager,
             params
         );
 
@@ -1221,51 +1221,51 @@ abstract class ModelRulesServiceBase {
 
         if (shortCircuit && jivsState.doNotSave) {
             const changed = this.applyExternalIssuesFound(
-                validationManager,
+                valueHostsManager,
                 null,
                 params
             );
             return changed
-                ? validationManager.getValidationState(params?.options)
+                ? valueHostsManager.getValidationState(params?.options)
                 : jivsState;
         }
 
         const businessErrors = await this.validateBusinessRules(
-            validationManager,
+            valueHostsManager,
             params
         );
 
         const changed = this.applyExternalIssuesFound(
-            validationManager,
+            valueHostsManager,
             businessErrors,
             params
         );
 
         return changed
-            ? validationManager.getValidationState(params?.options)
+            ? valueHostsManager.getValidationState(params?.options)
             : jivsState;
     }
 
     protected async validateJivsRules(
-        validationManager: ValidationManager,
+        valueHostsManager: ValueHostsManager,
         params?: ModelRulesValidateParams
     ): Promise<ValidationState> {
-        return validationManager.validate(params?.options);
+        return valueHostsManager.validate(params?.options);
     }
 
     protected async validateBusinessRules(
-        _validationManager: ValidationManager,
+        _valueHostsManager: ValueHostsManager,
         _params?: ModelRulesValidateParams
     ): Promise<Array<ExternalIssueFound> | null> {
         return null;
     }
 
     protected applyExternalIssuesFound(
-        validationManager: ValidationManager,
+        valueHostsManager: ValueHostsManager,
         businessErrors: Array<ExternalIssueFound> | null,
         params?: ModelRulesValidateParams
     ): boolean {
-        return validationManager.setExternalIssuesFound(
+        return valueHostsManager.setExternalIssuesFound(
             businessErrors,
             params?.options
         );
@@ -1283,7 +1283,7 @@ class PersonModelRulesService
     }
 
     protected override async validateBusinessRules(
-        _validationManager: ValidationManager,
+        _valueHostsManager: ValueHostsManager,
         params?: ModelRulesValidateParams
     ): Promise<Array<ExternalIssueFound> | null> {
         if (!params?.model) {
@@ -1312,7 +1312,7 @@ class LoginRulesService
     }
 
     protected override configureUIRules(
-        builder: IValidationManagerConfigBuilder
+        builder: IValueHostsManagerConfigBuilder
     ): void {
         builder.input("UserName", LookupKey.String).requireText();
         builder.input("Password", LookupKey.String).requireText();

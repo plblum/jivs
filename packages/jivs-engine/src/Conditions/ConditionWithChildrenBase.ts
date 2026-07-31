@@ -9,7 +9,7 @@ import { toIDisposable } from '../Interfaces/General_Purpose';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { toIGatherValueHostNames } from '../Interfaces/ValueHost';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionBase } from './ConditionBase';
 
 /**
@@ -42,27 +42,27 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
         this._conditions = undefined!;
     }    
 
-    protected conditions(validationManager: IValidationManager): Array<ICondition> {
+    protected conditions(valueHostsManager: IValueHostsManager): Array<ICondition> {
         if (!this._conditions) {
-            this._conditions = this.generateConditions(validationManager);
+            this._conditions = this.generateConditions(valueHostsManager);
         }
         return this._conditions;
     }
-    protected generateConditions(validationManager: IValidationManager): Array<ICondition> {
+    protected generateConditions(valueHostsManager: IValueHostsManager): Array<ICondition> {
         const conditions: Array<ICondition> = [];
         for (const condConfig of this.config.conditionConfigs) {
-            const condition = this.generateCondition(condConfig, validationManager.services);
+            const condition = this.generateCondition(condConfig, valueHostsManager.services);
             conditions.push(condition);
         }
         return conditions;
     }
     private _conditions: Array<ICondition> | null = null;
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void
     {
-        const conditions = this.conditions(validationManager);
+        const conditions = this.conditions(valueHostsManager);
         for (const condition of conditions)
-            toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, validationManager);
+            toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, valueHostsManager);
     }        
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

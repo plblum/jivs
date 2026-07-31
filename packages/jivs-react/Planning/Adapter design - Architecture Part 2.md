@@ -132,8 +132,8 @@ Conceptually:
 class JivsFieldCache
 {
     constructor(
-        validationManager:
-            ValidationManager
+        valueHostsManager:
+            ValueHostsManager
     );
 
     getField(
@@ -147,16 +147,16 @@ The final implementation may evolve.
 
 The identity contract remains architectural.
 
-### ValidationManager Dependency
+### ValueHostsManager Dependency
 
-JivsFieldCache requires access to ValidationManager.
+JivsFieldCache requires access to ValueHostsManager.
 
 Conceptually:
 
 ```text
 JivsFieldCache
         ↓
-ValidationManager
+ValueHostsManager
         ↓
 ValueHosts
 ```
@@ -169,7 +169,7 @@ When getField() is called:
 
 1. The cache first checks whether a JivsField already exists for the supplied field name.
 2. If a cached wrapper exists, that wrapper is returned.
-3. If no cached wrapper exists, the cache queries ValidationManager for a ValueHost whose name exactly matches the supplied field name.
+3. If no cached wrapper exists, the cache queries ValueHostsManager for a ValueHost whose name exactly matches the supplied field name.
 4. If a matching ValueHost is found, a new JivsField is created and associated with that ValueHost.
 5. The supplied initialValue is applied only during wrapper creation. (Nothing happens when initialValue = undefined) *ISSUE: what if this is after a callback to the server to process the page, where the previous HTML had a different value? I expect that <input value="current value"> must be used as the value for initialValue. Need to solve this one.*
 6. The newly created wrapper is stored in the cache and returned.
@@ -183,7 +183,7 @@ Cache Lookup
         ↓
 Cache Miss
         ↓
-ValidationManager
+ValueHostsManager
         ↓
 Matching ValueHost
         ↓
@@ -278,7 +278,7 @@ true
 JivsFieldCache is responsible for:
 
 * Resolving field wrappers
-* Resolving ValueHosts through ValidationManager
+* Resolving ValueHosts through ValueHostsManager
 * Creating wrappers when necessary
 * Applying initial values during wrapper creation
 * Maintaining wrapper identity
@@ -343,7 +343,7 @@ Conceptually:
 ```ts
 class JivsFormCache
 {
-    constructor( validationManager: ValidationManager );
+    constructor( valueHostsManager: ValueHostsManager );
     getForm(
         groupName?: string
     ): JivsForm;
@@ -449,16 +449,16 @@ Identity stability is an architectural guarantee within the scope of one JivsRea
 
 ## Purpose
 
-Validation notifications originate from ValidationManager through its onValidationStateChanged and onValueHostValidationStateChanged hooks.
+Validation notifications originate from ValueHostsManager through its onValidationStateChanged and onValueHostValidationStateChanged hooks.
 
 React components must be informed when Validation State changes. To work well with React's own approach, it involves the useSyncExternalStore hook.
 
-The React Adapter provides dedicated subscription infrastructure that routes notifications from ValidationManager to React Hooks.
+The React Adapter provides dedicated subscription infrastructure that routes notifications from ValueHostsManager to React Hooks.
 
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 Subscription Infrastructure
         ↓
@@ -494,7 +494,7 @@ The hook layer subscribes to field notifications through ReactFieldSubscriptions
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 Field Notification from ValidationHost.onValueHostValidationStateChanged
         ↓
@@ -761,7 +761,7 @@ are unaffected.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValueHostValidationStateChanged
         ↓
@@ -826,7 +826,7 @@ Each validation group has its own logical subscriber collection.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 Form Notification
         ↓
@@ -1017,7 +1017,7 @@ onValidationStateChanged(
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValidationStateChanged
         ↓

@@ -26,7 +26,7 @@ import
         ValidationStatus,
         ValueHostValidateResult
     } from "../../src/Interfaces/Validation";
-import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import
@@ -43,16 +43,16 @@ import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, UserSuppliedResultConditionType } from "../../src/Support/conditionsForTesting";
 import { createJivsServicesForTesting, registerDataTypeParsers } from "../../src/Support/createJivsServicesForTesting";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { MockValidationManager, MockJivsServices } from "../TestSupport/mocks";
+import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 
 
 interface ITestSetupConfig {
     services: MockJivsServices,
-    validationManager: MockValidationManager,
+    valueHostsManager: MockValueHostsManager,
     config: FieldValueHostConfig,
     state: FieldValueHostInstanceState,
     valueHost: FieldValueHost
@@ -161,7 +161,7 @@ function finishPartialFieldValueHostInstanceState(partialState: Partial<FieldVal
  * IssuesFound: null,
  * ValidationStatus: NotAttempted
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Config,
+ * ValueHostsManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
 function setupFieldValueHost(
@@ -170,7 +170,7 @@ function setupFieldValueHost(
     let services = new MockJivsServices(true, true);
     (services.loggerService as CapturingLogger).chainedLogger = new ConsoleLoggerService(services.loggerService.minLevel);
     (services.loggerService as CapturingLogger).overrideMinLevelWhen({ hasData: true });
-    let vm = new MockValidationManager(services);
+    let vm = new MockValueHostsManager(services);
     let updatedConfig = finishPartialFieldValueHostConfig(partialIVHConfig ?? null);
     let updatedState = finishPartialFieldValueHostInstanceState(partialState ?? null);
 
@@ -178,7 +178,7 @@ function setupFieldValueHost(
     //new FieldValueHost(vm, updatedConfig, updatedState);
     return {
         services: services,
-        validationManager: vm,
+        valueHostsManager: vm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh as FieldValueHost
@@ -216,7 +216,7 @@ describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let testItem: FieldValueHost | null = null;
         expect(()=> testItem = new FieldValueHost(vm, {
             name: 'Field1',
@@ -230,7 +230,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Field1');
@@ -248,7 +248,7 @@ describe('constructor and resulting property values', () => {
 
     test('constructor with Config.propertyName sets up getPropertyName correctly', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let testItem: FieldValueHost | null = null;
         expect(()=> testItem = new FieldValueHost(vm, {
             name: 'Field1',
@@ -263,7 +263,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Prop1');
@@ -304,7 +304,7 @@ describe('setValue', () => {
         let testItem = setup.valueHost;
 
         let callbackInvoked = 0;
-        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
             callbackInvoked++;
         };
         testItem.setValue(100);
@@ -317,7 +317,7 @@ describe('setValue', () => {
 
         let setup = setupFieldValueHost();
         let callbackInvoked = 0;
-        setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
+        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             callbackInvoked++;
         };        
         let testItem = setup.valueHost;
@@ -361,7 +361,7 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe(textValue);
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect((<FieldValueHostInstanceState>changes[0]).textValue).toBe(textValue);
         expect((<FieldValueHostInstanceState>changes[0]).changeCounter).toBe(1);        
@@ -386,7 +386,7 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe("ABC");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
         let valueChange = <FieldValueHostInstanceState>changes[0];
         expect(valueChange.textValue).toBe("ABC");
@@ -400,7 +400,7 @@ describe('setTextValue with getTextValue to check result', () => {
         let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
         let valueHostsCaptured: Array<FieldValueHost> = [];
-        setup.validationManager.onTextValueChanged = (valueHost, oldValue) =>
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
         {
             valueHostsCaptured.push(valueHost as FieldValueHost);
         }
@@ -415,7 +415,7 @@ describe('setTextValue with getTextValue to check result', () => {
         let setup = setupFieldValueHost();
         setup.services.dataTypeParserService.enabled = false;
         let valueHostsCaptured: Array<FieldValueHost> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) =>
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
         {
             valueHostsCaptured.push(valueHost as FieldValueHost);
         }
@@ -772,7 +772,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
         expect((<FieldValueHostInstanceState>changes[0]).textValue).toBe("10");
@@ -787,7 +787,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
         expect((<FieldValueHostInstanceState>changes[0]).textValue).toBe("10");
@@ -801,7 +801,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
         expect((<FieldValueHostInstanceState>changes[0]).textValue).toBe("10");
@@ -815,7 +815,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect((<FieldValueHostInstanceState>changes[0]).value).toBe(10);
         expect((<FieldValueHostInstanceState>changes[0]).textValue).toBe("10");
@@ -829,7 +829,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
         let valueChange = <FieldValueHostInstanceState>changes[0];
         expect(valueChange.value).toBe(10);
@@ -843,12 +843,12 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
     {
         let setup = setupFieldValueHost();
         let valueChangedHosts: Array<FieldValueHost> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) =>
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
         {
             valueChangedHosts.push(valueHost as FieldValueHost);
         }
         let textValueChangedHosts: Array<FieldValueHost> = [];
-        setup.validationManager.onTextValueChanged = (valueHost, oldValue) =>
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
         {
             textValueChangedHosts.push(valueHost as FieldValueHost);
         }
@@ -1039,8 +1039,8 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         expect(logger.findMessage('Attempt to format', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('No formatterLookupKey or formatterCreator', LoggingLevel.Debug)).toBeNull();
     });
-    // let's focus on the ValidationManager.onValueChanged callback to be sure its called in the normal case
-    test('ValidationManager.onValueChanged callback is called when setValues is called', () => {
+    // let's focus on the ValueHostsManager.onValueChanged callback to be sure its called in the normal case
+    test('ValueHostsManager.onValueChanged callback is called when setValues is called', () => {
         let setup = setupFieldValueHost({
             name: 'Field1',
             dataType: LookupKey.Number,
@@ -1050,7 +1050,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         logger.minLevel = LoggingLevel.Debug;
 
         let valHostsThatChanged: Array<FieldValueHost> = [];
-        setup.validationManager.onValueChanged = (valueHost, validateResult) =>
+        setup.valueHostsManager.onValueChanged = (valueHost, validateResult) =>
         {
             valHostsThatChanged.push(valueHost as FieldValueHost);
         };
@@ -1063,7 +1063,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         expect(logger.findMessage('Formatter used', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('notifyOtherValueHostsOfValueChange', LoggingLevel.Debug)).toBeTruthy();
     });
-    test('ValidationManager.onTextValueChanged callback is called when setValues is called', () =>
+    test('ValueHostsManager.onTextValueChanged callback is called when setValues is called', () =>
     {
         let setup = setupFieldValueHost({
             name: 'Field1',
@@ -1073,7 +1073,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let valHostsThatTextChanged: Array<FieldValueHost> = [];
-        setup.validationManager.onTextValueChanged = (valueHost, validateResult) =>
+        setup.valueHostsManager.onTextValueChanged = (valueHost, validateResult) =>
         {
             valHostsThatTextChanged.push(valueHost as FieldValueHost);
         };
@@ -1087,7 +1087,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         expect(logger.findMessage('Formatter used', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('notifyOtherValueHostsOfValueChange', LoggingLevel.Debug)).toBeTruthy();
     });    
-    test('ValidationManager.onValueHostValidationStateChanged callback is called when setValues is called', () =>
+    test('ValueHostsManager.onValueHostValidationStateChanged callback is called when setValues is called', () =>
     {
         let setup = setupFieldValueHost({
             name: 'Field1',
@@ -1097,7 +1097,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let valHostsThatValidated: Array<FieldValueHost> = [];
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) =>
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) =>
         {
             valHostsThatValidated.push(valueHost as FieldValueHost);
         };
@@ -1125,7 +1125,7 @@ describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let onValStateChanged: ValueHostValidationState | null = null;
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             onValStateChanged = validateResult;
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -1177,7 +1177,7 @@ describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let onValStateChanged: ValueHostValidationState | null = null;
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             onValStateChanged = validateResult;
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -1232,7 +1232,7 @@ describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let onValStateChanged: ValueHostValidationState | null = null;
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             onValStateChanged = validateResult;
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -1290,7 +1290,7 @@ describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
         let onValStateChanged: ValueHostValidationState | null = null;
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             onValStateChanged = validateResult;
         };
         setup.valueHost.setValues('ABC', 'ABC');   // will violate the regexp
@@ -1363,14 +1363,14 @@ describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', (
         ];
 
         let onValStateChanged: ValueHostValidationState | null = null;        
-        let vmConfig: ValidationManagerConfig = {
+        let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: configs,
             onValueHostValidationStateChanged: (valueHost, validateResult) => {
                 onValStateChanged = validateResult;
             }
         };
-        let vm = new ValidationManager(vmConfig);
+        let vm = new ValueHostsManager(vmConfig);
         let vh = vm.getValueHost('Field1') as FieldValueHost;     
         vh.setValues('ABC', 'ABC');   // will violate the regexp
         expect(onValStateChanged).toEqual(
@@ -1461,7 +1461,7 @@ describe('FieldValueHostGenerator members', () => {
 
     test('create returns instance of FieldValueHost with VM, Config and State established', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let config: FieldValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Field,
@@ -1576,7 +1576,7 @@ describe('FieldValueHost.required', () => {
 
 describe('toIFieldValueHost function', () => {
     test('Passing actual FieldValueHost matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockJivsServices(false, false));
+        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new FieldValueHost(vm, {
             name: 'Field1',
             label: 'Label1',
@@ -1593,7 +1593,7 @@ describe('toIFieldValueHost function', () => {
     });
     class TestIFieldValueHostImplementation implements IFieldValueHost {
 
-        validationManager: IValidationManager = {} as IValidationManager;       
+        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;       
         dispose(): void { }
         groupCheck(options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");
@@ -1711,7 +1711,7 @@ describe('toIFieldValueHost function', () => {
     });
   
     test('StaticValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockJivsServices(false, false));
+        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new StaticValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1'
@@ -1723,7 +1723,7 @@ describe('toIFieldValueHost function', () => {
         expect(toIFieldValueHost(testItem)).toBeNull();
     });            
     test('CalcValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockJivsServices(false, false));
+        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new CalcValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -1749,7 +1749,7 @@ describe('toIFieldValueHost function', () => {
 
 describe('toIFieldValueHostCallbacks function', () => {
     test('Passing actual FieldValueHost matches interface returns same object.', () => {
-        let testItem = new MockValidationManager(new MockJivsServices(false, false));
+        let testItem = new MockValueHostsManager(new MockJivsServices(false, false));
 
         expect(toIFieldValueHostCallbacks(testItem)).toBe(testItem);
     });
@@ -1794,7 +1794,7 @@ describe('No mocks!', () => {
         logger.overrideMinLevelWhen({
             category: LoggingCategory.Result,
         });
-        let vmConfig = <ValidationManagerConfig>{
+        let vmConfig = <ValueHostsManagerConfig>{
             services: services,
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
@@ -1819,7 +1819,7 @@ describe('No mocks!', () => {
         //     },
         // }, services);
         // builder.field('Field1').requireText('error');
-        let vm = new ValidationManager(vmConfig);
+        let vm = new ValueHostsManager(vmConfig);
         let vh = vm.vh.field('Field1');
         vh.setValues('', '', { validate: true });   // empty is invalid
 

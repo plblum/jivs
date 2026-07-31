@@ -3,12 +3,12 @@
 
 import { Directive, Input, ElementRef, Renderer2, OnInit, OnDestroy, Optional, SkipSelf, InjectionToken, Inject } from '@angular/core';
 import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from 'rxjs';
-import { ValidationManagerConfig, IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig, IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';
 
 /**
@@ -114,8 +114,8 @@ export interface IValueChangeListenerAction {
      * ValueHost and validate. It is called when the value is already its native type.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
-     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
+     * Fivase's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
      * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
@@ -300,8 +300,8 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * ValueHost and validate. It is called when the value is already its native type.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
-     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
+     * Fivase's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
      * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
@@ -495,8 +495,8 @@ export abstract class RendererActionBase implements IRendererAction {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. 
+     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
+     * Fivase's ValueHostsManager object, fully configured and ready to use. 
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
     public render(
@@ -522,8 +522,8 @@ export abstract class RendererActionBase implements IRendererAction {
      * @param renderer 
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. 
+     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
+     * Fivase's ValueHostsManager object, fully configured and ready to use. 
      * @param options 
      */
     protected twoStateRender(
@@ -719,7 +719,7 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
         options?: IRendererActionOptions): boolean | null {
-        const vh = fivaseForm.validationManager.getFieldValueHost(valueHostName);
+        const vh = fivaseForm.valueHostsManager.getFieldValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
@@ -896,8 +896,8 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      * Enables when validationState.issuesFound is not empty.
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseForm - Access to Fivase's features. Its validationManager property is 
-     * Fivase's ValidationManager object, fully configured and ready to use. 
+     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
+     * Fivase's ValueHostsManager object, fully configured and ready to use. 
      * @param options 
      * @returns true if issuesFound is not empty.
      */
@@ -1633,7 +1633,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * Ensures the UI conforms with the current validation state
      */
     protected setupInitialRender(valueHostName: string): void {
-        const vh = this.fivaseForm.validationManager.getValidatorsValueHost(valueHostName)!;
+        const vh = this.fivaseForm.valueHostsManager.getValidatorsValueHost(valueHostName)!;
         if (!vh)
             throw new Error(`Unknown valueHostName "${valueHostName}"`);
         this.onValueHostValidationStateChanged(this.getTargetElement(), vh.currentValidationState);
@@ -1704,10 +1704,10 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
 }
 /**
  * Directive `validate` manages how an input element interacts with Fivase.
- * It must supply the value to be validated to ValidationManager and update the
+ * It must supply the value to be validated to ValueHostsManager and update the
  * UI to show any validation state changes.
  *
- * 'validate' takes the value of the ValueHostName registered with Jivs ValidationManager.
+ * 'validate' takes the value of the ValueHostName registered with Jivs ValueHostsManager.
  *
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
@@ -1805,7 +1805,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     /**
      * resolves the IValueChangeListenerAction implementation from either the [fivase-valuechangelistener] input or the Factory.
-     * Has the event handler setup the input events to deliver the input value to the ValidationManager.
+     * Has the event handler setup the input events to deliver the input value to the ValueHostsManager.
      * Resolves the IFocusListenerAction implementation from the [fivase-focuslistener] input or the Factory.
      * Sets up listeners for focus in and focus out events to deliver focus messages to the FivaseForm.
      * @param valueHostName
@@ -1887,7 +1887,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     protected initAriaAttributes(): void {
         // Set aria-required based on the required field in the ValueHost
-        const valueHost = this.fivaseForm.validationManager.getFieldValueHost(this.valueHostName!);
+        const valueHost = this.fivaseForm.valueHostsManager.getFieldValueHost(this.valueHostName!);
         if (valueHost && valueHost.required) {
             this.ariaManager.setAriaRequired(); // Set aria-required if required is true
         }
@@ -1931,7 +1931,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
  * typically used to target a specific element within a component designed to show error messages.
  * That component often has other parts, like icons or other text, that are not part of the error message.
  * 
- * 'validationErrors' takes the value of the ValueHostName registered with Jivs ValidationManager.
+ * 'validationErrors' takes the value of the ValueHostName registered with Jivs ValueHostsManager.
  * 
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
@@ -2048,7 +2048,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
  * has been corrected (it was invalid and now it is valid). 
  * It shows the element when the input is corrected and hides otherwise.
  * 
- * 'showWhenCorrected' takes the value of the ValueHostName registered with Jivs ValidationManager.
+ * 'showWhenCorrected' takes the value of the ValueHostName registered with Jivs ValueHostsManager.
  * 
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
@@ -2094,7 +2094,7 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
  * has a required validator (FieldValueHost.required) 
  * It shows the element when the input is required and hides otherwise.
  * 
- * 'showWhenRequired' takes the value of the ValueHostName registered with Jivs ValidationManager.
+ * 'showWhenRequired' takes the value of the ValueHostName registered with Jivs ValueHostsManager.
  * 
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
@@ -2141,7 +2141,7 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
  * has at least one IssueFound in the validation state.
  * It shows the element when the input is required and hides otherwise.
  * 
- * 'showWhenIssuesFound' takes the value of the ValueHostName registered with Jivs ValidationManager.
+ * 'showWhenIssuesFound' takes the value of the ValueHostName registered with Jivs ValueHostsManager.
  * 
  * It either must be assigned the `ValueHostName` or be contained within a `ValueHostNameDirective`.
  * ```ts
@@ -2198,7 +2198,7 @@ export class ShowWhenIssuesFoundDirective extends RenderingDirectiveBase {
  * provided by `FivaseServices`. This directive can either use a default implementation of `IPopupAction`
  * or select a custom implementation by specifying the factory name through the `fivase-popupAction` input.
  *
- * `popup` takes the value of the `ValueHostName` registered with the Jivs ValidationManager and uses
+ * `popup` takes the value of the `ValueHostName` registered with the Jivs ValueHostsManager and uses
  * it to subscribe to the appropriate form field messages.
  *
  * The `popup` directive must either be assigned the `ValueHostName` directly or be contained within a
@@ -2474,16 +2474,16 @@ export class ValueHostNameDirective {
 
 
 /**
- * Interface for managing the lifecycle and behavior of a `ValidationManager` in Angular.
+ * Interface for managing the lifecycle and behavior of a `ValueHostsManager` in Angular.
  * Provides methods for validating forms, setting values, and managing subscriptions to validation state changes.
  *
- * Provides an abstraction over `ValidationManager`, making it easier to manage form validation in Angular applications. 
+ * Provides an abstraction over `ValueHostsManager`, making it easier to manage form validation in Angular applications. 
  * Ensures that the core validation logic can be integrated seamlessly into Angular’s dependency injection and lifecycle.
  *
  * Used by directives and components to trigger validation, retrieve validation state, and manage input values.
  */
 export interface IFivaseForm {
-    readonly validationManager: IValidationManager;
+    readonly valueHostsManager: IValueHostsManager;
     readonly services: IFivaseServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
@@ -2517,21 +2517,21 @@ export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');
 
 /**
  * The Fivase validation manager service.
- * Manages validation logic in Angular using the underlying ValidationManager from Jivs.
+ * Manages validation logic in Angular using the underlying ValueHostsManager from Jivs.
  * Handles state changes, value updates, validation subscriptions, and destruction of the manager.
  *
- * Integrates the core Jivs ValidationManager into Angular, allowing form validation and state management in Angular components.
+ * Integrates the core Jivs ValueHostsManager into Angular, allowing form validation and state management in Angular components.
  *
  * Used by directives to trigger validation, manage input values, and handle state subscriptions for forms.
  */
 export class FivaseForm implements IFivaseForm {
 
-    constructor(config: ValidationManagerConfig, services: IFivaseServices) {
+    constructor(config: ValueHostsManagerConfig, services: IFivaseServices) {
         this._services = services;
-        this._validationManager = new ValidationManager(config);
+        this._valueHostsManager = new ValueHostsManager(config);
 
         config.onValidationStateChanged =
-            (validationManager: IValidationManager, validationState: ValidationState) : void => {
+            (valueHostsManager: IValueHostsManager, validationState: ValidationState) : void => {
             this._validationStateSubject.next(validationState);
         };
         config.onValueHostValidationStateChanged =
@@ -2554,42 +2554,42 @@ export class FivaseForm implements IFivaseForm {
      * Some of its most prominent members have been exposed on FivaseForm,
      * but use this to access the rest.
      */
-    public get validationManager(): IValidationManager {
-        return this._validationManager;
+    public get valueHostsManager(): IValueHostsManager {
+        return this._valueHostsManager;
     }
-    private readonly _validationManager: IValidationManager;
+    private readonly _valueHostsManager: IValueHostsManager;
 
     /**
-     * Execute validation across all ValueHosts. Same as calling `validationManager.validate(options)`.
+     * Execute validation across all ValueHosts. Same as calling `valueHostsManager.validate(options)`.
      * See Fivase documentation for details.
      * @param options 
      * @returns 
      */
     public validate(options?: any): ValidationState {
-        return this.validationManager.validate(options);
+        return this.valueHostsManager.validate(options);
     }
 
     /**
      * Call when a value supported within the ValueHosts has changed. 
      * Consider using setTextValue instead for FieldValueHosts.
-     * Same as calling `validationManager.setValue(valueHostName, value, options)`.
+     * Same as calling `valueHostsManager.setValue(valueHostName, value, options)`.
      * See Fivase documentation for details.
      * @param valueHostName 
      * @param value 
      * @param options 
      */
     public setValue(valueHostName: string, value: any, options?: SetValueOptions): void {
-        this.validationManager.vh.field(valueHostName).setValue(value, options);
+        this.valueHostsManager.vh.field(valueHostName).setValue(value, options);
     }
     /**
-     * Call when an input value has changed.  Same as calling `validationManager.vh.field(valueHostName).setTextValue(textValue,options)`.
+     * Call when an input value has changed.  Same as calling `valueHostsManager.vh.field(valueHostName).setTextValue(textValue,options)`.
      * See Fivase documentation for details.
      * @param valueHostName 
      * @param textValue 
      * @param options 
      */
     public setTextValue(valueHostName: string, textValue: string, options?: FieldValueHostSetValueOptions): void {
-        this.validationManager.vh.field(valueHostName).setTextValue(textValue, options);
+        this.valueHostsManager.vh.field(valueHostName).setTextValue(textValue, options);
     }
 
     /**
@@ -2602,7 +2602,7 @@ export class FivaseForm implements IFivaseForm {
         return this._validationStateSubject.subscribe(callback);
     }
     /**
-     * ValidationManager level validation state changes
+     * ValueHostsManager level validation state changes
      */
     private readonly _validationStateSubject = new BehaviorSubject<ValidationState>({
         isValid: true,
@@ -2704,8 +2704,8 @@ export class FivaseForm implements IFivaseForm {
     });
 
     public destroy(): void {
-        this._validationManager?.dispose();
-        (this._validationManager as any) = undefined;
+        this._valueHostsManager?.dispose();
+        (this._valueHostsManager as any) = undefined;
         (this._services as any) = undefined;
         this._validationStateSubject.complete();
         this._valueHostValidationStateSubject.complete();
@@ -2714,22 +2714,22 @@ export class FivaseForm implements IFivaseForm {
 }
 
 /**
- * Interface for a service responsible for managing ValidationManagerConfigs and states of the ValidationManager + ValueHost objects.
+ * Interface for a service responsible for managing ValueHostsManagerConfigs and states of the ValueHostsManager + ValueHost objects.
  */
 export interface IFivaseConfigHost {
-    getConfig(formId: string): ValidationManagerConfig;
+    getConfig(formId: string): ValueHostsManagerConfig;
 
     // Register a configuration for a formId
-    register(formId: string, config: ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)): void;
+    register(formId: string, config: ValueHostsManagerConfig | ((formId: string) => ValueHostsManagerConfig)): void;
 }
 
 /**
- * In Jivs, each Form must have a configuration found in ValidationManagerConfig to setup a ValidationManager.
+ * In Jivs, each Form must have a configuration found in ValueHostsManagerConfig to setup a ValueHostsManager.
  * This configuration includes the ValueHosts, Validators, and other settings for the form.
  * FivaseConfigHost is an Angular service where the configurations are stored during setup and retrieved
  * when a form is being created.
  * 
- * ValidationManager and its ValueHosts have a state that should be saved and restored across sessions.
+ * ValueHostsManager and its ValueHosts have a state that should be saved and restored across sessions.
  * This service uses an implementation of IFivaseStateStore to persist form states across sessions.
  * Each form has 2 states: instanceState and valueHostInstanceStates. They are stored with these keys:
  * - instanceState: formId
@@ -2738,16 +2738,16 @@ export interface IFivaseConfigHost {
  * As a result, every form must have a unique formId, used to register the configuration and save the state.
  * 
  * Use register() to store the configuration for a formId and getConfig() to retrieve the configuration.
- * getConfig() will supply several parts to the ValidationManagerConfig:
+ * getConfig() will supply several parts to the ValueHostsManagerConfig:
  * - The ValueHostConfigs array, which is the ValueHost configuration for the form.
- * - The savedInstanceState, which is the state of the ValidationManager in the session.
+ * - The savedInstanceState, which is the state of the ValueHostsManager in the session.
  * - The savedValueHostInstanceStates, which is the state of each ValueHost in the session.
  * - The onInstanceStateChanged and onValueHostInstanceStateChanged callbacks, which are used to save the state.
  *   You can also use these callbacks to handle the state changes in the application, as yours will be called
  *   after this class saves the state.
  */
 export class FivaseConfigHost implements IFivaseConfigHost {
-    private readonly _configs: Map<string, ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)> = new Map();
+    private readonly _configs: Map<string, ValueHostsManagerConfig | ((formId: string) => ValueHostsManagerConfig)> = new Map();
 
     constructor(private readonly stateStore: IFivaseStateStore) { }
 
@@ -2766,7 +2766,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * `onInstanceStateChanged`, 
      * `onValueHostInstanceStateChanged`
      */
-    public getConfig(formId: string): ValidationManagerConfig {
+    public getConfig(formId: string): ValueHostsManagerConfig {
         const configOrFactory = this._configs.get(formId);
 
         if (!configOrFactory) {
@@ -2775,7 +2775,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
 
         // Get the config either directly or by calling the factory function
         const config = typeof configOrFactory === 'function'
-            ? (configOrFactory as (formId: string) => ValidationManagerConfig)(formId)
+            ? (configOrFactory as (formId: string) => ValueHostsManagerConfig)(formId)
             : configOrFactory;
         const valueHostKey = `${formId}|ValueHosts`;
 
@@ -2788,10 +2788,10 @@ export class FivaseConfigHost implements IFivaseConfigHost {
             ...config,  // do not modify the original config
             savedInstanceState: savedInstanceState ?? config.savedInstanceState ?? null,
             savedValueHostInstanceStates: savedValueHostInstanceStates ?? config.savedValueHostInstanceStates ?? null,
-            onInstanceStateChanged: (validationManager, state) : void => {
+            onInstanceStateChanged: (valueHostsManager, state) : void => {
                 this.saveState(formId, state);
                 if (config.onInstanceStateChanged) {  // Call the original callback if it exists
-                    config.onInstanceStateChanged(validationManager, state);
+                    config.onInstanceStateChanged(valueHostsManager, state);
                 }
             },
             onValueHostInstanceStateChanged: (valueHost, state) : void => {
@@ -2826,7 +2826,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * @param config - Supply either an instance or a function. When it is a function,
      * it creates the config. The function provides a lazy loading pattern.
      */
-    public register(formId: string, config: ValidationManagerConfig | ((formId: string) => ValidationManagerConfig)): void {
+    public register(formId: string, config: ValueHostsManagerConfig | ((formId: string) => ValueHostsManagerConfig)): void {
         this._configs.set(formId, config);
     }
 
@@ -3074,7 +3074,7 @@ export const NAME_SETFOCUSONCLICK_ERROR_MESSAGES = 'setFocusOnClickErrorMessages
 /**
  * Interface responsible for storing and retrieving any state from Fivase, 
  * allowing validation progress to be saved across sessions or page reloads.
- * Required by FivaseConfigHost to save and retrieve the state of the ValidationManager and ValueHosts.
+ * Required by FivaseConfigHost to save and retrieve the state of the ValueHostsManager and ValueHosts.
  *
  * Provides an abstraction for state management, allowing different implementations (e.g., local storage, Redux, or other state management libraries) 
  * to be used without altering the core validation logic. This flexibility ensures the validation system can work with various state management approaches.
@@ -3288,8 +3288,8 @@ export class AriaAttributeManager extends ElementAttributeManager {
                 return; // Do nothing if role description is undefined
             }
 
-            const localizedRoleDescription = this._fivaseForm.validationManager.services.textLocalizerService.localize(
-                this._fivaseForm.validationManager.services.cultureService.activeCultureId,
+            const localizedRoleDescription = this._fivaseForm.valueHostsManager.services.textLocalizerService.localize(
+                this._fivaseForm.valueHostsManager.services.cultureService.activeCultureId,
                 roleDescriptionConfig.l10nKey,
                 roleDescriptionConfig.text
             );

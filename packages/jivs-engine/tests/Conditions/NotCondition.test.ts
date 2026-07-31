@@ -9,7 +9,7 @@ import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../../src/Support/conditionsForTesting";
-import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 describe('NotCondition', () => {
     test('DefaultConditionType', () => {
@@ -18,7 +18,7 @@ describe('NotCondition', () => {
     test('evaluate with valid child. Result of Match due to child NoMatch', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -35,7 +35,7 @@ describe('NotCondition', () => {
     test('evaluate with valid child. Result of NoMatch due to child Match', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -52,7 +52,7 @@ describe('NotCondition', () => {
     test('evaluate with valid child. Result of Undetermined due to child Undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -69,7 +69,7 @@ describe('NotCondition', () => {
     test('with invalid childconfig, logs error and evaluate returns undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -88,7 +88,7 @@ describe('NotCondition', () => {
     test('with null childconfig, logs error and evaluate returns undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -107,7 +107,7 @@ describe('NotCondition', () => {
     test('with evaluate returning a promise in child condition, throws', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -143,7 +143,7 @@ describe('NotCondition', () => {
     });
     test('gatherValueHostNames where child has a ValueHostName. Expect the one ValueHostName', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: NotConditionConfig = {
             conditionType: ConditionType.Not,
@@ -161,7 +161,7 @@ describe('NotCondition', () => {
     });        
     test('gatherValueHostNames where child does not implement gatherValueHostsNames. Expect the none', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: NotConditionConfig = {
             conditionType: ConditionType.Not,
@@ -175,7 +175,7 @@ describe('NotCondition', () => {
 
     test('dispose', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotConditionConfig = {
@@ -190,7 +190,7 @@ describe('NotCondition', () => {
 
         let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotConditionConfig = {

@@ -13,9 +13,9 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { createMinimalJivsServices } from './support';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
@@ -24,13 +24,13 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
 import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 
 export class DateRangeFormRules extends FormRulesBase {
     constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValidationManagerConfigBuilder,
+    protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
             .lessThanOrEqual('EndDate')
@@ -47,7 +47,7 @@ export class DateRangeFormRules extends FormRulesBase {
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
-    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) : SimpleValueType {
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(),
             null, LookupKey.TotalDays);
@@ -95,13 +95,13 @@ function createJivsServicesForThisExample(): IJivsServices {
     return services;
 }
 
-// written so you can call this function and use the configured ValidationManager to see
+// written so you can call this function and use the configured ValueHostsManager to see
 // what happens when you call validate with different inputs.
-export function configureVMForDifferenceBetweenDates(): IValidationManager {
+export function configureVMForDifferenceBetweenDates(): IValueHostsManager {
     let services = createJivsServicesForThisExample();
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
-    return new ValidationManager(config);
+    return new ValueHostsManager(config);
 }
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.

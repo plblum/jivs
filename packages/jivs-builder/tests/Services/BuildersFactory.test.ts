@@ -1,7 +1,7 @@
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { ValidatorBuilder } from "../../src/Builder/ValidatorBuilder";
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from '../../src/Interfaces/ChildBuilders';
 import { BuildersFactory } from "../../src/Services/BuildersFactory";
@@ -9,7 +9,7 @@ import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/
 
 
 
-class SubstituteManagerConfigBuilder extends ValidationManagerConfigBuilder
+class SubstituteManagerConfigBuilder extends ValueHostsManagerConfigBuilder
 {
     constructor(services: IJivsServices) {
         super(services);
@@ -56,7 +56,7 @@ describe('BuildersFactory', () => {
         buildersFactory.services = createJivsServicesForTesting();
         const builder = buildersFactory.createManagerConfigBuilder(null);
         expect(builder).toBeDefined();
-        expect(builder).toBeInstanceOf(ValidationManagerConfigBuilder);
+        expect(builder).toBeInstanceOf(ValueHostsManagerConfigBuilder);
     });
 
    test('createValidatorBuilder should return a valid builder', () => {

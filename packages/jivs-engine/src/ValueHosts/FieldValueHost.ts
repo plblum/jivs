@@ -18,7 +18,7 @@ import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './Val
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 
@@ -39,7 +39,7 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
  * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
  * the text value. Most other Conditions evaluate the typed value.
  *
- * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * When configuring the ValueHostsManager for a FieldValueHost, use the builder's field() method.
  * ```ts
  * builder.field("firstName", LookupKey.String);
  * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });
@@ -60,8 +60,8 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 */
 export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig, FieldValueHostInstanceState>
     implements IFieldValueHost {
-    constructor(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
-        super(validationManager, config, state);
+    constructor(valueHostsManager: IValueHostsManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
+        super(valueHostsManager, config, state);
     }
     
 
@@ -141,7 +141,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     protected useOnTextValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
     {
         if (changed && (!options || !options.skipValueChangedCallback))
-            toIFieldValueHostCallbacks(this.validationManager)?.onTextValueChanged?.(this, oldValue);
+            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
     }    
     //#region IFieldValueHost
     /**
@@ -496,8 +496,8 @@ export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
             return false;
         return true;
     }
-    public create(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState): IFieldValueHost {
-        return new FieldValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState): IFieldValueHost {
+        return new FieldValueHost(valueHostsManager, config, state);
     }
 
     public createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {

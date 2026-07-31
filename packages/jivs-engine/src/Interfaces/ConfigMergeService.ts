@@ -44,7 +44,7 @@ export interface IValueHostConfigMergeService extends IConfigMergeServiceBase<Va
     /**
      * Identifies a ValueHostConfig in the destination that should be merged
      * with the source. If none need to be merged, it returns null
-     * and the caller should add their ValueHostConfig to ValidationManagerConfig.ValueHostConfigs.
+     * and the caller should add their ValueHostConfig to ValueHostsManagerConfig.ValueHostConfigs.
      * @param source 
      * @param destinations 
      */

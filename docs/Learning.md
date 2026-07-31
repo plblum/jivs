@@ -4,11 +4,11 @@
 ## Where you want to use validation
 
 ### As focus leaves an Input and its value changed
-* Use the onchange event to tell the `ValidationManager` about the data change and run validation. 
+* Use the onchange event to tell the `ValueHostsManager` about the data change and run validation. 
   * You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-  * Jivs lets you assign a parser to each FieldValueHost. Just use: `validationManager.vh.field('name').setTextValue(textValue, { validate: true });`
-  * If you want to handle parsing elsewhere, use: `validationManager.vh.field('name').setValues(nativeValue, textValue, { validate: true });`
-* The `ValidationManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
+  * Jivs lets you assign a parser to each FieldValueHost. Just use: `valueHostsManager.vh.field('name').setTextValue(textValue, { validate: true });`
+  * If you want to handle parsing elsewhere, use: `valueHostsManager.vh.field('name').setValues(nativeValue, textValue, { validate: true });`
+* The `ValueHostsManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
 ```ts
@@ -20,14 +20,14 @@ Suppose that you have this HTML:
     <button>Submit</button>
 </form>
 ```
-This code initializes a `ValidationManager` and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the `ValidationManager` instance should be accessible to the rest of this form's code.
+This code initializes a `ValueHostsManager` and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the `ValueHostsManager` instance should be accessible to the rest of this form's code.
 
 ```ts
 let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services);  // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
@@ -85,8 +85,8 @@ firstNameFld.attachEventListener('onchange', (evt)=>{
 ### While the user types
 Show or hide the error state as the user types. This is limited to Validators that evaluate the raw string, like RequireText, RegExp, and StringLength. Always setup the onchange event (described above) to get all Validators involved.
 
-* Use the oninput event to tell the `ValidationManager` about the data change and run validation, with its "duringEdit" option set to true.
-* The `ValidationManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`.
+* Use the oninput event to tell the `ValueHostsManager` about the data change and run validation, with its "duringEdit" option set to true.
+* The `ValueHostsManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`.
 
 All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
@@ -104,13 +104,13 @@ Overview of the steps:
 
 1. Validate the data, gathering issues found. If there are issues found, stop.
 2. Send the data to the server to be saved.
-3. Process the server's response. If there were errors, route them into the `ValidationManager` for display.
+3. Process the server's response. If there were errors, route them into the `ValueHostsManager` for display.
 
 **Step 1**
-- 1a. Call `ValidationManager.validate()`. Its result is ValidationState. When `ValidationState.doNotSave` is true, 
+- 1a. Call `ValueHostsManager.validate()`. Its result is ValidationState. When `ValidationState.doNotSave` is true, 
 do not attempt step 2.
 - 1b. If you have other processes prior to saving, execute them. They may result in errors too. They should be converted into an `IssueFound` object
-and submitted as `Array<IssueFound>` to `ValidationManager.addExternalIssuesFound(array)`. They will appear in the UI supported by Jivs. Do not attempt step 2.
+and submitted as `Array<IssueFound>` to `ValueHostsManager.addExternalIssuesFound(array)`. They will appear in the UI supported by Jivs. Do not attempt step 2.
 
 **Step 2** 
 - 2a. Package up your data and send it to the server
@@ -119,14 +119,14 @@ and submitted as `Array<IssueFound>` to `ValidationManager.addExternalIssuesFoun
     - If successful, you are done.
 **Step 3**
 
-- 3a. Retrieve the errors and supply them to Jivs through either `ValidationManager.addExternalIssuesFound(errors, true)` or `ValidationManager.fromValidationPayload(validationPayload)`.
+- 3a. Retrieve the errors and supply them to Jivs through either `ValueHostsManager.addExternalIssuesFound(errors, true)` or `ValueHostsManager.fromValidationPayload(validationPayload)`.
     - `addExternalIssuesFound` targets a server side where you dictate the format of errors. 
     - `fromValidationPayload` targets Jivs running node.js on the server side.
 
 #### Client side submission workflow
 
 ```ts
-// we already have the ValidationManager instance fully configured in the variable vm
+// we already have the ValueHostsManager instance fully configured in the variable vm
 // step 1a
 let validationState = vm.validate();  // any validation errors will be sent to the UI via onValidationStateChanged callback
 if (!validationState.doNotSave)
@@ -186,7 +186,7 @@ if (!validationState.doNotSave)
 }
 
 // Here is the reject function if you are using jivs on the server side.
-// You have already passed a string generated by ValidationManager.toValidationPayload()
+// You have already passed a string generated by ValueHostsManager.toValidationPayload()
 // through the response and retrieved that string into validationPayload...
 
     // Promise reject function hooked up within your save() function
@@ -221,22 +221,22 @@ if (!validationState.doNotSave)
 
 1. Review the submitted request for attacks (for example, SQL Injection) and stop if found.
 2. Retrieve the submitted model. 
-3. Configure and create a ValidationManager instance for that model.
+3. Configure and create a ValueHostsManager instance for that model.
 4. Distribute fields from the model into Jivs through one of these:
-    * `ValidationManager.getValueHost(fieldname).setValue(property value)`
+    * `ValueHostsManager.getValueHost(fieldname).setValue(property value)`
     * If your data comes from a raw string, and not its native value in the model, run it through a parser.
     See the next topic.
-5. Call ValidationManager.validate(). It returns a ValidationStatus object
+5. Call ValueHostsManager.validate(). It returns a ValidationStatus object
     * If `ValidationStatus.doNotSave` is true, there are errors that must be sent back to the client.
-    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+    * Call `ValueHostsManager.toValidationPayload()` and include its result (a string) with your response to the client.
 6. Execute additional pre-save actions such as: duplicate check, complex logic against the overall model, etc.
     * If there were errors, build `Array<IssueFound>` from them.
-    * Call `ValidationManager.addExternalIssuesFound(your array)`.
-    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+    * Call `ValueHostsManager.addExternalIssuesFound(your array)`.
+    * Call `ValueHostsManager.toValidationPayload()` and include its result (a string) with your response to the client.
 7. Save.
     * If there were errors, build `Array<IssueFound>` from them.
-    * Call `ValidationManager.addExternalIssuesFound(your array)`.
-    * Call `ValidationManager.toValidationPayload()` and include its result (a string) with your response to the client.
+    * Call `ValueHostsManager.addExternalIssuesFound(your array)`.
+    * Call `ValueHostsManager.toValidationPayload()` and include its result (a string) with your response to the client.
 8. (No errors occurred). Send your "success" response.
 
 ##### Parsing raw strings to native values
@@ -249,11 +249,11 @@ let { nativeValue, errorMessage } = myParser(text);
 Then you report both values to Jivs like this:
 
 ```ts
-ValidationManager.getValueHost('FirstName').setValues(nativeValue, raw string);
+ValueHostsManager.getValueHost('FirstName').setValues(nativeValue, raw string);
 ```
 When parsing fails, you report the error along with the raw string like this:
 ```ts
-ValidationManager.getValueHost('FirstName').setValues(undefined, textValue, { conversionErrorTokenValue: errorMessage });
+ValueHostsManager.getValueHost('FirstName').setValues(undefined, textValue, { conversionErrorTokenValue: errorMessage });
 ```
 
 ### Showing all errors in a ValidationSummary
@@ -261,9 +261,9 @@ The term "ValidationSummary" refers to a location in the UI that offers a consol
 
 You need these tools to setup your ValidationSummary:
 * An HTML element to host the ValidationSummary.
-* A function that responds to the `onValidationStateChanged callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
-* Use the `getIssuesFound()` function on ValidationManager to retrieve those issues. 
->You will get issues generated by your business logic too with `ValidationManager.addExternalIssuesFound()`.
+* A function that responds to the `onValidationStateChanged callback` on the ValueHostsManager. This function will gather the data and update the ValidationSummary.
+* Use the `getIssuesFound()` function on ValueHostsManager to retrieve those issues. 
+>You will get issues generated by your business logic too with `ValueHostsManager.addExternalIssuesFound()`.
 
 We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
 ```ts
@@ -276,7 +276,7 @@ We've modified the original example to provide a \<div> used for the ValidationS
     <button>Submit</button>
 </form>
 ```
-This code initializes a ValidationManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+This code initializes a ValueHostsManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValueHostsManager instance should be accessible to the rest of this form's code.
 
 ```ts
 let services = createJivsServices('en-US');
@@ -284,13 +284,13 @@ let rules = new PersonModelRules(services); // subclass of ModelRulesBase for yo
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 config.onValidationStateChanged = formValidated;
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
   ... shown earlier ...
 }
-function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
+function formValidated(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
 {
     let valSummary = document.querySelector('.validationsummary');
     if (validationState.isValid)

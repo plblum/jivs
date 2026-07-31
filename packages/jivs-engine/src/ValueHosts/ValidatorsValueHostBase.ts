@@ -13,14 +13,14 @@ import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorH
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 
 /**
  * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
  * which support its validate() function.
  * 
 * Each instance depends on a few things, all passed into the constructor:
-* - validationManager 
+* - valueHostsManager 
 * - ValidatorsValueHostBaseConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
@@ -32,8 +32,8 @@ import { IValidationManager } from '../Interfaces/ValidationManager';
 export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHostBaseConfig, TState extends ValidatorsValueHostBaseInstanceState>
     extends ValidatableValueHostBase<TConfig, TState>
     implements IValidatorsValueHostBase {
-    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
-        super(validationManager, config, state);
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
+        super(valueHostsManager, config, state);
     }
 
     /**

@@ -9,10 +9,10 @@
      Subclass FormRulesBase and consume the Builder API within its configureRules() method.
      This class allows a nice testing experience too, independent of actual UI code.
   Phase 2
-     Create the ValidationManager through your FormRulesBase subclass.
-     Wire up any callbacks from the ValidationManagerConfig object to your UI layer.
+     Create the ValueHostsManager through your FormRulesBase subclass.
+     Wire up any callbacks from the ValueHostsManagerConfig object to your UI layer.
 
-  To accomplish our goal, we will setup the ValidationManager with the following
+  To accomplish our goal, we will setup the ValueHostsManager with the following
   ValueHosts and validators:
   * 'startDate' - an FieldValueHost with a Date data type and validators.
   * 'endDate' - an FieldValueHost with a Date data type and validators.
@@ -26,14 +26,14 @@
 
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 
 import { createJivsServices, TimeZoneRegex } from './Config_example_common_code';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
+import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
 import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 
@@ -46,7 +46,7 @@ export class DateRangeFormRules extends FormRulesBase
     constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValidationManagerConfigBuilder,
+    protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('endDate')
@@ -62,7 +62,7 @@ export class DateRangeFormRules extends FormRulesBase
         builder.calc('diffDays', LookupKey.Integer, this.differenceBetweenDates);   // eslint-disable-line @typescript-eslint/unbound-method    
     }
     // For our diffDays CalcValueHost
-    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('startDate')?.getValue(),
             null, LookupKey.TotalDays);
@@ -75,16 +75,16 @@ export class DateRangeFormRules extends FormRulesBase
     }
 }
 
-export function configUsingDateRangeFormRules(): ValidationManager
+export function configUsingDateRangeFormRules(): ValueHostsManager
 {
-    // Step 2: Configure and create the ValidationManager.
+    // Step 2: Configure and create the ValueHostsManager.
     let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler;
-    let vm = new ValidationManager(config);
+    let vm = new ValueHostsManager(config);
 
-    // at this point, use the ValidationManager to validate your model.
+    // at this point, use the ValueHostsManager to validate your model.
 
     return vm;
 }

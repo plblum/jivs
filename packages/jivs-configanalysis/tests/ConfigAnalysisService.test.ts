@@ -1,12 +1,12 @@
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from '../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
 import { ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { ValidationManagerConfigAnalysis } from '../src/ConfigAnalysis';
+import { ValueHostsManagerConfigAnalysis } from '../src/ConfigAnalysis';
 import { ConfigAnalysisService, getConfigAnalysisService, installConfigAnalysisService } from '../src/ConfigAnalysisService';
 import { ConfigAnalysisResultsExplorer } from '../src/Explorer/ConfigAnalysisResultsExplorer';
 import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from '../src/Types/Analyzers';
@@ -39,11 +39,11 @@ describe('install and getConfigAnalysisService', () => {
     });
 });
 
-describe('Create from ValidationManagerConfig object', () => {
+describe('Create from ValueHostsManagerConfig object', () => {
     test('analyze with a Builder object', () => {
         const services = createServices();
         installConfigAnalysisService(services);
-        const builder = new ValidationManagerConfigBuilder(services);
+        const builder = new ValueHostsManagerConfigBuilder(services);
         builder.field('Field1').requireText();
         let cas = getConfigAnalysisService(services);
 
@@ -55,7 +55,7 @@ describe('Create from ValidationManagerConfig object', () => {
     test('analyze with a Configuration object', () => {
         const services = createServices();
         installConfigAnalysisService(services);
-        const config: ValidationManagerConfig = {
+        const config: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [
                 <FieldValueHostConfig>{
@@ -76,10 +76,10 @@ describe('Create from ValidationManagerConfig object', () => {
     });
 });
 
-// Subclass ValidationManagerConfigAnalysis to expose protected methods for testing
-class TestConfigAnalysis extends ValidationManagerConfigAnalysis {
+// Subclass ValueHostsManagerConfigAnalysis to expose protected methods for testing
+class TestConfigAnalysis extends ValueHostsManagerConfigAnalysis {
 
-    public initializeAnalyzers(config: ValidationManagerConfig): void {
+    public initializeAnalyzers(config: ValueHostsManagerConfig): void {
         let results = super.createConfigAnalysisResults(config);
         let analysisArgs = this.createAnalysisArgs(config, results, {});
         let helper = this.createHelper(analysisArgs);
@@ -120,12 +120,12 @@ class TestConfigAnalysisService extends ConfigAnalysisService {
     }    
 }
 describe('Check analyzers using a subclass of ConfigAnalysisService', () => {
-    function setupConfigAnalysisService(): { testService: TestConfigAnalysisService, cas: TestConfigAnalysis, config: ValidationManagerConfig } {
+    function setupConfigAnalysisService(): { testService: TestConfigAnalysisService, cas: TestConfigAnalysis, config: ValueHostsManagerConfig } {
         const services = createServices();
         const testService = new TestConfigAnalysisService(services);
         const cas = testService.testCreateConfigAnalysis() as TestConfigAnalysis;
         testService.testAttachAnalyzers(cas);
-        let config: ValidationManagerConfig = {
+        let config: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: []
         };

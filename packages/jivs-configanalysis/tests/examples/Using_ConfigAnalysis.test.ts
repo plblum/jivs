@@ -1,4 +1,4 @@
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
 import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 import {
@@ -327,7 +327,7 @@ describe('Demonstrate the results from various use cases', () => {
             constructor(services: IJivsServices) {
                 super(services);
             }
-            protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
                 builder.field('BirthDate', LookupKey.Date, {
                     parserLookupKey: LookupKey.Date
                 }).lessThanOrEqualValue(new Date(), {
@@ -544,7 +544,7 @@ describe('Demonstrate the results from various use cases', () => {
             constructor(services: IJivsServices) {
                 super(services);
             }
-            protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
                 // this lacks a data type, which results in a warning.
                 builder.field('StartDate', null)
             }
@@ -678,7 +678,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.field('NewField', LookupKey.Date,
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser 
@@ -762,7 +762,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.static('Field1', 'date');// should be 'Date' or LookupKey.Date
         }
     }
@@ -811,7 +811,7 @@ describe('Demonstrate the results from various use cases', () => {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
             builder.field('Field1', 'Date').requireText({ errorMessagel10n: 'RequiredEM' });
         }
     }

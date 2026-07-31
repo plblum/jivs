@@ -5,7 +5,7 @@ import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCo
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -14,7 +14,7 @@ import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLoc
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
-import { createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
@@ -24,7 +24,7 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
 {
-    constructor(state: BuilderState<ValidationManagerConfig>, options?: BuilderOverrideOptions)
+    constructor(state: BuilderState<ValueHostsManagerConfig>, options?: BuilderOverrideOptions)
     {
         super(state, options);
     }
@@ -32,7 +32,7 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValidationManagerConfig {
+    public get publicify_baseConfig(): ValueHostsManagerConfig {
         return this.baseConfig;
     }
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
@@ -61,8 +61,8 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
     }
 }
 
-function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
-    let vmConfig: ValidationManagerConfig = {
+function createVMConfig(standardDataTypes?: boolean): ValueHostsManagerConfig {
+    let vmConfig: ValueHostsManagerConfig = {
         services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
@@ -71,7 +71,7 @@ function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
 }
 
 function setupPublicifyFormAdapter(options?: BuilderOverrideOptions, standardDataTypes?: boolean): Publicify_FormConfigAdapter {
-    let state = new BuilderState<ValidationManagerConfig>(createVMConfig(standardDataTypes));
+    let state = new BuilderState<ValueHostsManagerConfig>(createVMConfig(standardDataTypes));
     return new Publicify_FormConfigAdapter(state);
 }
 function setupFallbackService(services: IJivsServices): IJivsServices {
@@ -88,7 +88,7 @@ describe('constructor', () => {
 
     test('Basic state', () => {
         let services = createJivsServicesForTesting();
-        let state = new BuilderState<ValidationManagerConfig>({
+        let state = new BuilderState<ValueHostsManagerConfig>({
             services: services,
             valueHostConfigs: []
         });

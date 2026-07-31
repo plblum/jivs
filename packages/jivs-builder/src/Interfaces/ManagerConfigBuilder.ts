@@ -10,9 +10,9 @@ import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/Field
 import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpose';
 import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
 import {
-    IValidationManagerCallbacks, ValidationManagerConfig,
-    ValidationManagerInstanceState
-} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+    IValueHostsManagerCallbacks, ValueHostsManagerConfig,
+    ValueHostsManagerInstanceState
+} from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -25,12 +25,12 @@ import {
     FluentStaticParameters, FluentValidatorConfig
 } from './ValueHostConfigBuilders';
 /**
- * Base interface for a ValidationManagerConfigBuilder.
+ * Base interface for a ValueHostsManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
- * and ValidationManagerConfig through meaningful code.
+ * and ValueHostsManagerConfig through meaningful code.
  */
-export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
-    extends IDisposable, IValueHostsForValidationManagerConfig<T>
+export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
+    extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
 {
     services: IJivsServices;
     /**
@@ -69,24 +69,24 @@ export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
 }
 
 /**
- * A builder for preparing ValidationManagerConfig.
+ * A builder for preparing ValueHostsManagerConfig.
  */
-export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
+export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig>
     extends IManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder,
-    IValidationManagerCallbacks, IValidationManagerConfigExtensions
+    IValueHostsManagerCallbacks, IValueHostsManagerConfigExtensions
 {
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedInstanceState
      */
-    savedInstanceState?: ValidationManagerInstanceState | null;
+    savedInstanceState?: ValueHostsManagerInstanceState | null;
 
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedValueHostInstanceStates
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
 }
 
-export interface IValidationManagerConfigExtensions
+export interface IValueHostsManagerConfigExtensions
 {
 
 }
@@ -106,9 +106,9 @@ export interface BuilderOverrideOptions
 }
 
 /**
- * Provides value host creation functions for ValidationManagerConfigBuilder.
+ * Provides value host creation functions for ValueHostsManagerConfigBuilder.
  */
-export interface IValueHostsForValidationManagerConfig<T extends ValidationManagerConfig>
+export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManagerConfig>
 {
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -164,7 +164,7 @@ export interface IValueHostsForValidationManagerConfig<T extends ValidationManag
 }
 
 /**
- * Provides value host creation functions for ValidationManagerConfigBuilder.
+ * Provides value host creation functions for ValueHostsManagerConfigBuilder.
  */
 export interface IValueHostsForValidatorManagerConfigBuilder
 {
@@ -204,12 +204,12 @@ export interface IValueHostsForValidatorManagerConfigBuilder
 //#region FormConfigAdapter
 
 /** 
- * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
+ * Variation of ValueHostsManagerConfigBuilder with extensions designed for the UI layer
  * to override and extend the business layer configuration.
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export interface IFormConfigAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig> {
+export interface IFormConfigAdapter extends IValueHostsManagerConfigBuilder<ValueHostsManagerConfig> {
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
      * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 

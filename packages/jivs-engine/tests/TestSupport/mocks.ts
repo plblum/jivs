@@ -19,10 +19,10 @@ import {
 } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import {
-    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig,
-    ValidationManagerConfigChangedHandler,
-    ValidationManagerInstanceState, ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
-} from "../../src/Interfaces/ValidationManager";
+    IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig,
+    ValueHostsManagerConfigChangedHandler,
+    ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler, ValidationStateChangedHandler
+} from "../../src/Interfaces/ValueHostsManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -57,7 +57,7 @@ import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserServi
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../../src/Interfaces/ConfigMergeService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
@@ -67,25 +67,25 @@ import { CachingService } from "../../src/Services/CachingService";
 
 
 
-export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
+export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValueHostsManager
 {
     let services = new MockJivsServices(false, false);
     populateServicesWithManyCultures(services, 'en', registerLookupKeys);
-    return new MockValidationManager(services);
+    return new MockValueHostsManager(services);
 }
 
 export class MockValueHost implements IValueHost
 {
-    constructor(validationManager: IValidationManager, name: string, dataTypeLookupKey: string, label?: string)
+    constructor(valueHostsManager: IValueHostsManager, name: string, dataTypeLookupKey: string, label?: string)
     {
-        this._validationManager = validationManager;
+        this._valueHostsManager = valueHostsManager;
         this._name = name;
         this._dataTypeLookupKey = dataTypeLookupKey;
         this._label = label ?? name;
         this._value = undefined;
     }
     dispose(): void {}
-    _validationManager: IValidationManager;
+    _valueHostsManager: IValueHostsManager;
     _name: string;
     _label: string;
     _value: any;
@@ -101,8 +101,8 @@ export class MockValueHost implements IValueHost
         }
     }
 
-    public get validationManager(): IValidationManager {
-        return this._validationManager;
+    public get valueHostsManager(): IValueHostsManager {
+        return this._valueHostsManager;
     }
     getName(): string {
         return this._name;
@@ -529,11 +529,11 @@ export class MockJivsServices implements IJivsServices
 }
 
 /**
- * MockValidationManager limited to implementing support for 
+ * MockValueHostsManager limited to implementing support for 
  * child ValueHosts.
  */
-export class MockValidationManager extends ValidationManager<ValidationManagerInstanceState>
-    implements IValidationManager, IValidationManagerCallbacks
+export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState>
+    implements IValueHostsManager, IValueHostsManagerCallbacks
 {
     constructor(services: IJivsServices)
     {
@@ -542,9 +542,9 @@ export class MockValidationManager extends ValidationManager<ValidationManagerIn
     }
     notifyValidationStateChangedDelay?: number | undefined;
 
-    public get config(): ValidationManagerConfig
+    public get config(): ValueHostsManagerConfig
     {
-        return super.config as ValidationManagerConfig;
+        return super.config as ValueHostsManagerConfig;
     }
 
     public get services(): IJivsServices {
@@ -639,15 +639,15 @@ export class MockValidationManager extends ValidationManager<ValidationManagerIn
 
     }
     
-    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
         return this.config.onConfigChanged ?? null;
     }
 
 
-    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
         return this.config.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(fn: ValidationManagerInstanceStateChangedHandler) {
+    public set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
         this.config.onInstanceStateChanged = fn;
     }
 

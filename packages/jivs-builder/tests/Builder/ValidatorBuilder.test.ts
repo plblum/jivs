@@ -22,7 +22,7 @@ import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
-import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FluentValidatorConfig } from '../../src/Interfaces/ValueHostConfigBuilders';
 import { FluentOverloadArgs, ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
@@ -407,8 +407,8 @@ describe('ValidatorBuilder', () => {
     });
 });
 
-function createVMBuilder(): ValidationManagerConfigBuilder {
-    return new ValidationManagerConfigBuilder(createJivsServicesForTesting());
+function createVMBuilder(): ValueHostsManagerConfigBuilder {
+    return new ValueHostsManagerConfigBuilder(createJivsServicesForTesting());
 }
 function TestValidatorBuilder(testItem: IBuilderConfigHost<any>,
     expectedValConfig: ValidatorConfig) {

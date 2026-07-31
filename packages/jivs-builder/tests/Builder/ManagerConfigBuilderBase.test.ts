@@ -3,7 +3,7 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { IValueHostsManager, ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
@@ -11,14 +11,14 @@ import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogg
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import {
     ValidatableValueHostConfigBuilder,
     ValueHostConfigBuilder
 } from "../../src/Builder/ValueHostConfigBuilder";
 
-function createVMConfig(): ValidationManagerConfig {
-    let vmConfig: ValidationManagerConfig = {
+function createVMConfig(): ValueHostsManagerConfig {
+    let vmConfig: ValueHostsManagerConfig = {
         services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
@@ -26,7 +26,7 @@ function createVMConfig(): ValidationManagerConfig {
     return vmConfig;
 }
 
-class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValidationManagerConfig>
+class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsManagerConfig>
 {
     protected createValueHostBuilder(): ValueHostConfigBuilder {
         return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
@@ -42,7 +42,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValidationManagerConfig
+    public get publicify_baseConfig(): ValueHostsManagerConfig
     {
         return this.baseConfig;
     }
@@ -57,7 +57,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
     }
     
 }
-class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuilder
+class TestValueHostsManagerConfigBuilderBase extends ValueHostsManagerConfigBuilder
 {
     protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
         return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
@@ -93,7 +93,7 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValidationManagerConfig
+    public get publicify_baseConfig(): ValueHostsManagerConfig
     {
         return this.baseConfig;
     }
@@ -387,7 +387,7 @@ describe('snapshot', () => {
 });
 
 describe('build(vmConfig).static()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1', null, { label: 'Field 1' });
@@ -399,7 +399,7 @@ describe('build(vmConfig).static()', () => {
         }]);
     });
 
-    test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1', 'Test');
@@ -411,7 +411,7 @@ describe('build(vmConfig).static()', () => {
         }]);
     });
 
-    test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1');
@@ -422,7 +422,7 @@ describe('build(vmConfig).static()', () => {
         }]);
     });
 
-    test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a StaticValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
         testItem.static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
@@ -435,7 +435,7 @@ describe('build(vmConfig).static()', () => {
         }]);
     });
 
-    test('Use the 2 parameter API: name + config. Adds it plus type to ValidationManagerConfig', () => {
+    test('Use the 2 parameter API: name + config. Adds it plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1', { label: 'Field 1' });
@@ -490,10 +490,10 @@ describe('build(vmConfig).static()', () => {
     });
 });
 describe('build(vmConfig).calc', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         return 1;
     }
-    test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
 
         let builder = new TestValueHostManagerConfigBuilderBase(vmConfig);
@@ -505,7 +505,7 @@ describe('build(vmConfig).calc', () => {
             calcFn: calcFnForTests
         }]);
     });
-    test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
 
         let builder = new TestValueHostManagerConfigBuilderBase(vmConfig);
@@ -525,7 +525,7 @@ describe('build(vmConfig).calc', () => {
         expect(() => testItem.calc('Field1', 'Test', null!)).toThrow();
 
     });
-    test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a CalcValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let builder = new TestValueHostManagerConfigBuilderBase(vmConfig);
                 
@@ -555,10 +555,10 @@ describe('build(vmConfig).calc', () => {
 });
 
 // describe('ManagerConfigBuilderBase.setupValueHostToCombine', () => {
-//     function setup(includeOverrideData: boolean): TestValidationManagerConfigBuilderBase {
+//     function setup(includeOverrideData: boolean): TestValueHostsManagerConfigBuilderBase {
 //         let vmConfig = createVMConfig();
 
-//         let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+//         let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
 
 //         builder.field('Field1');
 //         builder.field('Field2').regExp(/abc/);
@@ -577,7 +577,7 @@ describe('build(vmConfig).calc', () => {
 //     }
 //     // when found in earlier array of ValueHostConfigs, the ValidatorConfig is newly generated and added to the latest array of ValueHostConfigs
 //     // expects "earlier" to be the first found in the array of ValueHostConfigs, baseConfig
-//     function testFoundInEarlier(builder: TestValidationManagerConfigBuilderBase,
+//     function testFoundInEarlier(builder: TestValueHostsManagerConfigBuilderBase,
 //         valueHostName: ValueHostName, errorCode: string,
 //         expectedValidatorConfig: ValidatorConfig): void {
                 
@@ -596,7 +596,7 @@ describe('build(vmConfig).calc', () => {
 //     }
 //     // when found latest array of ValueHostConfigs, the ValidatorConfig is the original object
 //     // expects "latest" to be after creating an entry in overriddenValueHostConfigs
-//     function testFoundInLatest(builder: TestValidationManagerConfigBuilderBase,
+//     function testFoundInLatest(builder: TestValueHostsManagerConfigBuilderBase,
 //         valueHostName: ValueHostName, errorCode: string,
 //             expectedValidatorConfig: ValidatorConfig): void {
 //         // call before setup, which can modify the source config arrays
@@ -610,11 +610,11 @@ describe('build(vmConfig).calc', () => {
 //         // prove not cloned
 //         expect(original).toBe(result.vhc);
 //     }    
-//     function testValueHostNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
+//     function testValueHostNotFoundThrows(builder: TestValueHostsManagerConfigBuilderBase,
 //         valueHostName: ValueHostName, errorCode: string): void {
 //         expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/not defined/);
 //     }
-//     function testErrorCodeNotFoundThrows(builder: TestValidationManagerConfigBuilderBase,
+//     function testErrorCodeNotFoundThrows(builder: TestValueHostsManagerConfigBuilderBase,
 //         valueHostName: ValueHostName, errorCode: string): void {
 //         expect(() => builder.publicify_setupValueHostToCombine(valueHostName, errorCode)).toThrow(/validator with error code/);
 //     }
@@ -763,31 +763,31 @@ describe('build(vmConfig).calc', () => {
 //     });
 
 //     test('The ValueHostName is unknown throws and no valueHosts defined', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
 //         testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
 //     });
 //     test('The ValueHostName is unknown throws and different named valueHost defined', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
 //         testItem.field('Field1');
 //         testValueHostNotFoundThrows(testItem, 'Field2', ConditionType.RegExp);        
 //     });
 //     test('The ValueHostName is null throws', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());   // has no valueHosts
 //         expect(()=> testItem.publicify_setupValueHostToCombine(null!, ConditionType.RegExp)).toThrow(/valueHostName/);
 //     });
 
 //     test('The errorCode is unknown throws when no validators on valuehost', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
 //         testItem.field('Field1');
 //         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
 //     });
 //     test('The errorCode is unknown throws when different validator on valuehost', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
 //         testItem.field('Field1').requireText();
 //         testErrorCodeNotFoundThrows(testItem, 'Field1', ConditionType.RegExp);        
 //     });    
 //     test('The errorCode is null throws', () => {
-//         let testItem = new TestValidationManagerConfigBuilderBase(createVMConfig());
+//         let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
 //         testItem.field('Field1').requireText();
 //         expect(()=> testItem.publicify_setupValueHostToCombine('Field1', null!)).toThrow(/errorCode/);       
 //     });
@@ -799,7 +799,7 @@ describe('whenToEnable', ()=> {
         let vmConfig = createVMConfig();
         let logger = vmConfig.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         let result = builder.whenToEnable('Field1', (builder)=>builder.parentValue().requireText());
         expect(result).toBe(builder);
@@ -809,7 +809,7 @@ describe('whenToEnable', ()=> {
     // same but call addOverride() first
     test('With a known valueHostName and addOverride() called, returns the StartConditionWithOneChildBuilder', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.publicify_addOverride();
         let result = builder.whenToEnable('Field1', (builder)=>builder.parentValue().requireText());
@@ -817,14 +817,14 @@ describe('whenToEnable', ()=> {
     });
     test('With an unknown valueHostName, throws', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         expect(() => builder.whenToEnable('Field2', (builder)=>builder)).toThrow(/not defined/);
     });
     // build with fluent RequireText condition
     test('With a known valueHostName and child using parentValue().requireText(), updates enablerConfig', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.whenToEnable('Field1', 
             (builder)=>builder.parentValue().requireText());
@@ -840,7 +840,7 @@ describe('whenToEnable', ()=> {
     });
     test('With a known valueHostName and child using fieldValue().requireText(), updates enablerConfig', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.whenToEnable('Field1', 
             (builder)=>builder.fieldValue('Field2').requireText());
@@ -858,7 +858,7 @@ describe('whenToEnable', ()=> {
     // same using conditionConfig to supply a predefined config
     test('With a known valueHostName and child using conditionConfig(), updates enablerConfig', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.whenToEnable('Field1', 
             (builder)=>builder.conditionConfig({
@@ -877,7 +877,7 @@ describe('whenToEnable', ()=> {
     // when the child function does not add to its builder, there is no condition to use. Throws
     test('With a known valueHostName and child does not add to builder, throws', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         expect(() => builder.whenToEnable('Field1', 
             (childBuilder)=>childBuilder)).toThrow(/Child builder/);
@@ -887,7 +887,7 @@ describe('whenToEnable', ()=> {
 describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfig()', () => {
     test('With a known valueHostName, returns the ValueHostConfig', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.field('Field2');
         builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
@@ -904,7 +904,7 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
     // not found and throwWhenNotFound = true, throws
     test('With an unknown valueHostName and throwWhenNotFound=true, throws', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.field('Field2');
         builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
@@ -916,7 +916,7 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
     // not found and throwWhenNotFound = false, returns null
     test('With an unknown valueHostName and throwWhenNotFound=false, returns null', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.field('Field2');
         builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
@@ -929,7 +929,7 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
     // when addOverride is not used and throwWhenNotFound = true, throws because the valueHostConfig is not in the overriddenValueHostConfigs array
     test('With a known valueHostName but addOverride not used and throwWhenNotFound=true, throws', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.field('Field2');
         expect(() => builder.publicify_getExistingValueHostConfig('Field1', true)).toThrow(/not defined/);
@@ -940,7 +940,7 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
     // when addOverride is not used and throwWhenNotFound = false, returns null because the valueHostConfig is not in the overriddenValueHostConfigs array
     test('With a known valueHostName but addOverride not used and throwWhenNotFound=false, returns null', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValidationManagerConfigBuilderBase(vmConfig);
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
         builder.field('Field2');
         let result = builder.publicify_getExistingValueHostConfig('Field1', false);

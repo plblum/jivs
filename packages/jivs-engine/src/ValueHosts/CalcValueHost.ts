@@ -5,7 +5,7 @@
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
@@ -19,9 +19,9 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
     implements ICalcValueHost
 {
-    constructor(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
+    constructor(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
     {
-        super(validationManager, config, state);
+        super(valueHostsManager, config, state);
     }
 
     /**
@@ -39,7 +39,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType
     {
-        const result = this.validationManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
+        const result = this.valueHostsManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
     /**
@@ -61,7 +61,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType
     {
-        const result = this.validationManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
+        const result = this.valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
 
@@ -75,7 +75,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
         try {
             this._reentrantCount++;
             if (this.config.calcFn)
-                return this.config.calcFn(this, this.validationManager);
+                return this.config.calcFn(this, this.valueHostsManager);
 
             this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
@@ -116,8 +116,8 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Calc;
     }
-    public create(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
-        return new CalcValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
+        return new CalcValueHost(valueHostsManager, config, state);
     }
 
     public cleanupInstanceState(state: CalcValueHostInstanceState, config: CalcValueHostConfig): void {

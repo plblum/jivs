@@ -30,7 +30,7 @@ The goal here is to define a configuration abstraction that is:
 
 ## 2. Design Direction
 
-This design defines a configuration abstraction focused entirely on producing a configured `ValidationManager`.
+This design defines a configuration abstraction focused entirely on producing a configured `ValueHostsManager`.
 
 The key types are:
 
@@ -44,7 +44,7 @@ The IRules public entry point is:
 
 * `configure()`
 
-`configure()` returns a `ValidationManagerConfig`.
+`configure()` returns a `ValueHostsManagerConfig`.
 
 The scope of this abstraction is:
 
@@ -59,7 +59,7 @@ Example direction:
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vm = new ValueHostsManager(config);
 ```
 
 ---
@@ -70,7 +70,7 @@ const vm = new ValidationManager(config);
 interface IRules {
   configure(
     options?: RulesConfigOptions
-  ): ValidationManagerConfig;
+  ): ValueHostsManagerConfig;
 }
 
 abstract class RulesBase implements IRules {}
@@ -81,7 +81,7 @@ abstract class FormRulesBase extends RulesBase {}
 
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigureOptions,
   ): void;
 }
@@ -91,7 +91,7 @@ interface IAdaptModelRulesToForm {
 
 ## 4. Primary Developer Story
 
-The preferred structured way to configure the ValidationManager is through this system (`IRules`, `RulesBase`, etc)
+The preferred structured way to configure the ValueHostsManager is through this system (`IRules`, `RulesBase`, etc)
 instead of using the Builder directly because it wraps fixed rules in a class with these benefits:
 
 * keeps configuration out of page/component code
@@ -122,7 +122,7 @@ Example:
 
 ```ts
 class PersonModelRules extends ModelRulesBase {
-  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions)
   {
     // setup rules for Person model using the builder
   }
@@ -141,7 +141,7 @@ Example:
 
 ```ts
 class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
-  public adaptToForm(builder: IValidationManagerConfigBuilder,
+  public adaptToForm(builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions): void {
       // update existing ValueHosts and add any that are Form specific
     }
@@ -160,7 +160,7 @@ Example:
 
 ```ts
 class LoginFormRules extends FormRulesBase {
-  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions)
   {
     // setup rules for Login form using the builder
   }  
@@ -194,18 +194,18 @@ Its used at the developer's discretion.
 interface IRules {
   configure(
     options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+  ): ValueHostsManagerConfig;
 }
 ```
 
-`configure()` is the single public entry point. It returns a new ValidationManager.
+`configure()` is the single public entry point. It returns a new ValueHostsManager.
 
 ### 6.3 IAdaptModelRulesToForm
 
 ```ts
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void;
 }
@@ -231,10 +231,10 @@ abstract class RulesBase implements IRules {
 
   public configure(
     options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+  ): ValueHostsManagerConfig;
 
   protected abstract configureRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 
@@ -246,14 +246,14 @@ abstract class RulesBase implements IRules {
 
   protected createBuilder(
     options?: RulesConfigOptions,
-  ): ValidationManagerConfigBuilder;
+  ): ValueHostsManagerConfigBuilder;
 
   protected buildConfig(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+  ): ValueHostsManagerConfig;
 
-  protected configAnalysis(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+  protected configAnalysis(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void;
 
 }
 
@@ -317,7 +317,7 @@ It is intended to be overridable when a subclass needs extra cache-key component
 
 #### `createBuilder(options)`
 
-Creates the `ValidationManagerConfigBuilder` used during configuration.
+Creates the `ValueHostsManagerConfigBuilder` used during configuration.
 
 Most subclasses should not need to override this.
 
@@ -325,7 +325,7 @@ Keep this protected support method available for framework extensibility.
 
 #### `buildConfig(builder, options)`
 
-Finalizes the builder into `ValidationManagerConfig`.
+Finalizes the builder into `ValueHostsManagerConfig`.
 
 Most subclasses should not need to override this.
 
@@ -355,7 +355,7 @@ The high-level behavior is:
       if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
    5. Finalize the builder into config.
    6. Store config in cache if enabled.
-5. Return the `ValidationManagerConfig`.
+5. Return the `ValueHostsManagerConfig`.
 
 Important rule:
 
@@ -368,8 +368,8 @@ It is not called before `configureRules()`.
 ```ts
 public configure(
   options?: RulesConfigOptions,
-): ValidationManager {
-  let config: ValidationManagerConfig | null = null;
+): ValueHostsManager {
+  let config: ValueHostsManagerConfig | null = null;
   const cacheKey = this.createConfigCacheKey(options);
   const useCache = !options?.options?.disableCache;
 
@@ -419,7 +419,7 @@ class PersonModelRules extends ModelRulesBase {
   );
 
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }
@@ -441,7 +441,7 @@ class PersonEditFormRules
   );
 
   public adaptToForm(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }
@@ -458,7 +458,7 @@ class LoginFormRules extends FormRulesBase {
   );
 
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions,
   ): void;
 }
@@ -474,27 +474,27 @@ Caching remains a first-class part of this design.
 
 The cached artifact is:
 
-* `ValidationManagerConfig`
+* `ValueHostsManagerConfig`
 
 The following is **not** cached:
 
-* `ValidationManager`
+* `ValueHostsManager`
 
 Reason:
 
 * configuration is static and reusable
-* `ValidationManager` is stateful and must be created anew for each `configure()` call
+* `ValueHostsManager` is stateful and must be created anew for each `configure()` call
 
 #### Caching Configuration Notes
 A configuration may contain callbacks and function pointers. These are not intended to survive
 a page regeneration. 
 
-* Callbacks are found on the top level ValidationManagerConfig, like onValidationStateChanged. They are expected to be reassigned 
+* Callbacks are found on the top level ValueHostsManagerConfig, like onValidationStateChanged. They are expected to be reassigned 
 as part of the Rules configuration like this:
   ```ts
   let config = rules.configure(options);
   config.onValidationStateChanged = (params)=> {};  // and others
-  let vm = new ValidationManager(config);
+  let vm = new ValueHostsManager(config);
   ```
 * Functions are buried inside of conditions and cannot be restored. In this case, do not use caching.
 
@@ -630,7 +630,7 @@ Config analysis runs only when:
 * that service exposes an `analyze()` function
 
 ```ts
-protected configAnalysis(builder: ValidationManager, options?: RulesConfigOptions): void
+protected configAnalysis(builder: ValueHostsManager, options?: RulesConfigOptions): void
 {
     if (!options?.configAnalysisOptions)
       return;
@@ -686,24 +686,24 @@ It also lets the config-analysis module remain independently customizable.
 
 *This is not really a configuration issue as much as its a workflow that happens side-by-side with configuration.*
 
-The ValidationManager gets discarded when a page posts back and gets a fresh copy.
+The ValueHostsManager gets discarded when a page posts back and gets a fresh copy.
 This process happens in many situations like MVC and ASP.NET webforms.
 
 A round-trip may be the result of errors on the server, and the server will
 supply those errors in some way to the client. The configuration process is followed by
-applying those errors to the new ValidationManager instance.
+applying those errors to the new ValueHostsManager instance.
 
 ### Jivs on the server-side
-The server side code must pass along the string from its ValidationManager.toValidationPayload().
+The server side code must pass along the string from its ValueHostsManager.toValidationPayload().
 
-The client adds this call to the ValidationManager: `vm.fromValidationPayload(payload)`.
+The client adds this call to the ValueHostsManager: `vm.fromValidationPayload(payload)`.
 
 ```ts
 let payload = getJivsPayload(); // user's code
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vm = new ValueHostsManager(config);
 if (payload)
   vm.fromValidationPayload(payload);
 ```
@@ -711,14 +711,14 @@ if (payload)
 ### Other server side code
 The server sends errors to the client in its own format. On the client,
 retrieve them and convert them into an array of `IssueFound`. Then pass the 
-IssuesFound to ValidationManager: `vm.addExternalIssuesFound(issuesFound, false)`.
+IssuesFound to ValueHostsManager: `vm.addExternalIssuesFound(issuesFound, false)`.
 
 ```ts
 let issuesFound = getIssuesFound(); // user's code to retrieve errors and return an array of IssueFound objects.
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vm = new ValueHostsManager(config);
 if (issuesFound?.length > 0)
   vm.addExternalIssuesFound(issuesFound, false);
 ```

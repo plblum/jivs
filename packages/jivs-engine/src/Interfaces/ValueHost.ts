@@ -22,17 +22,17 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValidationManagerAccessor } from './ValidationManager';
+import { IValueHostsManagerAccessor } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
 import { ConditionConfig } from './Conditions';
 /**
  * Interface for creating ValueHosts.
  */
-export interface IValueHost extends IValidationManagerAccessor, IDisposable {
+export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
-     * for which they will transfer a value, via ValidationManager.getValueHost(this name)
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
      */
     getName(): ValueHostName;
 
@@ -288,7 +288,7 @@ export interface ValueHostConfig {
     
     /**
      * Provides a unique name for this ValueHost, within the scope of one
-     * ValidationManager instance.
+     * ValueHostsManager instance.
      * Consuming systems use this name to locate the ValueHost
      * for which they will access a Value.
      * Its up to the consuming system to define unique names.

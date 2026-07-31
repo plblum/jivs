@@ -1,8 +1,8 @@
-import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { EvenNumberCondition, EvenNumberConditionConfig, EvenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
 import { createMinimalJivsServices } from "../src/support";
 
@@ -13,7 +13,7 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number);
 
-        let vm = new ValidationManager(builder.complete());
+        let vm = new ValueHostsManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: EvenNumberConditionType,
@@ -47,7 +47,7 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vm = new ValidationManager(builder.complete());
+        let vm = new ValueHostsManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);

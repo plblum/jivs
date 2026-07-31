@@ -26,10 +26,10 @@ import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase'
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import { toIValidationManagerAccessor } from '../Interfaces/ValidationManager';
+import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
-import { ValidationManager } from './ValidationManager';
+import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { ValueHostsManager } from './ValueHostsManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
 import { resolveErrorCode } from '../Utilities/Validation';
@@ -42,7 +42,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
- * That data ends up in the ValidationManager as part of its state,
+ * That data ends up in the ValueHostsManager as part of its state,
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  * 
@@ -72,7 +72,7 @@ export class Validator implements IValidator {
     }
 
     protected get services(): IJivsServices {
-        return this.validationManager.services;
+        return this.valueHostsManager.services;
     }
 
     protected get valueHost(): IValidatorsValueHostBase {
@@ -80,15 +80,15 @@ export class Validator implements IValidator {
         return this._valueHost.deref()!;
     }
 
-    protected get validationManager(): IValidationManager {
-        const vm = toIValidationManagerAccessor(this.valueHost)?.validationManager;
+    protected get valueHostsManager(): IValueHostsManager {
+        const vm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
         if (vm) {
-            if (vm instanceof ValidationManager || toIValidationManager(vm))
-                return vm as IValidationManager;
-            throw new CodingError('ValueHost.validationManager must contain IValidationManager');
+            if (vm instanceof ValueHostsManager || toIValueHostsManager(vm))
+                return vm as IValueHostsManager;
+            throw new CodingError('ValueHost.valueHostsManager must contain IValueHostsManager');
         }
         /* istanbul ignore next */
-        throw new CodingError('ValueHost must implement IValidationManagerAccessor');
+        throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
     }
     /**
      * Always supplied by constructor. Treat it as immutable.
@@ -180,7 +180,7 @@ export class Validator implements IValidator {
                 // errors creating these conditions are handled internally
                 // and bad conditions get replaced by ErrorResponseCondition
                 // so we can continue to execute the validation.
-                const { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.validationManager);
+                const { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.valueHostsManager);
                 this._condition = child;
                 this._enabler = enabler;
             }
@@ -351,7 +351,7 @@ export class Validator implements IValidator {
                 // When that is the case, their ConditionConfig.valueHostName
                 // must be setup to retrieve the correct one.
                 // ValueHostName takes precedence.
-                const result = enabler.evaluate(this.valueHost, this.validationManager);
+                const result = enabler.evaluate(this.valueHost, this.valueHostsManager);
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
@@ -373,7 +373,7 @@ export class Validator implements IValidator {
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
-            const pendingCER = this.condition.evaluate(this.valueHost, this.validationManager);
+            const pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
 
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
@@ -489,10 +489,10 @@ export class Validator implements IValidator {
         issueFound.severity = this.severity;
         const errorMessage = this.getErrorMessageTemplate();
         issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
-            errorMessage, this.valueHost, this.validationManager, this);
+            errorMessage, this.valueHost, this.valueHostsManager, this);
         const summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
-            services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.validationManager, this) :
+            services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.valueHostsManager, this) :
             undefined;
         issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning; // default to blocking save for errors, but not warnings. This can be overridden by the caller by directly setting doNotSave on the IssueFound.
     }

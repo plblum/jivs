@@ -10,19 +10,19 @@
  * 
  * Subclass from abstract ModelRulesBase or FormRulesBase to implement your own rules.
  * 
- * Then use it to create a ValidationManagerConfig object, which can be used to create a ValidationManager.
+ * Then use it to create a ValueHostsManagerConfig object, which can be used to create a ValueHostsManager.
  * 
     ```ts
     const rules = new PersonEditFormRules(services);
     const config = rules.configure();
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-    const vm = new ValidationManager(config);
+    const vm = new ValueHostsManager(config);
     ```
  * @module jivs-builder/ModelRules/Types
  */
 
 import { IFormConfigAdapter } from '../Interfaces/ManagerConfigBuilder';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 
 /**
  * Extends the behavior within IRules.configure.
@@ -50,12 +50,12 @@ export interface RulesConfigOptions {
 
 /**
  * Top level interface for rules classes. It is implemented by RuleBase.
- * It is used to create a ValidationManagerConfig object from any rules built 
+ * It is used to create a ValueHostsManagerConfig object from any rules built 
  * into each concrete class. Create concrete classes for each Model
  * or Form that uses Jivs validation. 
  */
 export interface IRules {
-  configure(options?: RulesConfigOptions): ValidationManagerConfig;
+  configure(options?: RulesConfigOptions): ValueHostsManagerConfig;
 }
 
 /**

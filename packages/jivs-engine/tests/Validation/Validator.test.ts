@@ -11,7 +11,7 @@ import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validati
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { MockValidationManager, MockJivsServices, MockFieldValueHost } from "../TestSupport/mocks";
+import { MockValueHostsManager, MockJivsServices, MockFieldValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
@@ -27,7 +27,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { IValidationManager } from "../../src/Interfaces/ValidationManager";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 
@@ -41,8 +41,8 @@ class PublicifiedValidator extends Validator {
     public exposeServices(): IJivsServices {
         return this.services;
     }
-    public exposeValidationManager(): IValidationManager {
-        return this.validationManager;
+    public exposeValueHostsManager(): IValueHostsManager {
+        return this.valueHostsManager;
     }
     public exposeValueHost(): IValidatorsValueHostBase {
         return this.valueHost;
@@ -63,18 +63,18 @@ class PublicifiedValidator extends Validator {
 }
 /**
  * Returns an Validator (PublicifiedValidator subclass) ready for testing.
- * The returned ValidationManager includes two FieldValueHosts with IDs "Field1" and "Field2".
+ * The returned ValueHostsManager includes two FieldValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * ConditionConfig - RequireTextConditiontType, ValueHostName: null
  * errorMessage: 'Local'
  * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, two ValueHosts, the complete Config,
+ * ValueHostsManager, Services, two ValueHosts, the complete Config,
  * and the Validator.
  */
 function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
-    vm: MockValidationManager,
+    vm: MockValueHostsManager,
     services: MockJivsServices,
     valueHost1: MockFieldValueHost,
     valueHost2: MockFieldValueHost,
@@ -82,7 +82,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     validator: PublicifiedValidator
 } {
     let services = new MockJivsServices(true, true);
-    let vm = new MockValidationManager(services);
+    let vm = new MockValueHostsManager(services);
     let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
@@ -146,7 +146,7 @@ describe('Validator.constructor and initial property values', () => {
     });
     test('config parameter null throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = new MockFieldValueHost(vm, '', '',);
         expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
@@ -155,7 +155,7 @@ describe('Validator.constructor and initial property values', () => {
             conditionConfig: { conditionType: '' },
         });
         expect(setup.validator.exposeConfig()).toBe(setup.config);
-        expect(setup.validator.exposeValidationManager()).toBe(setup.vm);
+        expect(setup.validator.exposeValueHostsManager()).toBe(setup.vm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
 });
@@ -223,7 +223,7 @@ describe('Validator.condition', () => {
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
-                    evaluate: (valueHost, validationManager) => {
+                    evaluate: (valueHost, valueHostsManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     category: ConditionCategory.Undetermined
@@ -252,7 +252,7 @@ describe('Validator.condition', () => {
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
-                    evaluate: (valueHost, validationManager) => {
+                    evaluate: (valueHost, valueHostsManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     category: ConditionCategory.Undetermined
@@ -1011,13 +1011,13 @@ describe('Validator.validate', () => {
     });
 
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
-        vm: MockValidationManager,
+        vm: MockValueHostsManager,
         services: MockJivsServices,
         vh: IFieldValueHost,
         testItem: Validator
     } {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
@@ -1195,14 +1195,14 @@ describe('getValuesForTokens', () => {
 
 describe('ValidatorFactory.create', () => {
     function setupValidatorFactory(): {
-        vm: MockValidationManager,
+        vm: MockValueHostsManager,
         vh: MockFieldValueHost,
         validatorConfig: ValidatorConfig,
         factory: ValidatorFactory
     }
     {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{

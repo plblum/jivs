@@ -1,9 +1,9 @@
 # Understanding jivs-builder
 
 > This document is for developers who want to understand or extend the Builder and Model Rules classes. It is not a Builder API syntax guide; see the jivs README.md for syntax and usage examples. 
-> If you want to consume the builder, start with [Configuring ValidationManager](Configuring.md). 
+> If you want to consume the builder, start with [Configuring ValueHostsManager](Configuring.md). 
 
-`@plblum/jivs-builder` is the package that creates the configuration objects used by `ValidationManager`. It should have already been installed, but if needed, get it from [https://www.npmjs.com/package/@plblum/jivs-builder](https://www.npmjs.com/package/@plblum/jivs-builder).
+`@plblum/jivs-builder` is the package that creates the configuration objects used by `ValueHostsManager`. It should have already been installed, but if needed, get it from [https://www.npmjs.com/package/@plblum/jivs-builder](https://www.npmjs.com/package/@plblum/jivs-builder).
 
 You are likely here for one of these reasons:
 
@@ -14,10 +14,10 @@ You are likely here for one of these reasons:
 
 This README introduces those areas. The source code comments go deeper into implementation details.
 
-"Builders" create the configuration objects that are fed into `ValidationManager`:
+"Builders" create the configuration objects that are fed into `ValueHostsManager`:
 
 ```ts
-let config: ValidationManagerConfig = {
+let config: ValueHostsManagerConfig = {
     services: createJivsServices(),
     valueHostConfigs: [
         {
@@ -35,18 +35,18 @@ let config: ValidationManagerConfig = {
     ],
     ... and more! ...
 };
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 
-The `ValidationManagerConfig` object is rather complex and difficult to maintain.
+The `ValueHostsManagerConfig` object is rather complex and difficult to maintain.
 
 The **Builders** and the **Builder API** are a better way.
 
 ```ts
-let builder = new ValidationManagerConfigBuilder(createJivsServices());
+let builder = new ValueHostsManagerConfigBuilder(createJivsServices());
 builder.field('LastName', LookupKey.String, { label: 'Last name'})
     .requireText();
-let vm = new ValidationManager(builder.complete());
+let vm = new ValueHostsManager(builder.complete());
 ```
 
 It uses fluent syntax to build the configuration quickly and succinctly. The syntax follows the shape of the configuration it creates: `field()` starts a ValueHost, and each validator function adds a validator with a condition inside it.
@@ -63,7 +63,7 @@ export class PersonModelRules extends ModelRulesBase {
     super(services);
   }
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
 // these are your business logic rules
@@ -106,13 +106,13 @@ export class PersonEditFormRules
 
 ## Class overview
 
-The Builders and Model Rules work together to prepare the complete object tree of `ValidationManagerConfig`.
+The Builders and Model Rules work together to prepare the complete object tree of `ValueHostsManagerConfig`.
 
 ### Configuration builders
 
-* `ValidationManagerConfigBuilder` is the starting point of the **Builder API**. It handles the top-level properties of `ValidationManagerConfig`, including callback properties like `onValueChanged`. Its main functions add ValueHosts.
-* `ValueHostConfigBuilder` is used internally by `ValidationManagerConfigBuilder` when adding `ValueHosts`. It creates and configures `ValueHostConfig` subclasses, including `FieldValueHostConfig`, `StaticValueHostConfig`, and `CalcValueHostConfig`.
-* `ValidatorBuilder` attaches validators to a `FieldValueHostConfig` through its `validatorConfigs` property. `ValidationManagerConfigBuilder.field()` returns a `ValidatorBuilder` to start the fluent syntax, and each validator function on `ValidatorBuilder` returns the same builder to continue the chain. If you add a new validator function for a condition, you'll add it here too.
+* `ValueHostsManagerConfigBuilder` is the starting point of the **Builder API**. It handles the top-level properties of `ValueHostsManagerConfig`, including callback properties like `onValueChanged`. Its main functions add ValueHosts.
+* `ValueHostConfigBuilder` is used internally by `ValueHostsManagerConfigBuilder` when adding `ValueHosts`. It creates and configures `ValueHostConfig` subclasses, including `FieldValueHostConfig`, `StaticValueHostConfig`, and `CalcValueHostConfig`.
+* `ValidatorBuilder` attaches validators to a `FieldValueHostConfig` through its `validatorConfigs` property. `ValueHostsManagerConfigBuilder.field()` returns a `ValidatorBuilder` to start the fluent syntax, and each validator function on `ValidatorBuilder` returns the same builder to continue the chain. If you add a new validator function for a condition, you'll add it here too.
 
 ### Condition builders
 
@@ -131,21 +131,21 @@ The Builders and Model Rules work together to prepare the complete object tree o
 
 ### Form configuration adapter
 
-* `FormConfigAdapter` is the class for the **Form Configuration Adapter**. It inherits from `ValidationManagerConfigBuilder` so the form developer can add new ValueHosts using the Builder API. It also adds functions to safely adapt existing business logic configurations. Its main function, `modify()`, returns a `ModifyFieldBuilder`.
+* `FormConfigAdapter` is the class for the **Form Configuration Adapter**. It inherits from `ValueHostsManagerConfigBuilder` so the form developer can add new ValueHosts using the Builder API. It also adds functions to safely adapt existing business logic configurations. Its main function, `modify()`, returns a `ModifyFieldBuilder`.
 * `ModifyFieldBuilder` is returned by `FormConfigAdapter.modify()` and supports selected properties of an existing `ValueHostConfig`, including `enablerConfig`, `validatorConfigs`, and `dataType`. Its `validator()` function lets you modify validator-specific properties, like error messages, but not condition-specific properties. `validator()` returns `ModifyValidatorBuilder`.
 * `ModifyValidatorBuilder` lets you wrap an existing validator condition with another condition.
 
 
 ## How the Builder API creates configuration
 
-The **Builder API** is a fluent way to create the object tree inside `ValidationManagerConfig`.
+The **Builder API** is a fluent way to create the object tree inside `ValueHostsManagerConfig`.
 
 This section connects the fluent syntax to the classes that build each part of that object tree.
 
 The top-level object looks like this:
 
 ```ts id="bsxub1"
-let config: ValidationManagerConfig = {
+let config: ValueHostsManagerConfig = {
     services: services,
 
     // ValueHostConfigBuilder helps create the objects inside this array.
@@ -153,26 +153,26 @@ let config: ValidationManagerConfig = {
         // FieldValueHostConfig, StaticValueHostConfig, CalcValueHostConfig
     ],
 
-    // ValidationManagerConfigBuilder also handles callback properties.
+    // ValueHostsManagerConfigBuilder also handles callback properties.
     onValueChanged: (valueHost, oldValue) => {
         // your callback here
     }
 };
 ```
 
-`ValidationManagerConfigBuilder` works at this top level. Its `ValueHost` functions delegate to `ValueHostConfigBuilder`, while other functions and properties configure `ValidationManagerConfig` itself.
+`ValueHostsManagerConfigBuilder` works at this top level. Its `ValueHost` functions delegate to `ValueHostConfigBuilder`, while other functions and properties configure `ValueHostsManagerConfig` itself.
 
-## Adding ValueHostConfigs to ValidationManagerConfig
+## Adding ValueHostConfigs to ValueHostsManagerConfig
 
-`ValidationManagerConfigBuilder` class defines top-level properties found on `ValidationManagerConfig`.
+`ValueHostsManagerConfigBuilder` class defines top-level properties found on `ValueHostsManagerConfig`.
 
-Its `ValueHost` functions are supported internally by `ValueHostConfigBuilder`. Each function creates a `ValueHostConfig` subclass and adds it to `ValidationManagerConfig.valueHostConfigs`.
+Its `ValueHost` functions are supported internally by `ValueHostConfigBuilder`. Each function creates a `ValueHostConfig` subclass and adds it to `ValueHostsManagerConfig.valueHostConfigs`.
 
 Fluent syntax starts with:
 
 * `field()` - creates a `FieldValueHostConfig` and returns `ValidatorBuilder` to build validators for this `FieldValueHost`.
-* `static()` - creates a `StaticValueHostConfig` and returns `ValidationManagerConfigBuilder`, allowing for chaining.
-* `calc()` - creates a `CalcValueHostConfig` and returns `ValidationManagerConfigBuilder`, allowing for chaining.
+* `static()` - creates a `StaticValueHostConfig` and returns `ValueHostsManagerConfigBuilder`, allowing for chaining.
+* `calc()` - creates a `CalcValueHostConfig` and returns `ValueHostsManagerConfigBuilder`, allowing for chaining.
 
 Those functions create configs shaped like these:
 
@@ -218,17 +218,17 @@ Some usage patterns:
 For example:
 
 ```ts id="pfo2my"
-let builder = new ValidationManagerConfigBuilder(services);
+let builder = new ValueHostsManagerConfigBuilder(services);
 builder.static('productVisible', LookupKey.Boolean);
 builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$');
 builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0);
 builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
-let vm = new ValidationManager(builder.complete());
+let vm = new ValueHostsManager(builder.complete());
 ```
 
 ## Adding ValidatorConfigs to FieldValueHostConfigs
 
-`ValidationManagerConfigBuilder.field()` returns the `ValidatorBuilder` class, which contains all of the validators supplied with Jivs.
+`ValueHostsManagerConfigBuilder.field()` returns the `ValidatorBuilder` class, which contains all of the validators supplied with Jivs.
 
 `ValidatorBuilder` adds each validator to the current `FieldValueHostConfig.validatorConfigs` array. Each validator function creates a `ValidatorConfig`.
 
@@ -454,7 +454,7 @@ builder.field('EmailAddress', emailAddressLookupKey)
 
 Builders and Model Rules are used to create configuration. They are not needed to run validation once that configuration exists.
 
-Since Builders and Model Rules are part of the general setup for `ValidationManager`, you might expect all of the code from the jivs-builder module to be part of jivs-engine. It has been separated out because:
+Since Builders and Model Rules are part of the general setup for `ValueHostsManager`, you might expect all of the code from the jivs-builder module to be part of jivs-engine. It has been separated out because:
 
 1. It is a fairly large codebase.
 2. It is not needed once configuration is done.
@@ -463,7 +463,7 @@ Since Builders and Model Rules are part of the general setup for `ValidationMana
 Let's suppose that you like to work with a light footprint. You can create code like this:
 
 ```ts id="ej8d12"
-let builder = new ValidationManagerConfigBuilder(services);
+let builder = new ValueHostsManagerConfigBuilder(services);
 let rules = new myRules();
 rules.configure(builder);
 let config = builder.complete();
@@ -479,12 +479,12 @@ On the client side, suppose you call your API with something like this.
 
 ```ts id="y3kook"
 let valueHostConfigs = await OurApi.getMyRules();
-let config: ValidationManagerConfig = {
+let config: ValueHostsManagerConfig = {
     services: services,
     valueHostConfigs: valueHostConfigs,
     ... attach any callbacks here ...
 }
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 
 ## Let Node.js generate a configuration file that the client can retrieve
@@ -496,7 +496,7 @@ For example, suppose you have a `PersonModelRules` class:
 ```ts id="8mi8qf"
 import { mkdir, writeFile } from "node:fs/promises";
 
-let builder = new ValidationManagerConfigBuilder(services);
+let builder = new ValueHostsManagerConfigBuilder(services);
 
 let rules = new PersonModelRules(services);
 rules.configure(builder);
@@ -538,12 +538,12 @@ Once the JSON file is available to the client, for example served from `/generat
 let response = await fetch("/generated-rules/Person.json");
 let valueHostConfigs = await response.json();
 
-let config: ValidationManagerConfig = {
+let config: ValueHostsManagerConfig = {
    services: services,
    valueHostConfigs: valueHostConfigs,
    // wire up any callbacks
 };
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 
 Depending on your application, you might:

@@ -12,7 +12,7 @@ import {
     DisposableConditionType
 } from "../../src/Support/conditionsForTesting";
 import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 describe('WhenCondition', () => {
@@ -26,7 +26,7 @@ describe('WhenCondition', () => {
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -63,7 +63,7 @@ describe('WhenCondition', () => {
     test('with invalid childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -85,7 +85,7 @@ describe('WhenCondition', () => {
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -106,7 +106,7 @@ describe('WhenCondition', () => {
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -127,7 +127,7 @@ describe('WhenCondition', () => {
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -147,7 +147,7 @@ describe('WhenCondition', () => {
     test('with evaluate returning a promise in child condition, throws', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
@@ -168,7 +168,7 @@ describe('WhenCondition', () => {
     test('extractConditions()', () => {
         let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -214,7 +214,7 @@ describe('WhenCondition', () => {
     test('gatherValueHostNames where child and enabler each have a different ValueHostName. Expect both ValueHostNames', () => {
         let services = new MockJivsServices(true, true);
         
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -237,7 +237,7 @@ describe('WhenCondition', () => {
     });        
     test('gatherValueHostNames where child and enabler each have the same ValueHostName. Expect one ValueHostName', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -260,7 +260,7 @@ describe('WhenCondition', () => {
     test('gatherValueHostNames where enabler does not support it. Expect one ValueHostName', () => {
         let services = new MockJivsServices(true, true);
         
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -280,7 +280,7 @@ describe('WhenCondition', () => {
     test('dispose', () => {
         let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
@@ -296,7 +296,7 @@ describe('WhenCondition', () => {
     test('dispose with IDisposable condition in enabler', () => {
         let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
@@ -313,7 +313,7 @@ describe('WhenCondition', () => {
 
         let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vh = vm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {

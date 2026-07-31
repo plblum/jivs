@@ -66,9 +66,9 @@ import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 
 /**
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
- * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
+ * It is returned by ValueHostsManagerConfigBuilder.field() and each chained object that follows.
  * 
- * See {@link jivs-builder/Builders/ConcreteClasses!ValidationManagerConfigBuilder:class | Builder Overview}
+ * See {@link jivs-builder/Builders/ConcreteClasses!ValueHostsManagerConfigBuilder:class | Builder Overview}
  */
 export class ValidatorBuilder
     extends BuilderConfigHostBase<object>
@@ -88,7 +88,7 @@ export class ValidatorBuilder
     }
 
     /**
-     * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
+     * This is the value ultimately passed to the ValueHostsManager config.ValueHostConfigs.
      */
     public get parentConfig(): FieldValueHostConfig {
         return this._parentConfig;

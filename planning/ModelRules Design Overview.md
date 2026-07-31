@@ -24,7 +24,7 @@ The core goal is to establish easy, consistent patterns for two related concerns
 * **configuration**
 * **form validation + save workflow**
 
-In this overview, **configuration** means the work of defining the Jivs setup that a `ValidationManager` will use.
+In this overview, **configuration** means the work of defining the Jivs setup that a `ValueHostsManager` will use.
 
 That includes ideas such as:
 
@@ -45,7 +45,7 @@ That includes ideas such as:
 * Deciding whether save is allowed
 * Handling save failures
 * Returning errors to the client
-* Reapplying returned errors into ValidationManager so UI components update correctly
+* Reapplying returned errors into ValueHostsManager so UI components update correctly
 
 A major design goal is to make these patterns easier to understand and easier to apply, especially for UI developers, while still preserving the needs of business logic developers and server-side validation.
 
@@ -97,14 +97,14 @@ The overall validation and save story has these major workflow parts.
 
 ### Client side
 
-1. Run Jivs field validators through `ValidationManager.validate()`.
+1. Run Jivs field validators through `ValueHostsManager.validate()`.
 2. Optionally run client-only augmentation checks.
-3. If the user submits and the server responds with errors, feed returned `IssuesFound` and/or `ExternalIssuesFound` into `ValidationManager` so the UI updates.
+3. If the user submits and the server responds with errors, feed returned `IssuesFound` and/or `ExternalIssuesFound` into `ValueHostsManager` so the UI updates.
 
 ### Server side
 
 4. Run server-only security checks. Stop if any are found.
-5. Run Jivs field validators through `ValidationManager.validate()` using the applicable model rules.
+5. Run Jivs field validators through `ValueHostsManager.validate()` using the applicable model rules.
 6. Run server-only pre-save business checks.
 7. If any relevant errors exist, return without saving.
 8. Attempt save.
@@ -113,7 +113,7 @@ The overall validation and save story has these major workflow parts.
 
 ### 3.1 Client-side Jivs validation after editing completes
 
-The client runs `ValidationManager.validate()` against configured ValueHosts and validators.
+The client runs `ValueHostsManager.validate()` against configured ValueHosts and validators.
 
 This produces:
 
@@ -138,7 +138,7 @@ After an attempted save, the server may return either or both:
 * IssuesFound
 * ExternalIssuesFound
 
-The client may feed those results back into `ValidationManager` so Jivs-connected UI components update their validation state.
+The client may feed those results back into `ValueHostsManager` so Jivs-connected UI components update their validation state.
 
 ### 3.4 Server-side hidden security checks
 
@@ -154,7 +154,7 @@ These checks may produce security-specific handling outside the normal user-faci
 
 ### 3.5 Server-side Jivs validation
 
-The server runs `ValidationManager.validate()` against configuration created from the same model rules.
+The server runs `ValueHostsManager.validate()` against configuration created from the same model rules.
 
 This is required because the server must not trust the client.
 
@@ -177,13 +177,13 @@ Examples:
 * Business policies not expressed as Jivs field validators
 
 These must result an array of `IssueFound` supplied
-to `ValidationManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
+to `ValueHostsManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
 
 ### 3.7 Save decision
 
 If any relevant errors are found before save, the server returns without saving, supplying errors back to the client.
 
-At this point, you have both a validationState from ValidationManager.validate() and an array that was supplied into addExternalIssuesFound().
+At this point, you have both a validationState from ValueHostsManager.validate() and an array that was supplied into addExternalIssuesFound().
 
 if (validationState.doNotSave == true || the array has at least one)
 then you cannot save, and must supply those errors back to the client.
@@ -203,15 +203,15 @@ Examples:
 These are not pre-save validation failures.
 
 These must result an array of `IssueFound` supplied
-to `ValidationManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
+to `ValueHostsManager.addExternalIssuesFound()` and then get sent back to the client as described in section 3.9 "Final server response".
 
 ### 3.9 Final server response
 
 The server response may legitimately be:
 
 * Success
-* Only issues found by ValidationManager.validate()
-* Only issues reported through ValidationManager.addExternalIssuesFound()
+* Only issues found by ValueHostsManager.validate()
+* Only issues reported through ValueHostsManager.addExternalIssuesFound()
 * Both types of issues.
 
 #### When success
@@ -219,12 +219,12 @@ Developer determines the appropriate response. For example, HTTP 200 with a JSON
 
 #### When there are issues and Jivs is on the client side:
 
-Return the string from `ValidationManager.toValidationPayload()` as part of the response payload in a way determined by the developer.
+Return the string from `ValueHostsManager.toValidationPayload()` as part of the response payload in a way determined by the developer.
 
-On the client side, a `ValidationManager` takes in that string through `fromValidationPayload()`.
+On the client side, a `ValueHostsManager` takes in that string through `fromValidationPayload()`.
 
 #### When there are issues and Jivs is not on the client side, such as an API call
-Gather the array of `IssueFound` from `ValidationManager.getIssuesFound()` and convert them into the desired model for the API response.
+Gather the array of `IssueFound` from `ValueHostsManager.getIssuesFound()` and convert them into the desired model for the API response.
 
 #### Client dictates the error format in the response
 The same code may be used for both a Jivs client and an API. Yet they need different response handling. The server code should have a way
@@ -274,11 +274,11 @@ specifics about a single issue found ('error') including the error message, erro
 
 There are two ways these are generated:
 
-#### ValidationManager.validate
+#### ValueHostsManager.validate
 
 `IssueFound` objects are produced by Jivs validators.
 
-They come from running `ValidationManager.validate()` against configured ValueHosts and validators.
+They come from running `ValueHostsManager.validate()` against configured ValueHosts and validators.
 
 They are the direct output of Jivs field/configuration validation.
 
@@ -295,13 +295,13 @@ Examples:
 * External system failures discovered during save
 
 The developer creates an IssueFound object representing each error
-they found and supplies an array into `ValidationManager.addExternalIssuesFound()`.
+they found and supplies an array into `ValueHostsManager.addExternalIssuesFound()`.
 
-External IssuesFound are maintained in a separate list from validation generated IssuesFound, allowing them to persist despite rerunning validation. They get cleared by either calling ValidationManager.clearExternalIssuesFound() or addExternalIssuesFound().
+External IssuesFound are maintained in a separate list from validation generated IssuesFound, allowing them to persist despite rerunning validation. They get cleared by either calling ValueHostsManager.clearExternalIssuesFound() or addExternalIssuesFound().
 
 ### 4.4 ValidationState
 
-ValidationState is an object representing the state of validation as a result of calling ValidationManager.validate(). It includes these values:
+ValidationState is an object representing the state of validation as a result of calling ValueHostsManager.validate(). It includes these values:
 
 * isValid - Used by the UI, not to block saving
 * doNotSave - Used to block saving, not by the UI
@@ -316,11 +316,11 @@ ValueHostValidateResult is an object representing the state of validation from a
 from the validation work, not external.
 
 ### 4.6 ValueHostValidationState
-ValueHostValidationState is a ValueHost companion to the ValidationState of the ValidationManager. It is slightly different from ValueHostValidateResult. 
+ValueHostValidationState is a ValueHost companion to the ValidationState of the ValueHostsManager. It is slightly different from ValueHostValidateResult. 
 
 It inherits from ValidationState adding the status and issuesFound properties we see from ValueHostValidateResult, except issuesFound here contains both validation and external sources.
 
-ValidationManager builds its ValidationState from these objects, not ValueHostValidateResult.
+ValueHostsManager builds its ValidationState from these objects, not ValueHostValidateResult.
 
 
 ### 4.7 Shared Configuration
@@ -347,15 +347,15 @@ Examples:
 * Save-time failure handling
 
 ### 4.9 Builder
-The term Builder is a shorthand for a class that provides a fluent way to configure a ValidationManager.
+The term Builder is a shorthand for a class that provides a fluent way to configure a ValueHostsManager.
 
 Instead of:
 ```ts
-let config: ValidationManagerConfig = {
+let config: ValueHostsManagerConfig = {
     services: getJivsServices(),
     ... a multitude of properties in object style ...
 }
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 
 Use the builder:
@@ -365,7 +365,7 @@ let builder = build(createJivsServices('en-US'));
 builder.input('fieldname1').required(parameters).regexp(parameters);
 builder.input('fieldname2');
 
-let vm = new ValidationManager(builder);
+let vm = new ValueHostsManager(builder);
 
 ```
 
@@ -468,7 +468,7 @@ Typical responsibilities:
 * Shared configuration intended for both client and server
 * Business-owned configuration intended to be reused unchanged or extended by the UI
 
-The business layer may also own server-side pre-save logic in addition to the shared Jivs configuration. This part is outside of Jivs, but Jivs will report issues found if the server-side developer passes in IssueFound objects to `ValidationManager.addExternalIssuesFound()`.
+The business layer may also own server-side pre-save logic in addition to the shared Jivs configuration. This part is outside of Jivs, but Jivs will report issues found if the server-side developer passes in IssueFound objects to `ValueHostsManager.addExternalIssuesFound()`.
 
 ### 7.2 UI Layer consuming or extending shared model rules
 
@@ -482,7 +482,7 @@ Typical responsibilities:
 * UI-only validators
 * Enablement rules
 * Form-specific variants
-* Binding inputs/components to ValidationManager
+* Binding inputs/components to ValueHostsManager
 
 The UI layer should be able to extend shared business-owned configuration without modifying the original business-owned source directly.
 
@@ -495,7 +495,7 @@ Typical responsibilities:
 * Define client-authored configuration for a validation target
 * Keep that configuration reusable and testable
 * Share that configuration across multiple UI consumers when needed
-* Bind inputs/components to ValidationManager
+* Bind inputs/components to ValueHostsManager
 * Optionally layer presentation-specific refinements on top of client-authored shared rules
 
 Examples include login, search, filter, and wizard-step models that are formal enough to deserve reusable model rules even without a business-authored source.
@@ -506,9 +506,9 @@ The client runtime is responsible for interactive validation behavior and for re
 
 Typical responsibilities:
 
-* Run Jivs validation through ValidationManager
+* Run Jivs validation through ValueHostsManager
 * Optionally run client-only helper checks
-* Receive server errors and push them back into ValidationManager
+* Receive server errors and push them back into ValueHostsManager
 * Update UI based on ValidationState and ValueHost state changes
 
 ### 7.5 Server Runtime
@@ -517,12 +517,12 @@ The server runtime is responsible for authoritative validation and save behavior
 
 Typical responsibilities:
 
-* Run Jivs validation through ValidationManager using the applicable shared configuration
+* Run Jivs validation through ValueHostsManager using the applicable shared configuration
 * Collect IssuesFound for any Jivs validation failures
 * Run server-only security checks
 * Run server-only pre-save business checks
 * Attempt save only when appropriate
-* Map save failures into IssuesFound, passed in through `ValidationManager.addExternalIssuesFound()`.
+* Map save failures into IssuesFound, passed in through `ValueHostsManager.addExternalIssuesFound()`.
 * Return success and/or error payloads to the client
 
 ---
@@ -531,7 +531,7 @@ Typical responsibilities:
 
 ### 8.1 Client-side Jivs validation
 
-Client-side validation uses `ValidationManager.validate()` against the configured ValueHosts and validators.
+Client-side validation uses `ValueHostsManager.validate()` against the configured ValueHosts and validators.
 
 This is the normal field/configuration validation path used by the UI.
 
@@ -554,7 +554,7 @@ These are not the same thing as shared business configuration.
 
 ### 8.3 Server-side Jivs validation
 
-The server may also run `ValidationManager.validate()` against configuration created from the same model rules.
+The server may also run `ValueHostsManager.validate()` against configuration created from the same model rules.
 
 This is important because the server must not trust the client.
 
@@ -625,7 +625,7 @@ A server response may legitimately contain:
 * IssuesFound from either or both validators and external sources
 * Success with no errors
 
-On the client, returned errors may be pushed back into `ValidationManager` so components can update their validation state accordingly.
+On the client, returned errors may be pushed back into `ValueHostsManager` so components can update their validation state accordingly.
 
 ---
 
@@ -692,7 +692,7 @@ Companion UI libraries need a stable concept they can consume.
 At a high level, they need to know:
 
 * How to obtain the configuration for a validation target
-* How to create or access a ValidationManager based on that configuration
+* How to create or access a ValueHostsManager based on that configuration
 * How to react to ValidationState and ValueHost validation changes
 * How to support model-based and UI-only forms
 * How to support form-specific variants
@@ -712,7 +712,7 @@ The following guardrails should guide later detailed documents.
 * Do not assume that UI-specific extension must edit business-owned source directly.
 * Do not assume that post-save failures are just another form of pre-save validation.
 * Do not assume that one detailed API shape is already settled.
-* Do preserve the central role of ValidationManager.validate() for Jivs field/configuration validation.
+* Do preserve the central role of ValueHostsManager.validate() for Jivs field/configuration validation.
 * Do preserve the server’s role as authoritative validator.
 * Do preserve the possibility of returning IssueFound whether generated by the Jivs validator or external.
 * Do preserve support for both business-model-driven and UI-only targets.

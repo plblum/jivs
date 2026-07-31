@@ -1,6 +1,6 @@
 # @plblum/jivs-configanalysis: Testing your configurations
 `Jivs-ConfigAnalysis` is a tool to ensure that your configuration is as expected,
-even before you create a ValidationManager object from it.
+even before you create a ValueHostsManager object from it.
 
 ## Problem it solves
 When you code with services and dependency injection, the code becomes very disconnected.

@@ -2,7 +2,7 @@
  * Interfaces and types for ConfigAnalysis class.
  * @module jivs-configanalysis/ConfigAnalysis/Types
  */
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
@@ -17,7 +17,7 @@ import { IConfigAnalysisResults } from './ConfigAnalysisResults';
 
 /**
  * A tool to ensure that your configuration is as expected,
- * even before you create a ValidationManager object from it.
+ * even before you create a ValueHostsManager object from it.
  * 
  * ConfigAnalysis does the following:
  * - Validates the properties throughout your ValueHostConfig objects, including:
@@ -45,7 +45,7 @@ export interface IConfigAnalysis {
      * @param config The configuration to analyze
      * @param options Options for the analysis
      */
-    analyze(config: ValidationManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
+    analyze(config: ValueHostsManagerConfig, options?: ConfigAnalysisOptions): IConfigAnalysisResultsExplorer;
     /**
      * Analyze the configuration found in the Builder object
      * @param builder 

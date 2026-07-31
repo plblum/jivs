@@ -1,6 +1,6 @@
 # Testing your configurations
 Use the `Jivs-ConfigAnalysis` module to ensure that your configuration is as expected,
-even before you create a `ValidationManager` object from it.
+even before you create a `ValueHostsManager` object from it.
 
 ## Problem it solves
 When you code with services and dependency injection, the code becomes very disconnected.
@@ -58,7 +58,7 @@ let config = rules.configure();
     explorer.throwOnErrors(false, new ConsoleConfigAnalysisOutputter());  // injects a report into the console and throws
  }
  // back to normal
- let vm = new ValidationManager(config);
+ let vm = new ValueHostsManager(config);
 ```
 ## Adding to a unit test
 We recommend that you create unit tests for each ModelRules subclass
@@ -223,7 +223,7 @@ npm install --save @plblum/jivs-configanalysis
 
 # Using Jivs-ConfigAnalysis
 Call the `analyze() function` on `ConfigAnalysisServices` after configuring, but before creating
-the `ValidationManager`.
+the `ValueHostsManager`.
 
 ```ts
 import { installConfigAnalysisService } from "@plblum/jivs-configanalysis/build/ConfigAnalysisService";
@@ -234,7 +234,7 @@ let config = rules.configure();
 let configAnalysisService = installConfigAnalysisService(services);
 let explorer = configAnalysisService.analyze(config);
 ... test against the explorer object ...
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 ## explorer: ConfigAnalysisResultsExplorer
 *explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to manually navigate. So `ConfigAnalysisResultsExplorer` includes a number of helper functions to focus on specific information.
@@ -327,7 +327,7 @@ class MyModelRules extends ModelRulesBase
   constructor(services: IJivsServices) {
       super(services);
   }
-  protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+  protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
     builder.input('NewField', LookupKey.Date, 
     {
       parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser

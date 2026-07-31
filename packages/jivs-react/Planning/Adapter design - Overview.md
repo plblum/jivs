@@ -301,7 +301,7 @@ Form-oriented access is exposed through:
 * JivsForm
 * useFormValidation()
 
-Forms are typically backed by a ValidationManager (from Jivs), which coordinates validation activity and exposes aggregate validation state for participating ValueHosts.
+Forms are typically backed by a ValueHostsManager (from Jivs), which coordinates validation activity and exposes aggregate validation state for participating ValueHosts.
 
 ### Validation Groups
 
@@ -492,7 +492,7 @@ Jivs React Design - React Hooks
 
 ## useFormValidation() (function/React hook)
 
-Primary React hook for form-oriented validation. It handles all fields configured in the ValidationManager, or a subset if supplied a group name.
+Primary React hook for form-oriented validation. It handles all fields configured in the ValueHostsManager, or a subset if supplied a group name.
 
 Provides access to:
 
@@ -511,7 +511,7 @@ Jivs React Design - React Hooks
 
 *PENDING: May rename to ValidationProvider because "Jivs" isn't as meaningful.*
 
-JivsProvider establishes access to React Adapter functionality by supplying a React Context that exposes the ValidationManager and the mechanisms required to subscribe to validation state changes.
+JivsProvider establishes access to React Adapter functionality by supplying a React Context that exposes the ValueHostsManager and the mechanisms required to subscribe to validation state changes.
 
 Most applications use a single provider for a validation workflow.
 

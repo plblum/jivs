@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
-import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import {
     LessThanOrEqualValueCondition,
     LessThanOrEqualValueConditionConfig,
@@ -4055,7 +4055,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
 
-            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValueHostsManagerConfigBuilder;
 
             builder.field('NewField', LookupKey.Date, 
                 {
@@ -4082,7 +4082,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                     twoDigitYearBreak: 29
                 }));            
 
-            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValueHostsManagerConfigBuilder;
 
             builder.field('NewField', LookupKey.Date,
                 {
@@ -4114,7 +4114,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             });
 
 
-            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValueHostsManagerConfigBuilder;
 
             builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
@@ -4139,7 +4139,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 'es': 'Esto es necesario'
             });
 
-            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValueHostsManagerConfigBuilder;
 
             builder.field('NewField').requireText({ errorMessagel10n: 'RequireEM' });
             let configAnalysisService = new ConfigAnalysisService(services);
@@ -4157,7 +4157,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 ConditionType.LessThanOrEqualValue,
                 (config) => new LessThanOrEqualValueCondition(config));
 
-            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValidationManagerConfigBuilder;
+            let builder = services.buildersFactory.createManagerConfigBuilder(null) as ValueHostsManagerConfigBuilder;
             builder.field('BirthDate', LookupKey.Date).lessThanOrEqualValue(new Date(), {
                 conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
             });

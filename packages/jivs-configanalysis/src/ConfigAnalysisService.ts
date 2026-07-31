@@ -4,8 +4,8 @@
  */
 
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
-import type { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
-import type { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import type { ValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
+import type { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
@@ -19,7 +19,7 @@ import {
     CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer,
     ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer
 } from './Analyzers/ValueHostConfigPropertyAnalyzerClasses';
-import { ValidationManagerConfigAnalysis } from './ConfigAnalysis';
+import { ValueHostsManagerConfigAnalysis } from './ConfigAnalysis';
 import { ConsoleConfigAnalysisOutputter } from './Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { IConditionConfigPropertyAnalyzer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer } from './Types/Analyzers';
 import { ConfigAnalysisOptions, IConfigAnalysis } from './Types/ConfigAnalysis';
@@ -57,7 +57,7 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
      * @returns The results of the analysis, which can be explored and reported.
      */
     public analyze(
-        target: ValidationManagerConfigBuilder,
+        target: ValueHostsManagerConfigBuilder,
         options?: ConfigAnalysisOptions,
     ): IConfigAnalysisResultsExplorer;
     /**
@@ -67,7 +67,7 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
      * @returns The results of the analysis, which can be explored and reported.
      */
     public analyze(
-        target: ValidationManagerConfig, // eslint-disable-line @typescript-eslint/unified-signatures
+        target: ValueHostsManagerConfig, // eslint-disable-line @typescript-eslint/unified-signatures
         options?: ConfigAnalysisOptions,
     ): IConfigAnalysisResultsExplorer;
     /**
@@ -77,15 +77,15 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
      * @returns The results of the analysis, which can be explored and reported.
      */
     public analyze(
-        arg1: ValidationManagerConfigBuilder | ValidationManagerConfig,
+        arg1: ValueHostsManagerConfigBuilder | ValueHostsManagerConfig,
         options?: ConfigAnalysisOptions
     ): IConfigAnalysisResultsExplorer {
 
-        let config: ValidationManagerConfig | undefined = undefined;
+        let config: ValueHostsManagerConfig | undefined = undefined;
         if (arg1 instanceof ManagerConfigBuilderBase)
             config = arg1.snapshot();
         else
-            config = arg1 as ValidationManagerConfig;
+            config = arg1 as ValueHostsManagerConfig;
 
         const analysis = this.createConfigAnalysis(config, options);
 
@@ -132,10 +132,10 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
     }
     // overriddable
     protected createConfigAnalysis(
-        target: ValidationManagerConfigBuilder | ValidationManagerConfig,
+        target: ValueHostsManagerConfigBuilder | ValueHostsManagerConfig,
         options?: ConfigAnalysisOptions
-    ): ValidationManagerConfigAnalysis {
-        return new ValidationManagerConfigAnalysis();
+    ): ValueHostsManagerConfigAnalysis {
+        return new ValueHostsManagerConfigAnalysis();
     }
 
     protected reportResults(

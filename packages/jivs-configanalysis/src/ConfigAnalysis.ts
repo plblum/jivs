@@ -4,7 +4,7 @@
  */
 
 
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 
@@ -32,7 +32,7 @@ import { SampleValues } from './SampleValues';
 /**
  * @inheritDoc jivs-configanalysis/ConfigAnalysis/Types!IConfigAnalysis:interface
  */
-export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig, TServices extends IJivsServices>
+export abstract class ConfigAnalysisBase<TConfig extends ValueHostsManagerConfig, TServices extends IJivsServices>
     implements IConfigAnalysis {
 
     /**
@@ -284,9 +284,9 @@ export abstract class ConfigAnalysisBase<TConfig extends ValidationManagerConfig
 }
 
 /**
- * ValidationManagerConfig analysis service.
+ * ValueHostsManagerConfig analysis service.
  */
-export class ValidationManagerConfigAnalysis extends ConfigAnalysisBase<ValidationManagerConfig, IJivsServices> {
+export class ValueHostsManagerConfigAnalysis extends ConfigAnalysisBase<ValueHostsManagerConfig, IJivsServices> {
     protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
         const helper = new AnalysisResultsHelper<IJivsServices>(args);
         helper.registerLookupKeyAnalyzer(ServiceName.converter, new DataTypeConverterLookupKeyAnalyzer(args));

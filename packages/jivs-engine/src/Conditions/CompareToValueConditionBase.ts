@@ -11,7 +11,7 @@ import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 
 /**
  * ConditionConfig for CompareToValueConditionBase.
@@ -48,23 +48,23 @@ export interface CompareToValueConditionBaseConfig extends OneValueConditionBase
  */
 export abstract class CompareToValueConditionBase<TConfig extends CompareToValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value == null)  // null/undefined
         {
-            this.logNothingToEvaluate('value', validationManager.services);
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
         
         if (this.config.secondValue == null)    // null/undefined
         {
-            this.logNothingToEvaluate('secondValue', validationManager.services);
+            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
 
         const valueDetails = this.tryConversion(value, valueHost.getDataType(),
-            this.config.conversionLookupKey, validationManager.services);
+            this.config.conversionLookupKey, valueHostsManager.services);
         if (valueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
@@ -72,14 +72,14 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
         // !!! However, this isn't ideal. We should offer config.secondValueLookupKey        
         
         const secondValueDetails = this.tryConversion(this.config.secondValue, null,   
-            this.config.secondConversionLookupKey, validationManager.services);
+            this.config.secondConversionLookupKey, valueHostsManager.services);
         if (secondValueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
-        const comparison = validationManager.services.dataTypeComparerService.compare(
+        const comparison = valueHostsManager.services.dataTypeComparerService.compare(
             valueDetails.value, secondValueDetails.value, valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            this.logTypeMismatch(validationManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
 
             return ConditionEvaluateResult.Undetermined;
         }
@@ -88,9 +88,9 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         const secondValue = this.config.secondValue;
         
         list.push({

@@ -6,7 +6,7 @@
  * 
  * Classes should be registered in the ConditionFactory.
  * 
- * Conditions can get data from any ValueHost registered in the ValidationManager.
+ * Conditions can get data from any ValueHost registered in the ValueHostsManager.
  * They can also be implemented specific to the consuming system, such as 
  * calling an API function, and using the result to determine how evaluation went.
  * 
@@ -24,7 +24,7 @@
 import { IValueHost } from './ValueHost';
 import { IJivsServices } from './JivsServices';
 import { IFieldValueHost } from './FieldValueHost';
-import { IValidationManager } from './ValidationManager';
+import { IValueHostsManager } from './ValueHostsManager';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -51,21 +51,21 @@ export interface ICondition {
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
      * the data was consistent or violates the rules, or the data couldn't be used to run the rule. 
-     * @param valueHost - Most values are found amongst the ValueHosts in the ValidationManager.
-     * Conditions can look them up using ValidationManager.getValueHost().getValue() or getTextValue().
+     * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
+     * Conditions can look them up using ValueHostsManager.getValueHost().getValue() or getTextValue().
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostName when creating the Condition instance.
      * Validator.validate() knows to pass the ValueHostName that hosts the Validator.
      * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
-     * @param validationManager - Its primary use is to lookup ValueHosts to get their data.
+     * @param valueHostsManager - Its primary use is to lookup ValueHosts to get their data.
      * @returns Any of these values:
      * - Match - consistent with the rule
      * - NoMatch - violates the rule
      * - Undetermined - Cannot invoke the rule. Usually data incompatible with use within the rule,
      *    like the value is null, undefined, or the wrong data type.
      */
-    evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:

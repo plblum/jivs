@@ -10,7 +10,7 @@ import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { TwoValueConditionBaseConfig, TwoValueConditionBase } from './TwoValueConditionBase';
-import type { IValidationManager } from '../Interfaces/ValidationManager';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 
 /**
  * ConditionConfig for CompareToSecondValueHostConditionBase.
@@ -36,43 +36,43 @@ export interface CompareToSecondValueHostConditionBaseConfig extends TwoValueCon
  */
 export abstract class CompareToSecondValueHostConditionBase<TConfig extends CompareToSecondValueHostConditionBaseConfig> extends TwoValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value == null)  // null/undefined
         {
-            this.logNothingToEvaluate('value', validationManager.services);
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
-        const valueDetails = this.tryConversion(value, valueHost.getDataType(), this.config.conversionLookupKey, validationManager.services); 
+        const valueDetails = this.tryConversion(value, valueHost.getDataType(), this.config.conversionLookupKey, valueHostsManager.services); 
         if (valueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
         let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
         if (this.config.secondValueHostName) {
-            const vh2 = this.getValueHost(this.config.secondValueHostName, validationManager);
+            const vh2 = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (!vh2) {
                 const msg = 'is unknown';
-                this.throwInvalidPropertyData('secondValueHostName', msg, validationManager.services);
+                this.throwInvalidPropertyData('secondValueHostName', msg, valueHostsManager.services);
             }
             secondValue = vh2!.getValue();
             secondValueLookupKey = vh2!.getDataType();
         }
         if (secondValue == null)  // null/undefined
         {
-            this.logNothingToEvaluate('secondValue', validationManager.services);
+            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
-        const secondValueDetails = this.tryConversion(secondValue, secondValueLookupKey, this.config.secondConversionLookupKey, validationManager.services);
+        const secondValueDetails = this.tryConversion(secondValue, secondValueLookupKey, this.config.secondConversionLookupKey, valueHostsManager.services);
         if (secondValueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
-        const comparison = validationManager.services.dataTypeComparerService.compare(
+        const comparison = valueHostsManager.services.dataTypeComparerService.compare(
             valueDetails.value, secondValueDetails.value,
             valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            this.logTypeMismatch(validationManager.services, 'value', 'secondValue', value, secondValue);
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', value, secondValue);
 
             return ConditionEvaluateResult.Undetermined;
         }
@@ -81,12 +81,12 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         let secondValue: any = undefined;
         if (this.config.secondValueHostName) {
-            const vh = this.getValueHost(this.config.secondValueHostName, validationManager);
+            const vh = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (vh)
                 secondValue = vh.getValue();
         }

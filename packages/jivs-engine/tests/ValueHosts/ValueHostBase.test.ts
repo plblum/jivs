@@ -5,15 +5,15 @@ import {
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
+import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
@@ -34,8 +34,8 @@ interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
  */
 class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostInstanceState>
 {
-    constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
-        super(validationManager, config, state);
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
+        super(valueHostsManager, config, state);
     }
     public get exposeServices(): IJivsServices {
         return this.services;
@@ -68,8 +68,8 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === testValueHostType;
     }
-    public create(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
-        return new PublicifiedValueHostBase(validationManager, config, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
+        return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
         state.counter = 0;
@@ -97,12 +97,12 @@ const testValueHostType = 'PublicifyValueHostBase';
  * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Config,
+ * ValueHostsManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
 function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): {
     services: MockJivsServices,
-    validationManager: MockValidationManager,
+    valueHostsManager: MockValueHostsManager,
     config: ValueHostConfig,
     state: ValueHostInstanceState,
     valueHost: PublicifiedValueHostBase
@@ -111,7 +111,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let factory = new ValueHostFactory();
     factory.register(new PublicifiedValueHostBaseGenerator());
     services.valueHostFactory = factory;
-    let vm = new MockValidationManager(services);
+    let vm = new MockValueHostsManager(services);
 
     let defaultConfig: ValueHostConfig = {
         name: 'Field1',
@@ -132,19 +132,19 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
         updatedConfig, state);
     return {
         services: services,
-        validationManager: vm,
+        valueHostsManager: vm,
         config: updatedConfig,
         state: state,
         valueHost: vh
     };
 }
 
-// constructor(validationManager: IValidationManager, config: TConfig, state: TState)
+// constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState)
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost',
@@ -157,7 +157,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -170,7 +170,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.exposeConfig).toBe(vhConfig);
         expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.exposeState.enabled).toBeUndefined();
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vm);
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () => {
@@ -208,7 +208,7 @@ describe('constructor and resulting property values', () => {
     test('constructor with null in each parameter throws', () => {
 
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);        
+        let vm = new MockValueHostsManager(services);        
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -223,7 +223,7 @@ describe('constructor and resulting property values', () => {
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
-            config, state)).toThrow(/validationManager/);
+            config, state)).toThrow(/valueHostsManager/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
             null!, state)).toThrow(/config/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
@@ -252,7 +252,7 @@ describe('ValidatableValueHostBase.getValue', () => {
 
 });
 describe('updateState', () => {
-    test('Update value with +1 results in new instance of State and report to ValidationManager',
+    test('Update value with +1 results in new instance of State and report to ValueHostsManager',
         () => {
             let initialValue = 100;
             let setup = setupValueHost({}, initialValue);
@@ -269,7 +269,7 @@ describe('updateState', () => {
                 expect(testItem.getValue()).toBe(initialValue + i);
                 expect(testItem.exposeState).not.toBe(originalState);   // different instances
             }
-            let changes = setup.validationManager.getHostStateChanges();
+            let changes = setup.valueHostsManager.getHostStateChanges();
             expect(changes.length).toBe(3);
             for (let i = 1; i <= 3; i++) {
 
@@ -278,7 +278,7 @@ describe('updateState', () => {
             }
 
         });
-    test('Update value with +0 results in no change to the state instance or notification to ValidationManager',
+    test('Update value with +0 results in no change to the state instance or notification to ValueHostsManager',
         () => {
             let initialValue = 100;
             let setup = setupValueHost({}, initialValue);
@@ -295,7 +295,7 @@ describe('updateState', () => {
                 expect(testItem.getValue()).toBe(initialValue);
                 expect(testItem.exposeState).toBe(originalState);   // same instance
             }
-            let changes = setup.validationManager.getHostStateChanges();
+            let changes = setup.valueHostsManager.getHostStateChanges();
             expect(changes.length).toBe(0);
 
 
@@ -318,7 +318,7 @@ describe('setValue', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -333,7 +333,7 @@ describe('setValue', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(0);
 
     });
@@ -346,7 +346,7 @@ describe('setValue', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -359,7 +359,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -381,7 +381,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -402,7 +402,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -422,7 +422,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -447,7 +447,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedState: Array<ValueHostInstanceState> = [];
-        setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
+        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
@@ -465,7 +465,7 @@ describe('setValue', () => {
 
         let setup = setupValueHost({}, initialValue);
         let changedState: Array<ValueHostInstanceState> = [];
-        setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
+        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
@@ -522,7 +522,7 @@ describe('setValueToUndefined', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -536,7 +536,7 @@ describe('setValueToUndefined', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(0);
 
     });    
@@ -549,7 +549,7 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         let testItem = setup.valueHost;
         expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -570,7 +570,7 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY', undefined)).not.toThrow();
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -587,7 +587,7 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
 
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -605,7 +605,7 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', undefined)).not.toThrow();
-        let changes = setup.validationManager.getHostStateChanges();
+        let changes = setup.valueHostsManager.getHostStateChanges();
         expect(changes.length).toBe(3);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -673,7 +673,7 @@ describe('getDataTypeLabel', () => {
             vhConfig.dataType = LookupKey.Integer;
         if (hasValue)
             vhConfig.initialValue = 10;
-        let vm = new ValidationManager({
+        let vm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [vhConfig]
         });
@@ -748,7 +748,7 @@ describe('isEnabled and related enabled', () => {
     } {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         if (stateChangeCallback)
             vm.onValueHostInstanceStateChanged = stateChangeCallback;
         let vhConfig: ValueHostConfig = {
@@ -780,12 +780,12 @@ describe('isEnabled and related enabled', () => {
     ): {
         vh: PublicifiedValueHostBase,
         logger: CapturingLogger,
-        vm: ValidationManager<ValidationManagerInstanceState>
+        vm: ValueHostsManager<ValueHostsManagerInstanceState>
     } {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
 
-        let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
+        let vmConfig = <ValueHostsManagerConfig>{ services: services, valueHostConfigs: [] };
         vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -805,7 +805,7 @@ describe('isEnabled and related enabled', () => {
         vmConfig.savedValueHostInstanceStates = [];
         vmConfig.savedValueHostInstanceStates.push(state);
 
-        // let builder = new ValidationManagerConfigBuilder(services);
+        // let builder = new ValueHostsManagerConfigBuilder(services);
         // if (stateChangeCallback)
         //     builder.onValueHostInstanceStateChanged = stateChangeCallback;
         // builder.static('Field1');
@@ -824,7 +824,7 @@ describe('isEnabled and related enabled', () => {
         // builder.savedValueHostInstanceStates = [];
         // builder.savedValueHostInstanceStates.push(state);
 
-        let vm = new ValidationManager(vmConfig);
+        let vm = new ValueHostsManager(vmConfig);
 
         return {
             vm: vm,

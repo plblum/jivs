@@ -94,7 +94,7 @@ That guidance is especially important for:
 
 ## Workflow A: Same-instance / SPA-style save failure flow
 
-1. Client already has a configured `ValidationManager` and assigned values to the ValueHosts
+1. Client already has a configured `ValueHostsManager` and assigned values to the ValueHosts
 2. User invokes the action, such as submit
 3. Client runs local validation for that action
 4. Client callbacks/hooks update visuals and messages to reflect the validation results
@@ -107,7 +107,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValueHostsManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If save logic needs a model object and one has not yet been created, set it up
 8. Client submits to server
@@ -117,7 +117,7 @@ That guidance is especially important for:
    * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 10. Server prepares the Jivs validation runtime
 
-    * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
+    * Server-side code selects the correct model rules and creates/configures the `ValueHostsManager`.
     * Server-side code transfers incoming source values into the appropriate `ValueHosts`.
     * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
     * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
@@ -141,14 +141,14 @@ That guidance is especially important for:
     * Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
     * App/server delivers packaged content in the response
     * App/client retrieves and deserializes the broader response, then gets `issuesFound` / `externalIssueFounds`
-    * App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValidationManager`
+    * App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValueHostsManager`
     * Client callbacks/hooks update visuals
 
       * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
 
 ## Workflow B: Reload / server-rendered round-trip failure flow
 
-1. Client creates/configures `ValidationManager` and assigned values to the ValueHosts
+1. Client creates/configures `ValueHostsManager` and assigned values to the ValueHosts
 2. User invokes the action, such as submit
 3. Client runs local validation for that action
 4. Client callbacks/hooks update visuals and messages to reflect the validation results
@@ -161,7 +161,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValueHostsManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If save logic needs a model object and one has not yet been created, set it up
 8. Client submits data to server
@@ -171,7 +171,7 @@ That guidance is especially important for:
    * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 10. Server prepares the Jivs validation runtime
 
-* Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
+* Server-side code selects the correct model rules and creates/configures the `ValueHostsManager`.
 * Server-side code transfers incoming source values into the appropriate `ValueHosts`.
 * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
 * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
@@ -200,7 +200,7 @@ That guidance is especially important for:
 * New page loads
 * App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `externalIssueFounds`
 * Client calls `ModelRules.configure()` with `issuesFound` / `externalIssueFounds` in `ModelRulesConfigureOptions`
-* `configure()` creates the new `ValidationManager` and reapplies the returned errors
+* `configure()` creates the new `ValueHostsManager` and reapplies the returned errors
 * Client callbacks/hooks update visuals
 
   * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -214,7 +214,7 @@ That guidance is especially important for:
    * The developer can instead convert that outcome into a `ExternalIssueFound`, continue, and include it in the returned list later.
 3. Server prepares the Jivs validation runtime
 
-   * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
+   * Server-side code selects the correct model rules and creates/configures the `ValueHostsManager`.
    * Server-side code transfers incoming source values into the appropriate `ValueHosts`.
    * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
    * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
@@ -238,11 +238,11 @@ That guidance is especially important for:
    * Jivs packager packages `IssuesFound` and `ExternalIssuesFound`
    * App/server delivers the response in its API or service-specific format
    * The consumer may inspect, map, or otherwise consume the returned Jivs content
-   * No client-side Jivs `ValidationManager` restoration step is assumed
+   * No client-side Jivs `ValueHostsManager` restoration step is assumed
 
 ## Workflow D: Client-side Jivs with non-Jivs server errors
 
-1. Client creates/configures `ValidationManager` and assigned values to the ValueHosts
+1. Client creates/configures `ValueHostsManager` and assigned values to the ValueHosts
 2. User invokes the action, such as submit
 3. Client runs local validation for that action
 4. Client callbacks/hooks update visuals and messages to reflect the validation results
@@ -255,7 +255,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValueHostsManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If submit logic needs a model object and one has not yet been created, set it up
 8. Client submits data to a server or API that does not use Jivs
@@ -264,14 +264,14 @@ That guidance is especially important for:
    * *The response format is owned by that server/API, not by Jivs.*
 10. App/client retrieves and deserializes the returned response
 11. Client-side code converts the returned server/API errors into `ExternalIssuesFound`
-12. Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValidationManager`
+12. Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValueHostsManager`
 13. Client callbacks/hooks update visuals
 
     * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
 
 ## Workflow E: Client-side validation stop-before-action flow
 
-1. Client already has a configured `ValidationManager` and assigned values to the ValueHosts
+1. Client already has a configured `ValueHostsManager` and assigned values to the ValueHosts
 2. User invokes the action, such as submit
 3. Client runs local validation for that action
 4. Client callbacks/hooks update visuals and messages to reflect the validation results
@@ -284,7 +284,7 @@ That guidance is especially important for:
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValueHostsManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 7. (Client) If the intended next step needs a model object and one has not yet been created, set it up
 8. App/client code performs the intended next step
@@ -294,9 +294,9 @@ That guidance is especially important for:
 
 ## Workflow F: Validation-group switch or handoff flow
 
-1. Client already has a configured `ValidationManager` and setup validation group names to the appropriate valuehosts.
+1. Client already has a configured `ValueHostsManager` and setup validation group names to the appropriate valuehosts.
 2. User invokes the action to switch tabs, advance to the next step, or otherwise hand off from the current step/group
-3. Client runs local validation for the current validation group by calling `ValidationManager.validate(group)`
+3. Client runs local validation for the current validation group by calling `ValueHostsManager.validate(group)`
 4. Client callbacks/hooks update visuals and messages to reflect the validation results for that group
 5. Client decides whether the group switch or handoff can proceed
 
@@ -317,11 +317,11 @@ That guidance is especially important for:
 
 ### Likely Jivs-engine-owned or Jivs-engine-facing
 
-* `ValidationManager.validate()` usage in the Jivs story
+* `ValueHostsManager.validate()` usage in the Jivs story
 * `IssuesFound`
 * `ExternalIssuesFound`
 * packaging Jivs-facing returned content
-* applying/restoring Jivs-facing returned content into `ValidationManager`
+* applying/restoring Jivs-facing returned content into `ValueHostsManager`
 * state preservation/restoration hooks where already supported by engine
 
 ### Possible companion-library or framework-integration territory
@@ -368,7 +368,7 @@ This boundary should avoid expanding into:
 * Should packaging/application support be separate services, one small service family, or just helper functions?
 * How should initial value synchronization be described for server-rendered HTML vs client-rendered UI?
 * Which parts belong in `jivs-engine` vs companion libraries or documentation examples?
-* How should the planner later connect to a separate write-up on general ValidationManager state preservation/restoration, without folding that topic into the returned-error workflow?
+* How should the planner later connect to a separate write-up on general ValueHostsManager state preservation/restoration, without folding that topic into the returned-error workflow?
 
 ---
 
@@ -391,7 +391,7 @@ This document should evolve before any formal validation-side API design is writ
 
 Use this workflow when the client invokes an action, such as submit or executing the process, and the client must validate before allowing that action to proceed.
 
-1. Client already has or creates/configures `ValidationManager` and assigned values to the ValueHosts
+1. Client already has or creates/configures `ValueHostsManager` and assigned values to the ValueHosts
 
 2. User invokes the action, such as submit or executing the process
 
@@ -408,7 +408,7 @@ Use this workflow when the client invokes an action, such as submit or executing
 6. Client runs any non-Jivs validation if needed
 
    * If those checks need a model object, the developer may create it here.
-   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValidationManager.setExternalIssuesFound()`.
+   * If non-Jivs checks report errors that should participate in the Jivs UI flow, client-side code converts them into `ExternalIssuesFound` and applies them through `ValueHostsManager.setExternalIssuesFound()`.
    * If those errors block the action, the workflow stops.
 
 7. If the next step for that action needs a model object and one has not yet been created, set it up
@@ -441,10 +441,10 @@ The workflow-specific variants begin at step 8:
 
 ### `C-APLY` Client same-instance returned-error application workflow
 
-Use this workflow when the client receives returned Jivs-facing errors and applies them to the existing `ValidationManager`.
+Use this workflow when the client receives returned Jivs-facing errors and applies them to the existing `ValueHostsManager`.
 
 1. `C-RETR` App/client retrieves and deserializes the broader response, then gets `issuesFound` / `externalIssueFounds`
-2. `C-AERR` App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValidationManager`
+2. `C-AERR` App/framework code applies the returned `issuesFound` / `externalIssueFounds` to the existing `ValueHostsManager`
 3. `C-VISL` Client callbacks/hooks update visuals
 
    * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -459,15 +459,15 @@ This is drawn from the client-side portion of:
 
 This is the same-instance returned-error path.
 
-It is the client-side template used when the original `ValidationManager` is still alive after the server response is received.
+It is the client-side template used when the original `ValueHostsManager` is still alive after the server response is received.
 
 ### `C-RSTR` Client recreated-instance returned-error restoration workflow
 
-Use this workflow when the client receives returned Jivs-facing errors and restores them while creating/configuring a new `ValidationManager`.
+Use this workflow when the client receives returned Jivs-facing errors and restores them while creating/configuring a new `ValueHostsManager`.
 
 1. `C-RETR` App/client retrieves and deserializes the returned page data, then gets `issuesFound` / `externalIssueFounds`
 2. Client calls `ModelRules.configure()` with `issuesFound` / `externalIssueFounds` in `ModelRulesConfigureOptions`
-3. `configure()` creates the new `ValidationManager` and reapplies the returned errors
+3. `configure()` creates the new `ValueHostsManager` and reapplies the returned errors
 4. `C-VISL` Client callbacks/hooks update visuals
 
    * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -482,7 +482,7 @@ This is drawn from the client-side portion of:
 
 This is the recreated-instance returned-error path.
 
-It is the client-side template used when the earlier client instance no longer exists and the returned errors must be restored during creation of the new `ValidationManager`.
+It is the client-side template used when the earlier client instance no longer exists and the returned errors must be restored during creation of the new `ValueHostsManager`.
 
 ### `C-ADPT` Client non-Jivs returned-error adaptation workflow
 
@@ -490,7 +490,7 @@ Use this workflow when the client receives returned errors from a server or API 
 
 1. App/client retrieves and deserializes the returned response
 2. Client-side code converts the returned server/API errors into `ExternalIssuesFound`
-3. `C-AERR` Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValidationManager`
+3. `C-AERR` Client-side Jivs applies the converted `ExternalIssuesFound` to the existing `ValueHostsManager`
 4. `C-VISL` Client callbacks/hooks update visuals
 
    * If one or more returned errors are associated with fields in hidden or inactive UI regions, app/client code may reveal, activate, expand, or navigate to those regions so the user can find and correct the errors
@@ -513,11 +513,11 @@ Step 3 uses `C-AERR`, which can also be applied to step 2 of `C-APLY`, since the
 
 Use this workflow when the client invokes the action to switch tabs, advance to the next step, or otherwise hand off from the current step/group, and the client must validate the current validation group before allowing that action to proceed.
 
-1. Client already has a configured `ValidationManager` and setup validation group names to the appropriate ValueHosts.
+1. Client already has a configured `ValueHostsManager` and setup validation group names to the appropriate ValueHosts.
 
 2. User invokes the action to switch tabs, advance to the next step, or otherwise hand off from the current step/group
 
-3. Client runs local validation for the current validation group by calling `ValidationManager.validate(group)`
+3. Client runs local validation for the current validation group by calling `ValueHostsManager.validate(group)`
 
 4. Client callbacks/hooks update visuals and messages to reflect the validation results for that group
 
@@ -558,7 +558,7 @@ Use this workflow when the server uses Jivs to perform server-side validation an
 
 3. Server prepares the Jivs validation runtime
 
-   * Server-side code selects the correct model rules and creates/configures the `ValidationManager`.
+   * Server-side code selects the correct model rules and creates/configures the `ValueHostsManager`.
    * Server-side code transfers incoming source values into the appropriate `ValueHosts`.
    * Source values may come from HTTP form fields, typed objects, or untyped objects created from JSON.
    * A helper may later support transferring values from an object or dictionary by matching `ValueHost` names to source members.
@@ -730,7 +730,7 @@ The important point is that the identifier should describe the **target packagin
 We explicitly recognized that server-side packaging only makes sense if the receiving side has a corresponding retrieval/unpackaging path. That was already partly implicit in Part 1’s later use cases:
 
 * app/client retrieves packaged content
-* then reapplies it into `ValidationManager`
+* then reapplies it into `ValueHostsManager`
 * either same-instance or recreated-instance depending on the workflow
 
 The new packaging architecture should continue to assume that pairing.

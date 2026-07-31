@@ -1,13 +1,13 @@
-# Configuring the ValidationManager
-The `ValidationManager` is the central object you use with a form or model. It contains the list of fields (called `ValueHosts`), their rules, callback hooks, and more. Use it to validate, retrieve validation results, and report additional errors determined by your business logic.
+# Configuring the ValueHostsManager
+The `ValueHostsManager` is the central object you use with a form or model. It contains the list of fields (called `ValueHosts`), their rules, callback hooks, and more. Use it to validate, retrieve validation results, and report additional errors determined by your business logic.
 
-The `ValidationManager` requires a configuration that reflects all of those, which it gets through a `ValidationManagerConfig` object tree. `ValidationManagerConfig` is rather complex, due to describing everything a model or form needs for validation.
+The `ValueHostsManager` requires a configuration that reflects all of those, which it gets through a `ValueHostsManagerConfig` object tree. `ValueHostsManagerConfig` is rather complex, due to describing everything a model or form needs for validation.
 
 <details>
 <summary>Take a look</summary>
 
 ```ts
-let vmConfig = <ValidationManagerConfig>{
+let vmConfig = <ValueHostsManagerConfig>{
   services: createJivsServices('en-US'),
   valueHostConfigs: [
     {
@@ -47,7 +47,7 @@ let vmConfig = <ValidationManagerConfig>{
     ]
 };
 
-let vm = new ValidationManager(vmConfig);
+let vm = new ValueHostsManager(vmConfig);
 ```
 
 </details>
@@ -56,7 +56,7 @@ Instead, you derive a class from [`ModelRulesBase`](Jivs_API.md#rules) or `FormR
 ```ts
 class PersonModelRules extends ModelRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions
     ): void {
         builder.field('FirstName', LookupKey.String)
@@ -70,14 +70,14 @@ class PersonModelRules extends ModelRulesBase {
 }
 ```
 
-Then do this to create the ValidationManager.
+Then do this to create the ValueHostsManager.
 
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); // documented below
 const config = rules.configure();
 // attach any callback hooks to config at this point
-const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
+const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
 ```
 
 ## ModelRulesBase: Defining rules for a model
@@ -99,7 +99,7 @@ Create a [`ModelRulesBase`](Jivs_API.md#rules) subclass to define the validation
 ```ts
 class PersonModelRules extends ModelRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions
     ): void {
         builder.field('FirstName', LookupKey.String)
@@ -118,9 +118,9 @@ class PersonModelRules extends ModelRulesBase {
 }
 ```
 
-This example introduces the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class), which is used inside `configureRules()` to define `ValueHosts` and their validators. Most developers will use the Builder API this way, inside a rules class, rather than building configuration directly in page or component code.
+This example introduces the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class), which is used inside `configureRules()` to define `ValueHosts` and their validators. Most developers will use the Builder API this way, inside a rules class, rather than building configuration directly in page or component code.
 
-### Using PersonModelRules class to create the ValidationManager
+### Using PersonModelRules class to create the ValueHostsManager
 Expect to use model-specific rules classes when writing server-side code for node.js,
 but not in the UI. Here's what the code for the server side looks like.
 
@@ -128,7 +128,7 @@ but not in the UI. Here's what the code for the server side looks like.
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); 
 const config = rules.configure();
-const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
+const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
 ```
 
 ## IAdaptModelRulesToForm interface: Adapt those rules for the form
@@ -209,7 +209,7 @@ class PersonEditFormRules
     }
 }
 ```
-### Using PersonEditFormRules class to create the ValidationManager
+### Using PersonEditFormRules class to create the ValueHostsManager
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonEditFormRules(services);
@@ -219,7 +219,7 @@ const config = rules.configure();
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
-const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
+const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
 ```
 ## FormRulesBase: Define rules for the form when there is no model
 
@@ -232,7 +232,7 @@ This example is a date range editor form that asks for a start date and end date
 ```ts
 class DateRangeFormRules extends FormRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions
     ): void {
         // create the start date ValueHost and its validators
@@ -252,13 +252,13 @@ class DateRangeFormRules extends FormRulesBase {
         // provide a calculation ValueHost for StartDate <= NumOfDays
         builder.calc('DiffDays', LookupKey.Number, this.differenceBetweenDates);
 
-        // provide a ValueHost to hold a constant which we'll assign after the ValidationManager is created
+        // provide a ValueHost to hold a constant which we'll assign after the ValueHostsManager is created
         builder.static('NumOfDays', LookupKey.Number);
     }
 
     private differenceBetweenDates(
         callingValueHost: ICalcValueHost,
-        findValueHosts: IValidationManager): SimpleValueType {
+        findValueHosts: IValueHostsManager): SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
         let totalDays2 = callingValueHost.convert(
@@ -271,7 +271,7 @@ class DateRangeFormRules extends FormRulesBase {
 ```
 > Notice that we 1) inherit from `FormRulesBase` 2) do not implement `IAdaptModelRulesToForm`, 3) use `builder.field()`.
 
-### Using DateRangeFormRules to create the ValidationManager
+### Using DateRangeFormRules to create the ValueHostsManager
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new DateRangeFormRules(services);
@@ -281,42 +281,42 @@ const config = rules.configure();
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
-const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
+const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
 ```
-## The ValidationManagerConfigBuilder class
-Use the `ValidationManagerConfigBuilder class` to create the `ValidationManagerConfig object tree` using a fluent syntax. Create the `ValueHosts` for fields, calculations, and static values along with  validators on fields.
+## The ValueHostsManagerConfigBuilder class
+Use the `ValueHostsManagerConfigBuilder class` to create the `ValueHostsManagerConfig object tree` using a fluent syntax. Create the `ValueHosts` for fields, calculations, and static values along with  validators on fields.
 ```ts
-class ValidationManagerConfigBuilder {
+class ValueHostsManagerConfigBuilder {
     constructor (services: IJivsServices) {} // there are other constructors too
-    complete(): ValidationManagerConfig;
+    complete(): ValueHostsManagerConfig;
 
     // some of the functions to configure ValueHosts
     field(valueHostName, dataType?, partial config?): IValidatorBuilder;
     field(valueHostName, partial config?): IValidatorBuilder;
     field(partial config?): IValidatorBuilder;
-    static(valueHostName, dataType?, partial config?): IValidationManagerConfigBuilder;
-    static(valueHostName, partial config?): IValidationManagerConfigBuilder;
-    static(partial config?): IValidationManagerConfigBuilder;
-    calc(valueHostName, dataType, calcFn): IValidationManagerConfigBuilder;     
+    static(valueHostName, dataType?, partial config?): IValueHostsManagerConfigBuilder;
+    static(valueHostName, partial config?): IValueHostsManagerConfigBuilder;
+    static(partial config?): IValueHostsManagerConfigBuilder;
+    calc(valueHostName, dataType, calcFn): IValueHostsManagerConfigBuilder;     
     whenToEnable(valueHostName: ValueHostName,
         callback: (builder: IStartConditionWithOneChildBuilder) => void): IManagerConfigBuilder; 
 
     // callbacks for various events
-    onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
+    onInstanceStateChanged?: null | ValueHostsManagerInstanceStateChangedHandler;
     onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
     onTextValueChanged?: null | TextValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
     onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
-    onConfigChanged?: null: ValidationManagerConfigChangedHandler;
+    onConfigChanged?: null: ValueHostsManagerConfigChangedHandler;
     notifyValidationStateChangedDelay?: number;
     
     // preserve stateful data during a round trip to the server
-    savedInstanceState?: null | ValidationManagerInstanceState;
+    savedInstanceState?: null | ValueHostsManagerInstanceState;
     savedValueHostInstanceStates?: null | ValueHostInstanceState[];
 }
 ```
-- `complete()` - Call upon completion of your work to retrieve the `ValidationManagerConfig object tree`. Then pass it to the constructor of `ValidationManager`.
+- `complete()` - Call upon completion of your work to retrieve the `ValueHostsManagerConfig object tree`. Then pass it to the constructor of `ValueHostsManager`.
 ### ValueHosts
 - `field()` – Adds or modifies an [FieldValueHost](Jivs_API.md#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts](Jivs_API.md#configuring-valuehosts).
     ```ts
@@ -344,9 +344,9 @@ class ValidationManagerConfigBuilder {
 - `onValueChanged` notifies you when a `ValueHost` had its value changed. On a FieldValueHost, this is the native value, not the text value.
 - `onTextValueChanged` notifies you when an `FieldValueHost` had its text value changed.
 - `onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
-- `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValidationManager.
+- `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValueHostsManager.
 ### State
-- `savedInstanceState` and `savedValueHostInstanceStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
+- `savedInstanceState` and `savedValueHostInstanceStates` – `ValueHostsManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 
 
 ### Chaining Validators using the Builder API
@@ -374,12 +374,12 @@ For details on all validators using the Builder API, see [All condition configur
 
 ## The Form Configuration Adapter
 The **Form Configuration Adapter** (`FormConfigAdapter class`) is used within `IAdaptModelRulesToForm.adaptToForm()`. It targets adapting
-the business rules to the form, and adding your own `ValueHosts`. Form Configuration Adapter inherits from the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class), sharing its API.
+the business rules to the form, and adding your own `ValueHosts`. Form Configuration Adapter inherits from the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class), sharing its API.
 
 ```ts
-class FormConfigAdapter extends ValidationManagerConfigBuilder
+class FormConfigAdapter extends ValueHostsManagerConfigBuilder
 {
-  // see ValidationManagerConfigBuilder class for field(), static(), calc(), whenToEnable(), state and callbacks
+  // see ValueHostsManagerConfigBuilder class for field(), static(), calc(), whenToEnable(), state and callbacks
     useOnlyTheseModelFields(modelFieldNames: Array<string>): void;
     disableTheseModelFields(modelFieldNames: Array<string>): void;
     assignToGroup(groupName: string, valueHostNames: Array<ValueHostName>): void;
@@ -388,11 +388,11 @@ class FormConfigAdapter extends ValidationManagerConfigBuilder
     modify(valueHostName: ValueHostName, adjustments: AdapterValueHostConfig): IModifyFieldBuilder;
     modify(valueHostName: ValueHostName, label: string): IModifyFieldBuilder;    
    
-    whenToEnable(valueHostName, builderFn): IValidationManagerConfigBuilder;
+    whenToEnable(valueHostName, builderFn): IValueHostsManagerConfigBuilder;
 }
 ```
 Let’s go through these types.
-- `field()`, `static()`, `calc()`, `whenToEnable()`, state and callback are inherited from the Builder. See [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class).
+- `field()`, `static()`, `calc()`, `whenToEnable()`, state and callback are inherited from the Builder. See [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class).
 - `useOnlyTheseModelFields()` - Declares the only inherited model fields this form uses. Any other inherited model fields already configured on the builder are disabled.
 
     This is useful when the business layer has a model with many fields, 

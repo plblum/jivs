@@ -23,8 +23,8 @@ import { deepClone, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Ut
 import { IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
@@ -34,7 +34,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * (although its great if you have to write conversion between your own business logic
  * and Jivs).
  * 
- * The Builder provides a fluent API to create the ValueHostConfig objects and add them to the ValidationManagerConfig.
+ * The Builder provides a fluent API to create the ValueHostConfig objects and add them to the ValueHostsManagerConfig.
  * ManagerConfigBuilderBase is the base class.
  * 
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
@@ -48,7 +48,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
   * You want to require that first and last name are not empty, and that the birthdate is a valid date.
  * ```ts
  * export class PersonModelRules extends ModelRulesBase {
- *  protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *  protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
  *      builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('birthdate', LookupKey.Date);
@@ -77,10 +77,10 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
  *        .lessThan('today');
  * builder.static('today', LookupKey.Date, { initialValue: new Date() });
- * let vm = new ValidationManager(builder); // consider builder disposed at this point
+ * let vm = new ValueHostsManager(builder); // consider builder disposed at this point
  * ```
  */
-export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig>
+export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
     implements IManagerConfigBuilder<T> {
 
     constructor(services: IJivsServices)
@@ -173,7 +173,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     }
 
     /**
-     * A ValidationManagerConfig that is getting overridden ValueHost configurations.
+     * A ValueHostsManagerConfig that is getting overridden ValueHost configurations.
      * Each are created by the addOverride() function.
      * They retain a reference to services.
      */
@@ -238,7 +238,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     public snapshot(): T {
         this.assertNotDisposed();
         
-        const destination = ValidationManager.safeConfigClone(this.baseConfig) as T;
+        const destination = ValueHostsManager.safeConfigClone(this.baseConfig) as T;
         const vhms = destination.services.valueHostConfigMergeService;
 
         this.overriddenValueHostConfigs.forEach((o) => {
@@ -331,7 +331,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
 
     //#region fluent for creating ValueHosts
     /**
-     * Utility to use the Fluent system to add a ValueHostConfig to the ValidationManagerConfig.
+     * Utility to use the Fluent system to add a ValueHostConfig to the ValueHostsManagerConfig.
      * @param valueHostType 
      * @param arg1 
      * @param arg2 
@@ -485,7 +485,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
  * Each private storage field in ManagerConfigBuilderBase is stored here,
  * so this object can be transferred to companion builders who will do additional work.
  */
-export class BuilderState<T extends ValidationManagerConfig>
+export class BuilderState<T extends ValueHostsManagerConfig>
 {
     constructor(baseConfig: T) {
         this.baseConfig = baseConfig;

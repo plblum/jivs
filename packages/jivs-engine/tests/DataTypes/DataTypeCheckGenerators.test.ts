@@ -2,7 +2,7 @@ import {
     IntegerDataTypeCheckGenerator
 } from './../../src/DataTypes/DataTypeCheckGenerators';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { MockValidationManager, MockJivsServices } from '../TestSupport/mocks';
+import { MockValueHostsManager, MockJivsServices } from '../TestSupport/mocks';
 import { ICondition } from '../../src/Interfaces/Conditions';
 import { DataTypeCheckCondition, IntegerCondition } from '../../src/Conditions/ConcreteConditions';
 
@@ -22,7 +22,7 @@ describe('DataTypeCheckGenerator concrete classes', () => {
         });        
         test('createConditions', () => {
             let services = new MockJivsServices(true, true);
-            let vm = new MockValidationManager(services);
+            let vm = new MockValueHostsManager(services);
             let vh = vm.addMockFieldValueHost('Field1', LookupKey.Integer, 'Field 1');
             let testItem = new IntegerDataTypeCheckGenerator();
             let results: Array<ICondition> = [];

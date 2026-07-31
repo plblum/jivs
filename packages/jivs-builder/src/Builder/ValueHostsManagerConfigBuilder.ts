@@ -1,5 +1,5 @@
 /**
- * @inheritDocjivs-builder/Builders/ConcreteClasses!ValidationManagerConfigBuilder:class
+ * @inheritDocjivs-builder/Builders/ConcreteClasses!ValueHostsManagerConfigBuilder:class
  * @module jivs-builder/Builders/ConcreteClasses
  */
 
@@ -8,9 +8,9 @@ import { FieldValueHostConfig, TextValueChangedHandler } from '@plblum/jivs-engi
 import { toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { ValueHostValidationStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import {
-    ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState,
-    ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
-} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+    ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState,
+    ValueHostsManagerInstanceStateChangedHandler, ValidationStateChangedHandler
+} from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -21,38 +21,38 @@ import {
     FluentFieldParameters, FluentFieldValueConfig,
     FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
 } from '../Interfaces/ValueHostConfigBuilders';
-import { IValidationManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { IValueHostsManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
 /**
- * Access point for using ValidationManagerConfigBuilder.
+ * Access point for using ValueHostsManagerConfigBuilder.
  * We recommend that you choose another approach: create your own subclass of ModelRulesBase, 
- * and use its builder property to configure your ValidationManagerConfig.
+ * and use its builder property to configure your ValueHostsManagerConfig.
  * @returns 
  */
-export function createConfigBuilder(arg1: IJivsServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
+export function createConfigBuilder(arg1: IJivsServices | ValueHostsManagerConfig): ValueHostsManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
-        const services = (arg1 as ValidationManagerConfig).services;
-        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as unknown as ValidationManagerConfigBuilder;
+        const services = (arg1 as ValueHostsManagerConfig).services;
+        return services.buildersFactory.createManagerConfigBuilder(arg1 as ValueHostsManagerConfig) as unknown as ValueHostsManagerConfigBuilder;
     }
     const services = arg1 as IJivsServices;
-    return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValidationManagerConfigBuilder;
+    return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValueHostsManagerConfigBuilder;
 }
 
 /**
- * For building the ValidationManagerConfig
+ * For building the ValueHostsManagerConfig
  * 
  * ```ts
- * let builder = new ValidationManagerConfigBuilder(createJivsServices());
+ * let builder = new ValueHostsManagerConfigBuilder(createJivsServices());
  * builder.field('Field1').requireText();
  * let vmConfig = builder.complete();
  * 
- * let vm = new ValidationManager(vmConfig);
+ * let vm = new ValueHostsManager(vmConfig);
  * ```
  * instead of
  * ```ts
- * let vmConfig: ValidationManagerConfig = {
+ * let vmConfig: ValueHostsManagerConfig = {
  *      services: createJivsServices(),
  *      valueHostConfigs: [
  *          {
@@ -67,12 +67,12 @@ export function createConfigBuilder(arg1: IJivsServices | ValidationManagerConfi
  *      ]
  * }
  * 
- * let vm = new ValidationManager(vmConfig);
+ * let vm = new ValueHostsManager(vmConfig);
  * ```
  */
 
-export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig> extends ManagerConfigBuilderBase<T>
-    implements IValidationManagerConfigBuilder<T> {
+export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig> extends ManagerConfigBuilderBase<T>
+    implements IValueHostsManagerConfigBuilder<T> {
     
     constructor(services: IJivsServices)
     constructor(config: T)
@@ -85,16 +85,16 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
     //#region InstanceState
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedInstanceState
      */
-    public get savedInstanceState(): ValidationManagerInstanceState | null {
+    public get savedInstanceState(): ValueHostsManagerInstanceState | null {
         return this.baseConfig.savedInstanceState ?? null;
     }
-    public set savedInstanceState(value: ValidationManagerInstanceState | null) {
+    public set savedInstanceState(value: ValueHostsManagerInstanceState | null) {
         this.baseConfig.savedInstanceState = value;
     }
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedValueHostInstanceStates
      */
     public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
         return this.baseConfig.savedValueHostInstanceStates ?? null;
@@ -140,13 +140,13 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
         return this.addValidatorsValueHost<FieldValueHostConfig>(ValueHostType.Field, arg1, arg2, arg3);
     }
 
-    //#region utilities for ValidationManager-based subclasses
-    // These utilities should all be protected. The ValidationManager subclass will create a public version of it.
+    //#region utilities for ValueHostsManager-based subclasses
+    // These utilities should all be protected. The ValueHostsManager subclass will create a public version of it.
     /**
      * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * Protected because ValueHostManager does not support FieldValueHost. 
-     * ValidationManager offers a public interface.
+     * ValueHostsManager offers a public interface.
      * @param valueHostType - the ValueHostType to configure
      * @param arg1 - either the ValueHost name for a multiparameter use or ValidatorsValueHostBaseConfig for a single parameter use.
      * @param arg2 - optional and can be null. The value for ValueHost.dataType or FieldValueHostConfig.
@@ -174,7 +174,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     //#endregion validation oriented ValueHost support
 
 
-    //#region IValidationManagerCallbacks
+    //#region IValueHostsManagerCallbacks
     /**
      * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
      */
@@ -205,7 +205,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onValidationStateChanged
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onValidationStateChanged
      */
     public get onValidationStateChanged(): ValidationStateChangedHandler | null {
         return this.baseConfig.onValidationStateChanged ?? null;
@@ -224,28 +224,28 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     }
 
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onInstanceStateChanged
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onInstanceStateChanged
      */
 
-    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
         return this.baseConfig.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(value: ValidationManagerInstanceStateChangedHandler | null) {
+    public set onInstanceStateChanged(value: ValueHostsManagerInstanceStateChangedHandler | null) {
         this.baseConfig.onInstanceStateChanged = value;
     }
 
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.onConfigChanged
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onConfigChanged
      */
-    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
         return this.baseConfig.onConfigChanged ?? null;
     }
-    public set onConfigChanged(value: ValidationManagerConfigChangedHandler | null) {
+    public set onConfigChanged(value: ValueHostsManagerConfigChangedHandler | null) {
         this.baseConfig.onConfigChanged = value;
     }
   
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.notifyValidationStateChangedDelay
      */
     public get notifyValidationStateChangedDelay(): number {
         return this.baseConfig.notifyValidationStateChangedDelay ?? 0;
@@ -253,7 +253,7 @@ export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = 
     public set notifyValidationStateChangedDelay(value: number) {
         this.baseConfig.notifyValidationStateChangedDelay = value;
     }
-    //#endregion IValidationManagerCallbacks
+    //#endregion IValueHostsManagerCallbacks
 }
 
 

@@ -10,7 +10,7 @@ import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
 import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
-import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerCallbacks } from '../Interfaces/ValueHostsManager';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
@@ -23,7 +23,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     extends ValueHostBase<TConfig, TState>
     implements IValidatableValueHostBase {
 /**
- * @param validationManager - Contains all ValueHosts and supports validation.
+ * @param valueHostsManager - Contains all ValueHosts and supports validation.
  *   It is the owner of all state and provides group validation.
  * @param config - The business logic supplies these rules
  *   to implement a ValueHost's name, label, data type, validation rules,
@@ -31,14 +31,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
  * @param state - InstanceState used by this ValidatableValueHost including its validators.
  * If the caller changes any of these, discard the instance. Treat as immutable.
  */    
-    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
-        super(validationManager, config, state);
-        if (!toIValidationManager(validationManager))
-            throw new CodingError('ValueHost requires ValidationManager');        
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
+        super(valueHostsManager, config, state);
+        if (!toIValueHostsManager(valueHostsManager))
+            throw new CodingError('ValueHost requires ValueHostsManager');        
     }
 
 
-    //#endregion IValidationManagerAccessor
+    //#endregion IValueHostsManagerAccessor
     
     protected get services(): IJivsServices
     {
@@ -133,7 +133,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     protected notifyOthersOfChange(options: SetValueOptions): void {
-        toIValidationManager(this.validationManager)?.notifyOtherValueHostsOfValueChange?.(
+        toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
             this.getName(), options.validate === true);
     }
     /**
@@ -157,7 +157,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             // it assumes that the Config is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
             this._associatedValueHostNames = new Set<ValueHostName>();
-            this.gatherValueHostNames(this._associatedValueHostNames, this.validationManager);
+            this.gatherValueHostNames(this._associatedValueHostNames, this.valueHostsManager);
         }
 
         if (this._associatedValueHostNames.has(valueHostIdThatChanged)) {
@@ -491,7 +491,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Helper to call onValueHostValidationStateChanged due to a change in the state associated
      * with Validate itself or ExternalIssuesFound.
-     * It also asks ValidationManager to call onValidationStateChanged so observers that only 
+     * It also asks ValueHostsManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      * 
      * This may still be called when the ValueHost is disabled, so long
@@ -508,8 +508,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         // To unit test the debounce feature of notifyValidationStateChanged, we need
         // the call to notify to be queued inside of debounce by the time onValueHostValidationStateChanged is invoked,
         // so we can leverage the onValueHostValidationStateChanged to advance the mock timer. (Ugh)
-        toIValidationManager(this.validationManager)?.notifyValidationStateChanged(null, options);
-        toIValidationManagerCallbacks(this.validationManager)?.onValueHostValidationStateChanged?.(this, this.currentValidationState);
+        toIValueHostsManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
+        toIValueHostsManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this, this.currentValidationState);
     }
 
     /**
@@ -709,7 +709,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.

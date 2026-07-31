@@ -299,7 +299,7 @@ export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks 
      * such as showing error messages and changing style sheets.
      * Use to change the disabled state of the submit button based on validity.
      * See also onValidationStateChanged for a similar callback from
-     * the ValidationManager.
+     * the ValueHostsManager.
      */
     onValueHostValidationStateChanged?: ValueHostValidationStateChangedHandler | null;
 }

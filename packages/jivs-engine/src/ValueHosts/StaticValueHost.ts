@@ -6,7 +6,7 @@ import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHost
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { CalcValueHost, hasICalcValueHostSpecificMembers } from './CalcValueHost';
 import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
@@ -19,19 +19,19 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
  * - Expose a global value - something not part of the form - that can be used by your
  *   Conditions, such as the current Country code used to select the right regular expression
  *   for postal codes, phone numbers, etc.
- * - Store all of the remaining members of your Model. Makes ValidationManager's ValueHosts
+ * - Store all of the remaining members of your Model. Makes ValueHostsManager's ValueHosts
  *   your ---Single Source of Truth (SSOT)--- for that Model.
  *   When working with a Model, you will need to write code that transfers the Model's property values
- *   into the UI elements. Since ValidationManager needs those same values, you can build
- *   your input fields/elements to get their value from ValidationManager and upon change, provide
+ *   into the UI elements. Since ValueHostsManager needs those same values, you can build
+ *   your input fields/elements to get their value from ValueHostsManager and upon change, provide
  *   the new values back.
 
  * You assign it during configuration or by calling its setValue() method.
  * 
- * When configuring the ValidationManager for a StaticValueHost, use the builder's static() method.
+ * When configuring the ValueHostsManager for a StaticValueHost, use the builder's static() method.
  * ```ts
  * builder.static("pi", LookupKey.Number, { initialValue: 3.14159, label: 'Pi' });
- * builder.static("today", LookupKey.Date); // use vm.getValueHost("today").setValue(new Date()); after creating the ValidationManager
+ * builder.static("today", LookupKey.Date); // use vm.getValueHost("today").setValue(new Date()); after creating the ValueHostsManager
  * ```
  * If configuring directly from a Config object, use the ValueHostType.Static type and provide a list of ValidatorConfigs.
  * ```ts
@@ -46,9 +46,9 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
 export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostInstanceState>
     implements IStaticValueHost
 {
-    constructor(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
+    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
     {
-        super(validationManager, config, state);
+        super(valueHostsManager, config, state);
     }
 }
 
@@ -67,8 +67,8 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
             return true;
         return false;
     }
-    public create(validationManager: IValidationManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
-        return new StaticValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
+        return new StaticValueHost(valueHostsManager, config, state);
     }
 
     public cleanupInstanceState(state: StaticValueHostInstanceState, config: StaticValueHostConfig): void {

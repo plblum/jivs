@@ -3,7 +3,7 @@ import {
     configUsingDateRangeFormRules
 } from '../src/Config_without_a_model';
 
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 import { StaticValueHost } from '@plblum/jivs-engine/build/ValueHosts/StaticValueHost';
@@ -27,7 +27,7 @@ afterEach(() => {
 describe('configExample', () => {
     it('should configure validation manager correctly', () => {
         // Execute configExample
-        let vm: ValidationManager;
+        let vm: ValueHostsManager;
         expect(() => vm = configUsingDateRangeFormRules()).not.toThrow();
         let vh1 = vm!.getValueHost('startDate');
         let vh2 = vm!.getValueHost('endDate');

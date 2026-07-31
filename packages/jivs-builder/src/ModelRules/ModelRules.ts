@@ -10,28 +10,28 @@
  * 
  * Subclass from abstract ModelRulesBase or FormRulesBase to implement your own rules.
  * 
- * Then use it to create a ValidationManagerConfig object, which can be used to create a ValidationManager.
+ * Then use it to create a ValueHostsManagerConfig object, which can be used to create a ValueHostsManager.
  * 
     ```ts
     const rules = new PersonEditFormRules(services);
     const config = rules.configure();
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-    const vm = new ValidationManager(config);
+    const vm = new ValueHostsManager(config);
     ```
  * @module jivs-builder/ModelRules/ConcreteClasses
  */
 
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { createFormConfigAdapter } from '../Builder/FormConfigAdapter';
-import { ValidationManagerConfigBuilder } from '../Builder/ValidationManagerConfigBuilder';
-import { IFormConfigAdapter, IManagerConfigBuilder, IValidationManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '../Builder/ValueHostsManagerConfigBuilder';
+import { IFormConfigAdapter, IManagerConfigBuilder, IValueHostsManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from '../Interfaces/ModelRules';
 
 
 /**
- * Core implementation of IRules. It is used to create a ValidationManagerConfig object from any rules built 
+ * Core implementation of IRules. It is used to create a ValueHostsManagerConfig object from any rules built 
  * into each concrete class.
  * Supports caching of the configuration. Uses ICachingService with a key formed by createConfigCacheKey().
  * Disable caching by setting options.disableCache to true.
@@ -51,12 +51,12 @@ export abstract class RulesBase implements IRules
     private readonly _services: IJivsServices;
 
     /**
-     * Creates a ValidationManagerConfig object from the rules built into this class.
+     * Creates a ValueHostsManagerConfig object from the rules built into this class.
      * @param options 
      * @returns 
      */
-    public configure(options?: RulesConfigOptions): ValidationManagerConfig {
-        let config: ValidationManagerConfig | null | undefined = undefined;
+    public configure(options?: RulesConfigOptions): ValueHostsManagerConfig {
+        let config: ValueHostsManagerConfig | null | undefined = undefined;
         const cacheKey = this.createConfigCacheKey(options);
         const cachingService = !options?.disableCache ? this.services.cachingService : null;
 
@@ -93,7 +93,7 @@ export abstract class RulesBase implements IRules
      * @param options 
      */
     protected abstract configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions,
     ): void;
 
@@ -131,9 +131,9 @@ export abstract class RulesBase implements IRules
      * @param options - Available if the subclass needs to customize the builder creation.
      * @returns 
      */    
-    protected createBuilder(options?: RulesConfigOptions): IValidationManagerConfigBuilder
+    protected createBuilder(options?: RulesConfigOptions): IValueHostsManagerConfigBuilder
     {
-        return new ValidationManagerConfigBuilder(this.services);
+        return new ValueHostsManagerConfigBuilder(this.services);
     }
 
     protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
@@ -142,11 +142,11 @@ export abstract class RulesBase implements IRules
     }
 
     /**
-     * Finalizes the builder into `ValidationManagerConfig`.
+     * Finalizes the builder into `ValueHostsManagerConfig`.
      * @param builder 
      * @param options - Available if the subclass needs to customize the finalization.
      */
-    protected buildConfig(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): ValidationManagerConfig
+    protected buildConfig(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): ValueHostsManagerConfig
     {
         return builder.complete();
     }
@@ -159,7 +159,7 @@ export abstract class RulesBase implements IRules
  * - Business Logic: implements configureRules() to define the model-oriented rules for a business model.
  *    ```ts
  *    export class PersonModelRules extends ModelRulesBase {
- *        configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *        configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
  *            // add model-oriented rules here
  *        }
  *    }
@@ -186,7 +186,7 @@ export abstract class ModelRulesBase extends RulesBase {
  * It is subclassed to create concrete rules classes for each Form.
  * ```ts
  *    export class PersonEditFormRules extends FormRulesBase {
- *       configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ *       configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
  *           // add form-specific rules
  *      }
  *    }

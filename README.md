@@ -57,7 +57,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
 -	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
     ```ts
     export class PersonModelRules extends ModelRulesBase {
-      protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+      protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
         builder.field('firstName').requireText().regExp('^[\\w\\s''\\-']*$');
         builder.field('lastName').requireText().regExp('^[\\w\\s''\\-]*$');
       }
@@ -258,7 +258,7 @@ Please use these documents:
   + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)
   + [ValueHosts](./docs/Jivs_API.md#valuehosts)
   + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
-  + [ValidationManager](./docs/Jivs_API.md#validationmanager)
+  + [ValueHostsManager](./docs/Jivs_API.md#valuehostsmanager)
   + [Rules](./docs/Jivs_API.md#rules)
   + [JivsServices](./docs/Jivs_API.md#jivsservices)
   + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)

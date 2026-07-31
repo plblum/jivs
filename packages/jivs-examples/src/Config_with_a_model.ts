@@ -1,5 +1,5 @@
 /**
-  Example of using the Builder API to create a ValidationManager configuration from business logic.
+  Example of using the Builder API to create a ValueHostsManager configuration from business logic.
   
   There are 3 phases to configuration when using business logic:
   Phase 1
@@ -12,8 +12,8 @@
      It must implement the IAdaptModelRulesToForm interface and consume the Builder API
      from within its adaptToForm() method.
   Phase 3
-     Create the ValidationManager through the class from Phase 2.
-     Wire up any callbacks from the ValidationManagerConfig object to your UI layer.
+     Create the ValueHostsManager through the class from Phase 2.
+     Wire up any callbacks from the ValueHostsManagerConfig object to your UI layer.
  
   You will see all three phases in this example.
 */
@@ -23,9 +23,9 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { createJivsServices } from './Config_example_common_code';
-import { IFormConfigAdapter, IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { IAdaptModelRulesToForm, RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
 import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
 
@@ -42,7 +42,7 @@ export class PersonModelRules extends ModelRulesBase {
     super(services);
   }
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigOptions
   ): void {
     builder.field('FirstName', LookupKey.String)
@@ -88,18 +88,18 @@ export class PersonEditFormRules
     into the existing configuration, so that business logic rules are not overwritten.
  4. Use the builder API to add and modify ValueHosts and validators.
  5. Attach callbacks to Builder object
- 6. Create the ValidationManager, passing in the builder object.
+ 6. Create the ValueHostsManager, passing in the builder object.
 */
-export function configPersonEditFormRules(): ValidationManager
+export function configPersonEditFormRules(): ValueHostsManager
 {
-    // Step 2: Configure and create the ValidationManager.
+    // Step 2: Configure and create the ValueHostsManager.
     let services = createJivsServices('en');
     let rules = new PersonEditFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler; 
-    let vm = new ValidationManager(config);
+    let vm = new ValueHostsManager(config);
 
-    // at this point, use the ValidationManager to validate your model.
+    // at this point, use the ValueHostsManager to validate your model.
     return vm;
 }
 

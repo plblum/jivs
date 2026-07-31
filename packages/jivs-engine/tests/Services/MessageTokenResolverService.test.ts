@@ -1,6 +1,6 @@
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { createMockValidationManagerForMessageTokenResolver } from "../TestSupport/mocks";
+import { createMockValueHostsManagerForMessageTokenResolver } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IFieldValueHost } from "../../src/Interfaces/FieldValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -8,10 +8,10 @@ import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/Me
 import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
 
 
-// resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
+// resolveTokens(message: string, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
 describe('resolveTokens', () => {
     test('Invalid parameters', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue> {
                 return [];
@@ -24,7 +24,7 @@ describe('resolveTokens', () => {
         expect(() => testItem.resolveTokens('message', null!, vm, null!)).toThrow(/hosts/);
     });
     test('Message with no tokens returns verbatim', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -39,7 +39,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{ message }', null!, vm, messageTokeSource)).toBe('{ message }');
     });    
     test('Message with {token} gets token replaced. Token value is a string.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -60,7 +60,7 @@ describe('resolveTokens', () => {
         
     });
     test('Message with {token} gets token replaced. Token value is a Date.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -76,7 +76,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('1/15/2000');
     });      
     test('Message with {token} gets token replaced. Token value is a Number.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -92,7 +92,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('2,100');
     });            
     test('Message with {token} gets token replaced. Token value is a Boolean.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -108,7 +108,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('false');
     });            
     test('Message with {token} gets token replaced using formatters. Token value is a String.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -126,7 +126,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token:' + LookupKey.Capitalize + '}', null!, vm, messageTokeSource)).toBe('ABC dEF');
     });          
     test('Message with {token} gets token replaced using formatters. Token value is a Date.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -144,7 +144,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token:' + LookupKey.LongDOWDate + '}', null!, vm, messageTokeSource)).toBe('Saturday, January 15, 2000');
     });          
     test('Message with {token1} and {token2} gets tokens replaced using formatters. Token1 is a Date; Token2 is a string.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -168,7 +168,7 @@ describe('resolveTokens', () => {
         expect(testItem.resolveTokens('{token2} and {token1:' + LookupKey.AbbrevDate + '}', null!, vm, messageTokeSource)).toBe('aBC dEF and Jan 15, 2000');
     });       
     test('Message with {token:formatter} where formatter does not support value is not replaced and gets logged', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let logger = vm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
@@ -188,7 +188,7 @@ describe('resolveTokens', () => {
         expect(logger.findMessage('not replaced', LoggingLevel.Warn)).toBeTruthy();        
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(true);
         let logger = vm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
@@ -208,7 +208,7 @@ describe('resolveTokens', () => {
         expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });        
     test('getValuesForTokens function throws an error', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue> {
                 return [{

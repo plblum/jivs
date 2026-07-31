@@ -12,7 +12,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound } from "../../src/Interfaces/Validation";
-import { IValidationManager } from "../../src/Interfaces/ValidationManager";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValueHostConfig, IValueHost } from "../../src/Interfaces/ValueHost";
@@ -20,7 +20,7 @@ import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { MockJivsServices, MockValidationManager } from "./mocks";
+import { MockJivsServices, MockValueHostsManager } from "./mocks";
 
 
 /**
@@ -164,8 +164,8 @@ class TestValidatableValueHostGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === 'TestValidatableValueHost';
     }
-    public create(validationManager : IValidationManager, config: ValueHostConfig, state: ValidatableValueHostBaseInstanceState): IValueHost {
-        return new TestValidatableValueHost(validationManager, config, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: ValidatableValueHostBaseInstanceState): IValueHost {
+        return new TestValidatableValueHost(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValueHostConfig): void {
     }
@@ -191,7 +191,7 @@ export function addTestValidatableValueHostGeneratorToServices(services: IJivsSe
 
 export interface ITestValidatableValueHostBaseSetupConfig {
     services: MockJivsServices,
-    validationManager: MockValidationManager,
+    valueHostsManager: MockValueHostsManager,
     config: ValidatableValueHostBaseConfig,
     state: ValidatableValueHostBaseInstanceState,
     valueHost: TestValidatableValueHost
@@ -297,7 +297,7 @@ export function finishPartialValidatableValueHostBaseInstanceState(partialState:
  * IssuesFound: null,
  * ValidationStatus: NotAttempted
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Config,
+ * ValueHostsManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
 export function setupValidatableValueHostBase(
@@ -307,7 +307,7 @@ export function setupValidatableValueHostBase(
     let services = new MockJivsServices(true, true);
     addTestValidatableValueHostGeneratorToServices(services);
 
-    let vm = new MockValidationManager(services);
+    let vm = new MockValueHostsManager(services);
     let updatedConfig = finishPartialValidatableValueHostBaseConfig(partialIVHConfig ?? null);
     let updatedState = finishPartialValidatableValueHostBaseInstanceState(partialState ?? null);
 
@@ -316,7 +316,7 @@ export function setupValidatableValueHostBase(
     //new ValidatableValueHostBase(vm, updatedConfig, updatedState);
     return {
         services: services,
-        validationManager: vm,
+        valueHostsManager: vm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh as TestValidatableValueHost

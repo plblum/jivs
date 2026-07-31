@@ -1,10 +1,10 @@
 
-import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, EmailAddressConditionType, EmailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { createMinimalJivsServices } from '../src/support';
 
@@ -15,7 +15,7 @@ describe('EmailAddressCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValidationManager(builder.complete());
+        let vm = new ValueHostsManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         let config: RegExpConditionConfig = {
@@ -49,7 +49,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValidationManager(builder.complete());
+        let vm = new ValueHostsManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
@@ -63,7 +63,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey).emailAddress();
 
-        let vm = new ValidationManager(builder.complete());
+        let vm = new ValueHostsManager(builder.complete());
         let vh = vm.getFieldValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');

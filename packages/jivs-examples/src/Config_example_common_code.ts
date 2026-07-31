@@ -8,7 +8,7 @@
  - How to configure the JivsServices object by adding conditions, localizable error messages, 
    parsers, formatters, and converters.
  - The model used in the examples.
- - Callback functions used by the ValidationManager.
+ - Callback functions used by the ValueHostsManager.
  - Unit testing Mocks for the document.getElementById function and the HTMLSelectElement 'timeZonePicker'
 
 
@@ -34,7 +34,7 @@ import { CleanUpStringParser, ShortDatePatternParser } from '@plblum/jivs-engine
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
@@ -64,7 +64,7 @@ export interface FilterDatesModel {
 export const TimeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
-export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
     let totalDays1 = callingValueHost.convert(
         findValueHosts.getValueHost('startDate')?.getValue(),
         null, LookupKey.TotalDays);
@@ -119,7 +119,7 @@ export function createJivsServices(cultureID: string): JivsServices {
     formatterService.register(new NumberFormatter());  // for {CompareTo} token in error message
 
     // provide default error messages. 
-    // These will override any passed through the ValidationManagerConfig as the supplied messages are assumed to
+    // These will override any passed through the ValueHostsManagerConfig as the supplied messages are assumed to
     // come from business logic, not the UI layer.
     // In this case, our error message for LessThan will be a custom one, so we will set it later.
     let textLocalizationService = services.textLocalizerService as TextLocalizerService;
@@ -161,7 +161,7 @@ export function createJivsServices(cultureID: string): JivsServices {
     return services;
 }
 
-// Callback functions used by ValidationManager.
+// Callback functions used by ValueHostsManager.
 
 // Builder.onValueChanged is called each time any ValueHost's value changes.
 export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {

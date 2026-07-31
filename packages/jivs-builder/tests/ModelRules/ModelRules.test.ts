@@ -4,8 +4,8 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { IFormConfigAdapter, IValidationManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
+import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { RulesBase } from "../../src/ModelRules/ModelRules";
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
@@ -19,7 +19,7 @@ class PersonModelRules extends RulesBase {
     constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
         builder.field('firstName', LookupKey.String).requireText();
         builder.field('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {
@@ -52,7 +52,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
             expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
-        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
         expect(cachedConfig).not.toBeNull();
         expect(cachedConfig).toBe(config);
     });
@@ -83,7 +83,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
             let config1 = rules.configure({ disableCache: true });
             let config2 = rules.configure({ disableCache: true });
             expect(config2).not.toBe(config1);
-            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
             expect(cachedConfig).toBeUndefined();
         });
         // options.disableCache = false
@@ -101,9 +101,9 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
             let config1 = rules.configure();
             let config2 = rules.configure({ variantName: 'variant1' });
             expect(config2).not.toBe(config1);
-            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
             expect(cachedConfig).toBe(config1);
-            let cachedConfig2 = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey({ variantName: 'variant1' }));
+            let cachedConfig2 = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey({ variantName: 'variant1' }));
             expect(cachedConfig2).toBe(config2);
 
         });
@@ -145,7 +145,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
             expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
-        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
         expect(cachedConfig).not.toBeNull();
         expect(cachedConfig).toBe(config);
     });

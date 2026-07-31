@@ -6,7 +6,7 @@ import type { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../Interfaces/LoggerService';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { assertNotNull, CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
@@ -27,10 +27,10 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
+    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
     {
         assertNotNull(message, 'message');
-        assertNotNull(validationManager, 'valueHostResolver');
+        assertNotNull(valueHostsManager, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError('hosts required');
 
@@ -48,7 +48,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
         let revised = message;
         let allTavs: Array<TokenLabelAndValue> = [];
         hosts.forEach((tokenSource, index) => {
-            const tavs = tokenSource.getValuesForTokens(valueHost, validationManager);
+            const tavs = tokenSource.getValuesForTokens(valueHost, valueHostsManager);
             if (tavs)
                 allTavs = allTavs.concat(tavs);
         });
@@ -62,7 +62,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                 if (capturedToken.isMatch(tav))
                 {
                     try {
-                        const replacement = capturedToken.replacement(tav.associatedValue, validationManager);
+                        const replacement = capturedToken.replacement(tav.associatedValue, valueHostsManager);
                         if (replacement.value !== undefined)
                         {
                             const finalized = this.finalizeReplacement(replacement.value, tav);
@@ -177,11 +177,11 @@ class CapturedToken
 /**
  * Generates the replacement string for the full token, using the replacementValue
  * @param replacementValue
- * @param validationManager 
+ * @param valueHostsManager 
  * @returns 
  */    
-    public replacement(replacementValue: any, validationManager: IValidationManager): DataTypeResolution<string>
+    public replacement(replacementValue: any, valueHostsManager: IValueHostsManager): DataTypeResolution<string>
     {
-        return validationManager.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? undefined);
+        return valueHostsManager.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? undefined);
     }
 }

@@ -3,7 +3,7 @@ import {
     configPersonEditFormRules
 } from '../src/Config_with_a_model';
 
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 
@@ -25,7 +25,7 @@ afterEach(() => {
 describe('configPersonEditFormRules', () => {
     it('should configure validation manager correctly', () => {
         // Execute configExample
-        let vm: ValidationManager;
+        let vm: ValueHostsManager;
         expect(() => vm = configPersonEditFormRules()).not.toThrow();
         let vh1 = vm!.getValueHost('FirstName');
         let vh2 = vm!.getValueHost('LastName');

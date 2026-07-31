@@ -21,10 +21,10 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     
     > If you are using a Model, you might also use `StaticValueHost` for all remaining properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
 
--   [`ValidationManager class`](#validationmanager) – The "face" of this API. It represents the fields of your form or model to Jivs through its `ValueHosts`. Your validation-related UI elements will need access to it to do their work. Use it to validate, retrieve validation results, and report additional errors determined by your business logic. It is supported by these types:
-    + `ValidationManagerConfig object tree` – An object tree that describes all aspects of configuring the ValidationManager, including services, ValueHosts, Validators, and callbacks. 
-    + [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class) – Provides a fluent syntax to create the `ValidationManagerConfig object tree`.
-    + [`FormConfigAdapter class`](#the-form-configuration-adapter) – Also known as the **Form Configuration Adapter**, use it to configure the `ValidationManager` from within the `IAdaptModelRulesToForm.adaptToForm()` method. Internally, it prepares the `ValidationManagerConfig object tree`.
+-   [`ValueHostsManager class`](#valuehostsmanager) – The "face" of this API. It represents the fields of your form or model to Jivs through its `ValueHosts`. Your validation-related UI elements will need access to it to do their work. Use it to validate, retrieve validation results, and report additional errors determined by your business logic. It is supported by these types:
+    + `ValueHostsManagerConfig object tree` – An object tree that describes all aspects of configuring the ValueHostsManager, including services, ValueHosts, Validators, and callbacks. 
+    + [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) – Provides a fluent syntax to create the `ValueHostsManagerConfig object tree`.
+    + [`FormConfigAdapter class`](#the-form-configuration-adapter) – Also known as the **Form Configuration Adapter**, use it to configure the `ValueHostsManager` from within the `IAdaptModelRulesToForm.adaptToForm()` method. Internally, it prepares the `ValueHostsManagerConfig object tree`.
 
 -   [`Condition classes`](#conditions-the-validation-rules) – Classes that evaluate value(s) against a rule
     to see if those values conform. `Condition classes` exist for each
@@ -33,7 +33,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     are `Conditions` included in this library, you are often going to need
     to build your own.
 
--   [`Validator class`](#validators-connecting-conditions-to-error-messages) – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
+-   [`Validator class`](#validators-connecting-conditions-to-error-messages) – Handle the validation process of a single rule and deliver a list of issues found to the ValueHostsManager, where your UI elements can consume it.
 
 - [`JivsServices class`](#jivsservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by JivsServices which empower Jivs.
     - `IDataTypeFormatter` – Two use cases:
@@ -52,7 +52,7 @@ Topics:
 - [Conditions - the validation rules](#conditions--the-validation-rules)
 - [ValueHosts](#valuehosts)
 - [Validators](#validators-connecting-conditions-to-error-messages)
-- [ValidationManager](#validationmanager)
+- [ValueHostsManager](#valuehostsmanager)
 - [Rules](#rules)
 - [JivsServices](#jivsservices)
 - [Creating your own Conditions](#creating-your-own-conditions)
@@ -67,7 +67,7 @@ Topics:
 A validator is the combination of two classes: 
 1. The *Condition* which is the rule that evaluates the data, determining validity.
 2. The *Validator* which hosts the error messages and one Condition object. It contains the `validate()` function
-that uses the `Condition` to determine validity and interacts with the containing `ValueHost` and `ValidationManager`, who deliver the results to the UI.
+that uses the `Condition` to determine validity and interacts with the containing `ValueHost` and `ValueHostsManager`, who deliver the results to the UI.
 
 To emphasize this separation, let's see how our configuration objects look:
 ```ts
@@ -217,7 +217,7 @@ Jivs wants the app to keep its validation rules in Business Logic separate from 
 
 > Input Validation’s role is to ensure that the values you move into a Model conform to the business logic, without using existing business logic code that depends on the Model.
 
-Business logic validation code still gets used, but only upon attempting to save into the Model. The user clicks a Save button. The button first checks if there are any remaining input validation errors. If none, you have code that populates a model from the Inputs. That’s when business logic does its own validation. It will save if no issues remain. It will report back issues if any are found. You’ll pass them along to `ValidationManager` to impact the user interface, like showing them in a ValidationSummary widget.
+Business logic validation code still gets used, but only upon attempting to save into the Model. The user clicks a Save button. The button first checks if there are any remaining input validation errors. If none, you have code that populates a model from the Inputs. That’s when business logic does its own validation. It will save if no issues remain. It will report back issues if any are found. You’ll pass them along to `ValueHostsManager` to impact the user interface, like showing them in a ValidationSummary widget.
 
 About all the UI developer should know is:
 - The identity of the Model’s field, so it can move values between Model and UI.
@@ -245,7 +245,7 @@ Jivs provides numerous `Condition classes`.
 </details>
 
 To use them, you need to provide a configuration with properties specific to its class. 
-> Configuration must be setup when [configuring the ValidationManager](#configuring-the-validationmanager).
+> Configuration must be setup when [configuring the ValueHostsManager](#configuring-the-valuehostsmanager).
 
 We'll work with this example: Compare a date from the Input to today's date.
 
@@ -262,7 +262,7 @@ interface EqualToValueConditionConfig {
 ```
 > Where's an error message property? A `Condition` is just part of a Validator. The `Validator class` connects your Condition to its error message.
 
-We'll use the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class) to deliver its properties as it is easier, and allows us to setup the error message too:
+We'll use the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) to deliver its properties as it is easier, and allows us to setup the error message too:
 ```ts
 builder.field('SignedOnDate').equalToValue(new Date(), "Enter today's date", { conversionLookupKey: LookupKey.Date });
 ```
@@ -278,7 +278,7 @@ Every value that you expose to Jivs is kept in a ValueHost. There are several ty
 - `StaticValueHost` – The value that is not validated itself, but its value is used in an FieldValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
 - `CalcValueHost` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
-These objects are created by the ValidationManager for you, as a result of configuring it. Here is pseudo-code representation of their interfaces (omitting many members).
+These objects are created by the ValueHostsManager for you, as a result of configuring it. Here is pseudo-code representation of their interfaces (omitting many members).
 ```ts
 interface IValueHost {
     getName(): string;
@@ -310,7 +310,7 @@ interface IStaticValueHost extends IValueHost
 }
 interface ICalcValueHost extends IValueHost
 {
-    convert(source, validationManager): SimpleValueType;
+    convert(source, valueHostsManager): SimpleValueType;
 }
 ```
 
@@ -327,10 +327,10 @@ In this example, our Model’s property names are used in the input tag’s name
 Jivs wants those same names for basically the same purpose of correlating with fields in the Model.
 
 ### Configuring ValueHosts
-You configure each ValueHost as part of configuring the overall ValidationManager.
+You configure each ValueHost as part of configuring the overall ValueHostsManager.
 Typically it involves subclassing [`ModelRulesBase`](#rules) to host the business logic rules
 of your model. The code goes into the `configureRules()` method, which is passed a Builder
-object to describe your configuration through the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class).
+object to describe your configuration through the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class).
 
 #### Example
 Each `field()` adds or modifies a `ValueHost` of type _FieldValueHost_. The method's parameters
@@ -338,7 +338,7 @@ assign properties to the ValueHost. The fluent syntax that follows it are valida
 
 ```ts
 export class PersonModelRules extends ModelRulesBase {
-    protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
 
         // create the First Name ValueHost and its validators
         builder.field('FirstName', LookupKey.String, { label: 'First name'} )
@@ -387,8 +387,8 @@ public adaptToForm(
 }
 ```
 #### Configuring ValueHosts
-The [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class) has these functions to add ValueHosts by their type.
-> The Form Configuration Adapter is actually a subclass of `ValidationManagerConfigBuilder`, supporting the same functions.
+The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) has these functions to add ValueHosts by their type.
+> The Form Configuration Adapter is actually a subclass of `ValueHostsManagerConfigBuilder`, supporting the same functions.
 - `field()` adds or modifies an `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
    
     `field(valueHostName, dataType?, *parameters object*?): IValidatorBuilder`
@@ -430,9 +430,9 @@ The [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder
 
 - `static()` adds or modifies a `StaticValueHost` configuration. It does not support validators, but it can be chained with other ValueHosts.
    
-    `static(valueHostName, dataType?, *parameters*?): ValidationManagerConfigBuilder`
+    `static(valueHostName, dataType?, *parameters*?): ValueHostsManagerConfigBuilder`
     
-    `static(valueHostName, *parameters*?): ValidationManagerConfigBuilder`
+    `static(valueHostName, *parameters*?): ValueHostsManagerConfigBuilder`
     ```ts
     builder.static('fieldname', LookupKey.Date);
     builder.static('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
@@ -448,7 +448,7 @@ The [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder
     ```
     This variant takes one parameter, an object with all properties on the `StaticValueHostConfig`.
 
-    `static(*config*): ValidationManagerConfigBuilder`
+    `static(*config*): ValueHostsManagerConfigBuilder`
     ```ts
     builder.static({ name: 'fieldname', dataType: LookupKey.Date,
         label: 'Field name', labell10n: 'FNKey' });
@@ -463,14 +463,14 @@ The [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder
 
 - `calc()` adds or modifies a `CalcValueHost` configuration. It does not support validators, but it can be chained with other ValueHosts. See [Using CalcValueHost](#using-calcvaluehost) for more.
     
-    `calc(valueHostName, dataType, calcFn): ValidationManagerConfigBuilder`
+    `calc(valueHostName, dataType, calcFn): ValueHostsManagerConfigBuilder`
 
     ```ts
     builder.calc('fieldname', LookupKey.Date, myCalcFunction);
     ```
     This variant takes one parameter, an object with all properties on the `CalcValueHostConfig`.
 
-    `calc(*config*): ValidationManagerConfigBuilder`
+    `calc(*config*): ValueHostsManagerConfigBuilder`
     ```ts
     builder.calc({ name: 'fieldname', dataType: LookupKey.Date,
         calcFn: myCalcFunction });
@@ -502,7 +502,7 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
 
 ### Getting a ValueHost
-Start with a ValidationManager instance. It should already be configured with ValueHosts. Supposing *vm* has that ValidationManager, do this to get a ValueHost:
+Start with a ValueHostsManager instance. It should already be configured with ValueHosts. Supposing *vm* has that ValueHostsManager, do this to get a ValueHost:
 
 |Code|Notes|Not found|
 |----|-----|---------|
@@ -519,7 +519,7 @@ Start with a ValidationManager instance. It should already be configured with Va
 ### Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.
 ```ts
-(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => number | Date | string | null | boolean | undefined
+(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => number | Date | string | null | boolean | undefined
 ```
 Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the JivsServices on `findValueHosts.services`.
 
@@ -527,7 +527,7 @@ In this example, the function multiplies the value from the FieldValueHost 'Coun
 ```ts
 builder.field('Count', LookupKey.Integer);
 builder.calc('TimesTen', LookupKey.Integer, 
-   (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => {
+   (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => {
       let count = findValueHosts.getValueHost('Count') as number;
       if (!isNaN(count))
           return count * 10;
@@ -593,8 +593,8 @@ interface IValidator {
 ```
 
 ### Configuring Validators
-Validators have an underlying object, ValidatorConfig, that hosts the configuration. You generally use the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class) to assist setting it up.
-> Configuration must be setup when [configuring the ValidationManager](#configuringvalidationmanager).
+Validators have an underlying object, ValidatorConfig, that hosts the configuration. You generally use the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) to assist setting it up.
+> Configuration must be setup when [configuring the ValueHostsManager](#configuringvaluehostsmanager).
 ```ts
 interface ValidatorConfig {
     errorCode?: string;
@@ -617,8 +617,8 @@ Let’s go through each property.
 - `errorCode` – Each validator must have a unique error code within a ValueHost to identify it. By default, it uses the value from `conditionConfig.conditionType` or the condition created by `conditionCreator` (below). 
   + It is used by these features:
     + Lookup the localized error message with the [`TextLocalizerService`](#localizing-strings-textlocalizerservice).
-    + It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it. IssueFound is passed to your UI in these ValidationManager callbacks: `onValidationStateChanged` and `onValueHostValidationStateChanged`.
-    + When the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class) has to merge validators using the `ValidatorConfigMergeService`.
+    + It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it. IssueFound is passed to your UI in these ValueHostsManager callbacks: `onValidationStateChanged` and `onValueHostValidationStateChanged`.
+    + When the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) has to merge validators using the `ValidatorConfigMergeService`.
     + When business logic provides errors, if its own error code matches this property, this validator reports an error, making it easy to ensure error messages are consistent and UI friendly.
   + Set it directly in these cases:
     + The same condition type is used more than once.
@@ -690,12 +690,12 @@ builder.field('FirstName', LookupKey.String, { label: 'First name' } )
 builder.field('LastName', LookupKey.String, { label: 'Last name' }).requireText();
 ```
 
-## ValidationManager
-With Jivs, the UI uses the `ValidationManager class` to manage the `ValueHosts`, run validation, and get any issues found. All of your UI widgets should have access to the `ValidationManager`, so they can take actions resulting from validation.
+## ValueHostsManager
+With Jivs, the UI uses the `ValueHostsManager class` to manage the `ValueHosts`, run validation, and get any issues found. All of your UI widgets should have access to the `ValueHostsManager`, so they can take actions resulting from validation.
 
 Here is pseudo-code representation of its interface (omitting some members).
 ```ts
-interface IValidationManager {
+interface IValueHostsManager {
     services: IJivsServices;
     
     getValueHost(valueHostName): null | IValueHost;
@@ -715,10 +715,10 @@ interface IValidationManager {
 }
 ```
 
-### Configuring the ValidationManager
+### Configuring the ValueHostsManager
 > Please visit "[Configuring Jivs](#configuring-jivs)" for an overview of the process.
 
-The `ValidationManager` is configured by passing the  `ValidationManagerConfig object tree` into its constructor. The object tree is complex and difficult to maintain, so we provide the **Builder API** to greatly simplify it. (See [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class).)
+The `ValueHostsManager` is configured by passing the  `ValueHostsManagerConfig object tree` into its constructor. The object tree is complex and difficult to maintain, so we provide the **Builder API** to greatly simplify it. (See [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class).)
 
 Typically you encapsolate the business rules in a class that inherits from [`ModelRulesBase`](#rules), overriding the `configureRules()` method where you describe each field and its validators with the Builder API.
 
@@ -732,7 +732,7 @@ export class PersonModel {
     lastName: string
 }
 export class PersonModelRules extends ModelRulesBase {
-    protected configureRules(builder: IValidationManagerConfigBuilder, 
+    protected configureRules(builder: IValueHostsManagerConfigBuilder, 
         options?: RulesConfigOptions): void {
 
         // create the First Name ValueHost and its validators
@@ -747,11 +747,11 @@ export class PersonModelRules extends ModelRulesBase {
         builder.field('LastName', LookupKey.String, { label: 'Last name'} );
     }
 }
-// consume to build your ValidationManager
+// consume to build your ValueHostsManager
 let services = createJivsServices('en-US'); // see "Installing Jivs"
 let rules = new PersonModelRules(services);
 let config = rules.configure();
-let vm = new ValidationManager(config);   // 'vm' will be used to handle validation
+let vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
 ```
 
 ## Rules
@@ -761,8 +761,8 @@ In most apps, you should create a subclass of `ModelRulesBase` to package the va
 When a form uses those model rules, the form should subclass that model rules class and implement `IAdaptModelRulesToForm`.
 Only when there is no business logic model should you instead subclass `FormRulesBase`.
 
-All of these classes return a `ValidationManagerConfig` from `configure()`.
-You then create the `ValidationManager` from that config.
+All of these classes return a `ValueHostsManagerConfig` from `configure()`.
+You then create the `ValueHostsManager` from that config.
 
 Use these types depending on where the rules belong:
 
@@ -773,23 +773,23 @@ Use these types depending on where the rules belong:
 ### What `configure()` gives you
 
 The public entry point is `configure(options?)`.
-It creates and returns a `ValidationManagerConfig`, ready to be passed to `ValidationManager`.
+It creates and returns a `ValueHostsManagerConfig`, ready to be passed to `ValueHostsManager`.
 
 Inside `configure()` Jivs handles several support steps for you:
 
-* Creates the `ValidationManagerConfigBuilder` so your subclass only focuses on `configureRules()`.
+* Creates the `ValueHostsManagerConfigBuilder` so your subclass only focuses on `configureRules()`.
 * Runs `configureRules()`. You are expected to override it to define your rules.
 * When `IAdaptModelRulesToForm` is implemented, `configure()` transistions from business rules to form adaptation by creating the [Form Configuration Adapter](#the-form-configuration-adapter),
   then calls `adaptToForm()` so you can adjust the rules for the form.
 * Optionally runs config analysis.
-* Finalizes the builder into `ValidationManagerConfig`.
+* Finalizes the builder into `ValueHostsManagerConfig`.
 * Optionally caches that config for reuse.
 
 ```ts
 const services = createJivsServices('en-US');
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
-const vm = new ValidationManager(config);
+const vm = new ValueHostsManager(config);
 ```
 
 ### RulesConfigOptions
@@ -807,13 +807,13 @@ interface RulesConfigOptions {
 * `variantName` - Lets the subclass author define named variants of the same rules class, so the class's consumer can request an optional configuration path by name.
 
 ### ModelRulesBase
-Subclass `ModelRulesBase` to define fields and their validation rules _for a model_ using the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class).
+Subclass `ModelRulesBase` to define fields and their validation rules _for a model_ using the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class).
 A `ModelRulesBase` class is business-logic-oriented. In its primary use case, it defines `FieldValueHosts` through `builder.field()` inside `configureRules()`.
 When your rules are form-only and there is no business logic model, see `FormRulesBase` below.
 ```ts
 class PersonModelRules extends ModelRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions): void 
     {
         builder.field('FirstName', LookupKey.String).requireText();
@@ -863,13 +863,13 @@ class PersonEditFormRules
 Subclass `FormRulesBase` when the form owns its validation rules directly and there is no model rules class to adapt.
 
 A `FormRulesBase` class is form-oriented and normally defines `FieldValueHosts`
-through `builder.field()` inside `configureRules()`, using the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class).
+through `builder.field()` inside `configureRules()`, using the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class).
 > Do not use `IAdaptModelRulesToForm` interface within FormRulesBase.
 
 ```ts
 class DateRangeFormRules extends FormRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions): void 
     {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' });
@@ -879,8 +879,8 @@ class DateRangeFormRules extends FormRulesBase {
 ```
 ### Caching
 Rules configuration is cached by default.
-The cached artifact is `ValidationManagerConfig`, not `ValidationManager`.
-This lets Jivs reuse static configuration while still creating a fresh runtime `ValidationManager` each time you need one. 
+The cached artifact is `ValueHostsManagerConfig`, not `ValueHostsManager`.
+This lets Jivs reuse static configuration while still creating a fresh runtime `ValueHostsManager` each time you need one. 
 
 Use the `disableCache: true` option when you do not want a `configure()` call to read from or write to the cache. 
 ```ts
@@ -906,15 +906,15 @@ export function createJivsServices(... parameters ...): JivsServices {
 ```
 Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
 
-Now that you have the `createJivsServices function`, use it during `ValidationManager` configuration.
+Now that you have the `createJivsServices function`, use it during `ValueHostsManager` configuration.
 ```ts
 let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 ```
 ### Customizing factories and services
-There are many services. Most code that instantiates an object is found in services and factories, not in the ValidationManager, ValueHosts, and Validators. That allows for extensive ability to customize.
+There are many services. Most code that instantiates an object is found in services and factories, not in the ValueHostsManager, ValueHosts, and Validators. That allows for extensive ability to customize.
 
 Here is the JivsServices type:
 ```ts
@@ -1067,7 +1067,7 @@ Normally it does not attempt to update the companion text value that is shown in
 Assign the FieldValueHostConfig.formatterLookupKey and you get a different result.
 - The native value is formatted with the supplied formatter.
 - The text value is set
-- The ValidationManager.onTextValueChanged callback is triggered, allowing you to wire up your data entry field to intake the new string.
+- The ValueHostsManager.onTextValueChanged callback is triggered, allowing you to wire up your data entry field to intake the new string.
 ```ts
 vm.onTextValueChanged = (fieldValueHost, oldValue)=>{
     let newTextValue = fieldValueHost.getTextValue();
@@ -1276,7 +1276,7 @@ builder.field('fieldname')
 [jivs-engine/src/Conditions](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Conditions)
 - Return `Undetermined` when unsupported data is found. For example, if you are evaluating only against a string, test `typeof value === 'string'` and return `Undetermined` when false.
 - Always write unit tests.
-- `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Configs passed into the `ValidationManager`.
+- `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Configs passed into the `ValueHostsManager`.
 - `conditionType` values are case sensitive.
 - You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `JivsServices class` in the `createJivsServices function`.
 
@@ -1294,14 +1294,14 @@ Here are a few places you provide user-facing strings into Jivs:
 
 Each of those properties have a companion that ends in "l10n" (industry term for localization), such as labell10n. Use the l10n properties to supply a Localization Key that will be sent to Jivs `TextLocalizerService`. If that service has the appropriate data, it will be used instead of the usual property.
 
-`TextLocalizerService` is available on `ValidationManager.services.textLocalizerService`. Add localization content within the `createTextLocalizerService() function` [that was added here](#jivsservices).
+`TextLocalizerService` is available on `ValueHostsManager.services.textLocalizerService`. Add localization content within the `createTextLocalizerService() function` [that was added here](#jivsservices).
 
 To replace it with a third party text localization tool, implement `ITextLocalizerService` and assign it in the `createTextLocalizerService() function`.
 
 #### Setup for ValueHostConfig.label
 Let's suppose that you have a label "First Name" which you want in several languages.
 1. Create a unique Localization Key for it. We'll use "FirstName".
-2. Assign both label and labell10n properties during configuration, shown here using the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class):
+2. Assign both label and labell10n properties during configuration, shown here using the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class):
     ```ts
     builder.field('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' });
     ```
@@ -1349,7 +1349,7 @@ service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
 So review and edit the `createTextLocalizerService() function`.
 #### Setup for ValueHostConfig.dataType
 The {DataType} token is useful in making the error message for a Data Type Check validator cover multiple data types. Instead of "Enter a date." and "Enter a number.", one error message can say "Enter a {DataType}.".
-1. Assign the dataType property during configuration shown here using the [`ValidationManagerConfigBuilder class`](#the-validationmanagerconfigbuilder-class):
+1. Assign the dataType property during configuration shown here using the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class):
     ```ts
     builder.field('Age', LookupKey.Integer);
     ```
@@ -1413,7 +1413,7 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 
 ## Validation Deep Dive
 ### What invokes validation
-Both the ValidationManager and validatable ValueHosts have a `validate()` function, as described in the next two sections.
+Both the ValueHostsManager and validatable ValueHosts have a `validate()` function, as described in the next two sections.
 #### ValueHost.validate()
 When a ValueHosts' value changed, call its `validate()` function or pass the `{ validate: true }` option into the `setValue()` (and related) function.
 
@@ -1504,8 +1504,8 @@ These properties are all related to validation:
         });    
     ```
 
-#### ValidationManager.validate()
-Prior to submitting or any time you want to validate the entire form, use `validate()` on ValidationManager.
+#### ValueHostsManager.validate()
+Prior to submitting or any time you want to validate the entire form, use `validate()` on ValueHostsManager.
 ```ts
 let status = vm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
@@ -1522,12 +1522,12 @@ interface ValidateOptions {
     skipCallback?: boolean;
 }
 ```
-These properties are all related to ValidationManager validation:
+These properties are all related to ValueHostsManager validation:
 - group - Group validation is a tool to group validatable ValueHosts with a specific submit command when validating. If used, it needs a name assigned here and on ValueHosts that it targets. See their ValueHostConfig.group property. The name matching is case insensitive.
 
   Use when there is more than one group of validatable ValueHosts to be validated together.
   
-  For example, the ValidationManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
+  For example, the ValueHostsManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
   pass in the same group name.
   
 - preliminary - Set to true when running a validation prior to a submit activity.
@@ -1546,7 +1546,7 @@ Your user interface depends on knowing the state of validation. Has validation r
 
 *See the details of ValueHostValidationState below for more on these.*
 
-However, its usually better to setup the `onValueHostValidationStateChanged callback` (on ValidationManagerConfig) and let it pass you this informative object:
+However, its usually better to setup the `onValueHostValidationStateChanged callback` (on ValueHostsManagerConfig) and let it pass you this informative object:
 ```ts
 interface ValueHostValidationState {
     isValid: boolean;
@@ -1562,7 +1562,7 @@ let services = createJivsServices('en-US');
 let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
@@ -1627,10 +1627,10 @@ Going through its properties:
 - `errorMessage` - The error message, fully localized and prepared to display.
 - `summaryMessage` - The error message that targets the ValidationSummary. 
 
-### Current validation state on ValidationManager
-The ValidationManager has similar functions to those on validatable ValueHosts, only it is a consolidated represention from the ValueHosts. The validation state is used prior to submitting the data and by the ValidationSummary as the state changes.
+### Current validation state on ValueHostsManager
+The ValueHostsManager has similar functions to those on validatable ValueHosts, only it is a consolidated represention from the ValueHosts. The validation state is used prior to submitting the data and by the ValidationSummary as the state changes.
 
-ValidationManager's validation state is found amongst several of its properties and functions.
+ValueHostsManager's validation state is found amongst several of its properties and functions.
 - `isValid`
 - `doNotSave`
 - `asyncProcessing`
@@ -1638,7 +1638,7 @@ ValidationManager's validation state is found amongst several of its properties 
 
 *See the details of ValidationState below for more on these.*
 
-When you need notifications as it changes, its setup the `onValidationStateChanged callback` (on ValidationManagerConfig) and let it pass you this informative object:
+When you need notifications as it changes, its setup the `onValidationStateChanged callback` (on ValueHostsManagerConfig) and let it pass you this informative object:
 ```ts
 interface ValidationState {
     isValid: boolean;
@@ -1654,13 +1654,13 @@ let rules = new PersonModelRules();// subclass of ModelRulesBase for your Person
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 builder.onValidationStateChanged = formValidated;
-let vm = new ValidationManager(config);
+let vm = new ValueHostsManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
     ... shown earlier ...
 }
-function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
+function formValidated(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
 {
     let valSummary = document.querySelector('.validationsummary');
     if (validationState.isValid)
@@ -1694,7 +1694,7 @@ Let's go through ValidationState properties:
 - `asyncProcessing` - When evaluating an asynchronous Condition, validation will return before it is done, with the results from the rest of the Conditions. `asyncProcessing` is true at this moment, and until all asynchronous Conditions are finished. Expect `onValueHostValidationStateChange callbacks` after the validation runs, and after each async Condition finishes, giving you the latest validation state.
 
 ### Actions that change the validation state
-All of these actions can change the validation state whether on ValidationManager or a ValueHost. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
+All of these actions can change the validation state whether on ValueHostsManager or a ValueHost. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
 - `validate()`
 - `clearValidation()`
 - `addExternalIssuesFound()` and `addExternalIssueFound()`
@@ -1708,7 +1708,7 @@ Validation rules work against the inputs from the user, the properties from the 
 Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
 
 ### Setting values
-You will set values as you initialize the ValidationManager and as the values are changed. Most of the time, you will use `valueHost.setValue()` and `valueHost.setValueToUndefined()`. 
+You will set values as you initialize the ValueHostsManager and as the values are changed. Most of the time, you will use `valueHost.setValue()` and `valueHost.setValueToUndefined()`. 
 ```ts
 setValue(value: any, options?: SetValueOptions): void;
 setValue(value: any, options?: FieldValueHostSetValueOptions): void;    // on FieldValueHosts
@@ -1717,7 +1717,7 @@ setValueToUndefined(options?: SetValueOptions): void;
 ```
 Use `setValueToUndefined()` (or call `setValue(undefined)`) to indicate that the value cannot be determined. For example, the user's input could not be converted into its native data type.
 
-In this example, *vm* is the ValidationManager.
+In this example, *vm* is the ValueHostsManager.
 ```ts
 let lastNameVH = vm.getValueHost("LastName");
 lastNameVH.setValue("MyValue");
@@ -1733,7 +1733,7 @@ lastNameVH.setValue("MyValue", {reset: true});
 // or
 vm.vh.any("LastName").setValue("MyValue", {reset: true});
 ```
-When initializing the ValidationManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
+When initializing the ValueHostsManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
 ```ts
 builder.field('LastName', LookupKey.String, { initialValue: 'MyValue' } );
 ```
@@ -1783,7 +1783,7 @@ Use `setTextValue()` when you have parsers setup, as they will convert and save 
 
 Both functions have an options parameter. See the previous section for its definition.
 ### Getting the value
-Use `getValue()` to get the value from any ValueHost. For an FieldValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValidationManager, use it there too.
+Use `getValue()` to get the value from any ValueHost. For an FieldValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValueHostsManager, use it there too.
 ```ts
 getValue(): any;
 ```
@@ -1844,7 +1844,7 @@ This jest unit test shows the logging for just calling ValueHost.setValues("", "
 ```ts
 test('setValue with validate=true, onValueHostValidationStateChanged called', () => {
     let onValidateResult: ValueHostValidationState | null = null;
-    let config: ValidationManagerConfig = {
+    let config: ValueHostsManagerConfig = {
         services: createJivsServices(),
         valueHostConfigs: [],
         onValueHostValidationStateChanged: (vh, vr) => {
@@ -1852,14 +1852,14 @@ test('setValue with validate=true, onValueHostValidationStateChanged called', ()
         }        
     };
     config.services.loggingService = new ConsoleLoggingService(LoggingLevel.Debug);
-    let builder = new ValidationManagerConfigBuilder(config);    
+    let builder = new ValueHostsManagerConfigBuilder(config);    
     let builder = createBuilder({
         onValueHostValidationStateChanged: (vh, vr) => {
             onValidateResult = vr;
         }
     });
     builder.field('Field1').requireText('error');
-    let vm = new ValidationManager(builder);
+    let vm = new ValueHostsManager(builder);
     let vh = vm.vh.field('Field1');
     vh.setValues('', '', { validate: true });   // empty is invalid
 
@@ -1885,7 +1885,7 @@ console.debug
   {
   message: 'addValueHost(Field1)',
   feature: 'Manager',
-  type: 'ValidationManager'
+  type: 'ValueHostsManager'
   }
 console.debug
   {
@@ -1928,13 +1928,13 @@ console.log
   {
   message: 'onValueHostValidationStateChanged',
   feature: 'Manager',
-  type: 'ValidationManager'
+  type: 'ValueHostsManager'
   }
 console.log
   {
   message: 'onValueHostValidationStateChanged',
   feature: 'Manager',
-  type: 'ValidationManager'
+  type: 'ValueHostsManager'
   }
 console.log
   {
@@ -1948,7 +1948,7 @@ console.debug
   {
   message: 'notifyOtherValueHostsOfValueChange on Field1',
   feature: 'Manager',
-  type: 'ValidationManager'
+  type: 'ValueHostsManager'
   }
 ```
 
@@ -2052,8 +2052,8 @@ vs.loggerService = new MyLoggerService(LoggingLevel.Error, chainedLogger);
 Because it is a service separated from your UI code, Jivs is easier to test that your validation is working correctly. Jivs also has its own services contained in the `JivsServices object`, where you might replace one of its services with a mock, as its services all start as interfaces.
 
 There are two possible places to test:
-1. Against the fully configured `ValidationManager object`, which is what your app will use. Use your testing framework.
-2. Against just the configuration that will be used by the ValidationManager. Use [Jivs-ConfigAnalysis service](#testing-the-configuration-jivs-configanalysis) to catch configuration errors and get a report that details how Dependency Injection should resolve objects. 
+1. Against the fully configured `ValueHostsManager object`, which is what your app will use. Use your testing framework.
+2. Against just the configuration that will be used by the ValueHostsManager. Use [Jivs-ConfigAnalysis service](#testing-the-configuration-jivs-configanalysis) to catch configuration errors and get a report that details how Dependency Injection should resolve objects. 
 
 You can use any testing framework you like. Jivs itself uses [Jest](https://www.npmjs.com/package/jest). So examples here will use Jest as well.
 
@@ -2061,17 +2061,17 @@ You can use any testing framework you like. Jivs itself uses [Jest](https://www.
 The basic test will generally do this:
 1. Create the `JivsServices object`, which may be identical to what you use in your app.
 2. Create a ModelBaseRules subclass that describes a model for your test.
-3. Create the ValidationManager from the result of the subclass's `configure()` method.
+3. Create the ValueHostsManager from the result of the subclass's `configure()` method.
 4. Set the values that will impact a validation test.
 5. Invoke either form-wide or ValueHost specific validation, and capture the results.
 6. Evaluate the results against expectations.
 
-We recommend that steps 1 - 3 are encapsulated into a function. In these test examples, we'll have this function available to deliver a fully-built ValidationManager:
+We recommend that steps 1 - 3 are encapsulated into a function. In these test examples, we'll have this function available to deliver a fully-built ValueHostsManager:
 ```ts
 
 class DateRangeFormRules extends FormRulesBase {
     protected override configureRules(
-        builder: IValidationManagerConfigBuilder,
+        builder: IValueHostsManagerConfigBuilder,
         options?: RulesConfigOptions): void 
     {
         // create the start date ValueHost and its validators
@@ -2082,19 +2082,19 @@ class DateRangeFormRules extends FormRulesBase {
         builder.field('EndDate', LookupKey.Date, { label: 'End date' });
     }
 }
-function createValidationManager(): ValidationManager
+function createValueHostsManager(): ValueHostsManager
 {
     let services = createJivsServices('culture identifier');
     let rules = new DateRangeFormRules(services);
-    return new ValidationManager(rules);
+    return new ValueHostsManager(rules);
 }
 ```
-#### Form-wide using ValidationManager.validate()
+#### Form-wide using ValueHostsManager.validate()
 ```ts
 test('Start and End date are supplied empty strings and report isValid=false', ()=>
 {
     // Arrange
-    let vm = createValidationManager();
+    let vm = createValueHostsManager();
     
     vm.field('StartDate').setValues('', '');	// we'll test the require validator. Empty strings will be invalid
     vm.field('EndDate').setValues('', '');
@@ -2123,7 +2123,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     expect(startDateResult.summaryMessage).toBe('the expected summary message');
 });
 ```
-The result of `ValidationManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
+The result of `ValueHostsManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
 ```ts
 interface ValidationState {
     isValid: boolean;
@@ -2160,7 +2160,7 @@ Let's redo the previous test to check the StartDate ValueHost.
 test('StartDate is supplied empty strings and report status=Invalid', ()=>
 {
     // Arrange  
-    let vm = createValidationManager();
+    let vm = createValueHostsManager();
     
     // even though we are only testing StartDate, it has validators
     // that need data from EndDate. So set both up.
@@ -2186,7 +2186,7 @@ test('StartDate is supplied empty strings and report status=Invalid', ()=>
 ```
 ### Testing the configuration: Jivs-ConfigAnalysis
 **Jivs-ConfigAnalysis** is a tool to ensure that your configuration is as expected,
-even before you create a ValidationManager object from it.
+even before you create a ValueHostsManager object from it.
 
 ConfigAnalysis does the following:
 - Validates the properties throughout your ValueHostConfig objects, including:

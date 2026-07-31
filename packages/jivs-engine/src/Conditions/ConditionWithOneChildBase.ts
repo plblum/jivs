@@ -8,7 +8,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { toIGatherValueHostNames } from '../Interfaces/ValueHost';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionBase, ErrorResponseCondition } from './ConditionBase';
 
 /**
@@ -42,20 +42,20 @@ export abstract class ConditionWithOneChildBase<TConfig extends ConditionWithOne
         this._condition = undefined!;
     }    
 
-    protected condition(validationManager: IValidationManager): ICondition {
+    protected condition(valueHostsManager: IValueHostsManager): ICondition {
         if (!this._condition) {
-            this._condition = this.generateCondition(this.config.childConditionConfig, validationManager.services);
+            this._condition = this.generateCondition(this.config.childConditionConfig, valueHostsManager.services);
             if (this._condition instanceof ErrorResponseCondition) {
-                this.throwInvalidPropertyData('childConditionConfig', 'must be assigned and configured correctly', validationManager.services);
+                this.throwInvalidPropertyData('childConditionConfig', 'must be assigned and configured correctly', valueHostsManager.services);
             }
 /*            
             if (!this.config.childConditionConfig) {
                 this._condition = new ErrorResponseCondition();
-                this.throwInvalidPropertyData('childConditionConfig', 'must be assigned to a Condition', validationManager.services);
+                this.throwInvalidPropertyData('childConditionConfig', 'must be assigned to a Condition', valueHostsManager.services);
             }
             else
                 try {
-                    this._condition = this.generateCondition(this.config.childConditionConfig, validationManager.services);
+                    this._condition = this.generateCondition(this.config.childConditionConfig, valueHostsManager.services);
                 }
                 catch (e) {
                     this._condition = new ErrorResponseCondition();
@@ -67,11 +67,11 @@ export abstract class ConditionWithOneChildBase<TConfig extends ConditionWithOne
     }
     private _condition: ICondition | null = null;
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void
     {
-        const condition = this.condition(validationManager);
+        const condition = this.condition(valueHostsManager);
 
-        toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, validationManager);
+        toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, valueHostsManager);
     }        
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

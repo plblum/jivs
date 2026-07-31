@@ -2,8 +2,8 @@ import { FieldValueHostGenerator } from "../../src/ValueHosts/FieldValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
-import { IValidationManager } from "../../src/Interfaces/ValidationManager";
-import { MockValidationManager, MockJivsServices } from "../TestSupport/mocks";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
@@ -19,8 +19,8 @@ interface IFactoryTestsValueHostInstanceState extends ValueHostInstanceState
 
 class FactoryTestsValueHost extends ValueHostBase<ValueHostConfig, IFactoryTestsValueHostInstanceState>
 {
-    constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState) {
-        super(validationManager, config, state);
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState) {
+        super(valueHostsManager, config, state);
     }
 }
 
@@ -29,8 +29,8 @@ class FactoryTestsValueHostGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === FactoryTestGeneratorType;
     }
-    public create(validationManager : IValidationManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState): IValueHost {
-        return new FactoryTestsValueHost(validationManager, config, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostInstanceState): IValueHost {
+        return new FactoryTestsValueHost(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: IFactoryTestsValueHostInstanceState, config: ValueHostConfig): void {
         state.Counter = 0;
@@ -63,11 +63,11 @@ describe('ValueHostFactory.register', () => {
     });    
 });
 
-// create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost
+// create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost
 describe('ValueHostFactory.create', () => {
     test('create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -91,7 +91,7 @@ describe('ValueHostFactory.create', () => {
     });
     test('create with null in parameters throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -108,13 +108,13 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/validationManager/);
+        expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/valueHostsManager/);
         expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/config/);
         expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
     });
     test('create with Config.valueHostType of null throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -136,7 +136,7 @@ describe('ValueHostFactory.create', () => {
     });    
     test('create with Config.valueHostType that has no matching registration throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValidationManager(services);
+        let vm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',

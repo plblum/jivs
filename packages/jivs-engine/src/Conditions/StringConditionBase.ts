@@ -7,7 +7,7 @@ import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
@@ -45,10 +45,10 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
-     * @param validationManager 
+     * @param valueHostsManager 
      */
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = this.resolveValue(valueHost);
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
@@ -57,7 +57,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
         // trimming is not appropriate since we are evaluating an already cleaned up native value
         // if (this.config.trim ?? true)
         //     text = text.trim();
-        return this.evaluateString(text, valueHost, validationManager.services);
+        return this.evaluateString(text, valueHost, valueHostsManager.services);
     }
     /**
      * Applies the business rule against the string value (already trimmed if 

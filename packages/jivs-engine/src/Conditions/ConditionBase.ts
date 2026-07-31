@@ -9,7 +9,7 @@ import { ConditionCategory, ConditionEvaluateResult, ICondition, type ConditionC
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import type { IValidationManager } from '../Interfaces/ValidationManager';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
@@ -81,9 +81,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * the ValueHost from the Model, and this parameter is ignored.
      * This parameter can be null, but the ConditionConfig will need to supply a ValueHostName
      * to a value host instead.
-     * @param validationManager 
+     * @param valueHostsManager 
      */
-    public abstract evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Data that supports the business rule defined in evaluate().
@@ -117,7 +117,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.
      */
-    public abstract gatherValueHostNames(collection: Set<ValueHostName>, validationManager: IValidationManager): void;
+    public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void;
 
     /**
      * Implementation for IMessageTokenSource.
@@ -127,11 +127,11 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      *  - In CompareToValueCondition, secondValueHostName property is the source for the {CompareTo} token.
      *  This implementation feels like it violates Single Responsibility pattern.
      *  But keeping this feature separate from conditions greatly increases complexity.
-     * @param validationManager 
+     * @param valueHostsManager 
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         return [];
     }
 
@@ -296,7 +296,7 @@ export class ErrorResponseCondition implements ICondition
      * Exposes the exception that caused this condition to be created.
      */
     public readonly error?: Error;
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
     }
 

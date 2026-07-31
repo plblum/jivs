@@ -17,11 +17,11 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 
 /**
- * The ValidationManagerConfig file may be populated in 2 phases:
+ * The ValueHostsManagerConfig file may be populated in 2 phases:
  * - Phase 1: Business Logic provides its ValueHosts and validators. Many aspects of this is 
  *   not ideal for the UI, including anything localizable, additional validators, and additional enabler conditions.
  * - Phase 2: UI updates what the Business Logic created, and adds its own ValueHosts and validators.
- *   The UI developer will use the ValidationManagerConfigBuilder and fluent syntax to describe their changes.
+ *   The UI developer will use the ValueHostsManagerConfigBuilder and fluent syntax to describe their changes.
  * 
  * The IConfigMergeService interface and its class are used by Phase 2. It allows the UI developer
  * to effectively create the same named ValueHosts, but with different characteristics.
@@ -30,7 +30,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * 
  * Suppose that Phase 1 creates this (with services passed to it from the UI):
  * ```ts
- * let vmConfig: ValidationManagerConfig = { services: services };
+ * let vmConfig: ValueHostsManagerConfig = { services: services };
  * let builder = build(vmConfig);
  * builder.field('Field1', LookupKey.Number, { label: 'Field 1' }).notNull().greaterThanValue(10);
  * // same as:
@@ -242,7 +242,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
 }
 
 /**
- * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValidationManagerConfigBuilder.
+ * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValueHostsManagerConfigBuilder.
  * It locks only the valueHostName and validatorConfigs.
  * It upscales ValueHostType from Property to Field (but not anything else).
  * It uses the ValidatorConfigResolver to handle all validatorConfigs.
@@ -295,7 +295,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
     /**
      * Identifies a ValueHostConfig in the destination that should be merged
      * with the source. If none need to be merged, it returns null
-     * and the caller should add their ValueHostConfig to ValidationManagerConfig.ValueHostConfigs.
+     * and the caller should add their ValueHostConfig to ValueHostsManagerConfig.ValueHostConfigs.
      * @param source 
      * @param destinations 
      */

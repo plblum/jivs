@@ -27,7 +27,7 @@ import { SetValueOptions } from './ValueHost';
  * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
  * the text value. Most other Conditions evaluate the typed value.
  *
- * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * When configuring the ValueHostsManager for a FieldValueHost, use the builder's field() method.
  * ```ts
  * builder.field("firstName", LookupKey.String);
  * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });

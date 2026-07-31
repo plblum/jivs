@@ -17,7 +17,7 @@ import {
     IEvaluateConditionDuringEdits,
     SupportsDataTypeConverter
 } from '../Interfaces/Conditions';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IValueHost } from '../Interfaces/ValueHost';
 import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsBaseConfig } from './EvaluateChildConditionResultsBase';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from './OneValueConditionBase';
@@ -58,14 +58,14 @@ export class DataTypeCheckCondition extends TextValueConditionBase<DataTypeCheck
     public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
     protected evaluateTextValue(value: any, valueHost: IFieldValueHost,
-        validationManager: IValidationManager): ConditionEvaluateResult {
+        valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
         const ivh = toIFieldValueHost(valueHost);
         if (ivh)
@@ -119,8 +119,8 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
 
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
@@ -166,8 +166,8 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionConf
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
 
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
@@ -294,16 +294,16 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Range; }
     
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value == null)  // includes undefined
         {
-            this.logNothingToEvaluate('value', validationManager.services);
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
 
-        const services = validationManager.services;
+        const services = valueHostsManager.services;
         //        let lookupKey = this.config.conversionLookupKey ?? valueHost.getDataType();
         const valueInfo = this.tryConversion(value, valueHost.getDataType(), this.config.conversionLookupKey, services);
         if (valueInfo.failed)
@@ -323,7 +323,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
                 null, valueInfo.lookupKey ?? null) :
             ComparersResult.Equal; // always value
         if (upper === ComparersResult.Undetermined) {
-            this.logTypeMismatch(validationManager.services, 'value', 'maximum', valueInfo.value, this.config.maximum ?? '');            
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'maximum', valueInfo.value, this.config.maximum ?? '');            
             return ConditionEvaluateResult.Undetermined;
         }
         if (lower === ComparersResult.Equal || lower === ComparersResult.LessThan)
@@ -333,9 +333,9 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
 
         list.push({
@@ -687,9 +687,9 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, validationManager: IValidationManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, validationManager));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
 
         list.push({
@@ -732,9 +732,9 @@ export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.All; }
     
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         for (const condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, validationManager))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.NoMatch:
                     return ConditionEvaluateResult.NoMatch;
                 case ConditionEvaluateResult.Undetermined:
@@ -761,10 +761,10 @@ export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Any; }
 
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         let countMatches = 0;
         for (const condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, validationManager))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -805,10 +805,10 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         let countMatches = 0;
         for (const condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, validationManager))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -839,7 +839,7 @@ export interface PositiveConditionConfig extends NumberConditionBaseConfig
 export class PositiveCondition extends NumberConditionBase<PositiveConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Positive; }    
-    protected evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     protected get defaultCategory(): ConditionCategory {
@@ -862,7 +862,7 @@ export interface IntegerConditionConfig extends NumberConditionBaseConfig
 export class IntegerCondition extends NumberConditionBase<IntegerConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Integer; }    
-    protected evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return value === Math.trunc(value) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     protected get defaultCategory(): ConditionCategory {
@@ -897,7 +897,7 @@ export class MaxDecimalsCondition extends NumberConditionBase<MaxDecimalsConditi
         if (config.maxDecimals < 1)
             throw new CodingError('maxDecimals must be 1 or higher');
     }
-    protected evaluateNumber(value: number, valueHost: IValueHost, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         const poweredValue = value * Math.pow(10, this.config.maxDecimals);
         
         return poweredValue === Math.floor(poweredValue) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
