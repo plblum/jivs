@@ -1,17 +1,20 @@
-* Split Builder from engine. jivs-builder. "Jivs" is the container for jivs-engine, jivs-builder, and jivs-configanalysis.
-
 * Change of valuehost.enabled or enabler condition result must fire the onvalueHostValidationState callback, except if the current validationstate is notattempted. The UI needs to update validator related features as that state changes.
 
 * Rename 'enablerConfig' prperty to whenToEnableConfig
 * Rename secondValue to rightOperand, value, something else?
 
+* Comparison conditions will have one of each case, where the secondValue can be an object containing a ValueHost name.
 
-* Rename conditional comparison equalToValue -> equalTo, equalTo -> equalToField. 
+  build.field('firstname').equalTo(valueHost('lastname'));	// new ValueHostNaming(name)
+  build.field('firstname').equalTo('bad word');
+  build.field('firstname').equalTo(vh('lastname'));	// new ValueHostNaming(name)
+
+* Consider making IValueHost.setInitialValue(vhname, value) and similar setInitialValues, setInitialTextValue. All they do is wrap setValue with the { validate: false } option to remove boilerplate and express the action more clearly.
 
 
 * Possibly introduce callback that notifies a specific input that it needs to show itself and set focus. ValidationSummary calls ValidationManager.setFocusTo(valueHostName) and it fires this callback. All inputs can listen to that callback and take appropriate actions if they are the same valueHostName. This will allow clicks on error messages to set focus to the relevant input.
 
-* Strong unit testing story
+* Stronger unit testing story
 - Expand logging to capture info for easier testing. Include path, so the user can find "ValueHostName"/"ErrorCode", and how the logs played out:
   - never happened
   - happened and got a result
@@ -36,7 +39,7 @@
 - Rename conversionerror to {ParserError} and setValueOptions.parserError
 - Make setValueOptions.conversionErrorTokenValue have a companion l10nkey.	
 - DataTypeResolution<T> should include l10nkey for the error message.
-- InputValueHostConfig.parserLookupKey and associated state, plus ability to apply it on setInputValue when duringEdit=false.
+- FieldValueHostConfig.parserLookupKey and associated state, plus ability to apply it on setFieldValue when duringEdit=false.
 - Create the IErrorMessageResolverService to control how validator gets its error message and summary message. It will have access to the validator's config and state to know what's available and the default implementation will be much of the getErrorMessageTemplate and getSummaryMessageTemplate functions. It will handle switching the DataTypeCheckCondition's error message to us the data of {ConversionError} and we can abandon {ConversionError}.
 - We'll need a {DataType} token to use in error messages: "Expecting a {DataType}". The string of DataType must be localizable.
 - TextLocalizationService should handle default and localized versions of lookup keys, so we can support {DataType}.
@@ -67,13 +70,14 @@
   - usagePattern. A string that will be inserted in the {UsagePattern} token. It is often a pattern like 'MM/DD/YYYY' or 'May 31, 1965' so the user has guidance on the expected value.
   - usagePatternl10key
 - There can also be an error message, but its not used in output. Its probably just logged. The error code is the right way to map from an error to an error message.
-  
+  * Should we introduce IFieldValueHostDescriptor.ConversionErrorTokenText to allow a default? This is a standard pattern, like "MM/DD/YYYY" whereas the value set by SetValue is an error specific to the parser.
 
-* Document setting activeCultureID each time you create a validation manager, especially on postback where we need to know the clientside value for cultureID
+
+* Document setting activeCultureID each time you create a valuehostmanager, especially on postback where we need to know the clientside value for cultureID
 * Document usage scenarios: 
 - Posting back with a form should retain the active CultureId and set it on the server
-- Posting back with and without our parsers connected to InputValueHost.
-- Setting up InputValueHostConfig with parser lookup key.
+- Posting back with and without our parsers connected to FieldValueHost.
+- Setting up FieldValueHostConfig with parser lookup key.
 
 * Document LookupKeyFallback in the Lookup Key section
 
@@ -103,7 +107,7 @@ Field Validation Service - FiVaSe Fivase "Fee-Vah-Seh" "Fih-Vah-See"
 
 
 * New ValueHost that is for a child model: ChildModelValueHost
-- inherit from InputValueHostBase since it needs to support validation
+- inherit from FieldValueHostBase since it needs to support validation
 - DataType = actual class name of the model
 - Property List of ValueHostDescriptors
 - Property to identify the primary key property of the model,
@@ -118,7 +122,7 @@ used to handle collections which need unique paths per each item in the collecti
 --- Or add property to getPath() which returns the ID within the larger path
 
 * New ValueHost that is a collection of ValueHosts. Allows defining a collection property, where each item is any ValueHost: noninput, input, or ChildModelValueHost.
-- Has its own list of InputValidatorDescriptors that work with all but is not used when the individual child has its own validators.
+- Has its own list of FieldValidatorDescriptors that work with all but is not used when the individual child has its own validators.
 
 
 * Deep dive doc into all things error messages
@@ -146,7 +150,7 @@ LIFTED FROM Jivs-Engine where it didn't belong.
 
 * ListOfStringsCondition for a list of strings that are allowed with optional case insensitive matching. Its an implementation of RegExpConditionBase. Could be called EnumTypeCondition or InThisStringListCondition
 
-* Conditions that apply the same child condition rule to a list of ValueHosts. They work together with AndConditions/OrConditions, generating the Conditions for those classes.
+* Conditions that apply the same child condition rule to a list of ValueHosts. They work together with AllConditions/AnyConditions, generating the Conditions for those classes.
 - EveryValueHostIsRequiredCondition/AllAreRequiredCondition
 { Type: "Every ValueHost is Required",
   ValueHostIds: ["id1", "id2"]
@@ -167,7 +171,6 @@ creates
 }
 
 
-* Should we introduce IInputValueHostDescriptor.ConversionErrorTokenText to allow a default? This is a standard pattern, like "MM/DD/YYYY" whereas the value set by SetValue is an error specific to the parser.
 
 * Consider making ConditionType case insensitive in matching to registered values and mapping into IssuesFound
 

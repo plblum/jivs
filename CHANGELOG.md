@@ -2,6 +2,12 @@
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
 
+## 0.21.0
+- **Breaking API change*. With a goal of establishing clearer terminology and usage patterns, major types have been renamed.
+  + ValidationServices -> JivsServices
+  + ValidationManager -> ValueHostsManager
+  + ModelRules -> ValueHostRules. RulesBase, ModelRulesBase, and FormRulesBase have been consolidated into ValueHostRulesBase.
+
 ## 0.20.0
 - **Breaking API change** - The Builder features are in a separate module, jivs-builder.
 - **Major feature** - Introduce IRules, ModelRulesBase, and FormRulesBase, which are the new way to configure the ValidationManager. It still uses the builder API,
