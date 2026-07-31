@@ -8,7 +8,7 @@ The `ValidationManager` requires a configuration that reflects all of those, whi
 
 ```ts
 let vmConfig = <ValidationManagerConfig>{
-  services: createValidationServices('en-US'),
+  services: createJivsServices('en-US'),
   valueHostConfigs: [
     {
         valueHostType: ValueHostType.Field,
@@ -73,7 +73,7 @@ class PersonModelRules extends ModelRulesBase {
 Then do this to create the ValidationManager.
 
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); // documented below
 const config = rules.configure();
 // attach any callback hooks to config at this point
@@ -125,7 +125,7 @@ Expect to use model-specific rules classes when writing server-side code for nod
 but not in the UI. Here's what the code for the server side looks like.
 
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); 
 const config = rules.configure();
 const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
@@ -211,7 +211,7 @@ class PersonEditFormRules
 ```
 ### Using PersonEditFormRules class to create the ValidationManager
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 
@@ -273,7 +273,7 @@ class DateRangeFormRules extends FormRulesBase {
 
 ### Using DateRangeFormRules to create the ValidationManager
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new DateRangeFormRules(services);
 const config = rules.configure();
 
@@ -287,7 +287,7 @@ const vm = new ValidationManager(config);   // 'vm' will be used to handle valid
 Use the `ValidationManagerConfigBuilder class` to create the `ValidationManagerConfig object tree` using a fluent syntax. Create the `ValueHosts` for fields, calculations, and static values along with  validators on fields.
 ```ts
 class ValidationManagerConfigBuilder {
-    constructor (services: IValidationServices) {} // there are other constructors too
+    constructor (services: IJivsServices) {} // there are other constructors too
     complete(): ValidationManagerConfig;
 
     // some of the functions to configure ValueHosts
@@ -501,7 +501,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
         adapter.modify('Field1').whenToEnable(
             (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
     + `refineDataType()` - Updates the data type. The new data type must be able to fallback to 
-        the original data type as specified in the `LookupFallbackService` of `ValidationServices`.
+        the original data type as specified in the `LookupFallbackService` of `JivsServices`.
         ```ts
         // from the business rules
         builder.field('Field1', LookupKey.String);  // original

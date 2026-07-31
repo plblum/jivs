@@ -11,7 +11,7 @@ import {
     ValidationManagerConfig, ValidationManagerConfigChangedHandler, ValidationManagerInstanceState,
     ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
 } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
@@ -31,12 +31,12 @@ import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * and use its builder property to configure your ValidationManagerConfig.
  * @returns 
  */
-export function createConfigBuilder(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
+export function createConfigBuilder(arg1: IJivsServices | ValidationManagerConfig): ValidationManagerConfigBuilder {
     if (toIServicesAccessor(arg1)) {
         const services = (arg1 as ValidationManagerConfig).services;
         return services.buildersFactory.createManagerConfigBuilder(arg1 as ValidationManagerConfig) as unknown as ValidationManagerConfigBuilder;
     }
-    const services = arg1 as IValidationServices;
+    const services = arg1 as IJivsServices;
     return services.buildersFactory.createManagerConfigBuilder(null) as unknown as ValidationManagerConfigBuilder;
 }
 
@@ -44,7 +44,7 @@ export function createConfigBuilder(arg1: IValidationServices | ValidationManage
  * For building the ValidationManagerConfig
  * 
  * ```ts
- * let builder = new ValidationManagerConfigBuilder(createValidationServices());
+ * let builder = new ValidationManagerConfigBuilder(createJivsServices());
  * builder.field('Field1').requireText();
  * let vmConfig = builder.complete();
  * 
@@ -53,7 +53,7 @@ export function createConfigBuilder(arg1: IValidationServices | ValidationManage
  * instead of
  * ```ts
  * let vmConfig: ValidationManagerConfig = {
- *      services: createValidationServices(),
+ *      services: createJivsServices(),
  *      valueHostConfigs: [
  *          {
  *              valueHostType: ValueHostType.Field,
@@ -74,13 +74,13 @@ export function createConfigBuilder(arg1: IValidationServices | ValidationManage
 export class ValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig> extends ManagerConfigBuilderBase<T>
     implements IValidationManagerConfigBuilder<T> {
     
-    constructor(services: IValidationServices)
+    constructor(services: IJivsServices)
     constructor(config: T)
     constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
-    constructor(arg1: IValidationServices | T | BuilderState<T>) {
+    constructor(arg1: IJivsServices | T | BuilderState<T>) {
         super(arg1 as any);
     }
-    public get services(): IValidationServices {
+    public get services(): IJivsServices {
         return this.baseConfig.services;
     }
     //#region InstanceState

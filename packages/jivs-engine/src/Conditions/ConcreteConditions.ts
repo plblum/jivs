@@ -28,7 +28,7 @@ import { TextValueConditionBase, TextValueConditionBaseConfig } from './TextValu
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
@@ -135,7 +135,7 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
         if (this.config.trim ?? true)
             text = text.trim();
         if (text == '')
@@ -238,7 +238,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
     
     private _savedRE: RegExp | null = null; // cache the results. By design, any change to the Config requires creating a new instance of the condition, discarding this
 
-    protected getRegExp(services: IValidationServices): RegExp {
+    protected getRegExp(services: IJivsServices): RegExp {
         if (!this._savedRE) {
             let re: RegExp | null = this.config.expression ?? null;
             if (!re) {
@@ -255,7 +255,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
         }
         return this._savedRE;
     }
-    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, services: IJivsServices): ConditionEvaluateResult {
         const found = this.getRegExp(services).test(text);
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }    
@@ -671,7 +671,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.StringLength; }
     
-    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, services: IJivsServices): ConditionEvaluateResult {
         const len = text.length;  // already trimmed
         return this.evaluateLength(len, valueHost);
     }

@@ -3,7 +3,7 @@ import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceSta
 import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
@@ -13,7 +13,7 @@ import { IValidationManager, ValidationManagerConfig } from "../../src/Interface
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
@@ -23,7 +23,7 @@ import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToService
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
-        let services = new MockValidationServices(true, true);
+        let services = new MockJivsServices(true, true);
         addTestValidatableValueHostGeneratorToServices(services);
         let vm = new MockValidationManager(services);
         let testItem: TestValidatableValueHost | null = null;
@@ -662,7 +662,7 @@ describe('addExternalIssuesFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -711,7 +711,7 @@ describe('addExternalIssuesFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -1061,7 +1061,7 @@ describe('addExternalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -1089,7 +1089,7 @@ describe('addExternalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -1246,7 +1246,7 @@ describe('clearExternalIssuesFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -1290,7 +1290,7 @@ describe('clearExternalIssuesFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
@@ -1915,7 +1915,7 @@ describe('otherValueHostChangedNotification', () => {
 });
 describe('toIValidatableValueHostBase', () => {
     test('Real instance match', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vm, {
             name: 'Field1'
         }, {
@@ -2009,7 +2009,7 @@ describe('toIValidatableValueHostBase', () => {
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
     test('Wrong instance class returns null', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let vh = new StaticValueHost(vm, {
             name: 'Field1',
         }, {
@@ -2205,7 +2205,7 @@ describe('groupCheck tests', () => {
 });
 describe('toIValidatableValueHostBase function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vm, {
             name: 'Field1',
             label: 'Label1'
@@ -2335,7 +2335,7 @@ describe('toIValidatableValueHostBase function', () => {
 
 describe('toIValidatableValueHostBaseCallbacks function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
-        let testItem = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new MockValidationManager(new MockJivsServices(false, false));
 
         expect(toIValidatableValueHostBaseCallbacks(testItem)).toBe(testItem);
     });

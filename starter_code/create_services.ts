@@ -2,10 +2,10 @@
 /**
  * >> ADD THIS ENTIRE FILE TO YOUR APP. <<
  * 
- * It creates and configures the ValidationServices object.
+ * It creates and configures the JivsServices object.
  * It has extensive configuration options. Many have defaults.
  * 
- * Jivs is designed to be flexible and extensible, and much of that is done within the ValidationServices object. 
+ * Jivs is designed to be flexible and extensible, and much of that is done within the JivsServices object. 
  * You may add your own classes or replace existing ones that are registered with factory services.
  * 
  * Some configuration is always your responsibility:
@@ -71,7 +71,7 @@ import { ITextLocalizerService } from "@plblum/jivs-engine/build/Interfaces/Text
 import { ICultureService } from "@plblum/jivs-engine/build/Interfaces/CultureService";
 import { ConsoleLoggerService } from "@plblum/jivs-engine/build/Services/ConsoleLoggerService";
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
+import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
 import { MessageTokenResolverService } from '@plblum/jivs-engine/build/Services/MessageTokenResolverService';
 import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
@@ -91,11 +91,11 @@ import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblu
 
 // If you need to omit the jivs-builder module later, comment out these next two lines.
 import { BuildersFactory } from '@plblum/jivs-builder/build/Services/BuildersFactory';
-new BuildersFactoryInstaller();  // install the buildersFactory service property on ValidationServices
+new BuildersFactoryInstaller();  // install the buildersFactory service property on JivsServices
 // 
 
 /**
- * Creates and configures the ValidationServices object for your app.
+ * Creates and configures the JivsServices object for your app.
  * @param usage Sets up for the type of usage. 
  * 'client' is used by any UI oriented code. 
  * 'server' is intended for business logic layer itself.
@@ -105,9 +105,9 @@ new BuildersFactoryInstaller();  // install the buildersFactory service property
  * `services.activeCultureId = 'new cultureid';`
  * @returns 
  */
-export function createValidationServices(activeCultureId: string,
-    usage: 'client' | 'server' | 'all' = 'client'): ValidationServices {
-    let vs = new ValidationServices();
+export function createJivsServices(activeCultureId: string,
+    usage: 'client' | 'server' | 'all' = 'client'): JivsServices {
+    let vs = new JivsServices();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
@@ -510,7 +510,7 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 
         dtfs.register(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
         dtfs.register(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
-        // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
+        // NOTE: BooleanFormatter has its strings localized in JivsServices.TextLocalizerService
         // connected to the TrueLabell10n and FalseLabell10n properties.
         dtfs.register(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
         // Example of providing another set of labels for true/false by supplying a different lookup key
@@ -815,7 +815,7 @@ export function createLookupKeyFallbackService(): ILookupKeyFallbackService
     return service;
 }
 
-export function createConfigMergeServices(vs: ValidationServices): void {
+export function createConfigMergeServices(vs: JivsServices): void {
     
     // --- ValueHostConfigMergeService ----------------------
     // Customize the process that merges the ValueHostConfig created by the business logic layer

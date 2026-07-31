@@ -20,7 +20,7 @@ import { DataTypeConverterServiceBase } from './DataTypeConverterServiceBase';
  * with the JavaScript comparison operators. Due to the Converter's ability to prepare
  * most values for the default comparison function, these aren't often created.
  *
- * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeComparerService | ValidationServices.dataTypeComparerService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices#dataTypeComparerService | JivsServices.dataTypeComparerService}.
  */
 export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataTypeComparer>
     implements IDataTypeComparerService

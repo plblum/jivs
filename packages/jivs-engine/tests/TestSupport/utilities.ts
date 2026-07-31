@@ -1,11 +1,11 @@
 import { CultureIdFallback, ICultureService } from "../../src/Interfaces/CultureService";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { registerDataTypeFormatters } from "../../src/Support/createValidationServicesForTesting";
+import { registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
 
 
-export function populateServicesWithManyCultures(services: IValidationServices, activeCultureId: string, registerFormatters: boolean = false): void {
+export function populateServicesWithManyCultures(services: IJivsServices, activeCultureId: string, registerFormatters: boolean = false): void {
     services.cultureService.activeCultureId = activeCultureId;
     registerCultureIdFallbacksForEn(services.cultureService);
 

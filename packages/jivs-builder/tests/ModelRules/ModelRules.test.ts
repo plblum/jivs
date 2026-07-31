@@ -2,13 +2,13 @@ import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryIn
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
 import { IFormConfigAdapter, IValidationManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
 import { RulesBase } from "../../src/ModelRules/ModelRules";
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 class Person
 {
@@ -16,7 +16,7 @@ class Person
     lastName: string = '';
 }
 class PersonModelRules extends RulesBase {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
@@ -32,13 +32,13 @@ class PersonModelRules extends RulesBase {
     }
 }
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 describe('RulesBase subclass for a single Model and no form involvement', () => {
 
     test('configureRules adds rules for the model', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure();
         // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
@@ -58,7 +58,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
     });
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure( { variantName: 'variant1' });
         // check that the second config has the age property
@@ -70,7 +70,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
     describe('caching use cases', () => {
         test('configureRules uses cached config when available', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure();
@@ -78,7 +78,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // options.disableCache = true
         test('configureRules does not use cached config when options.disableCache = true', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure({ disableCache: true });
             let config2 = rules.configure({ disableCache: true });
@@ -88,7 +88,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // options.disableCache = false
         test('configureRules uses cached config when options.disableCache = false', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ disableCache: false });
@@ -96,7 +96,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // variantName = 'variant1' on second call caches two different configs
         test('configureRules uses variantName to create a different config', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ variantName: 'variant1' });
@@ -114,7 +114,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
 describe('RulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
     class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
-        constructor(services: IValidationServices) {
+        constructor(services: IJivsServices) {
             super(services);
         }
         adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
@@ -130,7 +130,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
     }
     // same tests as above, but using the FormRules subclass instead of the ModelRules subclass
     test('configureRules adds rules for the model and form', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure();
         // find 2 fieldValueHostConfigs, each with one validator and the RequiredText condition
@@ -152,7 +152,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
 
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure({ variantName: 'variant1' });
         // check that the second config has the age property

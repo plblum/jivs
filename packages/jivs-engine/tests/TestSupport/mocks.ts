@@ -2,7 +2,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
 import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { type IJivsServices } from "../../src/Interfaces/JivsServices";
 import type {
     IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig,
     ValueChangedHandler, ValueHostInstanceStateChangedHandler
@@ -39,7 +39,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
-import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createValidationServicesForTesting";
+import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
 import { ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
@@ -69,7 +69,7 @@ import { CachingService } from "../../src/Services/CachingService";
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
 {
-    let services = new MockValidationServices(false, false);
+    let services = new MockJivsServices(false, false);
     populateServicesWithManyCultures(services, 'en', registerLookupKeys);
     return new MockValidationManager(services);
 }
@@ -272,10 +272,10 @@ export class MockFieldValueHost extends MockValueHost
 }
 
 /**
- * Flexible Mock ValidationServices with CapturingLogger.
+ * Flexible Mock JivsServices with CapturingLogger.
  * Optionally populated with standard Conditions and data types.
  */
-export class MockValidationServices implements IValidationServices
+export class MockJivsServices implements IJivsServices
 {
     /**
      * 
@@ -352,7 +352,7 @@ export class MockValidationServices implements IValidationServices
     /**
      * Adds or replaces a service.
      * If the supplied service implements IServicesAccessor, its own
-     * services property is assigned to this ValidationServices instance.
+     * services property is assigned to this JivsServices instance.
      * @param serviceName - name that identifies this service and
      * will be used in getService().
      * @param service - the service. It can be a class, object, or primitive.
@@ -535,7 +535,7 @@ export class MockValidationServices implements IValidationServices
 export class MockValidationManager extends ValidationManager<ValidationManagerInstanceState>
     implements IValidationManager, IValidationManagerCallbacks
 {
-    constructor(services: IValidationServices)
+    constructor(services: IJivsServices)
     {
         super({ services: services, valueHostConfigs: [] });
         this.config.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
@@ -547,8 +547,8 @@ export class MockValidationManager extends ValidationManager<ValidationManagerIn
         return super.config as ValidationManagerConfig;
     }
 
-    public get services(): IValidationServices {
-        return super.services as IValidationServices;
+    public get services(): IJivsServices {
+        return super.services as IJivsServices;
     }
 
     public getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {

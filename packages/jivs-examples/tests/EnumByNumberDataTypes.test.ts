@@ -1,13 +1,13 @@
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import {
     EnumByNumberFormatter, EnumByNumberParser, EnumByNumberParserOptions, PhoneType,
     PhoneTypeLookupKey, PhoneTypeEnumValues
 } from '../src/EnumByNumberDataTypes';
-import { createMinimalValidationServices } from "../src/support";
+import { createMinimalJivsServices } from "../src/support";
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
 
-function addLocalizedTextForCulture(services: IValidationServices): void
+function addLocalizedTextForCulture(services: IJivsServices): void
 {
     // let cis = services.cultureService;
     // cis.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
@@ -43,7 +43,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
     function testParseMatches(text: string, expectedValue: any, options: EnumByNumberParserOptions = {}): void
     {
         let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, options);
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -53,7 +53,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
     function testParseInvalid(text: string, options: EnumByNumberParserOptions = {}): void
     {
         let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, options);
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -110,7 +110,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
     function testParseLocalized(text: string, cultureId: string, expectedValue: any, options: EnumByNumberParserOptions = {}): void
     {
         let testItem = new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, {});
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         addLocalizedTextForCulture(testItem.services);
         
         let dts = testItem.parse(text, PhoneTypeLookupKey, cultureId);
@@ -149,7 +149,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
     function testFormatMatches(value: number, expectedText: string): void
     {
         let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -159,7 +159,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
     function testFormatInvalid(value: number): void
     {
         let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -192,7 +192,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
     function testFormatLocalized(value: number, cultureId: string, expectedValue: any): void
     {
         let testItem = new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues);
-        testItem.services = createMinimalValidationServices('en');
+        testItem.services = createMinimalJivsServices('en');
         addLocalizedTextForCulture(testItem.services);
         
         let dts = testItem.format(value, PhoneTypeLookupKey, cultureId);

@@ -6,11 +6,11 @@ import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('StaticValueHost constructor', () => {
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let testItem: StaticValueHost | null = null;
         expect(() => testItem = new StaticValueHost(vm, {
@@ -83,7 +83,7 @@ describe('StaticValueHostGenerator members', () => {
         })).toBe(false);
     });
     test('create returns instance of StaticValueHost with VM, Config and State established', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: StaticValueHostConfig = {
             name: 'Field1',
@@ -153,7 +153,7 @@ describe('toIGatherValueHostNames function', () => {
 });
 describe('toIStaticValueHost function', () => {
     test('Passing actual StaticValueHost matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new StaticValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1'
@@ -165,7 +165,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
     test('Passing actual FieldValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -180,7 +180,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });  
     test('Passing actual CalcValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new CalcValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -239,7 +239,7 @@ describe('toIStaticValueHost function', () => {
     });
  
     test('FieldValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -254,7 +254,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });                
     test('CalcValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new CalcValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',

@@ -14,13 +14,13 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { InvalidTypeError } from "../../src/Utilities/ErrorHandling";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { MockValidationServices } from "../TestSupport/mocks";
+import { MockJivsServices } from "../TestSupport/mocks";
 
 function setupServicesWithExtraLogging(): {
-    services: MockValidationServices,
+    services: MockJivsServices,
     testItem: DataTypeComparerService
 } {
-    let services = new MockValidationServices(false, true);
+    let services = new MockJivsServices(false, true);
     let comparerService = new DataTypeComparerService();
     services.dataTypeComparerService = comparerService;
     comparerService.services = services;
@@ -42,7 +42,7 @@ describe('DataTypeComparerServices constructor and properties', () => {
     });
 
     test('Attach Services returns the same instance', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new DataTypeComparerService();
         expect(() => testItem.services = services).not.toThrow();
         let x: any;
@@ -121,7 +121,7 @@ describe('DataTypeComparerServices.register and find', () => {
     });
     test('find with unexpected values returns null', () => {
         let testItem = new DataTypeComparerService();
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         services.dataTypeComparerService = testItem;
 
         expect(() => testItem.register(new TestComparer())).not.toThrow();
@@ -133,7 +133,7 @@ describe('DataTypeComparerServices.register and find', () => {
     });    
     test('find with one expected value and the other not expected returns null', () => {
         let testItem = new DataTypeComparerService();
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         services.dataTypeComparerService = testItem;
 
         expect(() => testItem.register(new TestComparer())).not.toThrow();
@@ -145,7 +145,7 @@ describe('DataTypeComparerServices.register and find', () => {
     });    
     test('register and find', () => {
         let testItem = new DataTypeComparerService();
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         services.dataTypeComparerService = testItem;
 
         let item1 = new TestDataType('A', 'B');
@@ -437,7 +437,7 @@ describe('DataTypeComparerService.compare', () => {
         expect(testItem.compare('A', 'B', null, LookupKey.String)).toBe(ComparersResult.LessThan);
     });    
     test('String values with various non-string lookup keys show lookup keys have no meaning as they are only used to pick a comparer', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
 

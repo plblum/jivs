@@ -1,4 +1,4 @@
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypeParsers';
@@ -6,7 +6,7 @@ import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTyp
 import { CultureService } from '@plblum/jivs-engine/build/Services/CultureService';
 import { DataTypeParserLookupKeyAnalyzer } from './../../src/Analyzers/DataTypeParserLookupKeyAnalyzer';
 import { ParserServiceCAResult, CAFeature, ParsersByCultureCAResult, CAIssueSeverity, ParserFoundCAResult, IssueForCAResultBase } from "../../src/Types/ConfigAnalysisResults";
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 import { createAnalysisArgs } from "../TestSupport/support";
 
 const toNumberParserLookupKey = 'toNumber';
@@ -69,20 +69,20 @@ class ParserThatThrowsError implements IDataTypeParser<number> {
     }
 }
 
-function oneCulture(services: IValidationServices) {
+function oneCulture(services: IJivsServices) {
     let cultureService = new CultureService();
     services.cultureService = cultureService;
     cultureService.register({ cultureId: 'en', fallbackCultureId: null });
 }
 
-function manyCultures(services: IValidationServices) {
+function manyCultures(services: IJivsServices) {
     let cultureService = new CultureService();
     services.cultureService = cultureService;
     cultureService.register({ cultureId: 'en', fallbackCultureId: null });
     cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
     cultureService.register({ cultureId: 'fr', fallbackCultureId: null });
 }
-function manyParsers(services: IValidationServices) {
+function manyParsers(services: IJivsServices) {
     let dtps = services.dataTypeParserService;
     dtps.register(new ToNumberParser('en'));
     dtps.register(new ToNumberParser2('2:en'));
@@ -128,7 +128,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
     describe('analyze', () => {
         test('parserKey is unknown. Returns ParserServiceCAResult with \"not found\" error and no requests', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             oneCulture(services);
             let dataTypeLookupKey = LookupKey.Number;
             let valueHostConfig: ValueHostConfig = {
@@ -149,7 +149,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         // toNumberParser found with culture 'en' and lookup key 'toNumber'
         test('parserKey is known and is unique amongst all registered. One culture available. Returns one matching parser', () => {
             let dataTypeLookupKey = 'uniqueParser';
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             oneCulture(services);
             services.dataTypeParserService.register(new ToNumberParser('en_custom', ['en'], dataTypeLookupKey));            
             manyParsers(services);
@@ -170,7 +170,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         test('parserKey is known and is unique amongst all registered. Three cultures available. Returns one parser per culture', () => {
             let dataTypeLookupKey = 'uniqueParser';
             const culturesSupported = ['en', 'en-US', 'fr'];
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             manyCultures(services);
             services.dataTypeParserService.register(new ToNumberParser('all_custom', culturesSupported, dataTypeLookupKey));
             manyParsers(services);
@@ -199,7 +199,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         test('parser LookupKey comes from valueHostConfig.dataType, not directly as a parameter in analyze. Returns one parser per culture', () => {
             let dataTypeLookupKey = 'uniqueParser';
             const culturesSupported = ['en', 'en-US', 'fr'];
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             manyCultures(services);
             services.dataTypeParserService.register(new ToNumberParser('all_custom', culturesSupported, dataTypeLookupKey));
             manyParsers(services);
@@ -228,7 +228,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
         test('3 parser instances with their own case name, 3 cultures, all will match to toNumberParserLookupKey results in 3 cultures each with 3 parsers found', () => {
             let dataTypeLookupKey = toNumberParserLookupKey;
             const culturesSupported = ['en', 'en-US', 'fr'];
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             manyCultures(services);
             let dtps = services.dataTypeParserService;
             // all will use the same lookup key and parser class,
@@ -269,7 +269,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
     test('3 parser instances with their own case name, 3 cultures, each case supports one culture, results in 3 cultures each with 1 parser found', () => {
         let dataTypeLookupKey = toNumberParserLookupKey;
         const culturesSupported = ['en', 'en-US', 'fr'];
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         manyCultures(services);
         let dtps = services.dataTypeParserService;
         // all will use the same lookup key and parser class,
@@ -304,7 +304,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
     test('parserKey is known but no parsers match. Three cultures available. Returns one parser per culture with no requests', () => {
         let dataTypeLookupKey = 'unknownParser';
         const culturesSupported = ['en', 'en-US', 'fr'];
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         manyCultures(services);
         manyParsers(services);
         let valueHostConfig: ValueHostConfig = {
@@ -327,7 +327,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
     test('parserKey is known, 3 cultures exist, and parser is only supported on one culture. Returns one parser per culture with no requests', () => {
         let dataTypeLookupKey = 'uniqueParser';
         const culturesSupported = ['en', 'en-US', 'fr'];
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         manyCultures(services);
         let dtps = services.dataTypeParserService;
         dtps.register(new ToNumberParser('fr', ['fr'], dataTypeLookupKey));
@@ -353,7 +353,7 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
     test('parser throws an error when isCompatible is called. Returns an error message', () => {
         let dataTypeLookupKey = parserThatThrowsLookupKey;
 
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         oneCulture(services);
         let dtps = services.dataTypeParserService;
         dtps.register(new ParserThatThrowsError());

@@ -20,7 +20,7 @@ export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFor
      * 
      * Formatting uses localization. It uses IDataTypeFormatter classes,
      * which may handle multiple cultures. When searching for a formatter,
-     * it tries the ValidationServices.activeCultureID first and if no formatter
+     * it tries the JivsServices.activeCultureID first and if no formatter
      * is supplied for that culture, it has a chain of fallback cultures that you supply
      * in the constructor.
      * @param value

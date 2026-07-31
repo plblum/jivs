@@ -12,7 +12,7 @@ import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableV
 import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
 
@@ -40,9 +40,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     //#endregion IValidationManagerAccessor
     
-    protected get services(): IValidationServices
+    protected get services(): IJivsServices
     {
-        return super.services as IValidationServices;
+        return super.services as IJivsServices;
     }
     /**
      * Participates in releasing memory.

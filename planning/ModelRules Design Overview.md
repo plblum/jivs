@@ -352,7 +352,7 @@ The term Builder is a shorthand for a class that provides a fluent way to config
 Instead of:
 ```ts
 let config: ValidationManagerConfig = {
-    services: getValidationServices(),
+    services: getJivsServices(),
     ... a multitude of properties in object style ...
 }
 let vm = new ValidationManager(config);
@@ -360,7 +360,7 @@ let vm = new ValidationManager(config);
 
 Use the builder:
 ```ts
-let builder = build(createValidationServices('en-US'));
+let builder = build(createJivsServices('en-US'));
 ... work with builder to add ValueHosts and their Validators ...
 builder.input('fieldname1').required(parameters).regexp(parameters);
 builder.input('fieldname2');

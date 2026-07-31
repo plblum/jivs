@@ -6,7 +6,7 @@
 import { defaultComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
 import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
-import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName, IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { InvalidTypeError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
@@ -68,7 +68,7 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
  * ```
  */
 
-export class DataTypeComparerAnalyzer<TServices extends IValidationServices>
+export class DataTypeComparerAnalyzer<TServices extends IJivsServices>
     implements IDataTypeComparerAnalyzer {
     constructor(helper: AnalysisResultsHelper<TServices>) {
         this._helper = helper;

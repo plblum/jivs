@@ -7,7 +7,7 @@ import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import type { IValidationManager } from '../Interfaces/ValidationManager';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
@@ -36,7 +36,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 
     //#endregion IValidationManagerAccessor
     
-    protected get services(): IValidationServices {
+    protected get services(): IJivsServices {
         return this.validationManager.services;
     }
     /**

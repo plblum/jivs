@@ -6,8 +6,8 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
 import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
@@ -32,11 +32,11 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
-let services: IValidationServices;
+let services: IJivsServices;
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-    services = createValidationServicesForTesting();
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
+    services = createJivsServicesForTesting();
 });
 
 describe('ConditionBuilder', () => {

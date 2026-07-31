@@ -1,11 +1,11 @@
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
 import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeConverterLookupKeyAnalyzer';
 import { ConverterServiceCAResult, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 import { createAnalysisArgs, sampleValueByLookupKey } from '../TestSupport/support';
 
 
@@ -70,8 +70,8 @@ describe('DataTypeConverterLookupKeyAnalyzer', () => {
             return typeof value === 'string';
         }
     }    
-    function setupServices() : IValidationServices {
-        let services = createValidationServicesForTesting({ registerDataTypeConverters: false });
+    function setupServices() : IJivsServices {
+        let services = createJivsServicesForTesting({ registerDataTypeConverters: false });
         services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
         services.dataTypeIdentifierService.register(new TestToNumberIdentifier());
         services.dataTypeConverterService.register(new TestToNumberConverter());

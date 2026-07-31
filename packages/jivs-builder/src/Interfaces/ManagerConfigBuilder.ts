@@ -13,7 +13,7 @@ import {
     IValidationManagerCallbacks, ValidationManagerConfig,
     ValidationManagerInstanceState
 } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import type { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import {
@@ -32,7 +32,7 @@ import {
 export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
     extends IDisposable, IValueHostsForValidationManagerConfig<T>
 {
-    services: IValidationServices;
+    services: IJivsServices;
     /**
      * Delivers a complete ValueHostConfig and shuts down this instance.
      * You cannot use the instance after this point.
@@ -333,7 +333,7 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      * Use case 2: The business layer specified a data type, but the UI layer needs to change it to a different one.
      * In this case, the new data type must be compatible with the original data type. If it is not, it is an error.
      * By "compatible", there must be a fallback defined between the new data type and existing one
-     * in the LookupKeyFallbackService within the ValidationServices. If there is no fallback, it is an error.
+     * in the LookupKeyFallbackService within the JivsServices. If there is no fallback, it is an error.
      * @param newDataType - the new data type to apply to this ValueHost. It must be compatible with the existing data type.
      * @returns The IModifyFieldBuilder for further modifications.
      */

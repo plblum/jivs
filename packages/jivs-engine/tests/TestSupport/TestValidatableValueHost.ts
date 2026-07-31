@@ -13,14 +13,14 @@ import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound } from "../../src/Interfaces/Validation";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValueHostConfig, IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { MockValidationServices, MockValidationManager } from "./mocks";
+import { MockJivsServices, MockValidationManager } from "./mocks";
 
 
 /**
@@ -180,7 +180,7 @@ class TestValidatableValueHostGenerator implements IValueHostGenerator {
     }
 
 }
-export function addTestValidatableValueHostGeneratorToServices(services: IValidationServices): void
+export function addTestValidatableValueHostGeneratorToServices(services: IJivsServices): void
 {
     let factory = new ValueHostFactory();
     factory.register(new TestValidatableValueHostGenerator());
@@ -190,7 +190,7 @@ export function addTestValidatableValueHostGeneratorToServices(services: IValida
 //#region types and setup functions for tests
 
 export interface ITestValidatableValueHostBaseSetupConfig {
-    services: MockValidationServices,
+    services: MockJivsServices,
     validationManager: MockValidationManager,
     config: ValidatableValueHostBaseConfig,
     state: ValidatableValueHostBaseInstanceState,
@@ -304,7 +304,7 @@ export function setupValidatableValueHostBase(
     partialIVHConfig?: Partial<ValidatableValueHostBaseConfig> | null,
     partialState?: Partial<ValidatableValueHostBaseInstanceState> | null,
     validateWillReturn: ValidationStatus | null = null): ITestValidatableValueHostBaseSetupConfig {
-    let services = new MockValidationServices(true, true);
+    let services = new MockJivsServices(true, true);
     addTestValidatableValueHostGeneratorToServices(services);
 
     let vm = new MockValidationManager(services);

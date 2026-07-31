@@ -1,6 +1,6 @@
 /**
  * For creating Conditions given an ConditionConfig.
- * Setup its instance on ValidationServices.ConditionFactory.
+ * Setup its instance on JivsServices.ConditionFactory.
  * @module jivs-engine/Conditions/ConcreteClasses/ConditionFactory
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
@@ -14,7 +14,7 @@ import { cleanString } from '../Utilities/Utilities';
 
 /**
  * Creates instances of Conditions given an ConditionConfig.
- * Setup its instance on ValidationServices.ConditionFactory.
+ * Setup its instance on JivsServices.ConditionFactory.
  * ConditionConfig.conditionType is used to determine the Condition class to create.
  * Supports IConditionCore implementations of ICondition.
  */

@@ -14,7 +14,7 @@
  * 
  * We need to teach this library about your TimeSpan.
  * You will create and register 2 classes with the dataTypeConverterService and dataTypeIdentifierService properties 
- * (found on the ValidationServices object).
+ * (found on the JivsServices object).
  * 1. IDataTypeIdentifier - Class to recognize the TimeSpan object and give it a Lookup Key.
  *    See TimeSpanIdentifier class below.
  * 2. IDataTypeConverter - Class that knows how to get the number from the value coming
@@ -25,7 +25,7 @@
  */
 
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
@@ -109,13 +109,13 @@ export class TimeSpanConverter extends DataTypeConverterBase
 
 }
 
-// Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerTimeSpan(validationServices: IValidationServices): void
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerTimeSpan(services: IJivsServices): void
 {
-    let dtis = validationServices.dataTypeIdentifierService as DataTypeIdentifierService;
+    let dtis = services.dataTypeIdentifierService as DataTypeIdentifierService;
     // or move just this line into registerDataTypeIdentifiers() function         
     dtis.register(new TimeSpanIdentifier());
-    let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
+    let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
     dtcs.register(new TimeSpanConverter()); 
 

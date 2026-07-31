@@ -7,14 +7,14 @@ import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ValidationManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: createValidationServicesForTesting(),
+        services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
     return vmConfig;
@@ -47,13 +47,13 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     
 }
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 
 describe('constructor', () => {
-    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
-        let services = createValidationServicesForTesting();
+    test('Creates a ValidationManagerConfigBuilder with the supplied JivsServices', () => {
+        let services = createJivsServicesForTesting();
         let testItem = new ValidationManagerConfigBuilder(services);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
@@ -66,7 +66,7 @@ describe('constructor', () => {
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -85,8 +85,8 @@ describe('constructor', () => {
 });
 
 describe('function build()', () => {
-    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
-        let services = createValidationServicesForTesting();
+    test('Creates a ValidationManagerConfigBuilder with the supplied JivsServices', () => {
+        let services = createJivsServicesForTesting();
         let testItem: ValidationManagerConfigBuilder;
         expect(() => testItem = createConfigBuilder(services)).not.toThrow();
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
@@ -105,7 +105,7 @@ describe('function build()', () => {
         expect(result.onValueHostValidationStateChanged).toBeUndefined();        
     });
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -136,7 +136,7 @@ describe('instance state properties', () => {
             stateChangeCounter: 20,
         };
 
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -153,7 +153,7 @@ describe('instance state properties', () => {
         const initialState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'A' }];
         const replacementState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'B' }];
 
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -178,7 +178,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -200,7 +200,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -223,7 +223,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -247,7 +247,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -269,7 +269,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -291,7 +291,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -314,7 +314,7 @@ describe('Callbacks get and set', () => {
         {
             
         }
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],
@@ -331,7 +331,7 @@ describe('Callbacks get and set', () => {
     
     test('notifyValidationStateChangedDelay', () => {
 
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: [],

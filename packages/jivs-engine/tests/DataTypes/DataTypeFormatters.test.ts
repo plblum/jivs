@@ -9,7 +9,7 @@ import {
 } from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { MockJivsServices } from '../TestSupport/mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 
@@ -32,15 +32,15 @@ describe('DataTypeFormatterBase', () => {
         let x: any;
         expect(() => x = testItem.services).toThrow(/Register/);
     });
-    test('Services to return same ValidationService as assigned', () => {
-        let services = new MockValidationServices(false, false);
+    test('Services to return same JivsServices as assigned', () => {
+        let services = new MockJivsServices(false, false);
         let testItem = new TestClass();
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
     });
 
     test('dispose then get services throws TypeError', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new TestClass();
         testItem.services = services;
         testItem.dispose();
@@ -933,7 +933,7 @@ describe('BooleanFormatter', () => {
         expect(dts.value).toBe('F');
     });    
     test('TextLocalizationService used for labels unless the culture is not setup', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let tlService = services.textLocalizerService as TextLocalizerService;
         tlService.register('TRUE', {
             'en': 'enTRUE',

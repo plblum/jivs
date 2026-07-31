@@ -311,11 +311,11 @@ The provider receives a ValidationManager and exposes React Adapter infrastructu
 
 ## Pending
 
-PENDING: We will be replacing validationManager parameter. JivsProvider must be supplied a string name or constructor of a class that identifies the model. JivsProvider passes this along to JivsReactContext which uses ModelRulesServiceFactory to build the configuration and then create a ValidationManager from it. The React UI developer will never directly see the ValidationManager. It still needs access to the ValidationServices object which should be created as a singleton when the app starts up or its first needed.
+PENDING: We will be replacing validationManager parameter. JivsProvider must be supplied a string name or constructor of a class that identifies the model. JivsProvider passes this along to JivsReactContext which uses ModelRulesServiceFactory to build the configuration and then create a ValidationManager from it. The React UI developer will never directly see the ValidationManager. It still needs access to the JivsServices object which should be created as a singleton when the app starts up or its first needed.
 
 PENDING: There will be an additional parameter to let the user forward anything they want to the ModelRulesService object that is used for configuration. For example, they may pass an object with a property of "variant" and the ModelRulesService may configure differently when that property is "XYZ".
 
-PENDING: Another required parameter takes the global ValidationServices instance (a Jivs Engine object)
+PENDING: Another required parameter takes the global JivsServices instance (a Jivs Engine object)
 
 PENDING: We will be renaming this class. The name "Jivs" is less meaningful than "Validation". It may be ValidationProvider or similar.
 
@@ -406,12 +406,12 @@ All React Adapter infrastructure is accessed through JivsReactContext.
 
 ## Pending
 
-PENDING: This class requires a model identifier (string or type) to work, getting it from JivsProvider. It also needs access to the Jivs Engine's ValidationServices object, so it can get to the ModelRulesServicesFactory to create the IModelRulesServices object associated with the model identifier. From there, it creates a configuration and then creates the ValidationManager itself from that configuration. It defines the Builder object that will collect the configuration, and passes it to IModelRulesServices.configure(builder)
+PENDING: This class requires a model identifier (string or type) to work, getting it from JivsProvider. It also needs access to the Jivs Engine's JivsServices object, so it can get to the ModelRulesServicesFactory to create the IModelRulesServices object associated with the model identifier. From there, it creates a configuration and then creates the ValidationManager itself from that configuration. It defines the Builder object that will collect the configuration, and passes it to IModelRulesServices.configure(builder)
 
 PENDING: So expect the constructor to have these parameters:
 
 * modelIdentifier: string|constructor
-* services: ValidationServices
+* services: JivsServices
 * payload: any -- optional. Allows the caller to pass along information to the IModelRulesService.configure() method.
 
 ---

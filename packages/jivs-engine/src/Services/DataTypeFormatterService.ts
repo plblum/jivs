@@ -21,7 +21,7 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices.dataTypeFormatterService | JivsServices.dataTypeFormatterService}.
  */
 export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeFormatter>
     implements IDataTypeFormatterService {

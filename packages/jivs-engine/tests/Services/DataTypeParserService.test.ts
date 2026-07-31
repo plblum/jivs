@@ -6,10 +6,10 @@ import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
-import { MockValidationServices } from "../TestSupport/mocks";
+import { MockJivsServices } from "../TestSupport/mocks";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { JivsServices } from "../../src/Services/JivsServices";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
 
 
@@ -46,7 +46,7 @@ describe('DataTypeParserServices constructor and properties', () => {
     });
 
     test('Attach Services returns the same instance', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new DataTypeParserService();
         expect(() => testItem.services = services).not.toThrow();
         let x: any;
@@ -58,19 +58,19 @@ describe('DataTypeParserServices constructor and properties', () => {
 // parse(value: any, lookupKey?: string): DataTypeResolution<string>
 describe('DataTypeParserService.parse', () => {
     test('Null LookupKey throws', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
 
         expect(() => testItem.parse('abc', null!, 'en')).toThrow(/lookupKey/);
     });
     test('EmptyString LookupKey throws', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
 
         expect(() => testItem.parse('abc', '', 'en')).toThrow(/lookupKey/);
     });    
     test('When no registered parsers, throws No DataTypeParser for lookupKey error and logs', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
 
         let logger = services.loggerService as CapturingLogger;
@@ -81,7 +81,7 @@ describe('DataTypeParserService.parse', () => {
     });
 
     test('Parameters find a parser with same lookup key and culture plus logs', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
 
@@ -107,7 +107,7 @@ describe('DataTypeParserService.parse', () => {
                 throw new Error('ERROR');
             }
         }
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -132,7 +132,7 @@ describe('DataTypeParserService.parse', () => {
                 throw 'ERROR';
             }
         }
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -152,7 +152,7 @@ describe('DataTypeParserService.parse', () => {
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('With registered parsers but a lookup key that does not match, throws Unsupported lookupKey error and logs', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
         testItem.register(new TestParser('TEST', ['en'], { value: 'abc'}));
 
@@ -163,7 +163,7 @@ describe('DataTypeParserService.parse', () => {
         expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });    
     test('With registered parsers and matching lookup key but no match to cultureId, throws Unsupported lookupKey error and logs', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
         testItem.register(new TestParser('TEST', ['en'], { value: 'abc'}));
 
@@ -175,9 +175,9 @@ describe('DataTypeParserService.parse', () => {
     });        
 });
 describe('parse() using lookupKeyFallbackService', () => {
-    function createValidationServices(): IValidationServices
+    function createJivsServices(): IJivsServices
     {
-        let vs = new ValidationServices();
+        let vs = new JivsServices();
         vs.cultureService.activeCultureId = 'en';
         let dtfs = new DataTypeParserService();
         vs.dataTypeParserService = dtfs;
@@ -189,7 +189,7 @@ describe('parse() using lookupKeyFallbackService', () => {
     }
 
     test('Integer datatype uses NumberParser', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let logger = new CapturingLogger();
         services.loggerService = logger;
         logger.minLevel = LoggingLevel.Debug;
@@ -203,7 +203,7 @@ describe('parse() using lookupKeyFallbackService', () => {
         expect(logger.findMessage('Parsed "Number" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Custom currency type falls back to Currency', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', LookupKey.Currency);
         lkfb.register('CUSTOMB', 'CUSTOMA');        
@@ -221,7 +221,7 @@ describe('parse() using lookupKeyFallbackService', () => {
         expect(logger.findMessage('Parsed "Currency" with culture "en"', LoggingLevel.Info)).toBeTruthy();        
     });    
     test('Fallback loop stopped with exception', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', 'CUSTOMB');
         lkfb.register('CUSTOMB', 'CUSTOMA');        

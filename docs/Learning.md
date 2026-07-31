@@ -23,7 +23,7 @@ Suppose that you have this HTML:
 This code initializes a `ValidationManager` and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the `ValidationManager` instance should be accessible to the rest of this form's code.
 
 ```ts
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services);  // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
@@ -279,7 +279,7 @@ We've modified the original example to provide a \<div> used for the ValidationS
 This code initializes a ValidationManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;

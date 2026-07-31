@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/Support/CreateValidationServicesForTesting!createValidationServicesForTesting
- * @module jivs-engine/Support/CreateValidationServicesForTesting
+ * @inheritdoc jivs-engine/Support/CreateJivsServicesForTesting!createJivsServicesForTesting
+ * @module jivs-engine/Support/CreateJivsServicesForTesting
  */
 
 import {
@@ -53,10 +53,10 @@ import { DataTypeFormatterService } from '../Services/DataTypeFormatterService';
 import { DataTypeIdentifierService } from '../Services/DataTypeIdentifierService';
 import { MessageTokenResolverService } from '../Services/MessageTokenResolverService';
 import { TextLocalizerService } from '../Services/TextLocalizerService';
-import { ValidationServices } from '../Services/ValidationServices';
+import { JivsServices } from '../Services/JivsServices';
 import { DataTypeCheckConditionConfig, RequireTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from '../Conditions/ConcreteConditions';
 import { LookupKey } from '../DataTypes/LookupKeys';
-import { registerTestingOnlyConditions } from '../Support/conditionsForTesting';
+import { registerTestingOnlyConditions } from './conditionsForTesting';
 import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
 import { DataTypeParserService } from '../Services/DataTypeParserService';
 import { CleanUpStringParser, NumberParser } from '../DataTypes/DataTypeParsers';
@@ -68,11 +68,11 @@ import {
 } from '../DataTypes/DataTypeConverters';
 import { IConditionFactory } from '../Interfaces/Conditions';
 import { CapturingLogger } from './CapturingLogger';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 
 
 /**
- * Every app should have a function like this to create the ValidationServices object.
+ * Every app should have a function like this to create the JivsServices object.
  * They normally have one that is edited. This one is for testing and has fixed objects.
  * - It has options to determine what those objects are.
  * - By default, it uses the ConsoleLoggerService with LoggingLevel.Error.
@@ -86,11 +86,11 @@ import { IValidationServices } from '../Interfaces/ValidationServices';
  * @param options 
  * @returns 
  */
-export function createValidationServicesForTesting(options?: CvstOptions): IValidationServices {
+export function createJivsServicesForTesting(options?: CvstOptions): IJivsServices {
     if (!options) options = {};
 
 
-    const vs = new ValidationServices();
+    const vs = new JivsServices();
 
     const consoleLogger = new ConsoleLoggerService(options.loggerLevel ?? LoggingLevel.Error);
     if (options.logger === 'capturing') {
@@ -159,7 +159,7 @@ export function createValidationServicesForTesting(options?: CvstOptions): IVali
 }
 
 /**
- * Guides the creation of the ValidationServices object.
+ * Guides the creation of the JivsServices object.
  */
 export interface CvstOptions {
     activeCultureId?: string;   // defaults to en
@@ -304,7 +304,7 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 
     dtfs.register(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
     dtfs.register(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
-    // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
+    // NOTE: BooleanFormatter has its strings localized in JivsServices.TextLocalizerService
     // connected to the TrueLabell10n and FalseLabell10n properties.
     dtfs.register(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
    // Example of providing another set of labels for true/false by supplying a different lookup key

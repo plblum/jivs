@@ -12,9 +12,9 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { createMinimalValidationServices } from './support';
+import { createMinimalJivsServices } from './support';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
@@ -27,7 +27,7 @@ import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules'
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 
 export class DateRangeFormRules extends FormRulesBase {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValidationManagerConfigBuilder,
@@ -60,18 +60,18 @@ export class DateRangeFormRules extends FormRulesBase {
     }    
 }    
 
-// Our starting point is createMinimumValidationServices() 
-// which is a really-stripped down version of createValidationServices() that is in support.ts.
-// Since you will be using createValidationServices(), most of this work is done
+// Our starting point is createMinimumJivsServices() 
+// which is a really-stripped down version of createJivsServices() that is in support.ts.
+// Since you will be using createJivsServices(), most of this work is done
 // for you. We're trying to expose you to what it takes to expand the services
 // within this example.
 // @returns 
-function createValidationServicesForThisExample(): IValidationServices {
-    // very stripped down version of createValidationServices() in support.ts
-    let services = createMinimalValidationServices('en');
+function createJivsServicesForThisExample(): IJivsServices {
+    // very stripped down version of createJivsServices() in support.ts
+    let services = createMinimalJivsServices('en');
 
     // let's add the supporting tools needed by this example
-    // normally you call createValidationServices() which already has this stuff setup
+    // normally you call createJivsServices() which already has this stuff setup
     let convertService = services.dataTypeConverterService as DataTypeConverterService;
     convertService.register(new UTCDateOnlyConverter());  // for LookupKey.TotalDays
     convertService.register(new IntegerConverter());    // for LookupKey.Integer
@@ -89,7 +89,7 @@ function createValidationServicesForThisExample(): IValidationServices {
     conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,
         (config) => new LessThanCondition(config));
 
-    // This might be the only line you'd customize in your version of createValidationServices()
+    // This might be the only line you'd customize in your version of createJivsServices()
     // as it relates to this example.
     services.loggerService.minLevel = LoggingLevel.Debug;
     return services;
@@ -98,7 +98,7 @@ function createValidationServicesForThisExample(): IValidationServices {
 // written so you can call this function and use the configured ValidationManager to see
 // what happens when you call validate with different inputs.
 export function configureVMForDifferenceBetweenDates(): IValidationManager {
-    let services = createValidationServicesForThisExample();
+    let services = createJivsServicesForThisExample();
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
     return new ValidationManager(config);

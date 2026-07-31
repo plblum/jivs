@@ -4,11 +4,11 @@ import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHo
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
 import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
@@ -19,7 +19,7 @@ import {
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: createValidationServicesForTesting(),
+        services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
     vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Debug, vmConfig.services.loggerService);
@@ -32,7 +32,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
         return new ValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 
-    public get publicify_services(): IValidationServices
+    public get publicify_services(): IJivsServices
     {   
         return this.services;
     }
@@ -83,7 +83,7 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
     //     super.replaceConditionWith(destinationOfCondition, sourceOfConditionConfig);
     // }    
 
-    public get publicify_services(): IValidationServices
+    public get publicify_services(): IJivsServices
     {   
         return this.services;
     }
@@ -117,7 +117,7 @@ class TestValidationManagerConfigBuilderBase extends ValidationManagerConfigBuil
 }
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 describe('ManagerConfigBuilderBase constructor', () => {
@@ -129,7 +129,7 @@ describe('ManagerConfigBuilderBase constructor', () => {
         expect(builder.publicify_destinationValueHostConfigs()).toBe(testItem.valueHostConfigs);
     });
     test('Initial setup with services successful', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let builder = new TestValueHostManagerConfigBuilderBase(services);
         expect(builder.publicify_baseConfig).not.toBeUndefined();
         expect(builder.publicify_baseConfig.services).toBe(services);
@@ -155,7 +155,7 @@ describe('ManagerConfigBuilderBase constructor', () => {
         expect(testItem.valueHostConfigs).toEqual(valueHostsConfigs);
     });
     test('services supplied as parameter creates a vmConfig with services', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         expect(testItem.publicify_destinationValueHostConfigs()).not.toBeNull();
         expect(testItem.publicify_services).toBe(services);
@@ -218,7 +218,7 @@ describe('addOverride', () => {
 });
 describe('complete', () => {
     test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         let result = testItem.complete();
         expect(result.services).toBe(services);
@@ -233,7 +233,7 @@ describe('complete', () => {
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });    
     test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         let result = testItem.complete();
@@ -293,7 +293,7 @@ describe('complete', () => {
 });
 describe('snapshot', () => {
     test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         let result = testItem.snapshot();
         expect(result.services).toBe(services);
@@ -308,7 +308,7 @@ describe('snapshot', () => {
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });    
     test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         let result = testItem.snapshot();
@@ -320,7 +320,7 @@ describe('snapshot', () => {
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });    
     test('Using service, override and add a new field', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let testItem = new TestValueHostManagerConfigBuilderBase(services);
         testItem.static('Field1');
         testItem.publicify_addOverride();

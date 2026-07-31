@@ -14,7 +14,7 @@ import {
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import {
     CompleteConfigBuilderHandler,
     IBuilderConfigHost,
@@ -69,7 +69,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * This is usually consumed by calling parentBuilder to use the child
      * builder's config.
      */
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object>,
         completed?: CompleteConfigBuilderHandler<TConfig>
     ) {

@@ -4,7 +4,7 @@ import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { MockValidationServices } from "../TestSupport/mocks";
+import { MockJivsServices } from "../TestSupport/mocks";
 
 class TestDataType { }
 class TestIdentifier implements IDataTypeIdentifier {
@@ -30,7 +30,7 @@ describe('DataTypeIdentifierService register and find', () => {
     });
     test('register adds new item', () => {
         let testItem = new DataTypeIdentifierService();
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.identify(new TestDataType())).toBe('TEST');
@@ -51,7 +51,7 @@ describe('DataTypeIdentifierService register and find', () => {
 
         }
         let testItem = new DataTypeIdentifierService();
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.identify(new TestDataType())).toBe(LookupKey.Date);
@@ -68,7 +68,7 @@ describe('DataTypeIdentifierService.identify', () => {
     // IdentifyLookupKey(value: any): string
     test('identify', () => {
         let testItem = new DataTypeIdentifierService();
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         testItem.services = services;
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -90,7 +90,7 @@ describe('DataTypeIdentifierService.identify', () => {
 describe('findByLookupKey', () => {
     test('with case sensitive matches', () => {
         let testItem = new DataTypeIdentifierService();
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.findByLookupKey(LookupKey.Number)).toBeInstanceOf(NumberDataTypeIdentifier);
@@ -103,7 +103,7 @@ describe('findByLookupKey', () => {
     // with case insensitive matches
     test('with case insensitive matches', () => {
         let testItem = new DataTypeIdentifierService();
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.findByLookupKey(LookupKey.Number, true)).toBeInstanceOf(NumberDataTypeIdentifier);

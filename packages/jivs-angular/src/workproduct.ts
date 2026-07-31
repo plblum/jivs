@@ -2807,7 +2807,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * Register a configuration for a formId
      * ```ts
      * configHost.register('userFormId', (formId: string) => {
-     *   let builder = build(createValidationServices());
+     *   let builder = build(createJivsServices());
      *   
      *   // Define validation for the username field
      *   builder.input('username', LookupKey.String)
@@ -2860,7 +2860,7 @@ export interface IFivaseServices {
      * For example, when creating a new form, register the configuration for that form like this:
      * ```ts
      * fivaseServices.configHost.register('myFormId', (formId: string) => {
-     * let builder = build(createValidationServices());
+     * let builder = build(createJivsServices());
      * ... use the Jivs Builder to create the configuration ...
      *    return builder.complete();
      * });
@@ -2957,7 +2957,7 @@ export class FivaseServices implements IFivaseServices {
      * For example, when creating a new form, register the configuration for that form like this:
      * ```ts
      * fivaseServices.configHost.register('myFormId', (formId: string) => {
-     * let builder = build(createValidationServices());
+     * let builder = build(createJivsServices());
      * ... use the Jivs Builder to create the configuration ...
      *    return builder.complete();
      * });

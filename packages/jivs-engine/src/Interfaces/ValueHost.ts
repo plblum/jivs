@@ -308,7 +308,7 @@ export interface ValueHostConfig {
 
     /**
      * Localization key for Label. Its value will be matched to an entry
-     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * made to JivsServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the errorMessage property is used.
      */

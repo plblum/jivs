@@ -6,7 +6,7 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
@@ -17,7 +17,7 @@ import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
 import { createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 
@@ -63,7 +63,7 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
 
 function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
-        services: createValidationServicesForTesting(),
+        services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
     vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Info, vmConfig.services.loggerService);
@@ -74,20 +74,20 @@ function setupPublicifyFormAdapter(options?: BuilderOverrideOptions, standardDat
     let state = new BuilderState<ValidationManagerConfig>(createVMConfig(standardDataTypes));
     return new Publicify_FormConfigAdapter(state);
 }
-function setupFallbackService(services: IValidationServices): IValidationServices {
+function setupFallbackService(services: IJivsServices): IJivsServices {
     services.lookupKeyFallbackService.register('NewString', LookupKey.String);
     services.lookupKeyFallbackService.register('NewNumber', LookupKey.Number);
     return services;
 }
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 describe('constructor', () => {
 
     test('Basic state', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let state = new BuilderState<ValidationManagerConfig>({
             services: services,
             valueHostConfigs: []

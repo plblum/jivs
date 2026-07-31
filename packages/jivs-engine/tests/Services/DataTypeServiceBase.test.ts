@@ -1,7 +1,7 @@
 import { BooleanFormatter, NumberFormatter } from "../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
-import { MockValidationServices } from "../TestSupport/mocks";
+import { MockJivsServices } from "../TestSupport/mocks";
 import { DataTypeServiceBase } from "../../src/Services/DataTypeServiceBase";
 import { IServiceWithAccessor, IServices } from "../../src/Interfaces/Services";
 
@@ -59,7 +59,7 @@ describe('PublicifyDataTypeServiceBase constructor and properties', () => {
     });
 
     test('Attach Services returns the same instance', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new PublicifyDataTypeServiceBase();
         expect(() => testItem.services = services).not.toThrow();
         let x: any;
@@ -99,7 +99,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
             expect(testItem.publicify_getAll().length).toBe(1);
         });        
         test('register with an item that implements IServicesAccessor assigns services to that item', () => {
-            let services = new MockValidationServices(false, false);
+            let services = new MockJivsServices(false, false);
             let testItem = new PublicifyDataTypeServiceBase();
             testItem.services = services;
             let toRegister = new TestItemWithService('TEST');
@@ -151,7 +151,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
             expect(testItem.publicify_getAll().length).toBe(2);
         });        
         test('register with an item that implements IServicesAccessor assigns services to that item', () => {
-            let services = new MockValidationServices(false, false);
+            let services = new MockJivsServices(false, false);
             let testItem = new PublicifyDataTypeServiceBase();
             testItem.registerCanOverwrite = true;
             testItem.services = services;
@@ -178,7 +178,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
         expect(() => testItem.register(null!)).toThrow(/item/);
     });    
     test('Attach Services after register assigns service to existing registered items', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new PublicifyDataTypeServiceBase();
         let toRegister = new TestItemWithService('TEST');
         testItem.register(toRegister);
@@ -196,7 +196,7 @@ describe('dispose()', () => {
     });
 
     test('dispose after services assigned throws when requesting services', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new PublicifyDataTypeServiceBase();
         testItem.services = services;
         testItem.dispose();

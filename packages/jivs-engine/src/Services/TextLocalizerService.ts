@@ -16,7 +16,7 @@ import { toIDisposable } from '../Interfaces/General_Purpose';
  * 
  * To set that up:
  * ```ts
- * let vs = createValidationServices(); // provides the standard case in vs.textLocalizerService
+ * let vs = createJivsServices(); // provides the standard case in vs.textLocalizerService
  * let special = new TextLocalizerService();
  * special.fallbackService = vs.textLocalizerService;
  * vs.textLocalizerService = special;

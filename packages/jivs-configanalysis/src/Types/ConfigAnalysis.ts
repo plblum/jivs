@@ -4,7 +4,7 @@
  */
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 
 import {
@@ -88,9 +88,9 @@ export interface IConfigAnalysis {
  */
 /**
  * Represents the arguments for analysis in the ConfigAnalysis.
- * @template TServices - The type of services provided by IValidationServices.
+ * @template TServices - The type of services provided by IJivsServices.
  */
-export interface AnalysisArgs<TServices extends IValidationServices> {
+export interface AnalysisArgs<TServices extends IJivsServices> {
     valueHostConfigs: Array<ValueHostConfig>;
     results: IConfigAnalysisResults;
     services: TServices;

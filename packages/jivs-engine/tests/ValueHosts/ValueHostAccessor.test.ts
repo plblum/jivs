@@ -1,7 +1,7 @@
 import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
@@ -10,7 +10,7 @@ import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 describe('constructor', () => {
     test('Valid parameter does not throw', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);
@@ -24,7 +24,7 @@ describe('constructor', () => {
 describe('field', () => {
     test('Existing FieldValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1'
@@ -39,7 +39,7 @@ describe('field', () => {
     });
     test('Matches CalcValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
                 name: 'Field1'
@@ -53,7 +53,7 @@ describe('field', () => {
 
     test('Matches StaticValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1'
@@ -66,7 +66,7 @@ describe('field', () => {
     });
     test('Unknown valueHostName', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);
@@ -79,7 +79,7 @@ describe('field', () => {
 describe('static', () => {
     test('Existing StaticValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1'
@@ -94,7 +94,7 @@ describe('static', () => {
     });
     test('Matches CalcValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
                 name: 'Field1'
@@ -107,7 +107,7 @@ describe('static', () => {
     });    
     test('Matches FieldValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1'
@@ -121,7 +121,7 @@ describe('static', () => {
   
     test('Unknown valueHostName', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);
@@ -133,7 +133,7 @@ describe('static', () => {
 describe('calc', () => {
     test('Existing CalcValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
                 name: 'Field1'
@@ -148,7 +148,7 @@ describe('calc', () => {
     });
     test('Matches StaticValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1'
@@ -161,7 +161,7 @@ describe('calc', () => {
     });    
     test('Matches FieldValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1'
@@ -175,7 +175,7 @@ describe('calc', () => {
   
     test('Unknown valueHostName', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);
@@ -187,7 +187,7 @@ describe('calc', () => {
 describe('any', () => {
     test('Existing FieldValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1'
@@ -202,7 +202,7 @@ describe('any', () => {
     });
     test('Existing StaticValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1'
@@ -217,7 +217,7 @@ describe('any', () => {
     });    
     test('Existing CalcValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
                 name: 'Field1'
@@ -232,7 +232,7 @@ describe('any', () => {
     });    
     test('Unknown valueHostName', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);
@@ -245,7 +245,7 @@ describe('any', () => {
 describe('validators', () => {
     test('Existing FieldValueHost', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Field,
                 name: 'Field1'
@@ -261,7 +261,7 @@ describe('validators', () => {
 
     test('Matches StaticValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1'
@@ -274,7 +274,7 @@ describe('validators', () => {
     });    
     test('Matches CalcValueHost throws', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
                 name: 'Field1'
@@ -287,7 +287,7 @@ describe('validators', () => {
     });        
     test('Unknown valueHostName', () => {
         let vhConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+            services: createJivsServicesForTesting(),
             valueHostConfigs: []
         };
         let vhm = new ValidationManager(vhConfig);

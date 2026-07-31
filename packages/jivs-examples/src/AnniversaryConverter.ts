@@ -1,6 +1,6 @@
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 
 
@@ -37,10 +37,10 @@ export class UTCAnniversaryConverter extends DataTypeConverterBase
     }
 }
 
-// Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerAnniversary(validationServices: IValidationServices): void
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerAnniversary(services: IJivsServices): void
 {
-    let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
+    let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
     dtcs.register(new UTCAnniversaryConverter()); 
 

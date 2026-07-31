@@ -8,7 +8,7 @@ import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/Field
 import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpose';
 import { IServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 
@@ -36,7 +36,7 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
      * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
      * @param services
      */
-    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValidationServices)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IJivsServices)
     {
         assertNotNull(services, 'services');
         if (existingValueHostConfigs)
@@ -49,11 +49,11 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
     {
         return this._existingValueHostConfigs ? this._existingValueHostConfigs.deref() ?? null : null;
     }
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
         return this._services.deref()!;
     }
-    private _services: WeakRef<IValidationServices>;
+    private _services: WeakRef<IJivsServices>;
 
     public dispose(): void {
         this._services = undefined!;
@@ -221,14 +221,14 @@ export class ValidatableValueHostConfigBuilder extends ValueHostConfigBuilder
      * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
      * @param services
      */
-    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValidationServices)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IJivsServices)
     {
         super(existingValueHostConfigs, services);
     }
 
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
-        return super.services as IValidationServices;
+        return super.services as IJivsServices;
     }    
 
     /**

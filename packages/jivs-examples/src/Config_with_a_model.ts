@@ -21,10 +21,10 @@
 
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
-import { createValidationServices } from './Config_example_common_code';
+import { createJivsServices } from './Config_example_common_code';
 import { IFormConfigAdapter, IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { IAdaptModelRulesToForm, RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
 import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
@@ -38,7 +38,7 @@ export class Person {
 
 // Phase 1: Business logic layer defines the rules for the model in ModelRulesBase subclass.
 export class PersonModelRules extends ModelRulesBase {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
     super(services);
   }
   protected override configureRules(
@@ -64,7 +64,7 @@ export class PersonEditFormRules
   extends PersonModelRules
   implements IAdaptModelRulesToForm
 {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
     super(services);
   }
   public adaptToForm(
@@ -82,7 +82,7 @@ export class PersonEditFormRules
 }
 
 /* General steps:
- 1. UI layer creates the ValidationServices object and Builder object.
+ 1. UI layer creates the JivsServices object and Builder object.
  2. UI passes the Builder object to the business logic layer where it is used to generate the Config objects.
  3. Back in the UI layer, use its startUILayerConfig() method to indicate that the upcoming configuration must be merged carefully
     into the existing configuration, so that business logic rules are not overwritten.
@@ -93,7 +93,7 @@ export class PersonEditFormRules
 export function configPersonEditFormRules(): ValidationManager
 {
     // Step 2: Configure and create the ValidationManager.
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new PersonEditFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler; 

@@ -3,7 +3,7 @@
  */
 
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { LoggerFacade } from '@plblum/jivs-engine/build/Utilities/LoggerFacade';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost, SetConfigOptions } from '../Interfaces/ChildBuilders';
@@ -21,7 +21,7 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
      * @param parentBuilder - expected to be null at the very top node.
      * @param completed 
      */
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object> | null, // intentionally <object></object> because the parent might not be creating a condition config
         completed?: CompleteConfigBuilderHandler<TConfig>) {
         assertNotNull(services, 'services');
@@ -30,11 +30,11 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
         this._completed = completed;
     }
 
-    protected get services(): IValidationServices
+    protected get services(): IJivsServices
     {
         return this._services;
     }
-    private readonly _services: IValidationServices;
+    private readonly _services: IJivsServices;
 
     protected get parentBuilder(): IBuilderConfigHost<object> | null {
         return this._parentBuilder;

@@ -6,10 +6,10 @@
  *   it may actually be a phone number or email address. These are in fact data types.
  *   So you might want to create Lookup Keys for them, and where appropriate, provide a supporting
  *   IDataTypeIdentifier, IDataTypeFormatter, IDataTypeConverter, and/or IDataTypeComparer.
- * - ValidationServices.dataTypeIdentifierService to work with IDataTypeIdentifiers.
- * - ValidationServices.dataTypeFormatterService to work with IDataTypeFormatters.
- * - ValidationServices.dataTypeConverterService to work with IDataTypeConverters.
- * - ValidationServices.dataTypeComparerService to work with IDataTypeComparers.
+ * - JivsServices.dataTypeIdentifierService to work with IDataTypeIdentifiers.
+ * - JivsServices.dataTypeFormatterService to work with IDataTypeFormatters.
+ * - JivsServices.dataTypeConverterService to work with IDataTypeConverters.
+ * - JivsServices.dataTypeComparerService to work with IDataTypeComparers.
  * - Error message tokens, like "{Value}" and "{Minimum}", get native values replaced by formatted and localized strings.
  *   By default, they select a IDataTypeFormatter from the ValueHostConfig.dataType property
  *   or the native data type itself. However, you may want different formatting.

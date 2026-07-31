@@ -1,13 +1,13 @@
 import { ModelValidatorsValueHostGenerator, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ModelValidatorsValueHost, ModelValidatorsValueHostType } from "../../src/ValueHosts/ModelValidatorsValueHost";
-import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
+import { MockValidationManager, MockJivsServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { ValidationStatus, ValueHostValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
 
 
 interface ITestSetupConfig {
-    services: MockValidationServices,
+    services: MockJivsServices,
     validationManager: MockValidationManager,
     config: ValidatableValueHostBaseConfig,
     state: ValidatableValueHostBaseInstanceState,
@@ -18,7 +18,7 @@ interface ITestSetupConfig {
 function setupFieldValueHost(
     config?: Partial<ValidatableValueHostBaseConfig> | null,
     state?: Partial<ValidatableValueHostBaseInstanceState> | null): ITestSetupConfig {
-    let services = new MockValidationServices(true, true);
+    let services = new MockJivsServices(true, true);
     let vm = new MockValidationManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
         valueHostType: ModelValidatorsValueHostType,
@@ -287,7 +287,7 @@ describe('ModelValidatorsValueHostGenerator members', () => {
         })).toBe(false);
     });
     test('create returns instance of ModelValidatorsValueHost with VM, Config and InstanceState established', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',

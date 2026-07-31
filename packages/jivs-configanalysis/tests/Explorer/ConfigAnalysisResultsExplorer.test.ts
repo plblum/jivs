@@ -13,14 +13,14 @@ import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/Condition
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
-import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { JivsServices } from '@plblum/jivs-engine/build/Services/JivsServices';
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     ComparerServiceCAResultExplorer,
@@ -87,7 +87,7 @@ import { CAExplorerBase } from '../../src/Explorer/CAExplorerBase';
 import { CASearcher } from '../../src/Explorer/CASearcher';
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 describe('CASearcher class', () => {
@@ -2726,7 +2726,7 @@ describe('ErrorCAResultExplorer class', () => {
 describe('ConfigAnalysisResultExplorer class', () => {
 
     let factory = new ConfigAnalysisResultsExplorerFactory();
-    let services = createValidationServicesForTesting();
+    let services = createJivsServicesForTesting();
 
     // these are the CAResultPaths for each case supplied in
     // createExtensiveConfigAnalysisResults().
@@ -2943,14 +2943,14 @@ describe('ConfigAnalysisResultExplorer class', () => {
         expect(notFound).toHaveLength(0);
     }
     describe('Constructor and setup', () => {
-        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IValidationServices> {
-            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IValidationServices) {
+        class Publicify_ConfigAnalysisResultsExplorer extends ConfigAnalysisResultsExplorer<IJivsServices> {
+            constructor(results: IConfigAnalysisResults, factory: ICAExplorerFactory, services: IJivsServices) {
                 super(results, factory, services);
             }
             public get publicify_factory(): ICAExplorerFactory {
                 return this.factory;
             }
-            public get publicify_services(): IValidationServices {
+            public get publicify_services(): IJivsServices {
                 return this.services;
             }
         }
@@ -2982,7 +2982,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/factory/);
         });
         test('constructor throws when services is null', () => {
-            let services: IValidationServices = null as any;
+            let services: IJivsServices = null as any;
             expect(() => new Publicify_ConfigAnalysisResultsExplorer(
                 createBasicConfigAnalysisResults(), factory, services)).toThrow(/services/);
         });
@@ -4050,7 +4050,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
     });
     describe('other tests', () => {
         test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, and no parsers registered reports errors for parser not found', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
@@ -4070,7 +4070,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
 
         });
         test('Build an FieldValueHost with DataType=Date and parserLookupKey=Date, has a matching parser but the wrong culture.', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.cultureService.register({ cultureId: 'en' });
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4100,7 +4100,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // errorMessagel10n value for 'en' and 'es', but only 'en' is registered.
         // Should report error for 'es' not found.
         test('Build an FieldValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
@@ -4125,7 +4125,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
         // same but both 'en' and 'es' are entries in TextLocalizerService.
         // Should not throw
         test('Build an FieldValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
             services.cultureService.register({ cultureId: 'en' });
@@ -4147,7 +4147,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).not.toThrow();
         });
         test('Report shows Converter for LessThanEqualValue in LookupKeyResults', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeConverterService = new DataTypeConverterService();
             services.dataTypeConverterService.register(new UTCDateOnlyConverter());

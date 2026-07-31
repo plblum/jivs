@@ -13,7 +13,7 @@ import { ServiceBase } from './ServiceBase';
  * by their CultureID  ('en', 'en-US', 'en-GB', etc), and provides
  * fallbacks for when a requested CultureID is not found.
  * 
- * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.cultureService | ValidationServices.cultureService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices.cultureService | JivsServices.cultureService}.
  */
 export class CultureService extends ServiceBase implements ICultureService {
 

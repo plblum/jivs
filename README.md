@@ -240,13 +240,13 @@ npm install --save @plblum/jivs-engine
 
 Add the contents of this file to your project. It results in several new functions starting with this one.
 ```ts
-export function createValidationServices(... parameters ...): ValidationServices {
+export function createJivsServices(... parameters ...): JivsServices {
 …
 }
 // also many register() functions plus configureCultures() and createTextLocalizerService
 ```
 Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-For more, see [ValidationServices](#validationservices).
+For more, see [JivsServices](#validationservices).
 
 # Digging in
 Please use these documents:
@@ -260,7 +260,7 @@ Please use these documents:
   + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
   + [ValidationManager](./docs/Jivs_API.md#validationmanager)
   + [Rules](./docs/Jivs_API.md#rules)
-  + [ValidationServices](./docs/Jivs_API.md#validationservices)
+  + [JivsServices](./docs/Jivs_API.md#validationservices)
   + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)
   + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)
   + [Localization](./docs/Jivs_API.md#localization)

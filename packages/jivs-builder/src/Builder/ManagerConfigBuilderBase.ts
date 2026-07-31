@@ -14,7 +14,7 @@ import {
 
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
@@ -83,17 +83,17 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
 export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig>
     implements IManagerConfigBuilder<T> {
 
-    constructor(services: IValidationServices)
+    constructor(services: IJivsServices)
     constructor(config: T)
     constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
-    constructor(arg1: IValidationServices | T | BuilderState<T>) {
+    constructor(arg1: IJivsServices | T | BuilderState<T>) {
         assertNotNull(arg1);
         if (arg1 instanceof BuilderState)
         {
             this._state = arg1;
             return;
         }
-        const services = toIServices(arg1) as IValidationServices;
+        const services = toIServices(arg1) as IJivsServices;
         if (services) {
             this._state = new BuilderState<T>({
                 services: services,
@@ -129,7 +129,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         return this.state;
     }
 
-    public get services(): IValidationServices {
+    public get services(): IJivsServices {
         return this.baseConfig.services;
     }
     
@@ -467,7 +467,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         
         const vhConfig = this.getValueHostConfig(valueHostName, true);
         const startBuilder = new StartConditionWithOneChildBuilder(
-            this.services as IValidationServices,
+            this.services as IJivsServices,
             null,
             (conditionConfig) => {
             if (conditionConfig)

@@ -44,7 +44,7 @@ import { DataTypeResolution } from './DataTypes';
  * Dates apply to this rule too. If you can get a real date from the data, leave it to another
  * validator to identify if that date is inappropriate for your use case.
  * 
- * Register your implementation with ValidationServices.dataTypeParserService.
+ * Register your implementation with JivsServices.dataTypeParserService.
  */
 export interface IDataTypeParser<TDataType> {
     /**

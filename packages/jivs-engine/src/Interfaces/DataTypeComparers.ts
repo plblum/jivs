@@ -13,7 +13,7 @@ import { ComparersResult } from './DataTypeComparerService';
  * your data type into an integer, string, or date. Those will
  * be supported by the default comparer.
  * 
- * Register your implementation with ValidationServices.dataTypeComparerService.
+ * Register your implementation with JivsServices.dataTypeComparerService.
  */
 export interface IDataTypeComparer
 {

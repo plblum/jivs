@@ -14,7 +14,7 @@ import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
@@ -45,7 +45,7 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
  * ValidationManager's constructor takes a single parameter, but its a potent one:
  * it's Configuration object (type=ValidationManagerConfig). By the time you 
  * create the ValidationManager, you have provided all of those configs to
- * the Configuration object. It also supplies the ValidationServices object,
+ * the Configuration object. It also supplies the JivsServices object,
  * state data, and callbacks. See the constructor's documentation for a sample of 
  * the Configuration object.
  * 
@@ -85,7 +85,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * @example
      * ```ts
      * {
-     *   services: createValidationServices(); <-- see and customize your create_services.ts file
+     *   services: createJivsServices(); <-- see and customize your create_services.ts file
      *   valueHostConfigs: [
      *     // see elsewhere for details on ValueHostConfigs as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
@@ -189,9 +189,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     private readonly _config: ValidationManagerConfig;
 
     /**
-     * Access to the ValidationServices.
+     * Access to the JivsServices.
      */
-    public get services(): IValidationServices {
+    public get services(): IJivsServices {
         return this._config.services!;
     }
     /**

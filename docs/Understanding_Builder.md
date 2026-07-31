@@ -18,7 +18,7 @@ This README introduces those areas. The source code comments go deeper into impl
 
 ```ts
 let config: ValidationManagerConfig = {
-    services: createValidationServices(),
+    services: createJivsServices(),
     valueHostConfigs: [
         {
             valueHostType: ValueHostType.Field,
@@ -43,7 +43,7 @@ The `ValidationManagerConfig` object is rather complex and difficult to maintain
 The **Builders** and the **Builder API** are a better way.
 
 ```ts
-let builder = new ValidationManagerConfigBuilder(createValidationServices());
+let builder = new ValidationManagerConfigBuilder(createJivsServices());
 builder.field('LastName', LookupKey.String, { label: 'Last name'})
     .requireText();
 let vm = new ValidationManager(builder.complete());
@@ -59,7 +59,7 @@ Let's see all of these working together:
 
 ```ts
 export class PersonModelRules extends ModelRulesBase {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
     super(services);
   }
   protected override configureRules(
@@ -83,7 +83,7 @@ export class PersonEditFormRules
   extends PersonModelRules
   implements IAdaptModelRulesToForm
 {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
     super(services);
   }
   public adaptToForm(
@@ -329,7 +329,7 @@ To make your own condition feel native to the Builder API, expose it through bot
 
    // The Condition that will be used by the DataTypeCheckValidator
    // when its dataType property is 'EmailAddress'
-   // It must still be registered in the ValidationServices.conditionFactory.
+   // It must still be registered in the JivsServices.conditionFactory.
    export class EmailAddressCondition extends RegExpCondition
    {
        constructor(config: EmailAddressConditionConfig)
@@ -348,7 +348,7 @@ To make your own condition feel native to the Builder API, expose it through bot
    }
    ```
 
-2. Register the condition with `ValidationServices.conditionFactory` in the `createValidationServices()` function.
+2. Register the condition with `JivsServices.conditionFactory` in the `createJivsServices()` function.
 
    ```ts
    let cf = vs.conditionFactory as ConditionFactory;
@@ -396,10 +396,10 @@ To make your own condition feel native to the Builder API, expose it through bot
    }
    ```
 
-5. Register your custom builders with the `BuildersFactory`, which is in `ValidationServices`.
+5. Register your custom builders with the `BuildersFactory`, which is in `JivsServices`.
 
    ```ts
-   // within the createValidationServices function, this code already exists,
+   // within the createJivsServices function, this code already exists,
    // only needing removing comments:
    // --- BuildersFactory -------------------------------------------
    let bf = vs.builderFactory;

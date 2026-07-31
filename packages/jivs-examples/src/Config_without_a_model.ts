@@ -28,9 +28,9 @@ import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 
-import { createValidationServices, TimeZoneRegex } from './Config_example_common_code';
+import { createJivsServices, TimeZoneRegex } from './Config_example_common_code';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
@@ -43,7 +43,7 @@ import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules'
  */
 export class DateRangeFormRules extends FormRulesBase
 {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValidationManagerConfigBuilder,
@@ -78,7 +78,7 @@ export class DateRangeFormRules extends FormRulesBase
 export function configUsingDateRangeFormRules(): ValidationManager
 {
     // Step 2: Configure and create the ValidationManager.
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler;

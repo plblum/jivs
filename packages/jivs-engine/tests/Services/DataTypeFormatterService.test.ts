@@ -6,10 +6,10 @@ import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 
-import { MockValidationServices } from "../TestSupport/mocks";
+import { MockJivsServices } from "../TestSupport/mocks";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { JivsServices } from "../../src/Services/JivsServices";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
 
 
@@ -39,7 +39,7 @@ describe('DataTypeFormatterServices constructor and properties', () => {
     });
 
     test('Attach Services returns the same instance', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new DataTypeFormatterService();
         expect(() => testItem.services = services).not.toThrow();
         let x: any;
@@ -51,7 +51,7 @@ describe('DataTypeFormatterServices constructor and properties', () => {
 // format(value: any, lookupKey?: string): DataTypeResolution<string>
 describe('DataTypeFormatterService.format', () => {
     test('No lookupKey not resolved. Logs an error and returns an error message', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en');
         let testItem = services.dataTypeFormatterService;
         let logger = services.loggerService as CapturingLogger;
@@ -64,7 +64,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('Unsupported lookupKey error', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en');
         let testItem = services.dataTypeFormatterService;
 
@@ -77,7 +77,7 @@ describe('DataTypeFormatterService.format', () => {
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -91,7 +91,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en-GB', true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -106,7 +106,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en-GB', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
@@ -114,7 +114,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en-GB TestKey' });
     });
     test('Date to string using built-in localization', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
@@ -127,7 +127,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
     });
     test('Number to string using built-in localization', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
@@ -140,7 +140,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(testItem.format(value)).toEqual({ value: '4\u{202F}000,932' });
     });
     test('String to string using built-in localization. Expect no changes', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         let value = 'abcZYX';
@@ -152,7 +152,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(testItem.format(value)).toEqual({ value: value });
     });
     test('Lookup Key supplied not compatible with native data type error', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         expect(testItem.format(10, LookupKey.Date).errorMessage).not.toBeUndefined();
@@ -169,7 +169,7 @@ describe('DataTypeFormatterService.format', () => {
                 throw new Error("ERROR");
             }
         }
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -191,7 +191,7 @@ describe('DataTypeFormatterService.format', () => {
                 throw "ERROR";
             }
         }
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
@@ -212,9 +212,9 @@ describe('DataTypeFormatterService.format', () => {
     });
 });
 describe('format() using lookupKeyFallbackService', () => {
-    function createValidationServices(): IValidationServices
+    function createJivsServices(): IJivsServices
     {
-        let vs = new ValidationServices();
+        let vs = new JivsServices();
         vs.cultureService.activeCultureId = 'en';
         let dtfs = new DataTypeFormatterService();
         vs.dataTypeFormatterService = dtfs;
@@ -226,7 +226,7 @@ describe('format() using lookupKeyFallbackService', () => {
     }
 
     test('Integer datatype uses NumberFormatter', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let logger = new CapturingLogger();
         services.loggerService = logger;
         logger.minLevel = LoggingLevel.Debug;
@@ -240,7 +240,7 @@ describe('format() using lookupKeyFallbackService', () => {
         expect(logger.findMessage('Formatted "Number" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Custom currency type falls back to Currency', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', LookupKey.Currency);
         lkfb.register('CUSTOMB', 'CUSTOMA');        
@@ -258,7 +258,7 @@ describe('format() using lookupKeyFallbackService', () => {
         expect(logger.findMessage('Formatted "Currency" with culture "en"', LoggingLevel.Info)).toBeTruthy();        
     });    
     test('Fallback loop stopped with exception', () => {
-        let services = createValidationServices();
+        let services = createJivsServices();
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', 'CUSTOMB');
         lkfb.register('CUSTOMB', 'CUSTOMA');        
@@ -327,7 +327,7 @@ describe('DataTypeFormatterServices register, unregister, and find', () => {
         expect(() => testItem.register(null!)).toThrow(/item/);
     });    
     test('Attach Services after register assigns service to existing registered formatters', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new DataTypeFormatterService();
         let formatter = new NumberFormatter();
         testItem.register(formatter);
