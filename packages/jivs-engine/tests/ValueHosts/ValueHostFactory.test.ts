@@ -67,7 +67,7 @@ describe('ValueHostFactory.register', () => {
 describe('ValueHostFactory.create', () => {
     test('create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -84,14 +84,14 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+        expect(() => valueHost = testItem.create(vhm, config, state)).not.toThrow();
         expect(valueHost).not.toBeNull();
         expect(valueHost!.getName()).toBe('Field1');
         expect(valueHost!.getValue()).toBe('Value');
     });
     test('create with null in parameters throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -109,12 +109,12 @@ describe('ValueHostFactory.create', () => {
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
         expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/valueHostsManager/);
-        expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/config/);
-        expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
+        expect(() => valueHost = testItem.create(vhm, null!, state)).toThrow(/config/);
+        expect(() => valueHost = testItem.create(vhm, config, null!)).toThrow(/state/);
     });
     test('create with Config.valueHostType of null throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -131,12 +131,12 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.valueHostType/);
+        expect(() => valueHost = testItem.create(vhm, config, state)).toThrow(/ValueHostConfig\.valueHostType/);
 
     });    
     test('create with Config.valueHostType that has no matching registration throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -153,7 +153,7 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/Unsupported/);
+        expect(() => valueHost = testItem.create(vhm, config, state)).toThrow(/Unsupported/);
 
     });        
 });

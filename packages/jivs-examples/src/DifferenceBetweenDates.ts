@@ -107,32 +107,32 @@ export function configureVMForDifferenceBetweenDates(): IValueHostsManager {
 // Even better, look at the unit tests in \tests folder as they run the same examples.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function demoSeveralCases(): void {
-    let vm = configureVMForDifferenceBetweenDates();
-    vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
-    vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
-    let diffDays = vm.getValueHost('DiffDays')?.getValue();
+    let vhm = configureVMForDifferenceBetweenDates();
+    vhm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
+    vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
+    let diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays = 0
-    let result = vm.validate();
+    let result = vhm.validate();
     /* 
     result = {
         issuesFound: null,
         status: ValidationStatus.Valid,
     }
     */
-    vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
+    vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
+    diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 9
-    result = vm.validate();
+    result = vhm.validate();
     /* 
     result = {
         issuesFound: null,
         status: ValidationStatus.Valid,
     }
     */
-    vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
+    vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
+    diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 10 
-    result = vm.validate();
+    result = vhm.validate();
     /* 
     result == {
         issuesFound: [{
@@ -142,10 +142,10 @@ function demoSeveralCases(): void {
     }
     */    
 
-    vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 12)));    // start > end
-    diffDays = vm.getValueHost('DiffDays')?.getValue();
+    vhm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 12)));    // start > end
+    diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 1 
-    result = vm.validate();
+    result = vhm.validate();
     /* 
     result == {
         issuesFound: [{

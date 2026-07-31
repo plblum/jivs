@@ -307,7 +307,7 @@ describe('constructor and initial property values', () => {
         let services = createJivsServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [<FieldValueHostConfig>{
                 valueHostType: ValueHostType.Field,
@@ -326,7 +326,7 @@ describe('constructor and initial property values', () => {
             }]
         });
 
-        let vh = vm.getFieldValueHost('Property1')!;
+        let vh = vhm.getFieldValueHost('Property1')!;
         vh.setValue('ABC');
         vh.validate();
         expect(vh.validationStatus).toBe(ValidationStatus.Valid);
@@ -338,7 +338,7 @@ describe('constructor and initial property values', () => {
         let services = createJivsServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<EqualToValueConditionConfig>(ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [<FieldValueHostConfig>{
                 valueHostType: ValueHostType.Field,
@@ -364,7 +364,7 @@ describe('constructor and initial property values', () => {
             ]
         });
 
-        let vh = vm.getFieldValueHost('Property1')!;
+        let vh = vhm.getFieldValueHost('Property1')!;
         vh.validate();
         expect(vh.validationStatus).toBe(ValidationStatus.Valid);
     });
@@ -388,11 +388,11 @@ function setupValueHostsManager(configs?: Array<FieldValueHostConfig> | null,
     };
     if (callbacks)
         setup = { ...callbacks, ...setup } as ValueHostsManagerConfig;
-    let vm = new PublicifiedValueHostsManager(setup);
+    let vhm = new PublicifiedValueHostsManager(setup);
 
     return {
         services: services,
-        valueHostsManager: vm
+        valueHostsManager: vhm
     };
 }
 
@@ -1947,7 +1947,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test invokes callback with expected ValidationState', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callback = (vhm: IValueHostsManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -1978,7 +1978,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callback = (vhm: IValueHostsManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2204,7 +2204,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callback = (vhm: IValueHostsManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -2223,7 +2223,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     });
     test('OnValidated callback test with skipCallback does not callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callback = (vhm: IValueHostsManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -2669,11 +2669,11 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         // let builder = new ValueHostsManagerConfigBuilder(services);
         // builder.field('Field1', LookupKey.String);
         // builder.static('Field2', LookupKey.Number);
-        let vm = new ValueHostsManager(vmConfig);
+        let vhm = new ValueHostsManager(vmConfig);
 
-        vm.validate();
+        vhm.validate();
 
-        expect(vm.getIssuesForField('Field2')).toBeNull();
+        expect(vhm.getIssuesForField('Field2')).toBeNull();
     });
 });
 
@@ -2703,7 +2703,7 @@ describe('clearValidation', () => {
         jest.useFakeTimers();
 
         let capturedFromOnValidated: Array<ValidationState> = [];
-        let callbackValidated = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callbackValidated = (vhm: IValueHostsManager, validationState: ValidationState) => {
             capturedFromOnValidated.push(validationState);
         };
         let capturedFromOnValueHostValidated: Array<ValueHostValidationState> = [];
@@ -2758,7 +2758,7 @@ describe('clearValidation', () => {
     });
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
         let callbackValue: ValidationState | null = null;
-        let callback = (vm: IValueHostsManager, validationState: ValidationState) => {
+        let callback = (vhm: IValueHostsManager, validationState: ValidationState) => {
             callbackValue = validationState
         };
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -3008,7 +3008,7 @@ describe('updateState', () => {
             };
             const initialValue = 100;
             let onStateChanges: Array<ITestExtendedState> = [];
-            let changes = testUpdateState(initialValue, testCallback, (vm, state) => {
+            let changes = testUpdateState(initialValue, testCallback, (vhm, state) => {
                 onStateChanges.push(state as ITestExtendedState);
             });
             expect(changes.length).toBe(3);
@@ -3027,7 +3027,7 @@ describe('updateState', () => {
             };
             const initialValue = 100;
             let onStateChanges: Array<ITestExtendedState> = [];
-            let changes = testUpdateState(initialValue, testCallback, (vm, state) => {
+            let changes = testUpdateState(initialValue, testCallback, (vhm, state) => {
                 onStateChanges.push(state as ITestExtendedState);
             });
             expect(changes.length).toBe(0);
@@ -3381,7 +3381,7 @@ describe('dispose', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
         let countCalls = 0;
         let setup = setupValueHostsManager([config], null, {
-            onValidationStateChanged: (vm, vs) => {
+            onValidationStateChanged: (vhm, vs) => {
                 countCalls++;
             },
             notifyValidationStateChangedDelay: 100
@@ -3405,9 +3405,9 @@ describe('toIValueHostsManagerCallbacks function', () => {
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
             onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
-            onInstanceStateChanged: (vm, state) => { },
-            onValidationStateChanged: (vm, results) => { },
-            onConfigChanged: (vm, config) => { }
+            onInstanceStateChanged: (vhm, state) => { },
+            onValidationStateChanged: (vhm, results) => { },
+            onConfigChanged: (vhm, config) => { }
         };
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
     });
@@ -3426,9 +3426,9 @@ describe('toIValueHostsManagerCallbacks function', () => {
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => { },
             onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
             onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
-            onInstanceStateChanged: (vm, state) => { },
-            onValidationStateChanged: (vm, results) => { },
-            onConfigChanged: (vm, config) => { }
+            onInstanceStateChanged: (vhm, state) => { },
+            onValidationStateChanged: (vhm, results) => { },
+            onConfigChanged: (vhm, config) => { }
         });
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
     });
@@ -3660,8 +3660,8 @@ describe('toIValueHostsManagerAccessor function', () => {
         expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);
     });
     test('ValueHost matches and returns itself.', () => {
-        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
-        let testItem = new StaticValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new StaticValueHost(vhm, {
             name: 'Field1',
             label: 'Label1',
         },
@@ -3736,31 +3736,31 @@ describe('Round trip caching of Config and State', () => {
 
         // builder.field('Field1', LookupKey.String).requireText('required').regExp(/^\d*$/, 'Digits only');
         // builder.static('Field2', LookupKey.Integer);
-        let vm = new ValueHostsManager(vmConfig);
+        let vhm = new ValueHostsManager(vmConfig);
 
         // this triggers the onConfigChanged callback and captures the config for later use.
-        vm.addValueHost(<StaticValueHostConfig>{
+        vhm.addValueHost(<StaticValueHostConfig>{
             valueHostType: ValueHostType.Static,
             name: 'Field3',
             dataType: LookupKey.Integer
         }, null);
 
-        vm.getFieldValueHost('Field1')!.setValues('abc', ' abc ');    // saved into state
-        vm.getStaticValueHost('Field2')!.setValue(10);
-        vm.getStaticValueHost('Field3')!.setValue(20);
+        vhm.getFieldValueHost('Field1')!.setValues('abc', ' abc ');    // saved into state
+        vhm.getStaticValueHost('Field2')!.setValue(10);
+        vhm.getStaticValueHost('Field3')!.setValue(20);
 
-        let vmValidationState = vm.validate();  // changes valueHostsManager state and Field1 state which has validation error now.
+        let vmValidationState = vhm.validate();  // changes valueHostsManager state and Field1 state which has validation error now.
 
-        let vh1IsValid = vm.getFieldValueHost('Field1')!.isValid;
-        let vh1ValidationStatus = vm.getFieldValueHost('Field1')!.validationStatus;
+        let vh1IsValid = vhm.getFieldValueHost('Field1')!.isValid;
+        let vh1ValidationStatus = vhm.getFieldValueHost('Field1')!.validationStatus;
 
-        let vh1Value = vm.getFieldValueHost('Field1')!.getValue();
-        let vh1TextValue = vm.getFieldValueHost('Field1')!.getTextValue();
-        let issuesFoundVH1 = vm.getFieldValueHost('Field1')!.getIssuesFound();
-        let vh2Value = vm.getStaticValueHost('Field2')!.getValue();
-        let vh3Value = vm.getStaticValueHost('Field3')!.getValue();
+        let vh1Value = vhm.getFieldValueHost('Field1')!.getValue();
+        let vh1TextValue = vhm.getFieldValueHost('Field1')!.getTextValue();
+        let issuesFoundVH1 = vhm.getFieldValueHost('Field1')!.getIssuesFound();
+        let vh2Value = vhm.getStaticValueHost('Field2')!.getValue();
+        let vh3Value = vhm.getStaticValueHost('Field3')!.getValue();
 
-        vm.dispose();   // our captured configs and states are still around
+        vhm.dispose();   // our captured configs and states are still around
         let expectedField1: FieldValueHostConfig = {
             valueHostType: ValueHostType.Field,
             name: 'Field1',

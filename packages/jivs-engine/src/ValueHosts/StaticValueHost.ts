@@ -31,7 +31,7 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
  * When configuring the ValueHostsManager for a StaticValueHost, use the builder's static() method.
  * ```ts
  * builder.static("pi", LookupKey.Number, { initialValue: 3.14159, label: 'Pi' });
- * builder.static("today", LookupKey.Date); // use vm.getValueHost("today").setValue(new Date()); after creating the ValueHostsManager
+ * builder.static("today", LookupKey.Date); // use vhm.getValueHost("today").setValue(new Date()); after creating the ValueHostsManager
  * ```
  * If configuring directly from a Config object, use the ValueHostType.Static type and provide a list of ValidatorConfigs.
  * ```ts

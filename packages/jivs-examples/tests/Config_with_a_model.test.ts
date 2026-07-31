@@ -25,11 +25,11 @@ afterEach(() => {
 describe('configPersonEditFormRules', () => {
     it('should configure validation manager correctly', () => {
         // Execute configExample
-        let vm: ValueHostsManager;
-        expect(() => vm = configPersonEditFormRules()).not.toThrow();
-        let vh1 = vm!.getValueHost('FirstName');
-        let vh2 = vm!.getValueHost('LastName');
-        let vh3 = vm!.getValueHost('BirthDate');
+        let vhm: ValueHostsManager;
+        expect(() => vhm = configPersonEditFormRules()).not.toThrow();
+        let vh1 = vhm!.getValueHost('FirstName');
+        let vh2 = vhm!.getValueHost('LastName');
+        let vh3 = vhm!.getValueHost('BirthDate');
         expect(vh1).toBeInstanceOf(FieldValueHost);
         expect(vh1!.getDataType()).toBe(LookupKey.String);
         expect(vh1!.getLabel()).toBe('First name');

@@ -81,10 +81,10 @@ export class Validator implements IValidator {
     }
 
     protected get valueHostsManager(): IValueHostsManager {
-        const vm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
-        if (vm) {
-            if (vm instanceof ValueHostsManager || toIValueHostsManager(vm))
-                return vm as IValueHostsManager;
+        const vhm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
+        if (vhm) {
+            if (vhm instanceof ValueHostsManager || toIValueHostsManager(vhm))
+                return vhm as IValueHostsManager;
             throw new CodingError('ValueHost.valueHostsManager must contain IValueHostsManager');
         }
         /* istanbul ignore next */

@@ -502,19 +502,19 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
 
 ### Getting a ValueHost
-Start with a ValueHostsManager instance. It should already be configured with ValueHosts. Supposing *vm* has that ValueHostsManager, do this to get a ValueHost:
+Start with a `ValueHostsManager` instance. It should already be configured with ValueHosts. Supposing *vhm* has that `ValueHostsManager`, do this to get a `ValueHost`:
 
 |Code|Notes|Not found|
 |----|-----|---------|
-|vm.getValueHost('name')|Base to all ValueHosts|Returns null|
-|vm.getValidatorsValueHost('name')|Base to Validatable ValueHosts|Returns null|
-|vm.getTextValueHost('name')|FieldValueHost|Returns null|
-|vm.getStaticValueHost('name')|StaticValueHost|Returns null|
-|vm.getCalcValueHost('name')|CalcValueHost|Returns null|
-|vm.vh.field('name')|FieldValueHost|Throws error|
-|vm.vh.static('name')|StaticValueHost|Throws error|
-|vm.vh.calc('name')|CalcValueHost|Throws error|
-|vm.vh.any('name')|Base to all ValueHosts|Throws error|
+|vhm.getValueHost('name')|Base to all ValueHosts|Returns null|
+|vhm.getValidatorsValueHost('name')|Base to Validatable ValueHosts|Returns null|
+|vhm.getTextValueHost('name')|FieldValueHost|Returns null|
+|vhm.getStaticValueHost('name')|StaticValueHost|Returns null|
+|vhm.getCalcValueHost('name')|CalcValueHost|Returns null|
+|vhm.vh.field('name')|FieldValueHost|Throws error|
+|vhm.vh.static('name')|StaticValueHost|Throws error|
+|vhm.vh.calc('name')|CalcValueHost|Throws error|
+|vhm.vh.any('name')|Base to all ValueHosts|Throws error|
 
 ### Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.
@@ -565,7 +565,7 @@ There are two ways to set and change it: using the 'enabled' state, which is a b
     ```
 - To change it on demand, call the setEnabled() function on the ValueHost object.
     ```ts
-    vm.getValueHost('name').setEnabled(false);
+    vhm.getValueHost('name').setEnabled(false);
     ```
   >When setting it to true, also be sure to call validate() if you want to restore the validation state. 
   
@@ -751,7 +751,7 @@ export class PersonModelRules extends ModelRulesBase {
 let services = createJivsServices('en-US'); // see "Installing Jivs"
 let rules = new PersonModelRules(services);
 let config = rules.configure();
-let vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
+let vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
 ## Rules
@@ -789,7 +789,7 @@ Inside `configure()` Jivs handles several support steps for you:
 const services = createJivsServices('en-US');
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
-const vm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(config);
 ```
 
 ### RulesConfigOptions
@@ -911,7 +911,7 @@ Now that you have the `createJivsServices function`, use it during `ValueHostsMa
 let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 ### Customizing factories and services
 There are many services. Most code that instantiates an object is found in services and factories, not in the ValueHostsManager, ValueHosts, and Validators. That allows for extensive ability to customize.
@@ -1069,7 +1069,7 @@ Assign the FieldValueHostConfig.formatterLookupKey and you get a different resul
 - The text value is set
 - The ValueHostsManager.onTextValueChanged callback is triggered, allowing you to wire up your data entry field to intake the new string.
 ```ts
-vm.onTextValueChanged = (fieldValueHost, oldValue)=>{
+vhm.onTextValueChanged = (fieldValueHost, oldValue)=>{
     let newTextValue = fieldValueHost.getTextValue();
     // assign it to the input's value attribute
     document.getElementById('FirstName').value = newTextValue;
@@ -1422,12 +1422,12 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=> {
     let textValue = evt.target.value;
     let nativeValue = YourConvertToNativeCode(textValue);  // return undefined if cannot convert
-    let valueHost = vm.vh.field('FirstName');	// or vm.getTextValueHost('FirstName')
+    let valueHost = vhm.vh.field('FirstName');	// or vhm.getTextValueHost('FirstName')
     valueHost.setValues(nativeValue, textValue);
     valueHost.validate();
 });	
 firstNameFld.attachEventListener('oninput', (evt)=> {
-    let valueHost = vm.vh.field('FirstName');	// or vm.getTextValueHost('FirstName')
+    let valueHost = vhm.vh.field('FirstName');	// or vhm.getTextValueHost('FirstName')
     valueHost.setTextValue(evt.target.value);
     valueHost.validate({ duringEdit: true });
 });
@@ -1452,10 +1452,10 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=> {
     let textValue = evt.target.value;
     let nativeValue = YourConvertToNativeCode(textValue);  // return undefined if cannot convert
-    vm.vh.field('FirstName').setValues(nativeValue, textValue, { validate: true });
+    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { validate: true });
 });	
 firstNameFld.attachEventListener('oninput', (evt)=> {
-    vm.vh.field('FirstName').setTextValue(evt.target.value, { validate: true, duringEdit: true });
+    vhm.vh.field('FirstName').setTextValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
 Here is the type for the *options* parameter:
@@ -1484,17 +1484,17 @@ These properties are all related to validation:
     firstNameFld.attachEventListener('onchange', (evt)=> {
         let textValue = evt.target.value;
         let [nativeValue, errorMessage] = YourConvertToNativeCode(textValue);  
-        vm.vh.field('FirstName').setValues(nativeValue, textValue, { 
+        vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
             validate: true, 
             conversionErrorTokenValue: errorMessage 
         });
     });	
     
     // set up the DataTypeCheckCondition's error message (local to this form)
-    let original = vm.services.textLocalizerService as TextLocalizerService;
+    let original = vhm.services.textLocalizerService as TextLocalizerService;
     let tls = new TextLocalizerService();
         tls.fallbackService = original.textLocalizerService;
-        vm.services.textLocalizerService = tls;
+        vhm.services.textLocalizerService = tls;
     
     tls.service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
             '*': 'Input error: {ConversionError}.' 
@@ -1507,7 +1507,7 @@ These properties are all related to validation:
 #### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on ValueHostsManager.
 ```ts
-let status = vm.validate(); // it will notify elements in your UI of validation changes
+let status = vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
     // Prevent saving. User has to fix things
 else
@@ -1562,7 +1562,7 @@ let services = createJivsServices('en-US');
 let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
@@ -1654,7 +1654,7 @@ let rules = new PersonModelRules();// subclass of ModelRulesBase for your Person
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 builder.onValidationStateChanged = formValidated;
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
@@ -1717,21 +1717,21 @@ setValueToUndefined(options?: SetValueOptions): void;
 ```
 Use `setValueToUndefined()` (or call `setValue(undefined)`) to indicate that the value cannot be determined. For example, the user's input could not be converted into its native data type.
 
-In this example, *vm* is the ValueHostsManager.
+In this example, *vhm* is the ValueHostsManager.
 ```ts
-let lastNameVH = vm.getValueHost("LastName");
+let lastNameVH = vhm.getValueHost("LastName");
 lastNameVH.setValue("MyValue");
 // or
-vm.vh.any("LastName").setValue("MyValue");
+vhm.vh.any("LastName").setValue("MyValue");
 ```
-> See ["Getting a ValueHost"](#getting-a-valuehost) for using `getValueHost()` and `vm.vh`.
+> See ["Getting a ValueHost"](#getting-a-valuehost) for using `getValueHost()` and `vhm.vh`.
 
 When called, the ValueHost will consider the value "changed" and its `status` becomes *NeedsValidation*. When initializing the value, modify the code as shown here to avoid changing the status:
 ```ts
-let lastNameVH = vm.getValueHost("LastName");
+let lastNameVH = vhm.getValueHost("LastName");
 lastNameVH.setValue("MyValue", {reset: true});
 // or
-vm.vh.any("LastName").setValue("MyValue", {reset: true});
+vhm.vh.any("LastName").setValue("MyValue", {reset: true});
 ```
 When initializing the ValueHostsManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
 ```ts
@@ -1774,10 +1774,10 @@ setTextValue(value: any, options?: SetValueOptions): void;
 
 Use `setValues()` when initializing the value and as either value has changed. If you cannot determine one of the values, pass in undefined.
 ```ts
-let lastNameVH = vm.getValueHost("Age");
+let lastNameVH = vhm.getValueHost("Age");
 lastNameVH.setValues(25, "25");
 // or
-vm.vh.field("Age").setValues(25, "25");
+vhm.vh.field("Age").setValues(25, "25");
 ```
 Use `setTextValue()` when you have parsers setup, as they will convert and save the native value for you. See [Where you want to use validation](#where-you-want-to-use-validation).
 
@@ -1789,10 +1789,10 @@ getValue(): any;
 ```
 When it returns undefined, it indicates the value is undetermined.
 ```ts
-let lastNameVH = vm.getValueHost("LastName");
+let lastNameVH = vhm.getValueHost("LastName");
 let nativeValue = lastNameVH.getValue();
 // or
-let nativeValue = vm.vh.any("LastName").getValue();
+let nativeValue = vhm.vh.any("LastName").getValue();
 ```
 ### Getting the Input value on FieldValueHosts
 FieldValueHosts have two values, native and input. The `getValue()` function gets its native value. The `getTextValue()` function gets its input value.
@@ -1800,10 +1800,10 @@ FieldValueHosts have two values, native and input. The `getValue()` function get
 getTextValue(): any;
 ```
 ```ts
-let lastNameVH = vm.getValueHost("LastName");
+let lastNameVH = vhm.getValueHost("LastName");
 let textValue = lastNameVH.getTextValue();
 // or
-let  textValue = vm.vh.any("LastName").getTextValue();
+let  textValue = vhm.vh.any("LastName").getTextValue();
 ```
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
@@ -1859,8 +1859,8 @@ test('setValue with validate=true, onValueHostValidationStateChanged called', ()
         }
     });
     builder.field('Field1').requireText('error');
-    let vm = new ValueHostsManager(builder);
-    let vh = vm.vh.field('Field1');
+    let vhm = new ValueHostsManager(builder);
+    let vh = vhm.vh.field('Field1');
     vh.setValues('', '', { validate: true });   // empty is invalid
 
     expect(onValidateResult).toEqual(<ValueHostValidationState>{
@@ -2094,13 +2094,13 @@ function createValueHostsManager(): ValueHostsManager
 test('Start and End date are supplied empty strings and report isValid=false', ()=>
 {
     // Arrange
-    let vm = createValueHostsManager();
+    let vhm = createValueHostsManager();
     
-    vm.field('StartDate').setValues('', '');	// we'll test the require validator. Empty strings will be invalid
-    vm.field('EndDate').setValues('', '');
+    vhm.field('StartDate').setValues('', '');	// we'll test the require validator. Empty strings will be invalid
+    vhm.field('EndDate').setValues('', '');
     
     // Act
-    let validationState = vm.validate();
+    let validationState = vhm.validate();
     
     // Assert
     expect(validationState.isValid).toBe(false);
@@ -2160,15 +2160,15 @@ Let's redo the previous test to check the StartDate ValueHost.
 test('StartDate is supplied empty strings and report status=Invalid', ()=>
 {
     // Arrange  
-    let vm = createValueHostsManager();
+    let vhm = createValueHostsManager();
     
     // even though we are only testing StartDate, it has validators
     // that need data from EndDate. So set both up.
-    vm.field('StartDate').setValues('', '');	
-    vm.field('EndDate').setValues('', '');
+    vhm.field('StartDate').setValues('', '');	
+    vhm.field('EndDate').setValues('', '');
     
     // Act
-    let validationResult = vm.field('StartDate').validate();
+    let validationResult = vhm.field('StartDate').validate();
     
     // Assert
     expect(validationResult.status).toBe(ValidationStatus.Invalid);

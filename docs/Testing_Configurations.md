@@ -58,7 +58,7 @@ let config = rules.configure();
     explorer.throwOnErrors(false, new ConsoleConfigAnalysisOutputter());  // injects a report into the console and throws
  }
  // back to normal
- let vm = new ValueHostsManager(config);
+ let vhm = new ValueHostsManager(config);
 ```
 ## Adding to a unit test
 We recommend that you create unit tests for each ModelRules subclass
@@ -234,7 +234,7 @@ let config = rules.configure();
 let configAnalysisService = installConfigAnalysisService(services);
 let explorer = configAnalysisService.analyze(config);
 ... test against the explorer object ...
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 ## explorer: ConfigAnalysisResultsExplorer
 *explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to manually navigate. So `ConfigAnalysisResultsExplorer` includes a number of helper functions to focus on specific information.

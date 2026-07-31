@@ -36,7 +36,7 @@
  * builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
  * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
  * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
- * let vm = new ValueHostsManager(builder);
+ * let vhm = new ValueHostsManager(builder);
  * ```
  * 
  * ## How this system works

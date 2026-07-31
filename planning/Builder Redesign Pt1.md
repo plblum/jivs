@@ -546,7 +546,7 @@ adapter.combineWithRule('Field1', 'NotNull',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.combineWithRule('Field1', 'NotNull',
   (combiningBuilder, existingConditionConfig) => {
@@ -588,7 +588,7 @@ adapter.combineWithRule(
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.combineWithRule(
   'Field1',
@@ -626,7 +626,7 @@ adapter.replaceRule('Field1', 'NotNull',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.replaceRule('Field1', 'NotNull',
   (replacementBuilder) => replacementBuilder.requireText()
@@ -663,7 +663,7 @@ adapter.enabler('Field1', {
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.enabler('Field1', {
   conditionType: ConditionType.EqualToValue,
@@ -700,7 +700,7 @@ adapter.enabler('Field1',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.enabler('Field1',
   (enablerBuilder) => enablerBuilder.equalToValue('YES', null, 'Field2')

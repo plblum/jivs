@@ -13,8 +13,8 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number);
 
-        let vm = new ValueHostsManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: EvenNumberConditionType,
             valueHostName: 'Field1',
@@ -22,24 +22,24 @@ describe('EvenNumberCondition tests', () => {
         let testItem = new EvenNumberCondition(config);
 
         vh.setValue(2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);    
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);    
         vh.setValue(1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);            
         vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);        
         vh.setValue(-1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(-2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);            
     // anything other than an integer is Undetermined
         vh.setValue(1.5);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('TEXT');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);        
         vh.setValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);            
         vh.setValue(new Date());
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
         let services = createMinimalJivsServices('en');
@@ -47,8 +47,8 @@ describe('EvenNumberCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vm = new ValueHostsManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);
         let valResult = vh.validate();

@@ -111,7 +111,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let factory = new ValueHostFactory();
     factory.register(new PublicifiedValueHostBaseGenerator());
     services.valueHostFactory = factory;
-    let vm = new MockValueHostsManager(services);
+    let vhm = new MockValueHostsManager(services);
 
     let defaultConfig: ValueHostConfig = {
         name: 'Field1',
@@ -128,11 +128,11 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
         value: initialValue,
         counter: 0
     };
-    let vh = new PublicifiedValueHostBase(vm,
+    let vh = new PublicifiedValueHostBase(vhm,
         updatedConfig, state);
     return {
         services: services,
-        valueHostsManager: vm,
+        valueHostsManager: vhm,
         config: updatedConfig,
         state: state,
         valueHost: vh
@@ -144,20 +144,20 @@ describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost',
         };
         let testItem: PublicifiedValueHostBase | null = null;
-        expect(()=> testItem = new PublicifiedValueHostBase(vm, vhConfig,
+        expect(()=> testItem = new PublicifiedValueHostBase(vhm, vhConfig,
             {
                 name: 'Field1',
                 counter: 0,
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vhm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -170,7 +170,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.exposeConfig).toBe(vhConfig);
         expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.exposeState.enabled).toBeUndefined();
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vhm);
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () => {
@@ -208,7 +208,7 @@ describe('constructor and resulting property values', () => {
     test('constructor with null in each parameter throws', () => {
 
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);        
+        let vhm = new MockValueHostsManager(services);        
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -224,9 +224,9 @@ describe('constructor and resulting property values', () => {
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
             config, state)).toThrow(/valueHostsManager/);
-        expect(() => testItem = new PublicifiedValueHostBase(vm,
+        expect(() => testItem = new PublicifiedValueHostBase(vhm,
             null!, state)).toThrow(/config/);
-        expect(() => testItem = new PublicifiedValueHostBase(vm,
+        expect(() => testItem = new PublicifiedValueHostBase(vhm,
             config, null!)).toThrow(/state/);
     });
 });
@@ -673,11 +673,11 @@ describe('getDataTypeLabel', () => {
             vhConfig.dataType = LookupKey.Integer;
         if (hasValue)
             vhConfig.initialValue = 10;
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [vhConfig]
         });
-        let vh = vm.getValueHost('Field1') as PublicifiedValueHostBase;
+        let vh = vhm.getValueHost('Field1') as PublicifiedValueHostBase;
         expect(vh.getDataTypeLabel()).toBe(expectedDataTypeLabel);
 
     }
@@ -748,9 +748,9 @@ describe('isEnabled and related enabled', () => {
     } {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         if (stateChangeCallback)
-            vm.onValueHostInstanceStateChanged = stateChangeCallback;
+            vhm.onValueHostInstanceStateChanged = stateChangeCallback;
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost'
@@ -769,7 +769,7 @@ describe('isEnabled and related enabled', () => {
             state.enabled = stateEnabled;
 
         return {
-            vh: new PublicifiedValueHostBase(vm, vhConfig, state),
+            vh: new PublicifiedValueHostBase(vhm, vhConfig, state),
             logger: services.loggerService as CapturingLogger
         };
     }
@@ -780,7 +780,7 @@ describe('isEnabled and related enabled', () => {
     ): {
         vh: PublicifiedValueHostBase,
         logger: CapturingLogger,
-        vm: ValueHostsManager<ValueHostsManagerInstanceState>
+        vhm: ValueHostsManager<ValueHostsManagerInstanceState>
     } {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
@@ -824,11 +824,11 @@ describe('isEnabled and related enabled', () => {
         // builder.savedValueHostInstanceStates = [];
         // builder.savedValueHostInstanceStates.push(state);
 
-        let vm = new ValueHostsManager(vmConfig);
+        let vhm = new ValueHostsManager(vmConfig);
 
         return {
-            vm: vm,
-            vh: vm.getValueHost('Field1') as PublicifiedValueHostBase,
+            vhm: vhm,
+            vh: vhm.getValueHost('Field1') as PublicifiedValueHostBase,
             logger: services.loggerService as CapturingLogger
         };
     }    

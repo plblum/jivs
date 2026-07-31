@@ -74,7 +74,7 @@ class PublicifiedValidator extends Validator {
  * and the Validator.
  */
 function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
-    vm: MockValueHostsManager,
+    vhm: MockValueHostsManager,
     services: MockJivsServices,
     valueHost1: MockFieldValueHost,
     valueHost2: MockFieldValueHost,
@@ -82,9 +82,9 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     validator: PublicifiedValidator
 } {
     let services = new MockJivsServices(true, true);
-    let vm = new MockValueHostsManager(services);
-    let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
-    let vh2 = vm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
+    let vhm = new MockValueHostsManager(services);
+    let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vhm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
@@ -98,7 +98,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
 
     let testItem = new PublicifiedValidator(vh, updatedConfig);
     return {
-        vm: vm,
+        vhm: vhm,
         services: services,
         valueHost1: vh,
         valueHost2: vh2,
@@ -146,8 +146,8 @@ describe('Validator.constructor and initial property values', () => {
     });
     test('config parameter null throws', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
-        let vh = new MockFieldValueHost(vm, '', '',);
+        let vhm = new MockValueHostsManager(services);
+        let vh = new MockFieldValueHost(vhm, '', '',);
         expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
     test('Valid parameters create and setup supporting properties', () => {
@@ -155,7 +155,7 @@ describe('Validator.constructor and initial property values', () => {
             conditionConfig: { conditionType: '' },
         });
         expect(setup.validator.exposeConfig()).toBe(setup.config);
-        expect(setup.validator.exposeValueHostsManager()).toBe(setup.vm);
+        expect(setup.validator.exposeValueHostsManager()).toBe(setup.vhm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
 });
@@ -236,7 +236,7 @@ describe('Validator.condition', () => {
         expect(condition).not.toBeNull();
         expect(condition!.conditionType).toBe('TEST');
         expect(condition!.category).toBe(ConditionCategory.Undetermined);
-        expect(condition!.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        expect(condition!.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Neither Config or Creator setup throws', () => {
         let setup = setupWithField1AndField2({
@@ -1011,14 +1011,14 @@ describe('Validator.validate', () => {
     });
 
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
-        vm: MockValueHostsManager,
+        vhm: MockValueHostsManager,
         services: MockJivsServices,
         vh: IFieldValueHost,
         testItem: Validator
     } {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
-        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
             conditionConfig: null,
@@ -1032,7 +1032,7 @@ describe('Validator.validate', () => {
 
         let testItem = new Validator(vh, config);
         return {
-            vm: vm,
+            vhm: vhm,
             services: services,
             vh: vh,
             testItem: testItem
@@ -1113,7 +1113,7 @@ describe('Validator.gatherValueHostNames', () => {
                 { conditionType: ConditionType.RequireText, valueHostName: 'Property1' },
         });
         let collection = new Set<ValueHostName>();
-        expect(() => setup.validator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
+        expect(() => setup.validator.gatherValueHostNames(collection, setup.vhm)).not.toThrow();
         expect(collection.size).toBe(1);
         expect(collection.has('Property1')).toBe(true);
     });
@@ -1129,7 +1129,7 @@ describe('getValuesForTokens', () => {
         });
         setup.valueHost1.setTextValue('Value1');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vhm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1161,7 +1161,7 @@ describe('getValuesForTokens', () => {
             ConditionType.RegExp, (config) => new RangeCondition(config));                
         setup.valueHost1.setTextValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vhm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1195,15 +1195,15 @@ describe('getValuesForTokens', () => {
 
 describe('ValidatorFactory.create', () => {
     function setupValidatorFactory(): {
-        vm: MockValueHostsManager,
+        vhm: MockValueHostsManager,
         vh: MockFieldValueHost,
         validatorConfig: ValidatorConfig,
         factory: ValidatorFactory
     }
     {
         let services = new MockJivsServices(true, true);
-        let vm = new MockValueHostsManager(services);
-        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1214,7 +1214,7 @@ describe('ValidatorFactory.create', () => {
         };
         let factory = new ValidatorFactory();
         return {
-            vm: vm,
+            vhm: vhm,
             vh: vh,
             validatorConfig: config,
             factory: factory

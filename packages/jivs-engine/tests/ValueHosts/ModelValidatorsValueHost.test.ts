@@ -19,7 +19,7 @@ function setupFieldValueHost(
     config?: Partial<ValidatableValueHostBaseConfig> | null,
     state?: Partial<ValidatableValueHostBaseInstanceState> | null): ITestSetupConfig {
     let services = new MockJivsServices(true, true);
-    let vm = new MockValueHostsManager(services);
+    let vhm = new MockValueHostsManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
         valueHostType: ModelValidatorsValueHostType,
         name: ModelValidatorsValueHostName,
@@ -37,11 +37,11 @@ function setupFieldValueHost(
     let updatedState: ValidatableValueHostBaseInstanceState = (!state) ?
         defaultState :
         { ...defaultState, ...state };
-    let vh = new ModelValidatorsValueHost(vm,
+    let vh = new ModelValidatorsValueHost(vhm,
         updatedConfig, updatedState);
     return {
         services: services,
-        valueHostsManager: vm,
+        valueHostsManager: vhm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh
@@ -288,7 +288,7 @@ describe('ModelValidatorsValueHostGenerator members', () => {
     });
     test('create returns instance of ModelValidatorsValueHost with VM, Config and InstanceState established', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
             valueHostType: ModelValidatorsValueHostType,
@@ -302,7 +302,7 @@ describe('ModelValidatorsValueHostGenerator members', () => {
         };
         let testItem = new ModelValidatorsValueHostGenerator();
         let vh: IValidatableValueHostBase | null = null;
-        expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
+        expect(() => vh = testItem.create(vhm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(ModelValidatorsValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config value

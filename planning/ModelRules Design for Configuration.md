@@ -59,7 +59,7 @@ Example direction:
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(config);
 ```
 
 ---
@@ -494,7 +494,7 @@ as part of the Rules configuration like this:
   ```ts
   let config = rules.configure(options);
   config.onValidationStateChanged = (params)=> {};  // and others
-  let vm = new ValueHostsManager(config);
+  let vhm = new ValueHostsManager(config);
   ```
 * Functions are buried inside of conditions and cannot be restored. In this case, do not use caching.
 
@@ -696,29 +696,29 @@ applying those errors to the new ValueHostsManager instance.
 ### Jivs on the server-side
 The server side code must pass along the string from its ValueHostsManager.toValidationPayload().
 
-The client adds this call to the ValueHostsManager: `vm.fromValidationPayload(payload)`.
+The client adds this call to the ValueHostsManager: `vhm.fromValidationPayload(payload)`.
 
 ```ts
 let payload = getJivsPayload(); // user's code
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(config);
 if (payload)
-  vm.fromValidationPayload(payload);
+  vhm.fromValidationPayload(payload);
 ```
 
 ### Other server side code
 The server sends errors to the client in its own format. On the client,
 retrieve them and convert them into an array of `IssueFound`. Then pass the 
-IssuesFound to ValueHostsManager: `vm.addExternalIssuesFound(issuesFound, false)`.
+IssuesFound to ValueHostsManager: `vhm.addExternalIssuesFound(issuesFound, false)`.
 
 ```ts
 let issuesFound = getIssuesFound(); // user's code to retrieve errors and return an array of IssueFound objects.
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(config);
 if (issuesFound?.length > 0)
-  vm.addExternalIssuesFound(issuesFound, false);
+  vhm.addExternalIssuesFound(issuesFound, false);
 ```

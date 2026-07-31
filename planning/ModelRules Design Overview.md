@@ -355,7 +355,7 @@ let config: ValueHostsManagerConfig = {
     services: getJivsServices(),
     ... a multitude of properties in object style ...
 }
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 
 Use the builder:
@@ -365,7 +365,7 @@ let builder = build(createJivsServices('en-US'));
 builder.input('fieldname1').required(parameters).regexp(parameters);
 builder.input('fieldname2');
 
-let vm = new ValueHostsManager(builder);
+let vhm = new ValueHostsManager(builder);
 
 ```
 

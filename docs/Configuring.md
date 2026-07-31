@@ -1,7 +1,9 @@
 # Configuring the ValueHostsManager
-The `ValueHostsManager` is the central object you use with a form or model. It contains the list of fields (called `ValueHosts`), their rules, callback hooks, and more. Use it to validate, retrieve validation results, and report additional errors determined by your business logic.
+The `ValueHostsManager` is the central object you use with a form or model. It contains the list of fields (called `ValueHosts`), their rules, callback hooks, and more.
+ Use it to get and set values, validate, retrieve validation results, and report additional errors determined by your business logic.
 
-The `ValueHostsManager` requires a configuration that reflects all of those, which it gets through a `ValueHostsManagerConfig` object tree. `ValueHostsManagerConfig` is rather complex, due to describing everything a model or form needs for validation.
+The `ValueHostsManager` requires a configuration that reflects all of those, which it gets through a `ValueHostsManagerConfig` object tree. 
+`ValueHostsManagerConfig` is rather complex, due to describing everything a model or form needs for validation.
 
 <details>
 <summary>Take a look</summary>
@@ -47,7 +49,7 @@ let vmConfig = <ValueHostsManagerConfig>{
     ]
 };
 
-let vm = new ValueHostsManager(vmConfig);
+let vhm = new ValueHostsManager(vmConfig);
 ```
 
 </details>
@@ -77,7 +79,7 @@ const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); // documented below
 const config = rules.configure();
 // attach any callback hooks to config at this point
-const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
+const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
 ## ModelRulesBase: Defining rules for a model
@@ -128,7 +130,7 @@ but not in the UI. Here's what the code for the server side looks like.
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); 
 const config = rules.configure();
-const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
+const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
 ## IAdaptModelRulesToForm interface: Adapt those rules for the form
@@ -219,7 +221,7 @@ const config = rules.configure();
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
-const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
+const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 ## FormRulesBase: Define rules for the form when there is no model
 
@@ -281,7 +283,7 @@ const config = rules.configure();
 config.onValidationStateChanged = myValidationStateChangedFn;
 config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
-const vm = new ValueHostsManager(config);   // 'vm' will be used to handle validation
+const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 ## The ValueHostsManagerConfigBuilder class
 Use the `ValueHostsManagerConfigBuilder class` to create the `ValueHostsManagerConfig object tree` using a fluent syntax. Create the `ValueHosts` for fields, calculations, and static values along with  validators on fields.

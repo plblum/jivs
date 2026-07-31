@@ -42,9 +42,9 @@ function TestCalcFunctionUsingConvertToPrimitive(calcValueHost: ICalcValueHost, 
 describe('CalcValueHost constructor', () => {
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let testItem: CalcValueHost | null = null;
-        expect(() => testItem = new CalcValueHost(vm, {
+        expect(() => testItem = new CalcValueHost(vhm, {
             name: 'Field1',
             valueHostType: ValueHostType.Calc,
             label: 'Label1',
@@ -55,7 +55,7 @@ describe('CalcValueHost constructor', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.valueHostsManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vhm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
@@ -92,7 +92,7 @@ describe('CalcValueHostGenerator members', () => {
 
     test('create returns instance of CalcValueHost with VM, Config and InstanceState established', () => {
         let services = new MockJivsServices(false, false);
-        let vm = new MockValueHostsManager(services);
+        let vhm = new MockValueHostsManager(services);
         let config: CalcValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Calc,
@@ -108,7 +108,7 @@ describe('CalcValueHostGenerator members', () => {
         };
         let testItem = new CalcValueHostGenerator();
         let vh: ICalcValueHost | null = null;
-        expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
+        expect(() => vh = testItem.create(vhm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(CalcValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config values
@@ -154,7 +154,7 @@ describe('CalcValueHostGenerator members', () => {
 describe('getValue using the calcFn', () => {
     test('Through ValueHostsManager, TestCalcFunctionReturnsOne always returns 1', () => {
         let services = createJivsServicesForTesting();
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -164,13 +164,13 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(testItem!.getValue()).toBe(1);
     });
     test('Through ValueHostsManager, TestCalcFunctionReturnsValueOfField1 always returns the value from Field1', () => {
         let services = createJivsServicesForTesting();
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 {
@@ -185,9 +185,9 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field2');
+        let testItem = vhm.getValueHost('Field2');
         expect(testItem).toBeInstanceOf(CalcValueHost);
-        let field1ValueHost = vm.getValueHost('Field1');
+        let field1ValueHost = vhm.getValueHost('Field1');
 
         expect(testItem!.getValue()).toBeUndefined();
         field1ValueHost!.setValue('B');
@@ -196,7 +196,7 @@ describe('getValue using the calcFn', () => {
     });    
     test('Through ValueHostsManager, function that calls getValue on itself throws', () => {
         let services = createJivsServicesForTesting();
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -206,7 +206,7 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(() => testItem?.getValue()).toThrow(/Recursive/);
     });     
@@ -215,7 +215,7 @@ describe('getValue using the calcFn', () => {
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;        
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -225,7 +225,7 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(testItem?.getValue()).toBeUndefined();
         expect(logger.findMessage('calcFn', LoggingLevel.Warn)).toBeTruthy();
@@ -234,7 +234,7 @@ describe('getValue using the calcFn', () => {
     test('function uses convert on a Date and gets a total number of days', () => {
         let services = createJivsServicesForTesting();
         services.dataTypeConverterService.register(new UTCDateOnlyConverter());
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -244,14 +244,14 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(typeof testItem?.getValue()).toBe('number');
     });      
     test('function uses convertToPrimitive on a Date and gets a total number of days', () => {
         let services = createJivsServicesForTesting();
         services.dataTypeConverterService.register(new UTCDateOnlyConverter());
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -261,7 +261,7 @@ describe('getValue using the calcFn', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(typeof testItem?.getValue()).toBe('number');
     });      
@@ -272,7 +272,7 @@ describe('setValue', () => {
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;
-        let vm = new ValueHostsManager({
+        let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
@@ -282,7 +282,7 @@ describe('setValue', () => {
                 }
             ]
         });
-        let testItem = vm.getValueHost('Field1');
+        let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(() => testItem?.setValue(0)).not.toThrow();
 
@@ -292,8 +292,8 @@ describe('setValue', () => {
 
 describe('toICalcValueHost function', () => {
     test('Passing actual CalcValueHost matches interface returns same object.', () => {
-        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
-        let testItem = new CalcValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new CalcValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 calcFn: (host, manager) => null
@@ -305,8 +305,8 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBe(testItem);
     });
     test('Passing FieldValueHost returns null.', () => {
-        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
-        let testItem = new FieldValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new FieldValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []
@@ -320,8 +320,8 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBeNull();
     });  
     test('Passing StaticValueHost returns null.', () => {
-        let vm = new MockValueHostsManager(new MockJivsServices(false, false));
-        let testItem = new StaticValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new StaticValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1'
             },

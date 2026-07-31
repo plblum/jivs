@@ -35,7 +35,7 @@ let config: ValueHostsManagerConfig = {
     ],
     ... and more! ...
 };
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 
 The `ValueHostsManagerConfig` object is rather complex and difficult to maintain.
@@ -46,7 +46,7 @@ The **Builders** and the **Builder API** are a better way.
 let builder = new ValueHostsManagerConfigBuilder(createJivsServices());
 builder.field('LastName', LookupKey.String, { label: 'Last name'})
     .requireText();
-let vm = new ValueHostsManager(builder.complete());
+let vhm = new ValueHostsManager(builder.complete());
 ```
 
 It uses fluent syntax to build the configuration quickly and succinctly. The syntax follows the shape of the configuration it creates: `field()` starts a ValueHost, and each validator function adds a validator with a condition inside it.
@@ -223,7 +223,7 @@ builder.static('productVisible', LookupKey.Boolean);
 builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$');
 builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0);
 builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
-let vm = new ValueHostsManager(builder.complete());
+let vhm = new ValueHostsManager(builder.complete());
 ```
 
 ## Adding ValidatorConfigs to FieldValueHostConfigs
@@ -484,7 +484,7 @@ let config: ValueHostsManagerConfig = {
     valueHostConfigs: valueHostConfigs,
     ... attach any callbacks here ...
 }
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 
 ## Let Node.js generate a configuration file that the client can retrieve
@@ -543,7 +543,7 @@ let config: ValueHostsManagerConfig = {
    valueHostConfigs: valueHostConfigs,
    // wire up any callbacks
 };
-let vm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 
 Depending on your application, you might:

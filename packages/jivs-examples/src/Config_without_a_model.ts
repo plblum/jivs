@@ -82,11 +82,11 @@ export function configUsingDateRangeFormRules(): ValueHostsManager
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler;
-    let vm = new ValueHostsManager(config);
+    let vhm = new ValueHostsManager(config);
 
     // at this point, use the ValueHostsManager to validate your model.
 
-    return vm;
+    return vhm;
 }
 
 // Phase 4:

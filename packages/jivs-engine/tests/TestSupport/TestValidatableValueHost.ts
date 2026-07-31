@@ -307,16 +307,16 @@ export function setupValidatableValueHostBase(
     let services = new MockJivsServices(true, true);
     addTestValidatableValueHostGeneratorToServices(services);
 
-    let vm = new MockValueHostsManager(services);
+    let vhm = new MockValueHostsManager(services);
     let updatedConfig = finishPartialValidatableValueHostBaseConfig(partialIVHConfig ?? null);
     let updatedState = finishPartialValidatableValueHostBaseInstanceState(partialState ?? null);
 
-    let vh = vm.addValueHost(updatedConfig, updatedState) as TestValidatableValueHost;
+    let vh = vhm.addValueHost(updatedConfig, updatedState) as TestValidatableValueHost;
     vh.setValidateWillReturn(validateWillReturn);
-    //new ValidatableValueHostBase(vm, updatedConfig, updatedState);
+    //new ValidatableValueHostBase(vhm, updatedConfig, updatedState);
     return {
         services: services,
-        valueHostsManager: vm,
+        valueHostsManager: vhm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh as TestValidatableValueHost

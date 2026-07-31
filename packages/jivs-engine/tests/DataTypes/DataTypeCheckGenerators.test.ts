@@ -22,8 +22,8 @@ describe('DataTypeCheckGenerator concrete classes', () => {
         });        
         test('createConditions', () => {
             let services = new MockJivsServices(true, true);
-            let vm = new MockValueHostsManager(services);
-            let vh = vm.addMockFieldValueHost('Field1', LookupKey.Integer, 'Field 1');
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', LookupKey.Integer, 'Field 1');
             let testItem = new IntegerDataTypeCheckGenerator();
             let results: Array<ICondition> = [];
 
@@ -33,11 +33,11 @@ describe('DataTypeCheckGenerator concrete classes', () => {
             expect(results[1]).toBeInstanceOf(IntegerCondition);
             let dtc = results[0] as DataTypeCheckCondition;
             let names = new Set<string>();
-            dtc.gatherValueHostNames(names, vm);
+            dtc.gatherValueHostNames(names, vhm);
             expect(names.has('Field1')).toBe(true);
             let ic = results[0] as IntegerCondition;
             let names2 = new Set<string>();
-            ic.gatherValueHostNames(names2, vm);
+            ic.gatherValueHostNames(names2, vhm);
             expect(names2.has('Field1')).toBe(true);            
         });
     });

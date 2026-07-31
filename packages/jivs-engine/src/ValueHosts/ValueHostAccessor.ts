@@ -17,18 +17,18 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfa
 
 
 /**
- * Used by ValueHostResolver's vm property to make it easier for the user
+ * Used by ValueHostResolver's vhm property to make it easier for the user
  * to get strongly typed ValueHosts, compared to ValueHostResolver.getValueHost().
  * 
  * It simplies this syntax, shown for getting a value from a FieldValueHost:
  * ```ts
- * let ivh = vm.getValueHost("valuehostname") as IFieldValueHost;
+ * let ivh = vhm.getValueHost("valuehostname") as IFieldValueHost;
  * if (ivh)
  *    x = ivh.getTextValue();
  * ```
  * The improved syntax:
  * ```ts
- * x = vm.vh.field("valuehostname").getTextValue();
+ * x = vhm.vh.field("valuehostname").getTextValue();
  * ```
  * A key difference is that getValueHost may return null. The ValueHostAccessor treats
  * unknown valuehosts and those that don't typecast correctly as exceptions.

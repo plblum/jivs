@@ -15,8 +15,8 @@ describe('EmailAddressCondition tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValueHostsManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
 
         let config: RegExpConditionConfig = {
             conditionType: EmailAddressConditionType,
@@ -24,17 +24,17 @@ describe('EmailAddressCondition tests', () => {
         };
         let testItem = new EmailAddressCondition(config);
         vh.setValue('ABC@DEF.com');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);    
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);    
         vh.setValue('A1@B2.gov');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);        
         vh.setValue('ABC');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('ABC@');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);        
         vh.setValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);            
         vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
     });
 });
 describe('EmailAddressDataTypeCheckGenerator tests', () => {
@@ -49,8 +49,8 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey);
 
-        let vm = new ValueHostsManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
         let result = testItem.createConditions(vh, EmailAddressLookupKey, services.conditionFactory);
@@ -63,8 +63,8 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         let builder = createConfigBuilder(services);
         builder.field('Field1', EmailAddressLookupKey).emailAddress();
 
-        let vm = new ValueHostsManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');
         let valResult = vh.validate();

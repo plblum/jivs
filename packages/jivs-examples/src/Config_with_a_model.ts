@@ -97,10 +97,10 @@ export function configPersonEditFormRules(): ValueHostsManager
     let rules = new PersonEditFormRules(services);
     let config = rules.configure();
     config.onValueChanged = onValueChangedHandler; 
-    let vm = new ValueHostsManager(config);
+    let vhm = new ValueHostsManager(config);
 
     // at this point, use the ValueHostsManager to validate your model.
-    return vm;
+    return vhm;
 }
 
 export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {

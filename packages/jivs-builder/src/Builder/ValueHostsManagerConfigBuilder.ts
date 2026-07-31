@@ -48,7 +48,7 @@ export function createConfigBuilder(arg1: IJivsServices | ValueHostsManagerConfi
  * builder.field('Field1').requireText();
  * let vmConfig = builder.complete();
  * 
- * let vm = new ValueHostsManager(vmConfig);
+ * let vhm = new ValueHostsManager(vmConfig);
  * ```
  * instead of
  * ```ts
@@ -67,7 +67,7 @@ export function createConfigBuilder(arg1: IJivsServices | ValueHostsManagerConfi
  *      ]
  * }
  * 
- * let vm = new ValueHostsManager(vmConfig);
+ * let vhm = new ValueHostsManager(vmConfig);
  * ```
  */
 

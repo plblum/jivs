@@ -325,7 +325,7 @@ PENDING: We will be renaming this class. The name "Jivs" is less meaningful than
 
 ```tsx
 <JivsProvider
-    valueHostsManager={vm}
+    valueHostsManager={vhm}
 >
     <CustomerEditor />
 </JivsProvider>
@@ -335,7 +335,7 @@ Field-oriented components:
 
 ```tsx
 <JivsProvider
-    valueHostsManager={vm}
+    valueHostsManager={vhm}
 >
     <FirstNameField />
     <LastNameField />
@@ -346,7 +346,7 @@ Form-oriented components:
 
 ```tsx
 <JivsProvider
-    valueHostsManager={vm}
+    valueHostsManager={vhm}
 >
     <ValidationSummary />
     <SaveButton />
