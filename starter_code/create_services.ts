@@ -91,7 +91,7 @@ import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblu
 
 // If you need to omit the jivs-builder module later, comment out these next two lines.
 import { BuildersFactory } from '@plblum/jivs-builder/build/Services/BuildersFactory';
-new BuildersFactoryInstaller();  // install the buildersFactory service property on ValidationServices
+new BuildersFactoryInstaller();  // install the buildersFactory service property on JivsServices
 // 
 
 /**

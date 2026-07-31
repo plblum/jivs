@@ -35,7 +35,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 
 -   [`Validator class`](#validators-connecting-conditions-to-error-messages) – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
-- [`ValidationServices class`](#validationservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
+- [`JivsServices class`](#jivsservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by JivsServices which empower Jivs.
     - `IDataTypeFormatter` – Two use cases:
         + `FieldValueHost` can convert the native value into its text value when using `ValueHost.setValue()`.
         + Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
@@ -54,7 +54,7 @@ Topics:
 - [Validators](#validators-connecting-conditions-to-error-messages)
 - [ValidationManager](#validationmanager)
 - [Rules](#rules)
-- [ValidationServices](#validationservices)
+- [JivsServices](#jivsservices)
 - [Creating your own Conditions](#creating-your-own-conditions)
 - [Lookup Keys: DataTypes and Companion tools](#lookup-keys-data-types-and-companion-tools)
 - [Localization](#localization)
@@ -521,7 +521,7 @@ The CalcValueHost takes a function used to calculate its value. The function has
 ```ts
 (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => number | Date | string | null | boolean | undefined
 ```
-Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the ValidationServices on `findValueHosts.services`.
+Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the JivsServices on `findValueHosts.services`.
 
 In this example, the function multiplies the value from the FieldValueHost 'Count' by 10.
 ```ts
@@ -1808,8 +1808,8 @@ let  textValue = vm.vh.any("LastName").getTextValue();
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 
-The logger is configured within the ValidationServices object, as it is a service.
-1. It is setup in the [`createValidationServices() function`](#configuring-validationservices).
+The logger is configured within the JivsServices object, as it is a service.
+1. It is setup in the [`createJivsServices() function`](#configuring-jivsservices).
     ```ts
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
