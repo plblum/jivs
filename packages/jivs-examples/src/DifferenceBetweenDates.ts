@@ -22,16 +22,16 @@ import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/Data
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
-import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
-import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
+import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
+import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 
-export class DateRangeFormRules extends FormRulesBase {
+export class DateRangeFormRules extends ValueHostRulesBase {
     constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions): void {
+        options?: ValueHostRulesOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
             .lessThanOrEqual('EndDate')
             .lessThan('NumOfDays',   // right operand of the comparison

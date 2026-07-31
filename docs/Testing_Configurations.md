@@ -45,9 +45,9 @@ Consider adding it directly into your normal execution process, although doing s
 - Run it only when not in production. The same below includes a isAppRunningInDeveloper(), which is up to you to create.
 - It means that deployment will include the jivs-configanalysis package. If you limit working with it to unit tests, then you can omit jivs-configanalysis within the main codebase.
 ```ts
-// this is the normal setup for any ModelRules used to configure...
+// this is the normal setup for any ValueHost Rules used to configure...
 let services = createJivsServices('en-US');
-let rules = new YourModelRules();
+let rules = new MyValueHostRules();
 let config = rules.configure();
 
 // now insert the jivs-configanalysis tool
@@ -61,12 +61,12 @@ let config = rules.configure();
  let vhm = new ValueHostsManager(config);
 ```
 ## Adding to a unit test
-We recommend that you create unit tests for each ModelRules subclass
+We recommend that you create unit tests for each ValueHostRulesBase subclass
 that uses your production version of `JivsServices`.
 ```ts
-test('Check YourModelRules against the services', () => {
+test('Check ValueHostRules against the services', () => {
     let services = createJivsServices('en-US');    // your production services 
-    let rules = new YourModelRules(services);
+    let rules = new ValueHostRules(services);
     let config = rules.configure();
 
     let configAnalysisService = installConfigAnalysisService(services);
@@ -82,7 +82,7 @@ test('Check YourModelRules against the services', () => {
           includeLookupKeyResults,
           includeCompleteResults, 2);      
     }
-    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the jivsservices.
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ValueHost Rules against the jivsservices.
 });
 ```
 ## Sample output: Conditions are not registered
@@ -228,7 +228,7 @@ the `ValueHostsManager`.
 ```ts
 import { installConfigAnalysisService } from "@plblum/jivs-configanalysis/build/ConfigAnalysisService";
 let services = createJivsServices('en');
-let rules = new YourModelRules();
+let rules = new MyValueHostRules();
 let config = rules.configure();
 
 let configAnalysisService = installConfigAnalysisService(services);
@@ -322,12 +322,12 @@ Many functions on `ConfigAnalysisResultsExplorer` query the results, and depend 
 #### Example
 Let's suppose that you wanted to see all errors, and one was found, where you had requested a parser that was not registered.
 ```ts
-class MyModelRules extends ModelRulesBase
+class MyValueHostRules extends ValueHostRulesBase
 {
   constructor(services: IJivsServices) {
       super(services);
   }
-  protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+  protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
     builder.input('NewField', LookupKey.Date, 
     {
       parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
@@ -336,7 +336,7 @@ class MyModelRules extends ModelRulesBase
 
 }
 let services = createJivsServices('en-US');
-let rules = new MyModelRules(services);
+let rules = new MyValueHostRules(services);
 let config = rules.configure();
 
 let configAnalysisService = installConfigAnalysisService(services);

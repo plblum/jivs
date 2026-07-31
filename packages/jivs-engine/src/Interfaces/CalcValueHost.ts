@@ -22,7 +22,7 @@
  * 
  * Here is pseudo code for configuring the CalcValueHost used in this example. It assumes
  * that you have a builder object, and that is provided so long as you are writing configuration 
- * code using the ModelRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
+ * code using the ValueHostRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
  * ```ts
  * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
  * : SimpleValueType

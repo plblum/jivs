@@ -3,7 +3,7 @@
   
   There are 3 phases to configuration when using business logic:
   Phase 1
-     Subclass ModelRulesBase and consume the Builder API within its configureRules() method
+     Subclass ValueHostRulesBase and consume the Builder API within its configureRules() method
      to define the model's rules. Keep it specific to the business logic.
      This class allows a nice testing experience too, independent of actual UI code.
   Phase 2
@@ -26,8 +26,8 @@ import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { createJivsServices } from './Config_example_common_code';
 import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import { IAdaptModelRulesToForm, RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
-import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
+import { IAdaptModelRulesToForm, ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
+import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 
 // The Model
 export class Person {
@@ -36,14 +36,14 @@ export class Person {
   public birthDate!: Date | null;
 }
 
-// Phase 1: Business logic layer defines the rules for the model in ModelRulesBase subclass.
-export class PersonModelRules extends ModelRulesBase {
+// Phase 1: Business logic layer defines the rules for the model in ValueHostRulesBase subclass.
+export class PersonModelRules extends ValueHostRulesBase {
   constructor(services: IJivsServices) {
     super(services);
   }
   protected override configureRules(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): void {
     builder.field('FirstName', LookupKey.String)
       .requireText()
@@ -69,7 +69,7 @@ export class PersonEditFormRules
   }
   public adaptToForm(
     adapter: IFormConfigAdapter,
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): void {
     adapter.modify('FirstName', 'First name' )
       .validator(ConditionType.StringLength, 'No more than {maximum} characters. You entered {length}.');

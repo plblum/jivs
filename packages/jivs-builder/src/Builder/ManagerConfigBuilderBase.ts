@@ -40,15 +40,15 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
  * 
  * Here are two ways to use it. 
- * 1) Wrapped in a ModelRulesBase subclass, so that your model has a single source of truth for its validation rules.
+ * 1) Wrapped in a ValueHostRulesBase subclass, so that your model has a single source of truth for its validation rules.
  * 2) Stand-alone.
  * 
-  * ## Using ModelRulesBase
+  * ## Using ValueHostRulesBase
   * Let's assume that you have a Model with 3 fields, firstname, lastname, and birthdate. 
   * You want to require that first and last name are not empty, and that the birthdate is a valid date.
  * ```ts
- * export class PersonModelRules extends ModelRulesBase {
- *  protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
+ * export class PersonModelRules extends ValueHostRulesBase {
+ *  protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
  *      builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('birthdate', LookupKey.Date);
@@ -59,14 +59,14 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * and implement the IAdaptModelRulesToForm interface, again using the Builder.
  * ```ts
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *   adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+ *   adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
  *      adapter.field('birthDate', null, { label: 'Birth date' })
  *        .lessThan('today');
  *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });
  *   }
  * }
  * ```
- * ## Without the ModelRulesBase, using the Builder directly.
+ * ## Without the ValueHostRulesBase, using the Builder directly.
  * The code is very similar to that above, except you explicitly create the Builder and add the ValueHostConfigs to it.
  * In this case, you are likely to be working only on the UI, and can declare all fields at once.
  * ```ts

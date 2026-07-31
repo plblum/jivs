@@ -1,6 +1,6 @@
 import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
-import { ModelRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
+import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
+import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 import {
   LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition,
   LessThanOrEqualConditionConfig, LessThanOrEqualValueCondition,
@@ -323,11 +323,11 @@ describe('Demonstrate the results from various use cases', () => {
             */
         });
 
-        class JustADateModelRules extends ModelRulesBase {
+        class JustADateValueHostRules extends ValueHostRulesBase {
             constructor(services: IJivsServices) {
                 super(services);
             }
-            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
                 builder.field('BirthDate', LookupKey.Date, {
                     parserLookupKey: LookupKey.Date
                 }).lessThanOrEqualValue(new Date(), {
@@ -336,7 +336,7 @@ describe('Demonstrate the results from various use cases', () => {
             }
         }
         test('Report with all Lookup Key results', () => {
-            // We're using a different ModelRules subclass, JustADateModelRules.
+            // We're using a different ValueHostRulesBase subclass, JustADateValueHostRules.
             // It has a single valueHost of data Type Date,
             // with a LessThanOrEqualValue condition. It uses a parser.
             // There should be one Lookup Key, "Date", with an identifier, converter, comparer, and parser.
@@ -356,7 +356,7 @@ describe('Demonstrate the results from various use cases', () => {
                     twoDigitYearBreak: 29
                 }));
             // Create the configuration
-            let rules = new JustADateModelRules(services);
+            let rules = new JustADateValueHostRules(services);
             let config = rules.configure();
 
             // Analyze the configuration
@@ -540,23 +540,23 @@ describe('Demonstrate the results from various use cases', () => {
             */
         });
 
-        class WarningsAndInfoModelRules extends ModelRulesBase {
+        class WarningsAndInfoValueHostRules extends ValueHostRulesBase {
             constructor(services: IJivsServices) {
                 super(services);
             }
-            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+            protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
                 // this lacks a data type, which results in a warning.
                 builder.field('StartDate', null)
             }
         }
         test('Report with any warnings and info messages', () => {
-            // Using WarningsAndInfoModelRules
+            // Using WarningsAndInfoValueHostRules
 
             // Setup Services
             let services = createBasicServices();    // start with no populated services.
 
             // Create the configuration
-            let rules = new WarningsAndInfoModelRules(services);
+            let rules = new WarningsAndInfoValueHostRules(services);
             let config = rules.configure();
 
             // Analyze the configuration
@@ -674,11 +674,11 @@ describe('Demonstrate the results from various use cases', () => {
         */
     });
 
-    class LackParserModelRules extends ModelRulesBase {
+    class LackParserValueHostRules extends ValueHostRulesBase {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
             builder.field('NewField', LookupKey.Date,
                 {
                     parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser 
@@ -687,7 +687,7 @@ describe('Demonstrate the results from various use cases', () => {
         }
     }
     test('Services lack a needed parser, report as an error', () => {
-        // Uses LackParserModelRules
+        // Uses LackParserValueHostRules
 
         // Setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors
@@ -700,7 +700,7 @@ describe('Demonstrate the results from various use cases', () => {
             ConditionType.LessThan,
             (config) => new LessThanCondition(config));
         
-        // LackParserModelRules expects a parser for the ShortDatePatternParser, which is not registered.
+        // LackParserValueHostRules expects a parser for the ShortDatePatternParser, which is not registered.
         // This is what it might look like:
         // services.dataTypeParserService.register(new ShortDatePatternParser(LookupKey.Date, ['en-US'], {
         //     order: 'mdy',
@@ -709,7 +709,7 @@ describe('Demonstrate the results from various use cases', () => {
         // }));
 
         // Create the configuration
-        let rules = new LackParserModelRules(services);
+        let rules = new LackParserValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration
@@ -758,23 +758,23 @@ describe('Demonstrate the results from various use cases', () => {
         */
     });
 
-    class CaseInsensitiveLookupKeyModelRules extends ModelRulesBase {
+    class CaseInsensitiveLookupKeyValueHostRules extends ValueHostRulesBase {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
             builder.static('Field1', 'date');// should be 'Date' or LookupKey.Date
         }
     }
 
     test('Lookup Key has a case insensitive match is an error on the property', () => {
-        // uses CaseInsensitiveLookupKeyModelRules, which has a field with a dataType of 'date' (lowercase)
+        // uses CaseInsensitiveLookupKeyValueHostRules, which has a field with a dataType of 'date' (lowercase)
 
         // Setup Services
         let services = createBasicServices(); //   start with no populated services. That should create errors
 
         // Create the configuration
-        let rules = new CaseInsensitiveLookupKeyModelRules(services);
+        let rules = new CaseInsensitiveLookupKeyValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration
@@ -807,16 +807,16 @@ describe('Demonstrate the results from various use cases', () => {
     // The report shows the validatorConfig.errorMessagel10n property and its
     // available text for each culture.
     // We'll support 'en' and 'es' for this test.
-    class DateOnlyForTextLocalizerModelRules extends ModelRulesBase {
+    class DateOnlyForTextLocalizerValueHostRules extends ValueHostRulesBase {
         constructor(services: IJivsServices) {
             super(services);
         }
-        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+        protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
             builder.field('Field1', 'Date').requireText({ errorMessagel10n: 'RequiredEM' });
         }
     }
     test('TextLocalizerService is used for a validator error message', () => {
-        // uses DateOnlyForTextLocalizerModelRules
+        // uses DateOnlyForTextLocalizerValueHostRules
 
         // Setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors
@@ -834,7 +834,7 @@ describe('Demonstrate the results from various use cases', () => {
             });
 
         // Create the configuration
-        let rules = new DateOnlyForTextLocalizerModelRules(services);
+        let rules = new DateOnlyForTextLocalizerValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration
@@ -878,7 +878,7 @@ describe('Demonstrate the results from various use cases', () => {
     // Now we'll see an localization error when the text is not found in the TextLocalizerService
     // We want text for both 'en' and 'es' but only have 'en' registered.    
     test('TextLocalizerService is used for a validator error message, but missing a culture', () => {
-        // Uses DateOnlyForTextLocalizerModelRules
+        // Uses DateOnlyForTextLocalizerValueHostRules
 
         // Setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors
@@ -895,7 +895,7 @@ describe('Demonstrate the results from various use cases', () => {
             });
 
         // Create the configuration
-        let rules = new DateOnlyForTextLocalizerModelRules(services);
+        let rules = new DateOnlyForTextLocalizerValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration

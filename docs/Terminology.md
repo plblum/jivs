@@ -15,7 +15,7 @@ to see if those values conform. One or more of these classes are used within a v
 - **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. `FieldValueHost` is associated with Fields, supporting validation as they change. However, not all values need actual validation. `StaticValueHost` holds static data like global values and fields from the Model that won't be edited. `CalcValueHost` determines its value from a calculation.
 - **ValueHostsManager** – A Jivs object; it is the main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
 You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
-- **Model Rules** - Model rules describes the business logic rules for validation specific to a Model. They are used to configure a ValueHostsManager. You encapsolate those rules in a subclass of `ModelRulesBase`. If you don't have a model, subclass from `FormRulesBase` instead.
+- **ValueHost Rules** - Classes that contain the configuration of each `ValueHost` associated with a form or model.
 - **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
 - **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, `JivsServices`, and connect individual services to it. 
 - **Builder API** - Tooling to configure the `ValueHosts` and their `Validators` used by `ValueHostsManager`.

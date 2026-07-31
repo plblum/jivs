@@ -56,8 +56,8 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
 
 -	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
     ```ts
-    export class PersonModelRules extends ModelRulesBase {
-      protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
+    export class PersonModelRules extends ValueHostRulesBase {
+      protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
         builder.field('firstName').requireText().regExp('^[\\w\\s''\\-']*$');
         builder.field('lastName').requireText().regExp('^[\\w\\s''\\-]*$');
       }
@@ -68,7 +68,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
       export class PersonFormEditorRules 
         extends PersonModelRules 
         implements IAdaptModelRulesToForm {
-        protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+        protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
           // apply some properties to the fields and validators
           adapter.modify('firstName', {label: 'First Name'}).validator(ConditionType.RequireText, '{Label} is required.');
           adapter.modify('lastName', {label: 'Last Name'}).whenToEnable((whenBuilder) =>
@@ -259,7 +259,7 @@ Please use these documents:
   + [ValueHosts](./docs/Jivs_API.md#valuehosts)
   + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
   + [ValueHostsManager](./docs/Jivs_API.md#valuehostsmanager)
-  + [Rules](./docs/Jivs_API.md#rules)
+  + [Rules](./docs/Jivs_API.md#valuehost-rules)
   + [JivsServices](./docs/Jivs_API.md#jivsservices)
   + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)
   + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)

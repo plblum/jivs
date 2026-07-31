@@ -27,10 +27,10 @@ Same for most API calls, because it uses HTTP which is a textual format. These a
 - You need to make a decision for where the parsing and formatting is coded. _Jivs supplies them_ and builds them into its `getValue()` and `setValue()` operations, but you can use your own, especially with existing apps that only need validation.
 - `ValueHostsManager` needs to be configured to express each ValueHost, including its validators. We have you create a class to wrap up all ValueHost configurations used by the ValueHostsManager, such as PersonModelRules. Within it, you will describe each `ValueHost` using a syntax called **Builder API**.
     ```ts
-    class PersonModelRules extends ModelRulesBase {
+    class PersonModelRules extends ValueHostRulesBase {
         protected override configureRules(
             builder: IValueHostsManagerConfigBuilder,
-            options?: RulesConfigOptions
+            options?: ValueHostRulesOptions
         ): void {
             builder.field('FirstName', LookupKey.String)
                 .requireText()
@@ -55,7 +55,7 @@ Same for most API calls, because it uses HTTP which is a textual format. These a
     {
         public adaptToForm(
             adapter: IFormConfigAdapter,
-            options?: RulesConfigOptions
+            options?: ValueHostRulesOptions
         ): void {
             adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
             // let's change some text on the model's FirstName and LastName ValueHosts
@@ -163,7 +163,7 @@ Suppose that you have a model configured by PersonModelRules above and are using
 
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
-const rules = new DateModelRules(services);
+const rules = new PersonModelRules(services);
 const config = rules.configure();
 
 const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
@@ -211,7 +211,7 @@ This code initializes a `ValueHostsManager` and sets up the `onValueHostValidati
 
 ```ts
 let services = createJivsServices('en-US');
-let rules = new PersonModelRules(services);  // subclass of ModelRulesBase for your PersonModel class
+let rules = new PersonModelRules(services);  // subclass of ValueHostRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 let vhm = new ValueHostsManager(config);
@@ -467,7 +467,7 @@ This code initializes a ValueHostsManager and sets up the `onValidationStateChan
 
 ```ts
 let services = createJivsServices('en-US');
-let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
+let rules = new PersonModelRules(services); // subclass of ValueHostRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 config.onValidationStateChanged = formValidated;

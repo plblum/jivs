@@ -6,10 +6,10 @@
   
   There are 2 phases to configuration when using UI layer alone:
   Phase 1
-     Subclass FormRulesBase and consume the Builder API within its configureRules() method.
+     Subclass ValueHostRulesBase and consume the Builder API within its configureRules() method.
      This class allows a nice testing experience too, independent of actual UI code.
   Phase 2
-     Create the ValueHostsManager through your FormRulesBase subclass.
+     Create the ValueHostsManager through your ValueHostRulesBase subclass.
      Wire up any callbacks from the ValueHostsManagerConfig object to your UI layer.
 
   To accomplish our goal, we will setup the ValueHostsManager with the following
@@ -34,20 +34,20 @@ import { createJivsServices, TimeZoneRegex } from './Config_example_common_code'
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
-import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
+import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
+import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 
 /**
- * Our Forms rules class, which is a subclass of FormRulesBase.
+ * Our Forms rules class.
  * This is Phase 1.
  */
-export class DateRangeFormRules extends FormRulesBase
+export class DateRangeFormRules extends ValueHostRulesBase
 {
     constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions): void {
+        options?: ValueHostRulesOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('endDate')
             .lessThanOrEqual('NumOfDays',   // right operand of the comparison

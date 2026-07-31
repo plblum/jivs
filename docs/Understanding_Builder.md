@@ -1,6 +1,6 @@
 # Understanding jivs-builder
 
-> This document is for developers who want to understand or extend the Builder and Model Rules classes. It is not a Builder API syntax guide; see the jivs README.md for syntax and usage examples. 
+> This document is for developers who want to understand or extend the Builder and ValueHostRulesBase classes. It is not a Builder API syntax guide; see the jivs README.md for syntax and usage examples. 
 > If you want to consume the builder, start with [Configuring ValueHostsManager](Configuring.md). 
 
 `@plblum/jivs-builder` is the package that creates the configuration objects used by `ValueHostsManager`. It should have already been installed, but if needed, get it from [https://www.npmjs.com/package/@plblum/jivs-builder](https://www.npmjs.com/package/@plblum/jivs-builder).
@@ -10,7 +10,7 @@ You are likely here for one of these reasons:
 * You want to understand how jivs-builder improves the configuration developer experience.
 * You want to extend the fluent syntax to support your own Condition or Validator.
 * You want to generate configuration separately from jivs-engine, such as JSON created by Node.js or a build step.
-* You want to better understand the architecture and codebase surrounding builders and model rules.
+* You want to better understand the architecture and codebase surrounding builders and ValueHostRulesBase.
 
 This README introduces those areas. The source code comments go deeper into implementation details.
 
@@ -51,20 +51,20 @@ let vhm = new ValueHostsManager(builder.complete());
 
 It uses fluent syntax to build the configuration quickly and succinctly. The syntax follows the shape of the configuration it creates: `field()` starts a ValueHost, and each validator function adds a validator with a condition inside it.
 
-The **Model Rules** encapsulate Builder code for a single model or form. Each rules class is subclassed from `ModelRulesBase` or `FormRulesBase`.
+The **ValueHost Rules** encapsulate Builder code for a single model or form. Each rules class is subclassed from `ValueHostRulesBase`.
 
-When a form starts with model or business logic rules, the form-specific rules class can implement `IAdaptModelRulesToForm`. That exposes the **Form Configuration Adapter** (FormConfigAdapter class) so the form can prepare the model rules for its own needs.
+When a form starts with model or business logic rules, the form-specific rules class should implement `IAdaptModelRulesToForm`. That exposes the **Form Configuration Adapter** (FormConfigAdapter class) so the form can prepare the ValueHost rules for its own needs.
 
 Let's see all of these working together:
 
 ```ts
-export class PersonModelRules extends ModelRulesBase {
+export class PersonModelRules extends ValueHostRulesBase {
   constructor(services: IJivsServices) {
     super(services);
   }
   protected override configureRules(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): void {
 // these are your business logic rules
     builder.field('FirstName', LookupKey.String)
@@ -88,7 +88,7 @@ export class PersonEditFormRules
   }
   public adaptToForm(
     adapter: IFormConfigAdapter,
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): void {
     adapter.modify('FirstName', 'First name' )
       .validator(ConditionType.StringLength, 'No more than {maximum} characters. You entered {length}.');
@@ -106,7 +106,7 @@ export class PersonEditFormRules
 
 ## Class overview
 
-The Builders and Model Rules work together to prepare the complete object tree of `ValueHostsManagerConfig`.
+The Builders and ValueHost Rules work together to prepare the complete object tree of `ValueHostsManagerConfig`.
 
 ### Configuration builders
 
@@ -124,17 +124,14 @@ The Builders and Model Rules work together to prepare the complete object tree o
 
 ### Rules classes
 
-* `RulesBase` is the base class for `ModelRulesBase` and `FormRulesBase`, and contains most of their shared functionality.
-* `ModelRulesBase` is intended to be subclassed for model or business logic rules.
-* `FormRulesBase` is intended to be subclassed for form rules that do not start from model or business logic rules.
-* `IAdaptModelRulesToForm` is an interface for a `ModelRulesBase` subclass that adapts inherited model or business logic rules for a form. It exposes the `FormConfigAdapter` to the form developer so they can safely update the configuration.
+* `ValueHostRulesBase` is the base class for creating rules and contains most of their shared functionality.
+* `IAdaptModelRulesToForm` is an interface for a `ValueHostRulesBase` subclass that adapts inherited model or business logic rules for a form. It exposes the `FormConfigAdapter` to the form developer so they can safely update the configuration.
 
 ### Form configuration adapter
 
 * `FormConfigAdapter` is the class for the **Form Configuration Adapter**. It inherits from `ValueHostsManagerConfigBuilder` so the form developer can add new ValueHosts using the Builder API. It also adds functions to safely adapt existing business logic configurations. Its main function, `modify()`, returns a `ModifyFieldBuilder`.
 * `ModifyFieldBuilder` is returned by `FormConfigAdapter.modify()` and supports selected properties of an existing `ValueHostConfig`, including `enablerConfig`, `validatorConfigs`, and `dataType`. Its `validator()` function lets you modify validator-specific properties, like error messages, but not condition-specific properties. `validator()` returns `ModifyValidatorBuilder`.
 * `ModifyValidatorBuilder` lets you wrap an existing validator condition with another condition.
-
 
 ## How the Builder API creates configuration
 
@@ -452,9 +449,9 @@ builder.field('EmailAddress', emailAddressLookupKey)
 ```
 # Builders are separate from the jivs-engine itself
 
-Builders and Model Rules are used to create configuration. They are not needed to run validation once that configuration exists.
+Builders and ValueHost Rules are used to create configuration. They are not needed to run validation once that configuration exists.
 
-Since Builders and Model Rules are part of the general setup for `ValueHostsManager`, you might expect all of the code from the jivs-builder module to be part of jivs-engine. It has been separated out because:
+Since Builders and ValueHost Rules are part of the general setup for `ValueHostsManager`, you might expect all of the code from the jivs-builder module to be part of jivs-engine. It has been separated out because:
 
 1. It is a fairly large codebase.
 2. It is not needed once configuration is done.
@@ -519,7 +516,7 @@ generated-rules/
     Person.json
 ```
 
-The Builder and Model Rules code only needs to run when this configuration data is generated. The resulting JSON file can then be deployed with the application and retrieved by the browser when needed.
+The Builder and ValueHost Rules code only needs to run when this configuration data is generated. The resulting JSON file can then be deployed with the application and retrieved by the browser when needed.
 
 You might run code like this yourself:
 
@@ -553,4 +550,4 @@ Depending on your application, you might:
 * cache it for reuse across multiple forms,
 * or bundle it with other static assets.
 
-The key idea is that the browser only needs the generated configuration data, not the Builder or Model Rules code that produced it.
+The key idea is that the browser only needs the generated configuration data, not the Builder or ValueHost Rules code that produced it.

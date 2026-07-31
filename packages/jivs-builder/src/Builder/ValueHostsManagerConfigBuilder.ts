@@ -27,7 +27,7 @@ import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
 /**
  * Access point for using ValueHostsManagerConfigBuilder.
- * We recommend that you choose another approach: create your own subclass of ModelRulesBase, 
+ * We recommend that you choose another approach: create your own subclass of ValueHostRulesBase, 
  * and use its builder property to configure your ValueHostsManagerConfig.
  * @returns 
  */

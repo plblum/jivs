@@ -1,4 +1,4 @@
-import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
+import { BuildersFactoryInstaller } from '../../src/Services/BuildersFactoryInstaller';
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
@@ -6,8 +6,8 @@ import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
-import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
-import { RulesBase } from "../../src/ModelRules/ModelRules";
+import { IAdaptModelRulesToForm, ValueHostRulesOptions } from "../../src/Interfaces/ValueHostRules";
+import { ValueHostRulesBase } from "../../src/ValueHostRules/ValueHostRules";
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 class Person
@@ -15,11 +15,11 @@ class Person
     firstName: string = '';
     lastName: string = '';
 }
-class PersonModelRules extends RulesBase {
+class PersonModelRules extends ValueHostRulesBase {
     constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
         builder.field('firstName', LookupKey.String).requireText();
         builder.field('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {
@@ -27,7 +27,7 @@ class PersonModelRules extends RulesBase {
         }
     }
 
-    public exposeCacheKey(options?: RulesConfigOptions): string {
+    public exposeCacheKey(options?: ValueHostRulesOptions): string {
         return this.createConfigCacheKey(options);
     }
 }
@@ -35,7 +35,7 @@ beforeAll(() => {
     new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
-describe('RulesBase subclass for a single Model and no form involvement', () => {
+describe('ValueHostRulesBase subclass for a single Model and no form involvement', () => {
 
     test('configureRules adds rules for the model', () => {
         let services = createJivsServicesForTesting();
@@ -112,12 +112,12 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
 });
 
-describe('RulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
+describe('ValueHostRulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
     class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
         constructor(services: IJivsServices) {
             super(services);
         }
-        adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+        adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().

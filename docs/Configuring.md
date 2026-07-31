@@ -54,12 +54,12 @@ let vhm = new ValueHostsManager(vmConfig);
 
 </details>
 
-Instead, you derive a class from [`ModelRulesBase`](Jivs_API.md#rules) or `FormRulesBase`. 
+Instead, you derive a class from [`ValueHostRulesBase`](Jivs_API.md#valuehost-rules). 
 ```ts
-class PersonModelRules extends ModelRulesBase {
+class PersonModelRules extends ValueHostRulesBase {
     protected override configureRules(
         builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions
+        options?: ValueHostRulesOptions
     ): void {
         builder.field('FirstName', LookupKey.String)
             .requireText()
@@ -82,8 +82,9 @@ const config = rules.configure();
 const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
-## ModelRulesBase: Defining rules for a model
+## ValueHostRulesBase: Defining rules to configure a ValueHost
 
+### Starting with a model from Business Logic
 Suppose your app edits this model:
 
 ```ts
@@ -96,13 +97,13 @@ class Person {
 }
 ```
 
-Create a [`ModelRulesBase`](Jivs_API.md#rules) subclass to define the validation rules for that model:
+Create a [`ValueHostRulesBase`](Jivs_API.md#valuehost-rules) subclass to define the validation rules for that model:
 
 ```ts
-class PersonModelRules extends ModelRulesBase {
+class PersonModelRules extends ValueHostRulesBase {
     protected override configureRules(
         builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions
+        options?: ValueHostRulesOptions
     ): void {
         builder.field('FirstName', LookupKey.String)
             .requireText()
@@ -133,16 +134,16 @@ const config = rules.configure();
 const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
-## IAdaptModelRulesToForm interface: Adapt those rules for the form
+## IAdaptModelRulesToForm interface: Adapt the model rules for the form
 
 A form can start with the model's rules and adapt them to its own needs. This is a central use case of Jivs and keeping business logic separate from the UI.
 
-The form _should_ subclass from the model's rules class and implement the `IAdaptModelRulesToForm` interface. Use its `adaptToForm()` method to further extend the configuration to reflect the needs of your form. `adaptToForm()` passes you a [Form Configuration Adapter](#the-form-configuration-adapter). 
+The form _should_ subclass from the model's ValueHostRules subclass and implement the `IAdaptModelRulesToForm` interface. Use its `adaptToForm()` method to further extend the configuration to reflect the needs of your form. `adaptToForm()` passes you a [Form Configuration Adapter](#the-form-configuration-adapter). 
 
 > Form Configuration Adapter is designed to _prevent_ you from modifying the validation rules, while _allowing_
 changes to whatever impacts the UI.
 
-- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#rules).
+- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#valuehost-rules).
 - Modify many aspects of existing ValueHosts through the `modify(valueHostName)` method including:
     + labels
     + parsers and formatters
@@ -196,7 +197,7 @@ class PersonEditFormRules
 {
     public adaptToForm(
         adapter: IFormConfigAdapter,
-        options?: RulesConfigOptions
+        options?: ValueHostRulesOptions
     ): void {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
         // let's change some text on the model's FirstName and LastName ValueHosts
@@ -223,19 +224,19 @@ config.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
 
 const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
-## FormRulesBase: Define rules for the form when there is no model
+## Define rules for the form when there is no model
 
 Sometimes a form is not backed by a business logic model.  
 
-In that case, create a `FormRulesBase` subclass and define the form's rules directly.
+In that case, create a `ValueHostRulesBase` subclass and define the form's rules directly.
 
 This example is a date range editor form that asks for a start date and end date, then ensures the two dates are no more than a certain number of days apart.
 
 ```ts
-class DateRangeFormRules extends FormRulesBase {
+class DateRangeFormRules extends ValueHostRulesBase {
     protected override configureRules(
         builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions
+        options?: ValueHostRulesOptions
     ): void {
         // create the start date ValueHost and its validators
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
@@ -271,7 +272,7 @@ class DateRangeFormRules extends FormRulesBase {
     }
 }
 ```
-> Notice that we 1) inherit from `FormRulesBase` 2) do not implement `IAdaptModelRulesToForm`, 3) use `builder.field()`.
+> Notice that we 1) inherit from `ValueHostRulesBase` 2) do not implement `IAdaptModelRulesToForm`, 3) use `builder.field()`.
 
 ### Using DateRangeFormRules to create the ValueHostsManager
 ```ts
@@ -407,7 +408,7 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void
+    protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
     {
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // all others are disabled
     }
@@ -424,7 +425,7 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void
+    protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
     {
         adapter.disableTheseModelFields(['BirthDate', 'Suffix']); // all others remain enabled
     }

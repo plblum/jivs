@@ -8,7 +8,7 @@
  * - compatible with both business-logic-owned and UI-authored rules
  * - suitable for subclass-based UI augmentation
  * 
- * Subclass from abstract ModelRulesBase or FormRulesBase to implement your own rules.
+ * Subclass from abstract ValueHostRulesBase to implement your own rules.
  * 
  * Then use it to create a ValueHostsManagerConfig object, which can be used to create a ValueHostsManager.
  * 
@@ -18,7 +18,7 @@
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     const vhm = new ValueHostsManager(config);
     ```
- * @module jivs-builder/ModelRules/ConcreteClasses
+ * @module jivs-builder/ValueHostRules/ConcreteClasses
  */
 
 import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
@@ -27,18 +27,37 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
 import { createFormConfigAdapter } from '../Builder/FormConfigAdapter';
 import { ValueHostsManagerConfigBuilder } from '../Builder/ValueHostsManagerConfigBuilder';
 import { IFormConfigAdapter, IManagerConfigBuilder, IValueHostsManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
-import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from '../Interfaces/ModelRules';
+import { IAdaptModelRulesToForm, IValueHostRules, ValueHostRulesOptions } from '../Interfaces/ValueHostRules';
 
 
 /**
- * Core implementation of IRules. It is used to create a ValueHostsManagerConfig object from any rules built 
- * into each concrete class.
+ * Core implementation of IValueHostRules. It is used to create a ValueHostsManagerConfig object from any rules 
+ * defined by the implementation of its configureRules() method.
+ * 
+ * Subclasses are used by both the model and the form.
+ * - Subclass from ValueHostRulesBase and implement configureRules() to define the model-oriented or form rules.
+ *    ```ts
+ *    export class PersonModelRules extends ValueHostRulesBase {
+ *        configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
+ *            // add model-oriented rules here
+ *        }
+ *    }
+ *    ```
+ * - Forms that use the business logic model from an existing ValueHostRulesBase class need to be adapted to avoid breaking
+ * the business logic rules while allowing for form related customizations. 
+ * Subclass from the Model's ValueHostRulesBase class and implement IAdaptModelRulesToForm 
+ * to add any form-specific rules to the model rules. 
+ *    ```ts
+ *    export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
+ *        adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
+ *            // add form-specific rules and adjustments such as to labels and error messages here
+ *        }
+ *    }
+ *    ```
  * Supports caching of the configuration. Uses ICachingService with a key formed by createConfigCacheKey().
  * Disable caching by setting options.disableCache to true.
- * Supports analysis of the configuration when the jivs-configAnalysis module is installed.
- * Disable analysis by not assigning options.configAnalysisOptions.
  */
-export abstract class RulesBase implements IRules
+export abstract class ValueHostRulesBase implements IValueHostRules
 {
     protected constructor(services: IJivsServices)
     {
@@ -55,7 +74,7 @@ export abstract class RulesBase implements IRules
      * @param options 
      * @returns 
      */
-    public configure(options?: RulesConfigOptions): ValueHostsManagerConfig {
+    public configure(options?: ValueHostRulesOptions): ValueHostsManagerConfig {
         let config: ValueHostsManagerConfig | null | undefined = undefined;
         const cacheKey = this.createConfigCacheKey(options);
         const cachingService = !options?.disableCache ? this.services.cachingService : null;
@@ -94,7 +113,7 @@ export abstract class RulesBase implements IRules
      */
     protected abstract configureRules(
         builder: IValueHostsManagerConfigBuilder,
-        options?: RulesConfigOptions,
+        options?: ValueHostRulesOptions,
     ): void;
 
     /**
@@ -104,7 +123,7 @@ export abstract class RulesBase implements IRules
      * Override this only when the default identity is not suitable.
      * @returns 
      */
-    protected getModelRulesKey(): string
+    protected getValueHostRulesKey(): string
     {
         return this.constructor.name;
     }
@@ -112,15 +131,15 @@ export abstract class RulesBase implements IRules
     /**
      * Part of caching the configuration.
      * Builds the full cache key used for configuration caching.
-     * Its default implementation should use `getModelRulesKey()` together with `variantName` 
+     * Its default implementation should use `getValueHostRulesKey()` together with `variantName` 
      * and may be extended by subclasses when additional options affect the produced configuration.
      * It is intended to be overridable when a subclass needs extra cache-key components.
      * @param options 
      * @returns 
      */
-    protected createConfigCacheKey(options?: RulesConfigOptions): string
+    protected createConfigCacheKey(options?: ValueHostRulesOptions): string
     {
-        let key = this.getModelRulesKey();
+        let key = this.getValueHostRulesKey();
         if (options?.variantName)
             key += `:${options.variantName}`;
         return key;
@@ -131,12 +150,12 @@ export abstract class RulesBase implements IRules
      * @param options - Available if the subclass needs to customize the builder creation.
      * @returns 
      */    
-    protected createBuilder(options?: RulesConfigOptions): IValueHostsManagerConfigBuilder
+    protected createBuilder(options?: ValueHostRulesOptions): IValueHostsManagerConfigBuilder
     {
         return new ValueHostsManagerConfigBuilder(this.services);
     }
 
-    protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
+    protected createFormAdapter(source: IManagerConfigBuilder<any>, options?: ValueHostRulesOptions): IFormConfigAdapter
     {
         return createFormConfigAdapter(source, options);
     }
@@ -146,54 +165,9 @@ export abstract class RulesBase implements IRules
      * @param builder 
      * @param options - Available if the subclass needs to customize the finalization.
      */
-    protected buildConfig(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): ValueHostsManagerConfig
+    protected buildConfig(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): ValueHostsManagerConfig
     {
         return builder.complete();
     }
 
-}
-
-/**
- * Use to develop rules for a model. It is subclassed to create concrete rules classes for each Model.
- * Subclasses are used by both the business logic and the Form.
- * - Business Logic: implements configureRules() to define the model-oriented rules for a business model.
- *    ```ts
- *    export class PersonModelRules extends ModelRulesBase {
- *        configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
- *            // add model-oriented rules here
- *        }
- *    }
- *    ```
- * - Form: subclass from the ModelRules class and then implement IAdaptModelRulesToForm.adaptToForm() 
- * to add any form-specific rules to the model rules. 
- *    ```ts
- *    export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *        adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
- *            // add form-specific rules and adjustments such as to labels and error messages here
- *        }
- *    }
- *    ```
- * If you have a form without a model, start with FormRulesBase instead of ModelRulesBase.
- */
-export abstract class ModelRulesBase extends RulesBase {
-    protected constructor(services: IJivsServices) {
-        super(services);
-    }
-}
-
-/**
- * Use to develop rules for a Form that doesn't have a model. 
- * It is subclassed to create concrete rules classes for each Form.
- * ```ts
- *    export class PersonEditFormRules extends FormRulesBase {
- *       configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void {
- *           // add form-specific rules
- *      }
- *    }
- * ```
- */
-export abstract class FormRulesBase extends RulesBase {
-    protected constructor(services: IJivsServices) {
-        super(services);
-    }
 }

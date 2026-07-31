@@ -34,13 +34,13 @@ This design defines a configuration abstraction focused entirely on producing a 
 
 The key types are:
 
-* `IRules` - interface
-* `RulesBase` - abstract base implementing IRules
-* `ModelRulesBase` - abstract base subclassing RulesBase specifically targetting business logic model rules
-* `FormRulesBase` - abstract base subclassing RulesBase specifically targetting Forms that do not have an associated Model.
+* `IValueHostRules` - interface
+* `ValueHostRulesBase` - abstract base implementing IValueHostRules
+* `ValueHostRulesBase` - abstract base subclassing ValueHostRulesBase specifically targetting business logic model rules
+* `FormRulesBase` - abstract base subclassing ValueHostRulesBase specifically targetting Forms that do not have an associated Model.
 * `IAdaptModelRulesToForm` - Interface used by Form developers who subclass from a ModelRules class to adapt it to their form.
 
-The IRules public entry point is:
+The IValueHostRules public entry point is:
 
 * `configure()`
 
@@ -67,17 +67,17 @@ const vhm = new ValueHostsManager(config);
 ## 3. API overview
 
 ```ts
-interface IRules {
+interface IValueHostRules {
   configure(
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): ValueHostsManagerConfig;
 }
 
-abstract class RulesBase implements IRules {}
+abstract class ValueHostRulesBase implements IValueHostRules {}
 
-abstract class ModelRulesBase extends RulesBase {}
+abstract class ValueHostRulesBase extends ValueHostRulesBase {}
 
-abstract class FormRulesBase extends RulesBase {}
+abstract class FormRulesBase extends ValueHostRulesBase {}
 
 interface IAdaptModelRulesToForm {
   adaptToForm(
@@ -91,7 +91,7 @@ interface IAdaptModelRulesToForm {
 
 ## 4. Primary Developer Story
 
-The preferred structured way to configure the ValueHostsManager is through this system (`IRules`, `RulesBase`, etc)
+The preferred structured way to configure the ValueHostsManager is through this system (`IValueHostRules`, `ValueHostRulesBase`, etc)
 instead of using the Builder directly because it wraps fixed rules in a class with these benefits:
 
 * keeps configuration out of page/component code
@@ -104,7 +104,7 @@ This applies to both:
 * business-logic-authored reusable model rules
 * UI-authored reusable rules classes
 
-`RulesBase` consumes the Builder so that the developer can create fluent syntax for configurations. Thus the Builder
+`ValueHostRulesBase` consumes the Builder so that the developer can create fluent syntax for configurations. Thus the Builder
 remains an essential tool, but the developer doesn't create it. They just consume it.
 
 Direct Builder without it usage remains available as a lower-level alternative, consistent with existing Jivs documentation.
@@ -115,14 +115,14 @@ Direct Builder without it usage remains available as a lower-level alternative, 
 
 ### 5.1 Business-logic model rules
 
-A business logic developer defines a rules class for a model by subclassing `ModelRulesBase`.
-The class defines the model's configuration through `configureRules()` which is abstract in `ModelRulesBase`.
+A business logic developer defines a rules class for a model by subclassing `ValueHostRulesBase`.
+The class defines the model's configuration through `configureRules()` which is abstract in `ValueHostRulesBase`.
 
 Example:
 
 ```ts
-class PersonModelRules extends ModelRulesBase {
-  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions)
+class PersonModelRules extends ValueHostRulesBase {
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions)
   {
     // setup rules for Person model using the builder
   }
@@ -142,7 +142,7 @@ Example:
 ```ts
 class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
   public adaptToForm(builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions): void {
+    options?: ValueHostRulesOptions): void {
       // update existing ValueHosts and add any that are Form specific
     }
 }
@@ -160,7 +160,7 @@ Example:
 
 ```ts
 class LoginFormRules extends FormRulesBase {
-  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions)
   {
     // setup rules for Login form using the builder
   }  
@@ -173,7 +173,7 @@ class LoginFormRules extends FormRulesBase {
 ### 6.1 Configure options
 
 ```ts
-interface RulesConfigOptions {
+interface ValueHostRulesOptions {
   configAnalysisOptions?: unknown;
   disableCache?: boolean;
   variantName?: string;
@@ -188,12 +188,12 @@ Its used at the developer's discretion.
 * `configAnalysisOptions` enables config analysis when it is not `null` or `undefined`. It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
 * The shape of `configAnalysisOptions` belongs to the installed config-analysis module, not to `jivs-engine`
 
-### 6.2 IRules
+### 6.2 IValueHostRules
 
 ```ts
-interface IRules {
+interface IValueHostRules {
   configure(
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): ValueHostsManagerConfig;
 }
 ```
@@ -206,14 +206,14 @@ interface IRules {
 interface IAdaptModelRulesToForm {
   adaptToForm(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions
+    options?: ValueHostRulesOptions
   ): void;
 }
 ```
 
 This is a narrow capability interface.
 
-It is not intended to replace `IRules`.
+It is not intended to replace `IValueHostRules`.
 
 Its purpose is to mark subclasses that add Form modification after Model configuration has run.
 It targets the UI developer who is working on a form against a business logic model so they
@@ -224,41 +224,41 @@ can focus on the changes needed to achieve the correct user experience.
 ## 7. Base Class Shape
 
 ```ts
-abstract class RulesBase implements IRules {
+abstract class ValueHostRulesBase implements IValueHostRules {
   protected constructor(
     protected readonly services: JivsServices,
   );
 
   public configure(
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): ValueHostsManagerConfig;
 
   protected abstract configureRules(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): void;
 
-  protected getModelRulesKey(): string;
+  protected getValueHostRulesKey(): string;
 
   protected createConfigCacheKey(
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): string;
 
   protected createBuilder(
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): ValueHostsManagerConfigBuilder;
 
   protected buildConfig(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): ValueHostsManagerConfig;
 
-  protected configAnalysis(builder: IValueHostsManagerConfigBuilder, options?: RulesConfigOptions): void;
+  protected configAnalysis(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void;
 
 }
 
-abstract class ModelRulesBase extends RulesBase {}
-abstract class FormRulesBase extends RulesBase {}
+abstract class ValueHostRulesBase extends ValueHostRulesBase {}
+abstract class FormRulesBase extends ValueHostRulesBase {}
 ```
 
 ### Method purposes
@@ -295,7 +295,7 @@ This is the required subclass hook (an abstract method).
 
 Override to define the model-oriented rules for a business model, or the full rules for a standalone UI-only rules class.
 
-#### `getModelRulesKey()`
+#### `getValueHostRulesKey()`
 
 Part of caching the configuration.
 
@@ -311,7 +311,7 @@ Part of caching the configuration.
 
 Builds the full cache key used for configuration caching.
 
-Its default implementation should use `getModelRulesKey()` together with `variantName` and may be extended by subclasses when additional options affect the produced configuration.
+Its default implementation should use `getValueHostRulesKey()` together with `variantName` and may be extended by subclasses when additional options affect the produced configuration.
 
 It is intended to be overridable when a subclass needs extra cache-key components.
 
@@ -339,7 +339,7 @@ it performs the analysis. It outputs results usually to the console. Use during 
 
 ## 8. Configuration Flow
 
-`RulesBase.configure()` owns the overall configuration process.
+`ValueHostRulesBase.configure()` owns the overall configuration process.
 
 The high-level behavior is:
 
@@ -367,7 +367,7 @@ It is not called before `configureRules()`.
 
 ```ts
 public configure(
-  options?: RulesConfigOptions,
+  options?: ValueHostRulesOptions,
 ): ValueHostsManager {
   let config: ValueHostsManagerConfig | null = null;
   const cacheKey = this.createConfigCacheKey(options);
@@ -413,14 +413,14 @@ Only the method name is checked at runtime.
 ### 9.1 Model alone
 
 ```ts
-class PersonModelRules extends ModelRulesBase {
+class PersonModelRules extends ValueHostRulesBase {
   public constructor(
     services: JivsServices,
   );
 
   protected override configureRules(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -442,7 +442,7 @@ class PersonEditFormRules
 
   public adaptToForm(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -459,7 +459,7 @@ class LoginFormRules extends FormRulesBase {
 
   protected override configureRules(
     builder: IValueHostsManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -548,17 +548,17 @@ The cache key should be built from:
 The first component comes from:
 
 ```ts
-protected getModelRulesKey(): string {
+protected getValueHostRulesKey(): string {
   return this.constructor.name;
 }
 ```
 
 Subclasses may override either:
 
-* `getModelRulesKey()`
+* `getValueHostRulesKey()`
 * `createConfigCacheKey()`
 
-The expected pattern is that `createConfigCacheKey()` uses `getModelRulesKey()` as its first component and may append subclass-specific values.
+The expected pattern is that `createConfigCacheKey()` uses `getValueHostRulesKey()` as its first component and may append subclass-specific values.
 
 ---
 
@@ -585,7 +585,7 @@ Subclassing was chosen because it keeps the configuration story simpler.
 
 The UI subclass can inherit model configuration directly and then optionally provide UI modification, without requiring that extra public builder-population method.
 
-### 11.2 Why `adaptToForm()` is not on `RulesBase`
+### 11.2 Why `adaptToForm()` is not on `ValueHostRulesBase`
 
 `adaptToForm()` is intentionally not part of the base class contract.
 
@@ -607,7 +607,7 @@ This is sufficient for the intended pattern.
 
 Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in services via setService().
 
-When the user installs and registers the config-analysis module into `JivsServices`, `RulesBase.configure()` may invoke it before building the final config.
+When the user installs and registers the config-analysis module into `JivsServices`, `ValueHostRulesBase.configure()` may invoke it before building the final config.
 
 ### 12.1 Service lookup
 
@@ -630,7 +630,7 @@ Config analysis runs only when:
 * that service exposes an `analyze()` function
 
 ```ts
-protected configAnalysis(builder: ValueHostsManager, options?: RulesConfigOptions): void
+protected configAnalysis(builder: ValueHostsManager, options?: ValueHostRulesOptions): void
 {
     if (!options?.configAnalysisOptions)
       return;

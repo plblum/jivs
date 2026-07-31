@@ -29,9 +29,9 @@ through a report.
 ### Put it into your unit tests
 Example unit test pattern.
 ```ts
-test('Check YourModelRules against the services', () => {
+test('Check MyValueHostRules against the services', () => {
     let services = createJivsServices();    // your production services 
-    let rules = new YourModelRules(services);
+    let rules = new MyValueHostRules(services);
     let config = rules.configure();
 
     let configAnalysisService = installConfigAnalysisService(services);
@@ -47,7 +47,7 @@ test('Check YourModelRules against the services', () => {
           includeLookupKeyResults,
           includeCompleteResults, 2);      
     }
-    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the jivsservices.
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ValueHost rules against the jivsservices.
 });
 ```
 ### Sample output: Conditions are not registered

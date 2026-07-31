@@ -1297,7 +1297,7 @@ export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
 // As a result, you see /*'valueHostName' |*/ in the definitions below.
 // ```ts
 //  protected configureRules(builder: IValueHostsManagerConfigBuilder,
-//      options?: RulesConfigOptions): void {
+//      options?: ValueHostRulesOptions): void {
 //      builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
 //          .lessThan('EndDate')
 //          .lessThanOrEqual('NumOfDays',   // right operand of the comparison

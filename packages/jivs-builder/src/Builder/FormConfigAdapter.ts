@@ -108,7 +108,7 @@ import {
     AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
     IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
 } from '../Interfaces/ManagerConfigBuilder';
-import { RulesConfigOptions } from '../Interfaces/ModelRules';
+import { ValueHostRulesOptions } from '../Interfaces/ValueHostRules';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
@@ -120,7 +120,7 @@ import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder
  * @param options 
  * @returns 
  */
-export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
+export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: ValueHostRulesOptions): IFormConfigAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
         const state = (source as ManagerConfigBuilderBase<ValueHostsManagerConfig>).handOffState();
