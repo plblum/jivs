@@ -5,7 +5,7 @@
  https://github.com/plblum/jivs/tree/main#apioverview
 
  You will find:
- - How to configure the ValidationServices object by adding conditions, localizable error messages, 
+ - How to configure the JivsServices object by adding conditions, localizable error messages, 
    parsers, formatters, and converters.
  - The model used in the examples.
  - Callback functions used by the ValidationManager.
@@ -13,8 +13,8 @@
 
 
 */
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
-import { createMinimalValidationServices } from "./support";
+import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
+import { createMinimalJivsServices } from "./support";
 import {
     DataTypeCheckConditionConfig, DataTypeCheckCondition,
     LessThanConditionConfig, LessThanCondition,
@@ -70,8 +70,8 @@ export function differenceBetweenDates(callingValueHost: ICalcValueHost, findVal
 // with the exception of default error messages.
 // Here we show how to prepare it from scratch configured
 // for this example.
-export function createValidationServices(cultureID: string): ValidationServices {
-    let services = createMinimalValidationServices(cultureID);
+export function createJivsServices(cultureID: string): JivsServices {
+    let services = createMinimalJivsServices(cultureID);
     // We are expecting to use Data Types: Date, Integer, String. 
     // Jivs preconfigures Date and String.
     // Integer is supported as "Number" automatically. We only need to

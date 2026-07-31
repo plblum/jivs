@@ -1,5 +1,5 @@
 import { CultureService } from '@plblum/jivs-engine/build/Services/CultureService';
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
@@ -22,7 +22,7 @@ import {
     IConfigAnalysisResults, PropertyCAResult, ServiceWithLookupKeyCAResultBase, LookupKeyCAResult,
     CAFeature, CAIssueSeverity, ErrorCAResult, FormatterServiceCAResult
 } from '../../src/Types/ConfigAnalysisResults';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 import {
     createServices, createAnalysisArgs, MockAnalyzer, MockAnalyzerWithFallback, checkPropertyCAResultsFromArray,
     checkLookupKeyResultsForService, checkLookupKeyResultsForNoService, checkLocalizedPropertyResultFromArray,
@@ -37,7 +37,7 @@ interface IAnalysisResultsHelperCommon {
 
 describe('AnalysisResultsHelper', () => {
 
-    class Publicify_AnalysisResultsHelper<TServices extends IValidationServices>
+    class Publicify_AnalysisResultsHelper<TServices extends IJivsServices>
         extends AnalysisResultsHelper<TServices>
         implements IAnalysisResultsHelperCommon
     {
@@ -67,7 +67,7 @@ describe('AnalysisResultsHelper', () => {
             return super.validateToken(token);
         }        
     }
-    function setupForTheseTests() : Publicify_AnalysisResultsHelper<IValidationServices> {
+    function setupForTheseTests() : Publicify_AnalysisResultsHelper<IJivsServices> {
         let services = createServices();
         let mockArgs = createAnalysisArgs(services, [], {});            
         let testItem = new Publicify_AnalysisResultsHelper(mockArgs);
@@ -350,7 +350,7 @@ describe('AnalysisResultsHelper', () => {
 
     describe('checkLookupKeyProperty()', () => {
         // Our tests will all use the Formatter and Converter services, so we can use the same args for all of them.
-        function setupForTheseTests() : Publicify_AnalysisResultsHelper<IValidationServices> {
+        function setupForTheseTests() : Publicify_AnalysisResultsHelper<IJivsServices> {
             let services = createServices();
             services.dataTypeFormatterService = new DataTypeFormatterService(); // removes existing registered entries
             let args = createAnalysisArgs(services, [], {
@@ -643,8 +643,8 @@ describe('AnalysisResultsHelper', () => {
 
     });
     describe('checkLocalization', () => {
-        function setupServices(): IValidationServices {
-            let services = createValidationServicesForTesting();
+        function setupServices(): IJivsServices {
+            let services = createJivsServicesForTesting();
             services.textLocalizerService.register('l10nKeyAllCultures',
                 {
                     en: 'This is a test message',
@@ -780,7 +780,7 @@ describe('AnalysisResultsHelper', () => {
                 let result = testItem.publicify_validateToken(token);
                 expect(result).toBe(expected);
             };
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
 
 
@@ -816,8 +816,8 @@ describe('AnalysisResultsHelper', () => {
     });
 
     describe('checkMessageTokens', () => {
-        function createServices(): IValidationServices {
-            let services = createValidationServicesForTesting();
+        function createServices(): IJivsServices {
+            let services = createJivsServicesForTesting();
             let dtfs = new DataTypeFormatterService();
             services.dataTypeFormatterService = dtfs;
             dtfs.services = services;
@@ -826,7 +826,7 @@ describe('AnalysisResultsHelper', () => {
     
             return services;
         }
-        function setupTestItem(services: IValidationServices, initCulture: boolean): Publicify_AnalysisResultsHelper<IValidationServices>
+        function setupTestItem(services: IJivsServices, initCulture: boolean): Publicify_AnalysisResultsHelper<IJivsServices>
         {
             if (initCulture) {
                 services.cultureService = new CultureService();
@@ -839,7 +839,7 @@ describe('AnalysisResultsHelper', () => {
             );    
             return testItem;
         }        
-        function executeFunction(testItem: Publicify_AnalysisResultsHelper<IValidationServices>,
+        function executeFunction(testItem: Publicify_AnalysisResultsHelper<IJivsServices>,
             message: string | null | undefined | ((validator: IValidator) => string),
             expectedLookupKeyResultsCount: number,
             expectedPropertiesCount: number): Array<PropertyCAResult | ErrorCAResult> {
@@ -1109,7 +1109,7 @@ describe('AnalysisResultsHelper', () => {
         // 9. name that has surrounding whitespace adds error "Remove whitespace"
         // 10. With non-empty valueHostConfigs array, valid name syntax that is not found in the array will always report "ValueHostName does not exist"
 
-        function setupForTheseTests(): Publicify_AnalysisResultsHelper<IValidationServices> {
+        function setupForTheseTests(): Publicify_AnalysisResultsHelper<IJivsServices> {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             return testItem;
@@ -1199,7 +1199,7 @@ describe('AnalysisResultsHelper', () => {
     });
 
     describe('checkValuePropertyContents', () => {
-        function setupForTheseTests(): Publicify_AnalysisResultsHelper<IValidationServices> {
+        function setupForTheseTests(): Publicify_AnalysisResultsHelper<IJivsServices> {
             let services = createServices();
             let dtis = new DataTypeIdentifierService();
             services.dataTypeIdentifierService = dtis;

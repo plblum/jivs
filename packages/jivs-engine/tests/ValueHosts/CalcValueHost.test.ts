@@ -3,8 +3,8 @@ import { CalcValueHostConfig, CalcValueHostInstanceState, ICalcValueHost } from 
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
+import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
@@ -41,7 +41,7 @@ function TestCalcFunctionUsingConvertToPrimitive(calcValueHost: ICalcValueHost, 
 
 describe('CalcValueHost constructor', () => {
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let testItem: CalcValueHost | null = null;
         expect(() => testItem = new CalcValueHost(vm, {
@@ -91,7 +91,7 @@ describe('CalcValueHostGenerator members', () => {
     });
 
     test('create returns instance of CalcValueHost with VM, Config and InstanceState established', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: CalcValueHostConfig = {
             name: 'Field1',
@@ -153,7 +153,7 @@ describe('CalcValueHostGenerator members', () => {
 });
 describe('getValue using the calcFn', () => {
     test('Through ValidationManager, TestCalcFunctionReturnsOne always returns 1', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: [ 
@@ -169,7 +169,7 @@ describe('getValue using the calcFn', () => {
         expect(testItem!.getValue()).toBe(1);
     });
     test('Through ValidationManager, TestCalcFunctionReturnsValueOfField1 always returns the value from Field1', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: [ 
@@ -195,7 +195,7 @@ describe('getValue using the calcFn', () => {
 
     });    
     test('Through ValidationManager, function that calls getValue on itself throws', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: [ 
@@ -211,7 +211,7 @@ describe('getValue using the calcFn', () => {
         expect(() => testItem?.getValue()).toThrow(/Recursive/);
     });     
     test('function is null returns undefined and logs', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;        
@@ -232,7 +232,7 @@ describe('getValue using the calcFn', () => {
 
     });          
     test('function uses convert on a Date and gets a total number of days', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         services.dataTypeConverterService.register(new UTCDateOnlyConverter());
         let vm = new ValidationManager({
             services: services,
@@ -249,7 +249,7 @@ describe('getValue using the calcFn', () => {
         expect(typeof testItem?.getValue()).toBe('number');
     });      
     test('function uses convertToPrimitive on a Date and gets a total number of days', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         services.dataTypeConverterService.register(new UTCDateOnlyConverter());
         let vm = new ValidationManager({
             services: services,
@@ -268,7 +268,7 @@ describe('getValue using the calcFn', () => {
 });
 describe('setValue', () => {
     test('setValue only logs. Has no impact on calculation', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;
@@ -292,7 +292,7 @@ describe('setValue', () => {
 
 describe('toICalcValueHost function', () => {
     test('Passing actual CalcValueHost matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new CalcValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -305,7 +305,7 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBe(testItem);
     });
     test('Passing FieldValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new FieldValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1',
@@ -320,7 +320,7 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBeNull();
     });  
     test('Passing StaticValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let vm = new MockValidationManager(new MockJivsServices(false, false));
         let testItem = new StaticValueHost(vm, {
                 name: 'Field1',
                 label: 'Label1'

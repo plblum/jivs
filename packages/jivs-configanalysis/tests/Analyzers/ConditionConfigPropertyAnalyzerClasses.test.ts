@@ -2,7 +2,7 @@ import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Con
 import { CompareToSecondValueHostConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToSecondValueHostConditionBase';
 import { ConditionCategory, SupportsDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { IntegerConverter, NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
@@ -11,7 +11,7 @@ import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/Condition
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { ConditionWithOneChildBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithOneChildBase';
 import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper';
 import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnalyzer';
@@ -20,7 +20,7 @@ import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataType
 import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createServices, setupHelper, checkPropertyCAResultsFromArray } from '../TestSupport/support';
 
-function createServicesForTheseTests(options?: CvstOptions): IValidationServices {
+function createServicesForTheseTests(options?: CvstOptions): IJivsServices {
     if (!options) options = {};
     if (!options.registerDataTypeConverters) options.registerDataTypeConverters = false;
     let services = createServices(options);
@@ -33,7 +33,7 @@ function createServicesForTheseTests(options?: CvstOptions): IValidationServices
     return services;
 }
 // Includes analyzer for DataTypeConverterService
-function setupHelperForTheseTests(services: IValidationServices): AnalysisResultsHelper<IValidationServices>
+function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelper<IJivsServices>
 {
     let helper = setupHelper(services);
     helper.analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer(helper,

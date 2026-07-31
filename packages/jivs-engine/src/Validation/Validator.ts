@@ -13,7 +13,7 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IJivsServices } from '../Interfaces/JivsServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
@@ -71,7 +71,7 @@ export class Validator implements IValidator {
         return this._config;
     }
 
-    protected get services(): IValidationServices {
+    protected get services(): IJivsServices {
         return this.validationManager.services;
     }
 

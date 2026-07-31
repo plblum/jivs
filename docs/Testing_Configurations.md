@@ -17,7 +17,7 @@ When services own the Parsers, Formatters, Conditions, etc, you no longer see th
 
 ```ts
 let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
-// when birthDate needs a parser, it asks ValidationServices to get it one by LookupKey.Date.
+// when birthDate needs a parser, it asks JivsServices to get it one by LookupKey.Date.
 // same for formatter.
 ```
 Similar issues arise with regard to error messages, which are expected to be localized
@@ -46,7 +46,7 @@ Consider adding it directly into your normal execution process, although doing s
 - It means that deployment will include the jivs-configanalysis package. If you limit working with it to unit tests, then you can omit jivs-configanalysis within the main codebase.
 ```ts
 // this is the normal setup for any ModelRules used to configure...
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new YourModelRules();
 let config = rules.configure();
 
@@ -62,10 +62,10 @@ let config = rules.configure();
 ```
 ## Adding to a unit test
 We recommend that you create unit tests for each ModelRules subclass
-that uses your production version of `ValidationServices`.
+that uses your production version of `JivsServices`.
 ```ts
 test('Check YourModelRules against the services', () => {
-    let services = createValidationServices('en-US');    // your production services 
+    let services = createJivsServices('en-US');    // your production services 
     let rules = new YourModelRules(services);
     let config = rules.configure();
 
@@ -82,7 +82,7 @@ test('Check YourModelRules against the services', () => {
           includeLookupKeyResults,
           includeCompleteResults, 2);      
     }
-    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the validationservices.
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the jivsservices.
 });
 ```
 ## Sample output: Conditions are not registered
@@ -227,7 +227,7 @@ the `ValidationManager`.
 
 ```ts
 import { installConfigAnalysisService } from "@plblum/jivs-configanalysis/build/ConfigAnalysisService";
-let services = createValidationServices('en');
+let services = createJivsServices('en');
 let rules = new YourModelRules();
 let config = rules.configure();
 
@@ -324,7 +324,7 @@ Let's suppose that you wanted to see all errors, and one was found, where you ha
 ```ts
 class MyModelRules extends ModelRulesBase
 {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
       super(services);
   }
   protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
@@ -335,7 +335,7 @@ class MyModelRules extends ModelRulesBase
   }
 
 }
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new MyModelRules(services);
 let config = rules.configure();
 

@@ -3,7 +3,7 @@
  * @module jivs-configanalysis/Explorer/ConcreteClasses
  */
 
-import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName, IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { CodingError, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { NullConfigAnalysisOutputter, ConsoleConfigAnalysisOutputter } from './Outputters/ConfigAnalysisOutputterClasses';
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from './Formatters/ConfigAnalysisOutputFormatterClasses';
@@ -30,7 +30,7 @@ import { CASearcher } from './CASearcher';
  * Intended for your testing code and to write the results to something that can store them,
  * even if you don't have a testing situation.
  */
-export class ConfigAnalysisResultsExplorer<TServices extends IValidationServices>
+export class ConfigAnalysisResultsExplorer<TServices extends IJivsServices>
     implements IConfigAnalysisResultsExplorer {
     constructor(results: IConfigAnalysisResults,
         factory: ICAExplorerFactory,

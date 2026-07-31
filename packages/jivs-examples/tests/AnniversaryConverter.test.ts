@@ -3,7 +3,7 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
 import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
-import { createMinimalValidationServices } from '../src/support';
+import { createMinimalJivsServices } from '../src/support';
 
 describe('UTCAnniversaryConverter', () => {
     test('canConvert', () => {
@@ -38,7 +38,7 @@ describe('UTCAnniversaryConverter', () => {
         let date7 = new Date(Date.UTC(1981, 10, 30, 23, 59, 59));
         let date8 = new Date(Date.UTC(1976, 10, 1));
 
-        let vs = createMinimalValidationServices('en');
+        let vs = createMinimalJivsServices('en');
         let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
         dtcs.register(new UTCAnniversaryConverter());
         let compareService = vs.dataTypeComparerService as DataTypeComparerService;

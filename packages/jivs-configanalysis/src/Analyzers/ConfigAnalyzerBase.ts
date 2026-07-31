@@ -4,7 +4,7 @@
  */
 
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { valueForLog } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
@@ -16,7 +16,7 @@ import { ConfigObjectCAResultsBase, ErrorCAResult, CAFeature, CAIssueSeverity } 
  */
 export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>>
     implements IConfigAnalyzer<TConfig, TResults> {
-    constructor(helper: AnalysisResultsHelper<IValidationServices>,
+    constructor(helper: AnalysisResultsHelper<IJivsServices>,
         propertyAnalyzers: Array<IConfigPropertyAnalyzer<TConfig, TResults>>
     ) {
         this._helper = helper;
@@ -35,10 +35,10 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectC
     /**
      * Supplies helper methods
      */
-    protected get helper(): AnalysisResultsHelper<IValidationServices> {
+    protected get helper(): AnalysisResultsHelper<IJivsServices> {
         return this._helper;
     }
-    private readonly _helper: AnalysisResultsHelper<IValidationServices>;
+    private readonly _helper: AnalysisResultsHelper<IJivsServices>;
 
     /**
      * Analyzes the given Config object to produce the ConfigResults object describing it.

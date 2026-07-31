@@ -4,7 +4,7 @@
  */
 
 import { IServicesAccessor } from '../Interfaces/Services';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { ServiceBase } from './ServiceBase';
@@ -17,22 +17,22 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     /**
      * Services accessor.
      * Note: Not passed into the constructor because this object should be created before
-     * ValidationServices itself. So it gets assigned when the associated service
-     * property on ValidationService is assigned the service instance.
+     * JivsServices itself. So it gets assigned when the associated service
+     * property on JivsServices is assigned the service instance.
      */
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
         assertWeakRefExists(this._services,
             'Assign services property first.');
         return this._services!.deref()!;
     }
-    public set services(services: IValidationServices)
+    public set services(services: IJivsServices)
     {
         assertNotNull(services, 'services');
-        this._services = new WeakRef<IValidationServices>(services);
+        this._services = new WeakRef<IJivsServices>(services);
         this.updateServices(services);
     }
-    private _services: WeakRef<IValidationServices> | null = null;
+    private _services: WeakRef<IJivsServices> | null = null;
 
     protected hasServices(): boolean
     {
@@ -44,7 +44,7 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      * Changes the services on all implementations of IServicesAccessor
      * @param services 
      */
-    protected updateServices(services: IValidationServices): void
+    protected updateServices(services: IJivsServices): void
     {
     }
     /**

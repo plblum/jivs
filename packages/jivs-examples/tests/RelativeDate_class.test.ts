@@ -3,7 +3,7 @@ import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/Dat
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { RelativeDateLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from '../src/RelativeDate_class';
 import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
-import { createMinimalValidationServices } from '../src/support';
+import { createMinimalJivsServices } from '../src/support';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 
@@ -49,7 +49,7 @@ test('Register and test values against the RelativeDateIdentifier', () => {
 });
 
 test('Register and test values against RelativeDateConverter', () => {
-    let vs = createMinimalValidationServices('en');
+    let vs = createMinimalJivsServices('en');
 
     let dtis = vs.dataTypeIdentifierService as DataTypeIdentifierService;
     dtis.register(new RelativeDateIdentifier());

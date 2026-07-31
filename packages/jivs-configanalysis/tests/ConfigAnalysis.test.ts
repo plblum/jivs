@@ -5,11 +5,11 @@ import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParser
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
 import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
-import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
@@ -42,8 +42,8 @@ import {
 
 
 describe('ConfigAnalysisBase class', () => {
-    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValidationManagerConfig, IValidationServices> {
-        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
+    class Publicify_ConfigAnalysisBase extends ConfigAnalysisBase<ValidationManagerConfig, IJivsServices> {
+        protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             let helper = new AnalysisResultsHelper(args);
             this._helper = helper;
             helper.registerLookupKeyAnalyzer(ServiceName.converter, new MockAnalyzer(ServiceName.converter, {} as ServiceWithLookupKeyCAResultBase));
@@ -54,10 +54,10 @@ describe('ConfigAnalysisBase class', () => {
         /**
          * Expose the helper for testing
          */
-        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IJivsServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IJivsServices> | undefined = undefined;
 
         public get publicify_options(): ConfigAnalysisOptions | null | undefined {
             return this._options;
@@ -67,7 +67,7 @@ describe('ConfigAnalysisBase class', () => {
         public publicify_getValueHostNames(config: ValidationManagerConfig): string[] {
             return this.getValueHostNames(config);
         }
-        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IValidationServices>): void {
+        public publicify_gatherDataTypeIdentifierLookupKeys(helper: AnalysisResultsHelper<IJivsServices>): void {
             this.gatherDataTypeIdentifierLookupKeys(helper);
         }
         public get publicify_valueHostConfigPropertyAnalyzers(): Array<IValueHostConfigPropertyAnalyzer> {
@@ -83,18 +83,18 @@ describe('ConfigAnalysisBase class', () => {
             return this.createConfigAnalysisResults(config);
         }
         public publicify_createAnalysisArgs(config: ValidationManagerConfig,
-            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
+            results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             return this.createAnalysisArgs(config, results, options);
         }
-        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValidationServices>, helper: AnalysisResultsHelper<IValidationServices>): void {
+        public publicify_resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IJivsServices>, helper: AnalysisResultsHelper<IJivsServices>): void {
             this.resolveConfigAnalyzers(analysisArgs, helper);
 
         }
-        public publicify_createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
+        public publicify_createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             return this.createHelper(args);
         }
         // just to expose options
-        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._options = options;
             return super.createAnalysisArgs(config, results, options);
 
@@ -118,9 +118,9 @@ describe('ConfigAnalysisBase class', () => {
     }
     function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
         testItem: Publicify_ConfigAnalysisBase,
-        services: IValidationServices,
-        helper: AnalysisResultsHelper<IValidationServices>,
-        analysisArgs: AnalysisArgs<IValidationServices>,
+        services: IJivsServices,
+        helper: AnalysisResultsHelper<IJivsServices>,
+        analysisArgs: AnalysisArgs<IJivsServices>,
         results: IConfigAnalysisResults,
     } {
         let services = createServices(serviceOptions);
@@ -567,25 +567,25 @@ describe('ConfigAnalysisBase class', () => {
 });
 describe('ValidationManagerConfigAnalysis', () => {
     class Publicify_ValidationManagerConfigAnalysis extends ValidationManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
+        protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
         }
-        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IJivsServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IJivsServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
-        public get publicify_AnalysisArgs(): AnalysisArgs<IValidationServices> | undefined {
+        public get publicify_AnalysisArgs(): AnalysisArgs<IJivsServices> | undefined {
 
             return this._analysisArgs;
         }
-        private _analysisArgs: AnalysisArgs<IValidationServices> | undefined = undefined;
+        private _analysisArgs: AnalysisArgs<IJivsServices> | undefined = undefined;
     }
 
     // test a very simple configuration of 1 valueHostConfig
@@ -682,25 +682,25 @@ describe('ValidationManagerConfigAnalysis', () => {
 });
 describe('ValidationManagerConfigAnalysis', () => {
     class Publicify_ValidationManagerConfigAnalysis extends ValidationManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IValidationServices>): AnalysisResultsHelper<IValidationServices> {
+        protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
         }
-        public get publicify_helper(): AnalysisResultsHelper<IValidationServices> | undefined {
+        public get publicify_helper(): AnalysisResultsHelper<IJivsServices> | undefined {
             return this._helper;
         }
-        private _helper: AnalysisResultsHelper<IValidationServices> | undefined = undefined;
+        private _helper: AnalysisResultsHelper<IJivsServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IValidationServices> {
+        protected createAnalysisArgs(config: ValidationManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
-        public get publicify_AnalysisArgs(): AnalysisArgs<IValidationServices> | undefined {
+        public get publicify_AnalysisArgs(): AnalysisArgs<IJivsServices> | undefined {
 
             return this._analysisArgs;
         }
-        private _analysisArgs: AnalysisArgs<IValidationServices> | undefined = undefined;
+        private _analysisArgs: AnalysisArgs<IJivsServices> | undefined = undefined;
     }
 
     // test a very simple configuration of 1 valueHostConfig
@@ -753,7 +753,7 @@ describe('ValidationManagerConfigAnalysis', () => {
     // It will need parsers and converters to handle 1st.
     // So services must have NumberParser and NumberConverter registered.
     // Because we are using ValueHostType.Field and validators,
-    // we'll use IValidationServices and ValidationManagerConfigBuilder.
+    // we'll use IJivsServices and ValidationManagerConfigBuilder.
     // Our helper must have registered the DataTypeParserLookupKeyAnalyzer added.
     // Write that test.
     test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {

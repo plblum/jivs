@@ -57,7 +57,7 @@ import {
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
@@ -77,7 +77,7 @@ export class ValidatorBuilder
      * Constructor
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentConfig: FieldValueHostConfig,
         completed?: CompleteConfigBuilderHandler<object>) {
         super(services, null, completed);
@@ -188,7 +188,7 @@ export class ValidatorBuilder
 
     /**
      * Creates the ConditionBuilder used by each Fluent validator function
-     * using the one defined in BuildersFactory on ValidationServices.
+     * using the one defined in BuildersFactory on JivsServices.
      * @returns 
      */
     protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder

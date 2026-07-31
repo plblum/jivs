@@ -8,7 +8,7 @@ import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { assertNotNull, assertWeakRefExists, CodingError } from '../Utilities/ErrorHandling';
 import { escapeRegExp, hasLetters, hasMultipleOccurances, onlyTheseCharacters } from '../Utilities/Utilities';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 
 
 /**
@@ -89,23 +89,23 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
     /**
      * Services accessor.
      * Note: Not passed into the constructor because this object should be created before
-     * ValidationServices itself. So it gets assigned when ValidationService.dataTypeFormatterService is assigned a value.
+     * JivsServices itself. So it gets assigned when JivsServices.dataTypeFormatterService is assigned a value.
      */
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
-        assertWeakRefExists(this._services, 'Register with ValidationServices.dataTypeFormatterService first.');
+        assertWeakRefExists(this._services, 'Register with JivsServices.dataTypeFormatterService first.');
         return this._services!.deref()!;
     }
-    public set services(services: IValidationServices)
+    public set services(services: IJivsServices)
     {
         assertNotNull(services);
-        this._services = new WeakRef<IValidationServices>(services);
+        this._services = new WeakRef<IJivsServices>(services);
     }
     protected get hasServices(): boolean
     {
         return this._services !== null && this._services.deref() !== undefined;
     }
-    private _services: WeakRef<IValidationServices> | null = null;    
+    private _services: WeakRef<IJivsServices> | null = null;    
 
     /**
      * The default for the options.emptyStringResult when the user doesn't supply it.

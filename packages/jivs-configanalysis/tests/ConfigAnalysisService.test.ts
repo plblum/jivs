@@ -2,7 +2,7 @@ import { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Build
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import type { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import type { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer } from '../src/Analyzers/ConditionConfigPropertyAnalyzerClasses';
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from '../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
 import { ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from '../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
@@ -90,7 +90,7 @@ class TestConfigAnalysis extends ValidationManagerConfigAnalysis {
 // Subclass ConfigAnalysisService to expose protected methods for testing
 // Uses TestConfigAnalysis to create a ConfigAnalysis object
 class TestConfigAnalysisService extends ConfigAnalysisService {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     public testAttachAnalyzers(cas: IConfigAnalysis): void {
@@ -108,7 +108,7 @@ class TestConfigAnalysisService extends ConfigAnalysisService {
     public get testConditionAnalyzers(): IConditionConfigPropertyAnalyzer[] {
         return this.conditionAnalyzers;
     }
-    public get testServices(): IValidationServices {
+    public get testServices(): IJivsServices {
         return this.services;
     }
 

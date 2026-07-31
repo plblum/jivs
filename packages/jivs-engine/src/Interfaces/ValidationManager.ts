@@ -32,7 +32,7 @@ import {
     IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
     toIValidatorsValueHostBaseCallbacks
 } from './ValidatorsValueHostBase';
-import { IValidationServices } from './ValidationServices';
+import { IJivsServices } from './JivsServices';
 import { IFieldValueHost, IFieldValueHostChangedCallback } from './FieldValueHost';
 import { IValueHostResolver } from './ValueHostResolver';
 
@@ -42,9 +42,9 @@ import { IValueHostResolver } from './ValueHostResolver';
  */
 export interface IValidationManager extends IValueHostResolver {
     /**
-     * Provides access to ValidationServices (override IServices).
+     * Provides access to JivsServices (override IServices).
      */
-    readonly services: IValidationServices; 
+    readonly services: IJivsServices; 
     /**
      * Adds a ValueHostConfig for a ValueHost not previously added. 
      * Does not trigger any notifications.
@@ -315,7 +315,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
     /**
      * Services that are needed by ValidationManager
      */
-    services: IValidationServices;
+    services: IJivsServices;
 
     /**
      * Initial list of ValueHostConfigs. Here's where all of the action is!

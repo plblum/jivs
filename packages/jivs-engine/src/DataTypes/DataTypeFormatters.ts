@@ -11,7 +11,7 @@
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { IServicesAccessor } from '../Interfaces/Services';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { cultureLanguageCode } from '../Services/CultureService';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { LookupKey } from './LookupKeys';
@@ -34,23 +34,23 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
     /**
      * Services accessor.
      * Note: Not passed into the constructor because this object should be created before
-     * ValidationServices itself. So it gets assigned when ValidationService.dataTypeFormatterService is assigned a value.
+     * JivsServices itself. So it gets assigned when JivsServices.dataTypeFormatterService is assigned a value.
      */
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
-        assertWeakRefExists(this._services, 'Register with ValidationServices.dataTypeFormatterService first.');
+        assertWeakRefExists(this._services, 'Register with JivsServices.dataTypeFormatterService first.');
         return this._services!.deref()!;
     }
-    public set services(services: IValidationServices)
+    public set services(services: IJivsServices)
     {
         assertNotNull(services);
-        this._services = new WeakRef<IValidationServices>(services);
+        this._services = new WeakRef<IJivsServices>(services);
     }
     protected get hasServices(): boolean
     {
         return this._services !== null && this._services.deref() !== undefined;
     }
-    private _services: WeakRef<IValidationServices> | null = null;
+    private _services: WeakRef<IJivsServices> | null = null;
     
     /**
      * The DataTypeLookup key(s) that this class supports.
@@ -461,7 +461,7 @@ export class Percentage100Formatter extends NumberFormatterBase
  * that you want to use for true and false.
  * If not supplied, it defaults to "true" and "false".
  * To provide localization of "true" and "false", set up
- * ValidationServices.TextLocalizerService with text keys, cultures and
+ * JivsServices.TextLocalizerService with text keys, cultures and
  * translations. Then provide values for TrueLabel and FalseLabel
  * when registering this class in the dataTypeFormatterService.
  */
@@ -495,7 +495,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     /**
      * Text shown the user for a value of true.
     * To provide localization of "true" and "false", set up
-    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * JivsServices.TextLocalizerService with text keys, cultures and
     * translations. Then provide values for TrueLabel and FalseLabel
     * when registering this class in the dataTypeFormatterService.
      */
@@ -507,7 +507,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 
     /**
      * Localization key for TrueLabel. Its value will be matched to an entry
-     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * made to JivsServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the TrueLabel property is used.
      */
@@ -520,7 +520,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     /**
     * Text shown the user for a value of false
     * To provide localization of "true" and "false", set up
-    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * JivsServices.TextLocalizerService with text keys, cultures and
     * translations. Then provide values for TrueLabel and FalseLabel
     * when registering this class in the dataTypeFormatterService.
       */
@@ -532,7 +532,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 
     /**
      * Localization key for FalseLabel. Its value will be matched to an entry
-     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * made to JivsServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the FalseLabel property is used.
      */

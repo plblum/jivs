@@ -35,13 +35,13 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 
 -   [`Validator class`](#validators-connecting-conditions-to-error-messages) – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
-- [`ValidationServices class`](#validationservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
+- [`JivsServices class`](#jivsservices) – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by `JivsServices` which empower Jivs.
     - `IDataTypeFormatter` – Two use cases:
-        + FieldValueHost can convert the native value into its text value when using `ValueHost.setValue()`.
+        + `FieldValueHost` can convert the native value into its text value when using `ValueHost.setValue()`.
         + Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
     - `IDataTypeConverter` – For these use cases:
-        + Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
-        + Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
+        + Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript `Date object` is a good example, as you should use its `getTime()` function for comparisons.
+        + Changing a value to something else. Take the `Date object` again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
     - `IDataTypeParser` – For converting the input value into a native value, ready for validation. A parser can detect an error and report it for a validator to show. Parsers are localizable.
     - There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
     - `ConditionFactory` – Creates the Condition objects used by business rules.
@@ -54,7 +54,7 @@ Topics:
 - [Validators](#validators-connecting-conditions-to-error-messages)
 - [ValidationManager](#validationmanager)
 - [Rules](#rules)
-- [ValidationServices](#validationservices)
+- [JivsServices](#jivsservices)
 - [Creating your own Conditions](#creating-your-own-conditions)
 - [Lookup Keys: DataTypes and Companion tools](#lookup-keys-data-types-and-companion-tools)
 - [Localization](#localization)
@@ -519,15 +519,15 @@ Start with a ValidationManager instance. It should already be configured with Va
 ### Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.
 ```ts
-(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => number | Date | string | null | boolean | undefined
+(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => number | Date | string | null | boolean | undefined
 ```
-Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the ValidationServices on `findValueHosts.services`.
+Take advantage of the findValueHosts parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to the `JivsServices` on `findValueHosts.services`.
 
 In this example, the function multiplies the value from the FieldValueHost 'Count' by 10.
 ```ts
 builder.field('Count', LookupKey.Integer);
 builder.calc('TimesTen', LookupKey.Integer, 
-   (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => {
+   (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => {
       let count = findValueHosts.getValueHost('Count') as number;
       if (!isNaN(count))
           return count * 10;
@@ -696,7 +696,7 @@ With Jivs, the UI uses the `ValidationManager class` to manage the `ValueHosts`,
 Here is pseudo-code representation of its interface (omitting some members).
 ```ts
 interface IValidationManager {
-    services: IValidationServices;
+    services: IJivsServices;
     
     getValueHost(valueHostName): null | IValueHost;
     getValidatorsValueHost(valueHostName): null | IValidatableValueHostBase;
@@ -748,7 +748,7 @@ export class PersonModelRules extends ModelRulesBase {
     }
 }
 // consume to build your ValidationManager
-let services = createValidationServices('en-US'); // see "Installing Jivs"
+let services = createJivsServices('en-US'); // see "Installing Jivs"
 let rules = new PersonModelRules(services);
 let config = rules.configure();
 let vm = new ValidationManager(config);   // 'vm' will be used to handle validation
@@ -786,7 +786,7 @@ Inside `configure()` Jivs handles several support steps for you:
 * Optionally caches that config for reuse.
 
 ```ts
-const services = createValidationServices('en-US');
+const services = createJivsServices('en-US');
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 const vm = new ValidationManager(config);
@@ -889,26 +889,26 @@ const config = rules.configure({
 });
 ```
 ---
-## ValidationServices
-The `ValidationServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
+## JivsServices
+The `JivsServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
 
-`ValidationServices` is where we register new `Conditions` and classes to help work with all of the data types you might have in your Model. None of those classes are prepopulated (so that you are not stuck with classes that you won't use). So let’s get them setup.
+`JivsServices` is where we register new `Conditions` and classes to help work with all of the data types you might have in your Model. None of those classes are prepopulated (so that you are not stuck with classes that you won't use). So let’s get them setup.
 
-### Configuring ValidationServices
+### Configuring JivsServices
 Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
 
 Add the contents of this file to your project. It results in several new functions starting with this one.
 ```ts
-export function createValidationServices(... parameters ...): ValidationServices {
+export function createJivsServices(... parameters ...): JivsServices {
 …
 }
 // also many register() functions plus configureCultures() and createTextLocalizerService
 ```
 Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
 
-Now that you have the `createValidationServices function`, use it during `ValidationManager` configuration.
+Now that you have the `createJivsServices function`, use it during `ValidationManager` configuration.
 ```ts
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new PersonModelRules(services); // subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 let vm = new ValidationManager(config);
@@ -916,9 +916,9 @@ let vm = new ValidationManager(config);
 ### Customizing factories and services
 There are many services. Most code that instantiates an object is found in services and factories, not in the ValidationManager, ValueHosts, and Validators. That allows for extensive ability to customize.
 
-Here is the ValidationServices type:
+Here is the JivsServices type:
 ```ts
-interface IValidationServices {
+interface IJivsServices {
 // general API where you can add your own services!
     getService<T>(serviceName): null | T;
     setService(serviceName, service): void;
@@ -996,7 +996,7 @@ You need to get involved in other cases. This is done by:
 3. The validator's ConditionConfig needs a Lookup Key for the resulting data type in the appropriate property: conversionLookupKey or secondConversionLookupKey.
 
 Example: Numeric string to number
-The DataTypeConverter is predefined in your `createValidationServices()` function. It is NumericStringToNumberConverter.
+The DataTypeConverter is predefined in your `createJivsServices()` function. It is NumericStringToNumberConverter.
 ```ts
 dtcs.register(new NumericStringToNumberConverter());
 ```
@@ -1185,7 +1185,7 @@ There are several ways to add your conditions.
 ### Reusable classes
 All Condition classes supplied within jivs-engine are registered with the ConditionFactory, which uses the ConditionConfig (describes rules specific to the condition) to know which class to create.
 
-Once created, go to the `registerConditions() function` that is [part of the startup code](#validationservices) and add it like this:
+Once created, go to the `registerConditions() function` that is [part of the startup code](#jivsservices) and add it like this:
 ```ts
 export function registerConditions(cf: ConditionFactory): void
 {
@@ -1278,7 +1278,7 @@ builder.field('fieldname')
 - Always write unit tests.
 - `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Configs passed into the `ValidationManager`.
 - `conditionType` values are case sensitive.
-- You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
+- You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `JivsServices class` in the `createJivsServices function`.
 
 ### Adding your new Condition class to the Builder API
 See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
@@ -1294,7 +1294,7 @@ Here are a few places you provide user-facing strings into Jivs:
 
 Each of those properties have a companion that ends in "l10n" (industry term for localization), such as labell10n. Use the l10n properties to supply a Localization Key that will be sent to Jivs `TextLocalizerService`. If that service has the appropriate data, it will be used instead of the usual property.
 
-`TextLocalizerService` is available on `ValidationManager.services.textLocalizerService`. Add localization content within the `createTextLocalizerService() function` [that was added here](#validationservice).
+`TextLocalizerService` is available on `ValidationManager.services.textLocalizerService`. Add localization content within the `createTextLocalizerService() function` [that was added here](#jivsservices).
 
 To replace it with a third party text localization tool, implement `ITextLocalizerService` and assign it in the `createTextLocalizerService() function`.
 
@@ -1401,7 +1401,7 @@ export class MyLongDateFormatter extends DataTypeFormatterBase
     }	
 }
 ```
-Then register it within registerDataTypeFormatters() where you added the [`createValidationService() function`](#validationservices), replacing the existing "LongDateFormatter" Lookup Key.
+Then register it within registerDataTypeFormatters() where you added the [`createJivsServices() function`](#jivsservices), replacing the existing "LongDateFormatter" Lookup Key.
 ```ts
 export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 {
@@ -1558,7 +1558,7 @@ interface ValueHostValidationState {
 ```
 Here is an example of using `onValueHostValidationStateChanged callback`.
 ```ts
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
@@ -1649,7 +1649,7 @@ interface ValidationState {
 ```
 Here is an example of using `onValidationStateChanged callback`.
 ```ts
-let services = createValidationServices('en-US');
+let services = createJivsServices('en-US');
 let rules = new PersonModelRules();// subclass of ModelRulesBase for your PersonModel class
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
@@ -1808,8 +1808,8 @@ let  textValue = vm.vh.any("LastName").getTextValue();
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 
-The logger is configured within the ValidationServices object, as it is a service.
-1. It is setup in the [`createValidationServices() function`](#configuring-validationservices).
+The logger is configured within the JivsServices object, as it is a service.
+1. It is setup in the [`createJivsServices() function`](#configuring-jivsservices).
     ```ts
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
@@ -1845,7 +1845,7 @@ This jest unit test shows the logging for just calling ValueHost.setValues("", "
 test('setValue with validate=true, onValueHostValidationStateChanged called', () => {
     let onValidateResult: ValueHostValidationState | null = null;
     let config: ValidationManagerConfig = {
-        services: createValidationServices(),
+        services: createJivsServices(),
         valueHostConfigs: [],
         onValueHostValidationStateChanged: (vh, vr) => {
             onValidateResult = vr;
@@ -2049,7 +2049,7 @@ vs.loggerService = new MyLoggerService(LoggingLevel.Error, chainedLogger);
 > Note that a chained logger will act as if it has LoggingLevel.Debug, knowing that the top-level logging service will only call it if its own minLevel is met.
 
 ## Testing your work
-Because it is a service separated from your UI code, Jivs is easier to test that your validation is working correctly. Jivs also has its own services contained in the `ValidationServices object`, where you might replace one of its services with a mock, as its services all start as interfaces.
+Because it is a service separated from your UI code, Jivs is easier to test that your validation is working correctly. Jivs also has its own services contained in the `JivsServices object`, where you might replace one of its services with a mock, as its services all start as interfaces.
 
 There are two possible places to test:
 1. Against the fully configured `ValidationManager object`, which is what your app will use. Use your testing framework.
@@ -2059,7 +2059,7 @@ You can use any testing framework you like. Jivs itself uses [Jest](https://www.
 
 ### Test validation requests
 The basic test will generally do this:
-1. Create the `ValidationServices object`, which may be identical to what you use in your app.
+1. Create the `JivsServices object`, which may be identical to what you use in your app.
 2. Create a ModelBaseRules subclass that describes a model for your test.
 3. Create the ValidationManager from the result of the subclass's `configure()` method.
 4. Set the values that will impact a validation test.
@@ -2084,7 +2084,7 @@ class DateRangeFormRules extends FormRulesBase {
 }
 function createValidationManager(): ValidationManager
 {
-    let services = createValidationServices('culture identifier');
+    let services = createJivsServices('culture identifier');
     let rules = new DateRangeFormRules(services);
     return new ValidationManager(rules);
 }

@@ -11,7 +11,7 @@ import type { IConfigAnalysisResultsExplorer } from './Explorer';
 
 /**
  * The name of the service used to analyze the ValidationManagerConfig.
- * IValidationService.setService(CONFIG_ANALYSIS_SERVICE_NAME, ...) is used to set the service.
+ * IJivsServices.setService(CONFIG_ANALYSIS_SERVICE_NAME, ...) is used to set the service.
  */
 export const CONFIG_ANALYSIS_SERVICE_NAME = 'ConfigAnalysisService';  // eslint-disable-line @typescript-eslint/naming-convention
 

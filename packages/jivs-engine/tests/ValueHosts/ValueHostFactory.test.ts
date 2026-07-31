@@ -3,7 +3,7 @@ import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/I
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
-import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
+import { MockValidationManager, MockJivsServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
@@ -66,7 +66,7 @@ describe('ValueHostFactory.register', () => {
 // create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost
 describe('ValueHostFactory.create', () => {
     test('create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
@@ -90,7 +90,7 @@ describe('ValueHostFactory.create', () => {
         expect(valueHost!.getValue()).toBe('Value');
     });
     test('create with null in parameters throws', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
@@ -113,7 +113,7 @@ describe('ValueHostFactory.create', () => {
         expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
     });
     test('create with Config.valueHostType of null throws', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
@@ -135,7 +135,7 @@ describe('ValueHostFactory.create', () => {
 
     });    
     test('create with Config.valueHostType that has no matching registration throws', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',

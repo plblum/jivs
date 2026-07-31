@@ -12,9 +12,9 @@ import { DataTypeResolution } from './DataTypes';
  * LookupKey="Date" provides a localized short date pattern through DateFormatter.
  * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
- * If you need access to ValidationServices, such as for text localization, implement
+ * If you need access to JivsServices, such as for text localization, implement
  * IServicesAccessor on your class.
- * Register your implementation with ValidationServices.dataTypeFormatterService.
+ * Register your implementation with JivsServices.dataTypeFormatterService.
  */
 export interface IDataTypeFormatter
 {

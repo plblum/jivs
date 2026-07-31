@@ -10,25 +10,25 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import {
   DateRangeFormRules,
   example_hasErrors_report_to_log, example_throwOnErrors,
   example_throwOnErrors_And_Write_To_Console, example_throwOnErrors_And_Write_To_Log, reportToConsole
 } from '../../examples/Using_ConfigAnalysis';
-import { createMinimalValidationServices } from '../../examples/support';
+import { createMinimalJivsServices } from '../../examples/support';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 
 
 /**
- * ValidationServices without anything registered,
+ * JivsServices without anything registered,
  * so we can trigger configuration errors.
  * @returns 
  */
-function createBasicServices(): IValidationServices {
-    let services = createMinimalValidationServices('en');
+function createBasicServices(): IJivsServices {
+    let services = createMinimalJivsServices('en');
     return services;
 }
 describe('Demonstrate the results from various use cases', () => {
@@ -324,7 +324,7 @@ describe('Demonstrate the results from various use cases', () => {
         });
 
         class JustADateModelRules extends ModelRulesBase {
-            constructor(services: IValidationServices) {
+            constructor(services: IJivsServices) {
                 super(services);
             }
             protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
@@ -541,7 +541,7 @@ describe('Demonstrate the results from various use cases', () => {
         });
 
         class WarningsAndInfoModelRules extends ModelRulesBase {
-            constructor(services: IValidationServices) {
+            constructor(services: IJivsServices) {
                 super(services);
             }
             protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
@@ -675,7 +675,7 @@ describe('Demonstrate the results from various use cases', () => {
     });
 
     class LackParserModelRules extends ModelRulesBase {
-        constructor(services: IValidationServices) {
+        constructor(services: IJivsServices) {
             super(services);
         }
         protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
@@ -759,7 +759,7 @@ describe('Demonstrate the results from various use cases', () => {
     });
 
     class CaseInsensitiveLookupKeyModelRules extends ModelRulesBase {
-        constructor(services: IValidationServices) {
+        constructor(services: IJivsServices) {
             super(services);
         }
         protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
@@ -808,7 +808,7 @@ describe('Demonstrate the results from various use cases', () => {
     // available text for each culture.
     // We'll support 'en' and 'es' for this test.
     class DateOnlyForTextLocalizerModelRules extends ModelRulesBase {
-        constructor(services: IValidationServices) {
+        constructor(services: IJivsServices) {
             super(services);
         }
         protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {

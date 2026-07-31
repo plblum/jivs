@@ -22,7 +22,7 @@
  */
 
 import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { createFormConfigAdapter } from '../Builder/FormConfigAdapter';
 import { ValidationManagerConfigBuilder } from '../Builder/ValidationManagerConfigBuilder';
@@ -40,15 +40,15 @@ import { IAdaptModelRulesToForm, IRules, RulesConfigOptions } from '../Interface
  */
 export abstract class RulesBase implements IRules
 {
-    protected constructor(services: IValidationServices)
+    protected constructor(services: IJivsServices)
     {
         assertNotNull(services, 'services');
         this._services = services;
     }
-    protected get services(): IValidationServices {
+    protected get services(): IJivsServices {
         return this._services;
     }
-    private readonly _services: IValidationServices;
+    private readonly _services: IJivsServices;
 
     /**
      * Creates a ValidationManagerConfig object from the rules built into this class.
@@ -176,7 +176,7 @@ export abstract class RulesBase implements IRules
  * If you have a form without a model, start with FormRulesBase instead of ModelRulesBase.
  */
 export abstract class ModelRulesBase extends RulesBase {
-    protected constructor(services: IValidationServices) {
+    protected constructor(services: IJivsServices) {
         super(services);
     }
 }
@@ -193,7 +193,7 @@ export abstract class ModelRulesBase extends RulesBase {
  * ```
  */
 export abstract class FormRulesBase extends RulesBase {
-    protected constructor(services: IValidationServices) {
+    protected constructor(services: IJivsServices) {
         super(services);
     }
 }

@@ -17,7 +17,7 @@ When services own the Parsers, Formatters, Conditions, etc, you no longer see th
 
 ```ts
 let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
-// when birthDate needs a parser, it asks ValidationServices to get it one by LookupKey.Date.
+// when birthDate needs a parser, it asks JivsServices to get it one by LookupKey.Date.
 // same for formatter.
 ```
 Similar issues arise with regard to error messages, which are expected to be localized
@@ -30,7 +30,7 @@ through a report.
 Example unit test pattern.
 ```ts
 test('Check YourModelRules against the services', () => {
-    let services = createValidationServices();    // your production services 
+    let services = createJivsServices();    // your production services 
     let rules = new YourModelRules(services);
     let config = rules.configure();
 
@@ -47,7 +47,7 @@ test('Check YourModelRules against the services', () => {
           includeLookupKeyResults,
           includeCompleteResults, 2);      
     }
-    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the validationservices.
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the jivsservices.
 });
 ```
 ### Sample output: Conditions are not registered

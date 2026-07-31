@@ -1,7 +1,7 @@
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
 import { IDataTypeFormatter } from "@plblum/jivs-engine/build/Interfaces/DataTypeFormatters";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { NumberFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
@@ -45,7 +45,7 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
     }
 
 
-    function setupServices() : IValidationServices {
+    function setupServices() : IJivsServices {
         let services = createServices({ cultures: [{ cultureId: 'en'}] , registerFormatters: false});
         services.dataTypeIdentifierService.register(new TestToNumberIdentifier());
         services.dataTypeFormatterService.register(new TestToNumberFormatter());

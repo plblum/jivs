@@ -5,7 +5,7 @@
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     IBuilderConfigHost,
@@ -36,7 +36,7 @@ export class StartConditionWithChildrenBuilder
     extends StartConditionBuilder
     implements IStartConditionWithChildrenBuilder {
 
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object>,
         conditionType: ConditionType
         /*completed?: CompleteConfigBuilderHandler<ConditionConfi>*/ 

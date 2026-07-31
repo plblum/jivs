@@ -4,7 +4,7 @@ import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeCo
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 
 class Publicify_ValueHostConfigBuilder extends ValueHostConfigBuilder { 
@@ -19,22 +19,22 @@ class Publicify_ValidatableValueHostConfigBuilder extends ValidatableValueHostCo
 }
 
 function createVMBuilder(): Publicify_ValidatableValueHostConfigBuilder {
-    return new Publicify_ValidatableValueHostConfigBuilder(null, createValidationServicesForTesting());
+    return new Publicify_ValidatableValueHostConfigBuilder(null, createJivsServicesForTesting());
 }
 function createVHBuilder(): Publicify_ValueHostConfigBuilder {
-    return new Publicify_ValueHostConfigBuilder(null, createValidationServicesForTesting());
+    return new Publicify_ValueHostConfigBuilder(null, createJivsServicesForTesting());
 }
 
 describe('ValueHostConfigBuilder', () => {
     describe('constructor', () => {
         test('null first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let testItem = new Publicify_ValueHostConfigBuilder(null, services);
             expect(testItem.services).toBe(services);
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
         });
         test('valueHostConfig array in first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             const valueHostConfigs: Array<ValueHostConfig> = [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1',
@@ -160,7 +160,7 @@ describe('ValueHostConfigBuilder', () => {
     });
     describe('dispose', () => {
         test('dispose sets services to undefined and later calls throw', () => {
-            let testItem = new Publicify_ValueHostConfigBuilder(null, createValidationServicesForTesting());
+            let testItem = new Publicify_ValueHostConfigBuilder(null, createJivsServicesForTesting());
             testItem.dispose();
             expect(() => testItem.services).toThrow();
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
@@ -173,7 +173,7 @@ describe('ValueHostConfigBuilder', () => {
                 dataType: LookupKey.Currency
             }];
 
-            let testItem = new Publicify_ValueHostConfigBuilder(valueHostConfigs, createValidationServicesForTesting());
+            let testItem = new Publicify_ValueHostConfigBuilder(valueHostConfigs, createJivsServicesForTesting());
             testItem.dispose();
             expect(() => testItem.services).toThrow();
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
@@ -183,13 +183,13 @@ describe('ValueHostConfigBuilder', () => {
 describe('ValidatableValueHostConfigBuilder', () => {
     describe('constructor', () => {
         test('null first parameter sets up without overrides', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let testItem = new Publicify_ValidatableValueHostConfigBuilder(null, services);
             expect(testItem.services).toBe(services);
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
         });
         test('valueHostConfig array in first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             const valueHostConfigs: Array<ValueHostConfig> = [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1',

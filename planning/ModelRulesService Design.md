@@ -224,12 +224,12 @@ class CustomRulesService implements IModelRulesService {
 ```txt
 Builder orchestration
 Business/UI configuration sequencing
-Configuration caching through ValidationServices.cacheService
+Configuration caching through JivsServices.cacheService
 ValidationManager validation
 Async Jivs validation completion
 ExternalIssueFound application through ValidationManager.setExternalIssuesFound()
 Final ValidationState retrieval through ValidationManager.getValidationState()
-Logging through ValidationServices.logService
+Logging through JivsServices.logService
 ```
 
 `ModelRulesServiceBase` does not own model identity directly.
@@ -325,9 +325,9 @@ protected abstract getModelName(): string;
 
 ---
 
-## 9. ValidationServices Integration
+## 9. JivsServices Integration
 
-Jivs works through `ValidationServices`.
+Jivs works through `JivsServices`.
 
 Add:
 
@@ -341,14 +341,14 @@ and:
 cacheService: ICacheService
 ```
 
-to `ValidationServices`.
+to `JivsServices`.
 
-`ModelRulesService` instances receive `ValidationServices` in the constructor.
+`ModelRulesService` instances receive `JivsServices` in the constructor.
 
 ```ts
 class ModelRulesServiceBase {
     public constructor(
-        protected readonly services: ValidationServices
+        protected readonly services: JivsServices
     ) {
     }
 }
@@ -363,7 +363,7 @@ It should not return cache/debug/config-analysis metadata.
 Those should be logged through:
 
 ```ts
-ValidationServices.logService
+JivsServices.logService
 ```
 
 ---
@@ -482,7 +482,7 @@ Caching is included now, but cache storage does not belong to `ModelRulesService
 Caching is handled by:
 
 ```ts
-ValidationServices.cacheService
+JivsServices.cacheService
 ```
 
 Candidate generic cache service:
@@ -615,7 +615,7 @@ Future design required:
 ```txt
 How ModelRulesService requests config analysis without referencing jivs-configanalysis.
 How callers register/provide a config analysis service.
-Whether ValidationServices exposes an optional interface implemented by jivs-configanalysis.
+Whether JivsServices exposes an optional interface implemented by jivs-configanalysis.
 Whether config analysis is invoked inside configure(), outside configure(), or through a hook.
 How config analysis output is returned, logged, or surfaced.
 ```
@@ -908,7 +908,7 @@ Future Jivs documentation should be refactored around these paths.
 Structured path:
 
 ```txt
-1. Create ValidationServices.
+1. Create JivsServices.
 2. Resolve or instantiate a ModelRulesService.
 3. Configure a ValidationManager through the service.
 4. Set values into ValueHosts.
@@ -919,7 +919,7 @@ Structured path:
 Lower-level path:
 
 ```txt
-1. Create ValidationServices.
+1. Create JivsServices.
 2. Use Builder directly.
 3. Create ValidationManager.
 4. Set values into ValueHosts.
@@ -935,7 +935,7 @@ ValidationManager
 ValueHosts
 Conditions
 Validators
-ValidationServices
+JivsServices
 Factories
 Config analysis integration
 Advanced UI-layer configuration
@@ -958,7 +958,7 @@ J-006: configure() returns ValidationManager only; diagnostics use logService.
 J-007: configure() params are optional.
 J-008: validate() takes ValidationManager as direct explicit parameter.
 J-009: Factory returns new service instances.
-J-010: Caching is through ValidationServices.cacheService.
+J-010: Caching is through JivsServices.cacheService.
 J-011: Service identity uses a stable string name.
 J-012: Protected config methods receive params, not just options.
 J-013: Protected config method order is builder first, params second.
@@ -1037,7 +1037,7 @@ const validationState = await rulesService.validate(
 ### UI-only direct Builder example
 
 ```ts
-const services = createValidationServices("en-US");
+const services = createJivsServices("en-US");
 const builder = build(services);
 
 builder
@@ -1144,7 +1144,7 @@ That gives overview documentation one clean structured path while preserving the
 
 ```ts
 
-interface ValidationServices {
+interface JivsServices {
     modelRulesServiceFactory?: IModelRulesServiceFactory;
     cacheService?: unknown;
     logService?: {
@@ -1188,7 +1188,7 @@ interface IModelRulesService {
 
 abstract class ModelRulesServiceBase {
     public constructor(
-        protected readonly services: ValidationServices
+        protected readonly services: JivsServices
     ) {}
 
     protected abstract getModelName(): string;
@@ -1320,7 +1320,7 @@ class LoginRulesService
 }
 
 type ModelRulesServiceCtor =
-    new (services: ValidationServices) => IModelRulesService;
+    new (services: JivsServices) => IModelRulesService;
 
 interface IModelRulesServiceFactory {
     register(
@@ -1337,7 +1337,7 @@ class ModelRulesServiceFactory implements IModelRulesServiceFactory {
     private readonly registry = new Map<string, ModelRulesServiceCtor>();
 
     public constructor(
-        private readonly services: ValidationServices
+        private readonly services: JivsServices
     ) {}
 
     public register(
@@ -1383,7 +1383,7 @@ class ModelRulesServiceFactory implements IModelRulesServiceFactory {
 
 // Example usage
 
-const services: ValidationServices = {};
+const services: JivsServices = {};
 const factory = new ModelRulesServiceFactory(services);
 
 // Register with constructor

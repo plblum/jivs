@@ -17,7 +17,7 @@ to see if those values conform. One or more of these classes are used within a v
 You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
 - **Model Rules** - Model rules describes the business logic rules for validation specific to a Model. They are used to configure a ValidationManager. You encapsolate those rules in a subclass of `ModelRulesBase`. If you don't have a model, subclass from `FormRulesBase` instead.
 - **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
-- **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, `ValidationServices`, and connect individual services to it. 
+- **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, `JivsServices`, and connect individual services to it. 
 - **Builder API** - Tooling to configure the `ValueHosts` and their `Validators` used by `ValidationManager`.
 - **Parser** - Code that converts of the Input Value from a string into its Native Value.
 - **Formatter** - Code that converts the Native Value into a localized, user friendly string for display within an error message.

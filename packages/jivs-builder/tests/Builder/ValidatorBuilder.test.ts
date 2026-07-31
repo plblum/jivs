@@ -16,11 +16,11 @@ import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/bu
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
 import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
@@ -58,10 +58,10 @@ function createVMConfig(): FieldValueHostConfig
     };
 }
 
-let services: IValidationServices;
+let services: IJivsServices;
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-    services = createValidationServicesForTesting();
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
+    services = createJivsServicesForTesting();
     services.loggerService = new CapturingLogger(LoggingLevel.Debug, services.loggerService);
 });
 
@@ -408,7 +408,7 @@ describe('ValidatorBuilder', () => {
 });
 
 function createVMBuilder(): ValidationManagerConfigBuilder {
-    return new ValidationManagerConfigBuilder(createValidationServicesForTesting());
+    return new ValidationManagerConfigBuilder(createJivsServicesForTesting());
 }
 function TestValidatorBuilder(testItem: IBuilderConfigHost<any>,
     expectedValConfig: ValidatorConfig) {

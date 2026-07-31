@@ -3,11 +3,11 @@
  */
 
 import type {
-    IValidationServices
-} from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+    IJivsServices
+} from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import type {
-    ValidationServices
-} from '@plblum/jivs-engine/build/Services/ValidationServices';
+    JivsServices
+} from '@plblum/jivs-engine/build/Services/JivsServices';
 
 import {
     ModuleServicesInstaller
@@ -22,27 +22,27 @@ import type {
 } from '../Interfaces/BuildersFactory';
 
 
-// TypeScript's type augmentation is used to extend the ValidationServices interface and concrete class with the buildersFactory property.
-declare module '@plblum/jivs-engine/build/Interfaces/ValidationServices' {
-    interface IValidationServices {
+// TypeScript's type augmentation is used to extend the JivsServices interface and concrete class with the buildersFactory property.
+declare module '@plblum/jivs-engine/build/Interfaces/JivsServices' {
+    interface IJivsServices {
         buildersFactory: IBuildersFactory;
     }
 }
 /**
- * Extends the ValidationServices instance type.
+ * Extends the JivsServices instance type.
  *
  * This declaration adds no runtime property. BuildersServicesInstaller
- * installs the actual getter and setter on ValidationServices.prototype.
+ * installs the actual getter and setter on JivsServices.prototype.
  */
-declare module '@plblum/jivs-engine/build/Services/ValidationServices' {
-    interface ValidationServices {
+declare module '@plblum/jivs-engine/build/Services/JivsServices' {
+    interface JivsServices {
         buildersFactory: IBuildersFactory;
     }
 }
 
 
 /**
- * Adds the buildersFactory service property on ValidationServices
+ * Adds the buildersFactory service property on JivsServices
  * upon construction of the singleton buildersFactoryInstaller.
  */
 export class BuildersFactoryInstaller
@@ -53,7 +53,7 @@ export class BuildersFactoryInstaller
     }
 
     protected override createDefaultService(
-        services: IValidationServices
+        services: IJivsServices
     ): IBuildersFactory {
         return new BuildersFactory();
     }
@@ -62,6 +62,6 @@ export class BuildersFactoryInstaller
 
 /**
  * Singleton whose construction installs buildersFactory on
- * ValidationServices.prototype.
+ * JivsServices.prototype.
  */
 export const buildersFactoryInstaller =  new BuildersFactoryInstaller();    // eslint-disable-line @typescript-eslint/naming-convention

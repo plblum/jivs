@@ -5,7 +5,7 @@
 
 import { toIServicesAccessor } from '../Interfaces/Services';
 import { IDataTypeService } from '../Interfaces/DataTypes';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { toIDisposable } from '../Interfaces/General_Purpose';
@@ -38,7 +38,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      * Changes the services on all implementations of IServicesAccessor
      * @param services 
      */
-    protected updateServices(services: IValidationServices): void
+    protected updateServices(services: IJivsServices): void
     {
         this.getAll().forEach((registered) => {
             const sa = toIServicesAccessor(registered);

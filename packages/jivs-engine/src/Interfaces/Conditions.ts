@@ -22,7 +22,7 @@
  */
 
 import { IValueHost } from './ValueHost';
-import { IValidationServices } from './ValidationServices';
+import { IJivsServices } from './JivsServices';
 import { IFieldValueHost } from './FieldValueHost';
 import { IValidationManager } from './ValidationManager';
 
@@ -267,7 +267,7 @@ export interface IEvaluateConditionDuringEdits extends ICondition
      * @param services - just in case, your logic needs more info. However, if the data you need
      * is constant, add a property to your condition's ConditionConfig to supply it.
      */
-    evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult;
+    evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult;
 }
 
 /**

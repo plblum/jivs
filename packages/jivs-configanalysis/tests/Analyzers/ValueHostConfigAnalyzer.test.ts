@@ -1,4 +1,4 @@
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
@@ -42,7 +42,7 @@ class MockValidatorConfigAnalyzer implements IValidatorConfigAnalyzer {
     public ranCount: number = 0;
     
 }
-function setupHelperForTheseTests(services: IValidationServices): AnalysisResultsHelper<IValidationServices>
+function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelper<IJivsServices>
 {
     let helper = setupHelper(services);
     helper.analysisArgs.validatorConfigAnalyzer = new MockValidatorConfigAnalyzer();
@@ -53,7 +53,7 @@ function ranCountOfPropertyAnalyzers(propertyAnalyzers: Array<IValueHostConfigPr
     propertyAnalyzers.forEach(pa => ranCount += (pa as MockValueHostConfigPropertyAnalyzer).ranCount);
     return ranCount;
 }   
-function ranCountOfMockValidatorConfigAnalyzer(helper: AnalysisResultsHelper<IValidationServices>): number {
+function ranCountOfMockValidatorConfigAnalyzer(helper: AnalysisResultsHelper<IJivsServices>): number {
     return (helper.analysisArgs.validatorConfigAnalyzer as MockValidatorConfigAnalyzer).ranCount;
 } 
 describe('ValueHostConfigAnalyzer', () => {

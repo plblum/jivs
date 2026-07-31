@@ -5,7 +5,7 @@ import {
 } from '../../src/DataTypes/DataTypeParserBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { MockJivsServices } from '../TestSupport/mocks';
 import {
     BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser, NumberParser,
     Percentage100Parser, PercentageParser, ShortDatePatternParser
@@ -119,8 +119,8 @@ describe('DataTypeParserBase', () => {
         let x: any;
         expect(() => x = testItem.services).toThrow(/Register/);
     });
-    test('Services to return same ValidationService as assigned', () => {
-        let services = new MockValidationServices(false, false);
+    test('Services to return same JivsServices as assigned', () => {
+        let services = new MockJivsServices(false, false);
         let testItem = new TestDataTypeParserBase('lookupKey', {});
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
@@ -128,7 +128,7 @@ describe('DataTypeParserBase', () => {
     });
 
     test('dispose then get services throws TypeError', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new TestDataTypeParserBase('lookupKey', {});
         testItem.services = services;
         testItem.dispose();

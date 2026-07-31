@@ -10,7 +10,7 @@
  */
 
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { StringConditionBaseConfig, StringConditionBase } from './StringConditionBase';
 
@@ -34,7 +34,7 @@ export interface RegExpConditionBaseConfig extends StringConditionBaseConfig {
 export abstract class RegExpConditionBase<TConfig extends RegExpConditionBaseConfig>
     extends StringConditionBase<TConfig>
 {
-    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, services: IJivsServices): ConditionEvaluateResult {
 
         return this.getRegExp(services).test(text) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
@@ -42,7 +42,7 @@ export abstract class RegExpConditionBase<TConfig extends RegExpConditionBaseCon
      * Return a RegExp for EvaluateString to use.
      * @param services 
      */
-    protected abstract getRegExp(services: IValidationServices): RegExp;
+    protected abstract getRegExp(services: IJivsServices): RegExp;
 
     /**
      * Most of time, this represents a pattern that defines a data type, like USPhoneNumber and EmailAddress.

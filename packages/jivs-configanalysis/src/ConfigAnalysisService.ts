@@ -6,7 +6,7 @@
 import { ManagerConfigBuilderBase } from '@plblum/jivs-builder/build/Builder/ManagerConfigBuilderBase';
 import type { ValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
 import type { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import type { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer,
@@ -29,7 +29,7 @@ import { CAIssueSeverity } from './Types/ConfigAnalysisResults';
 
 /**
  * ConfigAnalysisService supplies the ConfigAnalysis object.
- * It is expected to be registered within IValidationServices using 
+ * It is expected to be registered within IJivsServices using 
  * ```ts
  * installConfigAnalysisService(services);
  * // effectively does this:
@@ -45,8 +45,8 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
     protected readonly valueHostAnalyzers: IValueHostConfigPropertyAnalyzer[] = [];
     protected readonly validatorAnalyzers: IValidatorConfigPropertyAnalyzer[] = [];
     protected readonly conditionAnalyzers: IConditionConfigPropertyAnalyzer[] = [];
-    protected readonly services: IValidationServices;
-    protected constructor(services: IValidationServices) {
+    protected readonly services: IJivsServices;
+    protected constructor(services: IJivsServices) {
         this.services = services;
     }
 
@@ -180,7 +180,7 @@ export abstract class ConfigAnalysisServiceBase implements IConfigAnalysisServic
  * the standard analyzers for ValueHost, Validator, and Condition configurations.
  */
 export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     public override registerDefaultValueHostPropertyAnalyzers(): void {
@@ -210,7 +210,7 @@ export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
 }
 
 /**
- * Add this to createValidationServices method like this:
+ * Add this to createJivsServices method like this:
  * ```ts
  *  installConfigAnalysisService(services);
  * ```
@@ -219,7 +219,7 @@ export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
  * @returns The installed ConfigAnalysisService.
  */
 export function installConfigAnalysisService(
-    services: IValidationServices,
+    services: IJivsServices,
     service?: IConfigAnalysisService
 ): IConfigAnalysisService {
     const existingService = services.getService(CONFIG_ANALYSIS_SERVICE_NAME) as IConfigAnalysisService | null;
@@ -232,12 +232,12 @@ export function installConfigAnalysisService(
 }
 
 /**
- * Retrieves the installed ConfigAnalysisService from the given ValidationServices object.
+ * Retrieves the installed ConfigAnalysisService from the given JivsServices object.
  * @param services The validation services instance.
  * @returns The installed ConfigAnalysisService.
  * @throws CodingError if the ConfigAnalysisService is not installed.
  */
-export function getConfigAnalysisService(services: IValidationServices): IConfigAnalysisService {
+export function getConfigAnalysisService(services: IJivsServices): IConfigAnalysisService {
     const service = services.getService(CONFIG_ANALYSIS_SERVICE_NAME) as IConfigAnalysisService | null;
     if (!service) {
         throw new CodingError('ConfigAnalysisService is not installed.');

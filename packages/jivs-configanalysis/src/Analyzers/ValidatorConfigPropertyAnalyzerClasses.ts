@@ -4,7 +4,7 @@
  */
 
 
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConfigPropertyAnalyzerBase } from './ConfigPropertyAnalyzerBase';
@@ -38,7 +38,7 @@ export abstract class ValidatorConfigPropertyAnalyzerBase extends
  */
 export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
-        helper: IAnalysisResultsHelper<IValidationServices>): void {
+        helper: IAnalysisResultsHelper<IJivsServices>): void {
         this.checkMessagePropertiesForTokens(config, results, valueHostConfig, helper);
         this.reviewErrorMessageLocalizations(config, results, helper);
     }
@@ -56,7 +56,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
      */
     protected checkMessagePropertiesForTokens(config: ValidatorConfig,
         vhcResults: ValidatorConfigCAResult, vhc: ValueHostConfig,
-        helper: IAnalysisResultsHelper<IValidationServices>): void {
+        helper: IAnalysisResultsHelper<IJivsServices>): void {
 
         const propResults = vhcResults.properties;
         helper.checkMessageTokens(config.errorMessage, config, vhc, 'errorMessage', propResults);
@@ -87,7 +87,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
      */
     protected reviewErrorMessageLocalizations(config: ValidatorConfig,
         vhcResults: ValidatorConfigCAResult,
-        helper: IAnalysisResultsHelper<IValidationServices>): void {
+        helper: IAnalysisResultsHelper<IJivsServices>): void {
         function checkForOneProperty(propertyName: string, l10nValue: string | null | undefined,
             fallbackValue: any
         ): void
@@ -120,7 +120,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
  */
 export class ConditionCreatorConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
-        helper: IAnalysisResultsHelper<IValidationServices>): void {
+        helper: IAnalysisResultsHelper<IJivsServices>): void {
         const propResult: PropertyCAResult = {
             feature: CAFeature.property,
             propertyName: 'conditionCreator',

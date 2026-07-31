@@ -51,7 +51,7 @@ The scope of this abstraction is:
 * configuration only
 * no validation workflow behavior
 * no factory-based creation
-* callers create an instance directly and pass in `ValidationServices`
+* callers create an instance directly and pass in `JivsServices`
 
 Example direction:
 
@@ -226,7 +226,7 @@ can focus on the changes needed to achieve the correct user experience.
 ```ts
 abstract class RulesBase implements IRules {
   protected constructor(
-    protected readonly services: ValidationServices,
+    protected readonly services: JivsServices,
   );
 
   public configure(
@@ -265,7 +265,7 @@ abstract class FormRulesBase extends RulesBase {}
 
 #### `constructor(services)`
 
-Stores the `ValidationServices` instance used by the rules object.
+Stores the `JivsServices` instance used by the rules object.
 
 Subclasses call this through `super(services)`.
 
@@ -351,7 +351,7 @@ The high-level behavior is:
    1. Create the builder.
    2. Run `configureRules()`.
    3. If the instance has `adaptToForm()`, call `builder.startUILayerConfig()`. Then call `adaptToForm()`.
-   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, 
+   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `JivsServices` and, 
       if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
    5. Finalize the builder into config.
    6. Store config in cache if enabled.
@@ -415,7 +415,7 @@ Only the method name is checked at runtime.
 ```ts
 class PersonModelRules extends ModelRulesBase {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   protected override configureRules(
@@ -437,7 +437,7 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   public adaptToForm(
@@ -454,7 +454,7 @@ This class inherits base model rules and adds UI-layer modifications.
 ```ts
 class LoginFormRules extends FormRulesBase {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   protected override configureRules(
@@ -504,7 +504,7 @@ as part of the Rules configuration like this:
 
 `ICachingService` is a general Jivs infrastructure service, not a model-rules-specific one.
 
-It should be exposed on `ValidationServices`.
+It should be exposed on `JivsServices`.
 
 ```ts
 interface ICachingService {
@@ -521,12 +521,12 @@ interface ICachingService {
 }
 ```
 
-### 10.2 ValidationServices
+### 10.2 JivsServices
 
-`ValidationServices` should expose caching directly.
+`JivsServices` should expose caching directly.
 
 ```ts
-class ValidationServices {
+class JivsServices {
   public cachingService: ICachingService;
 }
 ```
@@ -605,13 +605,13 @@ This is sufficient for the intended pattern.
 
 ## 12. Config Analysis Integration
 
-Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in validationServices via setService().
+Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in services via setService().
 
-When the user installs and registers the config-analysis module into `ValidationServices`, `RulesBase.configure()` may invoke it before building the final config.
+When the user installs and registers the config-analysis module into `JivsServices`, `RulesBase.configure()` may invoke it before building the final config.
 
 ### 12.1 Service lookup
 
-`jivs-engine` should define a constant service name used to retrieve the config-analysis service from `ValidationServices`.
+`jivs-engine` should define a constant service name used to retrieve the config-analysis service from `JivsServices`.
 
 That same constant should be used by the config-analysis module when registering its service.
 
@@ -658,10 +658,10 @@ It does not know the options type.
 
 It only:
 
-* retrieves the registered service by name through ValidationServices.getService()
+* retrieves the registered service by name through JivsServices.getService()
 * checks whether `analyze` exists as a function
 * calls `analyze(builder, params.options.configAnalysisOptions)`
-* Provides the validationServices object to allow analyze to access many other services,
+* Provides the services object to allow analyze to access many other services,
 including the loggerService through which it may generate a report.
 
 ### 12.4 What the config-analysis module owns
@@ -676,7 +676,7 @@ The config-analysis module owns:
 
 ### 12.5 Why this approach was chosen
 
-This keeps `jivs-engine` decoupled from the config-analysis module while still allowing optional integration through `ValidationServices`.
+This keeps `jivs-engine` decoupled from the config-analysis module while still allowing optional integration through `JivsServices`.
 
 It also lets the config-analysis module remain independently customizable.
 

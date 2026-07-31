@@ -149,9 +149,9 @@
  *          }
  *     }
  *     ```
- * 3. Register your custom builders with the BuildersFactory which is in ValidationServices.
+ * 3. Register your custom builders with the BuildersFactory which is in JivsServices.
  *      ```ts
- *      // within the createValidationServices function, this code already exists, 
+ *      // within the createJivsServices function, this code already exists, 
  *      // only needing removing comments:
  *      // --- BuildersFactory -------------------------------------------
  *      let ff = new BuildersFactory();
@@ -169,7 +169,7 @@
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
  * allows replacing the ValidatorBuilder and ConditionBuilder classes with your own.
- * Just register them within the BuilderFactory in ValidationServices.
+ * Just register them within the BuilderFactory in JivsServices.
  * @module jivs-builder/Builders/ConcreteClasses
  */
 

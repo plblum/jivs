@@ -8,7 +8,7 @@ The `ValidationManager` requires a configuration that reflects all of those, whi
 
 ```ts
 let vmConfig = <ValidationManagerConfig>{
-  services: createValidationServices('en-US'),
+  services: createJivsServices('en-US'),
   valueHostConfigs: [
     {
         valueHostType: ValueHostType.Field,
@@ -73,7 +73,7 @@ class PersonModelRules extends ModelRulesBase {
 Then do this to create the ValidationManager.
 
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); // documented below
 const config = rules.configure();
 // attach any callback hooks to config at this point
@@ -125,7 +125,7 @@ Expect to use model-specific rules classes when writing server-side code for nod
 but not in the UI. Here's what the code for the server side looks like.
 
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); 
 const config = rules.configure();
 const vm = new ValidationManager(config);   // 'vm' will be used to handle validation
@@ -211,7 +211,7 @@ class PersonEditFormRules
 ```
 ### Using PersonEditFormRules class to create the ValidationManager
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 
@@ -258,7 +258,7 @@ class DateRangeFormRules extends FormRulesBase {
 
     private differenceBetweenDates(
         callingValueHost: ICalcValueHost,
-        findValueHosts: IValueHostsManager): SimpleValueType {
+        findValueHosts: IValidationManager): SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
         let totalDays2 = callingValueHost.convert(
@@ -273,7 +273,7 @@ class DateRangeFormRules extends FormRulesBase {
 
 ### Using DateRangeFormRules to create the ValidationManager
 ```ts
-const services = createValidationServices('en-US'); // see "Installing Jivs"
+const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new DateRangeFormRules(services);
 const config = rules.configure();
 
@@ -287,7 +287,7 @@ const vm = new ValidationManager(config);   // 'vm' will be used to handle valid
 Use the `ValidationManagerConfigBuilder class` to create the `ValidationManagerConfig object tree` using a fluent syntax. Create the `ValueHosts` for fields, calculations, and static values along with  validators on fields.
 ```ts
 class ValidationManagerConfigBuilder {
-    constructor (services: IValidationServices) {} // there are other constructors too
+    constructor (services: IJivsServices) {} // there are other constructors too
     complete(): ValidationManagerConfig;
 
     // some of the functions to configure ValueHosts
@@ -308,7 +308,7 @@ class ValidationManagerConfigBuilder {
     onTextValueChanged?: null | TextValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
     onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
-    onConfigChanged?: null: ValueHostsManagerConfigChangedHandler;
+    onConfigChanged?: null: ValidationManagerConfigChangedHandler;
     notifyValidationStateChangedDelay?: number;
     
     // preserve stateful data during a round trip to the server
@@ -344,7 +344,7 @@ class ValidationManagerConfigBuilder {
 - `onValueChanged` notifies you when a `ValueHost` had its value changed. On a FieldValueHost, this is the native value, not the text value.
 - `onTextValueChanged` notifies you when an `FieldValueHost` had its text value changed.
 - `onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
-- `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValueHostsManager.
+- `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValidationManager.
 ### State
 - `savedInstanceState` and `savedValueHostInstanceStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 
@@ -501,7 +501,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
         adapter.modify('Field1').whenToEnable(
             (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
     + `refineDataType()` - Updates the data type. The new data type must be able to fallback to 
-        the original data type as specified in the `LookupFallbackService` of `ValidationServices`.
+        the original data type as specified in the `LookupFallbackService` of `JivsServices`.
         ```ts
         // from the business rules
         builder.field('Field1', LookupKey.String);  // original

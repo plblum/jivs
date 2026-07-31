@@ -17,7 +17,7 @@ export interface IDataTypeIdentifierService extends IDataTypeService<IDataTypeId
      * string and Date object.
      * 
      * You can add your own data types by implementing IDataTypeIdentifier
-     * and registered you class with the {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices#dataTypeIdentifierService}.
+     * and registered you class with the {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices#dataTypeIdentifierService | JivsServices#dataTypeIdentifierService}.
      * @param value 
      * @returns the Data Type Lookup Key if found or null if no match.
      */

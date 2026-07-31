@@ -4,14 +4,14 @@ import {
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import type { IJivsServices } from "../../src/Interfaces/JivsServices";
+import { MockJivsServices, MockValidationManager } from "../TestSupport/mocks";
 import { IValidationManager, ValidationManagerConfig, ValidationManagerInstanceState } from "../../src/Interfaces/ValidationManager";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
@@ -37,7 +37,7 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
     constructor(validationManager : IValidationManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
         super(validationManager, config, state);
     }
-    public get exposeServices(): IValidationServices {
+    public get exposeServices(): IJivsServices {
         return this.services;
     }
 
@@ -101,13 +101,13 @@ const testValueHostType = 'PublicifyValueHostBase';
  * and the state.
  */
 function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): {
-    services: MockValidationServices,
+    services: MockJivsServices,
     validationManager: MockValidationManager,
     config: ValueHostConfig,
     state: ValueHostInstanceState,
     valueHost: PublicifiedValueHostBase
 } {
-    let services = new MockValidationServices(false, false);
+    let services = new MockJivsServices(false, false);
     let factory = new ValueHostFactory();
     factory.register(new PublicifiedValueHostBaseGenerator());
     services.valueHostFactory = factory;
@@ -143,7 +143,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
-        let services = new MockValidationServices(true, true);
+        let services = new MockJivsServices(true, true);
         let vm = new MockValidationManager(services);
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
@@ -207,7 +207,7 @@ describe('constructor and resulting property values', () => {
     });    
     test('constructor with null in each parameter throws', () => {
 
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let vm = new MockValidationManager(services);        
         let config: ValueHostConfig = {
             name: 'Field1',
@@ -647,7 +647,7 @@ describe('getDataTypeLabel', () => {
     // resolve a number to "Number". 
     function testGetDataTypeLabel(hasDataType: boolean, hasValue: boolean, hasLocalization: boolean, expectedDataTypeLabel: string): void
     {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let factory = new ValueHostFactory();
         factory.register(new PublicifiedValueHostBaseGenerator());
         services.valueHostFactory = factory;
@@ -746,7 +746,7 @@ describe('isEnabled and related enabled', () => {
         vh: PublicifiedValueHostBase,
         logger: CapturingLogger
     } {
-        let services = new MockValidationServices(true, false);
+        let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
         let vm = new MockValidationManager(services);
         if (stateChangeCallback)
@@ -782,7 +782,7 @@ describe('isEnabled and related enabled', () => {
         logger: CapturingLogger,
         vm: ValidationManager<ValidationManagerInstanceState>
     } {
-        let services = new MockValidationServices(true, false);
+        let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
 
         let vmConfig = <ValidationManagerConfig>{ services: services, valueHostConfigs: [] };
@@ -1018,7 +1018,7 @@ describe('isEnabled and related enabled', () => {
 
 });
 describe('logging functions', () => {
-    function setupForLogging(): { valueHost: PublicifiedValueHostBase, services: MockValidationServices, logger: TestLogCallsLoggingService } {
+    function setupForLogging(): { valueHost: PublicifiedValueHostBase, services: MockJivsServices, logger: TestLogCallsLoggingService } {
         let originalSetup = setupValueHost();
         let services = originalSetup.services;
         let logger = new TestLogCallsLoggingService(LoggingLevel.Debug);

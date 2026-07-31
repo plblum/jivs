@@ -34,7 +34,7 @@ export class Services implements IServices, IDisposable {
     /**
      * Adds or replaces a service.
      * If the supplied service implements IServicesAccessor, its own
-     * services property is assigned to this ValidationServices instance.
+     * services property is assigned to this JivsServices instance.
      * @param serviceName - name that identifies this service and
      * will be used in getService().
      * @param service - the service. It can be a class, object, or primitive.

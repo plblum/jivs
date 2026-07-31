@@ -6,7 +6,7 @@ import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHo
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { LogDetails, LogOptions, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 
@@ -15,9 +15,9 @@ import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
 import { ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
 import { CAIssueSeverity } from '../src/Types/ConfigAnalysisResults';
-import { createValidationServices } from './Config_example_common_code';
+import { createJivsServices } from './Config_example_common_code';
 
-new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 
 
 /**
@@ -28,7 +28,7 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on Validat
  *    See DateRangeFormRules below for that.
  * 2. Create the normal code to create the ValidationManager.
  * ```ts
- * let services = createValidationServices('en');
+ * let services = createJivsServices('en');
  * let rules = new DateRangeFormRules(services);
  * let config = rules.configure();
  * let validationManager = new ValidationManager(config, services);
@@ -56,7 +56,7 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on Validat
  * Here we use Jest and explorer.hasErrors() to confirm that there are no errors in the configuration.
  * ```ts
  * test('Configuration has no errors', () => {
- *   let services = createValidationServices('en');
+ *   let services = createJivsServices('en');
  *   let rules = new DateRangeFormRules(services);
  *   let config = rules.configure();
  *   let configAnalysisService = installConfigAnalysisService(services);
@@ -71,7 +71,7 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on Validat
  */
 export class DateRangeFormRules extends FormRulesBase
 {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
     protected configureRules(builder: IValidationManagerConfigBuilder,
@@ -109,7 +109,7 @@ export class DateRangeFormRules extends FormRulesBase
 export function example_throwOnErrors(): IValidationManager
 {
     // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -132,7 +132,7 @@ export function example_throwOnErrors_And_Write_To_Console(): IValidationManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -156,7 +156,7 @@ export function example_throwOnErrors_And_Write_To_Log(): IValidationManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -185,7 +185,7 @@ export function reportToConsole(): IValidationManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -234,7 +234,7 @@ export function reportToConsole(): IValidationManager
 export function example_hasErrors_report_to_log(): IValidationManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 

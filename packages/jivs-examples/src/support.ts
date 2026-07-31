@@ -1,4 +1,4 @@
-import { ValidationServices } from '@plblum/jivs-engine/build/Services/ValidationServices';
+import { JivsServices } from '@plblum/jivs-engine/build/Services/JivsServices';
 import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
 import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
@@ -15,10 +15,10 @@ import { DataTypeCheckCondition, DataTypeCheckConditionConfig } from '@plblum/ji
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 
-new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 
-export function createMinimalValidationServices(activeCultureId: string): ValidationServices {
-    let vs = new ValidationServices();
+export function createMinimalJivsServices(activeCultureId: string): JivsServices {
+    let vs = new JivsServices();
 
     // --- CultureServices ----------------------------
     vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture

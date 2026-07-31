@@ -4,7 +4,7 @@
 // - Formatter, converts number to localized text
 // - Parser, converts text to number
 
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserBase, DataTypeParserOptions } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
@@ -27,7 +27,7 @@ export const PhoneTypeLookupKey = 'PhoneType';
  * IDataTypeFormatter implementation starting from our base implementation, DataTypeFormatterBase.
  * It is designed to be created for each enum type. 
  * 
- * To use it, register an instance with the validationServices.dataTypeFormatterService.
+ * To use it, register an instance with the services.dataTypeFormatterService.
  * Each registration must have a lookup key for the enum type and the map of enum value to its string.
  */
 export class EnumByNumberFormatter extends DataTypeFormatterBase
@@ -242,14 +242,14 @@ export const PhoneTypeEnumValues: Array<EnumValueInfo> = [
 ];
 
 
-// Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerEnumDataTypes(validationServices: IValidationServices): void
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerEnumDataTypes(services: IJivsServices): void
 {
 
-    let dtfs = validationServices.dataTypeFormatterService as DataTypeFormatterService;
+    let dtfs = services.dataTypeFormatterService as DataTypeFormatterService;
     // or move just this line into registerDataTypeFormatter() function         
     dtfs.register(new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues)); 
-    let dtps = validationServices.dataTypeParserService as DataTypeParserService;
+    let dtps = services.dataTypeParserService as DataTypeParserService;
     // or move just this line into registerDataTypeParser() function         
     dtps.register(new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, { caseInsensitive: true }));     
 }

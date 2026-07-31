@@ -3,7 +3,7 @@
  */
 
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { ServiceName, IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName, IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig, IValidator } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
@@ -18,7 +18,7 @@ import { IConfigAnalysisResults, LookupKeyCAResult, ServiceWithLookupKeyCAResult
  * The implementation is supplied to the IConfigAnalyzer and IConfigPropertyAnalyzer
  * instances, as they will utilitize its methods.
  */
-export class AnalysisResultsHelper<TServices extends IValidationServices>
+export class AnalysisResultsHelper<TServices extends IJivsServices>
     implements IAnalysisResultsHelper<TServices> {
     constructor(args: AnalysisArgs<TServices>) {
         this._args = args;

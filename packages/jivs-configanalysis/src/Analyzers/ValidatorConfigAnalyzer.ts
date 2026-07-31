@@ -9,7 +9,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer } from '../Types/Analyzers';
 import { ValidatorConfigCAResult, CAFeature, PropertyCAResult, CAIssueSeverity } from '../Types/ConfigAnalysisResults';
 
@@ -23,7 +23,7 @@ export class ValidatorConfigAnalyzer
     extends ConfigAnalyzerBase<ValidatorConfig, ValidatorConfigCAResult>
     implements IValidatorConfigAnalyzer {
 
-    constructor(helper: AnalysisResultsHelper<IValidationServices>,
+    constructor(helper: AnalysisResultsHelper<IJivsServices>,
         validatorConfigPropertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer>
     ) {
         super(helper, validatorConfigPropertyAnalyzers);
