@@ -89,12 +89,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
                 self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${ resolution.errorDetails!.errorMessage }`);
                 return false;
             }
-//!!!OBSOLETE
-            if (resolution.errorMessage)
-            {
-                self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${resolution.errorMessage}`);
-                return false;
-            }
+
             self.logger.message(LoggingLevel.Debug, ()=> 'Formatter used. Switching to setValues()');
             self.setValues(value, resolution.value, options); 
             return true;
@@ -251,17 +246,11 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
             const nativeValue = resolution.value; // may be undefined which indicates a parser error
             if (resolution.errorDetails)
                 options.injectedError = resolution.errorDetails;
-            else if (resolution.errorMessage)   //!!!OBSOLETE
-                options.conversionErrorTokenValue = resolution.errorMessage;
+
             self.logger.log(LoggingLevel.Debug, (options) => {
                 if (resolution.errorDetails)
                     return {
                         message: `Parser reported error and assigned the native value to undefined: ${resolution.errorDetails!.errorMessage}`,
-                        data: resolution
-                    };
-                if (resolution.errorMessage)    // !!!OBSOLETE
-                    return {
-                        message: `Parser reported error and assigned the native value to undefined: ${resolution.errorMessage}`,
                         data: resolution
                     };
                 return {
