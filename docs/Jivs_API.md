@@ -1454,45 +1454,22 @@ interface SetValueOptions {
     validate?: boolean;
     duringEdit?: boolean;
     reset?: boolean;
-    conversionErrorTokenValue?: string;
     skipValueChangedCallback?: boolean;
     overrideDisabled?: boolean;
 }
-// FieldValueHosts extend the above
+// FieldValueHosts extend the above on setValue, setTextValue, setValueToUndefined, and setValues.
 export interface FieldValueHostSetValueOptions extends SetValueOptions
 {
+    injectedError?: InjectedError;
     disableParser?: boolean;
     disableFormatter?: boolean;
 }
 ```
 These properties are all related to validation:
-- validate - When true, invoke validation but only if the value changed.
-- reset - When true, change the state of the ValueHost to unchanged and validation has not been attempted. 
-- conversionErrorTokenValue - Provide an error message related to parsing from the Input Value into native value. This message can be shown when using DataTypeCheckCondition, by using the {ConversionError} token in its error message:
-    ```ts
-    let firstNameFld = document.getElementById('FirstName');
-    firstNameFld.attachEventListener('onchange', (evt)=> {
-        let textValue = evt.target.value;
-        let [nativeValue, errorMessage] = YourConvertToNativeCode(textValue);  
-        vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
-            validate: true, 
-            conversionErrorTokenValue: errorMessage 
-        });
-    });	
-    
-    // set up the DataTypeCheckCondition's error message (local to this form)
-    let original = vhm.services.textLocalizerService as TextLocalizerService;
-    let tls = new TextLocalizerService();
-        tls.fallbackService = original.textLocalizerService;
-        vhm.services.textLocalizerService = tls;
-    
-    tls.service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-            '*': 'Input error: {ConversionError}.' 
-        });
-        tls.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-            '*': '{Label} has this error: {ConversionError}.'
-        });    
-    ```
+- `validate` - When true, invoke validation but only if the value changed.
+- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. 
+- `injectedError` - When you handle parsing, your parser may report an error that you want to display.
+  Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
 
 #### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on ValueHostsManager.
@@ -1735,10 +1712,10 @@ interface SetValueOptions {
     overrideDisabled?: boolean;    
     skipValueChangedCallback?: boolean;
     duringEdit?: boolean;
-    conversionErrorTokenValue?: string;
 }
 export interface FieldValueHostSetValueOptions extends SetValueOptions
 {
+    injectedError? : InjectedError;
     disableParser?: boolean;
     disableFormatter?: boolean;
 }
@@ -1750,16 +1727,18 @@ These properties are all related to validation:
 - `overrideDisabled` - When true, it forces the change to the value even when the ValueHost is disabled.
 ValueHost is disabled when `isEnabled()` returns false.
 **Use case**: You may want to initialize a ValueHost with a value that is disabled. See [Disabling a ValueHost](#disabling-a-valuehost).
-- disableParser - When true, do not allow the parser to run on this ValueHost.
-- disableFormatter - When true, do not allow the parser to run on this ValueHost.
+- `injectedError` - When you handle parsing, your parser may report an error that you want to display.
+  Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
+- `disableParser` - When true, do not allow the parser to run on this ValueHost.
+- `disableFormatter` - When true, do not allow the parser to run on this ValueHost.
 - The other two are special cases covered elsewhere.
 
 ### Setting values on FieldValueHosts
-FieldValueHosts have two values: the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
+FieldValueHosts have two values: the raw value from the Input (called the "Text Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setTextValue()`.
 ```ts
-setValues(nativeValue: any, textValue: any, options?: SetValueOptions): void;
-setTextValue(value: any, options?: SetValueOptions): void;
+setValues(nativeValue: any, textValue: any, options?: FieldValueHostSetValueOptions): void;
+setTextValue(value: any, options?: FieldValueHostSetValueOptions): void;
 ```
 
 Use `setValues()` when initializing the value and as either value has changed. If you cannot determine one of the values, pass in undefined.
@@ -1795,6 +1774,65 @@ let textValue = lastNameVH.getTextValue();
 // or
 let  textValue = vhm.vh.any("LastName").getTextValue();
 ```
+### Injecting errors on demand
+When you handle parsing outside of Jivs, your parser may report an error. You need to supply the original
+text and that error message to Jivs. Upon receipt of an error like this, Jivs knows to add it to that ValueHost's list of validation errors.
+
+The `FieldValueHost` functions `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` can take in your error message like this:
+
+```ts
+vhm.getFieldValueHost('field1').setTextValue(
+    undefined, // indicates the native value was unresolved
+    text, // value prior to parsing
+    { injectedError: { errorMessage: 'message'}});  // error resulting from the parser
+```
+
+The `InjectedError` object is designed to support localization:
+```ts
+export interface InjectedError
+{
+    errorMessage: string;   // the only value that is required
+    errorMessagel10n?: string;  // a localization key
+    summaryMessage?: string;  
+    summaryMessagel10n?: string;
+    errorCode?: string;     // helps setup discrete localized error messages by using different error codes
+}    
+```
+### Example
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchange', (evt)=> {
+    let textValue = evt.target.value;
+    let [nativeValue, parserError] = YourConvertToNativeCode(textValue);  
+    let injectedError: InjectedError | undefined = undefined;
+    if (parserError)
+        injectedError = { 
+            errorMessage : parserError,
+            errorCode: 'MyParserErrorCode'  // see below
+        }
+    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
+        validate: true, 
+        injectedError: injectedError
+    });
+});	
+```
+### Localizing your injected error
+Setup all localization in the `createJivsService()` function, with code associated
+with TextLocalizerService. See [Localization](#localization) for more.
+
+In this case, you must provide InjectedError.errorCode so you can correlate your localized text to it. 
+In the prior example, we have used injectedError: { errorCode: 'MyParserErrorCode '}. Here is the localization.
+
+```ts
+let tls = vhm.services.textLocalizerService;    
+tls.registerErrorMessage('MyParserErrorCode', null, {
+        '*': 'Invalid input' 
+    });
+tls.registerSummaryMessage('MyParserErrorCode', null, {
+    '*': '{Label} has this invalid input.'
+});    
+```
+
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 

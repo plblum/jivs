@@ -612,45 +612,7 @@ describe('class DataTypeCheckCondition', () => {
         expect(logger.findMessage('Invalid ValueHost used', LoggingLevel.Error)).toBeTruthy();
 
     });        
-    test('getValuesForTokens where ConversionErrorTokenValue is setup shows that token', () => {
-        let setup = setupWithValueHost();
 
-        let config: DataTypeCheckConditionConfig = {
-            conditionType: ConditionType.DataTypeCheck,
-            valueHostName: 'Property1',
-        };
-        setup.vh.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
-        let testItem = new DataTypeCheckCondition(config);
-
-        let list = testItem.getValuesForTokens(setup.vh, setup.vhm);
-        expect(list).not.toBeNull();
-        expect(list).toEqual([
-            {
-                tokenLabel: 'ConversionError',
-                associatedValue: 'ERROR',
-                purpose: 'message'
-            }
-        ]);
-    });
-    test('getValuesForTokens where ConversionErrorTokenValue is null', () => {
-        let setup = setupWithValueHost();
-
-        let config: DataTypeCheckConditionConfig = {
-            conditionType: ConditionType.DataTypeCheck,
-            valueHostName: 'Property1',
-        };
-        let testItem = new DataTypeCheckCondition(config);
-
-        let list = testItem.getValuesForTokens(setup.vh, setup.vhm);
-        expect(list).not.toBeNull();
-        expect(list).toEqual([
-            {
-                tokenLabel: 'ConversionError',
-                associatedValue: null,
-                purpose: 'message'
-            }
-        ]);
-    });    
     test('category is DataTypeCheck', () => {
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,

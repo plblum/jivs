@@ -8,7 +8,7 @@ import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../..
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
-import { IValidator } from "../../src/Interfaces/Validator";
+import { InjectedError, IValidator } from "../../src/Interfaces/Validator";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
@@ -2271,7 +2271,7 @@ describe('toIValidatableValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
    
-        getConversionErrorMessage(): string | null {
+        getInjectedError(): InjectedError | null {
             throw new Error("Method not implemented.");
         }
         required: boolean = false;

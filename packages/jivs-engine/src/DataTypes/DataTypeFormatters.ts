@@ -129,8 +129,8 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
     /**
      * Utility function to return an error in a DataTypeResolution.
      * It will use the errorCode property to provide a default errorCode if one is not supplied.
-     * Error messages will have a generated localization key based on the LookupKey of the parser:
-     * {errorCode}_{LookupKey}_l10n
+     * Unlike parsers, formatters are not expecting their errors to be viewed by the user,
+     * so they do not need to provide a l10n key for the error message. The errorCode is sufficient.
      * @param message - Error message to return in the DataTypeResolution.
      * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
      * @returns 
@@ -145,7 +145,6 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
         return {
             errorDetails: {
                 errorMessage: message,
-                errorMessagel10n: `${errorCode}_${lookupKey}_l10n`,
                 errorCode: errorCode
             }
         };

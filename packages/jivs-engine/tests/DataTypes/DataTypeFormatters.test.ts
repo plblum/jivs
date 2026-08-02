@@ -109,7 +109,6 @@ describe('StringFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a string or primitive',
-            errorMessagel10n: `${ DataTypeFormatterBase.IncompatibleDataTypeErrorCode}_${LookupKey.String}_l10n`,
             errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
         });
     });
@@ -192,7 +191,6 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a string or primitive',
-            errorMessagel10n: `${ DataTypeFormatterBase.IncompatibleDataTypeErrorCode }_${ LookupKey.Capitalize }_l10n`,
             errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
         });
     });
@@ -281,7 +279,6 @@ describe('UppercaseStringFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a string or primitive',
-            errorMessagel10n: `${ DataTypeFormatterBase.IncompatibleDataTypeErrorCode }_${ LookupKey.Uppercase }_l10n`,
             errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode,
         });
     });
@@ -369,7 +366,6 @@ describe('LowercaseStringFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a string or primitive',
-            errorMessagel10n: `${ DataTypeFormatterBase.IncompatibleDataTypeErrorCode }_${ LookupKey.Lowercase }_l10n`,
             errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
         });
     });
@@ -463,7 +459,6 @@ describe('NumberFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Number }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -471,7 +466,6 @@ describe('NumberFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Number }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -621,7 +615,6 @@ describe('CurrencyFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Currency }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -629,7 +622,6 @@ describe('CurrencyFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Currency }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -722,7 +714,6 @@ describe('IntegerFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Integer }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -730,7 +721,6 @@ describe('IntegerFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Integer }_l10n`,
             errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
@@ -822,16 +812,14 @@ describe('PercentageFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorCode: NumberFormatterBase.NotANumberErrorCode,
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Percentage }_l10n`
+            errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
         dts = testItem.format({}, LookupKey.Percentage, 'en');
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorCode: NumberFormatterBase.NotANumberErrorCode,
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Percentage }_l10n`
+            errorCode: NumberFormatterBase.NotANumberErrorCode
         });
         
     });
@@ -930,16 +918,14 @@ describe('Percentage100Formatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorCode: NumberFormatterBase.NotANumberErrorCode,
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Percentage100 }_l10n`
+            errorCode: NumberFormatterBase.NotANumberErrorCode
         });
 
         dts = testItem.format({}, LookupKey.Percentage100, 'en');
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a number',
-            errorCode: NumberFormatterBase.NotANumberErrorCode,
-            errorMessagel10n: `${ NumberFormatterBase.NotANumberErrorCode }_${ LookupKey.Percentage100 }_l10n`
+            errorCode: NumberFormatterBase.NotANumberErrorCode
         });
     });
 });
@@ -1077,7 +1063,6 @@ describe('BooleanFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a boolean',
-            errorMessagel10n: `${BooleanFormatterBase.NotABooleanErrorCode}_${LookupKey.Boolean}_l10n`,
             errorCode: BooleanFormatterBase.NotABooleanErrorCode
         });
         
@@ -1085,7 +1070,6 @@ describe('BooleanFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a boolean',
-            errorMessagel10n: `${ BooleanFormatterBase.NotABooleanErrorCode }_${ LookupKey.Boolean }_l10n`,
             errorCode: BooleanFormatterBase.NotABooleanErrorCode
         });
         
@@ -1208,7 +1192,6 @@ describe('DateTimeFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.DateTime}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
@@ -1217,8 +1200,7 @@ describe('DateTimeFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.DateTime}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format(10, LookupKey.DateTime, 'en');
@@ -1226,8 +1208,7 @@ describe('DateTimeFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.DateTime}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
         dts = testItem.format(true, LookupKey.DateTime, 'en');
@@ -1235,8 +1216,7 @@ describe('DateTimeFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.DateTime}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
     });
@@ -1327,7 +1307,6 @@ describe('DateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.Date}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         dts = testItem.format('', LookupKey.Date, 'en');
@@ -1335,7 +1314,6 @@ describe('DateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.Date}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
@@ -1344,7 +1322,6 @@ describe('DateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.Date}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
@@ -1353,7 +1330,6 @@ describe('DateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.Date}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
@@ -1445,8 +1421,7 @@ describe('AbbrevDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format('', LookupKey.AbbrevDate, 'en');
@@ -1454,8 +1429,7 @@ describe('AbbrevDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format(10, LookupKey.AbbrevDate, 'en');
@@ -1463,8 +1437,7 @@ describe('AbbrevDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
         dts = testItem.format(true, LookupKey.AbbrevDate, 'en');
@@ -1472,8 +1445,7 @@ describe('AbbrevDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
     });
@@ -1565,8 +1537,7 @@ describe('AbbrevDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDOWDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format('', LookupKey.AbbrevDOWDate, 'en');
@@ -1574,8 +1545,7 @@ describe('AbbrevDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDOWDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format(10, LookupKey.AbbrevDOWDate, 'en');
@@ -1583,8 +1553,7 @@ describe('AbbrevDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDOWDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
         dts = testItem.format(true, LookupKey.AbbrevDOWDate, 'en');
@@ -1592,8 +1561,7 @@ describe('AbbrevDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.AbbrevDOWDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
     });    
@@ -1683,8 +1651,7 @@ describe('LongDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format('', LookupKey.LongDate, 'en');
@@ -1692,8 +1659,7 @@ describe('LongDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
         dts = testItem.format(10, LookupKey.LongDate, 'en');
@@ -1701,8 +1667,7 @@ describe('LongDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
         dts = testItem.format(true, LookupKey.LongDate, 'en');
@@ -1710,8 +1675,7 @@ describe('LongDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorCode: DateTimeFormatterBase.NotADateErrorCode,
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDate}_l10n`
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
     });
@@ -1803,7 +1767,6 @@ describe('LongDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDOWDate}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
@@ -1812,7 +1775,6 @@ describe('LongDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDOWDate}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
         
@@ -1821,7 +1783,6 @@ describe('LongDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDOWDate}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
             
@@ -1830,7 +1791,6 @@ describe('LongDOWDateFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a date',
-            errorMessagel10n: `${DateTimeFormatterBase.NotADateErrorCode}_${LookupKey.LongDOWDate}_l10n`,
             errorCode: DateTimeFormatterBase.NotADateErrorCode
         });
                 
@@ -1909,7 +1869,6 @@ describe('TimeofDayFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorMessagel10n: `${ TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDay}_l10n`,
             errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
         
@@ -1918,8 +1877,7 @@ describe('TimeofDayFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorCode: TimeofDayFormatter.NotATimeErrorCode,
-            errorMessagel10n: `${ TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDay}_l10n`
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
         
         dts = testItem.format(10, LookupKey.TimeOfDay, 'en');
@@ -1927,8 +1885,7 @@ describe('TimeofDayFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorCode: TimeofDayFormatter.NotATimeErrorCode,
-            errorMessagel10n: `${ TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDay}_l10n`
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
             
         dts = testItem.format(true, LookupKey.TimeOfDay, 'en');
@@ -1936,8 +1893,7 @@ describe('TimeofDayFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorCode: TimeofDayFormatter.NotATimeErrorCode,
-            errorMessagel10n: `${ TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDay}_l10n`
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
                 
     });    
@@ -1996,7 +1952,6 @@ describe('TimeofDayHMSFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorMessagel10n: `${TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDayHMS}_l10n`,
             errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
         
@@ -2005,7 +1960,6 @@ describe('TimeofDayHMSFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorMessagel10n: `${TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDayHMS}_l10n`,
             errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
         
@@ -2014,7 +1968,6 @@ describe('TimeofDayHMSFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorMessagel10n: `${TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDayHMS}_l10n`,
             errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
             
@@ -2023,7 +1976,6 @@ describe('TimeofDayHMSFormatter', () => {
         expect(dts.value).toBeUndefined();
         expect(dts.errorDetails).toEqual({
             errorMessage: 'Not a time',
-            errorMessagel10n: `${TimeofDayFormatter.NotATimeErrorCode}_${LookupKey.TimeOfDayHMS}_l10n`,
             errorCode: TimeofDayFormatter.NotATimeErrorCode
         });
                 

@@ -29,9 +29,7 @@ import { DataTypeResolution } from './DataTypes';
  * A parser is intended to be forgiving of minor flaws in the string, allowing the user
  * flexibility in input. That in itself is the main reason for a different with DataTypeConverter.
  * Additionally, any errors realized by the parser are not thrown, but instead
- * provided back to the caller to be used inside of the validator's error message
- * when the {ConversionError} token is supplied. Jivs puts the parser's error
- * into the state of FieldValueHost as "conversionErrorTokenValue" so its available to {ConversionError}.
+ * provided back to the caller to be used as an additional validation error message.
  * 
  * While similar to IDataTypeConverter, this is used in a specialized way and is more like
  * the inverse of IDataTypeFormatter, which takes a native value into a string.

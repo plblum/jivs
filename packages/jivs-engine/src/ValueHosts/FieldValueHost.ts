@@ -86,7 +86,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         {
             if (resolution.errorDetails)
             {
-                self.logger.message(LoggingLevel.Info, () => `Formatter reported error: ${ resolution.errorDetails!.errorMessage }`);
+                self.logger.message(LoggingLevel.Error, () => `Formatter reported error: ${ resolution.errorDetails!.errorMessage }`);
                 return false;
             }
 
@@ -381,12 +381,6 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
             stateToUpdate.injectedError = options.injectedError;
         else
             delete stateToUpdate.injectedError;
-
-//!!!OBSOLETE
-        if (options && (stateToUpdate.value === undefined) && options.conversionErrorTokenValue)
-            stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
-        else
-            delete stateToUpdate.conversionErrorTokenValue;
     }
 
     //#endregion IFieldValueHost
@@ -395,7 +389,6 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     protected override clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
         super.clearValidationDataFromInstanceState(stateToUpdate);
         delete stateToUpdate.injectedError;
-        delete stateToUpdate.conversionErrorTokenValue; //!!!OBSOLETE
     }
 
     /**
@@ -461,15 +454,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     public getInjectedError(): InjectedError | null {
         return this.instanceState.injectedError ?? null;
     }
-//!!!OBSOLETE
-    /**
-     * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to setValue() or setValues(). Its null when not supplied or has been cleared.
-     * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-     */
-    public getConversionErrorMessage(): string | null {
-        return this.instanceState.conversionErrorTokenValue ?? null;
-    }
+
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
      */
@@ -516,7 +501,7 @@ export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBa
         test.setTextValue !== undefined &&
         test.setValues !== undefined &&
         test.getParserLookupKey !== undefined &&
-        test.getConversionErrorMessage !== undefined);
+        test.getInjectedError !== undefined);
 }
 
 export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {

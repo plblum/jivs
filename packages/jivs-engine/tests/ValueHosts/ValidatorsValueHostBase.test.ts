@@ -15,7 +15,7 @@ import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, Valu
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
+import { InjectedError, IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -2769,7 +2769,7 @@ describe('toIValidatorsValueHostBase function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             return this.issues;
         }  
-        getConversionErrorMessage(): string | null {
+        getInjectedError(): InjectedError | null {
             return null;
         }
         required: boolean = false;

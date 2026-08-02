@@ -165,7 +165,6 @@ export class MockFieldValueHost extends MockValueHost
 {
 
     _textValue: string | undefined = undefined;
-    _conversionErrorMessage: string | undefined;
     _injectedError: InjectedError | undefined;
     _parserLookupKey: string | null | undefined;
 
@@ -184,10 +183,7 @@ export class MockFieldValueHost extends MockValueHost
             this._injectedError = options.injectedError;
         else
             this._injectedError = undefined;
-        if (value === undefined && options && options.conversionErrorTokenValue)
-            this._conversionErrorMessage = options.conversionErrorTokenValue;
-        else
-            this._conversionErrorMessage = undefined;        
+ 
     }
 
     public getTextValue() : string | undefined {
@@ -195,7 +191,6 @@ export class MockFieldValueHost extends MockValueHost
     }
     setTextValue(value: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
         this._textValue = value;
-        this._conversionErrorMessage = undefined;
         this._injectedError = undefined;
     }
     setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
@@ -205,10 +200,6 @@ export class MockFieldValueHost extends MockValueHost
             this._injectedError = options.injectedError;
         else
             this._injectedError = undefined;
-        if (nativeValue === undefined && options && options.conversionErrorTokenValue)
-            this._conversionErrorMessage = options.conversionErrorTokenValue;
-        else
-            this._conversionErrorMessage = undefined;
     }
     getPropertyName(): string {
         throw new Error("Method not implemented.");
@@ -257,10 +248,7 @@ export class MockFieldValueHost extends MockValueHost
     {
         return this._injectedError ?? null;
     }
-    public getConversionErrorMessage(): string | null
-    {
-        return this._conversionErrorMessage ?? null;
-    }
+
     public getParserLookupKey(): string | null | undefined
     {
         return this._parserLookupKey;

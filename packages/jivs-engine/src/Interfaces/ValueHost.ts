@@ -62,9 +62,12 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     * @param options -
     *    * validate - Invoke validation after setting the value.
     *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
-    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
-    *      provide a user-facing error message here. It will appear in the Category=Require
-    *      validator within the {ConversionError} token.
+    *   * injectedError - If you handle parsing before calling setValue(), your parser may have returned
+    *        an error. Assign this object to contain the error message and other info.
+    *        Internally Jivs will provide a Validator with the error message to report the error.
+    *        If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+    *        use the errorCode value of 'InjectedError' to localize the error message. 
+    *        You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
@@ -76,12 +79,15 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
      * or the textbox is empty.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+     * @param options - 
+     *  * validate - Invoke validation after setting the value.
+     *  * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
+     *  * injectedError - If you handle parsing before calling setValueToUndefined(), your parser may have returned
+     *       an error. Assign this object to contain the error message and other info.
+     *       Internally Jivs will provide a Validator with the error message to report the error.
+     *       If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *       use the errorCode value of 'InjectedError' to localize the error message. 
+     *       You can also provide a summaryMessage for use in a summary of validation errors.
      */
     setValueToUndefined(options?: SetValueOptions): void;
 
@@ -189,15 +195,6 @@ export interface SetValueOptions {
      * It effectively sets ValueHost.IsChanged to false and calls ValidatableValueHost.clearValidation().
      */
     reset?: boolean;
-
-    /**
-     * When converting the input field/element value to native and there is an error
-     * it should be supplied here. Only meaningful when instanceState.Value is undefined.
-     * It can be displayed as part of the DataTypeCheckCondition's
-     * error message token {ConversionError}.
-     * Cleared when setting the value without an error.
-     */
-    conversionErrorTokenValue?: string;
 
     /**
      * If you have setup the OnValueChanged callback, it automatically is run

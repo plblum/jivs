@@ -47,11 +47,9 @@ export interface DataTypeCheckConditionConfig extends TextValueConditionBaseConf
 
 /**
  * Determines if the text value can be successfully converted to its native data type.
- * Since the actual work of conversion occurs by the consuming system, this really just looks
- * at both values. When the text value is provided while Value is undefined, it reports an error
- * as the converter could not get a valid value to store in the Value.
- * Supports these tokens:
- * {ConversionError} - Uses the value from IFieldValueHost.getConversionErrorMessage()
+ * It does so by looking at the existing two values, the text value and the native value. If the native value is undefined
+ * but the text value is defined, it will report NoMatch. If the native value is defined, it will report Match.
+ * That means all of the parsing and conversion has already happened, and not within this condition. 
  */
 export class DataTypeCheckCondition extends TextValueConditionBase<DataTypeCheckConditionConfig>
 {
@@ -63,20 +61,6 @@ export class DataTypeCheckCondition extends TextValueConditionBase<DataTypeCheck
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
-        let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
-        // same order of precidence as in Evaluate
-        const ivh = toIFieldValueHost(valueHost);
-        if (ivh)
-            list.push({
-                tokenLabel: 'ConversionError',
-                associatedValue: ivh.getConversionErrorMessage() ?? null,
-                purpose: 'message'
-            });
-
-        return list;
-    }
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;
     }

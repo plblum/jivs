@@ -98,10 +98,12 @@ export interface IFieldValueHost extends IValidatorsValueHostBase
      * reset - Clear validation state, unless validate = true, and set IsChanged to false.
      * disableParser - When true, do not use the DataTypeParser to resolve the typed value
      *   from the text value.
-     * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *   resolved from the text value, provide a user-friendly error message here. It will appear
-     *   in the Category=Require validator within the {ConversionError} token. A DataTypeParser
-     *   may also set conversionErrorTokenValue when it reports an error.
+     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *      an error. Assign this object to contain the error message and other info.
+     *      Internally Jivs will provide a Validator with the error message to report the error.
+     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      use the errorCode value of 'InjectedError' to localize the error message. 
+     *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
@@ -123,10 +125,12 @@ export interface IFieldValueHost extends IValidatorsValueHostBase
      * @param options -
      *    * validate - Invoke validation after setting the values.
      *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     *    * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *    *    resolved from the text value, provide a user-friendly error message here. It will
-     *    *    appear in the Category=Require validator within the {ConversionError} token.
-     *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     *    *  injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *          an error. Assign this object to contain the error message and other info.
+     *          Internally Jivs will provide a Validator with the error message to report the error.
+     *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *          use the errorCode value of 'InjectedError' to localize the error message. 
+     *          You can also provide a summaryMessage for use in a summary of validation errors.
      */
     setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
 
@@ -146,14 +150,6 @@ export interface IFieldValueHost extends IValidatorsValueHostBase
      * Its null when not supplied or has been cleared.
      */
     getInjectedError(): InjectedError | null;
-
-    //!!!OBSOLETE
-     /**
-      * Returns the ConversionErrorTokenValue supplied by the latest call
-      * to setValue() or setValues(). Its null when not supplied or has been cleared.
-      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-      */
-    getConversionErrorMessage(): string | null;
     
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
@@ -287,15 +283,6 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      * Will be 'undefined' if the value has not been retrieved.
      */
     textValue?: string | undefined;
-
-//!!!OBSOLETE
-    /**
-     * When converting the input field/element value to native and there is an error
-     * it should be saved here. It can be displayed as part of the DataTypeCheckCondition's
-     * error message token {ConversionError}.
-     * Cleared when setting the value without an error.
-     */
-    conversionErrorTokenValue?: string;
 
     /**
      * Supplied by options.injectedError when calling setValue() or setValues() to provide a way to inject.

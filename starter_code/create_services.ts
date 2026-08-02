@@ -63,7 +63,8 @@ import {
     StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, CapitalizeStringFormatter,
     UppercaseStringFormatter, LowercaseStringFormatter, DateTimeFormatter, AbbrevDateFormatter,
     AbbrevDOWDateFormatter, LongDateFormatter, LongDOWDateFormatter, TimeofDayFormatter, TimeofDayHMSFormatter,
-    BooleanFormatter, CurrencyFormatter, PercentageFormatter, Percentage100Formatter
+    BooleanFormatter, CurrencyFormatter, PercentageFormatter, Percentage100Formatter,
+    DataTypeFormatterBase
 } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
@@ -86,11 +87,12 @@ import {
     BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser,
     NumberParser, Percentage100Parser, PercentageParser, ShortDatePatternParser
 } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { DataTypeParserBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
 
 // If you need to omit the jivs-builder module later, comment out these next two lines.
-import { BuildersFactory } from '@plblum/jivs-builder/build/Services/BuildersFactory';
+import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 new BuildersFactoryInstaller();  // install the buildersFactory service property on JivsServices
 // 
 
@@ -258,14 +260,6 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
         service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
             '*': '{Label} has an invalid value. Expects {DataType}.'
         });
-        /* If you use the setValueOption.conversionErrorTokenValue in setValue, these are better than the last two    
-            service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-                '*': 'Invalid value. Expects {DataType}. {ConversionError}.' 
-            });
-            service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-                '*': '{Label} has an invalid value. Expects {DataType}. {ConversionError}.'
-            });    
-        */
 
         service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
             '*': 'Invalid value. Enter a date.',
@@ -308,6 +302,29 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
             '*': '{Label} has an invalid value. Enter a date.',
             'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
             'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
+        });
+
+        // --- for Parser error messages, like "Invalid value. Enter a number."
+        // When FieldValueHosts.validate notices that a parser has registered an error with the injectedErrors feature
+        // built into setValue/setTextValue, it will use the errorCode and LookupKey supplied by the parser to find a localized error message.
+        // Errors reported by built in parsers:
+        service.registerErrorMessage(DataTypeParserBase.ParserErrorCode, null, {
+            '*': 'Invalid value.'
+        });
+        service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, null, {
+            '*': '{Label} has an invalid value.'
+        });
+        service.registerErrorMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Date, {
+            '*': 'Invalid value. Enter a date.'
+        });
+        service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Date, {
+            '*': '{Label} has an invalid value. Enter a date.'
+        });
+        service.registerErrorMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Number, {
+            '*': 'Invalid value. Enter a number.'
+        });
+        service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Number, {
+            '*': '{Label} has an invalid value. Enter a number.'
         });
 
         // --- for the {DataType} token in error messages

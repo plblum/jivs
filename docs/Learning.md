@@ -264,10 +264,11 @@ firstNameFld.attachEventListener('onchange', (evt)=>{
     let { nativeValue, errorMessage } = myParser(textValue);	// return nativeValue=undefined when there is an error
     vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
         validate: true, 
-        conversionErrorTokenValue: errorMessage 
+        injectedError: errorMessage ? { errorMessage: errorMessage } : undefined
     });
 });
 ```
+See [Injecting errors on demand](#injecting-errors-on-demand) for more on the injectingErrors parameter.
 
 ### While the user types
 Show or hide the error state as the user types. This is limited to Validators that evaluate the raw string, like RequireText, RegExp, and StringLength. Always setup the onchange event (described above) to get all Validators involved.
@@ -440,8 +441,14 @@ ValueHostsManager.getValueHost('FirstName').setValues(nativeValue, raw string);
 ```
 When parsing fails, you report the error along with the raw string like this:
 ```ts
-ValueHostsManager.getValueHost('FirstName').setValues(undefined, textValue, { conversionErrorTokenValue: errorMessage });
+ValueHostsManager.getValueHost('FirstName').setValues(undefined, textValue, { 
+    injectedError: {
+        errorMessage:  errorMessage 
+        // other properties include errorCode, errorMessagel10n, summaryMessage, and summaryMessagel10n.
+    }
+});
 ```
+See [Injecting errors on demand](./Jivs_API.md#injecting-errors-on-demand) for more.
 
 ### Showing all errors in a ValidationSummary
 The term "ValidationSummary" refers to a location in the UI that offers a consolidated view of all error messages. Aside from how its presented, it is very similar to showing errors specific to one field, except it shows all errors and updates upon any ValueHost's validation.
