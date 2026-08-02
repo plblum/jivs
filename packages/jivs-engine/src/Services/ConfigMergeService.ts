@@ -97,7 +97,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
 export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccessorBase
     implements IConfigMergeServiceBase<TConfig> {
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._configProperties = undefined!;
         this._cacheNoChangePropertyNames = undefined;
@@ -334,7 +334,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         return { useAction: 'nochange' };
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._identifyHandler = undefined!;
     }

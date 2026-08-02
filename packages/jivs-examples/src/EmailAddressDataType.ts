@@ -50,10 +50,10 @@ export class EmailAddressCondition extends RegExpCondition
     {
         super({ ...config, expression: /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i });
     }
-    public get conditionType(): string {
+    public override get conditionType(): string {
         return EmailAddressConditionType; 
     }
-    public get category(): ConditionCategory {
+    public override get category(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;
     }
 }

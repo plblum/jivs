@@ -152,7 +152,7 @@ export class PercentageParser extends PercentageParserBase
         super(LookupKey.Percentage, supportedCultures, options);
     }
 
-    protected parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
+    protected override parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
         const result = super.parseCleanedText(text, dataTypeLookupKey, cultureId);
         if (typeof result.value === 'number')
             result.value = result.value / 100.0;

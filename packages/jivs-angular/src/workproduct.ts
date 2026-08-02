@@ -827,7 +827,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
     }
     private readonly _setFocusToInput: boolean = false;    
 
-    public render(
+    public override render(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
@@ -869,7 +869,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
         super.render(element, renderer, valueHostName, validationState, fivaseForm, options);
     }
 
-    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseForm: IFivaseForm): void {
+    protected override addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseForm: IFivaseForm): void {
         if (this.setFocusToInput && issueFound.valueHostName) {
             this.addSetFocusToValueHost(element, renderer, fivaseForm, issueFound.valueHostName);
         }
@@ -901,7 +901,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      * @param options 
      * @returns true if issuesFound is not empty.
      */
-    protected resolveTwoStates(
+    protected override resolveTwoStates(
         valueHostName: string,
         validationState: ValueHostValidationState,
         fivaseForm: IFivaseForm,
@@ -1689,7 +1689,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     /**
      * Cleans up by unsubscribing from validation state changes when the directive is destroyed.
      */
-    public ngOnDestroy(): void {
+    public override ngOnDestroy(): void {
         this.resolveRendererFactory.unavailable(this.getFactoryElement());
 
         if (this._subscription) {
@@ -1810,7 +1810,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * Sets up listeners for focus in and focus out events to deliver focus messages to the FivaseForm.
      * @param valueHostName
      */
-    protected setupDirective(valueHostName: string): void {
+    protected override setupDirective(valueHostName: string): void {
         // Setup Value Change Listener
         const eventHandler = this.resolveEventHandlerFactory
             .resolve(this.getFactoryElement(), this.eventHandlerName);
@@ -1856,7 +1856,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * NOTE: While its possible to combine data-severity into data-invalid as a single attribute,
      * we want to use data-severity in other cases, whereas data-invalid is specific to the input, so you can find the input.
      */
-    protected onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
+    protected override onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
         const issuesFound = validationState.issuesFound;
         const isValid = !issuesFound || issuesFound.length === 0;   // instead of checking doNotSave, which will be false if there are warning issues that we want to display
 
@@ -1878,14 +1878,14 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      *
      * @returns An object containing the valid and invalid CSS classes.
      */
-    protected getRenderOptions(): IRendererActionOptions {
+    protected override getRenderOptions(): IRendererActionOptions {
         return {
             enabledCssClass: this.invalidCssClass,
             disabledCssClass: this.validCssClass
         };
     }
 
-    protected initAriaAttributes(): void {
+    protected override initAriaAttributes(): void {
         // Set aria-required based on the required field in the ValueHost
         const valueHost = this.fivaseForm.valueHostsManager.getFieldValueHost(this.valueHostName!);
         if (valueHost && valueHost.required) {
@@ -1911,7 +1911,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
         this.ariaManager.setAriaLive(severity);
     }
 
-    public ngOnDestroy(): void {
+    public override ngOnDestroy(): void {
         // Clean up Value Change Listener
         this.resolveEventHandlerFactory.unavailable(this.getFactoryElement());
 
@@ -2002,7 +2002,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
      * 
      * @returns An object containing the valid and invalid CSS classes.
      */
-    protected getRenderOptions(): IRendererActionOptions {
+    protected override getRenderOptions(): IRendererActionOptions {
         return {
             enabledCssClass: this.invalidCssClass,
             disabledCssClass: this.validCssClass
@@ -2012,7 +2012,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
     /**
      * Initializes ARIA attributes that do not change dynamically (e.g., aria-roledescription).
      */
-    protected initAriaAttributes(): void {
+    protected override initAriaAttributes(): void {
         // Set aria-roledescription with the directive name
         this.ariaManager.setAriaRoleDescription(DIRECTIVE_VALIDATION_ERRORS);
     }
@@ -2037,7 +2037,7 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
     /**
      * Handles validation state changes and updates ARIA attributes accordingly.
      */
-    protected onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
+    protected override onValueHostValidationStateChanged(targetElement: HTMLElement, validationState: ValueHostValidationState): void {
         super.onValueHostValidationStateChanged(targetElement, validationState);
         this.updateAriaAttributes(validationState);  // Update ARIA attributes dynamically
     }
@@ -2341,7 +2341,7 @@ export class PopupDirective extends FivaseDirectiveBase {
      * Cleanup by unsubscribing from the form's value host messaging and 
      * removing the popup action.
      */
-    public ngOnDestroy(): void {
+    public override ngOnDestroy(): void {
         if (this._subscription) {
             this._subscription.unsubscribe();
             this._subscription = null;

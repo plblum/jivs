@@ -53,10 +53,11 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         this._services = undefined!;
-        (this._logger as any) = undefined!;        
+        (this._logger as any) = undefined!;  
+        super.dispose();
     }    
  
     /**

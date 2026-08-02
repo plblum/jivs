@@ -69,7 +69,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * Returns the calculated value or undefined if it could not calculate.
      * @returns 
      */
-    public getValue(): SimpleValueType {
+    public override getValue(): SimpleValueType {
         if (this._reentrantCount > 0)
             throw new CodingError('Recursive call from your Calculation function not allowed.');
         try {
@@ -102,7 +102,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param options 
      */
-    public setValue(value: any, options?: SetValueOptions  ): void {
+    public override setValue(value: any, options?: SetValueOptions  ): void {
         // does nothing
         this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }

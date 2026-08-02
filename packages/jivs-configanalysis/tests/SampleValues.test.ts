@@ -27,7 +27,7 @@ describe('SampleValues', () => {
         public get Publicify_valueHostsSampleValues(): { [key: string]: any } {
             return this.valueHostsSampleValues ?? {}
         }
-        public tryToIdentifyLookupKey(lookupKey: string, services: IJivsServices)
+        public override tryToIdentifyLookupKey(lookupKey: string, services: IJivsServices)
         {
             return super.tryToIdentifyLookupKey(lookupKey, services);
         }

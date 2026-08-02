@@ -42,7 +42,7 @@ implements IConditionConfigAnalyzer {
             properties: []
         };
     }    
-    public analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
+    public override analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
         const result = super.analyze(config, valueHostConfig, existingResults);
         if (valueHostConfig && this.helper.analysisArgs.comparerAnalyzer) {
             const checkResult = this.helper.analysisArgs.comparerAnalyzer.checkConditionConfig(config, valueHostConfig);

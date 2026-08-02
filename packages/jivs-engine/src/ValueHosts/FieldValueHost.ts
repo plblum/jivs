@@ -386,7 +386,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         super.setValueToUndefined(options);
     }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: FieldValueHostSetValueOptions): void {
+    protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: FieldValueHostSetValueOptions): void {
         super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
         if (options && options.injectedError)
             stateToUpdate.injectedError = options.injectedError;
@@ -403,7 +403,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     //#endregion IFieldValueHost
 
 
-    protected clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
+    protected override clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
         super.clearValidationDataFromInstanceState(stateToUpdate);
         delete stateToUpdate.injectedError;
         delete stateToUpdate.conversionErrorTokenValue; //!!!OBSOLETE
@@ -413,7 +413,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
      * @returns 
      */
-    protected generateValidators(): Array<IValidator> {
+    protected override generateValidators(): Array<IValidator> {
 
         const validators: Array<IValidator> = super.generateValidators();
         let needsDataTypeCheck = true;
@@ -543,7 +543,7 @@ export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
         return new FieldValueHost(valueHostsManager, config, state);
     }
 
-    public createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
+    public override createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
         const state = super.createInstanceState(config);
 
         return {

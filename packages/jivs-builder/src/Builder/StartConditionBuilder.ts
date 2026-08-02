@@ -55,7 +55,7 @@ export class StartConditionBuilder
      * Will pass up the config to the parent builder's setConfig method.
      * @param config
      */
-    public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
+    public override setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
         const revise = !options || options.applyValueHostName != false;
         if (revise)
             this.reviseValueHostName(config);

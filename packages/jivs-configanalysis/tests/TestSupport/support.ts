@@ -141,7 +141,7 @@ export class MockAnalyzerWithFallback extends MockAnalyzer {
 
     private _rejectedLookupKey: string;
 
-    analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
+    public override analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
         if (key === this._rejectedLookupKey) {
             return { feature: this.feature, tryFallback: true, message: 'testFallback' } as any;
         }

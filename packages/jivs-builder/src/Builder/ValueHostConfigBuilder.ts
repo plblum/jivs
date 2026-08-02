@@ -226,7 +226,7 @@ export class ValidatableValueHostConfigBuilder extends ValueHostConfigBuilder
         super(existingValueHostConfigs, services);
     }
 
-    public get services(): IJivsServices
+    public override get services(): IJivsServices
     {
         return super.services as IJivsServices;
     }    

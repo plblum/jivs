@@ -18,7 +18,7 @@ export class StartConditionWithOneChildBuilder
      * @param config
      * @param options
      */
-    public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
+    public override setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
         if (this.getConfig() != null)
             throw new Error('Only one child configuration permitted.');
         super.setConfig(config, options);

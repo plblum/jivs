@@ -130,14 +130,14 @@ export class EnumByNumberParser
         this._hasLocalizedValues = enumValueInfos.find((item) => item.textl10n != null /* null or undefined */) !== undefined;
 
     }
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
     // not absolutely required but Jivs supports on demand cleanup
         (this._cultureToEnumValuesMap as any) = undefined;
         (this._enumValueInfos as any) = undefined;
     }
 
-    protected initUndefinedOptions(options: EnumByNumberParserOptions): void
+    protected override initUndefinedOptions(options: EnumByNumberParserOptions): void
     {
         super.initUndefinedOptions(options);
         if (options.caseInsensitive === undefined)

@@ -291,7 +291,7 @@ export class NumericStringToNumberConverter extends DataTypeConverterBase {
      * @param resultLookupKey 
      * @returns 
      */
-    public canConvert(value: any, sourceLookupKey: string | null, resultLookupKey: string): boolean {
+    public override canConvert(value: any, sourceLookupKey: string | null, resultLookupKey: string): boolean {
         return super.canConvert(value, sourceLookupKey, resultLookupKey);
     }
     /**

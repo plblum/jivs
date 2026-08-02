@@ -80,7 +80,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     constructor(arg1: IJivsServices | T | BuilderState<T>) {
         super(arg1 as any);
     }
-    public get services(): IJivsServices {
+    public override get services(): IJivsServices {
         return this.baseConfig.services;
     }
     //#region InstanceState

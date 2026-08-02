@@ -31,13 +31,13 @@ export interface TwoValueConditionBaseConfig extends OneValueConditionBaseConfig
  */
 export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
+    public override gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
         super.gatherValueHostNames(collection, valueHostsManager);
         if (this.config.secondValueHostName)
             collection.add(this.config.secondValueHostName);
     }
 
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate

@@ -59,7 +59,7 @@ class TestValueHostManagerConfigBuilderBase extends ManagerConfigBuilderBase<Val
 }
 class TestValueHostsManagerConfigBuilderBase extends ValueHostsManagerConfigBuilder
 {
-    protected createValueHostBuilder(): ValidatableValueHostConfigBuilder {
+    protected override createValueHostBuilder(): ValidatableValueHostConfigBuilder {
         return new ValidatableValueHostConfigBuilder(this.destinationValueHostConfigs(), this.services);
     }
 

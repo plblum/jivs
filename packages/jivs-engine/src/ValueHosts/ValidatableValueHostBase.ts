@@ -40,7 +40,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     //#endregion IValueHostsManagerAccessor
     
-    protected get services(): IJivsServices
+    protected override get services(): IJivsServices
     {
         return super.services as IJivsServices;
     }
@@ -50,7 +50,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         this._associatedValueHostNames = undefined!;
@@ -72,7 +72,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
-    public setValue(value: any, options?: SetValueOptions): void {
+    public override setValue(value: any, options?: SetValueOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!options)
             options = {};
@@ -196,7 +196,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * has no errors, except for ValidationState which is set to Disabled.
      * @param enabled 
      */
-    public setEnabled(enabled: boolean): void {
+    public override setEnabled(enabled: boolean): void {
         super.setEnabled(enabled);
         if (!enabled)
             this.clearValidation();

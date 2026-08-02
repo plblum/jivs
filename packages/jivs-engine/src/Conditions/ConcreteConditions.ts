@@ -229,7 +229,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         this._savedRE = undefined!;
@@ -255,7 +255,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
         }
         return this._savedRE;
     }
-    protected evaluateString(text: string, valueHost: IValueHost, services: IJivsServices): ConditionEvaluateResult {
+    protected override evaluateString(text: string, valueHost: IValueHost, services: IJivsServices): ConditionEvaluateResult {
         const found = this.getRegExp(services).test(text);
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }    

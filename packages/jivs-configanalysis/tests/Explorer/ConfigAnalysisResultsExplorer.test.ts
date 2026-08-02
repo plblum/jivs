@@ -464,7 +464,7 @@ describe('CAExplorerBase class', () => {
     abstract class TestExplorerBase<T extends TestResultBase>
         extends CAExplorerBase<T>
     {
-        public matchThis(searcher: ICASearcher): boolean | undefined {
+        public override matchThis(searcher: ICASearcher): boolean | undefined {
             let result = super.matchThis(searcher);
             switch (result) {
                 case true:

@@ -595,7 +595,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
     // subclass CalcFnPropertyAnalyzer to override its calcValueHostType with "TEST" and write a test to confirm it works
     test('user should be able to subclass CalcFnPropertyAnalyzer and override calcValueHostType with "TEST" to support custom CalcValueHostConfigs', () => {
         class TestCalcFnPropertyAnalyzer extends CalcFnPropertyAnalyzer {
-            protected get calcValueHostType(): string
+            protected override get calcValueHostType(): string
             {
                 return 'TEST';
             }

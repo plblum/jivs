@@ -241,7 +241,7 @@ export abstract class CleanUpStringParserBase<TOptions extends CleanUpStringPars
             new RegExp('[' + escapeRegExp(options.stripTheseCharacters) + ']', 'g') : 
             null;        
     }
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
         if (options.compressWhitespace === undefined)
@@ -260,7 +260,7 @@ export abstract class CleanUpStringParserBase<TOptions extends CleanUpStringPars
      * @param dataTypeLookupKey 
      * @param cultureId - Such as 'en-US' and 'en'
      */
-    protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
+    protected override cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
 
         text = super.cleanText(text, dataTypeLookupKey, cultureId);
         if (this._stripTheseCharactersRegExp) {
@@ -333,7 +333,7 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
      * @param text 
      * @returns 
      */
-    public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+    public override supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
         if (super.supports(dataTypeLookupKey, cultureId, text)) {
             text = this.cleanText(text, dataTypeLookupKey, cultureId);
             if (text.length === 0)
@@ -404,7 +404,7 @@ export abstract class SpecificCulturesPatternParserBase<TDataType, TOptions exte
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    public override isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
     {
         if (!super.isCompatible(dataTypeLookupKey, cultureId))
             return false;
@@ -452,7 +452,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
         assertNotNull(format.order, 'order');
         this._utc = utc;
     }
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
         if (typeof options.twoDigitYearBreak !== 'number')
@@ -615,7 +615,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         this._stripTheseStringsRegExp = undefined;       
     }
 
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
     }
@@ -675,7 +675,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         return new RegExp(pattern, 'g');
     }
 
-    public parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
+    public override parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
         text = super.applyTrimming(text);
         if (text.length === 0)
             return { value: this.options.emptyStringResult };        
@@ -697,7 +697,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
      * @param cultureId 
      * @returns 
      */
-    protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
+    protected override cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
         text = super.cleanText(text, dataTypeLookupKey, cultureId);
 
         const isNegative = this.isNegative(text);
@@ -737,7 +737,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
      * @param text 
      * @returns 
      */
-    protected responsibleForThisText(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+    protected override responsibleForThisText(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
        
         // we'll always handle anything that cannot be converted to a number.
         // The user requested the NumberParser. Therefore it should return an error message
@@ -880,7 +880,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
 
     }
 
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
     }
@@ -903,7 +903,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    public override isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
     {
         if (!super.isCompatible(dataTypeLookupKey, cultureId))
             return false;

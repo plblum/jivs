@@ -712,7 +712,7 @@ export class LocalizedPropertyCAResultExplorer extends CAExplorerBase<LocalizedP
     public identifier(): string | null {
         return this.result.l10nPropertyName;
     }
-    protected matchSeverity(searcher: ICASearcher): boolean | undefined
+    protected override matchSeverity(searcher: ICASearcher): boolean | undefined
     {
         // if there a cultureText severity matches
         // the criteria's severity, return true.

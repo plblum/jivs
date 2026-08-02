@@ -6,10 +6,10 @@ import { LoggerServiceBase } from '../../src/Services/LoggerServiceBase';
 
 class TestLoggerServiceBase extends LoggerServiceBase {
 
-    public get serviceName(): string {
+    public override get serviceName(): string {
         return this._serviceName;
     }
-    public set serviceName(value: string) {
+    public override set serviceName(value: string) {
         this._serviceName = value;
     }
     private _serviceName: string = 'TestLoggerServiceBase';

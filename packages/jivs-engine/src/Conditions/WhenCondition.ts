@@ -65,7 +65,7 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         toIDisposable(this._whenToEnable)?.dispose();
         this._whenToEnable = undefined!;
@@ -143,7 +143,7 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
     /**
      * The WhenCondition uses the ConditionType of its child condition in error messages.
      */
-    public get conditionType(): string {
+    public override get conditionType(): string {
         let ct = ConditionType.Unknown as string;
         if (this.config.thenConfig && this.config.thenConfig.conditionType)
             ct = this.config.thenConfig.conditionType;

@@ -42,7 +42,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         this.config.validatorConfigs = undefined!;
         super.dispose();
@@ -330,7 +330,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     * The validator may not have found the issue on the client side, but the server did, 
     * so we act like the client-side validator found it, preserving the error message from the client side.
      */
-    public addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
+    public override addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
     {
         if (error) {
             if (!this.isEnabled())

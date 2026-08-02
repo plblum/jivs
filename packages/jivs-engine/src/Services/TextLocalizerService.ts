@@ -39,7 +39,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         toIDisposable(this._fallbackService)?.dispose();

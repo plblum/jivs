@@ -169,7 +169,7 @@ export class MockFieldValueHost extends MockValueHost
     _injectedError: InjectedError | undefined;
     _parserLookupKey: string | null | undefined;
 
-    public get config(): FieldValueHostConfig
+    public override get config(): FieldValueHostConfig
     {
         return {
             ...super.config,
@@ -199,8 +199,8 @@ export class MockFieldValueHost extends MockValueHost
         this._injectedError = undefined;
     }
     setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
-        this.setValue(nativeValue);
-        this.setTextValue(textValue);
+        this.setValue(nativeValue, options);
+        this.setTextValue(textValue, options);
         if (nativeValue === undefined && options && options.injectedError)
             this._injectedError = options.injectedError;
         else
@@ -556,22 +556,22 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
     }
     notifyValidationStateChangedDelay?: number | undefined;
 
-    public get config(): ValueHostsManagerConfig
+    public override get config(): ValueHostsManagerConfig
     {
         return super.config as ValueHostsManagerConfig;
     }
 
-    public get services(): IJivsServices {
+    public override get services(): IJivsServices {
         return super.services as IJivsServices;
     }
 
-    public getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {
+    public override getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {
         let vh = this.getValueHost(valueHostName);
         if (vh instanceof ValidatorsValueHostBase)
             return vh;
         return null;
     }
-    getFieldValueHost(valueHostName: string): IFieldValueHost | null {
+    public override getFieldValueHost(valueHostName: string): IFieldValueHost | null {
         let vh = this.getValueHost(valueHostName);
         if (vh instanceof FieldValueHost)
             return vh;
@@ -618,89 +618,89 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
         return this._hostInstanceStateChanges;
     }    
 
-    validate(options?: ValidateOptions): ValidationState {
+    public override validate(options?: ValidateOptions): ValidationState {
         throw new Error("Method not implemented.");
     }
-    clearValidation(options?: ValidateOptions): boolean {
+    public override clearValidation(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
 
     // isValid: boolean = true;        
 
     // doNotSave: boolean = false;
-    addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
+    public override addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-    addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
+    public override addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-    toValidationPayload(externalIssues: IssueFound[] | null): string {
+    public override toValidationPayload(externalIssues: IssueFound[] | null): string {
         throw new Error("Method not implemented.");
     }
-    fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
+    public override fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
         throw new Error("Method not implemented.");
     }
    
-    getIssuesForField(valueHostName: string): IssueFound[] {
+    public override getIssuesForField(valueHostName: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }
-    getIssuesFound(group?: string | undefined): IssueFound[] {
+    public override getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }
 
-    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
+    public override notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
     {
 
     }
     
-    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
+    public override get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
         return this.config.onConfigChanged ?? null;
     }
 
 
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
+    public override get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
         return this.config.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
+    public override set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
         this.config.onInstanceStateChanged = fn;
     }
 
 
-    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
+    public override get onValidationStateChanged(): ValidationStateChangedHandler | null {
         return this.config.onValidationStateChanged ?? null;
     }
-    public set onValidationStateChanged(fn: ValidationStateChangedHandler) {
+    public override set onValidationStateChanged(fn: ValidationStateChangedHandler) {
         this.config.onValidationStateChanged = fn;
     }
 
 
-    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
+    public override get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
         return this.config.onValueHostValidationStateChanged ?? null;
     }
-    public set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
+    public override set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
         this.config.onValueHostValidationStateChanged = fn;
     }
 
     
-    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
+    public override get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
         return this.config.onValueHostInstanceStateChanged ?? null;
     }
-    public set onValueHostInstanceStateChanged(fn: ValueHostInstanceStateChangedHandler) {
+    public override set onValueHostInstanceStateChanged(fn: ValueHostInstanceStateChangedHandler) {
         this.config.onValueHostInstanceStateChanged = fn;
     }
 
-    public get onValueChanged(): ValueChangedHandler | null {
+    public override get onValueChanged(): ValueChangedHandler | null {
         return this.config.onValueChanged ?? null;
     }
-    public set onValueChanged(fn: ValueChangedHandler) {
+    public override set onValueChanged(fn: ValueChangedHandler) {
         this.config.onValueChanged = fn;
     }
 
 
-    public get onTextValueChanged(): TextValueChangedHandler | null {
+    public override get onTextValueChanged(): TextValueChangedHandler | null {
         return this.config.onTextValueChanged ?? null;
     }    
-    public set onTextValueChanged(fn: TextValueChangedHandler) {
+    public override set onTextValueChanged(fn: TextValueChangedHandler) {
         this.config.onTextValueChanged = fn;
     }    
 }

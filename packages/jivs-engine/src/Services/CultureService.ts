@@ -23,7 +23,7 @@ export class CultureService extends ServiceBase implements ICultureService {
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         this._cultureConfig = undefined!;

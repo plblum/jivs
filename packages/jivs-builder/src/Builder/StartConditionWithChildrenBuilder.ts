@@ -49,7 +49,7 @@ export class StartConditionWithChildrenBuilder
             { bubbleUp: false, applyValueHostName: false });
     }
 
-    public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
+    public override setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
         assertNotNull(config, 'config');
         assertNotNull(config.conditionType, 'config.conditionType');
 

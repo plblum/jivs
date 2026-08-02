@@ -133,7 +133,7 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
      * which is supported by the ILoggerService object.
      * @param reportData - The data to be formatted.
      */
-    protected format(reportData: ConfigAnalysisOutputReportData) : LogDetails {
+    protected override format(reportData: ConfigAnalysisOutputReportData) : LogDetails {
         const content = super.format(reportData);
         if (typeof content !== 'string')
             throw new CodingError('LoggerConfigAnalysisOutputter requires content to be a string.');

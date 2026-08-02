@@ -35,7 +35,7 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         this._conditions?.forEach((cond)=> toIDisposable(cond)?.dispose());

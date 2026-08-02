@@ -94,7 +94,7 @@ describe('ConfigAnalysisBase class', () => {
             return this.createHelper(args);
         }
         // just to expose options
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
+        protected override createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._options = options;
             return super.createAnalysisArgs(config, results, options);
 
@@ -567,7 +567,7 @@ describe('ConfigAnalysisBase class', () => {
 });
 describe('ValueHostsManagerConfigAnalysis', () => {
     class Publicify_ValueHostsManagerConfigAnalysis extends ValueHostsManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
+        protected override createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
@@ -577,7 +577,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         }
         private _helper: AnalysisResultsHelper<IJivsServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
+        protected override createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }
@@ -682,7 +682,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
 });
 describe('ValueHostsManagerConfigAnalysis', () => {
     class Publicify_ValueHostsManagerConfigAnalysis extends ValueHostsManagerConfigAnalysis {
-        protected createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
+        protected override createHelper(args: AnalysisArgs<IJivsServices>): AnalysisResultsHelper<IJivsServices> {
             let helper = super.createHelper(args);
             this._helper = helper;
             return helper;
@@ -692,7 +692,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         }
         private _helper: AnalysisResultsHelper<IJivsServices> | undefined = undefined;
 
-        protected createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
+        protected override createAnalysisArgs(config: ValueHostsManagerConfig, results: IConfigAnalysisResults, options: ConfigAnalysisOptions): AnalysisArgs<IJivsServices> {
             this._analysisArgs = super.createAnalysisArgs(config, results, options);
             return this._analysisArgs;
         }

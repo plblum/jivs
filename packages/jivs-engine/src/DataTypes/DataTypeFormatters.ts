@@ -372,7 +372,7 @@ export class CurrencyFormatter extends NumberFormatterBase
     }
 
 
-    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public override format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let options = this.options;
         if (options.currency === 'DEFAULT') {
             options = { ...options, currency: this.resolveCurrencyCode(cultureId) };
@@ -445,7 +445,7 @@ export class Percentage100Formatter extends NumberFormatterBase
     }
 
     // Intl library treats 1.0 as 100. So we adjust the value.
-    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public override format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'number')
             value = value / 100.0;
         return super.format(value, dataTypeLookupKey, cultureId);
@@ -727,7 +727,7 @@ export class DateFormatter extends DateTimeFormatterBase
         return true;
     }
 
-    public supports(dataTypeLookupKey: string, cultureId: string): boolean {
+    public override supports(dataTypeLookupKey: string, cultureId: string): boolean {
         return (dataTypeLookupKey === LookupKey.ShortDate || super.supports(dataTypeLookupKey, cultureId));
     }
 
