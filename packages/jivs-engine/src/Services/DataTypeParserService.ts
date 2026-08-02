@@ -97,7 +97,12 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         catch (e) {
             const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
-            return { errorMessage: err.message };
+            return {
+                errorDetails: {
+                    errorMessage: err.message,
+                    // note: No errorcode or l10n because this is a configuration problem.
+                }
+             };
         }
 
     }

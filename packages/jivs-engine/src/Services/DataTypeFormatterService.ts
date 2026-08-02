@@ -90,11 +90,14 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
             return {
-                errorMessage: err.message,
-                value: undefined
+                errorDetails: {
+                    errorMessage: err.message
+                    // note: No errorcode or l10n because this is a configuration problem.
+                }
             };
         }
     }
+
     /**
      * Removes the first {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * that supports both parameters.

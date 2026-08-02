@@ -641,7 +641,7 @@ describe('setTextValue with parser enabled to see both text value and native val
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe(textValue);
         expect(setup.valueHost.getValue()).toBe(expectedNativeValue);     
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        expect(setup.valueHost.getInjectedError()).toBeNull();
         expect(setup.valueHost.getParserLookupKey()).toBe(parserLookupKey);
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
@@ -678,7 +678,7 @@ describe('setTextValue with parser enabled to see both text value and native val
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe(textValue);
         expect(setup.valueHost.getValue()).toBeUndefined();     
-        expect(setup.valueHost.getConversionErrorMessage()).toBeTruthy();
+        expect(setup.valueHost.getInjectedError()).toBeTruthy();
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
             null)).toBeTruthy();  
@@ -777,7 +777,7 @@ describe('setTextValue with parser enabled to see both text value and native val
                 if (!isNaN(num))
                     return { value: num + 1 };
                 
-                return { errorMessage: 'Invalid data type ' };
+                return { errorDetails: { errorMessage: 'Invalid data type ' } };
             },
         }
     }    

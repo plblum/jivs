@@ -70,12 +70,12 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                             resolved = true;
                         }
                         else
-                            if (replacement.errorMessage)
+                            if (replacement.errorDetails)
                             {
                                 this.logger.log(LoggingLevel.Error,
                                     () => {
                                         return {
-                                            message: `${capturedToken.full}: ${replacement.errorMessage}`,
+                                            message: `${capturedToken.full}: ${replacement.errorDetails!.errorMessage}`,
                                             category: LoggingCategory.Configuration
                                         };
                                     }

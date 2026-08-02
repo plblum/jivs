@@ -187,6 +187,35 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
  * @param cultureId 
  */
     protected abstract parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType | null>;
+
+    /**
+     * Utility to use when the parser needs to return an error in DataTypeResolution. 
+     * It will use the errorCode property to provide a default errorCode if one is not supplied.
+     * Error messages will have a generated localization key based on the LookupKey of the parser:
+     * {errorCode}_{LookupKey}_l10n
+     * @param message - The error message to return in the DataTypeResolution.
+     * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
+     * @returns 
+     */
+    protected returnError(message: string, errorCode?: string): DataTypeResolution<TDataType> 
+    {
+        if (!errorCode)
+            errorCode = this.defaultErrorCode;
+        return {
+            errorDetails: {
+                errorMessage: message,
+                errorMessagel10n: `${errorCode}_${this.supportedLookupKey}_l10n`,
+                errorCode: errorCode
+            }
+        };
+    }
+
+    protected get defaultErrorCode(): string
+    {
+        return DataTypeParserBase.ParserErrorCode;
+    }
+
+    public static readonly ParserErrorCode = 'ParserError';
 }
 
 /**
@@ -362,7 +391,7 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
         const pattern = re.exec(text);
         if (pattern)
             return this.processPattern(pattern, text, dataTypeLookupKey, cultureId);
-        return { errorMessage: this.patternDidNotMatchMessage() };
+        return this.returnError(this.patternDidNotMatchMessage());
     }
 
     protected abstract processPattern(pattern: RegExpExecArray, text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType>;
@@ -501,7 +530,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
         else
             attempt = new Date(year, month, day);
         if (isNaN(attempt.getTime()))
-            return { errorMessage: this.patternDidNotMatchMessage() };
+            return this.returnError(this.patternDidNotMatchMessage());
         // double-check for overflows
         if (this.utc && attempt.getUTCFullYear() === year &&
             attempt.getUTCMonth() === month &&
@@ -511,7 +540,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
             attempt.getMonth() === month &&
             attempt.getDate() === day)
             return { value: attempt };
-        return { errorMessage: DatePatternParserBase.invalidDateMessage };
+        return this.returnError(DatePatternParserBase.invalidDateMessage, DatePatternParserBase.invalidDateErrorCode);
     }
     protected patternDidNotMatchMessage(): string
     {
@@ -525,6 +554,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
      * day is after the last day of the month.
      */
     public static readonly invalidDateMessage = 'Not a valid date';
+    public static readonly invalidDateErrorCode = 'InvalidDate';
 }
 
 /**
@@ -681,7 +711,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
             return { value: this.options.emptyStringResult };        
 
         if (this.cannotBeNumber(text))
-            return { errorMessage: this.patternDidNotMatchMessage() };
+            return this.returnError(this.patternDidNotMatchMessage());
         return super.parse(text, dataTypeLookupKey, cultureId);
     }
 
@@ -924,7 +954,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
         if (this._falseValuesLC.includes(text))
             return { value: false };
 
-        return { errorMessage: this.patternDidNotMatchMessage() };
+        return this.returnError(this.patternDidNotMatchMessage());
 
     }    
     protected patternDidNotMatchMessage(): string

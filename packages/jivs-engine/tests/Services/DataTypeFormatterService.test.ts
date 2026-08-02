@@ -155,9 +155,9 @@ describe('DataTypeFormatterService.format', () => {
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
-        expect(testItem.format(10, LookupKey.Date).errorMessage).not.toBeUndefined();
-        expect(testItem.format(10, LookupKey.Boolean).errorMessage).not.toBeUndefined();
-        expect(testItem.format('10', LookupKey.Number).errorMessage).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Date).errorDetails).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Boolean).errorDetails).not.toBeUndefined();
+        expect(testItem.format('10', LookupKey.Number).errorDetails).not.toBeUndefined();
     });
     test('Formatter throws Error. results in errorMessage with exception message', () => {
         class FormatterThrowsError implements IDataTypeFormatter
@@ -176,7 +176,11 @@ describe('DataTypeFormatterService.format', () => {
 
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new FormatterThrowsError());
-        expect(testItem.format(10, 'TEST').errorMessage).toBe('ERROR');
+        expect(testItem.format(10, 'TEST')).toEqual({
+            errorDetails: {
+                errorMessage: 'ERROR'
+            }
+        });
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
         expect(logger.findMessage('Formatter selected: FormatterThrowsError', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();

@@ -114,7 +114,9 @@ describe('DataTypeParserService.parse', () => {
 
         let testItem = services.dataTypeParserService as DataTypeParserService;
         testItem.register(new ParserThrowsError());
-        expect(testItem.parse('anything', 'TEST', 'does not matter').errorMessage).toBe('ERROR');
+        expect(testItem.parse('anything', 'TEST', 'does not matter').errorDetails).toEqual({
+            errorMessage: 'ERROR'
+        });
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService'
         expect(logger.findMessage('Parser selected: ParserThrowsError', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();

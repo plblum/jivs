@@ -91,11 +91,13 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
             return { value: '' };
         // filter out invalid values
         if (typeof value === 'object')
-            return { errorMessage: 'Not a string or primitive' };
+            return this.returnError('Not a string or primitive', DataTypeFormatterBase.IncompatibleDataTypeErrorCode);
         return {
             value: value.toString()
         };
     }    
+
+    public static readonly IncompatibleDataTypeErrorCode = 'IncompatibleDataType';
 
     /**
      * LookupKeys must be case insensitive matched.
@@ -123,6 +125,37 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
             return true;
         return false;
     }
+
+    /**
+     * Utility function to return an error in a DataTypeResolution.
+     * It will use the errorCode property to provide a default errorCode if one is not supplied.
+     * Error messages will have a generated localization key based on the LookupKey of the parser:
+     * {errorCode}_{LookupKey}_l10n
+     * @param message - Error message to return in the DataTypeResolution.
+     * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
+     * @returns 
+     */
+    protected returnError(message: string, errorCode?: string): DataTypeResolution<string>
+    {
+        if (!errorCode) {
+            errorCode = this.defaultErrorCode;
+        }
+        let lookupKey: string = Array.isArray(this.expectedLookupKeys) ? this.expectedLookupKeys[0] : this.expectedLookupKeys ?? 'Unknown';
+
+        return {
+            errorDetails: {
+                errorMessage: message,
+                errorMessagel10n: `${errorCode}_${lookupKey}_l10n`,
+                errorCode: errorCode
+            }
+        };
+    }   
+    protected get defaultErrorCode(): string
+    {
+        return DataTypeFormatterBase.FormatterErrorCode;
+    }
+
+    public static readonly FormatterErrorCode = 'FormatterError';
 }
 /**
  * For LookupKey.String. Culture neutral.
@@ -267,8 +300,13 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
         else if (value == null)   // null/undefined
             return { value: '' };
         else
-            return { errorMessage: 'Not a number' };
+            return this.returnError(
+                'Not a number',
+                NumberFormatterBase.NotANumberErrorCode
+            );
     }
+
+    public static readonly NotANumberErrorCode = 'NotANumber';
 }
 
 /**
@@ -552,7 +590,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
         else if (value == null)   // null/undefined
             return { value: '' };
         else
-            return { errorMessage: 'Not a boolean' };
+            return this.returnError('Not a boolean', BooleanFormatterBase.NotABooleanErrorCode);
     }
     protected formatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
@@ -564,6 +602,8 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
         }
         return { value: text };
     }
+
+    public static readonly NotABooleanErrorCode = 'NotABoolean';
 }
 export interface DefaultLabelsForBoolean
 {
@@ -664,8 +704,13 @@ export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
         else if (value == null)   // null/undefined
             return { value: '' };
         else
-            return { errorMessage: 'Not a date' };
+            return this.returnFormatDateTimeError();
     }
+    protected returnFormatDateTimeError(): DataTypeResolution<string> {
+        return this.returnError('Not a date', DateTimeFormatterBase.NotADateErrorCode);
+    }
+
+    public static readonly NotADateErrorCode = 'NotADate';
 }
 /**
  * For LookupKey.DateTime. 
@@ -881,7 +926,11 @@ export class TimeofDayFormatter extends DateTimeFormatterBase
     {
         return true;
     }
-
+    protected override returnFormatDateTimeError(): DataTypeResolution<string>
+    {
+        return this.returnError('Not a time', TimeofDayFormatter.NotATimeErrorCode);
+    }
+    public static readonly NotATimeErrorCode = 'NotATime';
 }
 
 /**
@@ -911,5 +960,8 @@ export class TimeofDayHMSFormatter extends DateTimeFormatterBase
     {
         return true;
     }
-
+    protected override returnFormatDateTimeError(): DataTypeResolution<string>
+    {
+        return this.returnError('Not a time', TimeofDayFormatter.NotATimeErrorCode);
+    }
 }
