@@ -18,7 +18,7 @@ import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
-import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { NumberFormatter, StringFormatter, DateFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
@@ -78,6 +78,7 @@ function createJivsServicesForThisExample(): IJivsServices {
     let formatterService = services.dataTypeFormatterService as DataTypeFormatterService;
     formatterService.register(new StringFormatter());  // for {Label} and {SecondLabel} tokens in error message    
     formatterService.register(new NumberFormatter());  // for {CompareTo} token in error message    
+    formatterService.register(new DateFormatter());    // setValue() uses a formatter by default to convert native to text value
     let conditionFactory = services.conditionFactory as ConditionFactory;
     // DataTypeCheck is auto generated. So its needed here.
     conditionFactory.register<DataTypeCheckConditionConfig>(ConditionType.DataTypeCheck,

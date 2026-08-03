@@ -111,25 +111,28 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
             this.logger.message(LoggingLevel.Debug, () => 'formatterLookupKey=null');
             return false;
         }
-        const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
-        if (lookupKey)
-        {
-            try
-            {
-                this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
-                const dtfs = this.services.dataTypeFormatterService;
-                const result = dtfs.format(value, lookupKey);
-                return sendResultAlong(result);
-            }
-            catch (e) // the service threw
-            {
-                const err = ensureError(e);
-                this.logger.error(err); // will throw if SevereErrorBase
-                throw e;
-            }
-        }
-        this.logger.message(LoggingLevel.Debug, () => 'Did not format. No lookupKey supplied by config.formatterLookupKey or getDataType()');
 
+        const dtfs = this.services.dataTypeFormatterService;
+        if (dtfs.isActive())
+        {
+            const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+            if (lookupKey)
+            {
+                try
+                {
+                    this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+                    const result = dtfs.format(value, lookupKey);
+                    return sendResultAlong(result);
+                }
+                catch (e) // the service threw
+                {
+                    const err = ensureError(e);
+                    this.logger.error(err); // will throw if SevereErrorBase
+                    throw e;
+                }
+            }
+            this.logger.message(LoggingLevel.Debug, () => 'Did not format. No lookupKey supplied by config.formatterLookupKey or getDataType()');
+        }
         return false;
     }
 

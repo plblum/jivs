@@ -36,7 +36,30 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     protected indexOfExisting(item: IDataTypeFormatter): number {
         return -1;  // register does not replace existing
     }
-    
+
+    /**
+     * Determines if the Formatter service is active. When false, do not call format().
+     * Defaults to true.
+     * It does not block any methods (register, find, etc).
+     */
+    public get enabled(): boolean
+    {
+        return this._enabled;
+    }
+    public set enabled(value: boolean)
+    {
+        this._enabled = value;
+    }
+    private _enabled: boolean = true;
+    /**
+     * Returns true if enabled and there is at least one parser registered.
+     * Used by FieldValueHost.setTextValue instead of enabled.
+     */
+    public isActive(): boolean
+    {
+        return this.enabled && this.getAll().length > 0;
+    }
+
     /**
      * {@inheritDoc jivs-engine/Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
      */    

@@ -385,7 +385,7 @@ public adaptToForm(
         });
 }
 ```
-#### Configuring ValueHosts
+#### Configuring ValueHosts with the Builder
 The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) has these functions to add ValueHosts by their type.
 > The Form Configuration Adapter is actually a subclass of `ValueHostsManagerConfigBuilder`, supporting the same functions.
 - `field()` adds or modifies an `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
@@ -482,7 +482,7 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
     ```
  > All members of parameters, config, and arguments are [discussed below](#valuehost-members).
 
-##### ValueHost members
+##### Configuration parameters of ValueHosts
 Here are the arguments, parameters, and config members for all ValueHost functions described above.
 - `name` – The `ValueHost` name. Required. See [Naming each ValueHost](#naming-each-valuehost). If you repeat the same name after calling `builder.startUILayerConfig()`, you want to modify that ValueHost configuration.
 - `dataType` – The data type. Generally recommended to be setup, although the actual value provided by `ValueHost.setValue()` can be used to infer the data type. See [Lookup Keys: Data Types and Companion Tools](#lookup-keys-data-types-and-companion-tools).
@@ -511,6 +511,324 @@ Start with a `ValueHostsManager` instance. It should already be configured with 
 |vhm.vh.static('name')|StaticValueHost|Throws error|
 |vhm.vh.calc('name')|CalcValueHost|Throws error|
 |vhm.vh.any('name')|Base to all ValueHosts|Throws error|
+
+### Native and Text Values of ValueHosts
+Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (FieldValueHost, StaticValueHost, etc).
+
+Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
+
+As a refresher, each `FieldValueHost` may have two representations of its value:
+- Native value - The value that will actually be stored in the model or table.
+- Text value - The value as represented by the input. 
+
+#### Setting values
+You will set values as you initialize the `ValueHostsManager` and as the values are changed. 
+
+There are 4 functions available.
+- `setValue(value: any, options?: SetValueOptions): void` - Set the native value. Optionally let Jivs convert it to the text value.
+
+- `setTextValue(textValue: string, options?: FieldValueHostSetValueOptions): void` - Set the text value. Optionally let Jivs convert it to the native value.
+- `setValues(nativeValue: any, textValue: string, options?: SetValueOptions): void` - You have prepared both native and text values. Use this to set both of them together.
+- `setValueToUndefined(options?: SetValueOptions): void` - The native value is undetermined, or your own parser could not convert from text to a native value, this will record the native value as undefined. 
+
+#### setValue() function
+Set the native value. Optionally let Jivs convert it to the text value.
+```ts
+class ValueHost
+{
+    setValue(value: any, options?: SetValueOptions): void {}
+}
+```
+- Use when initializing the `ValueHost` from the native value on your model.
+- `FieldValueHosts` can also change the text value, so long its `DataTypeFormatters` feature is setup in the `ValueHostConfig`. More details below.
+- `FieldValueHosts` and `StaticValueHosts` support this. `CalcValueHosts` are effectively read-only, and calling this does nothing.
+- Your own formatter: If you handle converting native to text value outside of Jivs, use `setValues()` instead.
+- Using our formatter, you can wire up your UI element to take the resulting string by setting up the `ValueHostsManager.onTextValueChanged` callback handler.
+
+In this example, *vhm* is the ValueHostsManager.
+```ts
+vhm.getValueHost("LastName").setValue("MyValue");
+// or
+vhm.vh.any("LastName").setValue("MyValue");
+```
+When initializing the value, the options parameter offers several properties that are used:
+In this example, *vhm* is the `ValueHostsManager`.
+```ts
+vhm.getValueHost("LastName").setValue("MyValue",
+    {
+        validate: false,    // don't need to validate just yet
+        reset: true         // don't track a state change as if the user has edited the value
+    }
+);
+```
+See [Options parameter](#options-parameter-setvalueoptions) for all options.
+
+See ["Getting a ValueHost"](#getting-a-valuehost) for using `getValueHost()` and `vhm.vh`.
+##### Decisions around Jivs built in formatting
+Your `ValueHost` configuration determines if formatting will happen.
+
+- LookupKey used to select the `DataTypeFormatter` comes from the `dataType` or `formatterLookupKey`.
+    ```ts
+    builder.field('BirthDate', LookupKey.Date); // will use DateFormatter
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            formatterLookupKey: LookupKey.LongDate  // will use LongDateFormatter, overriding the data type
+        }
+    )
+    ```
+- Prevent conversion to text value by assigning formatterLookupKey to null.
+    ```ts
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            formatterLookupKey: null  // no conversion
+        }
+    )
+    ```
+    > If you are handling all conversion to text, be sure to use `formatterLookupKey: null` faithfully.
+    If not, the dataType is used and its lookupKey must be registered with the `DataTypeFormatter` or you will
+    get an error.
+- When the formatter has been setup, it can be disabled on calls to any of the setValue functions.
+    ```ts
+    vhm.getValueHost('BirthDate').setValue(birthDate, { disableFormatter: true });
+    ```
+- Using the resulting text value in your user interface element
+    ```ts
+    builder.field('BirthDate', LookupKey.Date, { // will use DateFormatter
+        propertyName: 'idForBirthdate'  // use propertyName to hold the id attribute value of the input if different from the ValueHost name
+    });
+    builder.onTextValueChanged = (fieldValueHost, oldValue)=>{
+        let newTextValue = fieldValueHost.getTextValue();
+        // assign it to the input's value attribute
+        document.getElementById(fieldValueHost.getPropertyName()).value = newTextValue;
+    };
+    let vhm = new ValueHostsManager(builder.completed());
+    // suppose your have a model object with a 'BirthDate' property
+    vhm.getValueHost('BirthDate').setValue(model.BirthDate);  // triggers onTextValueChanged
+    ```
+#### setTextValue() function
+Set the text value. Optionally let Jivs convert it to the native value using its built-in parsers.
+```ts
+class FieldValueHost {
+    setTextValue(textValue: string, options?: FieldValueHostSetValueOptions): void {}
+}
+```
+- Use when an input or string from an API call needs validation. For example, use this with the HTML Input element's onchange event handler.
+- Only exists on `FieldValueHosts`.
+- `FieldValueHosts` can also change the native value, so long as its `DataTypeParsers` feature is setup in the `ValueHostConfig`. More details below.
+- Your own parser: If you handle converting the text to native value outside of Jivs, use `setValues()` instead.
+
+```ts
+document.getElementById('birthDate').attachEventListener('onchange', (event)=> {
+    vhm.getFieldValueHost('BirthDate').setTextValue(event.target.value);
+});
+```
+See [Options parameter](#options-parameter-setvalueoptions) for all options.
+
+See ["Getting a ValueHost"](#getting-a-valuehost) for using `getFieldValueHost()` and `vhm.vh`.
+
+##### Decisions around Jivs built in parsing
+Your `ValueHost` configuration determines if parsing will happen.
+
+- LookupKey used to select the `DataTypeParser` comes from the `dataType` or `parserLookupKey`.
+    ```ts
+    builder.field('BirthDate', LookupKey.Date); // will use DateParser
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            parserLookupKey: LookupKey.LongDate  // will use LongDateParser, overriding the data type
+        }
+    )
+    ```
+- Prevent conversion to native value by assigning parserLookupKey to null.
+    ```ts
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            parserLookupKey: null  // no conversion
+        }
+    )
+    ```
+    > If you are handling all conversion to native value, be sure to use `parserLookupKey: null` faithfully.
+    If not, the dataType is used and its lookupKey must be registered with the `DataTypeParser` or you will
+    get an error.
+- When the parser has been setup, it can be disabled on calls to any of the setValue functions.
+    ```ts
+    vhm.getValueHost('BirthDate').setValue(birthDate, { disableParser: true });
+    ```
+#### setValues() function
+Set both native and text values together.
+```ts
+class FieldValueHost
+{
+    setValues(nativeValue: any, textValue: string, options?: SetValueOptions): void {}
+}
+```
+- Use when you handle either parsing (convert text to native) or formatting (convert native to text) instead of `setValue()` and `setTextValue()`.
+- If conversion failed or the value is undetermined, pass the value `undefined` as the value. Alternatively, use `setValueToUndefined()`.
+- Even if configured, Jivs own parsers and formatters will not be used by `setValues()`.
+
+```ts
+// to initialize, convert the model's native value to text and assign to the HTML element
+let textValue = myFormatter(model.birthDate);   // you write this
+document.getElementById('birthDate').value = textValue ?? '';   // in case undefined, use ?? ''
+vhm.getFieldValueHost('BirthDate').setValues(model.birthDate, textValue, {
+    skipValueChangedCallback: true,  // in case you wire up the onTextValueChanged callback hook
+    validate: false,    // don't need to validate just yet
+    reset: true         // don't track a state change as if the user has edited the value    
+});
+
+// to handle the onchanged event, parse the text to make it the native value
+document.getElementById('birthDate').attachEventListener('onchange', (event)=> {
+    let textValue = event.target.value;
+    let nativeValue = myParser(textValue); // return undefined if could not convert
+    vhm.getFieldValueHost('BirthDate').setValues(nativeValue, textValue);
+});
+```
+See [Options parameter](#options-parameter-setvalueoptions) for all options.
+
+See ["Getting a ValueHost"](#getting-a-valuehost) for using `getFieldValueHost()` and `vhm.vh`.
+#### setValueToUndefined() function
+The native value is undetermined, or your own parser could not convert from text to a native value, this will record the native value as undefined. Alternatively, use `setValue(undefined)`.   
+```ts
+class ValueHost {
+    setValueToUndefined(options?: SetValueOptions): void {}
+}
+```
+#### Options parameter: SetValueOptions
+Each of the `setValue()` functions offer the options parameter. Here is its type:
+```ts
+interface SetValueOptions {
+    validate?: boolean;
+    reset?: boolean;
+    overrideDisabled?: boolean;    
+    skipValueChangedCallback?: boolean;
+    duringEdit?: boolean;
+// FieldValueHosts add the following:
+    injectedError? : InjectedError;
+    disableParser?: boolean;
+    disableFormatter?: boolean;
+}
+```
+These properties are all related to validation:
+- `validate` - When true, invoke validation but only if the value changed. Only supported by validatable ValueHosts.
+- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
+- `skipValueChangedCallback` - When true, the onValueChanged and onTextValueChanged callbacks will not be invoked.
+- `overrideDisabled` - When true, it forces the change to the value even when the ValueHost is disabled.
+ValueHost is disabled when `isEnabled()` returns false.
+**Use case**: You may want to initialize a ValueHost with a value that is disabled. See [Disabling a ValueHost](#disabling-a-valuehost).
+- `duringEdit` - Set to true for an intermediate edit activity rather than a completed change.
+     For example, on the client side this may be used for an HTMLInputElement.oninput event,
+     where the user is still editing. In this mode, only validators intended for in-progress
+     edits are used like requireText, notNull, stringLength and regExp.
+- `injectedError` - When you handle parsing, your parser may report an error that you want to display.
+  Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
+- `disableParser` - When true, do not allow the parser to run on this ValueHost.
+- `disableFormatter` - When true, do not allow the parser to run on this ValueHost.
+
+### Getting the value
+Use `getValue()` to get the value from any ValueHost. For an FieldValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValueHostsManager, use it there too.
+```ts
+getValue(): any;
+```
+When it returns undefined, it indicates the value is undetermined.
+```ts
+let nativeValue = vhm.getValueHost("LastName").getValue();
+// or
+let nativeValue = vhm.vh.any("LastName").getValue();
+```
+### Getting the text value on FieldValueHosts
+FieldValueHosts have two values, native and text. The `getValue()` function gets its native value. The `getTextValue()` function gets its text value.
+```ts
+getTextValue(): string;
+```
+```ts
+let textValue = vhm.getFieldValueHost("LastName").getTextValue();
+// or
+let  textValue = vhm.vh.any("LastName").getTextValue();
+```
+See ["Getting a ValueHost"](#getting-a-valuehost) for using `getFieldValueHost()` and `vhm.vh`.
+
+### Injecting errors on demand
+When you handle parsing outside of Jivs, your parser may report an error. You need to supply the original
+text and that error message to Jivs. Upon receipt of an error like this, Jivs knows to add it to that ValueHost's list of validation errors.
+
+The `FieldValueHost` functions `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` can take in your error message like this:
+
+```ts
+vhm.getFieldValueHost('field1').setTextValue(
+    undefined, // indicates the native value was unresolved
+    text, // value prior to parsing
+    { injectedError: { errorMessage: 'message'}});  // error resulting from the parser
+```
+You can also supply it separately:
+```ts
+vhm.getFieldValueHost('field1').setInjectedError({ errorMessage: 'message'});
+```
+Its state remains until the next call to `setValue()` and its peers, `clearValidation()`, and ondemand with this:
+```ts
+vhm.getFieldValueHost('field1').clearInjectedError();
+```
+
+The `InjectedError` object is designed to support localization:
+```ts
+interface InjectedError
+{
+    errorMessage: string;   // the only value that is required
+    errorMessagel10n?: string;  // a localization key
+    summaryMessage?: string;  
+    summaryMessagel10n?: string;
+    errorCode?: string;     // helps setup discrete localized error messages by using different error codes
+}    
+```
+### Example
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchange', (evt)=> {
+    let textValue = evt.target.value;
+    let [nativeValue, parserError] = YourConvertToNativeCode(textValue);  
+    let injectedError: InjectedError | undefined = undefined;
+    if (parserError)
+    {
+        injectedError = { 
+            errorMessage : parserError,
+            errorCode: 'MyParserErrorCode'  // see below
+        };
+        nativeValue = undefined;    // indicates native value is not available
+    }
+    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
+        injectedError: injectedError
+    });
+});	
+```
+### Localizing your injected error
+Setup all localization in the `createJivsService()` function, with code associated
+with `TextLocalizerService`. See [Localization](#localization) for more.
+
+Like with validator error messages, any value you directly supply can be overridden by 
+the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,
+it will internally get setup with the correct l10n key to match `TextLocalizerService.registerErrorMessage()`.
+Same for `injectedError.summaryMessagel10n`. Simply by using `registerErrorMessage()`
+and `registerSummaryMessage()`, your original text is overridden.
+
+Here is an example to setup the messages when you don't supply the error code.
+```ts
+import { InjectedErrorValidatorErrorCode } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
+let tls = vhm.services.textLocalizerService;    
+tls.registerErrorMessage(InjectedErrorValidatorErrorCode, null, {
+        '*': 'Invalid input' 
+    });
+tls.registerSummaryMessage(InjectedErrorValidatorErrorCode, null, {
+    '*': '{Label} has this invalid input.'
+});    
+```
+Now using your own supplied errorcode (InjectedError.errorCode = 'MyParserErrorCode'):
+```ts
+let tls = vhm.services.textLocalizerService;    
+tls.registerErrorMessage('MyParserErrorCode', null, {
+        '*': 'Invalid input' 
+    });
+tls.registerSummaryMessage('MyParserErrorCode', null, {
+    '*': '{Label} has this invalid input.'
+});    
+```
 
 ### Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.
@@ -1059,7 +1377,7 @@ Assign the FieldValueHostConfig.formatterLookupKey and you get a different resul
 vhm.onTextValueChanged = (fieldValueHost, oldValue)=>{
     let newTextValue = fieldValueHost.getTextValue();
     // assign it to the input's value attribute
-    document.getElementById('FirstName').value = newTextValue;
+    document.getElementById(fieldValueHost.getName()).value = newTextValue;
 }
 ```
 #### Localized tokens in error messages
@@ -1663,190 +1981,6 @@ All of these actions can change the validation state whether on ValueHostsManage
 - using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setTextValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
 
-## Setting and getting values
-Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (FieldValueHost, StaticValueHost, etc).
-
-Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
-
-### Setting values
-You will set values as you initialize the ValueHostsManager and as the values are changed. Most of the time, you will use `valueHost.setValue()` and `valueHost.setValueToUndefined()`. 
-```ts
-setValue(value: any, options?: SetValueOptions): void;
-setValue(value: any, options?: FieldValueHostSetValueOptions): void;    // on FieldValueHosts
-
-setValueToUndefined(options?: SetValueOptions): void;
-```
-Use `setValueToUndefined()` (or call `setValue(undefined)`) to indicate that the value cannot be determined. For example, the user's input could not be converted into its native data type.
-
-In this example, *vhm* is the ValueHostsManager.
-```ts
-let lastNameVH = vhm.getValueHost("LastName");
-lastNameVH.setValue("MyValue");
-// or
-vhm.vh.any("LastName").setValue("MyValue");
-```
-> See ["Getting a ValueHost"](#getting-a-valuehost) for using `getValueHost()` and `vhm.vh`.
-
-When called, the ValueHost will consider the value "changed" and its `status` becomes *NeedsValidation*. When initializing the value, modify the code as shown here to avoid changing the status:
-```ts
-let lastNameVH = vhm.getValueHost("LastName");
-lastNameVH.setValue("MyValue", {reset: true});
-// or
-vhm.vh.any("LastName").setValue("MyValue", {reset: true});
-```
-When initializing the ValueHostsManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
-```ts
-builder.field('LastName', LookupKey.String, { initialValue: 'MyValue' } );
-```
-Both functions have an options parameter. Here is its type:
-```ts
-interface SetValueOptions {
-    validate?: boolean;
-    reset?: boolean;
-    overrideDisabled?: boolean;    
-    skipValueChangedCallback?: boolean;
-    duringEdit?: boolean;
-// FieldValueHosts add the following:
-    injectedError? : InjectedError;
-    disableParser?: boolean;
-    disableFormatter?: boolean;
-}
-```
-These properties are all related to validation:
-- `validate` - When true, invoke validation but only if the value changed. Only supported by validatable ValueHosts.
-- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
-- `skipValueChangedCallback` - When true, the onValueChanged and onTextValueChanged callbacks will not be invoked.
-- `overrideDisabled` - When true, it forces the change to the value even when the ValueHost is disabled.
-ValueHost is disabled when `isEnabled()` returns false.
-**Use case**: You may want to initialize a ValueHost with a value that is disabled. See [Disabling a ValueHost](#disabling-a-valuehost).
-- `injectedError` - When you handle parsing, your parser may report an error that you want to display.
-  Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
-- `disableParser` - When true, do not allow the parser to run on this ValueHost.
-- `disableFormatter` - When true, do not allow the parser to run on this ValueHost.
-- The other two are special cases covered elsewhere.
-
-### Setting values on FieldValueHosts
-FieldValueHosts have two values: the raw value from the Input (called the "Text Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setTextValue()`.
-```ts
-setValues(nativeValue: any, textValue: any, options?: FieldValueHostSetValueOptions): void;
-setTextValue(value: any, options?: FieldValueHostSetValueOptions): void;
-```
-
-Use `setValues()` when initializing the value and as either value has changed. If you cannot determine one of the values, pass in undefined.
-```ts
-let lastNameVH = vhm.getValueHost("Age");
-lastNameVH.setValues(25, "25");
-// or
-vhm.vh.field("Age").setValues(25, "25");
-```
-Use `setTextValue()` when you have parsers setup, as they will convert and save the native value for you. See [Where you want to use validation](#where-you-want-to-use-validation).
-
-Both functions have an options parameter. See the previous section for its definition.
-### Getting the value
-Use `getValue()` to get the value from any ValueHost. For an FieldValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValueHostsManager, use it there too.
-```ts
-getValue(): any;
-```
-When it returns undefined, it indicates the value is undetermined.
-```ts
-let lastNameVH = vhm.getValueHost("LastName");
-let nativeValue = lastNameVH.getValue();
-// or
-let nativeValue = vhm.vh.any("LastName").getValue();
-```
-### Getting the Input value on FieldValueHosts
-FieldValueHosts have two values, native and input. The `getValue()` function gets its native value. The `getTextValue()` function gets its input value.
-```ts
-getTextValue(): any;
-```
-```ts
-let lastNameVH = vhm.getValueHost("LastName");
-let textValue = lastNameVH.getTextValue();
-// or
-let  textValue = vhm.vh.any("LastName").getTextValue();
-```
-### Injecting errors on demand
-When you handle parsing outside of Jivs, your parser may report an error. You need to supply the original
-text and that error message to Jivs. Upon receipt of an error like this, Jivs knows to add it to that ValueHost's list of validation errors.
-
-The `FieldValueHost` functions `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` can take in your error message like this:
-
-```ts
-vhm.getFieldValueHost('field1').setTextValue(
-    undefined, // indicates the native value was unresolved
-    text, // value prior to parsing
-    { injectedError: { errorMessage: 'message'}});  // error resulting from the parser
-```
-You can also supply it separately:
-```ts
-vhm.getFieldValueHost('field1').setInjectedError({ errorMessage: 'message'});
-```
-Its state remains until the next call to `setValue()` and its peers, `clearValidation()`, and ondemand with this:
-```ts
-vhm.getFieldValueHost('field1').clearInjectedError();
-```
-
-The `InjectedError` object is designed to support localization:
-```ts
-interface InjectedError
-{
-    errorMessage: string;   // the only value that is required
-    errorMessagel10n?: string;  // a localization key
-    summaryMessage?: string;  
-    summaryMessagel10n?: string;
-    errorCode?: string;     // helps setup discrete localized error messages by using different error codes
-}    
-```
-### Example
-```ts
-let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchange', (evt)=> {
-    let textValue = evt.target.value;
-    let [nativeValue, parserError] = YourConvertToNativeCode(textValue);  
-    let injectedError: InjectedError | undefined = undefined;
-    if (parserError)
-        injectedError = { 
-            errorMessage : parserError,
-            errorCode: 'MyParserErrorCode'  // see below
-        }
-    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
-        validate: true, 
-        injectedError: injectedError
-    });
-});	
-```
-### Localizing your injected error
-Setup all localization in the `createJivsService()` function, with code associated
-with `TextLocalizerService`. See [Localization](#localization) for more.
-
-Like with validator error messages, any value you directly supply can be overridden by 
-the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,
-it will internally get setup with the correct l10n key to match `TextLocalizerService.registerErrorMessage()`.
-Same for `injectedError.summaryMessagel10n`. Simply by using `registerErrorMessage()`
-and `registerSummaryMessage()`, your original text is overridden.
-
-Here is an example to setup the messages when you don't supply the error code.
-```ts
-import { InjectedErrorValidatorErrorCode } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
-let tls = vhm.services.textLocalizerService;    
-tls.registerErrorMessage(InjectedErrorValidatorErrorCode, null, {
-        '*': 'Invalid input' 
-    });
-tls.registerSummaryMessage(InjectedErrorValidatorErrorCode, null, {
-    '*': '{Label} has this invalid input.'
-});    
-```
-Now using your own supplied errorcode (InjectedError.errorCode = 'MyParserErrorCode'):
-```ts
-let tls = vhm.services.textLocalizerService;    
-tls.registerErrorMessage('MyParserErrorCode', null, {
-        '*': 'Invalid input' 
-    });
-tls.registerSummaryMessage('MyParserErrorCode', null, {
-    '*': '{Label} has this invalid input.'
-});    
-```
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 

@@ -902,6 +902,22 @@ describe('FieldValueHost using FieldValueHostConfig.formatterLookupKey features 
         });
         expect(() => setup.valueHost.setValue(123)).toThrow(/No DataTypeFormatter for LookupKey/);
     });
+    // service.isActive() is false (DataTypeFormatterService.enabled=false), and setValue is called with a native value. Confirm that the formatter is not used and the text value is not set.
+    test('service.isActive() is false (DataTypeFormatterService.enabled=false), and setValue is called with a native value. Confirm that the formatter is not used and the text value is not set.', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Number
+        });
+        setup.services.dataTypeFormatterService.enabled = false;
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setValue(123);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.valueHost.getValue()).toBe(123);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeFalsy();
+    });
 
     // let's focus on the ValueHostsManager.onValueChanged callback to be sure its called in the normal case
     test('ValueHostsManager.onValueChanged callback is called when setValues is called', () =>

@@ -12,6 +12,15 @@ import { IServicesAccessor } from './Services';
  * using {@link jivs-engine/DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  */
 export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFormatter>, IServicesAccessor {
+    /**
+     * Returns true if enabled and there is at least one formatter registered.
+     * Used by FieldValueHost.setValue instead of enabled.
+     */
+    isActive(): boolean;
+    /**
+     * Determines if the Formatter service is active. When false, do not call format().
+     */
+    enabled: boolean;
 
     /**
      * Converts the native value to a string that can be shown to the user.
