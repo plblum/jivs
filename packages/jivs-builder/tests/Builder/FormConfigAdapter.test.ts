@@ -551,7 +551,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'NewPropertyName',
             // validatorConfigs is NEVER here
         };
@@ -573,7 +572,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: expect.any(Function),
             propertyName: 'NewPropertyName'
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
@@ -664,7 +662,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'OldGroup',
             parserLookupKey: 'OldParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'OldPropertyName'
         };
         let adjustments: AdapterValueHostConfig = {
@@ -677,7 +674,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'NewPropertyName'
         };
         let expectedValueHostConfig: FieldValueHostConfig = {
@@ -698,7 +694,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: expect.any(Function),
             propertyName: 'NewPropertyName'
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);

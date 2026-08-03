@@ -71,7 +71,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     /**
      * Called by setValue() to determine if a formatter is setup and the value is formattable.
      * If so, it determines the text value, and calls upon setValues() to handle it all.
-     * Supports config.formatterDataType and config.formatterCreator.
+     * Supports config.formatterLookupKey.
      * Also supports options.disableFormatter to skip formatting.
      * @param value 
      * @param options 
@@ -106,38 +106,29 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
             this.logger.message(LoggingLevel.Debug, () => 'option.disableFormatter=true');
             return false;
         }
-        if (this.config.formatterLookupKey || this.config.formatterCreator)
+        if (this.config.formatterLookupKey === null)   // null means no formatter is configured. undefined means use the default formatter for the data type.
         {
-        
-            this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
-            const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
-            if (this.config.formatterCreator)
-            {
-                // unlike with tryParser, we don't check formatter.supports
-                // because we want to let the formatter decide 
-                // if it can handle the value or not. It may have its own fallback behavior.
-                const formatter = this.config.formatterCreator?.(this);
-                if (formatter)
-                { // in this case, we have to let the formatter function deal with
-                    // any fallback behavior and we'll supply a null lookupKey.
-                    const cultureId = this.services.cultureService.activeCultureId;
-                    const result = formatter.format(value, lookupKey!, cultureId);
-                    return sendResultAlong(result);
-
-                }
-            }
-            // if neither formatterCreator nor formatterLookupKey is configured, we cannot format.
-            // and let setValue() continue as normal. It will set the text value to undefined.
-            if (!this.config.formatterLookupKey)
-            {
-                this.logger.message(LoggingLevel.Info, () => 'No formatterLookupKey or formatterCreator configured. Cannot format.');
-                return false;
-            }
-
-            const dtfs = this.services.dataTypeFormatterService;
-            const result = dtfs.format(value, lookupKey);
-            return sendResultAlong(result);
+            this.logger.message(LoggingLevel.Debug, () => 'formatterLookupKey=null');
+            return false;
         }
+        const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+        if (lookupKey)
+        {
+            try
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+                const dtfs = this.services.dataTypeFormatterService;
+                const result = dtfs.format(value, lookupKey);
+                return sendResultAlong(result);
+            }
+            catch (e) // the service threw
+            {
+                const err = ensureError(e);
+                this.logger.error(err); // will throw if SevereErrorBase
+                throw e;
+            }
+        }
+        this.logger.message(LoggingLevel.Debug, () => 'Did not format. No lookupKey supplied by config.formatterLookupKey or getDataType()');
 
         return false;
     }
@@ -234,7 +225,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      * If so, it determines the native value, and calls upon setValues() to handle it all.
      * If the parser detects an error, the native value will be set to undefined
      * and options.injectedError gets set to the parser's reported error info.
-     * Supports config.parserDataType and config.parserCreator.
+     * Supports config.parserLookupKey.
      * 
      * @param textValue 
      * @param options - Set disableParser = true to prevent parsing. When duringEdit=true,
@@ -269,45 +260,45 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         // on validating the input value alone
         if (options.duringEdit === true)
             return false;
-        try {
-            if (typeof textValue === 'string') {
-                if (options.disableParser === true) {
-                    this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
-                    return false;
-                }
-                const dtps = this.services.dataTypeParserService;
-                if (dtps.isActive()) {
-                    this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
-                         
-                    const lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
-                    const cultureId = this.services.cultureService.activeCultureId;
-                    const parser = this.config.parserCreator?.(this);
-                    if (parser && parser.supports(lookupKey!, cultureId, textValue)) { // in this case, we have to let the parser function deal with
-                        // any fallback behavior and we'll supply a null lookupKey.
-                        this.logger.message(LoggingLevel.Info, () => 'Parsing');
-                        const result = parser.parse(textValue, lookupKey!, cultureId);
-                        sendResultAlong(result);
-                        return true;
-                    }
-                    if (this.config.parserLookupKey === null)
-                        return false;
-                
-                    if (lookupKey) {
+
+        if (typeof textValue === 'string')
+        {
+            if (options.disableParser === true)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
+                return false;
+            }
+            if (this.config.parserLookupKey === null)   // null means no parser is configured. undefined means use the default parser for the data type.
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'parserLookupKey=null');
+                return false;
+            }            
+            const dtps = this.services.dataTypeParserService;
+            if (dtps.isActive())
+            {
+                const lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
+                if (lookupKey)
+                {
+                        
+                    try
+                    {
+                        this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
+                        const cultureId = this.services.cultureService.activeCultureId;
                         const result = dtps.parse(textValue, lookupKey, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
-                    const error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
-                    this.logger.error(error);
-                    throw error;
+                    catch (e)
+                    {
+                        const err = ensureError(e);
+                        this.logger.error(err);
+                        throw e;
+                    }
                 }
+                this.logger.message(LoggingLevel.Debug, () => 'Did not parse. No lookupKey supplied by config.parserLookupKey or getDataType()');
             }
         }
-        catch (e) {
-            const err = ensureError(e);            
-            this.logger.error(err);
-            throw err;
-        }            
+         
         return false;
     }
 

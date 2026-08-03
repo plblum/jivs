@@ -304,7 +304,9 @@ describe('constructor and initial property values', () => {
     });
 
     test('Configure with an actual RegExp object to ensure that object is still present when needed', () => {
-        let services = createJivsServicesForTesting();
+        let services = createJivsServicesForTesting({
+            registerFormatters: true
+        });
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
         let vhm = new ValueHostsManager({

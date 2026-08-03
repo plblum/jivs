@@ -177,33 +177,8 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * 
      * Note that the options object for setTextValue has a property called disableParser
      * which if set to true will prevent parsing too.
-     * 
-     * Alternatively, you can leave this undefined and use parserCreator to create the DataTypeParser
-     * instance you want.
      */
     parserLookupKey?: string | null;
-
-    /**
-     * Alternative to parserLookupKey that establishes a parser used when calling setTextValue()
-     * to convert the input value into the native value. It results in calling setValue() with the native value,
-     * or if the parser had an error, calling setValueToUndefined() and retaining
-     * the error information to show in the error message.
-     * 
-     * It provides a callback function that is expected to create an object that implements IDataTypeParser
-     * or return null if no parser is appropriate.
-     * 
-     * While parserLookupKey knows how to fallback to another data type using LookupKeyFallbackService,
-     * this parser function completely ignores DataTypeParserService.parse where that happens.
-     * Instead, its up to you to handle any fallbacks. You should also expect that the parse()
-     * functions lookupKey parameter may be null if parserLookupKey and dataType properties were not setup.
-     * 
-     * Your parser object's supports() method will be called. If it returns false, your
-     * object won't be used, and it will fallback to the parserLookupKey.
-     * @param valueHost
-     * @returns Object that implements IDataTypeParser
-     * or return null if no parser is appropriate
-     */
-    parserCreator?: (valueHost: IFieldValueHost) => IDataTypeParser<any> | null;
 
     /**
      * A DataTypeFormatter object is used when calling setValue() to convert
@@ -215,35 +190,14 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * like LookupKey.Integer for an integer-specific formatter. However, individual
      * DataTypeFormatter classes may have a unique lookup key to assign here.
      * - Assign to the lookup key to use a formatter that supports the lookup key.
-     * - Leave it undefined/null to AVOID using a formatter at all,
-     * meaning that setValue will never call setValues() with both native and text values, 
-     * and the text value will remain unchanged.
+     * - Leave it undefined to use the dataType configuration property (for a Data Type Lookup Key)
+     *   on the ValueHost, but remember to assign that property.
+     * - Assign to null to prevent any formatter from being setup.
      * 
      * Note that the options object for setValue has a property called disableFormatter
      * which if set to true will prevent formatting too.
-     * 
-     * Alternatively, you can leave this undefined and use formatterCreator 
-     * to create the DataTypeFormatter instance you want.
      */
     formatterLookupKey?: string | null;
-
-    /**
-     * Alternative to formatterLookupKey that establishes a formatter used when calling setValue()
-     * to convert the native value into the text value.
-     * 
-     * It provides a callback function that is expected to create an object that 
-     * implements IDataTypeFormatter or return null if no formatter is appropriate.
-     * 
-     * Your formatter object's supports() method will be called. If it returns false, your
-     * object won't be used, and it will fallback to the formatterLookupKey.
-     * 
-     * Note that the options object for setValue has a property called disableFormatter
-     * which if set to true will prevent formatting too.
-     * @param valueHost
-     * @returns Object that implements IDataTypeFormatter
-     * or return null if no formatter is appropriate
-     */
-    formatterCreator?: (valueHost: IFieldValueHost) => IDataTypeFormatter | null;
 
     /**
      * The actual property name on the model. If its the same as Config.name,

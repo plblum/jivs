@@ -49,6 +49,7 @@ import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../.
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
+import { IDataTypeFormatter } from '../../src/Interfaces/DataTypeFormatters';
 
 
 interface ITestSetupConfig {
@@ -476,11 +477,10 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });    
 });
-describe('setTextValue with parser enabled to see both text value and native values are assigned', () => {
+describe('setTextValue with parserLookupKey enabled to see both text value and native values are assigned', () => {
     function testWithParser(textValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: FieldValueHostSetValueOptions| null | undefined,
         expectedNativeValue: any,
         expectParserCreatorToBeCalled: boolean = false
@@ -490,8 +490,7 @@ describe('setTextValue with parser enabled to see both text value and native val
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
-            parserLookupKey: parserLookupKey,
-            parserCreator: parserCreator
+            parserLookupKey: parserLookupKey
         }
         let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
@@ -518,7 +517,6 @@ describe('setTextValue with parser enabled to see both text value and native val
     function testWithParserWithErrorMessage(textValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: FieldValueHostSetValueOptions| null | undefined
         ): ITestSetupConfig
     {
@@ -526,8 +524,7 @@ describe('setTextValue with parser enabled to see both text value and native val
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
-            parserLookupKey: parserLookupKey,
-            parserCreator: parserCreator
+            parserLookupKey: parserLookupKey
         }
         let setup = setupFieldValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
@@ -549,45 +546,12 @@ describe('setTextValue with parser enabled to see both text value and native val
 
         return setup;
     }    
-    function testWithParserWhereErrorIsThrown(textValue: any,
-        nativeDataTypeLookupKey: string,
-        parserLookupKey: string | null | undefined,
-        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
-        options: FieldValueHostSetValueOptions| null | undefined,
-        errorMsg: string
-        ): ITestSetupConfig
-    {
-        let ivh: FieldValueHostConfig = {
-            name: 'Field1',
-            validatorConfigs: [],
-            dataType: nativeDataTypeLookupKey,
-            parserLookupKey: parserLookupKey,
-            parserCreator: parserCreator
-        }
-        let setup = setupFieldValueHost(ivh);
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
-        registerDataTypeParsers(setup.services.dataTypeParserService);
-        setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
-        let regex = new RegExp(errorMsg);
-        expect(() => setup.valueHost.setTextValue(textValue, options!)).toThrow(regex);
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
-        expect(setup.valueHost.isChanged).toBe(false);
-        expect(setup.valueHost.getTextValue()).toBeUndefined();
-        expect(setup.valueHost.getValue()).toBeUndefined();     
-        expect(setup.valueHost.getInjectedError()).toBeNull();
-        let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
-            null)).toBeTruthy();
-        expect(logger.findMessage(errorMsg, LoggingLevel.Error,    
-            LoggingCategory.Exception)).toBeTruthy();
-        return setup;
-    }        
     function testWithDisabledParser(textValue: any,
         nativeDataTypeLookupKey: string,
         parserLookupKey: string | null | undefined, // when null, no parser
-        parserCreator: undefined | ((valueHost: IFieldValueHost) => IDataTypeParser<any>),
         options: FieldValueHostSetValueOptions | null | undefined,    // when disableParser = true
+        errorMsg: string | null, // the message to find in the log
         isActiveParser: boolean = true  // when false, no parser
         ): ITestSetupConfig
     {
@@ -595,11 +559,11 @@ describe('setTextValue with parser enabled to see both text value and native val
             name: 'Field1',
             validatorConfigs: [],
             dataType: nativeDataTypeLookupKey,
-            parserLookupKey: parserLookupKey,
-            parserCreator: parserCreator
+            parserLookupKey: parserLookupKey
         }
         let setup = setupFieldValueHost(ivh);
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
         setup.services.dataTypeParserService.enabled = isActiveParser;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
@@ -609,139 +573,104 @@ describe('setTextValue with parser enabled to see both text value and native val
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe(textValue);    
         expect(setup.valueHost.getInjectedError()).toBeNull();
-        let logger = setup.services.loggerService as CapturingLogger;
-        if (options && options.disableParser)
-            expect(logger.findMessage('option.disableParser=true', LoggingLevel.Debug,
+        if (errorMsg)
+            expect(logger.findMessage(errorMsg, LoggingLevel.Debug,
                 null)).toBeTruthy();
         return setup;
     }    
-// trims then appends '!' to show this function was applied
-    function parserFnTrimString(valueHost: IFieldValueHost): IDataTypeParser<string>
-    {
-        return <IDataTypeParser<string>>{
-            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
-                return !dataTypeLookupKey || (dataTypeLookupKey === LookupKey.String);
-            },
-            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-                return { value: text.trim() + '!' };
-            },
-        }
-    }
-    // converts to a number then adds 1 to show this function was applied.
-    function parserFnToNumber(valueHost: IFieldValueHost): IDataTypeParser<number>
-    {
-        return <IDataTypeParser<number>>{
-            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
-                return !dataTypeLookupKey || dataTypeLookupKey === LookupKey.Number;
-            },
-            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
-                let num = parseFloat(text);
-                if (!isNaN(num))
-                    return { value: num + 1 };
-                
-                return { errorDetails: { errorMessage: 'Invalid data type ' } };
-            },
-        }
-    }    
-    function parserFnThrows(valueHost: IFieldValueHost): IDataTypeParser<string>
-    {
-        return <IDataTypeParser<string>>{
-            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
-                return true;
-            },
-            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-                throw new CodingError('ERROR');
-            },
-        }
-    }    
+
 
     test('As a string with dataType=string, expecting to parse and update native value. The parser will be CleanupStringParser set only to trim. This parser does not encounter any errors', () => {
-        testWithParser('ABC', LookupKey.String, undefined, undefined, {}, 'ABC');
-        testWithParser(' ABC ', LookupKey.String, undefined, undefined, {}, 'ABC');     
-        testWithParser('ABC', LookupKey.String, LookupKey.String, undefined, {}, 'ABC');     
-        testWithParser('ABC', null!, LookupKey.String, undefined, {}, 'ABC');         
-        testWithParser('ABC', undefined!, LookupKey.String, undefined, {}, 'ABC');     
-        testWithParser('ABC', undefined!, LookupKey.String, undefined, { disableParser: false}, 'ABC');           
-        
-        testWithParser('ABC', LookupKey.String, undefined, parserFnTrimString, {}, 'ABC!');
-        testWithParser('ABC', undefined!, undefined, parserFnTrimString, {}, 'ABC!');
-        testWithParser(' ABC ', LookupKey.String, undefined, parserFnTrimString, {}, 'ABC!');     
-        testWithParser(' ABC ', undefined!, undefined, parserFnTrimString, {}, 'ABC!');     
-        testWithParser('ABC', LookupKey.String, LookupKey.String, parserFnTrimString, {}, 'ABC!');     
-        testWithParser('ABC', null!, LookupKey.String, parserFnTrimString, {}, 'ABC!');         
-        testWithParser('ABC', undefined!, undefined, parserFnTrimString, { disableParser: false }, 'ABC!');     
-        testWithParser('ABC', undefined!, LookupKey.String, parserFnTrimString, { disableParser: false}, 'ABC!');           
+        testWithParser('ABC', LookupKey.String, undefined, {}, 'ABC');
+        testWithParser(' ABC ', LookupKey.String, undefined, {}, 'ABC');     
+        testWithParser('ABC', LookupKey.String, LookupKey.String, {}, 'ABC');     
+        testWithParser('ABC', null!, LookupKey.String, {}, 'ABC');         
+        testWithParser('ABC', undefined!, LookupKey.String, {}, 'ABC');     
+        testWithParser('ABC', undefined!, LookupKey.String, { disableParser: false}, 'ABC');           
+      
     });
     test('As a string representing a number with dataType=number, expecting to parse and update native value. None will generate errors', () => {
-        testWithParser('10', LookupKey.Number, undefined, undefined, {}, 10);
-        testWithParser(' 20 ', LookupKey.Number, undefined, undefined, {}, 20);     
-        testWithParser('30', LookupKey.Number, LookupKey.Number, undefined, {}, 30);        
-        testWithParser('30', null!, LookupKey.Number, undefined, {}, 30);           
-        testWithParser('30', undefined!, LookupKey.Number, undefined, {}, 30);                
-        testWithParser('30', undefined!, LookupKey.Number, undefined, { disableParser: false }, 30);
+        testWithParser('10', LookupKey.Number, undefined, {}, 10);
+        testWithParser(' 20 ', LookupKey.Number, undefined, {}, 20);     
+        testWithParser('30', LookupKey.Number, LookupKey.Number, {}, 30);        
+        testWithParser('30', null!, LookupKey.Number, {}, 30);           
+        testWithParser('30', undefined!, LookupKey.Number, {}, 30);                
+        testWithParser('30', undefined!, LookupKey.Number, { disableParser: false }, 30);
 
-        testWithParser('10', LookupKey.Number, undefined, parserFnToNumber, {}, 11);
-        testWithParser('10', undefined!, undefined, parserFnToNumber, {}, 11);
-        testWithParser(' 20 ', LookupKey.Number, undefined, parserFnToNumber, {}, 21);     
-        testWithParser(' 20 ', undefined!, undefined, parserFnToNumber, {}, 21);     
-        testWithParser('30', LookupKey.Number, LookupKey.Number, parserFnToNumber, {}, 31);        
-        testWithParser('30', null!, LookupKey.Number, parserFnToNumber, {}, 31);           
-        testWithParser('30', undefined!, LookupKey.Number, parserFnToNumber, { disableParser: false }, 31);                
-        testWithParser('30', undefined!, LookupKey.Number, parserFnToNumber, { disableParser: false }, 31);
     });
     test('As a string representing a number with dataType=integer, expecting to parse using fallback lookupkey and update native value. None will generate errors', () => {
-        testWithParser('10', LookupKey.Integer, undefined, undefined, {}, 10);
-        testWithParser(' 20 ', LookupKey.Integer, undefined, undefined, {}, 20);     
-        testWithParser('30', null!, LookupKey.Integer, undefined, {}, 30);        
-        testWithParser('30', undefined!, LookupKey.Integer, undefined, {}, 30);
+        testWithParser('10', LookupKey.Integer, undefined, {}, 10);
+        testWithParser(' 20 ', LookupKey.Integer, undefined, {}, 20);     
+        testWithParser('30', null!, LookupKey.Integer, {}, 30);        
+        testWithParser('30', undefined!, LookupKey.Integer, {}, 30);
 
     });    
-    test('parserCreator is provided but its supports() will return false. The parserLookupKey or dataType will be used instead.', () => {
-        testWithParser('30', undefined!, LookupKey.Integer, parserFnToNumber, {}, 30, false);        
-        testWithParser('30', LookupKey.Integer, LookupKey.Integer, parserFnToNumber, {}, 30, false);        
-        testWithParser('30', LookupKey.Integer, undefined, parserFnToNumber, {}, 30, false);        
-    });
 
     test('As a string that cannot parse to a number, but using datatype=number, reports an error', () => {
-        testWithParserWithErrorMessage('ABC', LookupKey.Number, undefined, undefined, {});
-        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Number, undefined, {});
-        testWithParserWithErrorMessage('ABC', LookupKey.Integer, undefined, undefined, {});
-        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Integer, undefined, {});   
-        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Number, parserFnToNumber, {});        
+        testWithParserWithErrorMessage('ABC', LookupKey.Number, undefined, {});
+        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Number, {});
+        testWithParserWithErrorMessage('ABC', LookupKey.Integer, undefined, {});
+        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Integer, {});       
     });
 
     test('parserLookupKey = null disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, null, undefined, {});   // parserLookupKey = null
+        testWithDisabledParser('ABC', LookupKey.String, null, {}, 'parserLookupKey=null');   // parserLookupKey = null
     });
-    test('parserCreator is setup and used despite parserLookupKey = null, resulting in just updating text value but no change to native value', () => {
-        testWithParser('ABC', LookupKey.String, null, parserFnTrimString, {}, 'ABC!');   
-    });    
+
     test('option.disableParser=true disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, undefined, undefined, { disableParser: true });
-        testWithDisabledParser('ABC', LookupKey.String, undefined, parserFnTrimString, { disableParser: true });
+        testWithDisabledParser('ABC', LookupKey.String, undefined, { disableParser: true }, 'option.disableParser=true');
     });   
     test('option.duringEdit=true disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, undefined, undefined, { duringEdit: true });
-        testWithDisabledParser('ABC', LookupKey.String, undefined, parserFnTrimString, { duringEdit: true });
+        testWithDisabledParser('ABC', LookupKey.String, undefined, { duringEdit: true }, null);
     });        
     test('dataTypeParserService.enabled=false disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, null, undefined, { }, false);  // parserservice disabled
-        testWithDisabledParser('ABC', LookupKey.String, null, parserFnTrimString, { }, false);  // parserservice disabled
+        testWithDisabledParser('ABC', LookupKey.String, null, { }, null, false);  // parserservice disabled
     });    
     test('value is not a string disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser(10, LookupKey.Number, undefined, undefined, {}); // not a string
-        testWithDisabledParser(false, LookupKey.Number, undefined, undefined, {}); // not a string
-        testWithDisabledParser(new Date(), LookupKey.Number, undefined, undefined, {}); // not a string
-        testWithDisabledParser(10, LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
-        testWithDisabledParser(false, LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
-        testWithDisabledParser(new Date(), LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
+        testWithDisabledParser(10, LookupKey.Number, undefined, {}, null); // not a string
+        testWithDisabledParser(false, LookupKey.Number, undefined, {}, null); // not a string
+        testWithDisabledParser(new Date(), LookupKey.Number, undefined, {}, null); // not a string
     });    
-    test('Cases that throw exceptions', () => {
-        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, undefined, {}, 'Cannot parse');
-        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, parserFnThrows, {}, 'ERROR');
-        testWithParserWhereErrorIsThrown('10', LookupKey.Integer, undefined, (vh) => {
-            throw new CodingError('ERROR');
-        }, {}, 'ERROR');        
+
+    class TestWithExceptionParser implements IDataTypeParser<string> {
+        supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean
+        {
+            return true;
+        }
+        isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+        {
+            return true;
+        }
+        parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string | null>
+        {
+            throw new CodingError('EXCEPTION');
+        }
+
+    };
+    test('Parser throws', () => {  
+        let ivh: FieldValueHostConfig = {
+            name: 'Field1',
+            validatorConfigs: [],
+            dataType: LookupKey.Number,
+            parserLookupKey: 'TESTWITHEXCEPTION'
+        };
+        let setup = setupFieldValueHost(ivh);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+
+        setup.services.dataTypeParserService.register(new TestWithExceptionParser());
+        const errorMsg = 'EXCEPTION';
+        let regex = new RegExp(errorMsg);
+        expect(() => setup.valueHost.setTextValue('Test')).toThrow(regex);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getInjectedError()).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,
+            null)).toBeTruthy();
+        expect(logger.findMessage(errorMsg, LoggingLevel.Error,
+            LoggingCategory.Exception)).toBeTruthy();        
     });
 });
 
@@ -916,13 +845,10 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
     });    
 });
 
-describe('FieldValueHost using FieldValueHostConfig.formatter features with setValue()', () =>
+describe('FieldValueHost using FieldValueHostConfig.formatterLookupKey features with setValue()', () =>
 {
-    // setValue has been tested without any formatter options. Now to handle when either or both
-    // config.formatterLookupKey and config.formatterCreator are provided. 
-    // The formatterCreator is a function that returns an IValueFormatter. 
-    // The formatterLookupKey is used to find a registered IValueFormatter. 
-    // If both are provided, the formatterCreator takes precedence.
+    // setValue has been tested without any formatter options. Now to handle
+    // config.formatterLookupKey.
     // When either is provided, setValue will defer to setValues(nativeValue, textValue, options)
     // and tests should confirm that both the native value and text value are set correctly.
     // Tests include logging with Level=Debug to confirm that the formatter is being used 
@@ -932,13 +858,12 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
     
     // Create some test cases
     // 1. formatterLookupKey is provided and registered, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.
-    // 2. formatterCreator is provided and returns a formatter, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.
-    // 3. Both formatterLookupKey and formatterCreator are provided, and setValue is called with a native value. Confirm that the text value is set correctly using the formatterCreator's formatter.
-    // 4. option.disableFormatter=true is provided in setValue's options, and confirm that the formatter is not used and the text value is not set.
-    // 5. formatterLookupKey is provided but not registered, and setValue is called with a native value. Confirm that an error is thrown.
-    // 6. formatterCreator is provided but returns null, and setValues is called with a native value. Confirm that an error is thrown.
-    
-    test('formatterLookupKey is provided and registered, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.', () => {
+    // 2. option.disableFormatter=true is provided in setValue's options, and confirm that the formatter is not used and the text value is not set.
+    // 3. formatterLookupKey=null is provided in setValue's options, and confirm that the formatter is not used and the text value is not set.
+    // 4. formatterLookupKey is provided but not registered, and setValue is called with a native value. Confirm that an error is thrown.
+     
+    test('formatterLookupKey is provided and registered, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.', () =>
+    {
         // setupFieldValueHost will configure all built-in formatters, so we can use LookupKey.Number
         let setup = setupFieldValueHost({
             name: 'Field1',
@@ -954,41 +879,6 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Formatter used', LoggingLevel.Debug)).toBeTruthy();
     });
-    test('formatterCreator is provided and returns a formatter, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.', () =>
-    {
-        let setup = setupFieldValueHost({
-            name: 'Field1',
-            dataType: LookupKey.Number,
-            formatterCreator: (valueHost) =>
-            {
-                return new CurrencyFormatter('USD');
-            }
-        }
-        );
-        let logger = setup.services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
-        setup.valueHost.setValue(456);
-        expect(setup.valueHost.getTextValue()).toBe('$456.00');
-        expect(setup.valueHost.getValue()).toBe(456);
-    });
-    test('Both formatterLookupKey and formatterCreator are provided, and setValue is called with a native value. Confirm that the text value is set correctly using the formatterCreator\'s formatter.', () =>
-    {
-        let setup = setupFieldValueHost({
-            name: 'Field1',
-            dataType: LookupKey.Number,
-            formatterLookupKey: LookupKey.Number,
-            formatterCreator: (valueHost) =>
-            {
-                return new CurrencyFormatter('USD');
-            }
-        }
-        );
-        let logger = setup.services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
-        setup.valueHost.setValue(789);
-        expect(setup.valueHost.getTextValue()).toBe('$789.00');
-        expect(setup.valueHost.getValue()).toBe(789);
-    });
     test('option.disableFormatter=true is provided in setValue\'s options, and confirm that the formatter is not used and the text value is not set.', () =>
     {
         let setup = setupFieldValueHost({
@@ -998,7 +888,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
         });
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        setup.valueHost.setValue(123, <FieldValueHostSetValueOptions>{ disableFormatter: true });  
+        setup.valueHost.setValue(123, <FieldValueHostSetValueOptions> { disableFormatter: true });
         expect(setup.valueHost.getTextValue()).toBeUndefined();
         expect(setup.valueHost.getValue()).toBe(123);
         expect(logger.findMessage('option.disableFormatter=true', LoggingLevel.Debug)).toBeTruthy();
@@ -1011,26 +901,11 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
             formatterLookupKey: 'NonExistentFormatter'
         });
         expect(() => setup.valueHost.setValue(123)).toThrow(/No DataTypeFormatter for LookupKey/);
-    }); 
-    test('formatterCreator is provided but returns null, and setValues is called with a native value. Uses normal setValue().', () =>
-    {
-        let setup = setupFieldValueHost({
-            name: 'Field1',
-            dataType: LookupKey.Number,
-            formatterCreator: (valueHost) => {
-                return null as any;
-            }   
-        });
-        let logger = setup.services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
-        setup.valueHost.setValue(123);
-        expect(setup.valueHost.getTextValue()).toBeUndefined();
-        expect(setup.valueHost.getValue()).toBe(123);
-        expect(logger.findMessage('Attempt to format', LoggingLevel.Debug)).toBeTruthy();
-        expect(logger.findMessage('No formatterLookupKey or formatterCreator', LoggingLevel.Debug)).toBeNull();
     });
+
     // let's focus on the ValueHostsManager.onValueChanged callback to be sure its called in the normal case
-    test('ValueHostsManager.onValueChanged callback is called when setValues is called', () => {
+    test('ValueHostsManager.onValueChanged callback is called when setValues is called', () =>
+    {
         let setup = setupFieldValueHost({
             name: 'Field1',
             dataType: LookupKey.Number,
@@ -1076,7 +951,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
 
         expect(logger.findMessage('Formatter used', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('notifyOtherValueHostsOfValueChange', LoggingLevel.Debug)).toBeTruthy();
-    });    
+    });
     test('ValueHostsManager.onValueHostValidationStateChanged callback is called when setValues is called', () =>
     {
         let setup = setupFieldValueHost({
@@ -1098,7 +973,99 @@ describe('FieldValueHost using FieldValueHostConfig.formatter features with setV
 
         expect(logger.findMessage('Formatter used', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('notifyOtherValueHostsOfValueChange', LoggingLevel.Debug)).toBeTruthy();
-    });    
+    });
+    // when formatterLookupKey=null, does not format and logs 'Did not format'
+    test('when formatterLookupKey=null, does not format and logs "formatterLookupKey=null"', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: null
+        });
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        setup.valueHost.setValue(10);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(logger.findMessage('formatterLookupKey=null', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // both formatterLookupKey and dataType config options are undefined. Logs 'No lookupKey supplied'
+    test('both formatterLookupKey and dataType config options are undefined. Logs "No lookupKey supplied"', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: undefined,
+            formatterLookupKey: undefined
+        });
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setValue(10);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(logger.findMessage('No lookupKey supplied', LoggingLevel.Debug)).toBeTruthy();
+    });
+    class FormatterThrows implements IDataTypeFormatter
+    {
+        supports(dataTypeLookupKey: string, cultureId: string): boolean
+        {
+            return true
+        }
+        format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>
+        {
+            throw new CodingError('EXCEPTION');
+        }
+    }
+
+    test('Formatter throws', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: 'FormatterThrows'   
+        });
+        setup.services.dataTypeFormatterService.register(new FormatterThrows());
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        const errorMsg = 'EXCEPTION';
+        let regex = new RegExp(errorMsg);
+        expect(() => setup.valueHost.setValue(10)).toThrow(regex);
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug,
+            null)).toBeTruthy();
+        expect(logger.findMessage(errorMsg, LoggingLevel.Error,
+            LoggingCategory.Exception)).toBeTruthy();        
+    });
+    // demonstrate setValues and setTextValue do not use the formatter
+    test('setValues does not use the formatter', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency    
+        });
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setValues(10, '20');    // this text value is definitely not what the formatter would produce, but setValues does not use the formatter
+        expect(setup.valueHost.getTextValue()).toBe('20');
+        expect(setup.valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug,
+            null)).toBeNull();
+    });
+    test('setTextValue does not use the formatter', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency
+        });
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setTextValue('20');
+        expect(setup.valueHost.getTextValue()).toBe('20');  // if the formatter was used, it would have been '$20.00' or similar
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug,
+            null)).toBeNull();
+    });
 });
 
 describe('FieldValueHost.validate uses autogenerated DataTypeCheck condition', () => {

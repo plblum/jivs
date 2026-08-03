@@ -405,9 +405,7 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         initialValue?: any;   
         initialEnabled?: boolean;
         parserLookupKey?: null | string;
-        parserCreator?: ((valueHost) => null | IDataTypeParser<any>);
         formatterLookupKey?: null | string;
-        formatterCreator?: ((valueHost) => null | IDataTypeFormatter<any>);
         group?: null | string | string[];
         propertyName?: string;
     }
@@ -495,9 +493,8 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](#using-calcvaluehost).
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to validate() that share the group. The name matching is case insensitive.
 - `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
-- `parserCreator` – An alternative to `parserLookupKey` that provides a function callback to create the parser object. The function has this definition: `(valueHost: IFieldValueHost) => IDataTypeParser | null;`
 - `formatterLookupKey` – When calling setValue(), it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the DataTypeFormatterService.
-- `formatterCreator` – An alternative to `formatterLookupKey` that provides a function callback to create the formatter object. The function has this definition: `(valueHost: IFieldValueHost) => IDataTypeFormatter | null;`
+It has no impact on `setValues()` or `setTextValue()`.
 - `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
 
 ### Getting a ValueHost
