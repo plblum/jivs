@@ -1454,8 +1454,8 @@ describe('injectedErrors', () =>
             expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
         });
 
-        // setup TextLocalizerService to have supporting error messages for the injected error, and ensure that the l10n messages are used in the IssuesFound
-        test('InjectedError present with l10n error message but not summary, validate() returns Invalid and IssuesFound contains the injected error with l10n messages', () =>
+        // setup TextLocalizerService to have supporting error message but not summary for the injected error, and ensure that the l10n messages are used in the IssuesFound
+        test('InjectedError present with localized error message and summary setup uses those localized versions when summary is unassigned', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
@@ -1467,8 +1467,7 @@ describe('injectedErrors', () =>
                 "*": 'Localized Summary Message',
             });
             setup.valueHost.setInjectedError({
-                errorMessage: 'ERROR',
-                errorMessagel10n: TextLocalizerService.getErrorMessagel10nText(errorCode, null),
+                errorMessage: 'ERROR'
             });
             let vr = setup.valueHost.validate();
             expect(vr).toBeDefined();
@@ -1486,7 +1485,7 @@ describe('injectedErrors', () =>
             expect(state).not.toBeNull();
             expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
         });
-        test('InjectedError present with l10n summary message, validate() returns Invalid and IssuesFound contains the injected error with l10n messages', () =>
+        test('InjectedError present with localized error message and summary setup uses those localized versions when summary is assigned', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
@@ -1506,7 +1505,7 @@ describe('injectedErrors', () =>
             expect(vr).toBeDefined();
             expect(vr!.status).toBe(ValidationStatus.Invalid);
             expect(vr!.issuesFound).toEqual([{
-                errorMessage: 'ERROR',
+                errorMessage: 'Localized Error Message',
                 // summary happens because the injectedError.summaryMessage is blank
                 summaryMessage: 'Localized Summary Message',
                 severity: ValidationSeverity.Severe,
@@ -1518,7 +1517,7 @@ describe('injectedErrors', () =>
             expect(state).not.toBeNull();
             expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
         });        
-        test('InjectedError without l10n but localizations setup still uses the messages from InjectedError', () =>
+        test('InjectedError present with localized error message and summary setup, injectedError has the unassigned l10n values uses original text', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
@@ -1531,7 +1530,9 @@ describe('injectedErrors', () =>
             });
             setup.valueHost.setInjectedError({
                 errorMessage: 'ERROR',
+                errorMessagel10n: 'Unknown l10n text',
                 summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'Unknown l10n text',
             });
             let vr = setup.valueHost.validate();
             expect(vr).toBeDefined();

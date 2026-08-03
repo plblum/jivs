@@ -1456,10 +1456,7 @@ interface SetValueOptions {
     reset?: boolean;
     skipValueChangedCallback?: boolean;
     overrideDisabled?: boolean;
-}
-// FieldValueHosts extend the above on setValue, setTextValue, setValueToUndefined, and setValues.
-export interface FieldValueHostSetValueOptions extends SetValueOptions
-{
+// FieldValueHosts add the following:
     injectedError?: InjectedError;
     disableParser?: boolean;
     disableFormatter?: boolean;
@@ -1712,9 +1709,7 @@ interface SetValueOptions {
     overrideDisabled?: boolean;    
     skipValueChangedCallback?: boolean;
     duringEdit?: boolean;
-}
-export interface FieldValueHostSetValueOptions extends SetValueOptions
-{
+// FieldValueHosts add the following:
     injectedError? : InjectedError;
     disableParser?: boolean;
     disableFormatter?: boolean;
@@ -1786,10 +1781,18 @@ vhm.getFieldValueHost('field1').setTextValue(
     text, // value prior to parsing
     { injectedError: { errorMessage: 'message'}});  // error resulting from the parser
 ```
+You can also supply it separately:
+```ts
+vhm.getFieldValueHost('field1').setInjectedError({ errorMessage: 'message'});
+```
+Its state remains until the next call to `setValue()` and its peers, `clearValidation()`, and ondemand with this:
+```ts
+vhm.getFieldValueHost('field1').clearInjectedError();
+```
 
 The `InjectedError` object is designed to support localization:
 ```ts
-export interface InjectedError
+interface InjectedError
 {
     errorMessage: string;   // the only value that is required
     errorMessagel10n?: string;  // a localization key
@@ -1818,11 +1821,26 @@ firstNameFld.attachEventListener('onchange', (evt)=> {
 ```
 ### Localizing your injected error
 Setup all localization in the `createJivsService()` function, with code associated
-with TextLocalizerService. See [Localization](#localization) for more.
+with `TextLocalizerService`. See [Localization](#localization) for more.
 
-In this case, you must provide InjectedError.errorCode so you can correlate your localized text to it. 
-In the prior example, we have used injectedError: { errorCode: 'MyParserErrorCode '}. Here is the localization.
+Like with validator error messages, any value you directly supply can be overridden by 
+the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,
+it will internally get setup with the correct l10n key to match `TextLocalizerService.registerErrorMessage()`.
+Same for `injectedError.summaryMessagel10n`. Simply by using `registerErrorMessage()`
+and `registerSummaryMessage()`, your original text is overridden.
 
+Here is an example to setup the messages when you don't supply the error code.
+```ts
+import { InjectedErrorValidatorErrorCode } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
+let tls = vhm.services.textLocalizerService;    
+tls.registerErrorMessage(InjectedErrorValidatorErrorCode, null, {
+        '*': 'Invalid input' 
+    });
+tls.registerSummaryMessage(InjectedErrorValidatorErrorCode, null, {
+    '*': '{Label} has this invalid input.'
+});    
+```
+Now using your own supplied errorcode (InjectedError.errorCode = 'MyParserErrorCode'):
 ```ts
 let tls = vhm.services.textLocalizerService;    
 tls.registerErrorMessage('MyParserErrorCode', null, {
@@ -1832,7 +1850,6 @@ tls.registerSummaryMessage('MyParserErrorCode', null, {
     '*': '{Label} has this invalid input.'
 });    
 ```
-
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 

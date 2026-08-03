@@ -20,6 +20,7 @@ import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './V
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
+import { TextLocalizerService } from '../Services/TextLocalizerService';
 
 /**
  * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
@@ -391,14 +392,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     }   
     protected createValConfigFromInjectedError(injectedError: InjectedError): ValidatorConfig
     {
+        let errorCode = injectedError.errorCode ?? InjectedErrorValidatorErrorCode;
         return {
             conditionCreator: (valConfig) => new InjectedErrorCondition(),
             conditionConfig: null,
-            errorCode: injectedError.errorCode, // may be null
+            errorCode: errorCode, // may be null
             errorMessage: injectedError.errorMessage,
-            errorMessagel10n: injectedError.errorMessagel10n,
+            errorMessagel10n: injectedError.errorMessagel10n ?? TextLocalizerService.getErrorMessagel10nText(errorCode, null),
             summaryMessage: injectedError.summaryMessage,
-            summaryMessagel10n: injectedError.summaryMessagel10n,
+            summaryMessagel10n: injectedError.summaryMessagel10n ?? TextLocalizerService.getSummaryMessagel10nText(errorCode, null),
             // always severe since its blocking. It stops further processing of validators, and the user must fix it before continuing.
             severity: ValidationSeverity.Severe
         };

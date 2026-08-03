@@ -68,12 +68,6 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * @param options -
     *    * validate - Invoke validation after setting the value.
     *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
-    *    * injectedError - If you handle parsing before calling setValue(), your parser may have returned
-    *          an error. Assign this object to contain the error message and other info.
-    *          Internally Jivs will provide a Validator with the error message to report the error.
-    *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
-    *          use the errorCode value of 'InjectedError' to localize the error message. 
-    *          You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */

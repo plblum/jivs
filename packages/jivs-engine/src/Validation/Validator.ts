@@ -277,7 +277,7 @@ export class Validator implements IValidator {
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
             msg = this.services.textLocalizerService.getErrorMessage(this.services.cultureService.activeCultureId,
-                this.errorCode, this.valueHost.getDataType());
+                this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null) {
             msg = Validator.errorMessageMissing;
@@ -312,7 +312,7 @@ export class Validator implements IValidator {
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
             msg = this.services.textLocalizerService.getSummaryMessage(this.services.cultureService.activeCultureId,
-                this.errorCode, this.valueHost.getDataType());
+                this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null)
             return this.getErrorMessageTemplate();
@@ -496,7 +496,7 @@ export class Validator implements IValidator {
         const summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
             services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.valueHostsManager, this) :
-            undefined;
+            issueFound.errorMessage;
         issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning; // default to blocking save for errors, but not warnings. This can be overridden by the caller by directly setting doNotSave on the IssueFound.
     }
 
