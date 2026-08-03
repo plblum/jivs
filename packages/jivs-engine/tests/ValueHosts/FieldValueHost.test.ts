@@ -273,82 +273,6 @@ describe('constructor and resulting property values', () => {
 
 describe('setValue', () =>
 {
-    describe('setValue with options to test options.injectErrors', () =>
-    {
-        test('InjectedError added to state when value supplied is undefined.', () =>
-        {
-            let setup = setupFieldValueHost();
-
-            setup.valueHost.setValue(undefined, <FieldValueHostSetValueOptions>{
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR'
-            };
-            expect(setup.valueHost.getValue()).toBeUndefined();
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        });
-        test('InjectedError added to state when value supplied is supplied.', () =>
-        {
-            let setup = setupFieldValueHost();
-
-            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR'
-            };
-            expect(setup.valueHost.getValue()).toBe(10);
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        });        
-        // full set of properties on injectedError
-        test('InjectedError added to state and all properties are retained.', () =>
-        {
-            let setup = setupFieldValueHost();
-            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
-                injectedError: {
-                    errorMessage: 'ERROR',
-                    errorCode: 'ERROR_CODE',
-                    errorMessagel10n: 'l10n',
-                    summaryMessage: 'SUMMARY',
-                    summaryMessagel10n: 'SUMMARY_L10N',
-                }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR',
-                errorCode: 'ERROR_CODE',
-                errorMessagel10n: 'l10n',
-                summaryMessage: 'SUMMARY',
-                summaryMessagel10n: 'SUMMARY_L10N'
-            };
-            expect(setup.valueHost.getValue()).toBe(10);
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        }); 
-
-        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
-        {
-            let setup = setupFieldValueHost();
-
-            setup.valueHost.setValue(10, <FieldValueHostSetValueOptions> {
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            setup.valueHost.setValue(20);
-            expect(setup.valueHost.getValue()).toBe(20);
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-        });
-        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
-        {
-            let setup = setupFieldValueHost();
-
-            expect(() => setup.valueHost.setValue(undefined, <FieldValueHostSetValueOptions> {
-                injectedError: { errorMessage: 'ERROR' },
-                reset: true
-            })).not.toThrow();
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-            expect(setup.valueHost.isChanged).toBe(false);
-        });
-    });
-
     test('Value was changed. OnValueChanged called. (confirm ancestor was not broken)', () => {
         let setup = setupFieldValueHost();
         let testItem = setup.valueHost;
@@ -1719,7 +1643,14 @@ describe('toIFieldValueHost function', () => {
         {
             throw new Error('Method not implemented.');
         }
-        
+        setInjectedError(injectedError: InjectedError): void
+        {
+            throw new Error('Method not implemented.');
+        }
+        clearInjectedError(): void
+        {
+            throw new Error('Method not implemented.');
+        }
         getParserLookupKey(): string | null | undefined
         {
             throw new Error("Method not implemented.");

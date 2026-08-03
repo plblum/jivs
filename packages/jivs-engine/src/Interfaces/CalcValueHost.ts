@@ -47,7 +47,7 @@
 
 import { LookupKey } from '../DataTypes/LookupKeys';
 import { SimpleValueType } from './DataTypeConverterService';
-import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState, SetValueOptions } from './ValueHost';
 import { IValueHostsManager } from './ValueHostsManager';
 
 /**
@@ -58,7 +58,8 @@ export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHos
 /**
  * Structure of CalcValueHost
  */
-export interface ICalcValueHost extends IValueHost
+export interface ICalcValueHost<TOptions extends CalcValueHostSetValueOptions = CalcValueHostSetValueOptions>
+    extends IValueHost<TOptions>
 {
     /**
      * Provides conversion support against the original value using the DataTypeConverters
@@ -115,4 +116,8 @@ export interface CalcValueHostConfig extends ValueHostConfig
 export interface CalcValueHostInstanceState extends ValueHostInstanceState
 {
     
+}
+
+export interface CalcValueHostSetValueOptions extends SetValueOptions
+{
 }

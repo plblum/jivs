@@ -32,9 +32,11 @@
  * @module jivs-engine/ValueHosts/Types/StaticValueHost
  */
 
-import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState, SetValueOptions } from './ValueHost';
 
-export interface IStaticValueHost extends IValueHost {
+export interface IStaticValueHost<TOptions extends StaticValueHostSetValueOptions = StaticValueHostSetValueOptions>
+    extends IValueHost<TOptions>
+{
 }
 
 /**
@@ -48,3 +50,6 @@ export interface StaticValueHostInstanceState extends ValueHostInstanceState {
  */
 export interface StaticValueHostConfig extends ValueHostConfig {
 }    
+
+export interface StaticValueHostSetValueOptions extends SetValueOptions {
+}

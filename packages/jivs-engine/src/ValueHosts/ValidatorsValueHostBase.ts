@@ -8,9 +8,9 @@ import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
-import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
+import { ValidatorValidateResult, IValidator, InjectedError } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
-import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase, ValidatorsValueHostSetValueOptions } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -29,9 +29,11 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHostBaseConfig, TState extends ValidatorsValueHostBaseInstanceState>
-    extends ValidatableValueHostBase<TConfig, TState>
-    implements IValidatorsValueHostBase {
+export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHostBaseConfig,
+    TState extends ValidatorsValueHostBaseInstanceState,
+    TOptions extends ValidatorsValueHostSetValueOptions = ValidatorsValueHostSetValueOptions>
+    extends ValidatableValueHostBase<TConfig, TState, TOptions>
+    implements IValidatorsValueHostBase<TOptions> {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         super(valueHostsManager, config, state);
     }
@@ -49,6 +51,75 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         this._validators?.forEach((validator) => { validator.dispose(); });
         this._validators = undefined!;
     }
+
+    /**
+     * Override the default setValue() to provide additional options for FieldValueHost.
+     * @param value 
+     * @param options 
+     */
+    public override setValue(value: any, options?: TOptions): void
+    {
+        super.setValue(value, options);
+    }
+    protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void
+    {
+        super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
+        if (options && options.injectedError)
+            stateToUpdate.injectedError = options.injectedError;
+        else
+            delete stateToUpdate.injectedError;
+    }
+
+    //#endregion IFieldValueHost
+
+
+    protected override clearValidationDataFromInstanceState(stateToUpdate: TState): void
+    {
+        super.clearValidationDataFromInstanceState(stateToUpdate);
+        delete stateToUpdate.injectedError;
+    }
+
+    /**
+     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
+     * Its null when not supplied or has been cleared.
+     */
+    public getInjectedError(): InjectedError | null
+    {
+        return this.instanceState.injectedError ?? null;
+    }
+    /**
+     * Attaches the InjectedError to this ValidatorsValueHostBase. It will be used to create a Validator
+     * to report the error. If you supply an errorCode, it will be used to localize the error message.
+     * If not supplied, know that TextLocalizerService will use the errorCode value of 'InjectedError'
+     * to localize the error message. You can also provide a summaryMessage for use in a summary of validation errors.
+     * 
+     * Alternatively use the options.injectedError property when calling setTextValue() or setValues() 
+     * to provide a way to inject.
+     * @param injectedError 
+     */
+    public setInjectedError(injectedError: InjectedError): void
+    {
+        assertNotNull(injectedError, 'injectedError');
+        this.updateInstanceState((stateToUpdate) => {
+            stateToUpdate.injectedError = injectedError;
+            return stateToUpdate;
+        }, this);
+    }
+
+    /**
+     * Clears the InjectedError from this ValidatorsValueHostBase. It will no longer be used to create a Validator
+     * to report the error.
+     */
+    public clearInjectedError(): void
+    {
+        if (this.instanceState.injectedError) {
+            this.updateInstanceState((stateToUpdate) => {
+                delete stateToUpdate.injectedError;
+                return stateToUpdate;
+            }, this);
+        }
+    }
+
     /**
      * Determines if this ValueHost handles validation for a specific error code.
      * @param errorCode 

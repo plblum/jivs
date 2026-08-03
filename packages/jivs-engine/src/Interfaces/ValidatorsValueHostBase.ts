@@ -1,10 +1,11 @@
 /**
  * @module jivs-engine/ValueHosts/Types/ValidatorsValueHostBase
  */
-import { IValidator, ValidatorConfig } from './Validator';
+import { InjectedError, IValidator, ValidatorConfig } from './Validator';
 import {
     IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
     ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
+    ValidatableValueHostBaseSetValueOptions,
     toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks
 } from './ValidatableValueHostBase';
 import { ValueHostConfig } from './ValueHost';
@@ -13,7 +14,8 @@ import { ValueHostType } from './ValueHostFactory';
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
 */
-export interface IValidatorsValueHostBase extends IValidatableValueHostBase {
+export interface IValidatorsValueHostBase<TOptions extends ValidatorsValueHostSetValueOptions = ValidatorsValueHostSetValueOptions>
+    extends IValidatableValueHostBase<TOptions>  {
 
     /**
      * Gets an Validator already assigned to this ValidatorsValueHostBase.
@@ -22,6 +24,31 @@ export interface IValidatorsValueHostBase extends IValidatableValueHostBase {
      * @returns The Validator or null if the condition type does not match.
      */
     getValidator(errorCode: string): IValidator | null;
+
+    /**
+     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
+     * Its null when not supplied or has been cleared.
+     */
+    getInjectedError(): InjectedError | null;
+    
+    /**
+     * Attaches the InjectedError to this ValidatorsValueHostBase. It will be used to create a Validator
+     * to report the error. If you supply an errorCode, it will be used to localize the error message.
+     * If not supplied, know that TextLocalizerService will use the errorCode value of 'InjectedError'
+     * to localize the error message. You can also provide a summaryMessage for use in a summary of validation errors.
+     * 
+     * Alternatively use the options.injectedError property when calling setTextValue() or setValues() 
+     * to provide a way to inject.
+     * @param injectedError 
+     */
+    setInjectedError(injectedError: InjectedError): void;
+
+    /**
+     * Clears the InjectedError from this ValidatorsValueHostBase. It will no longer be used to create a Validator
+     * to report the error.
+     */
+    clearInjectedError(): void;
+    
 }
 /**
  * Just the data that is used to describe this ValueHost.
@@ -63,8 +90,16 @@ export function isValidatableValueHostConfig(source: ValueHostConfig): boolean
  * Elements of ValidatorsValueHostBase that are stateful based on user interaction
  */
 export interface ValidatorsValueHostBaseInstanceState extends ValidatableValueHostBaseInstanceState {
+    /**
+     * Supplied by options.injectedError when calling setValue() or setValues() to provide a way to inject.
+     * If they use formatting or parsing, the injectedError will be set to the 
+     * errorDetails from the DataTypeParser.
+     */
+    injectedError?: InjectedError;
+}
 
-
+export interface ValidatorsValueHostBaseSetValueOptions extends ValidatableValueHostBaseSetValueOptions
+{
 }
 
 
@@ -74,6 +109,22 @@ export interface ValidatorsValueHostBaseInstanceState extends ValidatableValueHo
 export interface IValidatorsValueHostBaseCallbacks extends IValidatableValueHostBaseCallbacks {
 
 }
+
+/**
+ * Additional options for setTextValue().
+ */
+export interface ValidatorsValueHostSetValueOptions extends ValidatableValueHostBaseSetValueOptions
+{
+    /**
+     * Provides a way to inject non-condition related error information into the validation system.
+     * Create this object with at least one of the properties. It will be used to create an IssueFound object
+     * even though no condition is setup. The object supplies localization keys
+     * so you can set up the error message and summary message for the current culture
+     * in the TextLocalizerService. The errorCode is used to identify the error in the consuming system.
+     */
+    injectedError?: InjectedError;
+}
+
 /**
  * Determines if the object implements IValidatorsValueHostBaseCallbacks.
  * @param source 
@@ -99,7 +150,11 @@ export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBas
     {
         const test = source as IValidatorsValueHostBase;    
         // some select members of IValidatorsValueHostBase
-        if (test.getValidator !== undefined)
+        if (test.getValidator !== undefined &&
+            test.getInjectedError !== undefined &&
+            test.setInjectedError !== undefined &&
+            test.clearInjectedError !== undefined   
+        )
             return test;
     }
     return null;

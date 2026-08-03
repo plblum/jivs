@@ -17,8 +17,10 @@ import { deepClone, deepEquals } from '../Utilities/Utilities';
 /**
  * Standard implementation of IValueHost
  */
-export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostInstanceState>
-    implements IValueHost {
+export abstract class ValueHostBase<TConfig extends ValueHostConfig,
+    TState extends ValueHostInstanceState,
+    TOptions extends SetValueOptions = SetValueOptions>
+    implements IValueHost<TOptions> {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');
@@ -131,10 +133,10 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
-    public setValue(value: any, options?: SetValueOptions): void {
+    public setValue(value: any, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!options)
-            options = {};
+            options = {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;
         
@@ -153,7 +155,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     /**
      * For setValue functions to check for disabled before trying to change.
      */
-    protected canChangeValueCheck(options: SetValueOptions): boolean {
+    protected canChangeValueCheck(options: TOptions): boolean {
         if (!options.overrideDisabled && !this.isEnabled()) {
             this.logger.message(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
             return false;
@@ -180,18 +182,18 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      *      use the errorCode value of 'InjectedError' to localize the error message. 
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      */
-    public setValueToUndefined(options?: SetValueOptions): void {
+    public setValueToUndefined(options?: TOptions): void {
         this.setValue(undefined, options);
     }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void {
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void {
         if (options.reset)
             stateToUpdate.changeCounter = 0;
         else if (valueChanged)
             stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;
     }
 
-    protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void {
+    protected useOnValueChanged(changed: boolean, oldValue: any, options: TOptions): void {
         if (changed && (!options || !options.skipValueChangedCallback))
             toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);
     }

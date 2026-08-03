@@ -28,7 +28,9 @@ import { ConditionConfig } from './Conditions';
 /**
  * Interface for creating ValueHosts.
  */
-export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
+export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
+    extends IValueHostsManagerAccessor, IDisposable
+{
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
@@ -71,7 +73,7 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
-    setValue(value: any, options?: SetValueOptions): void;
+    setValue(value: any, options?: TOptions): void;
 
     /**
      * Identifies that the value is undetermined. For example,
@@ -89,7 +91,7 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
      *       use the errorCode value of 'InjectedError' to localize the error message. 
      *       You can also provide a summaryMessage for use in a summary of validation errors.
      */
-    setValueToUndefined(options?: SetValueOptions): void;
+    setValueToUndefined(options?: TOptions): void;
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.

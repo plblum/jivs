@@ -463,6 +463,120 @@ describe('constructor and resulting property values', () => {
     });
 });
 
+describe('injectedErrors', () =>
+{
+    // tests additionalInstanceStateUpdatesOnSetValue and clearValidationDataFromInstanceState
+    describe('setValue with options to test options.injectErrors', () =>
+    {
+        test('InjectedError added to state when value supplied is undefined.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBeUndefined();
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        test('InjectedError added to state when value supplied is supplied.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });        
+        // full set of properties on injectedError
+        test('InjectedError added to state and all properties are retained.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setValue(10, {
+                injectedError: {
+                    errorMessage: 'ERROR',
+                    errorCode: 'ERROR_CODE',
+                    errorMessagel10n: 'l10n',
+                    summaryMessage: 'SUMMARY',
+                    summaryMessagel10n: 'SUMMARY_L10N',
+                }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        }); 
+
+        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            setup.valueHost.setValue(20);
+            expect(setup.valueHost.getValue()).toBe(20);
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+        });
+        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            expect(() => setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' },
+                reset: true
+            })).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            expect(setup.valueHost.isChanged).toBe(false);
+        });
+    });
+
+    describe('setInjectedError and clearInjectedError', () =>
+    {
+        test('setInjectedError sets the error', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toEqual({ errorMessage: 'ERROR' });
+        });
+        test('setInjectedError sets the error and clearInjectedError clears it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            setup.valueHost.clearInjectedError();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+        });        
+        // clearInjectedError when injectedError is null should not throw
+        test('clearInjectedError when injectedError is null should not throw', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            expect(() => setup.valueHost.clearInjectedError()).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+
+        });
+    });
+
+});
 
 describe('ValidatorsValueHostBase.validate', () => {
     //NOTE: Validator tests already handle testing Validator property of Enabled, Enabler,
@@ -2772,6 +2886,14 @@ describe('toIValidatorsValueHostBase function', () => {
         getInjectedError(): InjectedError | null {
             return null;
         }
+        setInjectedError(injectedError: InjectedError): void
+        {
+            throw new Error('Method not implemented.');
+        }
+        clearInjectedError(): void
+        {
+            throw new Error('Method not implemented.');
+        }        
         required: boolean = false;
         getName(): string {
             return 'TestHost';

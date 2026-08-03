@@ -7,9 +7,9 @@ import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from 
 import type { InjectedError } from './Validator';
 import {
     IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
-    ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState
+    ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
+    ValidatorsValueHostSetValueOptions
 } from './ValidatorsValueHostBase';
-import type { SetValueOptions } from './ValueHost';
 
 
 /**
@@ -46,14 +46,9 @@ import type { SetValueOptions } from './ValueHost';
  * };
  * ```
 */
-export interface IFieldValueHost extends IValidatorsValueHostBase
+export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
+    extends IValidatorsValueHostBase<TOptions>
 {
-    /**
-     * Override the default setValue() to provide additional options for FieldValueHost.
-     * @param value 
-     * @param options 
-     */
-    setValue(value: any, options?: FieldValueHostSetValueOptions): void;
 
     /**
      * Gets the current text value exactly as last provided.
@@ -106,7 +101,7 @@ export interface IFieldValueHost extends IValidatorsValueHostBase
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
+    setTextValue(textValue: string | undefined, options?: TOptions): void;
 
     /**
      * Replaces both the typed value and the text value at the same time,
@@ -132,24 +127,13 @@ export interface IFieldValueHost extends IValidatorsValueHostBase
      *          use the errorCode value of 'InjectedError' to localize the error message. 
      *          You can also provide a summaryMessage for use in a summary of validation errors.
      */
-    setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions): void;
+    setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void;
 
-    /**
-     * Overrides the default setValueToUndefined() to provide additional options for FieldValueHost.
-     * @param options 
-     */
-    setValueToUndefined(options?: FieldValueHostSetValueOptions): void;
     /**
      *Returns true for a condition with Category=Require. UI can use it to 
      * display a "requires a value" indicator.
      */
     required: boolean;
-
-    /**
-     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
-     * Its null when not supplied or has been cleared.
-     */
-    getInjectedError(): InjectedError | null;
     
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
@@ -284,12 +268,6 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      */
     textValue?: string | undefined;
 
-    /**
-     * Supplied by options.injectedError when calling setValue() or setValues() to provide a way to inject.
-     * If they use formatting or parsing, the injectedError will be set to the errorDetails from the DataTypeFormatter or DataTypeParser.
-     */
-    injectedError?: InjectedError;
-
 }
 
 export type TextValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
@@ -315,17 +293,9 @@ export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback
 /**
  * Additional options for setTextValue().
  */
-export interface FieldValueHostSetValueOptions extends SetValueOptions
+export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetValueOptions
 {
-    /**
-     * Provides a way to inject non-condition related error information into the validation system.
-     * Create this object with at least one of the properties. It will be used to create an IssueFound object
-     * even though no condition is setup. The object supplies localization keys
-     * so you can set up the error message and summary message for the current culture
-     * in the TextLocalizerService. The errorCode is used to identify the error in the consuming system.
-     */
-    injectedError?: InjectedError;
-    
+   
     /**
      * When true, do not use the DataTypeParser to convert 
      * the input value into its native value with setTextValue().

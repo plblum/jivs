@@ -4,11 +4,11 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { cleanString, deepEquals, groupsMatch, valueForLog } from '../Utilities/Utilities';
-import { ValueHostConfig, type SetValueOptions } from '../Interfaces/ValueHost';
+import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValidatableValueHostBaseSetValueOptions, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
 import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerCallbacks } from '../Interfaces/ValueHostsManager';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -19,9 +19,11 @@ import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 /**
 * Expands upon ValueHost to provide the basics of validation.
  */
-export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueHostBaseConfig, TState extends ValidatableValueHostBaseInstanceState>
-    extends ValueHostBase<TConfig, TState>
-    implements IValidatableValueHostBase {
+export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueHostBaseConfig,
+    TState extends ValidatableValueHostBaseInstanceState,
+    TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
+    extends ValueHostBase<TConfig, TState, TOptions>
+    implements IValidatableValueHostBase<TOptions> {
 /**
  * @param valueHostsManager - Contains all ValueHosts and supports validation.
  *   It is the owner of all state and provides group validation.
@@ -75,10 +77,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
-    public override setValue(value: any, options?: SetValueOptions): void {
+    public override setValue(value: any, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!options)
-            options = {};
+            options = {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;
         if (options.duringEdit)
@@ -120,11 +122,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * @returns When true, it used setValues() and setValue() should not continue. 
      * When false, setValue() continues as normal.
      */
-    protected tryFormatToText(value: any, options?: SetValueOptions): boolean {
+    protected tryFormatToText(value: any, options?: TOptions): boolean {
         return false;
     }
 
-    protected processValidationOptions(options: SetValueOptions, valStateChanged: boolean): void {
+    protected processValidationOptions(options: TOptions, valStateChanged: boolean): void {
         if (options.validate) {
             if (this.instanceState.status === ValidationStatus.NeedsValidation)
                 this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
@@ -135,7 +137,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.invokeOnValueHostValidationStateChanged(options);
     }
 
-    protected notifyOthersOfChange(options: SetValueOptions): void {
+    protected notifyOthersOfChange(options: TOptions): void {
         toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
             this.getName(), options.validate === true);
     }
@@ -204,7 +206,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (!enabled)
             this.clearValidation();
     }
-        
+            
     //#endregion IValidatableValueHostBase
 
     //#region validation
@@ -214,6 +216,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * @param errorCode 
      */
     protected abstract handlesErrorCode(errorCode: string): boolean;
+    
     /**
     * Runs validation against some of all validators.
     * If at least one validator was NoMatch, it returns IValidatorInstanceStateDictionary

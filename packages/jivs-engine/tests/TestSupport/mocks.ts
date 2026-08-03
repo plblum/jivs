@@ -248,7 +248,14 @@ export class MockFieldValueHost extends MockValueHost
     {
         return this._injectedError ?? null;
     }
-
+    setInjectedError(injectedError: InjectedError): void
+    {
+        this._injectedError = injectedError;
+    }
+    clearInjectedError(): void
+    {
+        this._injectedError = undefined;
+    }
     public getParserLookupKey(): string | null | undefined
     {
         return this._parserLookupKey;

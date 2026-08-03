@@ -2,7 +2,7 @@
  * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost}
  * @module jivs-engine/ValueHosts/ConcreteClasses/CalcValueHost
  */
-import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
+import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalcValueHostSetValueOptions } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -16,10 +16,13 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 /**
  * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost} 
  */
-export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
-    implements ICalcValueHost
+export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostConfig,
+    TState extends CalcValueHostInstanceState = CalcValueHostInstanceState,
+    TOptions extends CalcValueHostSetValueOptions = CalcValueHostSetValueOptions>
+    extends ValueHostBase<TConfig, TState, TOptions>
+    implements ICalcValueHost<TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState)
     {
         super(valueHostsManager, config, state);
     }
@@ -102,7 +105,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param options 
      */
-    public override setValue(value: any, options?: SetValueOptions  ): void {
+    public override setValue(value: any, options?: TOptions): void {
         // does nothing
         this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }

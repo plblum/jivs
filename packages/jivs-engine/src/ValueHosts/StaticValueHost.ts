@@ -3,7 +3,7 @@
  * @module jivs-engine/ValueHosts/ConcreteClasses/StaticValueHost
  */
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
+import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState, StaticValueHostSetValueOptions } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -43,10 +43,14 @@ import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostB
  * ...and more...
  * };
  */
-export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostInstanceState>
-    implements IStaticValueHost
+export class StaticValueHost<
+    TConfig extends StaticValueHostConfig = StaticValueHostConfig,
+    TState extends StaticValueHostInstanceState = StaticValueHostInstanceState,
+    TOptions extends StaticValueHostSetValueOptions = StaticValueHostSetValueOptions>
+    extends ValueHostBase<TConfig, TState, TOptions>
+    implements IStaticValueHost<TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState)
     {
         super(valueHostsManager, config, state);
     }

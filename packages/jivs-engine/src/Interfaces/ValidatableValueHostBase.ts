@@ -12,7 +12,7 @@ import {
 } from './Validation';
 
 import {
-    IGatherValueHostNames, IValueHostCallbacks, toIValueHost,
+    IGatherValueHostNames, IValueHostCallbacks, SetValueOptions, toIValueHost,
     toIValueHostCallbacks,
     type IValueHost, type ValueHostConfig, type ValueHostInstanceState
 } from './ValueHost';
@@ -20,7 +20,9 @@ import {
 /**
 * Manages a value that may use field validation.
 */
-export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
+export interface IValidatableValueHostBase<TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
+    extends IValueHost<TOptions>, IGatherValueHostNames
+{
 
     /**
      * When the value changes,
@@ -237,6 +239,10 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
      * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
+}
+
+export interface ValidatableValueHostBaseSetValueOptions extends SetValueOptions
+{
 }
 
 

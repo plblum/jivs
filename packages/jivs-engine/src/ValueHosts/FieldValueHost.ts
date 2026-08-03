@@ -13,10 +13,10 @@ import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, FieldValueHostSetValueOptions, toIFieldValueHostCallbacks } from '../Interfaces/FieldValueHost';
-import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
+import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
-import { InjectedError, IValidator, ValidatorConfig } from '../Interfaces/Validator';
+import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
@@ -58,9 +58,12 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
  * };
  * ```
 */
-export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig, FieldValueHostInstanceState>
-    implements IFieldValueHost {
-    constructor(valueHostsManager: IValueHostsManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
+export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHostConfig,
+    TState extends FieldValueHostInstanceState = FieldValueHostInstanceState,
+    TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
+    extends ValidatorsValueHostBase<TConfig, TState, TOptions>
+    implements IFieldValueHost<TOptions> {
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         super(valueHostsManager, config, state);
     }
     
@@ -75,7 +78,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @returns When true, it used the formatter and finished with setValues. No further work is needed.
      * When false, setValue() should continue.
      */
-    protected override tryFormatToText(value: any, options?: FieldValueHostSetValueOptions): boolean
+    protected override tryFormatToText(value: any, options?: TOptions): boolean
     {
         /**
          * 
@@ -139,7 +142,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         return false;
     }
 
-    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
+    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: TOptions): void
     {
         if (changed && (!options || !options.skipValueChangedCallback))
             toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
@@ -198,11 +201,11 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setTextValue(textValue: string | undefined, options?: FieldValueHostSetValueOptions): void {  
+    public setTextValue(textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
 
         if (!options)
-            options = {};
+            options = {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;        
         if (this.tryParse(textValue, options))
@@ -239,7 +242,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @returns True used the parser and finished with setValues. No further work is needed.
      * False means the parser is not used, and setTextValue should continue.
      */
-    protected tryParse(textValue: any, options: FieldValueHostSetValueOptions): boolean
+    protected tryParse(textValue: any, options: TOptions): boolean
     {
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
@@ -335,9 +338,9 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
 
      *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions): void {    
+    public setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
-        options = options ?? {};
+        options = options ?? {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;        
         const oldNative: any = this.instanceState.value;
@@ -370,27 +373,12 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
  * Ensures options type change is available.
  * @param options 
  */
-    public override setValueToUndefined(options?: FieldValueHostSetValueOptions): void
+    public override setValueToUndefined(options?: TOptions): void
     {
         super.setValueToUndefined(options);
     }
 
-    protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: FieldValueHostSetValueOptions): void {
-        super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
-        if (options && options.injectedError)
-            stateToUpdate.injectedError = options.injectedError;
-        else
-            delete stateToUpdate.injectedError;
-    }
-
     //#endregion IFieldValueHost
-
-
-    protected override clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
-        super.clearValidationDataFromInstanceState(stateToUpdate);
-        delete stateToUpdate.injectedError;
-    }
-
     /**
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
      * @returns 
@@ -447,13 +435,6 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
             (validators[0].condition.category === ConditionCategory.Require);
     }
 
-    /**
-     * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
-     * Its null when not supplied or has been cleared.
-     */
-    public getInjectedError(): InjectedError | null {
-        return this.instanceState.injectedError ?? null;
-    }
 
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
