@@ -172,9 +172,9 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public getErrorMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, TextLocalizerService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, null), null);
+            text = this.localize(cultureIdToMatch, TextLocalizerService.getErrorMessagel10nText(errorCode, null), null);
         if (text === null && this.fallbackService !== null)
             return this.fallbackService.getErrorMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);        
         return text;
@@ -185,7 +185,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected getErrorMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
+    public static getErrorMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
     {
         let l10nText = 'EM-' + errorCode;
         if (dataTypeLookupKey)
@@ -202,9 +202,9 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public getSummaryMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, TextLocalizerService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, null), null);
+            text = this.localize(cultureIdToMatch, TextLocalizerService.getSummaryMessagel10nText(errorCode, null), null);
         if (text === null && this.fallbackService !== null)
             return this.fallbackService.getSummaryMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);                
         return text;
@@ -215,7 +215,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected getSummaryMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
+    public static getSummaryMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
     {
         let l10nText = 'SEM-' + errorCode;
         if (dataTypeLookupKey)
@@ -267,7 +267,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public registerErrorMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(this.getErrorMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
+        this.register(TextLocalizerService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }
     /**
      * Utility to add a summary error message for a validator
@@ -280,7 +280,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public registerSummaryMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(this.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
+        this.register(TextLocalizerService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }    
 
     /**

@@ -39,7 +39,9 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
                 };
             }
             return {
-                errorMessage: 'TEST ERROR'
+                errorDetails: {
+                    errorMessage: 'TEST ERROR'
+                }
             };
         }
     }
@@ -159,10 +161,12 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
                         };
                     }
                     return {
-                        errorMessage: 'TEST ERROR'
+                        errorDetails: {
+                            errorMessage: 'TEST ERROR'
+                        }
                     };
                 }
-            }            
+            }
             let services = setupServices(); // already has 'en'
             services.cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
             services.dataTypeFormatterService.register(new ENOnlyNumberFormatter());

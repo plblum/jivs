@@ -76,9 +76,17 @@ export class EnumByNumberFormatter extends DataTypeFormatterBase
             }
             // There are several ways to handle missing values, including returning returning the empty string
             // We've chosen to use an error message instead so the issue gets logged.
-            return { errorMessage: `Missing value ${value}` };
+            return {
+                errorDetails: {
+                errorMessage: `Missing value ${ value }`
+                }
+            };
         }
-        return { errorMessage: 'Only supports numbers' };
+        return {
+            errorDetails: {
+                errorMessage: 'Only supports numbers'
+            }
+        };
     }
 }
 
@@ -213,7 +221,11 @@ export class EnumByNumberParser
                 return { value: value };
         }
 
-        return { errorMessage: `Unknown value ${text}` };
+        return {
+            errorDetails: {
+                errorMessage: `Unknown value ${ text }`
+            }
+        };
 
     }
 }

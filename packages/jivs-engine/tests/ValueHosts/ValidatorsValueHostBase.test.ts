@@ -9,13 +9,13 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
-import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { InjectedError, IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
+import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -44,6 +44,7 @@ import { createJivsServicesForTesting } from '../../src/Support/createJivsServic
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.
@@ -461,121 +462,6 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.asyncProcessing).toBe(false);
         expect(testItem!.corrected).toBe(false);        
     });
-});
-
-describe('injectedErrors', () =>
-{
-    // tests additionalInstanceStateUpdatesOnSetValue and clearValidationDataFromInstanceState
-    describe('setValue with options to test options.injectErrors', () =>
-    {
-        test('InjectedError added to state when value supplied is undefined.', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-
-            setup.valueHost.setValue(undefined, {
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR'
-            };
-            expect(setup.valueHost.getValue()).toBeUndefined();
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        });
-        test('InjectedError added to state when value supplied is supplied.', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-
-            setup.valueHost.setValue(10, {
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR'
-            };
-            expect(setup.valueHost.getValue()).toBe(10);
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        });        
-        // full set of properties on injectedError
-        test('InjectedError added to state and all properties are retained.', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-            setup.valueHost.setValue(10, {
-                injectedError: {
-                    errorMessage: 'ERROR',
-                    errorCode: 'ERROR_CODE',
-                    errorMessagel10n: 'l10n',
-                    summaryMessage: 'SUMMARY',
-                    summaryMessagel10n: 'SUMMARY_L10N',
-                }
-            });
-            const expectedInjectedError: InjectedError = {
-                errorMessage: 'ERROR',
-                errorCode: 'ERROR_CODE',
-                errorMessagel10n: 'l10n',
-                summaryMessage: 'SUMMARY',
-                summaryMessagel10n: 'SUMMARY_L10N'
-            };
-            expect(setup.valueHost.getValue()).toBe(10);
-            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
-        }); 
-
-        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-
-            setup.valueHost.setValue(10, {
-                injectedError: { errorMessage: 'ERROR' }
-            });
-            setup.valueHost.setValue(20);
-            expect(setup.valueHost.getValue()).toBe(20);
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-        });
-        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-
-            expect(() => setup.valueHost.setValue(undefined, {
-                injectedError: { errorMessage: 'ERROR' },
-                reset: true
-            })).not.toThrow();
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-            expect(setup.valueHost.isChanged).toBe(false);
-        });
-    });
-
-    describe('setInjectedError and clearInjectedError', () =>
-    {
-        test('setInjectedError sets the error', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
-            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
-            let state = setup.valueHost.exposeState;
-            expect(state).not.toBeNull();
-            expect(state.injectedError).toEqual({ errorMessage: 'ERROR' });
-        });
-        test('setInjectedError sets the error and clearInjectedError clears it', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
-            setup.valueHost.clearInjectedError();
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-            let state = setup.valueHost.exposeState;
-            expect(state).not.toBeNull();
-            expect(state.injectedError).toBeUndefined();
-        });        
-        // clearInjectedError when injectedError is null should not throw
-        test('clearInjectedError when injectedError is null should not throw', () =>
-        {
-            let setup = setupValidatorsValueHostBase();
-            expect(() => setup.valueHost.clearInjectedError()).not.toThrow();
-            expect(setup.valueHost.getInjectedError()).toBeNull();
-            let state = setup.valueHost.exposeState;
-            expect(state).not.toBeNull();
-            expect(state.injectedError).toBeUndefined();
-
-        });
-    });
-
 });
 
 describe('ValidatorsValueHostBase.validate', () => {
@@ -1361,6 +1247,311 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
 });
+
+describe('injectedErrors', () =>
+{
+    // tests additionalInstanceStateUpdatesOnSetValue and clearValidationDataFromInstanceState
+    describe('setValue with options to test options.injectErrors', () =>
+    {
+        test('InjectedError added to state when value supplied is undefined.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBeUndefined();
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        test('InjectedError added to state when value supplied is supplied.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        // full set of properties on injectedError
+        test('InjectedError added to state and all properties are retained.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setValue(10, {
+                injectedError: {
+                    errorMessage: 'ERROR',
+                    errorCode: 'ERROR_CODE',
+                    errorMessagel10n: 'l10n',
+                    summaryMessage: 'SUMMARY',
+                    summaryMessagel10n: 'SUMMARY_L10N',
+                }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+
+        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            setup.valueHost.setValue(20);
+            expect(setup.valueHost.getValue()).toBe(20);
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+        });
+        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            expect(() => setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' },
+                reset: true
+            })).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            expect(setup.valueHost.isChanged).toBe(false);
+        });
+    });
+
+    describe('setInjectedError and clearInjectedError', () =>
+    {
+        test('setInjectedError sets the error', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toEqual({ errorMessage: 'ERROR' });
+        });
+        test('setInjectedError sets the error and clearInjectedError clears it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            setup.valueHost.clearInjectedError();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+        });
+        // clearInjectedError when injectedError is null should not throw
+        test('clearInjectedError when injectedError is null should not throw', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            expect(() => setup.valueHost.clearInjectedError()).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+
+        });
+    });
+
+    describe('validate() and its impact on injectedError', () =>
+    {
+        // ensure that when InjectedError is present, it creates a Validator object within the validate()
+        // function. That validator is first amongst all, and is severe, with the same properties
+        // as found on the InjectedError. The result of validate() is Invalid, and the IssuesFound contains the injected error.
+        // The injected error is not removed from the state, and remains there until clearInjectedError() is called.
+        test('InjectedError present without errorcode, validate() returns Invalid and IssuesFound contains the injected error', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorMessage: 'ERROR',
+                errorCode: InjectedErrorValidatorErrorCode,
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+        test('InjectedError present with errorcode, validate() returns Invalid and IssuesFound contains the injected error', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+
+        test('Several validators exist, InjectedError present, validate() returns Invalid and IssuesFound contains the injected error first', () =>
+        {
+            let ivConfigs: Array<Partial<ValidatorConfig>> = [
+                {
+                    // while it should be reported normally, the injected error should be first in the list of issues found
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    }
+                },
+                {   
+                    conditionConfig: {
+                        conditionType: AlwaysMatchesConditionType
+                    }
+                }
+            ];
+        
+            let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            // only the injected error
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR',    // carried over from errorMessage
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+
+        // setup TextLocalizerService to have supporting error messages for the injected error, and ensure that the l10n messages are used in the IssuesFound
+        test('InjectedError present with l10n error message but not summary, validate() returns Invalid and IssuesFound contains the injected error with l10n messages', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorMessagel10n: TextLocalizerService.getErrorMessagel10nText(errorCode, null),
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'Localized Error Message',
+            // summary happens because the injectedError.summaryMessage is blank
+                summaryMessage: 'Localized Summary Message',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+        test('InjectedError present with l10n summary message, validate() returns Invalid and IssuesFound contains the injected error with l10n messages', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: TextLocalizerService.getSummaryMessagel10nText(errorCode, null),
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'ERROR',
+                // summary happens because the injectedError.summaryMessage is blank
+                summaryMessage: 'Localized Summary Message',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });        
+        test('InjectedError without l10n but localizations setup still uses the messages from InjectedError', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                summaryMessage: 'SUMMARY',
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'ERROR',
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });        
+    });
+
+});
+
 describe('corrected property', () => {
 
     test('Validate without validators, corrected=false', () => {

@@ -6,14 +6,20 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { ConditionEvaluateResult } from '../Interfaces/Conditions';
+import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, InjectedError } from '../Interfaces/Validator';
+import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
-import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase, ValidatorsValueHostSetValueOptions } from '../Interfaces/ValidatorsValueHostBase';
+import
+    {
+        ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
+        IValidatorsValueHostBase, ValidatorsValueHostSetValueOptions,
+        type InjectedError, InjectedErrorValidatorErrorCode
+    } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { IValueHost } from '../Interfaces/ValueHost';
 
 /**
  * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
@@ -357,12 +363,46 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      */
     protected validators(): Array<IValidator> {
         if (this._validators === null)
+        {
             this._validators = this.orderValidators(this.generateValidators());
+            this.tryToAddInjectedErrorValidator(this._validators);
+        }
         return this._validators;
     }
     // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
     private _validators: Array<IValidator> | null = null;
+
+    /**
+     * Adds an injected error validator to the beginning of the validators array if an injected error exists.
+     * The validator's configuration will use Severity=Severe, which will stop further validation processing and require the user to fix the issue before continuing.
+     * The InjectedError object delivers both error message and summary message.
+     * @param validators The array of validators to which the injected error validator will be added.
+     */
+    protected tryToAddInjectedErrorValidator(validators: Array<IValidator>): void
+    {
+        let injectedError = this.getInjectedError();
+        if (injectedError)
+        {
+            let validatorConfig: ValidatorConfig = this.createValConfigFromInjectedError(injectedError);
+            const injectedErrorValidator = this.services.validatorFactory.create(this, validatorConfig);
+            validators.unshift(injectedErrorValidator);
+        }
+    }   
+    protected createValConfigFromInjectedError(injectedError: InjectedError): ValidatorConfig
+    {
+        return {
+            conditionCreator: (valConfig) => new InjectedErrorCondition(),
+            conditionConfig: null,
+            errorCode: injectedError.errorCode, // may be null
+            errorMessage: injectedError.errorMessage,
+            errorMessagel10n: injectedError.errorMessagel10n,
+            summaryMessage: injectedError.summaryMessage,
+            summaryMessagel10n: injectedError.summaryMessagel10n,
+            // always severe since its blocking. It stops further processing of validators, and the user must fix it before continuing.
+            severity: ValidationSeverity.Severe
+        };
+    }   
 
     /**
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
@@ -548,6 +588,33 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
             }
             state.status = vr;
         }
+    }
+
+}
+
+
+/**
+ * Internally managed Condition that is used to represent an injected error when
+ * the ValidatorsValueHostBase has an injected error. It is used to provide a ConditionEvaluateResult.NoMatch.
+ * Expected to be created by code within ValidatorsValueHostBase.validate()
+ * only when the injectedError is present.
+ */
+class InjectedErrorCondition implements ICondition
+{
+    constructor()
+    {
+    }
+    public get conditionType(): string
+    {
+        return InjectedErrorValidatorErrorCode;
+    }
+    public get category(): ConditionCategory
+    {
+        return ConditionCategory.Undetermined;
+    }
+    public evaluate(valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult
+    {
+        return ConditionEvaluateResult.NoMatch;
     }
 
 }

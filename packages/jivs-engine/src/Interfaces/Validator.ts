@@ -249,33 +249,3 @@ export interface IValidatorFactory {
     create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator;
     canCreate(config: ValidatorConfig): boolean;
 }
-
-/**
- * Provides a way to inject non-condition related error information into the validation system.
- * This object gets assigned to SetValueOptions.injectedError and is used by the Validator 
- * to create an IssueFound that is added to the ValueHost's state.
- * 
- * ValidatableValueHostBase.validate() detects it in ValueHost's state and creates a new Validator instance,
- * InjectedErrorValidator, that is used to create an IssueFound that is added to the ValueHost's state.
- * InjectedErrorValidator is a special validator that does not have a Condition and 
- * is only used to create an IssueFound from the InjectedError. It builds the error message
- * from the InjectedError object details using TextLocalizerService to localize the errorMessage 
- * and summaryMessage if the l10n keys are provided.
- */
-export interface InjectedError
-{
-    /**
-     * Only value required.
-     */
-    errorMessage: string;
-    errorMessagel10n?: string;
-    summaryMessage?: string;
-    summaryMessagel10n?: string;
-    errorCode?: string;
-}
-
-/**
- * Assigned to the errorCode property of IssueFound when the error was generated from an InjectedError
- * unless the InjectedError.errorCode is assigned, in which case that value is used.
- */
-export const InjectedErrorValidatorErrorCode = 'InjectedError';

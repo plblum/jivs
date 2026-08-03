@@ -1,7 +1,7 @@
 /**
  * @module jivs-engine/ValueHosts/Types/ValidatorsValueHostBase
  */
-import { InjectedError, IValidator, ValidatorConfig } from './Validator';
+import { IValidator, ValidatorConfig } from './Validator';
 import {
     IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
     ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
@@ -159,3 +159,55 @@ export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBas
     }
     return null;
 }
+
+//#region InjectedErrors
+
+/**
+ * Provides a way to inject non-condition related error information into the validation system.
+ * This object gets assigned to ValidatableValueHostSetValueOptions.injectedError 
+ * or with ValidatableValueHostBase.setInjectedError() and is used by the Validator 
+ * to create an IssueFound that is added to the ValueHost's state.
+ * 
+ * ValidatableValueHostBase.validate() detects it in ValueHost's state and creates a new Validator instance.
+ * It still supports localization following the same rules as ValidatorConfig.errorMessagel10n 
+ * and ValidatorConfig.summaryMessagel10n.
+ */
+export interface InjectedError
+{
+    /**
+     * Only value required.
+     * Use null to allow a localization lookup without using errorMessagel10n
+     */
+    errorMessage: string | null;
+    /**
+     * Set with TextLocalizerService.getErrorMessagel10nText to use
+     * a localization setup with TextLocalizerService.registerErrorMessage.
+     * Its actual format is "EM-" + errorCode + (dataTypeLookupKey ? "-" + dataTypeLookupKey : "")
+     * If you setup text with TextLocalizerService.register(), this value should be set to the same value.
+     */
+    errorMessagel10n?: string;
+    /**
+     * It will use the same value as the resolved error message if not supplied.
+     * If assigned, it will be used but with summaryMessagel10n supplied, it may be overridden by the localized value.
+     */
+    summaryMessage?: string;
+    /**
+     * Set with TextLocalizerService.getSummaryMessagel10nText to use
+     * a localization setup with TextLocalizerService.registerSummaryMessage.
+     * Its actual format is "SEM-" + errorCode + (dataTypeLookupKey ? "-" + dataTypeLookupKey : "")
+     * If you setup text with TextLocalizerService.register(), this value should be set to the same value.
+     */
+    summaryMessagel10n?: string;
+    /**
+     * When unassigned, the error code uses the InjectedErrorValidatorErrorCode constant ('InjectedError').
+     * Its value is used with localization lookups in TextLocalizerService.getErrorMessagel10nText and TextLocalizerService.getSummaryMessagel10nText.
+     */
+    errorCode?: string;
+}
+
+/**
+ * Assigned to the errorCode property of IssueFound when the error was generated from an InjectedError
+ * unless the InjectedError.errorCode is assigned, in which case that value is used.
+ */
+export const InjectedErrorValidatorErrorCode = 'InjectedError';
+//#endregion InjectedErrors

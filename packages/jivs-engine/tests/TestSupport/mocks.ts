@@ -18,7 +18,7 @@ import {
     ValidateOptions, ValueHostValidateResult,
     ValidationStatus, IssueFound, ValidationState
 } from "../../src/Interfaces/Validation";
-import { InjectedError, IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
+import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import {
     IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig,
     ValueHostsManagerConfigChangedHandler,
@@ -47,7 +47,7 @@ import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTe
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 
 import { ICultureService } from "../../src/Interfaces/CultureService";
 import { CultureService } from "../../src/Services/CultureService";

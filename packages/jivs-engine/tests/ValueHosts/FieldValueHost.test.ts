@@ -28,7 +28,7 @@ import
     } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { InjectedError, IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
+import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import
     {
         IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -48,6 +48,7 @@ import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
+import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
 
 
 interface ITestSetupConfig {

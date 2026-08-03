@@ -3,7 +3,8 @@
  */
 
 import { IServiceWithAccessor } from './Services';
-import { InjectedError } from './Validator';
+import type { InjectedError } from './ValidatorsValueHostBase';
+
 
 /**
  * Base interface for Data Type services.

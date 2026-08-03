@@ -8,7 +8,7 @@ import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../..
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
-import { InjectedError, IValidator } from "../../src/Interfaces/Validator";
+import { IValidator } from "../../src/Interfaces/Validator";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
@@ -17,6 +17,7 @@ import { createJivsServicesForTesting } from '../../src/Support/createJivsServic
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
+import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
 
 
 

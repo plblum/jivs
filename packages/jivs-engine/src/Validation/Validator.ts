@@ -12,28 +12,31 @@
   * @module jivs-engine/Validator/ConcreteClasses
  */
 
-import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { IJivsServices } from '../Interfaces/JivsServices';
-import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import type { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory } from '../Interfaces/Validator';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
-import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
-import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { ValueHostsManager } from './ValueHostsManager';
-import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
-import { resolveErrorCode } from '../Utilities/Validation';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import
+    {
+        type ICondition, ConditionCategory, ConditionEvaluateResult,
+        IEvaluateConditionDuringEdits, toIEvaluateConditionDuringEdits
+    } from '../Interfaces/Conditions';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import type { IJivsServices } from '../Interfaces/JivsServices';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
+import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
+import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from '../Interfaces/ValueHost';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
+import { cleanString } from '../Utilities/Utilities';
+import { resolveErrorCode } from '../Utilities/Validation';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
+import { ValueHostsManager } from './ValueHostsManager';
 
 /**
  * An IValidator implementation that represents a single validator 

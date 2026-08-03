@@ -48,7 +48,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe(expectedValue);
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     }
     function testParseInvalid(text: string, options: EnumByNumberParserOptions = {}): void
     {
@@ -58,7 +58,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
         let dts = testItem.parse(text, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).not.toBeUndefined();
+        expect(dts.errorDetails).not.toBeUndefined();
     }    
 
     test('supports', () => {
@@ -116,7 +116,7 @@ describe('EnumByNumberParser using PhoneType enum', () => {
         let dts = testItem.parse(text, PhoneTypeLookupKey, cultureId);
         expect(dts).not.toBeNull();
         expect(dts.value).toBe(expectedValue);
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     }        
     test('parse with with localized text for multiple cultures returns correct values', () => {
         testParseLocalized('0_*', 'en', PhoneType.Landline);               
@@ -154,7 +154,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe(expectedText);
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     }
     function testFormatInvalid(value: number): void
     {
@@ -164,7 +164,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
         let dts = testItem.format(value, PhoneTypeLookupKey, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).not.toBeUndefined();
+        expect(dts.errorDetails).not.toBeUndefined();
     }    
 
     test('supports', () => {
@@ -198,7 +198,7 @@ describe('EnumByNumberFormatter using PhoneType enum', () => {
         let dts = testItem.format(value, PhoneTypeLookupKey, cultureId);
         expect(dts).not.toBeNull();
         expect(dts.value).toBe(expectedValue);
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     }        
     test('format with with localized text for multiple cultures returns correct values', () => {
         testFormatLocalized(PhoneType.Landline, 'en', '0_en');

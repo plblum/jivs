@@ -4,7 +4,6 @@
 import { IDataTypeFormatter } from './DataTypeFormatters';
 import { IDataTypeParser } from './DataTypeParsers';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
-import type { InjectedError } from './Validator';
 import {
     IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
     ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
