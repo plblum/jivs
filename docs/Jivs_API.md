@@ -575,9 +575,9 @@ Your `ValueHost` configuration determines if formatting will happen.
         }
     )
     ```
-- Prevent conversion to text value by assigning behaviors.formatWhenValueChanges to false.
+- Prevent conversion to text value by assigning behaviors.disableFormattingOnValueChange to true.
     ```ts
-    builder.behaviors.formatWhenValueChanges = false;
+    builder.behaviors.disableFormattingOnValueChange = true;
     ```    
 - Prevent conversion to text value by assigning formatterLookupKey to null for case-by-case basis.
     ```ts
@@ -643,9 +643,9 @@ Your `ValueHost` configuration determines if parsing will happen.
         }
     )
     ```
-- Prevent conversion to text value by assigning behaviors.parseWhenTextValueChanges to false.
+- Prevent conversion to text value by assigning behaviors.disableParsingOnValueChange to true.
     ```ts
-    builder.behaviors.parseWhenTextValueChanges = false;
+    builder.behaviors.disableParsingOnValueChange = true;
     ```    
 - Prevent conversion to native value by assigning parserLookupKey to null on a case-by-case basis.
     ```ts

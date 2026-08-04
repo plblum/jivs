@@ -101,9 +101,9 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         // similar to tryParser.
         if (value === undefined)
             return false;
-        if (this.valueHostsManager.behaviors.formatWhenValueChanges === false)
+        if (this.valueHostsManager.behaviors.disableFormattingOnValueChange === true)
         {
-            this.logger.message(LoggingLevel.Debug, () => 'behaviors.formatWhenValueChanges=false');
+            this.logger.message(LoggingLevel.Debug, () => 'behaviors.disableFormattingOnValueChange=true');
             return false;
         }
         if (options?.disableFormatter)
@@ -271,9 +271,9 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
 
         if (typeof textValue === 'string')
         {
-            if (this.valueHostsManager.behaviors.parseWhenTextValueChanges === false)
+            if (this.valueHostsManager.behaviors.disableParsingOnValueChange === true)
             {
-                this.logger.message(LoggingLevel.Debug, () => 'behaviors.parseWhenTextValueChanges=false');
+                this.logger.message(LoggingLevel.Debug, () => 'behaviors.disableParsingOnValueChange=true');
                 return false;
             }
             if (options.disableParser === true)

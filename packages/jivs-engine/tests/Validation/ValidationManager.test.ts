@@ -148,8 +148,8 @@ describe('constructor and initial property values', () => {
     {
         let behaviors: Behaviors = {
             activeCultureId: 'en-US',
-            formatWhenValueChanges: false,
-            parseWhenTextValueChanges: false
+            disableFormattingOnValueChange: true,
+            disableParsingOnValueChange: false
         };
         let config: ValueHostsManagerConfig = {
             services: new MockJivsServices(false, false),

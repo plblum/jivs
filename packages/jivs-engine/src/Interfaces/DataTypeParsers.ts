@@ -22,7 +22,7 @@
  * 
  * Because it is likely that you have a dataType property, and you may not want to use the parser feature, 
  * here are several ways to disable it:
- * - Set behavior.parseWhenTextValueChanges to false. 'behavior' is found on the Builder: `builder.behavior.parseWhenTextValueChanges = false;`
+ * - Set behavior.disableParsingOnValueChange to true. 'behavior' is found on the Builder: `builder.behavior.disableParsingOnValueChange = true;`
  * - Set the FieldValueHostConfig.parserLookupKey property to null.
  * - Use the option disableParser when calling setTextValue: `valueHost.setTextValue("some text", { disableParser: true });`
  * 

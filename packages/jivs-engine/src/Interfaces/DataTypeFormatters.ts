@@ -24,7 +24,7 @@
  * 
  * Because it is likely that you have a dataType property, and you may not want to use the formatter feature, 
  * here are several ways to disable it:
- * - Set behavior.formatWhenValueChanges to false. 'behavior' is found on the Builder: `builder.behavior.formatWhenValueChanges = false;`
+ * - Set behavior.disableFormattingOnValueChange to true. 'behavior' is found on the Builder: `builder.behavior.disableFormattingOnValueChange = true;`
  * - Set the FieldValueHostConfig.formatterLookupKey property to null.
  * - Use the option disableFormatter when calling setValue: `valueHost.setValue("some value", { disableFormatter: true });`
  * 

@@ -51,8 +51,10 @@ export interface IValueHostsManager extends IValueHostResolver {
      * 
      * Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
-     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
+     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * `setValue(value, { disableParser: true });` to selectively turn off parsing.
      */
     readonly behaviors: Behaviors;
     /**
@@ -339,8 +341,8 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
     /**
      * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
-     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
+     * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
      * 
      * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
      * It is also available in the ValueHostsManager.behaviors property.
@@ -448,8 +450,8 @@ export const DefaultNotifyValidationStateChangedDelay = 100;
  * They are here to allow the consuming system to change the behavior of ValueHostsManager.
  * The default behaviors are:
  * - activeCultureID = undefined, which means use the default culture from CultureService.defaultCultureId
- * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
- * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+ * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
+ * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
  * 
  * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
  * It is also available in the ValueHostsManager.behaviors property.
@@ -465,32 +467,32 @@ export interface Behaviors
      * FieldValueHosts.setValue() function can format the native value into a string and set it
      * as the text value. If the ValueHostsManager.onTextValueChanged callback is supplied, it will be invoked with the formatted value,
      * letting your UI also refresh the text value. 
-     * When true, when a value changes, it is formatted and the formatted value is set.
-     * When false, the value is not formatted and the raw value is set.
+     * When true, the value is not formatted and the raw value is set.
+     * When false, when a value changes, it is formatted and the formatted value is set.
      * 
      * If you want to selectively control formatting, leave this true and leverage the FieldValueHostConfig.formatterLookupKey property as follows:
      * - Turn off formatting: formattingLookupKey = null
      * - Leave on formatting: formattingLookupKey = undefined or any other string value. When undefined, the lookupKey used is from the dataType of the ValueHost.
      */
-    formatWhenValueChanges?: boolean;
+    disableFormattingOnValueChange?: boolean;
     /**
      * FieldValueHosts.setTextValue() function can parse the text value into a native value and set it
      * as the value. If the ValueHostsManager.onValueChanged callback is supplied, it will be invoked with the parsed value.
-     * When true, when a text value changes, it is parsed and the parsed value is set.
-     * When false, the text value is not parsed and the raw text value is set.
+     * When true, the text value is not parsed and the raw text value is set.
+     * When false, when a text value changes, it is parsed and the parsed value is set.
      * 
      * If you want to selectively control parsing, leave this true and leverage the FieldValueHostConfig.parserLookupKey property as follows:
      * - Turn off parsing: parserLookupKey = null
      * - Leave on parsing: parserLookupKey = undefined or any other string value. When undefined, the lookupKey used is from the dataType of the ValueHost.
      */
-    parseWhenTextValueChanges?: boolean;
+    disableParsingOnValueChange?: boolean;
 }
 export function createBehaviors(services: IJivsServices): Behaviors
 {
     return {
         activeCultureId: services.cultureService.defaultCultureId,
-        formatWhenValueChanges: true,
-        parseWhenTextValueChanges: true
+        disableFormattingOnValueChange: false,
+        disableParsingOnValueChange: false
     };
 }
 

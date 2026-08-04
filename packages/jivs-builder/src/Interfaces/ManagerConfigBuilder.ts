@@ -35,10 +35,14 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
     services: IJivsServices;
 
     /**
-     * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
+     * Behavioral settings for how ValueHostsManager should operate. Supplied by either the ValueHostsManagerConfig.behaviors or Builder.behaviors property.
+     * 
+     * Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
-     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
+     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * `setValue(value, { disableParser: true });` to selectively turn off parsing.
      * 
      * They can be changed on the ValueHostsManager.behaviors property.
      */
