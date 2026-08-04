@@ -23,7 +23,7 @@ import { deepClone, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Ut
 import { IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 
-import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { ValueHostsManagerConfig, createBehaviors, Behaviors } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
@@ -131,6 +131,20 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     public get services(): IJivsServices {
         return this.baseConfig.services;
+    }
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
+     * - activeCultureID = from CultureService.activeCultureId
+     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
+     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * 
+     * You can later change its values in the ValueHostsManager.behaviors property.
+     */ 
+    public get behaviors(): Behaviors {
+        if (!this.baseConfig.behaviors)
+            this.baseConfig.behaviors = createBehaviors(this.services);
+        return this.baseConfig.behaviors;
     }
     
     //#region logging

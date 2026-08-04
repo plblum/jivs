@@ -1,16 +1,10 @@
 /**
- * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
- * @module jivs-engine/DataTypes/Types/IDataTypeParser
- */
-
-import { DataTypeResolution } from './DataTypes';
-
-/**
- * A specialized converter that takes in a string and converts it into an expected native value (TDataType generic).
+ * The DataTypeParser is a specialized converter that takes in a string and 
+ * converts it into an expected native value.
  * It may return the native value or an error message if conversion fails.
  * The parser is also localizable, as cultures vary in their number, date and time formatting of strings.
  * 
- * DataTypeParsers are associated with LookupKeys. There will be parsers to cover the basic cases,
+ * DataTypeParsers are associated with Lookup Keys. There will be parsers to cover the basic cases,
  * and the user can create those for their own situations.
  * 
  * There may be multiple DataTypeParsers for a single lookupKey and cultureID. Each can handle
@@ -20,11 +14,19 @@ import { DataTypeResolution } from './DataTypes';
  * All 3 would be registered in the DataTypeParserService, and the first whose support() function
  * returns true will be expected to fully handle the text.
  * 
- * The parser is associated with FieldValueHost.setTextValue specifically. It is supplied
- * on the setValueOptions object's parserDataType or parser properties. When the parserDataType
- * is used, the DataTypeParserService will be used to find the appropriate parser.
- * When not supplied, parsing will try to find a parser whose datatype is the same as the
- * FieldValueHost's datatype.
+ * The parser is associated with FieldValueHost.setTextValue specifically. Its LookupKey is determined 
+ * by:
+ * - The FieldValueHostConfig.dataType property
+ * - The FieldValueHostConfig.parserLookupKey property, which overrides the dataType property if supplied. This allows you to use a different parser than the one
+ * that is associated with the dataType. For example, you may have a dataType of "PositiveInteger" but want to use a parser that allows for negative numbers and decimals, so you can have a validator that checks for the edge case of positive integers.
+ * 
+ * Because it is likely that you have a dataType property, and you may not want to use the parser feature, 
+ * here are several ways to disable it:
+ * - Set behavior.parseWhenTextValueChanges to false. 'behavior' is found on the Builder: `builder.behavior.parseWhenTextValueChanges = false;`
+ * - Set the FieldValueHostConfig.parserLookupKey property to null.
+ * - Use the option disableParser when calling setTextValue: `valueHost.setTextValue("some text", { disableParser: true });`
+ * 
+ * When used, the DataTypeParserService will be used to find the appropriate parser based on the lookup key established.
  * 
  * A parser is intended to be forgiving of minor flaws in the string, allowing the user
  * flexibility in input. That in itself is the main reason for a different with DataTypeConverter.
@@ -41,6 +43,17 @@ import { DataTypeResolution } from './DataTypes';
  * That also means better control over error messages by having validators built for the edge cases.
  * Dates apply to this rule too. If you can get a real date from the data, leave it to another
  * validator to identify if that date is inappropriate for your use case.
+ * 
+ * Register your implementation with JivsServices.dataTypeParserService.
+ * {@inheritDoc jivs-engine/DataTypes/AbstractClasses/DataTypeParsers }
+ * @module jivs-engine/DataTypes/Types/IDataTypeParser
+ */
+
+import { DataTypeResolution } from './DataTypes';
+
+/**
+ * A specialized converter that takes in a string and converts it into an expected native value.
+ * @see {@link jivs-engine/DataTypes/Types/IDataTypeParser} for details.
  * 
  * Register your implementation with JivsServices.dataTypeParserService.
  */

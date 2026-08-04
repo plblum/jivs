@@ -11,7 +11,7 @@ import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpos
 import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
 import {
     IValueHostsManagerCallbacks, ValueHostsManagerConfig,
-    ValueHostsManagerInstanceState
+    ValueHostsManagerInstanceState, Behaviors
 } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
@@ -33,6 +33,16 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
     extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
 {
     services: IJivsServices;
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
+     * - activeCultureID = from CultureService.activeCultureId
+     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
+     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * 
+     * They can be changed on the ValueHostsManager.behaviors property.
+     */
+    behaviors: Behaviors;    
     /**
      * Delivers a complete ValueHostConfig and shuts down this instance.
      * You cannot use the instance after this point.

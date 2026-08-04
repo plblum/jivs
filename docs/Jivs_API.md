@@ -576,7 +576,11 @@ Your `ValueHost` configuration determines if formatting will happen.
         }
     )
     ```
-- Prevent conversion to text value by assigning formatterLookupKey to null.
+- Prevent conversion to text value by assigning behaviors.formatWhenValueChanges to false.
+    ```ts
+    builder.behaviors.formatWhenValueChanges = false;
+    ```    
+- Prevent conversion to text value by assigning formatterLookupKey to null for case-by-case basis.
     ```ts
     builder.field('BirthDate', LookupKey.Date,
         {
@@ -584,9 +588,6 @@ Your `ValueHost` configuration determines if formatting will happen.
         }
     )
     ```
-    > If you are handling all conversion to text, be sure to use `formatterLookupKey: null` faithfully.
-    If not, the dataType is used and its lookupKey must be registered with the `DataTypeFormatter` or you will
-    get an error.
 - When the formatter has been setup, it can be disabled on calls to any of the setValue functions.
     ```ts
     vhm.getValueHost('BirthDate').setValue(birthDate, { disableFormatter: true });
@@ -605,6 +606,10 @@ Your `ValueHost` configuration determines if formatting will happen.
     // suppose your have a model object with a 'BirthDate' property
     vhm.getValueHost('BirthDate').setValue(model.BirthDate);  // triggers onTextValueChanged
     ```
+- Localize formatting with the behaviors.activeCultureId property.
+    ```ts
+    builder.behaviors.activeCultureId = 'fr-FR';
+    ```          
 #### setTextValue() function
 Set the text value. Optionally let Jivs convert it to the native value using its built-in parsers.
 ```ts
@@ -638,7 +643,11 @@ Your `ValueHost` configuration determines if parsing will happen.
         }
     )
     ```
-- Prevent conversion to native value by assigning parserLookupKey to null.
+- Prevent conversion to text value by assigning behaviors.parseWhenTextValueChanges to false.
+    ```ts
+    builder.behaviors.parseWhenTextValueChanges = false;
+    ```    
+- Prevent conversion to native value by assigning parserLookupKey to null on a case-by-case basis.
     ```ts
     builder.field('BirthDate', LookupKey.Date,
         {
@@ -646,13 +655,14 @@ Your `ValueHost` configuration determines if parsing will happen.
         }
     )
     ```
-    > If you are handling all conversion to native value, be sure to use `parserLookupKey: null` faithfully.
-    If not, the dataType is used and its lookupKey must be registered with the `DataTypeParser` or you will
-    get an error.
 - When the parser has been setup, it can be disabled on calls to any of the setValue functions.
     ```ts
     vhm.getValueHost('BirthDate').setValue(birthDate, { disableParser: true });
     ```
+- Localize parsing with the behaviors.activeCultureId property.
+    ```ts
+    builder.behaviors.activeCultureId = 'fr-FR';
+    ```        
 #### setValues() function
 Set both native and text values together.
 ```ts

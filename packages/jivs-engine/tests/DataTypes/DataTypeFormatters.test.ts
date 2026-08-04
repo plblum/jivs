@@ -1,6 +1,6 @@
 import {
     AbbrevDOWDateFormatter, AbbrevDateFormatter, BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter,
-    DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
+    DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
     LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
     TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter,
     IntegerFormatter,
@@ -14,6 +14,7 @@ import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
 import { MockJivsServices } from '../TestSupport/mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
+import { DataTypeFormatterBase } from '../../src/DataTypes/DataTypeFormatterBase';
 
 describe('DataTypeFormatterBase', () => {
     class TestClass extends DataTypeFormatterBase

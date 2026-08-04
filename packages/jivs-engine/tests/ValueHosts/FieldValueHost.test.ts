@@ -564,7 +564,7 @@ describe('setTextValue with parserLookupKey enabled to see both text value and n
         let setup = setupFieldValueHost(ivh);
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        setup.services.dataTypeParserService.enabled = isActiveParser;
+        setup.valueHostsManager.behaviors.parseWhenTextValueChanges = isActiveParser;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
@@ -614,7 +614,7 @@ describe('setTextValue with parserLookupKey enabled to see both text value and n
     });
 
     test('parserLookupKey = null disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, null, {}, 'parserLookupKey=null');   // parserLookupKey = null
+        testWithDisabledParser('ABC', LookupKey.String, null, {}, 'config.parserLookupKey=null');   // parserLookupKey = null
     });
 
     test('option.disableParser=true disables parsing, resulting in just updating text value but no change to native value', () => {
@@ -623,8 +623,8 @@ describe('setTextValue with parserLookupKey enabled to see both text value and n
     test('option.duringEdit=true disables parsing, resulting in just updating text value but no change to native value', () => {
         testWithDisabledParser('ABC', LookupKey.String, undefined, { duringEdit: true }, null);
     });        
-    test('dataTypeParserService.enabled=false disables parsing, resulting in just updating text value but no change to native value', () => {
-        testWithDisabledParser('ABC', LookupKey.String, null, { }, null, false);  // parserservice disabled
+    test('behaviors.parseWhenTextValueChanges=false disables parsing, resulting in just updating text value but no change to native value', () => {
+        testWithDisabledParser('ABC', LookupKey.String, null, { }, 'behaviors.parseWhenTextValueChanges=false', false);  // behaviors.parseWhenTextValueChanges=false
     });    
     test('value is not a string disables parsing, resulting in just updating text value but no change to native value', () => {
         testWithDisabledParser(10, LookupKey.Number, undefined, {}, null); // not a string
@@ -861,6 +861,7 @@ describe('FieldValueHost using FieldValueHostConfig.formatterLookupKey features 
     // 2. option.disableFormatter=true is provided in setValue's options, and confirm that the formatter is not used and the text value is not set.
     // 3. formatterLookupKey=null is provided in setValue's options, and confirm that the formatter is not used and the text value is not set.
     // 4. formatterLookupKey is provided but not registered, and setValue is called with a native value. Confirm that an error is thrown.
+    // 5. behaviors.formatWhenValueChanges=false disables formatting, resulting in just updating native value but no change to text value.
      
     test('formatterLookupKey is provided and registered, and setValue is called with a native value. Confirm that the text value is set correctly using the formatter.', () =>
     {
@@ -901,6 +902,21 @@ describe('FieldValueHost using FieldValueHostConfig.formatterLookupKey features 
             formatterLookupKey: 'NonExistentFormatter'
         });
         expect(() => setup.valueHost.setValue(123)).toThrow(/No DataTypeFormatter for LookupKey/);
+    });
+    test('behaviors.formatWhenValueChanges=false disables formatting, resulting in just updating native value but no change to text value.', () =>
+    {
+        let setup = setupFieldValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Number
+        });
+        setup.valueHostsManager.behaviors.formatWhenValueChanges = false;
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setValue(123);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.valueHost.getValue()).toBe(123);
+        expect(logger.findMessage('behaviors.formatWhenValueChanges=false', LoggingLevel.Debug)).toBeTruthy();
     });
     // service.isActive() is false (DataTypeFormatterService.enabled=false), and setValue is called with a native value. Confirm that the formatter is not used and the text value is not set.
     test('service.isActive() is false (DataTypeFormatterService.enabled=false), and setValue is called with a native value. Confirm that the formatter is not used and the text value is not set.', () =>

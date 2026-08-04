@@ -5,7 +5,7 @@
 // - Parser, converts text to number
 
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatterBase';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserBase, DataTypeParserOptions } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';

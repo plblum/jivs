@@ -8,7 +8,7 @@ import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../V
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValueHostsManagerInstanceState, type IValueHostsManager, type ValueHostsManagerConfig, type IValueHostsManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
+import { type ValueHostsManagerInstanceState, type IValueHostsManager, type ValueHostsManagerConfig, type IValueHostsManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler, Behaviors, createBehaviors } from '../Interfaces/ValueHostsManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
@@ -115,6 +115,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
         // this._config = internalConfig;
         const internalConfig = this._config = ValueHostsManager.safeConfigClone(config);
+        if (!this._config.behaviors)
+            this._config.behaviors = createBehaviors(this._config.services);
 
         this._instanceState = internalConfig.savedInstanceState ?? {};
         if (typeof this._instanceState.stateChangeCounter !== 'number')
@@ -194,6 +196,19 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     public get services(): IJivsServices {
         return this._config.services!;
     }
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
+     * - activeCultureID = from CultureService.activeCultureId
+     * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
+     * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * 
+     * You can later change its values in the ValueHostsManager.behaviors property.
+     */
+    public get behaviors(): Behaviors
+    {
+        return this._config.behaviors!; // assigned in constructor when missing
+    }    
     /**
      * ValueHosts for all ValueHostConfigs.
      * Always replace a ValueHost when the associated Config or InstanceState are changed.

@@ -3,7 +3,7 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
-import { IValueHostsManager, ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { IValueHostsManager, ValueHostsManagerConfig, createBehaviors } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
@@ -124,6 +124,9 @@ describe('ManagerConfigBuilderBase constructor', () => {
     test('Initial setup with vmConfig successful', () => {
         let testItem = createVMConfig();
         let builder = new TestValueHostManagerConfigBuilderBase(testItem);
+        expect(builder.services).toBe(testItem.services);
+        let expectedBehaviors = createBehaviors(testItem.services);
+        expect(builder.behaviors).toEqual(expectedBehaviors);
         expect(builder.publicify_baseConfig).toBe(testItem);
         expect(builder.publicify_overrideValueHostConfigs).toEqual([]);
         expect(builder.publicify_destinationValueHostConfigs()).toBe(testItem.valueHostConfigs);
@@ -131,6 +134,10 @@ describe('ManagerConfigBuilderBase constructor', () => {
     test('Initial setup with services successful', () => {
         let services = createJivsServicesForTesting();
         let builder = new TestValueHostManagerConfigBuilderBase(services);
+        expect(builder.services).toBe(services);
+        let expectedBehaviors = createBehaviors(services);
+        expect(builder.behaviors).toEqual(expectedBehaviors);
+
         expect(builder.publicify_baseConfig).not.toBeUndefined();
         expect(builder.publicify_baseConfig.services).toBe(services);
         expect(builder.publicify_overrideValueHostConfigs).toEqual([]);

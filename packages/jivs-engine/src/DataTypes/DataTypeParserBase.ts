@@ -1,5 +1,5 @@
 /**
- * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser }
  * @module jivs-engine/DataTypes/AbstractClasses/DataTypeParsers
  */
 

@@ -9,9 +9,10 @@ import { IFieldValueHost, FieldValueHostConfig, FieldValueHostInstanceState } fr
 import { IssueFound, ValidationSeverity, ValidationState, ValidateOptions, ValidationStatus, ValueHostValidateResult } from '../../src/Interfaces/Validation';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import {
+    Behaviors,
     IValueHostsManager,
     IValueHostsManagerAccessor,
-    IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler, toIValueHostsManager,
+    IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler, createBehaviors, toIValueHostsManager,
     toIValueHostsManagerAccessor,
     toIValueHostsManagerCallbacks
 }
@@ -133,12 +134,31 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onTextValueChanged).toBeNull();
         expect(testItem!.onConfigChanged).toBeNull();
+        let expectedBehaviors: Behaviors = createBehaviors(services);
+        expect(testItem!.behaviors).toEqual(expectedBehaviors);
     });
     test('null setup parameter throws', () => {
         let testItem: PublicifiedValueHostsManager | null = null;
 
         expect(() => testItem = new PublicifiedValueHostsManager(null!)).toThrow(/config/);
 
+    });
+    // with config.behaviors initialized when passed into constructor
+    test('Config.behaviors initialized when passed into constructor', () =>
+    {
+        let behaviors: Behaviors = {
+            activeCultureId: 'en-US',
+            formatWhenValueChanges: false,
+            parseWhenTextValueChanges: false
+        };
+        let config: ValueHostsManagerConfig = {
+            services: new MockJivsServices(false, false),
+            valueHostConfigs: [],
+            behaviors: behaviors
+        };
+        let testItem: PublicifiedValueHostsManager | null = null;
+        expect(() => testItem = new PublicifiedValueHostsManager(config)).not.toThrow();
+        expect(testItem!.behaviors).toEqual(behaviors);
     });
 
     test('Config for 1 ValueHost supplied. Other parameters are null', () => {
@@ -151,6 +171,7 @@ describe('constructor and initial property values', () => {
         let services = new MockJivsServices(false, false);
         expect(() => testItem = new PublicifiedValueHostsManager({ services: services, valueHostConfigs: configs })).not.toThrow();
         expect(testItem!.services).toBe(services);
+        expect(testItem!.behaviors).not.toBeNull();
 
         expect(testItem!.exposedValueHosts.size).toBe(1);
 
@@ -190,6 +211,7 @@ describe('constructor and initial property values', () => {
         let services = new MockJivsServices(false, false);
         expect(() => testItem = new PublicifiedValueHostsManager({ services: services, valueHostConfigs: configs })).not.toThrow();
         expect(testItem!.services).toBe(services);
+        expect(testItem!.behaviors).not.toBeNull();
 
         expect(testItem!.exposedValueHosts.size).toBe(2);
 
@@ -253,7 +275,7 @@ describe('constructor and initial property values', () => {
             savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
         })).not.toThrow();
         expect(testItem!.services).toBe(services);
-
+        expect(testItem!.behaviors).not.toBeNull();
 
         expect(testItem!.exposedValueHosts.size).toBe(1);
 
@@ -3504,6 +3526,9 @@ describe('toIValueHostsManager function', () => {
             },
             isValid: false,
             doNotSave: true,
+            behaviors: <Behaviors>{
+                activeCultureId: 'en-US',
+            },
 
             getIssuesForField: function (valueHostName: string): IssueFound[] | null {
                 throw new Error("Function not implemented.");
@@ -3601,6 +3626,9 @@ describe('toIValueHostsManagerAccessor function', () => {
                 getCalcValueHost: (name) => { return <any>{}; },
                 getStaticValueHost: (name) => { return <any>{}; },
                 services: new MockJivsServices(false, false),
+                behaviors: <Behaviors>{
+                    activeCultureId: 'en-US',
+                },
                 notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
                 dispose: () => void {},
                 addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {

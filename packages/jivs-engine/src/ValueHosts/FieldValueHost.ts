@@ -101,6 +101,11 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         // similar to tryParser.
         if (value === undefined)
             return false;
+        if (this.valueHostsManager.behaviors.formatWhenValueChanges === false)
+        {
+            this.logger.message(LoggingLevel.Debug, () => 'behaviors.formatWhenValueChanges=false');
+            return false;
+        }
         if (options?.disableFormatter)
         {
             this.logger.message(LoggingLevel.Debug, () => 'option.disableFormatter=true');
@@ -108,7 +113,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         }
         if (this.config.formatterLookupKey === null)   // null means no formatter is configured. undefined means use the default formatter for the data type.
         {
-            this.logger.message(LoggingLevel.Debug, () => 'formatterLookupKey=null');
+            this.logger.message(LoggingLevel.Debug, () => 'config.formatterLookupKey=null');
             return false;
         }
 
@@ -266,6 +271,11 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
 
         if (typeof textValue === 'string')
         {
+            if (this.valueHostsManager.behaviors.parseWhenTextValueChanges === false)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'behaviors.parseWhenTextValueChanges=false');
+                return false;
+            }
             if (options.disableParser === true)
             {
                 this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
@@ -273,7 +283,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
             }
             if (this.config.parserLookupKey === null)   // null means no parser is configured. undefined means use the default parser for the data type.
             {
-                this.logger.message(LoggingLevel.Debug, () => 'parserLookupKey=null');
+                this.logger.message(LoggingLevel.Debug, () => 'config.parserLookupKey=null');
                 return false;
             }            
             const dtps = this.services.dataTypeParserService;

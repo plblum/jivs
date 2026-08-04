@@ -6,7 +6,7 @@ import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { IValidator, ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
-import { DataTypeFormatterBase, NumberFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
+import { NumberFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier } from '@plblum/jivs-engine/build/DataTypes/DataTypeIdentifiers';
@@ -29,6 +29,7 @@ import {
     checkSyntaxError, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService,
     checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService
 } from '../TestSupport/support';
+import { DataTypeFormatterBase } from '@plblum/jivs-engine/src/DataTypes/DataTypeFormatterBase';
 
 interface IAnalysisResultsHelperCommon {
     publicify_results: IConfigAnalysisResults;
