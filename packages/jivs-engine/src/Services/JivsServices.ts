@@ -55,17 +55,19 @@ import { ValueHostConfigMergeService } from './ConfigMergeService';
  * To add more services, use setService(name, service) to add a new service to the IJivsServices instance.
  * Alternatively, use the ModuleServicesInstaller to add services to the global default IJivsServices instance.
  */
-export class JivsServices extends Services implements IJivsServices {
+export class JivsServices extends Services implements IJivsServices
+{
+    constructor(defaultCultureId: string = 'en')
+    {
+        super();
+        const service = new CultureService(defaultCultureId);
+        this.setService(ServiceName.culture, service);        
+    }
     /**
      * Service to create Culture objects.
      */
     public get cultureService(): ICultureService {
-        let service = this.getService<ICultureService>(ServiceName.culture);
-        if (!service) {
-            service = new CultureService();
-            this.setService(ServiceName.culture, service);
-        }
-        return service;
+        return this.getService<ICultureService>(ServiceName.culture)!;
     }
     public set cultureService(service: ICultureService) {
         this.setService(ServiceName.culture, service);

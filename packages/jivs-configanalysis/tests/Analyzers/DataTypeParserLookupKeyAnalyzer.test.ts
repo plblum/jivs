@@ -70,15 +70,13 @@ class ParserThatThrowsError implements IDataTypeParser<number> {
 }
 
 function oneCulture(services: IJivsServices) {
-    let cultureService = new CultureService();
-    services.cultureService = cultureService;
-    cultureService.register({ cultureId: 'en', fallbackCultureId: null });
+    services.cultureService = new CultureService('en');
+
 }
 
 function manyCultures(services: IJivsServices) {
-    let cultureService = new CultureService();
+    let cultureService = new CultureService('en');
     services.cultureService = cultureService;
-    cultureService.register({ cultureId: 'en', fallbackCultureId: null });
     cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
     cultureService.register({ cultureId: 'fr', fallbackCultureId: null });
 }

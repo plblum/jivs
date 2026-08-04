@@ -1,16 +1,20 @@
 /**
  * Implements these DataTypeFormatters:
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!StringFormatter | StringFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!CapitalizeStringFormatter | CapitalizeStringFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!UppercaseStringFormatter | UppercaseStringFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!LowercaseStringFormatter | LowercaseStringFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!NumberFormatter | NumberFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!IntegerFormatter | IntegerFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!CurrencyFormatter | CurrencyFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!PercentageFormatter | PercentageFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!Percentage100Formatter | Percentage100Formatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!BooleanFormatter | BooleanFormatter},
- * {@link jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters!DateTimeFormatterBase | DateTimeFormatterBase}
+ * - {@link StringFormatter | StringFormatter}
+ * - {@link CapitalizeStringFormatter | CapitalizeStringFormatter}
+ * - {@link UppercaseStringFormatter | UppercaseStringFormatter}
+ * - {@link LowercaseStringFormatter | LowercaseStringFormatter}
+ * - {@link NumberFormatter | NumberFormatter}
+ * - {@link IntegerFormatter | IntegerFormatter}
+ * - {@link CurrencyFormatter | CurrencyFormatter}
+ * - {@link PercentageFormatter | PercentageFormatter}
+ * - {@link Percentage100Formatter | Percentage100Formatter}
+ * - {@link BooleanFormatter | BooleanFormatter}
+ * - {@link DateTimeFormatterBase | DateTimeFormatterBase}
+ * - {@link DateFormatter | DateFormatter}
+ * - {@link DateTimeFormatter | DateTimeFormatter}
+ * - {@link TimeofDayFormatter | TimeofDayFormatter}
+ * - {@link TimeofDayHMSFormatter | TimeofDayHMSFormatter}
  * 
  * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeFormatters
  */

@@ -182,6 +182,6 @@ class CapturedToken
  */    
     public replacement(replacementValue: any, valueHostsManager: IValueHostsManager): DataTypeResolution<string>
     {
-        return valueHostsManager.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? undefined);
+        return valueHostsManager.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? null, valueHostsManager.behaviors.activeCultureId!);
     }
 }

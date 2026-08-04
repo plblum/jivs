@@ -1,13 +1,13 @@
 /**
  * Implementations of IDataTypeParser for common data types:
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/CleanUpStringParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/ShortDatePatternParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/NumberParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/CurrencyParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/Percentage100Parser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/PercentageParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/BooleanParser },
- * - {@see jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers/EmptyStringIsFalseParser }.
+ * - {@link CleanUpStringParser }
+ * - {@link ShortDatePatternParser }
+ * - {@link NumberParser }
+ * - {@link CurrencyParser }
+ * - {@link Percentage100Parser }
+ * - {@link PercentageParser }
+ * - {@link BooleanParser }
+ * - {@link EmptyStringIsFalseParser }
  * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers
  */
 

@@ -98,7 +98,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
         const label = (this.config.label ?? '') as string;
         const labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
-            return this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId, labell10n, label)!;
+            return this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
         return label;
     }
 
@@ -218,7 +218,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
         }
-        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.activeCultureId, dt)!) : '';
+        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
     }
 
     /**

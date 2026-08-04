@@ -73,7 +73,9 @@ class PublicifiedValidator extends Validator {
  * ValueHostsManager, Services, two ValueHosts, the complete Config,
  * and the Validator.
  */
-function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
+function setupWithField1AndField2(config?: Partial<ValidatorConfig>,
+    defaultCultureId: string = 'en'
+): {
     vhm: MockValueHostsManager,
     services: MockJivsServices,
     valueHost1: MockFieldValueHost,
@@ -81,7 +83,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     config: ValidatorConfig,
     validator: PublicifiedValidator
 } {
-    let services = new MockJivsServices(true, true);
+    let services = new MockJivsServices(true, true, defaultCultureId);
     let vhm = new MockValueHostsManager(services);
     let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vhm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
@@ -503,7 +505,7 @@ function setupForLocalization(activeCultureID: string): PublicifiedValidator {
         errorMessagel10n: 'EM',
         summaryMessage: 'SEM-fallback',
         summaryMessagel10n: 'SEM'
-    });
+    }, activeCultureID);
     let tlService = setup.services.textLocalizerService as TextLocalizerService;
     tlService.register('EM', {
         'en': 'enErrorMessage',
@@ -513,7 +515,6 @@ function setupForLocalization(activeCultureID: string): PublicifiedValidator {
         'en': 'enSummaryMessage',
         'es': 'esSummaryMessage'
     });
-    setup.services.cultureService.activeCultureId = activeCultureID;
     return setup.validator;
 }
 describe('Validator.getErrorMessageTemplate', () => {
@@ -570,11 +571,10 @@ describe('Validator.getErrorMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -584,12 +584,11 @@ describe('Validator.getErrorMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'supplied',
             errorMessagel10n: null,
-        });
+        }, 'en');
 
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('supplied');
@@ -602,12 +601,11 @@ describe('Validator.getErrorMessageTemplate', () => {
             },
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -620,7 +618,7 @@ describe('Validator.getErrorMessageTemplate', () => {
             },
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
@@ -629,7 +627,6 @@ describe('Validator.getErrorMessageTemplate', () => {
         {
             '*': 'Default Error Message-String'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -706,11 +703,10 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
@@ -720,12 +716,11 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             summaryMessage: 'supplied',
             summaryMessagel10n: null,
-        });
+        }, 'en');
 
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('supplied');
@@ -738,12 +733,11 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             },
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
@@ -756,7 +750,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             },
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
@@ -765,7 +759,6 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         {
             '*': 'Default Error Message-String'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');

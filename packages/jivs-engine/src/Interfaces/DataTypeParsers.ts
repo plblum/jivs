@@ -45,7 +45,6 @@
  * validator to identify if that date is inappropriate for your use case.
  * 
  * Register your implementation with JivsServices.dataTypeParserService.
- * {@inheritDoc jivs-engine/DataTypes/AbstractClasses/DataTypeParsers }
  * @module jivs-engine/DataTypes/Types/IDataTypeParser
  */
 

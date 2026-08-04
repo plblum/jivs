@@ -33,12 +33,13 @@ export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFor
      * is supplied for that culture, it has a chain of fallback cultures that you supply
      * in the constructor.
      * @param value
-     * @param lookupKey - If not supplied, a lookup key is created based on the native value type.
+     * @param lookupKey - If null, a lookup key is created based on the native value type.
      * If you need alternative formatting or are supporting a user defined type,
      * always pass in the associated lookup key. They can be found in the LookupKeys module.
+     * @param cultureId - The culture to use for formatting. Usually supplied by Behaviors.activeCultureId.
      * @returns successfully converted value or validation error information.
      */
-    format(value: any, lookupKey?: string | null): DataTypeResolution<string>;
+    format(value: any, lookupKey: string | null, cultureId: string): DataTypeResolution<string>;
 
 
     /**

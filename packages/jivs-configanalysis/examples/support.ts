@@ -19,11 +19,8 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on JivsSer
 
 
 
-export function createMinimalJivsServices(activeCultureId: string): JivsServices {
-    let vs = new JivsServices();
-
-    // --- CultureServices ----------------------------
-    vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
+export function createMinimalJivsServices(defaultCultureId: string): JivsServices {
+    let vs = new JivsServices(defaultCultureId);
 
     vs.conditionFactory = new ConditionFactory();
     // no Conditions pre-installed except DataTypecheck because

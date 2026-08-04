@@ -63,8 +63,7 @@ import {
     StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, CapitalizeStringFormatter,
     UppercaseStringFormatter, LowercaseStringFormatter, DateTimeFormatter, AbbrevDateFormatter,
     AbbrevDOWDateFormatter, LongDateFormatter, LongDOWDateFormatter, TimeofDayFormatter, TimeofDayHMSFormatter,
-    BooleanFormatter, CurrencyFormatter, PercentageFormatter, Percentage100Formatter,
-    DataTypeFormatterBase
+    BooleanFormatter, CurrencyFormatter, PercentageFormatter, Percentage100Formatter
 } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
@@ -102,14 +101,14 @@ new BuildersFactoryInstaller();  // install the buildersFactory service property
  * 'client' is used by any UI oriented code. 
  * 'server' is intended for business logic layer itself.
  * When 'all', it is not usage specific.
- * @param activeCultureId - The CultureId (like 'en' and 'en-US') which is used for localization.
- * You can change it without creating a new service like this:
- * `services.activeCultureId = 'new cultureid';`
+ * @param defaultCultureId - The default CultureId (like 'en' and 'en-US') which is used for localization.
+ * Override it on each ValueHostsManager with builder.behaviors.activeCultureId
+ * or ValueHostsManager.behaviors.activeCultureId.
  * @returns 
  */
-export function createJivsServices(activeCultureId: string,
+export function createJivsServices(defaultCultureId: string,
     usage: 'client' | 'server' | 'all' = 'client'): JivsServices {
-    let vs = new JivsServices();
+    let vs = new JivsServices(defaultCultureId);
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
@@ -117,7 +116,6 @@ export function createJivsServices(activeCultureId: string,
     vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
     
     // --- CultureServices ----------------------------
-    vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
     registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
 
     // --- Text localization service

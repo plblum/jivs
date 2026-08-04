@@ -265,6 +265,6 @@ Please use these documents:
   + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)
   + [Localization](./docs/Jivs_API.md#localization)
   + [Validation Deep Dive](./docs/Jivs_API.md#validation-deep-dive)
-  + [Setting and Getting Values](./docs/Jivs_API.md#setting-and-getting-values)
+  + [Setting and Getting Values](./docs/Jivs_API.md#getting-and-setting-native-and-text-values)
   + [Logging](./docs/Jivs_API.md#logging)
   + [Testing your work](./docs/Jivs_API.md#testing-your-work)

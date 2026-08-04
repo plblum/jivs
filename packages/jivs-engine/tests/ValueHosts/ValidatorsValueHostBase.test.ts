@@ -1841,9 +1841,8 @@ function testValidateFunctionWithPromise(
         valueHostType: TestValueHostType,
         validatorConfigs: finishPartialValidatorConfigs(validatorConfigs ?? null)
     };
-    let services = new JivsServices();
+    let services = new JivsServices('en');
     supportTestValueHostInServices(services);
-    services.cultureService.activeCultureId = 'en';
     services.conditionFactory = new ConditionFactory();
     services.loggerService = new CapturingLogger();
     registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);

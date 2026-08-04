@@ -189,6 +189,7 @@ describe('resolveTokens', () => {
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
+        vhm.services.cultureService.register({ cultureId: 'de-DE' });
         let logger = vhm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
@@ -202,9 +203,9 @@ describe('resolveTokens', () => {
         };
         let testItem = new MessageTokenResolverService();
         testItem.services = vhm.services;
-        vhm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
+        vhm.behaviors.activeCultureId = 'de-DE';  // not configured in LA
         expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vhm, messageTokeSource)).toThrow();
-
+        logger.toConsole();
         expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });        
     test('getValuesForTokens function throws an error', () => {

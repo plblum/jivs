@@ -90,7 +90,7 @@ export function createJivsServicesForTesting(options?: CvstOptions): IJivsServic
     if (!options) options = {};
 
 
-    const vs = new JivsServices();
+    const vs = new JivsServices(options.defaultCultureId ?? 'en');
 
     const consoleLogger = new ConsoleLoggerService(options.loggerLevel ?? LoggingLevel.Error);
     if (options.logger === 'capturing') {
@@ -100,7 +100,6 @@ export function createJivsServicesForTesting(options?: CvstOptions): IJivsServic
     else
         vs.loggerService = consoleLogger;
 
-    vs.cultureService.activeCultureId = options.activeCultureId ?? 'en';
     if (options.cultures)
         options.cultures.forEach((culture) => { vs.cultureService.register(culture); });
     else
@@ -162,7 +161,7 @@ export function createJivsServicesForTesting(options?: CvstOptions): IJivsServic
  * Guides the creation of the JivsServices object.
  */
 export interface CvstOptions {
-    activeCultureId?: string;   // defaults to en
+    defaultCultureId?: string;   // defaults to en
     cultures?: Array<CultureIdFallback>;     // defaults en, en-US, es, es-MX, fr with some fallbacks
     logger?: 'console' | 'capturing';    // defaults to console. When capturing, it also logs to console.
     loggerLevel?: LoggingLevel; // defaults to Error

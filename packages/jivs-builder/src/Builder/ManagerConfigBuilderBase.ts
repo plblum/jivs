@@ -135,7 +135,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     /**
      * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
-     * - activeCultureID = from CultureService.activeCultureId
+     * - activeCultureID = from CultureService.defaultCultureId
      * - formatWhenValueChanges = true, which means when a value changes, it is formatted and the formatted value is set.
      * - parseWhenTextValueChanges = true, which means when a text value changes, it is parsed and the parsed value is set.
      * 

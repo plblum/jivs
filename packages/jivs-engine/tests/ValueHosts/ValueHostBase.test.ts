@@ -647,7 +647,7 @@ describe('getDataTypeLabel', () => {
     // resolve a number to "Number". 
     function testGetDataTypeLabel(hasDataType: boolean, hasValue: boolean, hasLocalization: boolean, expectedDataTypeLabel: string): void
     {
-        let services = createJivsServicesForTesting();
+        let services = createJivsServicesForTesting({ defaultCultureId: 'en' });
         let factory = new ValueHostFactory();
         factory.register(new PublicifiedValueHostBaseGenerator());
         services.valueHostFactory = factory;
@@ -655,7 +655,6 @@ describe('getDataTypeLabel', () => {
         let tls = new TextLocalizerService();
         services.textLocalizerService = tls; // ensures its inited as empty
         if (hasLocalization) {
-            services.cultureService.activeCultureId = 'en';
             tls.registerDataTypeLabel(LookupKey.Number, {
                 'en': 'Localized Number'
             });            

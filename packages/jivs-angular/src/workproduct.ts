@@ -3289,7 +3289,7 @@ export class AriaAttributeManager extends ElementAttributeManager {
             }
 
             const localizedRoleDescription = this._fivaseForm.valueHostsManager.services.textLocalizerService.localize(
-                this._fivaseForm.valueHostsManager.services.cultureService.activeCultureId,
+                this._fivaseForm.valueHostsManager.behaviors.activeCultureId!,
                 roleDescriptionConfig.l10nKey,
                 roleDescriptionConfig.text
             );

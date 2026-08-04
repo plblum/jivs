@@ -126,7 +126,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
                 try
                 {
                     this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
-                    const result = dtfs.format(value, lookupKey);
+                    const result = dtfs.format(value, lookupKey, this.valueHostsManager.behaviors.activeCultureId!);
                     return sendResultAlong(result);
                 }
                 catch (e) // the service threw
@@ -296,7 +296,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
                     try
                     {
                         this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
-                        const cultureId = this.services.cultureService.activeCultureId;
+                        const cultureId = this.services.cultureService.defaultCultureId;
                         const result = dtps.parse(textValue, lookupKey, cultureId);
                         sendResultAlong(result);
                         return true;

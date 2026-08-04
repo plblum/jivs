@@ -667,7 +667,7 @@ describe('AnalysisResultsHelper', () => {
                     fr: 'Ceci est un message de test',
                     es: 'Este es un mensaje de prueba'
                 });
-            services.cultureService = new CultureService();
+            services.cultureService = new CultureService('en');
             services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
             services.cultureService.register({ cultureId: 'fr', fallbackCultureId: null });
             services.cultureService.register({ cultureId: 'es', fallbackCultureId: null });
@@ -817,21 +817,19 @@ describe('AnalysisResultsHelper', () => {
     });
 
     describe('checkMessageTokens', () => {
-        function createServices(): IJivsServices {
-            let services = createJivsServicesForTesting();
+        function createServices(defaultCultureId: string = 'en'): IJivsServices {
+            let services = createJivsServicesForTesting({ defaultCultureId: defaultCultureId });
+            services.cultureService = new CultureService(defaultCultureId); // ensure fresh cultures
             let dtfs = new DataTypeFormatterService();
             services.dataTypeFormatterService = dtfs;
             dtfs.services = services;
-            let cultureService = new CultureService();
-            services.cultureService = cultureService;
     
             return services;
         }
         function setupTestItem(services: IJivsServices, initCulture: boolean): Publicify_AnalysisResultsHelper<IJivsServices>
         {
             if (initCulture) {
-                services.cultureService = new CultureService();
-                services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
+                services.cultureService = new CultureService('en');
             }
             let mockArgs = createAnalysisArgs(services, [], {});            
             let testItem = new Publicify_AnalysisResultsHelper(mockArgs);
@@ -935,10 +933,8 @@ describe('AnalysisResultsHelper', () => {
         });
         // same as above with 2 cultures, en and en-US that fallsback to en
         test('Valid token with Number as lookupKey and 2 cultures results in lookup key info being registered', () => {
-            let services = createServices();
+            let services = createServices('en');
             services.dataTypeFormatterService.register(new NumberFormatter(null));
-            services.cultureService = new CultureService();
-            services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
             services.cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
             let testItem = setupTestItem(services, false);
             let message = '{Token:Number}';
@@ -1020,12 +1016,10 @@ describe('AnalysisResultsHelper', () => {
                 }
                 
             }
-            let services = createServices();
+            let services = createServices('en');
             services.dataTypeFormatterService.register(new NumberFormatter(null));
             services.dataTypeFormatterService.register(new CustomFormatter());  // we expect to find this one only
             services.lookupKeyFallbackService.register('Custom', LookupKey.Number);
-            services.cultureService = new CultureService();
-            services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
             services.cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
             let testItem = setupTestItem(services, false);
             let message = '{Token:Custom}';
@@ -1077,11 +1071,9 @@ describe('AnalysisResultsHelper', () => {
                     throw new Error('Method not implemented.');
                 }
             }            
-            let services = createServices();
+            let services = createServices('en');
             services.dataTypeFormatterService.register(new NumberFormatter(null));
             services.dataTypeFormatterService.register(new CustomFormatter());
-            services.cultureService = new CultureService();
-            services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
             services.cultureService.register({ cultureId: 'fr', fallbackCultureId: null });
             let testItem = setupTestItem(services, false);
             let message = 'A {Token:Custom} B {Token2:Number} C';

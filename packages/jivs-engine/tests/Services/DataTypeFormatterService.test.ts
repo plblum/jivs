@@ -52,12 +52,12 @@ describe('DataTypeFormatterServices constructor and properties', () => {
 describe('DataTypeFormatterService.format', () => {
     test('No lookupKey not resolved. Logs an error and returns an error message', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en');
+        populateServicesWithManyCultures(services);
         let testItem = services.dataTypeFormatterService;
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = testItem.format({})).toThrow(/LookupKey/);
+        expect(() => result = testItem.format({}, null, 'en')).toThrow(/LookupKey/);
 
         expect(logger.findMessage('Identify LookupKey from value', LoggingLevel.Debug)).toBeTruthy();
 
@@ -65,40 +65,40 @@ describe('DataTypeFormatterService.format', () => {
     });
     test('Unsupported lookupKey error', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en');
+        populateServicesWithManyCultures(services);
         let testItem = services.dataTypeFormatterService;
 
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = testItem.format(0, 'huh')).toThrow(/No DataTypeFormatter/);
+        expect(() => result = testItem.format(0, 'huh', 'en')).toThrow(/No DataTypeFormatter/);
         expect(logger.findMessage('Trying cultureId', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', true);
+        populateServicesWithManyCultures(services, true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         testItem.register(new TestFormatter(['en'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
+        expect(testItem.format(10, 'TestKey', 'en')).toEqual({ value: 'en TestKey' });
         expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
-        let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en-GB', true);
+        let services = new MockJivsServices(false, true, 'en-GB');
+        populateServicesWithManyCultures(services, true);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         testItem.register(new TestFormatter(['en'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
+        expect(testItem.format(10, 'TestKey', 'en-GB')).toEqual({ value: 'en TestKey' });
 
         expect(logger.findMessage('Trying cultureId: en-GB', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug)).toBeTruthy();
@@ -106,58 +106,49 @@ describe('DataTypeFormatterService.format', () => {
         expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
-        let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en-GB', true);
+        let services = new MockJivsServices(false, true, 'en-GB');
+        populateServicesWithManyCultures(services, true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         testItem.register(new TestFormatter(['en', 'en-GB'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en-GB TestKey' });
+        expect(testItem.format(10, 'TestKey', 'en-GB')).toEqual({ value: 'en-GB TestKey' });
     });
     test('Date to string using built-in localization', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', true);
+        populateServicesWithManyCultures(services, true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         let date = new Date(2000, 0, 11);
-        testItem.services.cultureService.activeCultureId = 'en-GB';
-        expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
-        testItem.services.cultureService.activeCultureId = 'en';
-        expect(testItem.format(date)).toEqual({ value: '1/11/2000' });
-        testItem.services.cultureService.activeCultureId = 'fr';
-        expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
+        expect(testItem.format(date, null, 'en-GB')).toEqual({ value: '11/01/2000' });
+        expect(testItem.format(date, null, 'en')).toEqual({ value: '1/11/2000' });
+        expect(testItem.format(date, null, 'fr')).toEqual({ value: '11/01/2000' });
     });
     test('Number to string using built-in localization', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', true);
+        populateServicesWithManyCultures(services, true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         let value = 4000.932;
-        testItem.services.cultureService.activeCultureId = 'en-GB';
-        expect(testItem.format(value)).toEqual({ value: '4,000.932' });
-        testItem.services.cultureService.activeCultureId = 'en';
-        expect(testItem.format(value)).toEqual({ value: '4,000.932' });
-        testItem.services.cultureService.activeCultureId = 'fr';
-        expect(testItem.format(value)).toEqual({ value: '4\u{202F}000,932' });
+        expect(testItem.format(value, null, 'en-GB')).toEqual({ value: '4,000.932' });
+        expect(testItem.format(value, null, 'en')).toEqual({ value: '4,000.932' });
+        expect(testItem.format(value, null, 'fr')).toEqual({ value: '4\u{202F}000,932' });
     });
     test('String to string using built-in localization. Expect no changes', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', true);
+        populateServicesWithManyCultures(services, true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         let value = 'abcZYX';
-        testItem.services.cultureService.activeCultureId = 'en-GB';
-        expect(testItem.format(value)).toEqual({ value: value });
-        testItem.services.cultureService.activeCultureId = 'en';
-        expect(testItem.format(value)).toEqual({ value: value });
-        testItem.services.cultureService.activeCultureId = 'fr';
-        expect(testItem.format(value)).toEqual({ value: value });
+        expect(testItem.format(value, null, 'en-GB')).toEqual({ value: value });
+        expect(testItem.format(value, null, 'en')).toEqual({ value: value });
+        expect(testItem.format(value, null, 'fr')).toEqual({ value: value });
     });
     test('Lookup Key supplied not compatible with native data type error', () => {
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', true);
+        populateServicesWithManyCultures(services, true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
-        expect(testItem.format(10, LookupKey.Date).errorDetails).not.toBeUndefined();
-        expect(testItem.format(10, LookupKey.Boolean).errorDetails).not.toBeUndefined();
-        expect(testItem.format('10', LookupKey.Number).errorDetails).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Date, 'en').errorDetails).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Boolean, 'en').errorDetails).not.toBeUndefined();
+        expect(testItem.format('10', LookupKey.Number, 'en').errorDetails).not.toBeUndefined();
     });
     test('Formatter throws Error. results in errorMessage with exception message', () => {
         class FormatterThrowsError implements IDataTypeFormatter
@@ -170,13 +161,13 @@ describe('DataTypeFormatterService.format', () => {
             }
         }
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', false);
+        populateServicesWithManyCultures(services, false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new FormatterThrowsError());
-        expect(testItem.format(10, 'TEST')).toEqual({
+        expect(testItem.format(10, 'TEST', 'en')).toEqual({
             errorDetails: {
                 errorMessage: 'ERROR'
             }
@@ -196,13 +187,13 @@ describe('DataTypeFormatterService.format', () => {
             }
         }
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', false);
+        populateServicesWithManyCultures(services, false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new FormatterThrowsString());
         try {
-            testItem.format(10, 'TEST');
+            testItem.format(10, 'TEST', 'en');
             fail();
         }
         catch (e)
@@ -218,8 +209,7 @@ describe('DataTypeFormatterService.format', () => {
 describe('format() using lookupKeyFallbackService', () => {
     function createJivsServices(): IJivsServices
     {
-        let vs = new JivsServices();
-        vs.cultureService.activeCultureId = 'en';
+        let vs = new JivsServices('en');
         let dtfs = new DataTypeFormatterService();
         vs.dataTypeFormatterService = dtfs;
 
@@ -237,7 +227,7 @@ describe('format() using lookupKeyFallbackService', () => {
 
         // default contains Integer->Number
         let dtfs = services.dataTypeFormatterService;
-        let result = dtfs.format(1, LookupKey.Integer);
+        let result = dtfs.format(1, LookupKey.Integer, 'en');
         expect(result.value).toEqual('1');
         expect(logger.findMessage('Trying fallback', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Formatter selected: NumberFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();        
@@ -254,7 +244,7 @@ describe('format() using lookupKeyFallbackService', () => {
 
         // default contains Integer->Number
         let dtfs = services.dataTypeFormatterService;
-        let result = dtfs.format(1, 'CUSTOMB');
+        let result = dtfs.format(1, 'CUSTOMB', 'en');
         expect(result.value).toEqual('$1.00');
         expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug)).toBeTruthy();
@@ -273,7 +263,7 @@ describe('format() using lookupKeyFallbackService', () => {
         // default contains Integer->Number
         let dtfs = services.dataTypeFormatterService;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = dtfs.format(1, 'CUSTOMB')).toThrow(/loop involving CUSTOMB/);
+        expect(() => result = dtfs.format(1, 'CUSTOMB', 'en')).toThrow(/loop involving CUSTOMB/);
     });        
     
 });

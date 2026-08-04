@@ -68,10 +68,12 @@ import { CachingService } from "../../src/Services/CachingService";
 
 
 
-export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValueHostsManager
+export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true,
+    defaultCultureId: string = 'en'
+): IValueHostsManager
 {
-    let services = new MockJivsServices(false, false);
-    populateServicesWithManyCultures(services, 'en', registerLookupKeys);
+    let services = new MockJivsServices(false, false, defaultCultureId);
+    populateServicesWithManyCultures(services, registerLookupKeys);
     return new MockValueHostsManager(services);
 }
 
@@ -296,6 +298,7 @@ export class MockJivsServices implements IJivsServices
      */
     constructor(registerStandardConditions: boolean,
         registerStandardDataTypes: boolean,
+        defaultCultureId: string = 'en',
         powerLogging: boolean = false,
         powerLoggingTypeFilter: string | null = null)
     {
@@ -304,8 +307,7 @@ export class MockJivsServices implements IJivsServices
         this._valueHostFactory = factory;
         this._validatorFactory = new ValidatorFactory();
 
-        this._cultureService = new CultureService();
-        this.cultureService.activeCultureId = 'en';
+        this._cultureService = new CultureService(defaultCultureId);
         this._conditionFactory = new ConditionFactory();
         this.dataTypeFormatterService = new DataTypeFormatterService();
         this.dataTypeParserService = new DataTypeParserService();

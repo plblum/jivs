@@ -80,7 +80,7 @@ describe('Replace factories and services', () => {
         expect(testItem.dataTypeIdentifierService).toBe(replacement);
     });
     test('Replace cultureService', () => {
-        let replacement = new CultureService();
+        let replacement = new CultureService('fr');
 
         let testItem = new JivsServices();
         testItem.cultureService = replacement;
@@ -366,7 +366,7 @@ describe('dispose', () => {
     test('accessing any service after dispose throws a TypeError', () => {
         let testItem = new JivsServices();
         testItem.conditionFactory = new ConditionFactory();
-        testItem.cultureService = new CultureService();
+        testItem.cultureService = new CultureService('en');
         testItem.dataTypeComparerService = new DataTypeComparerService();
         testItem.dataTypeConverterService = new DataTypeConverterService();
         testItem.dataTypeIdentifierService = new DataTypeIdentifierService();

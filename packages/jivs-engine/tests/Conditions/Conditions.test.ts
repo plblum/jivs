@@ -5683,7 +5683,7 @@ describe('IntegerCondition', () => {
         expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
     test('evaluate non-numbers that have converters available results in numbers that can be evaluated', () => {
-        let services = new MockJivsServices(false, true, true);
+        let services = new MockJivsServices(false, true, 'en', true);
 
         services.dataTypeConverterService.register(new UTCDateOnlyConverter());
         services.dataTypeConverterService.register(new NumericStringToNumberConverter());

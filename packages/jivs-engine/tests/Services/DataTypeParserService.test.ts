@@ -107,8 +107,8 @@ describe('DataTypeParserService.parse', () => {
                 throw new Error('ERROR');
             }
         }
-        let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', false);
+        let services = new MockJivsServices(false, true, 'en');
+        populateServicesWithManyCultures(services, false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
 
@@ -135,7 +135,7 @@ describe('DataTypeParserService.parse', () => {
             }
         }
         let services = new MockJivsServices(false, true);
-        populateServicesWithManyCultures(services, 'en', false);
+        populateServicesWithManyCultures(services, false);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeParserService as DataTypeParserService;
@@ -179,8 +179,7 @@ describe('DataTypeParserService.parse', () => {
 describe('parse() using lookupKeyFallbackService', () => {
     function createJivsServices(): IJivsServices
     {
-        let vs = new JivsServices();
-        vs.cultureService.activeCultureId = 'en';
+        let vs = new JivsServices('en');
         let dtfs = new DataTypeParserService();
         vs.dataTypeParserService = dtfs;
 

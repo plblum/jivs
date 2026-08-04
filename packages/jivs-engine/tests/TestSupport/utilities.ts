@@ -5,8 +5,7 @@ import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifier
 import { registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
 
 
-export function populateServicesWithManyCultures(services: IJivsServices, activeCultureId: string, registerFormatters: boolean = false): void {
-    services.cultureService.activeCultureId = activeCultureId;
+export function populateServicesWithManyCultures(services: IJivsServices, registerFormatters: boolean = false): void {
     registerCultureIdFallbacksForEn(services.cultureService);
 
     let dtis = new DataTypeIdentifierService();

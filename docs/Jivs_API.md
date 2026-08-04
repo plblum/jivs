@@ -58,7 +58,6 @@ Topics:
 - [Lookup Keys: DataTypes and Companion tools](#lookup-keys-data-types-and-companion-tools)
 - [Localization](#localization)
 - [Validation Deep Dive](#validation-deep-dive)
-- [Setting and Getting Values](#setting-and-getting-values)
 - [Logging](#logging)
 - [Testing your work](#testing-your-work)
 
@@ -512,7 +511,7 @@ Start with a `ValueHostsManager` instance. It should already be configured with 
 |vhm.vh.calc('name')|CalcValueHost|Throws error|
 |vhm.vh.any('name')|Base to all ValueHosts|Throws error|
 
-### Native and Text Values of ValueHosts
+### Getting and setting native and text values
 Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (FieldValueHost, StaticValueHost, etc).
 
 Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
@@ -610,6 +609,7 @@ Your `ValueHost` configuration determines if formatting will happen.
     ```ts
     builder.behaviors.activeCultureId = 'fr-FR';
     ```          
+    See also [Localization](#localization).
 #### setTextValue() function
 Set the text value. Optionally let Jivs convert it to the native value using its built-in parsers.
 ```ts
@@ -663,6 +663,7 @@ Your `ValueHost` configuration determines if parsing will happen.
     ```ts
     builder.behaviors.activeCultureId = 'fr-FR';
     ```        
+    See also [Localization](#localization).
 #### setValues() function
 Set both native and text values together.
 ```ts
@@ -1726,6 +1727,20 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 }    
 ```
 
+### Selecting the culture
+There are two places you can select a culture. Each takes a cultureId like 'en' or 'fr-FR'.
+- Globally, when creating the `JivsService` object, passing the cultureId into its constructor. Usually you will work with the `createJivsServices()` function and it takes a cultureId: 
+    ```ts
+    let services = createJivsServices('fr-FR');
+    ```
+- Each `ValueHostsManager` starts from that global setting, and allows you to change the default. Be sure to have registered all cultures you intend to use within `createJivsServices()`.
+    ```ts
+    // prior to creating the ValueHostsManager
+    builder.behaviors.activeCultureId = 'en';
+    // once the ValueHostsManager exists, change it at will
+    vhm.behaviors.activeCultureId = 'de';
+    ```    
+
 ## Validation Deep Dive
 ### What invokes validation
 Both the ValueHostsManager and validatable ValueHosts have a `validate()` function, as described in the next two sections.
@@ -1757,8 +1772,8 @@ interface ValidateOptions {
 }
 ```
 These properties are all related to ValueHost value changes:
-- duringEdit - Set to true when handling oninput events, or any other validation that needs to happen as the user types. Only a few validators will respond, including RequireTextCondition, RegExpCondition, and StringLengthCondition.
-- skipCallback - Set to true if you have a reason to skip the `onValueHostValidationStateChanged callback` normally invoked by `validate()`.
+- `duringEdit` - Set to true when handling oninput events, or any other validation that needs to happen as the user types. Only a few validators will respond, including RequireTextCondition, RegExpCondition, and StringLengthCondition.
+- `skipCallback` - Set to true if you have a reason to skip the `onValueHostValidationStateChanged callback` normally invoked by `validate()`.
 
 The `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` functions all take an *options* parameter to include validation, saving a step:
 
@@ -1788,13 +1803,13 @@ interface SetValueOptions {
 }
 ```
 These properties are all related to validation:
-- `validate` - When true, invoke validation but only if the value changed.
-- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. 
+- `validate` - When true, invoke validation but only if the value changed. It defaults to true.
+- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. It defaults to false.
 - `injectedError` - When you handle parsing, your parser may report an error that you want to display.
   Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
 
 #### ValueHostsManager.validate()
-Prior to submitting or any time you want to validate the entire form, use `validate()` on ValueHostsManager.
+Prior to submitting or any time you want to validate the entire form, use `validate()` on `ValueHostsManager`.
 ```ts
 let status = vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
@@ -1811,22 +1826,22 @@ interface ValidateOptions {
     skipCallback?: boolean;
 }
 ```
-These properties are all related to ValueHostsManager validation:
-- group - Group validation is a tool to group validatable ValueHosts with a specific submit command when validating. If used, it needs a name assigned here and on ValueHosts that it targets. See their ValueHostConfig.group property. The name matching is case insensitive.
+These properties are all related to `ValueHostsManager` validation:
+- `group` - Group validation is a tool to group validatable `ValueHosts` with a specific submit command when validating. If used, it needs a name assigned here and on `ValueHosts` that it targets. See their `ValueHostConfig.group` property. The name matching is case insensitive.
 
-  Use when there is more than one group of validatable ValueHosts to be validated together.
+  Use when there is more than one group of validatable `ValueHosts` to be validated together.
   
-  For example, the ValueHostsManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
+  For example, the `ValueHostsManager` handles two forms at once. Give the `ValueHostConfig.group` a name for each form. Then make their submit command
   pass in the same group name.
   
-- preliminary - Set to true when running a validation prior to a submit activity.
+- `preliminary` - Set to true when running a validation prior to a submit activity.
 Typically used just after loading the form to report any errors already present.
 When set, the RequireTextCondition is not checked as the user doesn't need
 the noise complaining about missing input when they haven't had a chance to address it.
-- skipCallback - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
+- `skipCallback` - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
 
 ### Current validation state on valuehost
-Your user interface depends on knowing the state of validation. Has validation reported an error or not? Each validatable ValueHost has is own state that is found amongst several of its properties and functions.
+Your user interface depends on knowing the state of validation. Has validation reported an error or not? Each validatable `ValueHost` has is own state that is found amongst several of its properties and functions.
 - `isValid`
 - `doNotSave`
 - `status`
@@ -1835,7 +1850,7 @@ Your user interface depends on knowing the state of validation. Has validation r
 
 *See the details of ValueHostValidationState below for more on these.*
 
-However, its usually better to setup the `onValueHostValidationStateChanged callback` (on ValueHostsManagerConfig) and let it pass you this informative object:
+However, its usually better to setup the `onValueHostValidationStateChanged callback` (on `ValueHostsManagerConfig`) and let it pass you this informative object:
 ```ts
 interface ValueHostValidationState {
     isValid: boolean;
@@ -1917,9 +1932,9 @@ Going through its properties:
 - `summaryMessage` - The error message that targets the ValidationSummary. 
 
 ### Current validation state on ValueHostsManager
-The ValueHostsManager has similar functions to those on validatable ValueHosts, only it is a consolidated represention from the ValueHosts. The validation state is used prior to submitting the data and by the ValidationSummary as the state changes.
+The `ValueHostsManager` has similar functions to those on validatable `ValueHosts`, only it is a consolidated represention from the `ValueHosts`. The validation state is used prior to submitting the data and by the ValidationSummary as the state changes.
 
-ValueHostsManager's validation state is found amongst several of its properties and functions.
+`ValueHostsManager's` validation state is found amongst several of its properties and functions.
 - `isValid`
 - `doNotSave`
 - `asyncProcessing`
@@ -1927,7 +1942,7 @@ ValueHostsManager's validation state is found amongst several of its properties 
 
 *See the details of ValidationState below for more on these.*
 
-When you need notifications as it changes, its setup the `onValidationStateChanged callback` (on ValueHostsManagerConfig) and let it pass you this informative object:
+When you need notifications as it changes, its setup the `onValidationStateChanged callback` (on `ValueHostsManagerConfig`) and let it pass you this informative object:
 ```ts
 interface ValidationState {
     isValid: boolean;
@@ -1976,14 +1991,14 @@ function formValidated(valueHostsManager: IValueHostsManager, validationState: V
 }
 ```
 
-Let's go through ValidationState properties:
+Let's go through `ValidationState` properties:
 - `isValid` - When true, the value appears to be valid. However, it's only false when there was an explicit `status` of *Invalid* within at least one ValueHost. It's better to check `doNotSave` to know if you can submit the data.
-- `doNotSave` - Determines if any ValueHost doesn't consider its value ready to save. It is true when the ValueHost validation `status` is *Invalid* or *NeedsValidation*. It is also true when `asyncProcessing` is true.
+- `doNotSave` - Determines if any `ValueHost` doesn't consider its value ready to save. It is true when the `ValueHost` validation `status` is *Invalid* or *NeedsValidation*. It is also true when `asyncProcessing` is true.
 - `issuesFound` - An array of all issues found or null when there are no issues found. See the previous section for details on the IssueFound type that populates this array.
 - `asyncProcessing` - When evaluating an asynchronous Condition, validation will return before it is done, with the results from the rest of the Conditions. `asyncProcessing` is true at this moment, and until all asynchronous Conditions are finished. Expect `onValueHostValidationStateChange callbacks` after the validation runs, and after each async Condition finishes, giving you the latest validation state.
 
 ### Actions that change the validation state
-All of these actions can change the validation state whether on ValueHostsManager or a ValueHost. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
+All of these actions can change the validation state whether on `ValueHostsManager` or a `ValueHost`. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
 - `validate()`
 - `clearValidation()`
 - `addExternalIssuesFound()` and `addExternalIssueFound()`
@@ -1994,7 +2009,7 @@ All of these actions can change the validation state whether on ValueHostsManage
 ## Logging
 Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
 
-The logger is configured within the JivsServices object, as it is a service.
+The logger is configured within the `JivsServices object`, as it is a service.
 1. It is setup in the [`createJivsServices() function`](#configuring-jivsservices).
     ```ts
     // --- Logger Service -----------------------------------    
@@ -2010,12 +2025,12 @@ The logger is configured within the JivsServices object, as it is a service.
 There are several actions you might want to take when using logging described in upcoming sections.
 - Set the minimum logging level
 - Varying the minLevel based on what is being logged
-- Change to another LoggerService object
+- Change to another `LoggerService` object
  
 ### Set the minimum logging level
 Jivs has logging levels of Debug, Info, Warn, and Error. The logging object has a `minLevel property` which defaults to Error, which means omit the rest. You can set and change the minLevel as shown above.
 
-The LoggingLevel enum:
+The `LoggingLevel` enum:
 ```ts
 export enum LoggingLevel
 {
@@ -2222,7 +2237,7 @@ console.log
 
 ```
 ### Change to another LoggerService object
-You can replace the ConsoleLoggerService with your preferred logging library, either by implementing the ILoggerService interface or subclassing from the feature-rich LoggerServiceBase.
+You can replace the `ConsoleLoggerService` with your preferred logging library, either by implementing the `ILoggerService` interface or subclassing from the feature-rich `LoggerServiceBase`.
 
 - [ILoggerService documentation](http://jivs.peterblum.com/typedoc/interfaces/Services_Types_ILoggerService.ILoggerService.html)
 - [LoggerServiceBase documentation](http://jivs.peterblum.com/typedoc/classes/Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html)
@@ -2246,13 +2261,13 @@ You can use any testing framework you like. Jivs itself uses [Jest](https://www.
 ### Test validation requests
 The basic test will generally do this:
 1. Create the `JivsServices object`, which may be identical to what you use in your app.
-2. Create a ValueHostRulesBase subclass that describes a model for your test.
-3. Create the ValueHostsManager from the result of the subclass's `configure()` method.
+2. Create a `ValueHostRulesBase` subclass that describes a model for your test.
+3. Create the `ValueHostsManager` from the result of the subclass's `configure()` method.
 4. Set the values that will impact a validation test.
-5. Invoke either form-wide or ValueHost specific validation, and capture the results.
+5. Invoke either form-wide or `ValueHost` specific validation, and capture the results.
 6. Evaluate the results against expectations.
 
-We recommend that steps 1 - 3 are encapsulated into a function. In these test examples, we'll have this function available to deliver a fully-built ValueHostsManager:
+We recommend that steps 1 - 3 are encapsulated into a function. In these test examples, we'll have this function available to deliver a fully-built `ValueHostsManager`:
 ```ts
 
 class DateRangeFormRules extends ValueHostRulesBase {
@@ -2318,7 +2333,7 @@ interface ValidationState {
     asyncProcessing: boolean;
 }
 ```
-Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single ValueHost).
+Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single `ValueHost`).
 ```ts
 interface IssueFound {
     valueHostName?: string;
@@ -2330,7 +2345,7 @@ interface IssueFound {
 }
 ```
 #### Individual ValueHosts using valueHost.validate()
-If we want, we can test individual ValueHosts for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValueHostValidateResult.html) or null for no issue.
+If we want, we can test individual `ValueHosts` for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValueHostValidateResult.html) or null for no issue.
 ```ts
 interface ValueHostValidateResult {
     status: ValidationStatus;
@@ -2339,9 +2354,9 @@ interface ValueHostValidateResult {
     pending?: null | Promise<ValidatorValidateResult>[];
 }
 ```
-It too has an IssueFound object for each validator. 
+It too has an `IssueFound object` for each validator. 
 
-Let's redo the previous test to check the StartDate ValueHost.
+Let's redo the previous test to check the StartDate `ValueHost`.
 ```ts
 test('StartDate is supplied empty strings and report status=Invalid', ()=>
 {
@@ -2372,10 +2387,10 @@ test('StartDate is supplied empty strings and report status=Invalid', ()=>
 ```
 ### Testing the configuration: Jivs-ConfigAnalysis
 **Jivs-ConfigAnalysis** is a tool to ensure that your configuration is as expected,
-even before you create a ValueHostsManager object from it.
+even before you create a `ValueHostsManager` from it.
 
 ConfigAnalysis does the following:
-- Validates the properties throughout your ValueHostConfig objects, including:
+- Validates the properties throughout your `ValueHostConfig objects`, including:
   - Requested Lookup Keys have an associated class registered with the factories, taking cultures into account. (Lookup Keys are used to identify data types, parsers, formatters, converters, and more.)
 	> When using dependency injection, it is not immediately apparent if the object
 	that you want is the one you get, especially because Jivs provides fallbacks for cultures and Lookup Keys.
@@ -2383,8 +2398,8 @@ ConfigAnalysis does the following:
   - Issues with tokens within error messages.
   - Required properties have values.
   
-- Identifies each Lookup Key in use, along with the services that are needed by your ValueHostConfigs.
-- For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
+- Identifies each Lookup Key in use, along with the services that are needed by your `ValueHostConfigs`.
+- For properties that support localization, it shows all cultural localizations of the text registered with the `TextLocalizerService`.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
 `Jivs-ConfigAnalysis` is a separate library, available within npm.

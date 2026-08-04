@@ -17,6 +17,11 @@ import { ServiceBase } from './ServiceBase';
  */
 export class CultureService extends ServiceBase implements ICultureService {
 
+    constructor(defaultCultureId: string) {
+        super();
+        this._activeCultureId = defaultCultureId;
+        this._cultureConfig = [{ cultureId: defaultCultureId }];
+    }
     /**
      * Participates in releasing memory.
      * While not required, the idea is to be a more friendly participant in the ecosystem.
@@ -29,18 +34,12 @@ export class CultureService extends ServiceBase implements ICultureService {
         this._cultureConfig = undefined!;
     }    
     /**
-     * The culture shown to the user in the app. Its the ISO language-region format.
-     * This value is the starting point to search through localizations.
-     * If not supplied, it defaults to the value from the first culture added.
+     * The default culture Id that is used by DataTypeFormatters and DataTypeParsers.
+     * Its value is used by ValueHostsManager.behaviors.activeCultureId when that was not assigned.
      * If none were added, it uses 'en'.
      */
-    public get activeCultureId(): string {
+    public get defaultCultureId(): string {
         return this._activeCultureId ?? 'en';
-    }
-    public set activeCultureId(cultureID: string) {
-        this._activeCultureId = cultureID;
-        if (this.cultureIdFallback.length === 0)
-            this.cultureIdFallback.push({ cultureId: cultureID });
     }
     private _activeCultureId: string | null = null;
 
@@ -64,7 +63,7 @@ export class CultureService extends ServiceBase implements ICultureService {
     protected get cultureIdFallback(): Array<CultureIdFallback> {
         return this._cultureConfig;
     }
-    private _cultureConfig: Array<CultureIdFallback> = [];
+    private _cultureConfig: Array<CultureIdFallback>;
 
     /**
      * Utility to check for the presence of a Culture.

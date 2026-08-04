@@ -63,10 +63,10 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     /**
      * {@inheritDoc jivs-engine/Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
      */    
-    public format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
-        return this.formatRecursive(value, lookupKey, new Set<string>());
+    public format(value: any, lookupKey: string | null, cultureId: string): DataTypeResolution<string> {
+        return this.formatRecursive(value, lookupKey, cultureId, new Set<string>());
     }
-    protected formatRecursive(value: any, lookupKey: string | null | undefined, alreadyChecked: Set<string>): DataTypeResolution<string> {
+    protected formatRecursive(value: any, lookupKey: string | null, cultureId: string, alreadyChecked: Set<string>): DataTypeResolution<string> {
         try {
             if (!lookupKey) {
                 this.logger.message(LoggingLevel.Debug, ()=> 'Identify LookupKey from value');
@@ -78,36 +78,36 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             // recursion defense
             LookupKeyFallbackService.ensureRecursionSafe(lookupKey, alreadyChecked);
 
-            let cultureId: string | null = this.services.cultureService.activeCultureId;
-            while (cultureId) {
-                const cc = this.services.cultureService.find(cultureId);
+            let searchCultureId: string | null = cultureId;
+            while (searchCultureId) {
+                const cc = this.services.cultureService.find(searchCultureId);
                 /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
                 if (!cc)
-                    throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-                this.logger.message(LoggingLevel.Debug, () => `Trying cultureId: ${cultureId}`);
-                const dtlf = this.find(lookupKey, cultureId);
+                    throw new CodingError(`Need to support CultureID ${searchCultureId} in DataTypeServices.`);
+                this.logger.message(LoggingLevel.Debug, () => `Trying cultureId: ${searchCultureId}`);
+                const dtlf = this.find(lookupKey, searchCultureId);
                 if (dtlf) {
-                    this.logger.message(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`);
-                    const result = dtlf.format(value, lookupKey, cultureId);
+                    this.logger.message(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${searchCultureId}"`);
+                    const result = dtlf.format(value, lookupKey, searchCultureId);
                     if (result.value)
                         this.logger.log(LoggingLevel.Info, () => {
                             return {
-                                message: `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`,
+                                message: `Formatted "${lookupKey}" with culture "${searchCultureId}": "${result.value}`,
                                 category: LoggingCategory.Result
                             };
                         });                    
                     return result;
                 }
 
-                cultureId = cc.fallbackCultureId ?? null;
+                searchCultureId = cc.fallbackCultureId ?? null;
             }
             const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
                 this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
-                return this.formatRecursive(value, fallbackLookupKey, alreadyChecked);
+                return this.formatRecursive(value, fallbackLookupKey, cultureId, alreadyChecked);
             }
             
-            throw new CodingError(`No DataTypeFormatter for LookupKey "${lookupKey}" with culture "${this.services.cultureService.activeCultureId}"`);
+            throw new CodingError(`No DataTypeFormatter for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
         catch (e) {
             const err = ensureError(e);
