@@ -405,6 +405,7 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         initialEnabled?: boolean;
         parserLookupKey?: null | string;
         formatterLookupKey?: null | string;
+        reformatTextValue?: boolean;
         group?: null | string | string[];
         propertyName?: string;
     }
@@ -491,9 +492,10 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `initialEnabled` – `ValueHosts` have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the `ValidationStatus` is Disabled. Use initialEnabled=false to configure the `ValueHost` as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](#disabling-a-valuehost) for more.
 - `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](#using-calcvaluehost).
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to validate() that share the group. The name matching is case insensitive.
-- `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
-- `formatterLookupKey` – When calling setValue(), it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the DataTypeFormatterService.
+- `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the `DataTypeParserService`.
+- `formatterLookupKey` – When calling setValue(), it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the `DataTypeFormatterService`.
 It has no impact on `setValues()` or `setTextValue()`.
+- `reformatTextValue` - When calling setTextValue(), the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
 - `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
 
 ### Getting a ValueHost
@@ -563,7 +565,7 @@ vhm.getValueHost("LastName").setValue("MyValue",
 See [Options parameter](#options-parameter-setvalueoptions) for all options.
 
 See ["Getting a ValueHost"](#getting-a-valuehost) for using `getValueHost()` and `vhm.vh`.
-##### Decisions around Jivs built in formatting
+##### Decisions around Jivs built-in formatting
 Your `ValueHost` configuration determines if formatting will happen.
 
 - LookupKey used to select the `DataTypeFormatter` comes from the `dataType` or `formatterLookupKey`.
@@ -612,6 +614,8 @@ Your `ValueHost` configuration determines if formatting will happen.
     See also [Localization](#localization).
 #### setTextValue() function
 Set the text value. Optionally let Jivs convert it to the native value using its built-in parsers.
+Optionally let it also reformat the native value to text value and call onTextValueChanged callback hook
+so you can get reformatting too.
 ```ts
 class FieldValueHost {
     setTextValue(textValue: string, options?: FieldValueHostSetValueOptions): void {}
@@ -631,7 +635,7 @@ See [Options parameter](#options-parameter-setvalueoptions) for all options.
 
 See ["Getting a ValueHost"](#getting-a-valuehost) for using `getFieldValueHost()` and `vhm.vh`.
 
-##### Decisions around Jivs built in parsing
+##### Decisions around Jivs built-in parsing
 Your `ValueHost` configuration determines if parsing will happen.
 
 - LookupKey used to select the `DataTypeParser` comes from the `dataType` or `parserLookupKey`.
@@ -659,7 +663,27 @@ Your `ValueHost` configuration determines if parsing will happen.
     ```ts
     vhm.getValueHost('BirthDate').setValue(birthDate, { disableParser: true });
     ```
-- Localize parsing with the behaviors.activeCultureId property.
+- Reformatting the original text based the presence of both parser and formatter is handled through configuration's `reformatTextValue` property.
+You must have configured services and the valueHostConfig with the necessary `DataTypeFormatters`, `DataTypeParsers`, and their lookup keys.
+    ```ts
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            reformatTextValue: true // if DateFormatter and DateParser are setup, expect '1/2/2000' to reformat into '01/02/2000'
+        }
+    )
+    ```
+    Or using the `behavior.reformatTextValue` property to address all that don't explicity use `ValueHostConfig.reformatTextValue`.
+
+    ```ts
+    builder.behaviors.reformatTextValue = true;
+    builder.field('BirthDate', LookupKey.Date,
+        {
+            // if DateFormatter and DateParser are setup, expect '1/2/2000' to reformat into '01/02/2000'
+        }
+    )
+    ```
+    If neither `reformatTextValue` properties are set, the feature is disabled.
+- Localize parsing with the `behaviors.activeCultureId` property.
     ```ts
     builder.behaviors.activeCultureId = 'fr-FR';
     ```        
@@ -1372,24 +1396,39 @@ Consider these *Use Cases*:
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
 
 ### DataTypeFormatters
-Two use cases:
-+ Convert the native value into a text value when calling FieldValueHost.setValue().
+`DataTypeFormatters` turn a native value into a text value. Some involve localization, like `DateFormatter` will treat new Date(2000, 0, 15) as '15/01/2000' in 'en-GB' and '01/15/2000' in 'en-US'.
+
+`DataTypeFormatters` are used in these cases:
++ Convert the native value into a text value when calling `FieldValueHost.setValue()`.
++ Reformat the text passed into `FieldValueHost.setTextValue()`.
 + Localized tokens in error messages.
 
 #### Convert native to text value
-When you call the FieldValueHost.setValue() function, it takes only a native value. 
-Normally it does not attempt to update the companion text value that is shown in the data entry field.
+When you call the `FieldValueHost.setValue()` function, it takes only a native value. 
+If the `FieldValueHost` has a lookup key to a `DataTypeFormatter` already registered in `DataTypeFormatterServices`,
+formatting will happen. If you don't want this behavior, you have to turn it off.
 
-Assign the FieldValueHostConfig.formatterLookupKey and you get a different result.
+For more, see [Decisions around Jivs Built-in formatting](#decisions-around-jivs-built-in-formatting).
+
+When enabled:
 - The native value is formatted with the supplied formatter.
 - The text value is set
-- The ValueHostsManager.onTextValueChanged callback is triggered, allowing you to wire up your data entry field to intake the new string.
+- The `ValueHostsManager.onTextValueChanged` callback is triggered, allowing you to wire up your data entry field to intake the new string.
 ```ts
 vhm.onTextValueChanged = (fieldValueHost, oldValue)=>{
     let newTextValue = fieldValueHost.getTextValue();
     // assign it to the input's value attribute
     document.getElementById(fieldValueHost.getName()).value = newTextValue;
 }
+```
+When you want to disable it:
+```ts
+// on a case-by-case basis
+builder.field('field1', LookupKey.Date, {
+    formatterLookupKey = null
+});
+// for the entire ValueHostsManager
+builder.disableFormattingOnValueChanged = true;
 ```
 #### Localized tokens in error messages
 Formatters provide localized strings for the tokens within error messages with implementations of `IDataTypeFormatter`. For example, if validating a date against a range, your error message may look like this: 
@@ -1416,24 +1455,48 @@ See [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/
 Also [jivs-engine/src/DataTypes/DataTypeFormatters.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeFormatters.ts).
 
 ### DataTypeParsers
-Convert from the input value into the native value with implementations of `IDataTypeParser`. They can report problems with the input value, and their error can be shown in a validation error message.
+Convert from the text value into the native value with implementations of `IDataTypeParser`. They can report problems with the text value, and their error can be shown in a validation error message.
 
-Parsers are used:
-- only on FieldValueHosts, when calling `FieldValueHost.setTextValue()`. 
+Parsers are used only on `FieldValueHosts`, when calling `FieldValueHost.setTextValue()`. 
     - In the client-side in response to the onchange event of a form \<input>.
     - In the node.js server that uses Jivs to validate. See [Validation in Node.Js](#using-jivs-on-a-nodejs-server).
-- when the input value is a string (even if the native value is also a string).
-- automatically, so long as a `IDataTypeParser` is setup for the lookup key assigned to TextValueHostConfig.dataType or TextValueHostConfig.parserLookupKey. Alternatively, pass a function to create the parser in TextValueHostConfig.parserCreator.
+
+#### Convert text native to native value
+When you call the `FieldValueHost.setTextValue()` function, it takes only a text value. 
+If the `FieldValueHost` has a lookup key to a `DataTypeParser` already registered in `DataTypeParserServices`,
+parsing will happen. If you don't want this behavior, you have to turn it off.
+
+For more, see [Decisions around Jivs Built-in parsing](#decisions-around-jivs-built-in-parsing).
+
+When enabled:
+- The text value is parsed with the supplied parser.
+- The native value is set either to the parsed value or undefined if the parser failed.
+- The `ValueHostsManager.onValueChanged` callback is triggered.
+```ts
+vhm.onValueChanged = (fieldValueHost, oldValue)=>{
+    let newValue = fieldValueHost.getValue();
+    // use newValue
+}
+```
+When you want to disable it:
+```ts
+// on a case-by-case basis
+builder.field('field1', LookupKey.Date, {
+    parserLookupKey = null
+});
+// for the entire ValueHostsManager
+builder.disableParsingOnValueChange = true;
+```
 
 #### Error reporting
-Jivs has been designed so that you have a parser do very limited error reporting, leaving most cases to validators. Suppose that your native value is expected to be a positive integer. Our NumberParser will convert the input into a number, including negatives and floating point. You add two Validators with these conditions: PositiveCondition and IntegerCondition. This lets you supply specific error messages to the user.
+Jivs has been designed so that you have a parser do very limited error reporting, leaving most cases to validators. Suppose that your native value is expected to be a positive integer. Our `NumberParser` will convert the input into a number, including negatives and floating point. You add two Validators with these conditions: `PositiveCondition` and `IntegerCondition`. This lets you supply specific error messages to the user.
 
-Number parser may report "Expecting a number" if it encounters "ABC". It converts "1.0", "-2", "3,201.40" and others that have the culture's currency and percent symbols. So your native value is 1, -2, or 3201.4.
-The PositiveCondition's error message might say "Negative numbers are not allowed."
-The IntegerCondition's error message might say "Must be an integer."
+`NumberParser` may report "Expecting a number" if it encounters "ABC". It converts "1.0", "-2", "3,201.40" and others that have the culture's currency and percent symbols. So your native value is 1, -2, or 3201.4.
+The `PositiveCondition's` error message might say "Negative numbers are not allowed."
+The `IntegerCondition's` error message might say "Must be an integer."
 
 #### String clean up 
-When the native type is a string, the input value may need to be changed if it's what you intend to save. Trimming lead and trailing whitespace is almost always used on Inputs. As a result, our CleanUpStringParser is already registered to trim all ValueHosts with a data type lookup key of LookupKey.String.
+When the native type is a string, the input value may need to be changed if it's what you intend to save. Trimming lead and trailing whitespace is almost always used on Inputs. As a result, our `CleanUpStringParser` is already registered to trim all `ValueHosts` with a data type lookup key of `LookupKey.String`.
 
 A phone number often has culture specific formatting, but in the end, you intend to store it in a fixed format, such as +\[country code] \[all digits of the phone number without formatting]. Use a Parser to deliver this, only reporting an error when the input is severely inappropriate.
 
@@ -1443,7 +1506,7 @@ A phone number often has culture specific formatting, but in the end, you intend
 
 "ABC" -> error message
 
-The CleanUpStringParser has numerous configuration options that together may deliver the desired format. 
+The `CleanUpStringParser` has numerous configuration options that together may deliver the desired format. 
 
 #### Building your own
 See [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).

@@ -59,7 +59,7 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 import { registerTestingOnlyConditions } from './conditionsForTesting';
 import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
 import { DataTypeParserService } from '../Services/DataTypeParserService';
-import { CleanUpStringParser, NumberParser } from '../DataTypes/DataTypeParsers';
+import { CleanUpStringParser, CurrencyParser, NumberParser } from '../DataTypes/DataTypeParsers';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from '../Services/ConfigMergeService';
 import {
@@ -347,4 +347,11 @@ export function registerDataTypeParsers(dtps: IDataTypeParserService): void {
         decimalSeparator: '.',
         negativeSymbol: '-'
     }));
+    dtps.register(new CurrencyParser(['en', 'en-US'],
+        {
+            currencySymbol: '$',
+            decimalSeparator: '.',
+            thousandsSeparator: ',',
+            negativeSymbol: '-'
+        }));
 }

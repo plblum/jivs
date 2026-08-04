@@ -50,6 +50,9 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { IDataTypeFormatter } from '../../src/Interfaces/DataTypeFormatters';
+import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
+import { DataTypeFormatterService } from '../../src/Services/DataTypeFormatterService';
+import { CurrencyParser } from '../../src/DataTypes/DataTypeParsers';
 
 
 interface ITestSetupConfig {
@@ -142,6 +145,36 @@ function finishPartialFieldValueHostInstanceState(partialState: Partial<FieldVal
     }
     return defaultIVS;
 }
+
+//#region TestFieldValueHost
+class TestFieldValueHost extends FieldValueHost
+{
+    public publicifiy_TryReformatTextValue(originalText: string, options: FieldValueHostSetValueOptions): void {
+        super.tryReformatTextValue(originalText, options);
+    }
+}
+
+
+const TestValueHostType = 'TestFieldsValueHost';
+
+class TestValidatorsValueHostGenerator extends FieldValueHostGenerator {
+    public canCreate(config: ValueHostConfig): boolean {
+        return config.valueHostType === TestValueHostType;
+    }
+    public create(valueHostsManager: IValueHostsManager, config: FieldValueHostConfig,
+        state: FieldValueHostInstanceState): IFieldValueHost
+    {
+        return new TestFieldValueHost(valueHostsManager, config, state);
+    }
+}
+
+function supportTestValueHostInServices(services: IJivsServices): void
+{
+    let factory = new ValueHostFactory();
+    factory.register(new TestValidatorsValueHostGenerator());
+    services.valueHostFactory = factory;
+}
+//#endregion TestFieldValueHost
 
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
@@ -671,6 +704,375 @@ describe('setTextValue with parserLookupKey enabled to see both text value and n
             null)).toBeTruthy();
         expect(logger.findMessage(errorMsg, LoggingLevel.Error,
             LoggingCategory.Exception)).toBeTruthy();        
+    });
+});
+
+describe('setTextValue focusing on the reformatTextValue feature ', () =>
+{
+    function setupForTryReformatTextValue(partialIVHConfig: Partial<FieldValueHostConfig>,
+        textValue: string | undefined, nativeValue: any | undefined
+    ): ITestSetupConfig
+    {
+        partialIVHConfig.valueHostType = TestValueHostType;  // will cause valueHostFactory to return TestFieldValueHost
+        let services = new MockJivsServices(true, true);
+        (services.loggerService as CapturingLogger).chainedLogger = new ConsoleLoggerService(services.loggerService.minLevel);
+        (services.loggerService as CapturingLogger).overrideMinLevelWhen({ hasData: true });
+
+        supportTestValueHostInServices(services);   // Field will resolve to TestFieldValueHost
+
+        let vhm = new MockValueHostsManager(services);
+        let valueHostConfig = finishPartialFieldValueHostConfig(partialIVHConfig ?? null);
+        let updatedState = finishPartialFieldValueHostInstanceState(null);
+        let vh = vhm.addFieldValueHostWithConfig(valueHostConfig, updatedState);    // valueHostFactory will return TestFieldValueHost
+        vh.setValues(nativeValue, textValue, { validate: false, reset: true });
+        return {
+            services: services,
+            valueHostsManager: vhm,
+            config: valueHostConfig,
+            state: updatedState,
+            valueHost: vh as FieldValueHost
+        };
+    }
+    // tests initially are built around PublicifyFieldValueHost.publicify_tryReformatTextValue
+    test('dataType=Number. formattingLookupKey=Currency. Input "10" expected to reformat to "$10.00"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+
+        expect(valueHostsCaptured[0].getTextValue()).toBe('$10.00');
+        expect(valueHostsCaptured[0].getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(1);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Reformatting updated text value', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('dataType=Number. formattingLookupKey=Currency. Input "$10.00" expected to remain "$10.00"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency
+        }, '$10.00', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('$10.00', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('$10.00');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(0);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('same as original', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // without formatterLookupKey, supply '10.0', it will reformat to '10'
+    test('dataType=Number. No formattingLookupKey. Input "10.0" expected to reformat to "10"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number
+        }, '10.0', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10.0', {})).not.toThrow();
+        expect(valueHostsCaptured[0].getTextValue()).toBe('10');
+        expect(valueHostsCaptured[0].getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(1);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Reformatting updated text value', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('dataType=Number. formattingLookupKey=null, which indicates disable formatting. Input "10" expected to remain "10"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: null  // disables formatting even though dataType is supplied
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(0);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('reformatTextValue = false. dataType=Number. formattingLookupKey=Currency. No reformatting should occur', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: false,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(0);
+        expect(logger.entryCount).toBe(0);
+    });
+    test('reformatTextValue = unassigned. Behaviors.reformatTextValue=true. dataType=Number. formattingLookupKey=Currency. Expect reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        setup.valueHostsManager.behaviors.reformatTextValue = true;
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('$10.00');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(1);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Reformatting updated text value', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('reformatTextValue = unassigned. Behaviors.reformatTextValue=false. dataType=Number. formattingLookupKey=Currency. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        setup.valueHostsManager.behaviors.reformatTextValue = false;
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(0);
+        expect(logger.entryCount).toBe(0);
+    });
+    test('reformatTextValue = unassigned. Behaviors.reformatTextValue=unassigned which means do not reformat. dataType=Number. formattingLookupKey=Currency. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        setup.valueHostsManager.behaviors.reformatTextValue = undefined;
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(valueHostsCaptured.length).toBe(0);
+        expect(logger.entryCount).toBe(0);
+    });
+    test('TextValue="ABC", nativeValue=undefined. DataType=Number. No formatting because nativeValue is undefined. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, 'ABC', undefined);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHostsCaptured: Array<FieldValueHost> = [];
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            valueHostsCaptured.push(valueHost as FieldValueHost);
+        };
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('ABC', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('ABC');
+        expect(valueHost.getValue()).toBe(undefined);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // behaviors.disableFormattingOnValueChange === true blocks reformatting. TextValue='10', nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting
+    test('behaviors.disableFormattingOnValueChange === true blocks reformatting. TextValue="10", nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        setup.valueHostsManager.behaviors.disableFormattingOnValueChange = true;
+
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('options.disableFormatter === true blocks reformatting. TextValue="10", nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', { disableFormatter: true })).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // services.dataTypeFormatterService.enabled = false blocks reformatting. TextValue='10', nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting
+    test('services.dataTypeFormatterService.enabled = false blocks reformatting. TextValue="10", nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.services.dataTypeFormatterService.enabled = false;
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', { disableFormatter: true })).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
+    });
+    // register a customformatter that throws an exception. TextValue='10', nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting and an exception to be thrown
+    test('register a customformatter that throws an exception. TextValue="10", nativeValue=10, dataType=Number, formattingLookupKey=Currency. Expect no reformatting and an exception to be thrown', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, '10', 10);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        class TestFormatterThatThrows implements IDataTypeFormatter
+        {
+            supports(dataTypeLookupKey: string, cultureId: string): boolean
+            {
+                return true
+            }
+            format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>
+            {
+                throw new Error('EXCEPTION');
+            }
+
+        }
+        let dtfs = new DataTypeFormatterService();
+        setup.services.dataTypeFormatterService = dtfs;
+        dtfs.register(new TestFormatterThatThrows());
+
+        let valueHost: TestFieldValueHost = setup.valueHost as TestFieldValueHost;
+        expect(() => valueHost.publicifiy_TryReformatTextValue('10', {})).not.toThrow();
+        expect(valueHost.getTextValue()).toBe('10');
+        expect(valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('EXCEPTION', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
+    });
+
+    // now a few full setTextValue tests using happy paths based on the previous tests
+    test('setTextValue with reformatTextValue=true, dataType=Number, formattingLookupKey=Currency. Input "10" expected to reformat to "$10.00"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency  // will cause reformatting to happen so long as original was not formatted as a currency    
+        }, undefined, undefined);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        expect(() => setup.valueHost.setTextValue('10', { validate: false })).not.toThrow();
+
+        expect(setup.valueHost.getTextValue()).toBe('$10.00');
+        expect(setup.valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Reformatting updated text value', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('setTextValue with reformatTextValue=true, dataType=Number, formattingLookupKey=Currency. Input "$10.00" expected to remain "$10.00"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: LookupKey.Currency,  // will cause reformatting to happen so long as original was not formatted as a currency
+            parserLookupKey: LookupKey.Currency  // will cause parsing to happen so long as original was not formatted as a currency
+        }, undefined, undefined);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+     
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        expect(() => setup.valueHost.setTextValue('$10.00', { validate: false })).not.toThrow();
+
+        expect(setup.valueHost.getTextValue()).toBe('$10.00');
+        expect(setup.valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Attempt to format into text value', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('same as original', LoggingLevel.Debug)).toBeTruthy();
+    });
+    test('setTextValue with reformatTextValue=true, dataType=Number, formattingLookupKey=null. Input "10" expected to remain "10"', () =>
+    {
+        let setup = setupForTryReformatTextValue({
+            reformatTextValue: true,
+            dataType: LookupKey.Number,
+            formatterLookupKey: null  // disables formatting even though dataType is supplied
+        }, undefined, undefined);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        expect(() => setup.valueHost.setTextValue('10', { validate: false })).not.toThrow();
+        logger.toConsole();
+        expect(setup.valueHost.getTextValue()).toBe('10');
+        expect(setup.valueHost.getValue()).toBe(10);
+        expect(logger.findMessage('Either nativeValue is undefined or formatting is disabled.', LoggingLevel.Debug)).toBeTruthy();
     });
 });
 

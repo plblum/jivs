@@ -486,6 +486,15 @@ export interface Behaviors
      * - Leave on parsing: parserLookupKey = undefined or any other string value. When undefined, the lookupKey used is from the dataType of the ValueHost.
      */
     disableParsingOnValueChange?: boolean;
+
+    /**
+     * The default for FieldValueHostConfig.reformatTextValue when it is not assigned. 
+     * See {@link jivs-engine/ValueHosts/Types/FieldValueHost!FieldValueHostConfig} for details.
+     * It is used by setTextValue() to determine if the text value should be reformatted when the value changes.
+     * When true, the text value is reformatted.
+     * If left unassigned, it defaults to false. You must opt-in for this feature. It is not the default behavior.
+     */
+    reformatTextValue?: boolean;
 }
 export function createBehaviors(services: IJivsServices): Behaviors
 {

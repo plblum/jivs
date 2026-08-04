@@ -1,14 +1,13 @@
 /**
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
-import { IDataTypeFormatter } from './DataTypeFormatters';
-import { IDataTypeParser } from './DataTypeParsers';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
-import {
-    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
-    ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
-    ValidatorsValueHostSetValueOptions
-} from './ValidatorsValueHostBase';
+import
+    {
+        IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+        ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
+        ValidatorsValueHostSetValueOptions
+    } from './ValidatorsValueHostBase';
 
 
 /**
@@ -198,6 +197,32 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * which if set to true will prevent formatting too.
      */
     formatterLookupKey?: string | null;
+
+    /**
+     * When true and both formatters and parsers are setup, the text value will be reformatted when the typed value is set
+     * with setTextValue(). If the reformatted value differs from the original text value, the ValueHostsManager.onTextValueChanged callback 
+     * will be invoked to notify the application of the change.
+     * 
+     * Use this when you want to ensure that the text value is always in a consistent format, such as when a user inputs a date in a different format than expected.
+     * For example, if the expected format is "MM/DD/YYYY" and the user inputs "1/2/2023", it will be reformatted to "01/02/2023".
+     * 
+     * If not assigned, it will default to the Behaviors.reformatTextValue property of the ValueHostsManager. If both are not assigned, it will default to false
+     * as you have to opt-in.
+     * 
+     * ```ts
+     * build.field("birthDate", LookupKey.Date, { 
+     *  reformatTextValue: true,
+     *  parserLookupKey: LookupKey.Date,
+     *  formatterLookupKey: LookupKey.Date});
+     * ```
+     * setTextValue("1/2/2023") -> 
+     *      parsed to native value = Date(2023, 0, 2) -> 
+     *          formatted to text value = "01/02/2023" -> 
+     *              onTextValueChanged callback invoked with new text value = "01/02/2023"
+     * This option has no impact if the formatting is disabled through the Behaviors.disableFormattingOnValueChange property 
+     * of the ValueHostsManager or the options.disableFormatter property of setTextValue().
+     */
+    reformatTextValue?: boolean;
 
     /**
      * The actual property name on the model. If its the same as Config.name,

@@ -208,7 +208,10 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         if (!this.canChangeValueCheck(options))
             return;        
         if (this.tryParse(textValue, options))
-            return; // determines the native value and redirects to setValues().
+        {
+            this.tryReformatTextValue(textValue!, options);
+            return; 
+        }
 
         const oldValue: any = this.instanceState.textValue;
         const changed = !deepEquals(textValue, oldValue);
@@ -225,7 +228,6 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnTextValueChanged(changed, oldValue, options);
-
     }
 
     /**
@@ -312,6 +314,74 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
             }
         }
          
+        return false;
+    }
+
+    /**
+     * A hybrid of setTextValue and tryFormatToText. It is called by setTextValue() to attempt reformatting
+     * the text value when the typed value changes.
+     * It has several goals:
+     * - If the native value can be formatted, its text value is updated
+     * - If the onTextValueChanged callback is configured, it is invoked with the new text value.
+     * @param originalText 
+     * @param options 
+     * @returns 
+     */
+    protected tryReformatTextValue(originalText: string, options: TOptions): boolean
+    {
+        let reformat = this.config.reformatTextValue ?? (this.valueHostsManager.behaviors.reformatTextValue === true ? true : false);
+        if (reformat)
+        {
+            const nativeValue = this.instanceState.value;
+            if (nativeValue === undefined || this.valueHostsManager.behaviors.disableFormattingOnValueChange === true ||
+                options?.disableFormatter || this.config.formatterLookupKey === null)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. Either nativeValue is undefined or formatting is disabled.');
+                return false;
+            }
+
+
+            const dtfs = this.services.dataTypeFormatterService;
+            if (dtfs.isActive())
+            {
+                const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+                if (lookupKey)
+                {
+                    try
+                    {
+                        this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+                        const result = dtfs.format(nativeValue, lookupKey, this.valueHostsManager.behaviors.activeCultureId!);
+                        if (!result.errorDetails)
+                        {
+                            let newTextValue = result.value;
+                            const changed = !deepEquals(newTextValue, originalText);
+                            if (changed)
+                            {
+                                this.logger.message(LoggingLevel.Debug, () => `Reformatting updated text value`);
+                                // does not change validation state, because its part of a larger process that already has addressed that.
+                                this.updateInstanceState((stateToUpdate) =>
+                                {
+                                    stateToUpdate.textValue = newTextValue;
+                                    return stateToUpdate;
+                                }, this);
+                                this.useOnTextValueChanged(changed, originalText, options);
+                            }
+                            else
+                                this.logger.message(LoggingLevel.Debug, () => `Reformatted text value is the same as original. No change.`);
+                            return true;
+                        }
+                    }
+                    catch (e) // the service threw
+                    {
+                        const err = ensureError(e);
+                        this.logger.error(err); // will throw if SevereErrorBase
+                        throw e;
+                    }
+                }
+                this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. No lookupKey supplied by config.formatterLookupKey or getDataType()');
+            }
+            return false;
+        }
         return false;
     }
 
