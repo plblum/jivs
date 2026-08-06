@@ -42,6 +42,8 @@ import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService'
 import { IConditionFactory } from '../Interfaces/Conditions';
 
 import { ValueHostConfigMergeService } from './ConfigMergeService';
+import { IModelReaderWriterRuleService } from '../Interfaces/ModelReaderAndWriter';
+import { ModelReaderRuleService, ModelWriterRuleService } from './ModelReaderWriterRuleService';
 /**
  * Supplies services and tools to be used as dependency injection
  * into the classes of this system. It also supplies factories.
@@ -367,4 +369,49 @@ export class JivsServices extends Services implements IJivsServices
     public set cachingService(service: ICachingService) {
         this.setService(ServiceName.cache, service);
     }            
+
+    //#region ModelReaderRuleService    
+    /**
+     * The ModelReaderRuleService that supports rules used by ModelReader and found on FieldValueHostConfig.modelReaderRule.
+     * It supplies a default if not setup by the user.
+     */
+    public get modelReaderRuleService(): IModelReaderWriterRuleService
+    {
+        let service = this.getService<IModelReaderWriterRuleService>(ServiceName.modelReaderRule);
+        if (!service)
+        {
+            service = new ModelReaderRuleService();
+            this.setService(ServiceName.modelReaderRule, service);
+        }
+        return service;
+    }
+    public set modelReaderRuleService(factory: IModelReaderWriterRuleService)
+    {
+        this.setService(ServiceName.modelReaderRule, factory);
+    }
+
+    //#endregion ModelReaderRuleService
+
+    //#region ModelWriterRuleService    
+    /**
+     * The ModelWriterRuleService that supports rules used by ModelWriter and found on FieldValueHostConfig.modelWriterRule.
+     * It supplies a default if not setup by the user.
+     */
+    public get modelWriterRuleService(): IModelReaderWriterRuleService
+    {
+        let service = this.getService<IModelReaderWriterRuleService>(ServiceName.modelWriterRule);
+        if (!service)
+        {
+            service = new ModelWriterRuleService();
+            this.setService(ServiceName.modelWriterRule, service);
+        }
+        return service;
+    }
+    public set modelWriterRuleService(factory: IModelReaderWriterRuleService)
+    {
+        this.setService(ServiceName.modelWriterRule, factory);
+    }
+
+    //#endregion ModelWriterRuleService
+
 }

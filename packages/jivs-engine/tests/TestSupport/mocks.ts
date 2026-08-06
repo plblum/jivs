@@ -64,6 +64,8 @@ import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
+import { ModelReaderRuleService, ModelWriterRuleService } from '../../src/Services/ModelReaderWriterRuleService';
+import { IModelReaderWriterRuleService, ModelReaderWriterRule } from '../../src/Interfaces/ModelReaderAndWriter';
 
 
 
@@ -206,6 +208,12 @@ export class MockFieldValueHost extends MockValueHost
     getPropertyName(): string {
         throw new Error("Method not implemented.");
     }    
+    public getModelReaderRule(): ModelReaderWriterRule | undefined {
+        throw new Error("Method not implemented.");
+    }
+    public getModelWriterRule(): ModelReaderWriterRule | undefined {
+        throw new Error("Method not implemented.");
+    }    
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }
@@ -325,6 +333,8 @@ export class MockJivsServices implements IJivsServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
+        this.modelReaderRuleService = new ModelReaderRuleService();
+        this.modelWriterRuleService = new ModelWriterRuleService();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -537,6 +547,24 @@ export class MockJivsServices implements IJivsServices
         this._cachingService = service;
     }
     private _cachingService!: ICachingService;
+
+    public get modelReaderRuleService(): IModelReaderWriterRuleService
+    {
+        return this._modelReaderRuleService;
+    }
+    public set modelReaderRuleService(service: IModelReaderWriterRuleService)
+    {
+        this._modelReaderRuleService = service;
+    }
+    private _modelReaderRuleService!: IModelReaderWriterRuleService;
+    
+    public get modelWriterRuleService(): IModelReaderWriterRuleService {
+        return this._modelWriterRuleService;
+    }
+    public set modelWriterRuleService(service: IModelReaderWriterRuleService) {
+        this._modelWriterRuleService = service;
+    }
+    private _modelWriterRuleService!: IModelReaderWriterRuleService;
 }
 
 /**

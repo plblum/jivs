@@ -21,6 +21,7 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfa
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { CodingError, ensureError } from '../Utilities/ErrorHandling';
+import { ModelReaderWriterRule } from '../Interfaces/ModelReaderAndWriter';
 
 
 /**
@@ -527,6 +528,20 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     {
         return this.config.propertyName ?? this.getName();
     }    
+    /**
+     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    public getModelReaderRule(): ModelReaderWriterRule | undefined {
+        return this.config.modelReaderRule;
+    }
+    /**
+     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    public getModelWriterRule(): ModelReaderWriterRule | undefined {
+        return this.config.modelWriterRule;
+    }
 }
 
 /**

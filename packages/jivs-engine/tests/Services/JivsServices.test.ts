@@ -23,6 +23,7 @@ import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { MockJivsServices } from "../TestSupport/mocks";
+import { ModelReaderRuleService, ModelWriterRuleService } from '../../src/Services/ModelReaderWriterRuleService';
 
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
@@ -50,6 +51,8 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.validatorConfigMergeService).toBeInstanceOf(ValidatorConfigMergeService);
         expect(testItem.cachingService).toBeInstanceOf(CachingService);
+        expect(testItem.modelReaderRuleService).toBeInstanceOf(ModelReaderRuleService);
+        expect(testItem.modelWriterRuleService).toBeInstanceOf(ModelWriterRuleService);
 
     });
 });
@@ -164,6 +167,20 @@ describe('Replace factories and services', () => {
         let testItem = new JivsServices();
         testItem.cachingService = replacement;
         expect(testItem.cachingService).toBe(replacement);
+    });
+    test('Replace modelReaderRuleService', () =>
+    {
+        let replacement = new ModelReaderRuleService();
+        let testItem = new JivsServices();
+        testItem.modelReaderRuleService = replacement;
+        expect(testItem.modelReaderRuleService).toBe(replacement);
+    });
+    test('Replace modelWriterRuleService', () =>
+    {
+        let replacement = new ModelWriterRuleService();
+        let testItem = new JivsServices();
+        testItem.modelWriterRuleService = replacement;
+        expect(testItem.modelWriterRuleService).toBe(replacement);
     });
 
 });

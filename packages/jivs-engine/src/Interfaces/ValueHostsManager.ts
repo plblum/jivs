@@ -113,7 +113,11 @@ export interface IValueHostsManager extends IValueHostResolver {
      */
     discardValueHost(valueHostName: ValueHostName): void;    
 
-
+    /**
+     * An actual enumerator function that returns a generator for all ValueHosts.
+     * @param filter 
+     */
+    enumerateValueHosts(filter ?: (valueHost: IValueHost) => boolean): Generator<IValueHost>;
     /**
      * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property

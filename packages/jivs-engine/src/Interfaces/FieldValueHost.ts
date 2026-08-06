@@ -1,6 +1,7 @@
 /**
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
+import { ModelReaderWriterRule } from './ModelReaderAndWriter';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
 import
     {
@@ -143,7 +144,18 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * this can be undefined.
      * Helps mapping between model and valuehost.
      */
-    getPropertyName(): string;        
+    getPropertyName(): string;      
+    
+    /**
+     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    getModelReaderRule(): ModelReaderWriterRule | undefined;
+    /**
+     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    getModelWriterRule(): ModelReaderWriterRule | undefined;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -228,8 +240,27 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * The actual property name on the model. If its the same as Config.name,
      * this can be undefined.
      * Helps mapping between model and valuehost.
+     * 
+     * When using ModelReader or ModelWriter, it gets this value and allows for a syntax
+     * that refers to child objects and arrays. Here are some examples:
+     * - "name" - resolves to a property called 'name' on the model object
+     * - "name1.name2" - property name1 in the model contains a child with property name2.
+     * - "name1[0].name2" - property name1 in the model contains a child that is an array, 
+     *    and the first element of that array contains a property name2.
+     * - "name1.name2.name3" - property name1 in the model contains a child with property name2, which contains a child with property name3.
      */
     propertyName?: string;    
+
+    /**
+     * Supports the ModelReader to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    modelReaderRule?: ModelReaderWriterRule;
+    /**
+     * Supports the ModelWriter to determine how to handle the native value when writing to the model. 
+     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     */
+    modelWriterRule?: ModelReaderWriterRule;    
 }
 
 /**

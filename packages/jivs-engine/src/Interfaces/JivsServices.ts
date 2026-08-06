@@ -25,6 +25,7 @@ import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
+import { IModelReaderWriterRuleService } from './ModelReaderAndWriter';
 
 /**
  * Full interface representation of JivsServices.
@@ -144,6 +145,18 @@ export interface IJivsServices extends IServices {
      */
     cachingService: ICachingService;
 
+    /**
+     * Service for resolving rules used by ModelReader and found on 
+     * FieldValueHostConfig.modelReaderRule.
+     */
+    modelReaderRuleService: IModelReaderWriterRuleService;
+
+    /**
+     * Service for resolving rules used by ModelWriter and found on 
+     * FieldValueHostConfig.modelWriterRule.
+     */
+    modelWriterRuleService: IModelReaderWriterRuleService;
+
 }
 
 /**
@@ -222,17 +235,17 @@ export enum ServiceName {
     validatorFactory = 'ValidatorFactory',
     
     /**
-     * IModelToValuesFactory - in jivs-model
-     */
-    modelToValuesFactory = 'ModelToValuesFactory',
-    /**
-     * IValuesToModelFactory - in jivs-ssot
-     */
-    valuesToModelFactory = 'ValuesToModelFactory',
-
-    /**
      * ICachingService
      */
-    cache = 'Cache'
+    cache = 'Cache',
+
+    /**
+     * ModelReaderRuleService
+     */
+    modelReaderRule = 'ModelReaderRuleService',
+    /**
+     * ModelWriterRuleService
+     */
+    modelWriterRule = 'ModelWriterRuleService'
 
 }
