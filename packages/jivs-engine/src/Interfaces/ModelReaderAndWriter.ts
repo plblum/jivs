@@ -17,7 +17,7 @@
  * 
  * # ModelReader (IModelReader interface)
  * Native value on model -> FieldValueHost native value -> (optionally) FieldValueHost text value
- * See {@link jivs-engine/Interfaces/ModelReaderAndWriter!IModelReader} for details.
+ * See {@link jivs-engine/ModelReaderWriter/Types!IModelReader} for details.
  * 
  * ModelReader has a rule on each FieldValueHostConfig to determine how to read the data and 
  * convert it to the correct type. Mostly it is used to detect values in the source that represent
@@ -29,7 +29,7 @@
  * 
  * # ModelWriter (IModelWriter interface)
  * FieldValueHost native value -> Native value on model
- * See {@link jivs-engine/Interfaces/ModelReaderAndWriter!IModelWriter} for details.
+ * See {@link jivs-engine/ModelReaderWriter/Types!IModelWriter} for details.
  * 
  * ModelWriter has a rule on each FieldValueHostConfig to determine how to write the data and 
  * convert it to the correct type. Mostly it is used to detect values in the FieldValueHost that are undefined
@@ -39,13 +39,10 @@
  * 
  * Rules are defined in the DataCleanupService.
  * 
- * See {@link jivs-engine/Types/DataCleanupService} for details.
+ * See {@link jivs-engine/Services/Types/DataCleanupService} for details.
  * 
- * @module jivs-engine/Types/ModelReaderAndWriter
+ * @module jivs-engine/ModelReaderWriter/Types
  */
-
-import { IFieldValueHost } from './FieldValueHost';
-import { IService } from './Services';
 
 /**
  * The ModelReader is responsible for reading data from an external source and populating the ValueHostsManager with the data. 
@@ -165,26 +162,4 @@ export interface IModelWriter
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
     write(): void;
-}
-
-
-/**
- * ObjectFinder lets us supply a textual syntax to locating the object that hosts the desired property.
- * It expects a complete path down to the final property, and will basically strip off 
- * the last property name and return the object that hosts it.
- * 
- * This interface does not specify any syntax.
- * 
- * Note: While its an interface here which allows for dependency injection, we have not offered
- * it in our JivsServices. So currently create the desired instance directly.
- */
-export interface IObjectFinder
-{
-    /**
-     * Finds the object that hosts the property specified by the path.
-     * @param model The root model object or array to search within.
-     * @param path The textual path to the desired property.
-     * @returns An object containing the found object and the property name, or undefined if not found.
-     */
-    find(model: object | Array<any>, path: string): { object: object | Array<any> | undefined, propertyName: string | undefined; };
 }

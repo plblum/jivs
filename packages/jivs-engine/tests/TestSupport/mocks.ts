@@ -66,6 +66,8 @@ import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
 import { DataCleanupRule, IDataCleanupService } from '../../src/Interfaces/DataCleanupService';
 import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { IObjectFinderService } from '../../src/Interfaces/ObjectFinderService';
+import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
 
 export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true,
@@ -332,6 +334,7 @@ export class MockJivsServices implements IJivsServices
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
         this.dataCleanupService = new DataCleanupService();
+        this.objectFinderService = new ObjectFinderService();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -554,6 +557,16 @@ export class MockJivsServices implements IJivsServices
         this._dataCleanupService = service;
     }
     private _dataCleanupService!: IDataCleanupService;
+
+    public get objectFinderService(): IObjectFinderService
+    {
+        return this._objectFinderService;
+    }
+    public set objectFinderService(service: IObjectFinderService)
+    {
+        this._objectFinderService = service;
+    }
+    private _objectFinderService!: IObjectFinderService;
 }
 
 /**

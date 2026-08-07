@@ -148,12 +148,12 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
     
     /**
      * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     getModelReaderRule(): DataCleanupRule | undefined;
     /**
      * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     getModelWriterRule(): DataCleanupRule | undefined;
 }
@@ -253,12 +253,12 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
 
     /**
      * Supports the ModelReader to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     modelReaderRule?: DataCleanupRule;
     /**
      * Supports the ModelWriter to determine how to handle the native value when writing to the model. 
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     modelWriterRule?: DataCleanupRule;    
 }

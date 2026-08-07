@@ -91,7 +91,7 @@
  * ```ts
  * jivsServices.modelWriterRuleService.registerThenFunction('replaceWithNegativeOne', replaceWithNegativeOne);
  * ```
- * @module jivs-engine/Types/DataCleanupService
+ * @module jivs-engine/Services/Types/DataCleanupService
  */
 
 import { IFieldValueHost } from './FieldValueHost';

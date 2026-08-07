@@ -24,6 +24,7 @@ import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackSe
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { MockJivsServices } from "../TestSupport/mocks";
 import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
@@ -52,6 +53,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.validatorConfigMergeService).toBeInstanceOf(ValidatorConfigMergeService);
         expect(testItem.cachingService).toBeInstanceOf(CachingService);
         expect(testItem.dataCleanupService).toBeInstanceOf(DataCleanupService);
+        expect(testItem.objectFinderService).toBeInstanceOf(ObjectFinderService);
 
     });
 });
@@ -173,6 +175,12 @@ describe('Replace factories and services', () => {
         let testItem = new JivsServices();
         testItem.dataCleanupService = replacement;
         expect(testItem.dataCleanupService).toBe(replacement);
+    });
+    test('Replace objectFinderService', () => {
+        let replacement = new ObjectFinderService();
+        let testItem = new JivsServices();
+        testItem.objectFinderService = replacement;
+        expect(testItem.objectFinderService).toBe(replacement);
     });
 });
 

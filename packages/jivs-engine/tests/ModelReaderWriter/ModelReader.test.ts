@@ -4,7 +4,6 @@ import { DataCleanupResolution, DataCleanupRule } from '../../src/Interfaces/Dat
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { IObjectFinder } from '../../src/Interfaces/ModelReaderAndWriter';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
@@ -51,11 +50,6 @@ class PublicifyModelReader extends ModelReader<object>
     public get publicify_logger(): any
     {
         return super.logger;
-    }
-
-    public get publicify_objectFinder(): IObjectFinder
-    {
-        return super.objectFinder;
     }
 
     // create 'publicify_name' versions of protected methods for testing
@@ -154,7 +148,6 @@ describe('ModelReader', () =>
             expect(reader.publicify_disableFormatter).toBe(false);
             expect(reader.publicify_skipValueChangedCallback).toBe(false);
             expect(reader.publicify_logger).toBeDefined();
-            expect(reader.publicify_objectFinder).toBeDefined();
         });
         test('Create with all parameters. Confirm properties are set correctly', () =>
         {
@@ -192,7 +185,7 @@ describe('ModelReader', () =>
             let valueHostsManager = new MockValueHostsManager(services);
             let reader = new PublicifyModelReader(valueHostsManager, model);
             expect(reader.publicify_logger).toBeDefined();
-            expect(reader.publicify_logger.feature).toBe('modelreader');
+            expect(reader.publicify_logger.feature).toBe('PublicifyModelReader');
         });
         test('confirm 2 calls to logger return the same instance', () =>
         {

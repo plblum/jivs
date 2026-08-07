@@ -1,9 +1,14 @@
 /**
- * ObjectFinder lets us supply a textual syntax to locating the object that hosts the desired property.
- * It expects a complete path down to the final property, and will basically strip off 
- * the last property name and return the object that hosts it.
+ * @inheritdoc jivs-engine/Services/Types/ObjectFinderService
  * 
- * Supported patterns:
+ * @module jivs-engine/Services/ConcreteClasses/ObjectFinderService
+ */
+
+import { IObjectFinderService, ObjectFinderResolution } from '../Interfaces/ObjectFinderService';
+import { ServiceBase } from './ServiceBase';
+
+/**
+ * An ObjectFinderService that supports this syntax:
  * - "name" - resolves to the model object
  * - "[0].name" requires the model to be an array, and resolves to the first element of that array.
  * - "name1.name2" - property name1, which must be an object or array.
@@ -15,24 +20,18 @@
  *      The first element of that array must be an object with a property name3. It too must be an object or array.
  * Permitted characters: a-z, A-Z, 0-9, _, ., [, ]. No space, quoted content, etc.
  * 
- * @module jivs-engine/ModelReaderWriter/ObjectFinder
+ * It does NOT validate that the final property name exists on the object. It only resolves the object that hosts it.
+ * 
+ * This is assigned by default to JivsService.objectFinderService.
+ * 
+ * ALERT: There are better parsers for path syntax out there. Jivs does not want to
+ * have a dependency on a parser library, so this is a simple implementation that works for our needs.
+ * Feel free to wire up your preferred parser with an implementation of IObjectFinderService 
+ * and assign it to JivsService.objectFinderService.
  */
-
-import { IObjectFinder } from '../Interfaces/ModelReaderAndWriter';
-
-/**
- * An IObjectFinder that supports this syntax:
- * - "name" - resolves to the model object
- * - "[0].name" requires the model to be an array, and resolves to the first element of that array.
- * - "name1.name2" - property name1, which must be an object or array.
- * - "name1[0].name2" - Starts with property name1's value which must be an array, 
- *      and the first element of that array must be an object with a property name2.
- *     It too must be an object or array.
- * - "name1.name2.name3" - resolves the object associated with the property name2. It must be an object or array.
- * - "name1.name2[0].name3" - resolves the object associated with the property name2, which must be an array. 
- * The first element of that array must be an object with a property name3. It too must be an object or array.
- */
-export class ObjectFinder implements IObjectFinder
+export class ObjectFinderService
+    extends ServiceBase
+    implements IObjectFinderService
 {
     /**
      * Finds the object that hosts the property specified by the path using our textual syntax.
@@ -41,7 +40,7 @@ export class ObjectFinder implements IObjectFinder
      * @param path The textual path to the desired property. Expects a final property name at the end of the path.
      * @returns An object containing the found object and the property name, or undefined if not found.
      */
-    public find(model: object | Array<any>, path: string): { object: object | Array<any> | undefined, propertyName: string | undefined } {
+    public find(model: object | Array<any>, path: string): ObjectFinderResolution {
         if (!path || path.length === 0) {
             return { object: undefined, propertyName: undefined };
         }

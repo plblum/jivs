@@ -530,14 +530,14 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     }    
     /**
      * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     public getModelReaderRule(): DataCleanupRule | undefined {
         return this.config.modelReaderRule;
     }
     /**
      * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
-     * See {@link jivs-engine/Interfaces/ModelReaderAndWriter} for details.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     public getModelWriterRule(): DataCleanupRule | undefined {
         return this.config.modelWriterRule;

@@ -44,6 +44,8 @@ import { IConditionFactory } from '../Interfaces/Conditions';
 import { ValueHostConfigMergeService } from './ConfigMergeService';
 import { IDataCleanupService } from '../Interfaces/DataCleanupService';
 import { DataCleanupService } from './DataCleanupService';
+import { IObjectFinderService } from '../Interfaces/ObjectFinderService';
+import { ObjectFinderService } from './ObjectFinderService';
 /**
  * Supplies services and tools to be used as dependency injection
  * into the classes of this system. It also supplies factories.
@@ -392,5 +394,26 @@ export class JivsServices extends Services implements IJivsServices
     }
 
     //#endregion DataCleanupService
+
+    //#region ObjectFinderService
+    /**
+     * Provides a service for finding objects within a model based on a textual path.
+     */
+    public get objectFinderService(): IObjectFinderService
+    {
+        let service = this.getService<IObjectFinderService>(ServiceName.objectFinder);
+        if (!service)
+        {
+            service = new ObjectFinderService();
+            this.setService(ServiceName.objectFinder, service);
+        }
+        return service;
+    }
+    public set objectFinderService(factory: IObjectFinderService)
+    {
+        this.setService(ServiceName.objectFinder, factory);
+    }
+
+    //#endregion ObjectFinderService
 
 }

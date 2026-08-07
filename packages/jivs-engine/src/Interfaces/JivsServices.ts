@@ -26,6 +26,7 @@ import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
 import { IDataCleanupService } from './DataCleanupService';
+import { IObjectFinderService } from './ObjectFinderService';
 
 /**
  * Full interface representation of JivsServices.
@@ -152,6 +153,11 @@ export interface IJivsServices extends IServices {
      */
     dataCleanupService: IDataCleanupService;
 
+    /**
+     * Service for finding the object that hosts a property in a model, given a path to that property.
+     */
+    objectFinderService: IObjectFinderService;
+
 }
 
 /**
@@ -237,6 +243,11 @@ export enum ServiceName {
     /**
      * DataCleanupService
      */
-    dataCleanup = 'DataCleanup'
+    dataCleanup = 'DataCleanup',
+
+    /**
+     * IObjectFinderService
+     */
+    objectFinder = 'ObjectFinder'
 
 }

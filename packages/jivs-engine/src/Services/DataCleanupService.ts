@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/Types/DataCleanupService
- * @module jivs-engine/Services/DataCleanupService
+ * @inheritdoc jivs-engine/Services/Types/DataCleanupService
+ * @module jivs-engine/Services/ConcreteClasses/DataCleanupService
  */
 
 import
@@ -16,7 +16,7 @@ import { deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
 /**
- * @inheritdoc jivs-engine/Types/DataCleanupService|IDataCleanupService
+ * @inheritdoc jivs-engine/Services/Types/DataCleanupService!IDataCleanupService
  */
 export class DataCleanupService
     extends ServiceWithAccessorBase
