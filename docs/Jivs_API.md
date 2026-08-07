@@ -47,13 +47,16 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 
 <img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
-Topics:
+**Topics**
 - [Conditions - the validation rules](#conditions--the-validation-rules)
 - [ValueHosts](#valuehosts)
 - [Validators](#validators-connecting-conditions-to-error-messages)
 - [ValueHostsManager](#valuehostsmanager)
 - [Rules](#valuehost-rules)
 - [JivsServices](#jivsservices)
+- [ModelReader and ModelWriter](#modelreader-and-modelwriter)
+
+**Additional topics**
 - [Creating your own Conditions](#creating-your-own-conditions)
 - [Lookup Keys: DataTypes and Companion tools](#lookup-keys-data-types-and-companion-tools)
 - [Localization](#localization)
@@ -408,6 +411,8 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         reformatTextValue?: boolean;
         group?: null | string | string[];
         propertyName?: string;
+        modelReaderRule?: DataCleanupRule;
+        modelWriterRule?: DataCleanupRule;
     }
     ```
     This variant takes one parameter, an object with all properties on the `FieldValueHostConfig`.
@@ -493,11 +498,12 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](#using-calcvaluehost).
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to validate() that share the group. The name matching is case insensitive.
 - `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the `DataTypeParserService`.
-- `formatterLookupKey` – When calling setValue(), it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the `DataTypeFormatterService`.
+- `formatterLookupKey` – When calling `setValue()`, it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the `DataTypeFormatterService`.
 It has no impact on `setValues()` or `setTextValue()`.
-- `reformatTextValue` - When calling setTextValue(), the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
-- `propertyName` – The actual property name on the model. If its the same as Config.name, this can be undefined. Helps mapping between model and valuehost.
-
+- `reformatTextValue` - When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
+- `propertyName` – The actual property name on the model. If its the same as `ValueHostConfig.name`, this can be undefined. Helps mapping between model and valuehost, especially when using the [ModelReader and ModelWriter](#modelreader-and-modelwriter). `ModelReader` and `ModelWriter` permit dot notation to locate a property of a child, such as "Address.Street1".
+- `modelReaderRule` - Assists the `ModelReader` to convert and cleanup data between the model and the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
+- `modelWriterRule` - Assists the `ModelWriter` to convert and cleanup data between the ValueHost and model. See [ModelWriter](#modelreader-and-modelwriter).
 ### Getting a ValueHost
 Start with a `ValueHostsManager` instance. It should already be configured with ValueHosts. Supposing *vhm* has that `ValueHostsManager`, do this to get a `ValueHost`:
 
@@ -1229,6 +1235,161 @@ The `FormConfigAdapter` has these features:
 
 [Adapter](Configuring.md#the-form-configuration-adapter)
 ---
+## ModelReader and ModelWriter
+You usually start and end with your own model object. 
+
+At the start, its values are copied to the `ValueHosts`, ready for change and validation. 
+```
+model property → ValueHost
+```
+
+At the end - after validation approves, its values are copied to the model's properties.
+```
+ValueHost → model property
+```
+
+Your initial reaction is that using `FieldValueHost.setValue()` and `FieldValueHost.getValue()` will get the job done. However, there is more to it.
+```
+model property → clean up the value for use by ValueHost → ValueHost.setValue
+    optionally format into text and assign it to the input field too
+```
+```
+ValueHost.getValue → clean up the value for storing into the model property → model property
+```
+
+Jivs provides another approach: using the `ModelReader` to copy from model to `ValueHosts` and the `ModelWriter` to copy from the `ValueHosts` to the model. This approach allows business rules to be defined for each field so that nobody can code up transfer errors.
+
+The actual transfer process is pretty simple, but don't overlook the configuration part described below.
+```ts
+let vhm = new ValueHostsManager(builder.complete());
+let model = getMyModel(); // your code
+let reader = new ModelReader(vhm, model);
+reader.read();  // data is now in the ValueHosts
+
+// ... interact with the data and finish up with validation before trying to save it ...
+
+let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
+let writer = new ModelWriter(vhm, model);
+writer.write(); // your model is updated
+```
+
+If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [ValueHost Formatting](#decisions-around-jivs-built-in-formatting).
+```ts
+builder.onTextValueChanged = myFunctionToUpdateInputs;
+let vhm = new ValueHostsManager(builder.complete());
+```
+### Configuring the ValueHosts
+There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
+1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.
+2. Values may be represented differently and require conversion or cleanup. For example, your model has a numeric property, 'Count', that stores -1 to indicate the field is actually not in use. In that case, we want to setup the `ValueHost` with a value of `undefined` (use `FieldValueHost.setValueToUndefined()`.) This is a data cleanup task.
+
+### Handling a different property name
+When configuring the `FieldValueHost`, you can supply the name of the property explicitly like this:
+```ts
+builder.field('Field1', LookupKey.Number, { 
+    propertyName: 'myField' // the name on the model
+});
+```
+If your model contains child objects, that is supported too.
+```ts
+class MyModel{
+    firstName: string,
+    lastName: string,
+    child: MyChildModel
+}
+class MyChildModel
+{
+    favoriteColor?: string
+}
+```
+Set the favoriteColor like this:
+```ts
+builder.field('Field1', LookupKey.Number, { 
+    propertyName: 'child.favoriteColor' // path syntax
+});
+```
+> When using the `ModelWriter`, you are expected to pass in a model with child objects already created. Otherwise, `ModelWriter` will not transfer the value. 
+
+### Data cleanup rules
+When a value needs cleanup, setup rules to handle the cleanup again in the `FieldValueHostConfig`, this time within the `modelReaderRules` or `modelWriterRules` properties.
+```ts
+builder.field('Field1', LookupKey.Number, { 
+    modelReaderRules: // if undefined in the model, use 0 in the ValueHost
+    {
+        when: 'undefined',
+        then: '0'
+    },
+    modelWriterRules: // if 0 in the valuehost, assign undefined in the model
+    {
+        when: '0',
+        then: 'undefined'
+    }
+});
+```
+The values for _when_ and _then_ are strings that lookup functions from the `DataCleanupService`. It already has many functions. But you will likely add your own.
+
+#### When Rules
+|Rule name|Values that trigger the Then function
+|---------|--------------------------
+|undefined| undefined
+|nullorundefined| undefined, null
+|null| null
+|0| 0
+|zero| alias of '0'
+|zeroornull| 0, null
+|0ornull| alias of 'zeroornull'
+|zeronullorundefined| 0, null, undefined
+|0nullorundefined| alias of 'zeronullorundefined'
+|emptystring| '' (the empty string)
+|\<emptystring>| Type in ''. its the alias of 'emptystring'
+|emptystringornull| '', null
+|emptystringnullorundefined| '', null, undefined
+
+##### Creating your own When rule
+```ts
+ function isNegative(value: any): boolean {
+     return typeof value === 'number' && value < 0;
+ }
+ ```
+
+ Register in the service:
+ ```ts
+ jivsServices.dataCleanupService.registerWhenFunction('isNegative', isNegative);
+ ```
+#### Then Rules
+|Rule name|Value that will be transferred
+|---------|--------------------------
+|skip| Will not transfer
+|omit| alias for 'skip'
+|keep| Transfer as is. Typically used when the source value is undefined and you want to preserve that
+|nochange| alias for 'keep'
+|undefined| undefined
+|unassigned| alias for 'undefined'
+|null|null
+|0|0
+|zero|alias for 0
+|emptystring| '' (the empty string)
+|\<emptystring>| Type in ''. its the alias of 'emptystring'
+|false| false
+|true| true
+|emptyarray| assign an empty array
+|[]|alias for 'emptyarray'
+|emptyobject| assign an empty object
+|{}|alias for 'emptyobject'
+
+
+##### Creating your own Then rule
+```ts
+function replaceWithYear2000(value: any): DataCleanupResolution {
+    return { value: new Date('2000-01-01') };
+}
+```
+Register in the service:
+```ts
+jivsServices.modelWriterRuleService.registerThenFunction('year2000', replaceWithYear2000);
+```
+
+---
 ## JivsServices
 The `JivsServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
 
@@ -1287,6 +1448,8 @@ interface IJivsServices {
     lookupKeyFallbackService: ILookupKeyFallbackService;
     messageTokenResolverService: IMessageTokenResolverService;    
     cachingService: ICachingService;
+    dataCleanupService: IDataCleanupService;
+    objectFinderService: IObjectFinderService;
 }
 ```
 Use the source code and TypeDoc output to better understand these services and factories.

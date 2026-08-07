@@ -57,7 +57,7 @@
  *     return typeof value === 'number' && value < 0;
  * }
  * ```
- * Registered in the factory:
+ * Register in the service:
  * ```ts
  * jivsServices.dataCleanupService.registerWhenFunction('isNegative', isNegative);
  * ```
@@ -83,19 +83,18 @@
  * 
  * ### Example to add your own function:
  * ```ts
- * function replaceWithNegativeOne(value: any): { skip: boolean; value?: any } {
- *     return { skip: false, value: -1 };
+ * function negativeOne(value: any): DataCleanupResolution {
+ *     return { value: -1 };
  * }
  * ```
- * Registered in the factory:
+ * Register in the service:
  * ```ts
- * jivsServices.modelWriterRuleService.registerThenFunction('replaceWithNegativeOne', replaceWithNegativeOne);
+ * jivsServices.modelWriterRuleService.registerThenFunction('negativeOne', negativeOne);
  * ```
  * @module jivs-engine/Services/Types/DataCleanupService
  */
 
-import { IFieldValueHost } from './FieldValueHost';
-import { IService, IServiceWithAccessor } from './Services';
+import { IServiceWithAccessor } from './Services';
 
 
 /**

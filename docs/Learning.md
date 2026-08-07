@@ -11,6 +11,10 @@
 you use with a form or model. It contains the list of `ValueHosts`, callback hooks, and more. Use it to get and set values, validate, retrieve validation results, 
 and report additional errors determined by your business logic.
 - We keep user interface separate from validation operations. Values from your inputs and model properties must be passed into the `ValueHostsManager`.
+    + In the past, you might have had your validation code retrieve individual values from the fields. Jivs is not going to read from the UI.
+    + This means you must supply the initial value of your inputs into Jivs _before_ allowing the user to edit.
+        + Use the `ModelReader` class to prepopulate with an entire model at once.
+        + Use `FieldValueHost.setValue()` otherwise.
 - Each `FieldValueHost` may have two representations of its value:
     + Native value - The value that will actually be stored in the model or table.
     + Text value - The value as represented by the input. 
@@ -97,9 +101,13 @@ const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle val
 // Assign the initial values to each ValueHost to be available for validation.
 // There are many ways to do this. We are showing assigning the native value from the model here.
 // It assumes each ValueHost has been configured with a formatter.
-vhm.vh('FirstName').setValue(person.firstName, { validate: false });
-vhm.vh('LastName').setValue(person.lastName, { validate: false });
+vhm.vh('FirstName').setValue(person.firstName, { validate: false, reset: true });
+vhm.vh('LastName').setValue(person.lastName, { validate: false, reset: true });
 ... and so forth ...
+/* Or use the ModelReader class to copy values from model to all valuehosts together.
+let modelReader = new ModelReader(vhm, person);
+modelReader.read(); // ValueHosts are now updated!
+*/
 
 // Wire up your submit handler to use ValuesHostManager
 function submitTheForm(vhm: ValueHostsManager): void
@@ -121,6 +129,10 @@ function submitTheForm(vhm: ValueHostsManager): void
             person.firstName = vhm.vh('FirstName').getValue();
             person.lastName = vhm.vh('LastName').getValue();
             ... and the rest ...
+            // or use our ModelWriter class
+            let person = new Person();
+            let modelWriter = new ModelWriter(vhm, person);
+            modelWriter.write(); // now person is updated!
             return person;
         }
         */
@@ -174,6 +186,12 @@ const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle val
 vhm.vh('FirstName').setValue(person.firstName, { validate: false });
 vhm.vh('LastName').setValue(person.lastName, { validate: false });
 ... and so forth ...
+/* Or use the ModelReader class to copy values from model to all valuehosts together.
+let modelReader = new ModelReader(vhm, person);
+modelReader.read(); // ValueHosts are now updated!
+*/
+
+
 // execute validation
 let status = vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
@@ -325,7 +343,7 @@ if (!validationState.doNotSave)
     // Suppose that you convert your data into a Model object
     // and run some of your own validation on that object.
 
-    let modelResult = convertToModel(); // again, your code
+    let modelResult = convertToModel(); // again, your code or use our ModelWriter class
     // modelResult = { model: object | null, errormessage: string | null, errorCode: number }
     if (modelResult.errorMessage)
         issuesFound.push({
@@ -385,7 +403,7 @@ if (!validationState.doNotSave)
       vhm.fromValidationPayload(validationPayload);
       // These will update the UI via onValidationStateChanged callback
 
-    });
+    };
 ```
 
 ### Server-side saving data
