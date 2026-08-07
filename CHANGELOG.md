@@ -22,6 +22,7 @@ It offers activeCultureId, disableParserOnValueChange, and disableFormatterOnVal
 - **Breaking API change** - CultureService.activeCultureId is no longer used to set the active culture used for localization. Its property is readonly and named defaultCultureId.
 Instead, use the Behaviors.activeCultureId to change the default CultureID. This avoids services changing state. The result is JivsService constructor now optionally
 takes the value for CultureService.defaultCultureId.
+- **Major New Feature** - Use the ModelReader to assign the properties from the model to the associated ValueHosts. Use the ModelWriter to do the reverse.
 
 ## 0.20.0
 - **Breaking API change** - The Builder features are in a separate module, jivs-builder.

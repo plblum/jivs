@@ -1234,6 +1234,7 @@ The `FormConfigAdapter` has these features:
     + `adapter.assignToGroup('group name', [field names])`
 
 [Adapter](Configuring.md#the-form-configuration-adapter)
+
 ---
 ## ModelReader and ModelWriter
 You usually start and end with your own model object. 
@@ -1259,7 +1260,7 @@ ValueHost.getValue â†’ clean up the value for storing into the model property â†
 
 Jivs provides another approach: using the `ModelReader` to copy from model to `ValueHosts` and the `ModelWriter` to copy from the `ValueHosts` to the model. This approach allows business rules to be defined for each field so that nobody can code up transfer errors.
 
-The actual transfer process is pretty simple, but don't overlook the configuration part described below.
+The actual transfer process is pretty simple, but requires configuration described below.
 ```ts
 let vhm = new ValueHostsManager(builder.complete());
 let model = getMyModel(); // your code
