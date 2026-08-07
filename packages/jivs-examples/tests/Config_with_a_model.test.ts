@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 describe('configPersonEditFormRules', () => {
-    it('should configure validation manager correctly', () => {
+    it('should configure ValueHostsManager correctly', () => {
         // Execute configExample
         let vhm: ValueHostsManager;
         expect(() => vhm = configPersonEditFormRules()).not.toThrow();

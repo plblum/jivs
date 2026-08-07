@@ -253,7 +253,7 @@ Please use these documents:
 
 - [Terminology](./docs/Terminology.md)
 - [Learning Jivs](./docs/Learning.md)
-- [Configuring the Validation Manager](./docs/Configuring.md)
+- [Configuring the ValueHosts](./docs/Configuring.md)
 - [The API](./docs/Jivs_API.md)
   + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)
   + [ValueHosts](./docs/Jivs_API.md#valuehosts)
@@ -261,10 +261,10 @@ Please use these documents:
   + [ValueHostsManager](./docs/Jivs_API.md#valuehostsmanager)
   + [Rules](./docs/Jivs_API.md#valuehost-rules)
   + [JivsServices](./docs/Jivs_API.md#jivsservices)
+- Supporting topics
   + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)
   + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)
   + [Localization](./docs/Jivs_API.md#localization)
   + [Validation Deep Dive](./docs/Jivs_API.md#validation-deep-dive)
-  + [Setting and Getting Values](./docs/Jivs_API.md#getting-and-setting-native-and-text-values)
   + [Logging](./docs/Jivs_API.md#logging)
   + [Testing your work](./docs/Jivs_API.md#testing-your-work)

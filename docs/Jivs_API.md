@@ -1012,7 +1012,7 @@ builder.field('LastName', LookupKey.String, { label: 'Last name' })
 
 #### Example with error messages in the TextLocalizerService
 Error messages shown here are often delegated to the [TextLocalizerService](#localizing-strings-textlocalizerservice).
-TextLocalizerService is setup when creating the Validation Services. Here's a relevant snippet.
+TextLocalizerService is setup when creating the JivsServices. Here's a relevant snippet.
 
 ```ts
 service.registerErrorMessage(ConditionType.RequireText, null, {

@@ -113,7 +113,7 @@
  * ```ts
  * jivsServices.modelWriterRuleService.registerThenFunction('replaceWithNegativeOne', replaceWithNegativeOne);
  * ```
- * @module jivs-engine/Interfaces/ModelReaderAndWriter
+ * @module jivs-engine/Types/ModelReaderAndWriter
  */
 
 import { IFieldValueHost } from './FieldValueHost';
@@ -215,7 +215,7 @@ export interface IModelReader
  *          { when: 'undefined', then: 'keep' }          // write undefined as-is
  *          ```
  *      + The ModelWriterRuleService is used to register the functions behind the when/then names. See below for details.
- *          - The factory registers two types of functions: DetectInvalidValue and ReplaceWith. Each function is registered with a name. The name is used in the when/then properties of the rule.
+ *          - The factory registers two types of functions: When and Then. Each function is registered with a name. The name is used in the when/then properties of the rule.
  *          - Predefined rules are shown below and registered in the factory.
  *          - Expect the user to create very data specific rules like returning an object with a specific shape or a specific value. Date object is a good example.
  * 

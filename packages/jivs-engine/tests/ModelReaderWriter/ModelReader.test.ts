@@ -1,7 +1,11 @@
+import { LookupKey } from '../../src/DataTypes/LookupKeys';
+import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { IObjectFinder, ModelReaderWriterRule } from '../../src/Interfaces/ModelReaderAndWriter';
+import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
+import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
 import { ModelReaderRuleService } from '../../src/Services/ModelReaderWriterRuleService';
@@ -517,6 +521,59 @@ describe('ModelReader', () =>
             expect(logger.findMessage(`Model property '${ valueHost1.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`Model property '${ valueHost2.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`Model property '${ valueHost3.getName() }' does not exist in the model.`, LoggingLevel.Warn)).toBeTruthy();
+        });
+        // special case: Mixed ValueHost types. Only FieldValueHosts are supposed to be used with ModelReader, but  we'll test that the ModelReader ignores non-FieldValueHosts and does not throw an error.
+        test('read with mixed ValueHost types. Expect the ModelReader to ignore non-FieldValueHosts and not throw an error.', () =>
+        {
+            let valueHostsManager = new MockValueHostsManager(new MockJivsServices(false, false));
+            let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
+            let valueHost2 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 2);
+            let valueHost3 = valueHostsManager.addValueHost(<StaticValueHostConfig> {
+                valueHostType: ValueHostType.Static,
+                name: 'Field3',
+                initialValue: 10,
+                dataType: LookupKey.Number
+            }, null);
+            // our model will have properties for all 3 valueHosts, but the ModelReader should ignore the static valueHost and not throw an error.
+            let model = {};
+            (model as any)[valueHost1.getName()] = 0;
+            (model as any)[valueHost2.getName()] = 42;
+            (model as any)[valueHost3.getName()] = 100;
+            let reader = new PublicifyModelReader(valueHostsManager, model);
+            reader.read();
+            expect(valueHost1.getValue()).toBeNull();
+            expect(valueHost2.getValue()).toBe(42);
+            expect(valueHost3.getValue()).toBe(10); // static valueHost should not be changed by ModelReader
+            // make sure there is no log message indicating that the static valueHost was processed
+            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
+        });
+        // same using CalcValueHost
+        test('read with mixed ValueHost types including CalcValueHost. Expect the ModelReader to ignore non-FieldValueHosts and not throw an error.', () =>
+        {
+            let valueHostsManager = new MockValueHostsManager(new MockJivsServices(false, false));
+            let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
+            let valueHost2 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 2);
+            let valueHost3 = valueHostsManager.addValueHost(<CalcValueHostConfig> {
+                valueHostType: ValueHostType.Calc,
+                name: 'Field3',
+                initialValue: 10,
+                dataType: LookupKey.Number,
+                calcFn: (valueHost) => 20
+            }, null);
+            // our model will have properties for all 3 valueHosts, but the ModelReader should ignore the calc valueHost and not throw an error.
+            let model = {};
+            (model as any)[valueHost1.getName()] = 0;
+            (model as any)[valueHost2.getName()] = 42;
+            (model as any)[valueHost3.getName()] = 100;
+            let reader = new PublicifyModelReader(valueHostsManager, model);
+            reader.read();
+            expect(valueHost1.getValue()).toBeNull();
+            expect(valueHost2.getValue()).toBe(42);
+            expect(valueHost3.getValue()).toBe(20);
+            // make sure there is no log message indicating that the calc valueHost was processed
+            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
     });
 });

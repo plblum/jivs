@@ -49,7 +49,7 @@ export interface IRendererAction {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseForm - The validation manager responsible for managing the validation
+     * @param fivaseForm - The ValueHostsManager responsible for managing the validation
      * logic, errors, and state.
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
@@ -2516,7 +2516,7 @@ export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');
 
 
 /**
- * The Fivase validation manager service.
+ * The Fivase ValueHostsManager service.
  * Manages validation logic in Angular using the underlying ValueHostsManager from Jivs.
  * Handles state changes, value updates, validation subscriptions, and destruction of the manager.
  *

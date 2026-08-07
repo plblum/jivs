@@ -31,9 +31,8 @@ export abstract class ModelReaderBase<T extends object> implements IModelReader
 {
     /**
      * 
-     * @param services 
-     * @param valueHostsManager 
-     * @param model 
+     * @param valueHostsManager - The manager for the ValueHosts.
+     * @param model - The model object to be read.
      * @param disableFormatter - See {@link ModelReaderBase.disableFormatter} for details.
      * @param skipValueChangedCallback - See {@link ModelReaderBase.skipValueChangedCallback} for details.
      */

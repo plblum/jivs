@@ -89,7 +89,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      *   valueHostConfigs: [
      *     // see elsewhere for details on ValueHostConfigs as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
-     *     // to the Validation Manager
+     *     // to the ValueHostsManager
      *      ],
      *   savedInstanceState: null, // or the state object previously returned with OnInstanceStateChanged
      *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged

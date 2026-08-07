@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 describe('configExample', () => {
-    it('should configure validation manager correctly', () => {
+    it('should configure ValueHostsManager correctly', () => {
         // Execute configExample
         let vhm: ValueHostsManager;
         expect(() => vhm = configUsingDateRangeFormRules()).not.toThrow();

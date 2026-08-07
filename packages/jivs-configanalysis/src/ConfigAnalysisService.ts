@@ -214,7 +214,7 @@ export class ConfigAnalysisService extends ConfigAnalysisServiceBase {
  * ```ts
  *  installConfigAnalysisService(services);
  * ```
- * @param services The validation services instance.
+ * @param services The jivsServices instance.
  * @param service Optional ConfigAnalysisService instance to install.
  * @returns The installed ConfigAnalysisService.
  */
@@ -233,7 +233,7 @@ export function installConfigAnalysisService(
 
 /**
  * Retrieves the installed ConfigAnalysisService from the given JivsServices object.
- * @param services The validation services instance.
+ * @param services The jivsServices instance.
  * @returns The installed ConfigAnalysisService.
  * @throws CodingError if the ConfigAnalysisService is not installed.
  */
