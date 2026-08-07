@@ -1,14 +1,15 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
+import { DataCleanupResolution, DataCleanupRule } from '../../src/Interfaces/DataCleanupService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { IObjectFinder, ModelReaderWriterRule } from '../../src/Interfaces/ModelReaderAndWriter';
+import { IObjectFinder } from '../../src/Interfaces/ModelReaderAndWriter';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
-import { ModelReaderRuleService } from '../../src/Services/ModelReaderWriterRuleService';
+import { DataCleanupService } from '../../src/Services/DataCleanupService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
@@ -58,10 +59,11 @@ class PublicifyModelReader extends ModelReader<object>
     }
 
     // create 'publicify_name' versions of protected methods for testing
-    public publicify_adjustValueByRule(modelPropertyName: string,
-        modelPropertyValue: any, rule: ModelReaderWriterRule, valueHost: IFieldValueHost): { skip?: boolean, adjustedValue?: any; }
+    public publicify_adjustValueByRule(
+        modelPropertyValue: any, rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
+        
     {
-        return this.adjustValueByRule(modelPropertyName, modelPropertyValue, rule, valueHost);
+        return this.adjustValueByRule(modelPropertyValue, rule, valueHost);
     }
 
     public publicify_tryGetValueFromModel(modelPropertyName: string, valueHost: IFieldValueHost):
@@ -78,7 +80,7 @@ class PublicifyModelReader extends ModelReader<object>
         this.setValueIntoValueHost(valueHost, value, options);
     }
 
-    public publicify_getRule(valueHost: IFieldValueHost): ModelReaderWriterRule | undefined
+    public publicify_getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
     {
         return this.getRule(valueHost);
     }
@@ -98,7 +100,7 @@ function setup(model: object, propertyName: string,
     let services = new MockJivsServices(false, false);
     let logger = services.loggerService as CapturingLogger;
     logger.minLevel = LoggingLevel.Debug;
-    services.modelReaderRuleService = new ModelReaderRuleService(); // supplies the standard rules for when and then
+    services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
     let valueHostsManager = new MockValueHostsManager(services);
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
@@ -206,7 +208,7 @@ describe('ModelReader', () =>
 
     describe('adjustValueByRule via publicify_', () =>
     {
-        // most of the work is in ModelReaderWriterRuleService with full tests.
+        // most of the work is in DataCleanupService with full tests.
         // This just performs a few tests to confirm the ModelReader is using the service correctly.
         // No logging is reviewed here.
 
@@ -218,9 +220,9 @@ describe('ModelReader', () =>
             
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', 'value1', modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule('value1', modelReaderRule!, valueHost);
             expect(result.skip).toBe(true);
-            expect(result.adjustedValue).toBeUndefined();
+            expect(result.value).toBeUndefined();
         });
         test('then lookup in factory fails: when=known, then=unknown. Expect skip true', () =>
         {
@@ -228,51 +230,51 @@ describe('ModelReader', () =>
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'unknown');
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', model.prop1, modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
             expect(result.skip).toBe(true);
-            expect(result.adjustedValue).toBeUndefined();
+            expect(result.value).toBeUndefined();
         });
-        // when function returns false, indicating the value is valid and does not need to be replaced. Expect skip true and no adjustedValue.
-        test('when function returns false, indicating the value is valid and does not need to be replaced. Expect skip false and adjustedValue=originalValue.', () =>
+        // when function returns false, indicating the value is valid and does not need to be replaced. Expect skip true and no value.
+        test('when function returns false, indicating the value is valid and does not need to be replaced. Expect skip false and value=originalValue.', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', model.prop1, modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
             expect(result.skip).toBe(false);
-            expect(result.adjustedValue).toBe(model.prop1);
+            expect(result.value).toBe(model.prop1);
         });
         // the rest are for then rule
-        test('when tests for null and finds null, then=null. Expect skip=false, adjustedValue=null.', () =>
+        test('when tests for null and finds null, then=null. Expect skip=false, value=null.', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'null');
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', model.prop1, modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
             expect(result.skip).toBe(false);
-            expect(result.adjustedValue).toBe(null);
+            expect(result.value).toBe(null);
         });
-        test('when tests for null and finds null, then=unassigned. Expect skip=false, adjustedValue=undefined.', () =>
+        test('when tests for null and finds null, then=unassigned. Expect skip=false, value=undefined.', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'unassigned');
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', model.prop1, modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
             expect(result.skip).toBe(false);
-            expect(result.adjustedValue).toBeUndefined();
+            expect(result.value).toBeUndefined();
         });
-        test('when tests for null and finds null, then=keep. Expect skip=false, adjustedValue=null.', () =>
+        test('when tests for null and finds null, then=keep. Expect skip=false, value=null.', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'keep');
             let modelReaderRule = valueHost.getModelReaderRule();
             expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('prop1', model.prop1, modelReaderRule!, valueHost);
+            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
             expect(result.skip).toBe(false);
-            expect(result.adjustedValue).toBeNull();
+            expect(result.value).toBeNull();
         });
     });
     describe('publicify_tryGetValueFromModel via publicify_', () =>
@@ -353,7 +355,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
-            services.modelReaderRuleService = new ModelReaderRuleService(); // supplies the standard rules for when and then
+            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
             let valueHostsManager = new MockValueHostsManager(services);
             // not modelReaderRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
@@ -431,7 +433,7 @@ describe('ModelReader', () =>
         test('read with a valueHost that has a propertyName that does not exist on the model. Expect the valueHost to be set to undefined and a warning logged.', () =>
         {
             let services = new MockJivsServices(false, false);
-            services.modelReaderRuleService = new ModelReaderRuleService();
+            services.dataCleanupService = new DataCleanupService();
             let valueHostsManager = new MockValueHostsManager(services);
             let valueHost = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
             let model = {}; // propertyName is field1, same as generated name for valueHost
@@ -447,7 +449,7 @@ describe('ModelReader', () =>
         {
             // using matching name and propertyname, Field1, Field2, etc.
             let services = new MockJivsServices(false, false);
-            services.modelReaderRuleService = new ModelReaderRuleService(); // supplies the standard rules for when and then
+            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
             let logger = services.loggerService as CapturingLogger;
             logger.minLevel = LoggingLevel.Debug;
             let valueHostsManager = new MockValueHostsManager(services);

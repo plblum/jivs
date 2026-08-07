@@ -3,10 +3,11 @@
  * @model jivs-engine/AbstractClasses/ModelWriterBase
  */
 
+import { DataCleanupResolution, DataCleanupRule } from '../Interfaces/DataCleanupService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import { IModelWriter, IObjectFinder, ModelReaderWriterRule } from '../Interfaces/ModelReaderAndWriter';
+import { IModelWriter, IObjectFinder } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
@@ -18,19 +19,9 @@ import { ObjectFinder } from './ObjectFinder';
  * 
  * See {@link jivs-engine/Types/ModelReaderAndWriter!IModelWriter} for details.
  * 
- * Supports objects and arrays as the model.
- * 
- * Works together with the ModelWriterRuleService on JivsServices to handle
- * rules for writing values to the model or skipping them. 
- * See {@link jivs-engine/Types/ModelReaderAndWriter!IModelReaderWriterRuleService} for details.
- * 
- * Uses a syntax for the FieldValueHostConfig.propertyName that can find child elements:
- * - "name" - resolves to a property on the model object
- * - "[0].name" requires the model to be an array, and resolves to the first element of that array.
- * - "name1.name2" - property name1 in the model contains a child with property name2.
- * - "name1[0].name2" - property name1 in the model contains a child that is an array, 
- *    and the first element of that array contains a property name2.
- * - "name1.name2.name3" - property name1 in the model contains a child with property name2, which contains a child with property name3.
+ * - Supports objects and arrays as the model.
+ * - Uses the DataCleanupService to determine if a value should be adjusted or skipped when writing to the model.
+ * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  */
 export abstract class ModelWriterBase<T extends object> implements IModelWriter
 {
@@ -111,10 +102,10 @@ export abstract class ModelWriterBase<T extends object> implements IModelWriter
             let rule = this.getRule(valueHost);
             if (rule)
             {
-                let result = this.adjustValueByRule(modelPropertyName, modelPropertyValue, rule, valueHost);
+                let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
                 if (result.skip)
                     continue;
-                modelPropertyValue = result.adjustedValue;
+                modelPropertyValue = result.value;
             }
             // special case: if the value is undefined and there is no rule, we take no action
             else if (rule === undefined && modelPropertyValue === undefined)
@@ -147,7 +138,7 @@ export abstract class ModelWriterBase<T extends object> implements IModelWriter
      * @param valueHost 
      * @returns The rule for the model property, or undefined if no rule applies.
      */
-    protected getRule(valueHost: IFieldValueHost): ModelReaderWriterRule | undefined
+    protected getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
     {
         return valueHost.getModelWriterRule();
     }
@@ -156,18 +147,17 @@ export abstract class ModelWriterBase<T extends object> implements IModelWriter
      * With a known model property name, value and rule, evaluate and return
      * either the original value, the adjusted value, or a skip flag indicating the value 
      * should not be assigned to the model.
-     * @param modelPropertyName 
      * @param modelPropertyValue 
      * @param rule 
-     * @param valueHost 
+     * @param valueHost - While the DataCleanupService does not require the valueHost, 
+     * it is provided here in support of subclassing.
      * @returns An object with either skip: true, or adjustedValue: any. 
      * If skip is true, the value will be ignored.
      */
-    protected adjustValueByRule(modelPropertyName: string, modelPropertyValue: any,
-        rule: ModelReaderWriterRule, valueHost: IFieldValueHost): { skip?: boolean, adjustedValue?: any; }
+    protected adjustValueByRule(modelPropertyValue: any,
+        rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
     {
-        return this.services.modelWriterRuleService.resolve(
-            modelPropertyName, modelPropertyValue, rule, valueHost, 'Writer');
+        return this.services.dataCleanupService.resolve(modelPropertyValue, rule);
     }    
 
     /**

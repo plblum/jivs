@@ -25,7 +25,7 @@ import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
-import { IModelReaderWriterRuleService } from './ModelReaderAndWriter';
+import { IDataCleanupService } from './DataCleanupService';
 
 /**
  * Full interface representation of JivsServices.
@@ -146,16 +146,11 @@ export interface IJivsServices extends IServices {
     cachingService: ICachingService;
 
     /**
-     * Service for resolving rules used by ModelReader and found on 
-     * FieldValueHostConfig.modelReaderRule.
+     * Service for cleaning up data when reading from or writing to a model.
+     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
+     * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
      */
-    modelReaderRuleService: IModelReaderWriterRuleService;
-
-    /**
-     * Service for resolving rules used by ModelWriter and found on 
-     * FieldValueHostConfig.modelWriterRule.
-     */
-    modelWriterRuleService: IModelReaderWriterRuleService;
+    dataCleanupService: IDataCleanupService;
 
 }
 
@@ -240,12 +235,8 @@ export enum ServiceName {
     cache = 'Cache',
 
     /**
-     * ModelReaderRuleService
+     * DataCleanupService
      */
-    modelReaderRule = 'ModelReaderRuleService',
-    /**
-     * ModelWriterRuleService
-     */
-    modelWriterRule = 'ModelWriterRuleService'
+    dataCleanup = 'DataCleanup'
 
 }

@@ -18,7 +18,7 @@ import
     } from "../../src/Interfaces/FieldValueHost";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { ModelReaderWriterRule } from '../../src/Interfaces/ModelReaderAndWriter';
+import { DataCleanupRule } from '../../src/Interfaces/DataCleanupService';
 import { IValidatableValueHostBase, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import
     {
@@ -1970,11 +1970,11 @@ describe('toIFieldValueHost function', () => {
         getPropertyName(): string {
             return this.getName();
         }        
-        getModelReaderRule(): ModelReaderWriterRule | undefined
+        getModelReaderRule(): DataCleanupRule | undefined
         {
             throw new Error('Method not implemented.');
         }
-        getModelWriterRule(): ModelReaderWriterRule | undefined
+        getModelWriterRule(): DataCleanupRule | undefined
         {
             throw new Error('Method not implemented.');
         }

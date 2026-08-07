@@ -37,82 +37,10 @@
  * and be used when there are non-undefined values. For example, when 'null' then 'zero' would 
  * convert a null value to 0 in the model.
  * 
- * Rules are defined in the ModelWriterRuleService.
+ * Rules are defined in the DataCleanupService.
  * 
- *  * # ModelReaderRuleService
- * ModelReaderRuleService is added to JivsServices and resolves the rules used by ModelReader and found on FieldValueHostConfig.modelReaderRule.
- * It has numerous pre-registered functions, but users may register their own functions as well. The service supports case-insensitive name lookup.
- * See {@link jivs-engine/Interfaces/ModelReaderAndWriter!ModelReaderWriterRuleService} for details.
+ * See {@link jivs-engine/Types/DataCleanupService} for details.
  * 
- * JivsServices exposes it as jivsServices.modelReaderRuleService.
- * 
- * # ModelWriterRuleService
- * ModelWriterRuleService is added to JivsServices and resolves the rules used by ModelWriter and found on FieldValueHostConfig.modelWriterRule.
- * It has numerous pre-registered functions, but users may register their own functions as well. The service supports case-insensitive name lookup.
- * See {@link jivs-engine/Interfaces/ModelReaderAndWriter!ModelReaderWriterRuleService} for details.
- * 
- * JivsServices exposes it as jivsServices.modelWriterRuleService.
- * 
- * ## When functions
- * Used by the modelReader/WriterRule.when property to determine if the value is invalid and needs to be replaced.
- * 
- * Each registered function signature: (value: any) => boolean
- * Returns true when the value is considered invalid and replacement is needed.
- * 
- * Pre-registered on both reader and writer:
- *   + whenUndefined: 'undefined': true when value === undefined.
- *   + whenNullOrUndefined: 'nullorundefined': true when value === null or value === undefined.
- *   + whenZero: '0' or 'zero': true when value === 0.
- *   + whenZeroOrNull: '0ornull' or 'zeroornull': true when value === null or value === 0.
- *   + whenZeroNullOrUndefined: '0nullorundefined' or 'zeronullorundefined': true when value === null or value === 0 or value === undefined.
- *   + whenEmptyString: '' or 'emptystring': true when value === ''.
- *   + whenEmptyStringOrNull: 'emptystringornull': true when value === null or value === ''.
- *   + whenEmptyStringNullOrUndefined: 'emptystringnullorundefined': true when value === null or value === '' or value === undefined.
- * 
- * Example function:
- * ```ts
- * function isNegative(value: any): boolean {
- *     return typeof value === 'number' && value < 0;
- * }
- * ```
- * Registered in the factory:
- * ```ts
- * jivsServices.modelWriterRuleService.registerWhenFunction('isNegative', isNegative);
- * ```
- * ## Then functions
- * Used by the modelWriterRule.then property to determine what to do with the value identified by When functions.
- * 
- * Each registered function signature: (value: any) => { omit: boolean; value?: any }
- * Because it is passed the original value, it can return a modified value, or an entirely new value. It can also return a flag to omit the property from being written.
- * When omit is true, the property is not written. When false, the returned value is written.
- * 
- * Pre-registered on reader:
- *   + thenUndefined: 'unassigned' or 'undefined': writes undefined.
- *   + thenNull: 'null': writes null.
- *   + thenKeep: 'keep': writes the original value unchanged.
- * 
- * Pre-registered on writer:
- *   + thenOmit: 'omit': { omit: true } — skips the property.
- *   + thenKeep: 'keep': writes the original value unchanged.
- *   + thenUndefined: 'undefined': writes undefined.
- *   + thenNull: 'null': writes null.
- *   + thenZero: '0': writes 0.
- *   + thenEmptyString: '' or 'emptystring': writes ''.
- *   + thenFalse: 'false': writes false.
- *   + thenTrue: 'true': writes true.
- *   + thenEmptyArray: '[]' or 'emptyarray': writes [].
- *   + thenEmptyObject: '{}' or 'emptyobject' : writes {}.
- * 
- * Example function:
- * ```ts
- * function replaceWithNegativeOne(value: any): { omit: boolean; value?: any } {
- *     return { omit: false, value: -1 };
- * }
- * ```
- * Registered in the factory:
- * ```ts
- * jivsServices.modelWriterRuleService.registerThenFunction('replaceWithNegativeOne', replaceWithNegativeOne);
- * ```
  * @module jivs-engine/Types/ModelReaderAndWriter
  */
 
@@ -239,111 +167,6 @@ export interface IModelWriter
     write(): void;
 }
 
-/**
- * Contains the pair of settings that define a rule for the ModelReader and ModelWriter.
- * Both properties are names to locate the functions in the ModelReader/WriterRuleService. 
- * The When function is used to determine if the value is invalid and needs to be replaced. 
- * The Then function is used to determine what to do with the value identified by When functions.
- * FieldValueHostConfig.modelReaderRule and FieldValueHostConfig.modelWriterRule are of this type.
- */
-export interface ModelReaderWriterRule
-{
-    /**
-     * The name of the function registered in ModelReader/WriterRuleService to determine 
-     * if the value is invalid and needs to be replaced.
-     */
-    when: string;
-    /**
-     * The name of the function registered in ModelReader/WriterRuleService to determine 
-     * what to do with the value identified by the When function.
-     */
-    then: string;
-}
-
-/**
- * Pattern for the When function used in ModelReader/WriterRuleService. 
- * Returns true when the value is considered invalid and needs to be replaced, false when the value is valid.
- */
-export type ModelReaderWriterWhenFunction = (value: any) => boolean;
-/**
- * Pattern for the Then function used in ModelReader/WriterRuleService.
- * It is called when the When function returns true and provides the replacement value or
- * indicates if the value should be omitted.
- */
-export type ModelReaderWriterThenFunction = (value: any) => { omit?: boolean; value?: any };
-
-/**
- * The ModelReaderWriterRuleService resolves the rules used by either 
- * ModelReader or ModelWriter and is responsible for registering and retrieving the When and Then functions.
- * - resolve() takes a rule (ModelReaderWriterRule) and a value and returns either the original value, the adjusted value, or a skip flag indicating the value should not be assigned to the ValueHost.
- * - when() and then() retrieve and execute the When and Then functions by name.
- * - registerWhenFunction() and registerThenFunction() register the When and Then functions by name.
- * 
- * There are two implementations: ModelReaderWriterRuleService and ModelWriterRuleService.
- * Each has its own set of pre-registered functions.
- * They are registered in JivsServices and can be accessed via 
- * jivsServices.modelReaderRuleService and jivsServices.modelWriterRuleService.
- * It supports case-insensitive name lookup.
- */
-export interface IModelReaderWriterRuleService extends IService
-{
-    /**
-     * With a known model property name, value and rule, evaluate and return
-     * either the original value, the adjusted value, or a skip flag indicating the value 
-     * should not be assigned to the ValueHost.
-     * @param modelPropertyName 
-     * @param modelPropertyValue 
-     * @param rule 
-     * @param valueHost 
-     * @param readerWriter 'Reader' or 'Writer' to indicate which service is calling this function. 
-     * This is used for logging.
-     * @returns An object with either skip: true, or adjustedValue: any. 
-     * If skip is true, the value will be ignored.
-     */
-    resolve(modelPropertyName: string, modelPropertyValue: any,
-        rule: ModelReaderWriterRule, valueHost: IFieldValueHost,
-        readerWriter: 'Reader' | 'Writer'): { skip?: boolean, adjustedValue?: any; }
-    /**
-     * Retrieves the When function by its name.
-     * @param name The name of the When function to retrieve.
-     * @returns The When function if found, otherwise undefined.
-     */
-    getWhen(name: string): ModelReaderWriterWhenFunction | undefined;
-    /**
-     * Executes the When function by its name with the provided value.
-     * @param name The name of the When function to execute.
-     * @param value The value to pass to the When function.
-     * @returns True when the value is considered invalid and needs to be replaced, false when the value is valid.
-     * Undefined if the function is not found in a case-insensitive lookup.
-     */
-    when(name: string, value: any): boolean | undefined;
-    /**
-     * Retrieves the Then function by its name.
-     * @param name The name of the Then function to retrieve.
-     * @returns The Then function if found, otherwise undefined.
-     */
-    getThen(name: string): ModelReaderWriterThenFunction | undefined;
-    /**
-     * Executes the Then function by its name with the provided value.
-     * @param name The name of the Then function to execute.
-     * @param value The value to pass to the Then function.
-     * @returns The result of the Then function if found, otherwise undefined.
-     */
-    then(name: string, value: any): { omit?: boolean; value?: any } | undefined;
-
-    /**
-     * Registers a When function with the given name.
-     * @param name The name of the When function to register.
-     * @param func The When function to register.
-     */
-    registerWhenFunction(name: string, func: ModelReaderWriterWhenFunction): void;
-    /**
-     * Registers a Then function with the given name.
-     * @param name The name of the Then function to register.
-     * @param func The Then function to register.
-     */
-    registerThenFunction(name: string, func: ModelReaderWriterThenFunction): void;
-}
 
 /**
  * ObjectFinder lets us supply a textual syntax to locating the object that hosts the desired property.
@@ -363,5 +186,5 @@ export interface IObjectFinder
      * @param path The textual path to the desired property.
      * @returns An object containing the found object and the property name, or undefined if not found.
      */
-    find(model: object | Array<any>, path: string): { object: object | Array<any> | undefined, propertyName: string | undefined };
+    find(model: object | Array<any>, path: string): { object: object | Array<any> | undefined, propertyName: string | undefined; };
 }

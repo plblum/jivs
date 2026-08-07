@@ -42,8 +42,8 @@ import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService'
 import { IConditionFactory } from '../Interfaces/Conditions';
 
 import { ValueHostConfigMergeService } from './ConfigMergeService';
-import { IModelReaderWriterRuleService } from '../Interfaces/ModelReaderAndWriter';
-import { ModelReaderRuleService, ModelWriterRuleService } from './ModelReaderWriterRuleService';
+import { IDataCleanupService } from '../Interfaces/DataCleanupService';
+import { DataCleanupService } from './DataCleanupService';
 /**
  * Supplies services and tools to be used as dependency injection
  * into the classes of this system. It also supplies factories.
@@ -370,48 +370,27 @@ export class JivsServices extends Services implements IJivsServices
         this.setService(ServiceName.cache, service);
     }            
 
-    //#region ModelReaderRuleService    
+    //#region DataCleanupService
     /**
-     * The ModelReaderRuleService that supports rules used by ModelReader and found on FieldValueHostConfig.modelReaderRule.
-     * It supplies a default if not setup by the user.
+     * Provides a service for cleaning up data when reading from or writing to a model.
+     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
+     * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
      */
-    public get modelReaderRuleService(): IModelReaderWriterRuleService
+    public get dataCleanupService(): IDataCleanupService
     {
-        let service = this.getService<IModelReaderWriterRuleService>(ServiceName.modelReaderRule);
+        let service = this.getService<IDataCleanupService>(ServiceName.dataCleanup);
         if (!service)
         {
-            service = new ModelReaderRuleService();
-            this.setService(ServiceName.modelReaderRule, service);
+            service = new DataCleanupService();
+            this.setService(ServiceName.dataCleanup, service);
         }
         return service;
     }
-    public set modelReaderRuleService(factory: IModelReaderWriterRuleService)
+    public set dataCleanupService(factory: IDataCleanupService)
     {
-        this.setService(ServiceName.modelReaderRule, factory);
+        this.setService(ServiceName.dataCleanup, factory);
     }
 
-    //#endregion ModelReaderRuleService
-
-    //#region ModelWriterRuleService    
-    /**
-     * The ModelWriterRuleService that supports rules used by ModelWriter and found on FieldValueHostConfig.modelWriterRule.
-     * It supplies a default if not setup by the user.
-     */
-    public get modelWriterRuleService(): IModelReaderWriterRuleService
-    {
-        let service = this.getService<IModelReaderWriterRuleService>(ServiceName.modelWriterRule);
-        if (!service)
-        {
-            service = new ModelWriterRuleService();
-            this.setService(ServiceName.modelWriterRule, service);
-        }
-        return service;
-    }
-    public set modelWriterRuleService(factory: IModelReaderWriterRuleService)
-    {
-        this.setService(ServiceName.modelWriterRule, factory);
-    }
-
-    //#endregion ModelWriterRuleService
+    //#endregion DataCleanupService
 
 }

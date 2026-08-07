@@ -64,10 +64,8 @@ import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
-import { ModelReaderRuleService, ModelWriterRuleService } from '../../src/Services/ModelReaderWriterRuleService';
-import { IModelReaderWriterRuleService, ModelReaderWriterRule } from '../../src/Interfaces/ModelReaderAndWriter';
-
-
+import { DataCleanupRule, IDataCleanupService } from '../../src/Interfaces/DataCleanupService';
+import { DataCleanupService } from '../../src/Services/DataCleanupService';
 
 
 export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true,
@@ -208,10 +206,10 @@ export class MockFieldValueHost extends MockValueHost
     getPropertyName(): string {
         throw new Error("Method not implemented.");
     }    
-    public getModelReaderRule(): ModelReaderWriterRule | undefined {
+    public getModelReaderRule(): DataCleanupRule | undefined {
         throw new Error("Method not implemented.");
     }
-    public getModelWriterRule(): ModelReaderWriterRule | undefined {
+    public getModelWriterRule(): DataCleanupRule | undefined {
         throw new Error("Method not implemented.");
     }    
     validate(options?: ValidateOptions): ValueHostValidateResult {
@@ -333,8 +331,7 @@ export class MockJivsServices implements IJivsServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
-        this.modelReaderRuleService = new ModelReaderRuleService();
-        this.modelWriterRuleService = new ModelWriterRuleService();
+        this.dataCleanupService = new DataCleanupService();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -548,23 +545,15 @@ export class MockJivsServices implements IJivsServices
     }
     private _cachingService!: ICachingService;
 
-    public get modelReaderRuleService(): IModelReaderWriterRuleService
+    public get dataCleanupService(): IDataCleanupService
     {
-        return this._modelReaderRuleService;
+        return this._dataCleanupService;
     }
-    public set modelReaderRuleService(service: IModelReaderWriterRuleService)
+    public set dataCleanupService(service: IDataCleanupService)
     {
-        this._modelReaderRuleService = service;
+        this._dataCleanupService = service;
     }
-    private _modelReaderRuleService!: IModelReaderWriterRuleService;
-    
-    public get modelWriterRuleService(): IModelReaderWriterRuleService {
-        return this._modelWriterRuleService;
-    }
-    public set modelWriterRuleService(service: IModelReaderWriterRuleService) {
-        this._modelWriterRuleService = service;
-    }
-    private _modelWriterRuleService!: IModelReaderWriterRuleService;
+    private _dataCleanupService!: IDataCleanupService;
 }
 
 /**

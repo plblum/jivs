@@ -3,10 +3,11 @@
  * @model jivs-engine/AbstractClasses/ModelReaderBase
  */
 
+import { DataCleanupResolution, DataCleanupRule } from '../Interfaces/DataCleanupService';
 import { FieldValueHostSetValueOptions, IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import { IModelReader, IObjectFinder, ModelReaderWriterRule } from '../Interfaces/ModelReaderAndWriter';
+import { IModelReader, IObjectFinder } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
@@ -17,15 +18,9 @@ import { ObjectFinder } from './ObjectFinder';
  * Base class for model readers. It reads from the model's properties and writes
  * to the ValueHosts.
  * 
- * Supports objects and arrays as the model.
- * Uses a syntax for the FieldValueHostConfig.propertyName that can find child
- * elements:
- * - "name" - resolves to a property on the model object
- * - "[0].name" requires the model to be an array, and resolves to the first element of that array.
- * - "name1.name2" - property name1 in the model contains a child with property name2.
- * - "name1[0].name2" - property name1 in the model contains a child that is an array, 
- *    and the first element of that array contains a property name2.
- * - "name1.name2.name3" - property name1 in the model contains a child with property name2, which contains a child with property name3.
+ * - Supports objects and arrays as the model.
+ * - Uses the DataCleanupService to determine if a value should be adjusted or skipped when reading from the model.
+ * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  */
 export abstract class ModelReaderBase<T extends object> implements IModelReader
 {
@@ -148,15 +143,15 @@ export abstract class ModelReaderBase<T extends object> implements IModelReader
             let rule = this.getRule(valueHost);
             if (rule)
             {
-                let result = this.adjustValueByRule(modelPropertyName, modelPropertyValue, rule, valueHost);
+                let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
                 if (result.skip)
                     continue;
-                modelPropertyValue = result.adjustedValue;
+                modelPropertyValue = result.value;
             }
             // special case: if the model property is undefined and there is no rule, we take no action
             else if (rule === undefined && modelPropertyValue === undefined)
             {
-                this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' is undefined. ValueHost '${ valueHostName }' will be treated as unassigned.`);
+                this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
                 continue;
             }
 
@@ -181,21 +176,19 @@ export abstract class ModelReaderBase<T extends object> implements IModelReader
     }
 
     /**
-     * With a known model property name, value and rule, evaluate and return
-     * either the original value, the adjusted value, or a skip flag indicating the value 
+     * Evaluate the value of the model property and any rule that applies to it.
+     * Return either the original value, the adjusted value, or a skip flag indicating the value 
      * should not be assigned to the ValueHost.
-     * @param modelPropertyName 
      * @param modelPropertyValue 
      * @param rule 
-     * @param valueHost 
+     * @param valueHost - while not used by DataCleanupService, it is provided for subclasses that may need to use it.
      * @returns An object with either skip: true, or adjustedValue: any. 
      * If skip is true, the value will be ignored.
      */
-    protected adjustValueByRule(modelPropertyName: string, modelPropertyValue: any,
-        rule: ModelReaderWriterRule, valueHost: IFieldValueHost): { skip?: boolean, adjustedValue?: any; }
+    protected adjustValueByRule(modelPropertyValue: any,
+        rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
     {
-        return this.services.modelReaderRuleService.resolve(
-            modelPropertyName, modelPropertyValue, rule, valueHost, 'Reader');
+        return this.services.dataCleanupService.resolve(modelPropertyValue, rule);
     }
 
     /**
@@ -260,7 +253,7 @@ export abstract class ModelReaderBase<T extends object> implements IModelReader
      * @param valueHost 
      * @returns The rule for the model property, or undefined if no rule applies.
      */
-    protected getRule(valueHost: IFieldValueHost): ModelReaderWriterRule | undefined
+    protected getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
     {
         return valueHost.getModelReaderRule();
     }
