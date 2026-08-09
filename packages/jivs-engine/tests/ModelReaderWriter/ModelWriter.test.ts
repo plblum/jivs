@@ -333,6 +333,31 @@ describe('ModelWriter', () =>
 
         });
 
+        // same but specifically calling writeOne with the ValueHost for prop1
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeOne', () =>
+        {
+            let model = { prop1: 0, prop2: 42 };
+            let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
+            valueHost.setValue(0);
+            writer.writeOne(valueHost);
+            expect(model.prop1).toBeNull();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+        });
+        // same but passes the model property name explicitly to writeOne
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeOne with explicit model property name', () =>
+        {
+            let model = { prop1: 0, prop2: 42 };
+            let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
+            valueHost.setValue(0);
+            writer.writeOne(valueHost, 'prop1');
+            expect(model.prop1).toBeNull();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+        });
+
         test('modelWriterRule does not adjust the value. Expect the original value to be set into the model', () =>
         {
             let model = { prop1: 5, prop2: 42 };

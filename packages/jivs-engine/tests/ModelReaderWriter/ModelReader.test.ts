@@ -382,6 +382,26 @@ describe('ModelReader', () =>
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
+        // same using readOne(valueHost) on prop1
+        test('readOne with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        {
+            let model = { prop1: 0, prop2: 42 };
+            let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
+            reader.readOne(valueHost);
+            expect(valueHost.getValue()).toBeNull();
+            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+        });
+        // same using readOne('prop1', valueHost)
+        test('readOne with a model property name and valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        {
+            let model = { prop1: 0, prop2: 42 };
+            let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
+            reader.readOne('prop1', valueHost);
+            expect(valueHost.getValue()).toBeNull();
+            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+        });
 
         test('read with a valueHost that has a rule that does not adjust the value. Expect the original value to be set into the valueHost', () =>
         {

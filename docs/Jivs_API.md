@@ -1279,6 +1279,29 @@ If you want to have it also update the text value of your inputs, wire up the `V
 builder.onTextValueChanged = myFunctionToUpdateInputs;
 let vhm = new ValueHostsManager(builder.complete());
 ```
+
+### Available operations on ModelReader
+- `read()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the rule indicates.
+- `readOne(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
+  and applying its rules before setting it in the `ValueHost`. Will skip when the rule indicates.
+- `readOne(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
+    ```ts
+    let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
+    let writer = new ModelWriter(vhm, model);
+    writer.writeOne('property1', vhm.getFieldValueHost('field1'));
+    writer.writeOne('property2', vhm.getFieldValueHost('field2'));
+    ```
+### Available operations on ModelWriter
+- `write()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the rule indicates.
+- `writeOne(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
+  and applying its rules before setting it in the model. Will skip when the rule indicates.
+    ```ts
+    let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
+    let writer = new ModelWriter(vhm, model);
+    writer.writeOne(vhm.getFieldValueHost('field1'), 'property1');
+    writer.writeOne(vhm.getFieldValueHost('field2'), 'property2');
+    ```
+
 ### Configuring the ValueHosts
 There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
 1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.

@@ -88,54 +88,110 @@ export abstract class ModelReaderBase<T extends object>
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            let modelPropertyName = valueHost.getPropertyName();
-            if (!modelPropertyName)
-                continue; // very unlikely since its value defaults to ValueHostConfig.name. So we don't waste code logging
-
-            let valueHostName = valueHost.getName();
-            this.logger.message(LoggingLevel.Debug, () => `Reading model property '${ modelPropertyName }' for ValueHost '${ valueHostName }'.`);
-            let modelPropertyResult = this.tryGetValueFromModel(modelPropertyName, valueHost);
-            if (modelPropertyResult.skip)
-            {
-                this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' does not exist in the model. ValueHost '${ valueHostName }' will be treated as unassigned.`);
-                continue;
-            }
-            let modelPropertyValue = modelPropertyResult.value;
-            let rule = this.getRule(valueHost);
-            if (rule)
-            {
-                let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
-                if (result.skip)
-                    continue;
-                modelPropertyValue = result.value;
-            }
-
-            // special case: if the model property is undefined and there is no rule, we take no action
-            else if (rule === undefined && modelPropertyValue === undefined)
-            {
-                this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
-                continue;
-            }
-
-            // we have a value to assign.
-            let options: FieldValueHostSetValueOptions = {
-                disableFormatter: this.disableFormatter,
-                skipValueChangedCallback: this.skipValueChangedCallback,
-                validate: false,
-                reset: true
-            };
-            if (modelPropertyValue !== undefined)
-            {
-                this.setValueIntoValueHost(valueHost, modelPropertyValue, options);
-                this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value assigned to ValueHost '${ valueHostName }'.`);
-            }
-
-            else
-            {
-                valueHost.setValueToUndefined(options);
-                this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value of undefined will be assigned to ValueHost '${ valueHostName }'.`);
-            }
+            this.readOne(valueHost);
         }
+    }
+
+    /**
+     * Reads the value from the model, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * The model property name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
+     * @param destination The destination ValueHost. It identifies the model property name to read from
+     * with its FieldValueHostConfig.propertyName. If that is not set, it uses the ValueHostConfig.name.
+     * @returns True if the value was successfully read, false otherwise.
+     */
+    public readOne(destination: IFieldValueHost): boolean;
+    /**
+     * Reads the value of a specified model property, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * @param modelPropertyName The name of the model property to read.
+     * @param destination The destination ValueHost.
+     * @returns True if the value was successfully read, false otherwise.
+     */
+    public readOne(modelPropertyName: string, destination: IFieldValueHost): boolean;
+    
+    public readOne(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
+    {
+        let modelPropertyName: string;
+        let destination: IFieldValueHost;
+        if (typeof arg1 === "string") {
+            modelPropertyName = arg1;
+            destination = arg2 as IFieldValueHost;
+        } else {
+            destination = arg1 as IFieldValueHost;
+            modelPropertyName = destination.getPropertyName();
+            if (!modelPropertyName)
+                return false; // very unlikely since its value defaults to ValueHostConfig.name. So we don't waste code logging
+        }
+
+        let valueHostName = destination.getName();
+        this.logger.message(LoggingLevel.Debug, () => `Reading model property '${ modelPropertyName }' for ValueHost '${ valueHostName }'.`);
+
+        let modelPropertyResult = this.tryGetValueFromModel(modelPropertyName, destination);
+        if (modelPropertyResult.skip)
+        {
+            this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' does not exist in the model. ValueHost '${ destination.getName() }' will be treated as unassigned.`);
+            return false;
+        }
+        return this.applyRuleAndSetValue(modelPropertyName, modelPropertyResult.value, destination);
+    }
+
+    /**
+     * Sets the value of a model property into a specified ValueHost. It is up to the caller to resolve the model property value.
+     * It applies the rules supporting adjustments or skipping the value, and calling ValueHost.setValue if appropriate.
+     * 
+     * @param modelPropertyName The name of the model property.
+     * @param modelPropertyValue The value of the model property.
+     * @param destination The destination ValueHost or its name.
+     * @returns True if the value was successfully set, false otherwise.
+     */
+    public applyRuleAndSetValue(modelPropertyName: string, modelPropertyValue: any, destination: IFieldValueHost | string): boolean
+    {
+        let valueHost: IFieldValueHost;
+        if (typeof destination === "string") {
+            valueHost = this.valueHostsManager.getFieldValueHost(destination)!;
+            if (!valueHost)
+            {
+                this.logger.message(LoggingLevel.Error, () => `Cannot find ValueHost '${ destination }' to assign model property '${ modelPropertyName }' value.`);
+                return false;
+            }
+        } else {
+            valueHost = destination;
+        }
+        let valueHostName = valueHost.getName();
+        let rule = this.getRule(valueHost);
+        if (rule)
+        {
+            let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
+            if (result.skip)
+                return false;
+            modelPropertyValue = result.value;
+        }
+
+        // special case: if the model property is undefined and there is no rule, we take no action
+        else if (rule === undefined && modelPropertyValue === undefined)
+        {
+            this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
+            return false;
+        }
+
+        // we have a value to assign.
+        let options: FieldValueHostSetValueOptions = {
+            disableFormatter: this.disableFormatter,
+            skipValueChangedCallback: this.skipValueChangedCallback,
+            validate: false,
+            reset: true
+        };
+        if (modelPropertyValue !== undefined)
+        {
+            this.setValueIntoValueHost(valueHost, modelPropertyValue, options);
+            this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value assigned to ValueHost '${ valueHostName }'.`);
+        }
+
+        else
+        {
+            valueHost.setValueToUndefined(options);
+            this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value of undefined will be assigned to ValueHost '${ valueHostName }'.`);
+        }
+        return true;
     }
 
     /**

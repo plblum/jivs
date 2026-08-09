@@ -48,32 +48,58 @@ export abstract class ModelWriterBase<T extends object>
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            let modelPropertyName = valueHost.getPropertyName();
-            if (!modelPropertyName)
-                continue; // very unlikely since its value defaults to ValueHostConfig.name. So we don't waste code logging
-
-            let valueHostName = valueHost.getName();
-            this.logger.message(LoggingLevel.Debug, () => `Preparing to move value from ValueHost '${ valueHostName }' to model property '${ modelPropertyName }'.`);
-            let valueFromHost = valueHost.getValue();
-            let modelPropertyValue = valueFromHost;
-            let rule = this.getRule(valueHost);
-            if (rule)
-            {
-                let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
-                if (result.skip)
-                    continue;
-                modelPropertyValue = result.value;
-            }
-
-            // special case: if the value is undefined and there is no rule, we take no action
-            else if (rule === undefined && modelPropertyValue === undefined)
-            {
-                this.logger.message(LoggingLevel.Warn, () => `ValueHost '${ valueHostName }' has no value and no rule applied to Model property '${ modelPropertyName }'.`);
-                continue;
-            }
-            this.setValueIntoModel(modelPropertyName, modelPropertyValue, valueHost);
-            this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value was assigned from ValueHost '${ valueHostName }'.`);
+            this.writeOne(valueHost);
         }
+    }
+
+    /**
+     * Writes the value from the given ValueHost to the specified model property.
+     * Apply the rules to adjust or skip the value before writing it to the model.
+     *
+     * @param source The ValueHost containing the value to write.
+     * @param modelPropertyName The name of the model property to write to.
+     * When not provided, it is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
+     */
+    public writeOne(source: IFieldValueHost, modelPropertyName?: string): boolean 
+    {
+        if (!modelPropertyName) {
+            modelPropertyName = source.getPropertyName();
+            if (!modelPropertyName) 
+                return false;   // rare case: no property name to write to
+        }
+        let valueHostName = source.getName();
+        this.logger.message(LoggingLevel.Debug, () => `Preparing to move value from ValueHost '${ valueHostName }' to model property '${ modelPropertyName }'.`);
+
+        return this.applyRuleAndSetValue(source, modelPropertyName);
+    }
+
+    /**
+     * Gets the value from the source, applies the rules, and sets it into the model property if appropriate.
+     * @param source The source ValueHost to get the value from.
+     * @param modelPropertyName The name of the model property to set.
+     * @returns True if the value was successfully written, false otherwise.
+     */
+    public applyRuleAndSetValue(source: IFieldValueHost, modelPropertyName: string): boolean
+    {
+        let modelPropertyValue = source.getValue();
+        let rule = this.getRule(source);
+        if (rule)
+        {
+            let result = this.adjustValueByRule(modelPropertyValue, rule, source);
+            if (result.skip)
+                return false;
+            modelPropertyValue = result.value;
+        }
+
+        // special case: if the value is undefined and there is no rule, we take no action
+        else if (rule === undefined && modelPropertyValue === undefined)
+        {
+            this.logger.message(LoggingLevel.Warn, () => `ValueHost '${ source.getName() }' has no value and no rule applied to Model property '${ modelPropertyName }'.`);
+            return false;
+        }
+        this.setValueIntoModel(modelPropertyName, modelPropertyValue, source);
+        this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value was assigned from ValueHost '${ source.getName() }'.`);
+        return true;
     }
 
     /**
