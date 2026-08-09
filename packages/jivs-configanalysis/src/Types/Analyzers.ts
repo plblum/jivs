@@ -6,9 +6,9 @@
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValidator, ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { AnalysisArgs } from './ConfigAnalysis';
 import {
     ServiceWithLookupKeyCAResultBase, OneClassRetrieval, IConfigAnalysisResults,
@@ -66,7 +66,7 @@ export interface IDataTypeComparerAnalyzer {
  * The implementation is supplied to the IConfigAnalyzer and IConfigPropertyAnalyzer
  * instances, as they will utilitize its methods.
  */
-export interface IAnalysisResultsHelper<TServices extends IValidationServices> {
+export interface IAnalysisResultsHelper<TServices extends IJivsServices> {
 
     analysisArgs: AnalysisArgs<TServices>;
 

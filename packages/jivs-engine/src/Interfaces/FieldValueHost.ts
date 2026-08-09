@@ -1,13 +1,14 @@
 /**
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
-import { IDataTypeParser } from './DataTypeParsers';
+import { ValueAdapterRule } from './ValueAdapterService';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
-import {
-    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
-    ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState
-} from './ValidatorsValueHostBase';
-import { SetValueOptions } from './ValueHost';
+import
+    {
+        IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+        ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
+        ValidatorsValueHostSetValueOptions
+    } from './ValidatorsValueHostBase';
 
 
 /**
@@ -26,7 +27,7 @@ import { SetValueOptions } from './ValueHost';
  * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
  * the text value. Most other Conditions evaluate the typed value.
  *
- * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * When configuring the ValueHostsManager for a FieldValueHost, use the builder's field() method.
  * ```ts
  * builder.field("firstName", LookupKey.String);
  * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });
@@ -44,7 +45,10 @@ import { SetValueOptions } from './ValueHost';
  * };
  * ```
 */
-export interface IFieldValueHost extends IValidatorsValueHostBase {
+export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
+    extends IValidatorsValueHostBase<TOptions>
+{
+
     /**
      * Gets the current text value exactly as last provided.
      * This is the string representation before parsing into the typed value.
@@ -88,13 +92,15 @@ export interface IFieldValueHost extends IValidatorsValueHostBase {
      * reset - Clear validation state, unless validate = true, and set IsChanged to false.
      * disableParser - When true, do not use the DataTypeParser to resolve the typed value
      *   from the text value.
-     * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *   resolved from the text value, provide a user-friendly error message here. It will appear
-     *   in the Category=Require validator within the {ConversionError} token. A DataTypeParser
-     *   may also set conversionErrorTokenValue when it reports an error.
+     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *      an error. Assign this object to contain the error message and other info.
+     *      Internally Jivs will provide a Validator with the error message to report the error.
+     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      use the errorCode value of 'InjectedError' to localize the error message. 
+     *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    setTextValue(textValue: string | undefined, options?: SetTextValueOptions): void;
+    setTextValue(textValue: string | undefined, options?: TOptions): void;
 
     /**
      * Replaces both the typed value and the text value at the same time,
@@ -113,27 +119,20 @@ export interface IFieldValueHost extends IValidatorsValueHostBase {
      * @param options -
      *    * validate - Invoke validation after setting the values.
      *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     *    * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *    *    resolved from the text value, provide a user-friendly error message here. It will
-     *    *    appear in the Category=Require validator within the {ConversionError} token.
-     *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     *    *  injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *          an error. Assign this object to contain the error message and other info.
+     *          Internally Jivs will provide a Validator with the error message to report the error.
+     *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *          use the errorCode value of 'InjectedError' to localize the error message. 
+     *          You can also provide a summaryMessage for use in a summary of validation errors.
      */
-    setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions): void;
-
+    setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void;
 
     /**
      *Returns true for a condition with Category=Require. UI can use it to 
      * display a "requires a value" indicator.
      */
     required: boolean;
-
-
-     /**
-      * Returns the ConversionErrorTokenValue supplied by the latest call
-      * to setValue() or setValues(). Its null when not supplied or has been cleared.
-      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-      */
-    getConversionErrorMessage(): string | null;
     
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
@@ -145,7 +144,18 @@ export interface IFieldValueHost extends IValidatorsValueHostBase {
      * this can be undefined.
      * Helps mapping between model and valuehost.
      */
-    getPropertyName(): string;        
+    getPropertyName(): string;      
+    
+    /**
+     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    getModelReaderRule(): ValueAdapterRule | undefined;
+    /**
+     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    getModelWriterRule(): ValueAdapterRule | undefined;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -178,40 +188,79 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * 
      * Note that the options object for setTextValue has a property called disableParser
      * which if set to true will prevent parsing too.
-     * 
-     * Alternatively, you can leave this undefined and use parserCreator to create the DataTypeParser
-     * instance you want.
      */
     parserLookupKey?: string | null;
 
     /**
-     * Alternative to parserLookupKey that establishes a parser used when calling setTextValue()
-     * to convert the input value into the native value. It results in calling setValue() with the native value,
-     * or if the parser had an error, calling setValueToUndefined() and retaining
-     * the error information to show in the error message.
+     * A DataTypeFormatter object is used when calling setValue() to convert
+     * the native value into the text value when supplied.
+     * Effectively if setup, setValue() will call the formatter and then
+     * call setValues() with both native and text values instead of setValue() alone.
      * 
-     * It provides a callback function that is expected to create an object that implements IDataTypeParser
-     * or return null if no parser is appropriate.
+     * The value here is a lookup key, and is usually one of the Data Type lookup keys, 
+     * like LookupKey.Integer for an integer-specific formatter. However, individual
+     * DataTypeFormatter classes may have a unique lookup key to assign here.
+     * - Assign to the lookup key to use a formatter that supports the lookup key.
+     * - Leave it undefined to use the dataType configuration property (for a Data Type Lookup Key)
+     *   on the ValueHost, but remember to assign that property.
+     * - Assign to null to prevent any formatter from being setup.
      * 
-     * While parserLookupKey knows how to fallback to another data type using LookupKeyFallbackService,
-     * this parser function completely ignores DataTypeParserService.parse where that happens.
-     * Instead, its up to you to handle any fallbacks. You should also expect that the parse()
-     * functions lookupKey parameter may be null if parserLookupKey and dataType properties were not setup.
-     * 
-     * Your parser object's supports() method will be called. If it returns false, your
-     * object won't be used, and it will fallback to the parserLookupKey.
-     * @param valueHost
-     * @returns Object that implements IDataTypeParser
-     * or return null if no parser is appropriate
+     * Note that the options object for setValue has a property called disableFormatter
+     * which if set to true will prevent formatting too.
      */
-    parserCreator?: (valueHost: IFieldValueHost) => IDataTypeParser<any> | null;
+    formatterLookupKey?: string | null;
+
+    /**
+     * When true and both formatters and parsers are setup, the text value will be reformatted when the typed value is set
+     * with setTextValue(). If the reformatted value differs from the original text value, the ValueHostsManager.onTextValueChanged callback 
+     * will be invoked to notify the application of the change.
+     * 
+     * Use this when you want to ensure that the text value is always in a consistent format, such as when a user inputs a date in a different format than expected.
+     * For example, if the expected format is "MM/DD/YYYY" and the user inputs "1/2/2023", it will be reformatted to "01/02/2023".
+     * 
+     * If not assigned, it will default to the Behaviors.reformatTextValue property of the ValueHostsManager. If both are not assigned, it will default to false
+     * as you have to opt-in.
+     * 
+     * ```ts
+     * build.field("birthDate", LookupKey.Date, { 
+     *  reformatTextValue: true,
+     *  parserLookupKey: LookupKey.Date,
+     *  formatterLookupKey: LookupKey.Date});
+     * ```
+     * setTextValue("1/2/2023") -> 
+     *      parsed to native value = Date(2023, 0, 2) -> 
+     *          formatted to text value = "01/02/2023" -> 
+     *              onTextValueChanged callback invoked with new text value = "01/02/2023"
+     * This option has no impact if the formatting is disabled through the Behaviors.disableFormattingOnValueChange property 
+     * of the ValueHostsManager or the options.disableFormatter property of setTextValue().
+     */
+    reformatTextValue?: boolean;
 
     /**
      * The actual property name on the model. If its the same as Config.name,
      * this can be undefined.
      * Helps mapping between model and valuehost.
+     * 
+     * When using ModelReader or ModelWriter, it gets this value and allows for a syntax
+     * that refers to child objects and arrays. Here are some examples:
+     * - "name" - resolves to a property called 'name' on the model object
+     * - "name1.name2" - property name1 in the model contains a child with property name2.
+     * - "name1[0].name2" - property name1 in the model contains a child that is an array, 
+     *    and the first element of that array contains a property name2.
+     * - "name1.name2.name3" - property name1 in the model contains a child with property name2, which contains a child with property name3.
      */
     propertyName?: string;    
+
+    /**
+     * Supports the ModelReader to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    modelReaderRule?: ValueAdapterRule;
+    /**
+     * Supports the ModelWriter to determine how to handle the native value when writing to the model. 
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    modelWriterRule?: ValueAdapterRule;    
 }
 
 /**
@@ -227,15 +276,6 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      * Will be 'undefined' if the value has not been retrieved.
      */
     textValue?: string | undefined;
-
-
-    /**
-     * When converting the input field/element value to native and there is an error
-     * it should be saved here. It can be displayed as part of the DataTypeCheckCondition's
-     * error message token {ConversionError}.
-     * Cleared when setting the value without an error.
-     */
-    conversionErrorTokenValue?: string;
 
 }
 
@@ -262,12 +302,20 @@ export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback
 /**
  * Additional options for setTextValue().
  */
-export interface SetTextValueOptions extends SetValueOptions
+export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetValueOptions
 {
+   
     /**
-     * When true, do not use the DataTypeParser to convert the input value into its native value.
+     * When true, do not use the DataTypeParser to convert 
+     * the input value into its native value with setTextValue().
      */
     disableParser?: boolean;
+
+    /**
+     * When true, do not use the DataTypeFormatter to convert 
+     * the native value into its text value with setValue().
+     */
+    disableFormatter?: boolean;
 }
 
 /**

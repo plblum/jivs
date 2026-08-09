@@ -2,18 +2,18 @@ import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost }
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValidationManager } from "../../src/Interfaces/ValidationManager";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 describe('StaticValueHost constructor', () => {
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
         let testItem: StaticValueHost | null = null;
-        expect(() => testItem = new StaticValueHost(vm, {
+        expect(() => testItem = new StaticValueHost(vhm, {
             name: 'Field1',
             valueHostType: ValueHostType.Static,
             label: 'Label1'
@@ -22,7 +22,7 @@ describe('StaticValueHost constructor', () => {
             value: undefined
         })).not.toThrow();
 
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vhm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
@@ -83,8 +83,8 @@ describe('StaticValueHostGenerator members', () => {
         })).toBe(false);
     });
     test('create returns instance of StaticValueHost with VM, Config and State established', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
         let config: StaticValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Static,
@@ -96,7 +96,7 @@ describe('StaticValueHostGenerator members', () => {
         };
         let testItem = new StaticValueHostGenerator();
         let vh: IStaticValueHost | null = null;
-        expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
+        expect(() => vh = testItem.create(vhm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(StaticValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config values
@@ -153,8 +153,8 @@ describe('toIGatherValueHostNames function', () => {
 });
 describe('toIStaticValueHost function', () => {
     test('Passing actual StaticValueHost matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new StaticValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new StaticValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1'
             },
@@ -165,8 +165,8 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
     test('Passing actual FieldValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new FieldValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new FieldValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []
@@ -180,8 +180,8 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });  
     test('Passing actual CalcValueHost returns null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new CalcValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new CalcValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 calcFn: (host, manager) => null
@@ -193,7 +193,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });        
     class TestIStaticValueHostImplementation implements IStaticValueHost {
-        validationManager: IValidationManager = {} as IValidationManager;
+        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
         getName(): string {
             throw new Error("Method not implemented.");
@@ -239,8 +239,8 @@ describe('toIStaticValueHost function', () => {
     });
  
     test('FieldValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new FieldValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new FieldValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: []
@@ -254,8 +254,8 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });                
     test('CalcValueHost return null.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new CalcValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new CalcValueHost(vhm, {
                 name: 'Field1',
                 label: 'Label1',
                 calcFn: (host, mgr)=> 0

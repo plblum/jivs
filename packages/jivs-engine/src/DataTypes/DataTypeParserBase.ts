@@ -1,5 +1,5 @@
 /**
- * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser }
  * @module jivs-engine/DataTypes/AbstractClasses/DataTypeParsers
  */
 
@@ -8,7 +8,7 @@ import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { assertNotNull, assertWeakRefExists, CodingError } from '../Utilities/ErrorHandling';
 import { escapeRegExp, hasLetters, hasMultipleOccurances, onlyTheseCharacters } from '../Utilities/Utilities';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 
 
 /**
@@ -89,23 +89,23 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
     /**
      * Services accessor.
      * Note: Not passed into the constructor because this object should be created before
-     * ValidationServices itself. So it gets assigned when ValidationService.dataTypeFormatterService is assigned a value.
+     * JivsServices itself. So it gets assigned when JivsServices.dataTypeFormatterService is assigned a value.
      */
-    public get services(): IValidationServices
+    public get services(): IJivsServices
     {
-        assertWeakRefExists(this._services, 'Register with ValidationServices.dataTypeFormatterService first.');
+        assertWeakRefExists(this._services, 'Register with JivsServices.dataTypeFormatterService first.');
         return this._services!.deref()!;
     }
-    public set services(services: IValidationServices)
+    public set services(services: IJivsServices)
     {
         assertNotNull(services);
-        this._services = new WeakRef<IValidationServices>(services);
+        this._services = new WeakRef<IJivsServices>(services);
     }
     protected get hasServices(): boolean
     {
         return this._services !== null && this._services.deref() !== undefined;
     }
-    private _services: WeakRef<IValidationServices> | null = null;    
+    private _services: WeakRef<IJivsServices> | null = null;    
 
     /**
      * The default for the options.emptyStringResult when the user doesn't supply it.
@@ -187,6 +187,35 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
  * @param cultureId 
  */
     protected abstract parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType | null>;
+
+    /**
+     * Utility to use when the parser needs to return an error in DataTypeResolution. 
+     * It will use the errorCode property to provide a default errorCode if one is not supplied.
+     * Error messages will have a generated localization key based on the LookupKey of the parser:
+     * {errorCode}_{LookupKey}_l10n
+     * @param message - The error message to return in the DataTypeResolution.
+     * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
+     * @returns 
+     */
+    protected returnError(message: string, errorCode?: string): DataTypeResolution<TDataType> 
+    {
+        if (!errorCode)
+            errorCode = this.defaultErrorCode;
+        return {
+            errorDetails: {
+                errorMessage: message,
+                errorMessagel10n: `${errorCode}_${this.supportedLookupKey}_l10n`,
+                errorCode: errorCode
+            }
+        };
+    }
+
+    protected get defaultErrorCode(): string
+    {
+        return DataTypeParserBase.ParserErrorCode;
+    }
+
+    public static readonly ParserErrorCode = 'ParserError';
 }
 
 /**
@@ -241,7 +270,7 @@ export abstract class CleanUpStringParserBase<TOptions extends CleanUpStringPars
             new RegExp('[' + escapeRegExp(options.stripTheseCharacters) + ']', 'g') : 
             null;        
     }
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
         if (options.compressWhitespace === undefined)
@@ -260,7 +289,7 @@ export abstract class CleanUpStringParserBase<TOptions extends CleanUpStringPars
      * @param dataTypeLookupKey 
      * @param cultureId - Such as 'en-US' and 'en'
      */
-    protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
+    protected override cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
 
         text = super.cleanText(text, dataTypeLookupKey, cultureId);
         if (this._stripTheseCharactersRegExp) {
@@ -333,7 +362,7 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
      * @param text 
      * @returns 
      */
-    public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+    public override supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
         if (super.supports(dataTypeLookupKey, cultureId, text)) {
             text = this.cleanText(text, dataTypeLookupKey, cultureId);
             if (text.length === 0)
@@ -362,7 +391,7 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
         const pattern = re.exec(text);
         if (pattern)
             return this.processPattern(pattern, text, dataTypeLookupKey, cultureId);
-        return { errorMessage: this.patternDidNotMatchMessage() };
+        return this.returnError(this.patternDidNotMatchMessage());
     }
 
     protected abstract processPattern(pattern: RegExpExecArray, text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType>;
@@ -404,7 +433,7 @@ export abstract class SpecificCulturesPatternParserBase<TDataType, TOptions exte
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    public override isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
     {
         if (!super.isCompatible(dataTypeLookupKey, cultureId))
             return false;
@@ -452,7 +481,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
         assertNotNull(format.order, 'order');
         this._utc = utc;
     }
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
         if (typeof options.twoDigitYearBreak !== 'number')
@@ -501,7 +530,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
         else
             attempt = new Date(year, month, day);
         if (isNaN(attempt.getTime()))
-            return { errorMessage: this.patternDidNotMatchMessage() };
+            return this.returnError(this.patternDidNotMatchMessage());
         // double-check for overflows
         if (this.utc && attempt.getUTCFullYear() === year &&
             attempt.getUTCMonth() === month &&
@@ -511,7 +540,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
             attempt.getMonth() === month &&
             attempt.getDate() === day)
             return { value: attempt };
-        return { errorMessage: DatePatternParserBase.invalidDateMessage };
+        return this.returnError(DatePatternParserBase.invalidDateMessage, DatePatternParserBase.invalidDateErrorCode);
     }
     protected patternDidNotMatchMessage(): string
     {
@@ -525,6 +554,7 @@ export abstract class DatePatternParserBase<TOptions extends DateTimeCultureInfo
      * day is after the last day of the month.
      */
     public static readonly invalidDateMessage = 'Not a valid date';
+    public static readonly invalidDateErrorCode = 'InvalidDate';
 }
 
 /**
@@ -615,7 +645,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         this._stripTheseStringsRegExp = undefined;       
     }
 
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
     }
@@ -675,13 +705,13 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         return new RegExp(pattern, 'g');
     }
 
-    public parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
+    public override parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
         text = super.applyTrimming(text);
         if (text.length === 0)
             return { value: this.options.emptyStringResult };        
 
         if (this.cannotBeNumber(text))
-            return { errorMessage: this.patternDidNotMatchMessage() };
+            return this.returnError(this.patternDidNotMatchMessage());
         return super.parse(text, dataTypeLookupKey, cultureId);
     }
 
@@ -697,7 +727,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
      * @param cultureId 
      * @returns 
      */
-    protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
+    protected override cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string {
         text = super.cleanText(text, dataTypeLookupKey, cultureId);
 
         const isNegative = this.isNegative(text);
@@ -737,7 +767,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
      * @param text 
      * @returns 
      */
-    protected responsibleForThisText(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+    protected override responsibleForThisText(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
        
         // we'll always handle anything that cannot be converted to a number.
         // The user requested the NumberParser. Therefore it should return an error message
@@ -880,7 +910,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
 
     }
 
-    protected initUndefinedOptions(options: TOptions): void
+    protected override initUndefinedOptions(options: TOptions): void
     {
         super.initUndefinedOptions(options);
     }
@@ -903,7 +933,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    public override isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
     {
         if (!super.isCompatible(dataTypeLookupKey, cultureId))
             return false;
@@ -924,7 +954,7 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
         if (this._falseValuesLC.includes(text))
             return { value: false };
 
-        return { errorMessage: this.patternDidNotMatchMessage() };
+        return this.returnError(this.patternDidNotMatchMessage());
 
     }    
     protected patternDidNotMatchMessage(): string

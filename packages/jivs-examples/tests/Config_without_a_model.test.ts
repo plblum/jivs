@@ -3,7 +3,7 @@ import {
     configUsingDateRangeFormRules
 } from '../src/Config_without_a_model';
 
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 import { StaticValueHost } from '@plblum/jivs-engine/build/ValueHosts/StaticValueHost';
@@ -25,15 +25,15 @@ afterEach(() => {
 });
 
 describe('configExample', () => {
-    it('should configure validation manager correctly', () => {
+    it('should configure ValueHostsManager correctly', () => {
         // Execute configExample
-        let vm: ValidationManager;
-        expect(() => vm = configUsingDateRangeFormRules()).not.toThrow();
-        let vh1 = vm!.getValueHost('startDate');
-        let vh2 = vm!.getValueHost('endDate');
-        let vh3 = vm!.getValueHost('timeZone');
-        let vh4 = vm!.getValueHost('numOfDays');
-        let vh5 = vm!.getValueHost('diffDays');
+        let vhm: ValueHostsManager;
+        expect(() => vhm = configUsingDateRangeFormRules()).not.toThrow();
+        let vh1 = vhm!.getValueHost('startDate');
+        let vh2 = vhm!.getValueHost('endDate');
+        let vh3 = vhm!.getValueHost('timeZone');
+        let vh4 = vhm!.getValueHost('numOfDays');
+        let vh5 = vhm!.getValueHost('diffDays');
         expect(vh1).toBeInstanceOf(FieldValueHost);
         expect(vh1!.getDataType()).toBe(LookupKey.Date);
         expect(vh1!.getLabel()).toBe('Start date');

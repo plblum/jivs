@@ -14,7 +14,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
  * A service for identifing the Data Type Lookup Key associated with a data type
  * using {@link jivs-engine/DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
  * 
- * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices#dataTypeIdentifierService | ValidationServices.dataTypeIdentifierService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices#dataTypeIdentifierService | JivsServices.dataTypeIdentifierService}.
  */
 export class DataTypeIdentifierService extends DataTypeServiceBase<IDataTypeIdentifier>
 implements IDataTypeIdentifierService

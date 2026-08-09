@@ -23,7 +23,7 @@ It does **not** yet define final interfaces, class names, or method signatures.
 
 ### 1. Configuration is already separated
 
-`ModelRules.configure()` creates a configured `ValidationManager`.
+`ModelRules.configure()` creates a configured `ValueHostsManager`.
 
 This validation-side work starts **after** that configuration story.
 
@@ -34,7 +34,7 @@ Even when the server generates most or all of the HTML, the server does **not** 
 Instead:
 
 * the server provides HTML and any needed containers
-* the client creates/configures `ValidationManager`
+* the client creates/configures `ValueHostsManager`
 * the client wires callbacks/hooks
 * the client applies validation visuals and messages
 
@@ -169,7 +169,7 @@ Maps to: primarily Workflows A, B, and C
 
 The client keeps the same page or component instance alive across submit and response handling.
 
-Returned Jivs-facing errors are applied to the existing `ValidationManager`.
+Returned Jivs-facing errors are applied to the existing `ValueHostsManager`.
 
 Maps to: Workflow A
 
@@ -177,13 +177,13 @@ Maps to: Workflow A
 
 The page, component, or other client instance is recreated after the server returns errors.
 
-Returned Jivs-facing errors must be restored while creating a new `ValidationManager`.
+Returned Jivs-facing errors must be restored while creating a new `ValueHostsManager`.
 
 Maps to: Workflow B
 
 ### 4. API endpoint with unknown or non-Jivs consumer
 
-A consumer submits model data to a server/API boundary, but no client-side Jivs `ValidationManager` restoration is assumed.
+A consumer submits model data to a server/API boundary, but no client-side Jivs `ValueHostsManager` restoration is assumed.
 
 The server may still run Jivs validation, adapt non-Jivs errors into Jivs-facing shapes, and return structured results.
 
@@ -193,7 +193,7 @@ Maps to: Workflow C
 
 The client uses Jivs for local validation and UI updates, but the server or API does not use Jivs and returns errors in its own format.
 
-Client-side code converts those returned server/API errors into `ExternalIssuesFound` and applies them to the existing `ValidationManager`.
+Client-side code converts those returned server/API errors into `ExternalIssuesFound` and applies them to the existing `ValueHostsManager`.
 
 Maps to: Workflow D
 
@@ -233,15 +233,15 @@ Maps to: Workflows A, B, or C depending on the consumer and return path
 
 Some frameworks recreate the page or component instance as part of navigation or data reload behavior, even when the user experiences it as part of one application flow.
 
-When returned errors must be restored into a newly created `ValidationManager`, this follows the recreated-instance pattern.
+When returned errors must be restored into a newly created `ValueHostsManager`, this follows the recreated-instance pattern.
 
 Maps to: Workflow B
 
 ### 11. Server-rendered page with client-side Jivs visuals
 
-The server renders HTML and initial values, but the client still creates/configures `ValidationManager` and still applies validation visuals and messages.
+The server renders HTML and initial values, but the client still creates/configures `ValueHostsManager` and still applies validation visuals and messages.
 
-When returned errors are restored after a round trip into a newly created client-side `ValidationManager`, this follows the recreated-instance pattern.
+When returned errors are restored after a round trip into a newly created client-side `ValueHostsManager`, this follows the recreated-instance pattern.
 
 Maps to: Workflow B
 
@@ -257,7 +257,7 @@ Maps to: primarily Workflow B, and potentially other recreated-instance cases la
 
 The client uses Jivs for local validation and UI updates, and the workflow stops before the intended action when validation reports errors.
 
-Those validation results must still be reflected in the UI through the existing `ValidationManager`, even though no server submission or returned-error path occurs.
+Those validation results must still be reflected in the UI through the existing `ValueHostsManager`, even though no server submission or returned-error path occurs.
 
 Maps to: Workflow E
 
@@ -265,7 +265,7 @@ Maps to: Workflow E
 
 A user edits one logical validation target across tabs or steps. Each tab/step has its own Jivs validation group.
 
-Before the user can switch tabs or advance steps, the client calls `ValidationManager.validate(group)` for the current tab/step. If validation reports errors, the current tab/step remains active and the UI reflects those errors.
+Before the user can switch tabs or advance steps, the client calls `ValueHostsManager.validate(group)` for the current tab/step. If validation reports errors, the current tab/step remains active and the UI reflects those errors.
 
 When the user later invokes the final action, such as submit, the flow uses the normal client-side submit workflow without a validation group.
 
@@ -290,7 +290,7 @@ Maps to: primarily Workflows F, A, B, and D, and sometimes Workflow E depending 
 
 The client may receive initial or updated values from the server, an API, restored state, or another non-edit source, and those values may need to be validated and reflected in the UI even before the user edits a field.
 
-Jivs supports this through preliminary validation, such as `ValidationManager.validate({ preliminary: true })`, which the user may call whenever that behavior is appropriate.
+Jivs supports this through preliminary validation, such as `ValueHostsManager.validate({ preliminary: true })`, which the user may call whenever that behavior is appropriate.
 
 Maps to: primarily Workflow E, and sometimes Workflow B
 
@@ -298,13 +298,13 @@ Maps to: primarily Workflow E, and sometimes Workflow B
 
 Some validation results, especially `ExternalIssuesFound`, may not be naturally attached to a specific visible field.
 
-In those cases, the user is expected to provide a ValidationSummary-style UI element. `ValidationManager.onValidationState` should notify that element, and the element can obtain all current validation messages, including `ExternalIssuesFound`, through `ValidationManager.getValidationState()` or from the `onValidationState` notification itself.
+In those cases, the user is expected to provide a ValidationSummary-style UI element. `ValueHostsManager.onValidationState` should notify that element, and the element can obtain all current validation messages, including `ExternalIssuesFound`, through `ValueHostsManager.getValidationState()` or from the `onValidationState` notification itself.
 
 Maps to: primarily Workflows A, B, D, E, and F
 
 ### 18. Validation that includes asynchronous evaluation and completion waiting
 
-A validation run may start one or more asynchronous validation processes. In that case, the caller may need a helper around `ValidationManager.validate()` that resumes only after all asynchronous work started by that validation run has finished.
+A validation run may start one or more asynchronous validation processes. In that case, the caller may need a helper around `ValueHostsManager.validate()` that resumes only after all asynchronous work started by that validation run has finished.
 
 This is a narrow validation-run use case rather than a full end-to-end returned-error workflow.
 
@@ -342,13 +342,13 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
 ### Client-side "submit" phases
 
-1. Prerequisite: Client creates/configures `ValidationManager` and has provided values to ValueHost prior to submit
+1. Prerequisite: Client creates/configures `ValueHostsManager` and has provided values to ValueHost prior to submit
 
 2. Client runs Jivs validation
 
    - Assigns supplied values to ValueHosts
 
-   - Invokes ValidationManager.validate()
+   - Invokes ValueHostsManager.validate()
 
    - If ValidationState.doNotSave is true, stop.
 
@@ -356,7 +356,7 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
    - Developer decides whether to create a model object or to use other value sources for these checks
    - Client converts non-Jivs errors to `ExternalIssuesFound`
-   - ValidationManager.setExternalIssuesFound() to reflect them in the UI
+   - ValueHostsManager.setExternalIssuesFound() to reflect them in the UI
    - If ValidationState.doNotSave is true, stop
 
 4. If a model is needed for save and has not yet been created, create it.
@@ -365,7 +365,7 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
 6. Client receives server-returned validation/business-error payload
 
-7. Client reapplies returned errors into `ValidationManager`
+7. Client reapplies returned errors into `ValueHostsManager`
 
 8. Client hooks update visuals/messages
 
@@ -381,9 +381,9 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
 4. Server runs Jivs validation
 
-   - Configure and create ValidationManager
+   - Configure and create ValueHostsManager
    - Assigns supplied values to ValueHosts
-   - Invokes ValidationManager.validate()
+   - Invokes ValueHostsManager.validate()
    - If ValidationState.doNotSave is true, skip ahead to "Server prepares returned content" which at this point are only IssuesFound.
 
 5.  
@@ -392,7 +392,7 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
    - Developer decides whether to create a model object or to use other value sources for these checks
    - Server converts non-Jivs errors to `ExternalIssuesFound`
-   - If ValidationState.doNotSave  is true or externalIssueFounds were found, skip ahead to "Server prepares returned content". *Unlike the client side, we don't use ValidationManager.setExternalIssuesFound here because we need to keep them separate*
+   - If ValidationState.doNotSave  is true or externalIssueFounds were found, skip ahead to "Server prepares returned content". *Unlike the client side, we don't use ValueHostsManager.setExternalIssuesFound here because we need to keep them separate*
 
 6. Server attempts save if allowed
 
@@ -414,15 +414,15 @@ These phases should be made explicit before deciding whether Jivs needs one help
 
 ## Core use cases
 
-### UC-001 Shared configuration produces a ValidationManager
+### UC-001 Shared configuration produces a ValueHostsManager
 
-Jivs model-rules configuration creates the `ValidationManager` used by the client and/or server workflow.
+Jivs model-rules configuration creates the `ValueHostsManager` used by the client and/or server workflow.
 
 This is already handled by the configuration-side design and is the starting point for the validation-side story.
 
 ### UC-002 Client-side local validation before save
 
-The client runs Jivs validation using `ValidationManager.validate()`.
+The client runs Jivs validation using `ValueHostsManager.validate()`.
 
 This supports:
 
@@ -437,7 +437,7 @@ When the server uses Jivs, it must prepare the Jivs validation runtime before va
 This includes:
 
 * selecting the correct model rules
-* creating/configuring the `ValidationManager`
+* creating/configuring the `ValueHostsManager`
 * transferring incoming source values into the appropriate `ValueHosts`
 
 Source values may come from:
@@ -572,28 +572,28 @@ Examples:
 
 This retrieval step is separate from Jivs applying the content.
 
-### UC-013 Client reapplies returned errors into ValidationManager
+### UC-013 Client reapplies returned errors into ValueHostsManager
 
-Once the client has the returned Jivs content, the appropriate Jivs-facing path reapplies it into `ValidationManager`.
+Once the client has the returned Jivs content, the appropriate Jivs-facing path reapplies it into `ValueHostsManager`.
 
 The two main patterns are:
 
-* same-instance application through the existing `ValidationManager`, using `setIssuesFound()` and `setExternalIssuesFound()`
-* reload restoration through `ModelRules.configure()` as part of creating a new `ValidationManager`
+* same-instance application through the existing `ValueHostsManager`, using `setIssuesFound()` and `setExternalIssuesFound()`
+* reload restoration through `ModelRules.configure()` as part of creating a new `ValueHostsManager`
 
 This lets Jivs-connected UI update consistently.
 
 ### UC-014 SPA / same-instance returned-error application
 
-When the same page/component instance survives, the client can apply returned errors directly to the existing `ValidationManager`.
+When the same page/component instance survives, the client can apply returned errors directly to the existing `ValueHostsManager`.
 
 This is the simplest case.
 
 ### UC-015 Reload / recreated-instance returned-error restoration
 
-When the page/component is recreated, the old `ValidationManager` no longer exists.
+When the page/component is recreated, the old `ValueHostsManager` no longer exists.
 
-In that case, returned Jivs content is restored through `ModelRules.configure()` as part of creating a newly configured `ValidationManager`.
+In that case, returned Jivs content is restored through `ModelRules.configure()` as part of creating a newly configured `ValueHostsManager`.
 
 ### UC-016 Optional preservation of prior validation-state niceties
 
@@ -601,13 +601,13 @@ A narrower UX use case exists when Jivs shows that a previously invalid field wa
 
 If the page/component is recreated due to errors on the server side, preserving that kind of state may require additional state preservation and restoration.
 
-This appears to be optional and lower priority than restoring returned `IssuesFound` / `ExternalIssuesFound`. It should not be directly connected to IssuesFound / ExternalIssuesFound. ValidationManager already knows how to save state to a hook and take in the last state through a property on the ValidationManagerConfig which is used to create ValidationManager.
+This appears to be optional and lower priority than restoring returned `IssuesFound` / `ExternalIssuesFound`. It should not be directly connected to IssuesFound / ExternalIssuesFound. ValueHostsManager already knows how to save state to a hook and take in the last state through a property on the ValueHostsManagerConfig which is used to create ValueHostsManager.
 
 ### UC-017 Server-rendered initial values with client-side validation visuals
 
 In some apps, the server generates HTML with initial input values already present in the DOM.
 
-The client still creates/configures `ValidationManager` and still applies validation visuals.
+The client still creates/configures `ValueHostsManager` and still applies validation visuals.
 
 This may affect:
 

@@ -1,9 +1,9 @@
-# Creating ValidationServices
-Add the code of the **create_services.ts file** to your app. It provides the `createValidationServices() function` that you will need in order to create a ValidationManager. See [Configuring ValidationServices](../README.md#configuring-validationservices).
+# Creating JivsServices
+Add the code of the **create_services.ts file** to your app. It provides the `createJivsServices() function` that you will need in order to create a ValueHostsManager. See [Configuring JivsServices](../README.md#configuring-jivsservices).
 
 
-`createValidationServices()` creates and configures the `ValidationServices object`, which has extensive configuration options. Many have defaults.
-Jivs is designed to be flexible and extensible, and much of that is done within the `ValidationServices object`. You may add your own classes or replace existing ones
+`createJivsServices()` creates and configures the `JivsServices object`, which has extensive configuration options. Many have defaults.
+Jivs is designed to be flexible and extensible, and much of that is done within the `JivsServices object`. You may add your own classes or replace existing ones
 that are registered with factory services.
 
 However some configuration is always your responsibility:

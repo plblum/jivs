@@ -1,11 +1,11 @@
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { NumberDataTypeIdentifier } from '@plblum/jivs-engine/build/DataTypes/DataTypeIdentifiers';
 import { DataTypeIdentifierLookupKeyAnalyzer } from '../../src/Analyzers/DataTypeIdentifierLookupKeyAnalyzer';
 import { IdentifierServiceCAResult } from '../../src/Types/ConfigAnalysisResults';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 
 import { createAnalysisArgs } from '../TestSupport/support';
 
@@ -34,8 +34,8 @@ describe('DataTypeIdentifierLookupKeyAnalyzer', () => {
         }
     }
 
-    function setupServices() : IValidationServices {
-        let services = createValidationServicesForTesting();
+    function setupServices() : IJivsServices {
+        let services = createJivsServicesForTesting();
         services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
         services.dataTypeIdentifierService.register(new NumberHosterIdentifier());
         services.dataTypeIdentifierService.register(new NumberHosterIdentifier());

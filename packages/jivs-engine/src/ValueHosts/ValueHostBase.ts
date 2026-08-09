@@ -6,8 +6,8 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import type { IValidationManager } from '../Interfaces/ValidationManager';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
@@ -17,27 +17,29 @@ import { deepClone, deepEquals } from '../Utilities/Utilities';
 /**
  * Standard implementation of IValueHost
  */
-export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostInstanceState>
-    implements IValueHost {
-    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
-        assertNotNull(validationManager, 'validationManager');
+export abstract class ValueHostBase<TConfig extends ValueHostConfig,
+    TState extends ValueHostInstanceState,
+    TOptions extends SetValueOptions = SetValueOptions>
+    implements IValueHost<TOptions> {
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
+        assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
-        this._validationManager = new WeakRef<IValidationManager>(validationManager);
+        this._valueHostsManager = new WeakRef<IValueHostsManager>(valueHostsManager);
         this._config = config;
         this._instanceState = state;
     }
-    //#region IValidationManagerAccessor
-    public get validationManager(): IValidationManager {
-        assertWeakRefExists(this._validationManager, 'ValueHostManager disposed');
-        return this._validationManager.deref()!;
+    //#region IValueHostsManagerAccessor
+    public get valueHostsManager(): IValueHostsManager {
+        assertWeakRefExists(this._valueHostsManager, 'ValueHostManager disposed');
+        return this._valueHostsManager.deref()!;
     }
-    private readonly _validationManager: WeakRef<IValidationManager>;
+    private readonly _valueHostsManager: WeakRef<IValueHostsManager>;
 
-    //#endregion IValidationManagerAccessor
+    //#endregion IValueHostsManagerAccessor
     
-    protected get services(): IValidationServices {
-        return this.validationManager.services;
+    protected get services(): IJivsServices {
+        return this.valueHostsManager.services;
     }
     /**
      * Always supplied by constructor. Treat it as immutable.
@@ -60,7 +62,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
         this._instanceState = undefined!;
-        (this._validationManager as any) = undefined!;
+        (this._valueHostsManager as any) = undefined!;
         (this._logger as any) = undefined!;
     }
 
@@ -81,7 +83,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
-     * for which they will transfer a value, via ValidationManager.getValueHost(this name)
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
      */
     public getName(): valueHostName {
         return this.config.name;
@@ -96,7 +98,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         const label = (this.config.label ?? '') as string;
         const labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
-            return this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId, labell10n, label)!;
+            return this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
         return label;
     }
 
@@ -122,16 +124,19 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * @param options -
     *    * validate - Invoke validation after setting the value.
     *    * Reset - Clear validation state, unless validate = true, and set IsChanged to false.
-    *    * ConversionErrorTokenValue - When value is undefined because parsing from text failed,
-    *      provide a user-facing error message here. It will appear in the Category=Require
-    *      validator within the {ConversionError} token.
+    *    * injectedError - If you handle parsing before calling setValue(), your parser may have returned
+    *          an error. Assign this object to contain the error message and other info.
+    *          Internally Jivs will provide a Validator with the error message to report the error.
+    *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+    *          use the errorCode value of 'InjectedError' to localize the error message. 
+    *          You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
     *      OnValueChanged property.
     */
-    public setValue(value: any, options?: SetValueOptions): void {
+    public setValue(value: any, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!options)
-            options = {};
+            options = {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;
         
@@ -150,7 +155,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     /**
      * For setValue functions to check for disabled before trying to change.
      */
-    protected canChangeValueCheck(options: SetValueOptions): boolean {
+    protected canChangeValueCheck(options: TOptions): boolean {
         if (!options.overrideDisabled && !this.isEnabled()) {
             this.logger.message(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
             return false;
@@ -167,28 +172,32 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * is undefined.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+     * @param options - 
+     * validate - Invoke validation after setting the value.
+     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
+     * injectedError - If you handle parsing before calling setValueToUndefined(), your parser may have returned
+     *      an error. Assign this object to contain the error message and other info.
+     *      Internally Jivs will provide a Validator with the error message to report the error.
+     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      use the errorCode value of 'InjectedError' to localize the error message. 
+     *      You can also provide a summaryMessage for use in a summary of validation errors.
      */
-    public setValueToUndefined(options?: SetValueOptions): void {
+    public setValueToUndefined(options?: TOptions): void {
         this.setValue(undefined, options);
     }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void {
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void {
         if (options.reset)
             stateToUpdate.changeCounter = 0;
         else if (valueChanged)
             stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;
     }
 
-    protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void {
+    protected useOnValueChanged(changed: boolean, oldValue: any, options: TOptions): void {
         if (changed && (!options || !options.skipValueChangedCallback))
-            toIValueHostCallbacks(this.validationManager)?.onValueChanged?.(this, oldValue);
+            toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);
     }
+
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
      * See the {@link jivs-engine/DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
@@ -209,7 +218,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
         }
-        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.activeCultureId, dt)!) : '';
+        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
     }
 
     /**
@@ -249,7 +258,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             try {
                 // NOTE: The result of the enabler does not change any state of the valueHost,
                 // unlike setEnabled(false) which clears validation.
-                const result = enabler.evaluate(this, this.validationManager);
+                const result = enabler.evaluate(this, this.valueHostsManager);
                 if (result === ConditionEvaluateResult.Match)
                     return true;
                 if (result === ConditionEvaluateResult.NoMatch)
@@ -319,11 +328,11 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     //#region State
     /* 
      * Current state for the associated ValueHost.
-     * Only ValidationManager owns the state. This instance is a reference
-     * to the value in ValidationManager.
+     * Only ValueHostsManager owns the state. This instance is a reference
+     * to the value in ValueHostsManager.
      * InstanceState is considered immutable. If it needs to change,
-     * the ValidationManager must discard the current ValueHost instance
-     * and create a new one. The InstanceState contained in the ValidationManager
+     * the ValueHostsManager must discard the current ValueHost instance
+     * and create a new one. The InstanceState contained in the ValueHostsManager
      * must be supplied to the new ValueHost instance to restore the state.
     */
     protected get instanceState(): TState {
@@ -348,7 +357,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         const updated = updater(toUpdate);
         if (!deepEquals(this.instanceState, updated)) {
             this._instanceState = updated;
-            this.validationManager.notifyValueHostInstanceStateChanged(source, updated);
+            this.valueHostsManager.notifyValueHostInstanceStateChanged(source, updated);
             return true;
         }
         return false;
@@ -387,7 +396,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.

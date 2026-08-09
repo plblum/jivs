@@ -12,15 +12,16 @@ import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, SetTextValueOptions } from '../Interfaces/FieldValueHost';
-import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
+import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, FieldValueHostSetValueOptions, toIFieldValueHostCallbacks } from '../Interfaces/FieldValueHost';
+import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { CodingError, ensureError } from '../Utilities/ErrorHandling';
+import { ensureError } from '../Utilities/ErrorHandling';
+import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 
 
 /**
@@ -39,7 +40,7 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
  * such as RequireTextCondition, DataTypeCheckCondition, and RegExpCondition, evaluate
  * the text value. Most other Conditions evaluate the typed value.
  *
- * When configuring the ValidationManager for a FieldValueHost, use the builder's field() method.
+ * When configuring the ValueHostsManager for a FieldValueHost, use the builder's field() method.
  * ```ts
  * builder.field("firstName", LookupKey.String);
  * builder.field("birthDate", LookupKey.Date, { label: 'Birth Date' });
@@ -58,12 +59,94 @@ import { CodingError, ensureError } from '../Utilities/ErrorHandling';
  * };
  * ```
 */
-export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig, FieldValueHostInstanceState>
-    implements IFieldValueHost {
-    constructor(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState) {
-        super(validationManager, config, state);
+export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHostConfig,
+    TState extends FieldValueHostInstanceState = FieldValueHostInstanceState,
+    TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
+    extends ValidatorsValueHostBase<TConfig, TState, TOptions>
+    implements IFieldValueHost<TOptions> {
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
+        super(valueHostsManager, config, state);
+    }
+    
+
+    /**
+     * Called by setValue() to determine if a formatter is setup and the value is formattable.
+     * If so, it determines the text value, and calls upon setValues() to handle it all.
+     * Supports config.formatterLookupKey.
+     * Also supports options.disableFormatter to skip formatting.
+     * @param value 
+     * @param options 
+     * @returns When true, it used the formatter and finished with setValues. No further work is needed.
+     * When false, setValue() should continue.
+     */
+    protected override tryFormatToText(value: any, options?: TOptions): boolean
+    {
+        /**
+         * 
+         * @param resolution 
+         * @returns when true, it successfully sent
+         */
+        function sendResultAlong(resolution: DataTypeResolution<string>): boolean
+        {
+            if (resolution.errorDetails)
+            {
+                self.logger.message(LoggingLevel.Error, () => `Formatter reported error: ${ resolution.errorDetails!.errorMessage }`);
+                return false;
+            }
+
+            self.logger.message(LoggingLevel.Debug, ()=> 'Formatter used. Switching to setValues()');
+            self.setValues(value, resolution.value, options); 
+            return true;
+        }
+        let self = this;
+        // similar to tryParser.
+        if (value === undefined)
+            return false;
+        if (this.valueHostsManager.behaviors.disableFormattingOnValueChange === true)
+        {
+            this.logger.message(LoggingLevel.Debug, () => 'behaviors.disableFormattingOnValueChange=true');
+            return false;
+        }
+        if (options?.disableFormatter)
+        {
+            this.logger.message(LoggingLevel.Debug, () => 'option.disableFormatter=true');
+            return false;
+        }
+        if (this.config.formatterLookupKey === null)   // null means no formatter is configured. undefined means use the default formatter for the data type.
+        {
+            this.logger.message(LoggingLevel.Debug, () => 'config.formatterLookupKey=null');
+            return false;
+        }
+
+        const dtfs = this.services.dataTypeFormatterService;
+        if (dtfs.isActive())
+        {
+            const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+            if (lookupKey)
+            {
+                try
+                {
+                    this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+                    const result = dtfs.format(value, lookupKey, this.valueHostsManager.behaviors.activeCultureId!);
+                    return sendResultAlong(result);
+                }
+                catch (e) // the service threw
+                {
+                    const err = ensureError(e);
+                    this.logger.error(err); // will throw if SevereErrorBase
+                    throw e;
+                }
+            }
+            this.logger.message(LoggingLevel.Debug, () => 'Did not format. No lookupKey supplied by config.formatterLookupKey or getDataType()');
+        }
+        return false;
     }
 
+    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: TOptions): void
+    {
+        if (changed && (!options || !options.skipValueChangedCallback))
+            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
+    }    
     //#region IFieldValueHost
     /**
      * Gets the current text value exactly as last provided.
@@ -110,21 +193,26 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * reset - Clear validation state, unless validate = true, and set IsChanged to false.
      * disableParser - When true, do not use the DataTypeParser to resolve the typed value
      *   from the text value.
-     * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *   resolved from the text value, provide a user-friendly error message here. It will appear
-     *   in the Category=Require validator within the {ConversionError} token. A DataTypeParser
-     *   may also set conversionErrorTokenValue when it reports an error.
+     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *      an error. Assign this object to contain the error message and other info.
+     *      Internally Jivs will provide a Validator with the error message to report the error.
+     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      use the errorCode value of 'InjectedError' to localize the error message. 
+     *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setTextValue(textValue: string | undefined, options?: SetTextValueOptions): void {  
+    public setTextValue(textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
 
         if (!options)
-            options = {};
+            options = {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;        
         if (this.tryParse(textValue, options))
-            return; // determines the native value and redirects to setValues().
+        {
+            this.tryReformatTextValue(textValue!, options);
+            return; 
+        }
 
         const oldValue: any = this.instanceState.textValue;
         const changed = !deepEquals(textValue, oldValue);
@@ -140,16 +228,15 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         }, this);
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
-        this.useOnValueChanged(changed, oldValue, options);
-
+        this.useOnTextValueChanged(changed, oldValue, options);
     }
 
     /**
      * Determines if parsing is setup and the value is parsable (must be a string). 
      * If so, it determines the native value, and calls upon setValues() to handle it all.
      * If the parser detects an error, the native value will be set to undefined
-     * and options.conversionErrorTokenValue gets set to the parser's reported error info.
-     * Supports config.parserDataType and config.parserCreator.
+     * and options.injectedError gets set to the parser's reported error info.
+     * Supports config.parserLookupKey.
      * 
      * @param textValue 
      * @param options - Set disableParser = true to prevent parsing. When duringEdit=true,
@@ -157,17 +244,18 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @returns True used the parser and finished with setValues. No further work is needed.
      * False means the parser is not used, and setTextValue should continue.
      */
-    protected tryParse(textValue: any, options: SetTextValueOptions): boolean
+    protected tryParse(textValue: any, options: TOptions): boolean
     {
         function sendResultAlong(resolution: DataTypeResolution<any>): void
         {
             const nativeValue = resolution.value; // may be undefined which indicates a parser error
-            if (resolution.errorMessage)
-                options.conversionErrorTokenValue = resolution.errorMessage;
+            if (resolution.errorDetails)
+                options.injectedError = resolution.errorDetails;
+
             self.logger.log(LoggingLevel.Debug, (options) => {
-                if (resolution.errorMessage)
+                if (resolution.errorDetails)
                     return {
-                        message: `Parser reported error and assigned the native value to undefined: ${resolution.errorMessage}`,
+                        message: `Parser reported error and assigned the native value to undefined: ${resolution.errorDetails!.errorMessage}`,
                         data: resolution
                     };
                 return {
@@ -183,45 +271,118 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         // on validating the input value alone
         if (options.duringEdit === true)
             return false;
-        try {
-            if (typeof textValue === 'string') {
-                if (options.disableParser === true) {
-                    this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
-                    return false;
-                }
-                const dtps = this.services.dataTypeParserService;
-                if (dtps.isActive()) {
-                    this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
-                         
-                    const lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
-                    const cultureId = this.services.cultureService.activeCultureId;
-                    const parser = this.config.parserCreator?.(this);
-                    if (parser && parser.supports(lookupKey!, cultureId, textValue)) { // in this case, we have to let the parser function deal with
-                        // any fallback behavior and we'll supply a null lookupKey.
-                        this.logger.message(LoggingLevel.Info, () => 'Parsing');
-                        const result = parser.parse(textValue, lookupKey!, cultureId);
-                        sendResultAlong(result);
-                        return true;
-                    }
-                    if (this.config.parserLookupKey === null)
-                        return false;
-                
-                    if (lookupKey) {
+
+        if (typeof textValue === 'string')
+        {
+            if (this.valueHostsManager.behaviors.disableParsingOnValueChange === true)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'behaviors.disableParsingOnValueChange=true');
+                return false;
+            }
+            if (options.disableParser === true)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'option.disableParser=true');
+                return false;
+            }
+            if (this.config.parserLookupKey === null)   // null means no parser is configured. undefined means use the default parser for the data type.
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'config.parserLookupKey=null');
+                return false;
+            }            
+            const dtps = this.services.dataTypeParserService;
+            if (dtps.isActive())
+            {
+                const lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
+                if (lookupKey)
+                {
+                        
+                    try
+                    {
+                        this.logger.message(LoggingLevel.Debug, () => 'Attempt to parse into native value');
+                        const cultureId = this.services.cultureService.defaultCultureId;
                         const result = dtps.parse(textValue, lookupKey, cultureId);
                         sendResultAlong(result);
                         return true;
                     }
-                    const error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
-                    this.logger.error(error);
-                    throw error;
+                    catch (e)
+                    {
+                        const err = ensureError(e);
+                        this.logger.error(err);
+                        throw e;
+                    }
                 }
+                this.logger.message(LoggingLevel.Debug, () => 'Did not parse. No lookupKey supplied by config.parserLookupKey or getDataType()');
             }
         }
-        catch (e) {
-            const err = ensureError(e);            
-            this.logger.error(err);
-            throw err;
-        }            
+         
+        return false;
+    }
+
+    /**
+     * A hybrid of setTextValue and tryFormatToText. It is called by setTextValue() to attempt reformatting
+     * the text value when the typed value changes.
+     * It has several goals:
+     * - If the native value can be formatted, its text value is updated
+     * - If the onTextValueChanged callback is configured, it is invoked with the new text value.
+     * @param originalText 
+     * @param options 
+     * @returns 
+     */
+    protected tryReformatTextValue(originalText: string, options: TOptions): boolean
+    {
+        let reformat = this.config.reformatTextValue ?? (this.valueHostsManager.behaviors.reformatTextValue === true ? true : false);
+        if (reformat)
+        {
+            const nativeValue = this.instanceState.value;
+            if (nativeValue === undefined || this.valueHostsManager.behaviors.disableFormattingOnValueChange === true ||
+                options?.disableFormatter || this.config.formatterLookupKey === null)
+            {
+                this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. Either nativeValue is undefined or formatting is disabled.');
+                return false;
+            }
+
+
+            const dtfs = this.services.dataTypeFormatterService;
+            if (dtfs.isActive())
+            {
+                const lookupKey = this.config.formatterLookupKey ?? this.getDataType() ?? null;
+                if (lookupKey)
+                {
+                    try
+                    {
+                        this.logger.message(LoggingLevel.Debug, () => 'Attempt to format into text value');
+                        const result = dtfs.format(nativeValue, lookupKey, this.valueHostsManager.behaviors.activeCultureId!);
+                        if (!result.errorDetails)
+                        {
+                            let newTextValue = result.value;
+                            const changed = !deepEquals(newTextValue, originalText);
+                            if (changed)
+                            {
+                                this.logger.message(LoggingLevel.Debug, () => `Reformatting updated text value`);
+                                // does not change validation state, because its part of a larger process that already has addressed that.
+                                this.updateInstanceState((stateToUpdate) =>
+                                {
+                                    stateToUpdate.textValue = newTextValue;
+                                    return stateToUpdate;
+                                }, this);
+                                this.useOnTextValueChanged(changed, originalText, options);
+                            }
+                            else
+                                this.logger.message(LoggingLevel.Debug, () => `Reformatted text value is the same as original. No change.`);
+                            return true;
+                        }
+                    }
+                    catch (e) // the service threw
+                    {
+                        const err = ensureError(e);
+                        this.logger.error(err); // will throw if SevereErrorBase
+                        throw e;
+                    }
+                }
+                this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. No lookupKey supplied by config.formatterLookupKey or getDataType()');
+            }
+            return false;
+        }
         return false;
     }
 
@@ -242,14 +403,19 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
      * @param options -
      *    * validate - Invoke validation after setting the values.
      *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     *    * conversionErrorTokenValue - When the typed value is undefined because it could not be
-     *    *    resolved from the text value, provide a user-friendly error message here. It will
-     *    *    appear in the Category=Require validator within the {ConversionError} token.
+     *    * injectedError - If you handle parsing or formatting before calling setValues(), 
+     *          your parser or formatter may have returned an error. 
+     *          Assign this object to contain the error message and other info.
+     *          Internally Jivs will provide a Validator with the error message to report the error.
+     *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *          use the errorCode value of 'InjectedError' to localize the error message. 
+     *          You can also provide a summaryMessage for use in a summary of validation errors.
+
      *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
-    public setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions): void {    
+    public setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
-        options = options ?? {};
+        options = options ?? {} as TOptions;
         if (!this.canChangeValueCheck(options))
             return;        
         const oldNative: any = this.instanceState.value;
@@ -276,30 +442,23 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(nativeChanged, oldNative, options);
-        this.useOnValueChanged(textChanged, oldText, options);
+        this.useOnTextValueChanged(textChanged, oldText, options);
     }
-
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: FieldValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void {
-        super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
-        if (options && (stateToUpdate.value === undefined) && options.conversionErrorTokenValue)
-            stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
-        else
-            delete stateToUpdate.conversionErrorTokenValue;
+/**
+ * Ensures options type change is available.
+ * @param options 
+ */
+    public override setValueToUndefined(options?: TOptions): void
+    {
+        super.setValueToUndefined(options);
     }
 
     //#endregion IFieldValueHost
-
-
-    protected clearValidationDataFromInstanceState(stateToUpdate: FieldValueHostInstanceState): void {
-        super.clearValidationDataFromInstanceState(stateToUpdate);
-        delete stateToUpdate.conversionErrorTokenValue;
-    }
-
     /**
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
      * @returns 
      */
-    protected generateValidators(): Array<IValidator> {
+    protected override generateValidators(): Array<IValidator> {
 
         const validators: Array<IValidator> = super.generateValidators();
         let needsDataTypeCheck = true;
@@ -351,14 +510,7 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
             (validators[0].condition.category === ConditionCategory.Require);
     }
 
-    /**
-     * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to setValue() or setValues(). Its null when not supplied or has been cleared.
-     * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-     */
-    public getConversionErrorMessage(): string | null {
-        return this.instanceState.conversionErrorTokenValue ?? null;
-    }
+
     /**
      * Returns the value from FieldValueHostConfig.parserLookupKey.
      */
@@ -376,6 +528,20 @@ export class FieldValueHost extends ValidatorsValueHostBase<FieldValueHostConfig
     {
         return this.config.propertyName ?? this.getName();
     }    
+    /**
+     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    public getModelReaderRule(): ValueAdapterRule | undefined {
+        return this.config.modelReaderRule;
+    }
+    /**
+     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
+     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     */
+    public getModelWriterRule(): ValueAdapterRule | undefined {
+        return this.config.modelWriterRule;
+    }
 }
 
 /**
@@ -405,7 +571,7 @@ export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBa
         test.setTextValue !== undefined &&
         test.setValues !== undefined &&
         test.getParserLookupKey !== undefined &&
-        test.getConversionErrorMessage !== undefined);
+        test.getInjectedError !== undefined);
 }
 
 export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
@@ -417,11 +583,11 @@ export class FieldValueHostGenerator extends ValidatorsValueHostBaseGenerator {
             return false;
         return true;
     }
-    public create(validationManager: IValidationManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState): IFieldValueHost {
-        return new FieldValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: FieldValueHostConfig, state: FieldValueHostInstanceState): IFieldValueHost {
+        return new FieldValueHost(valueHostsManager, config, state);
     }
 
-    public createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
+    public override createInstanceState(config: FieldValueHostConfig): FieldValueHostInstanceState {
         const state = super.createInstanceState(config);
 
         return {

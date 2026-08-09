@@ -1,16 +1,16 @@
-import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 
 
 
-export class Publicify_ValidationManager extends ValidationManager
+export class Publicify_ValueHostsManager extends ValueHostsManager
 {
     public getValueHostConfig(valueHostName: string): ValueHostConfig | null
     {
         return this.valueHostConfigs.get(valueHostName) ?? null;
     }    
-    public get publicify_config(): ValidationManagerConfig
+    public get publicify_config(): ValueHostsManagerConfig
     {
         return this.config;
     }

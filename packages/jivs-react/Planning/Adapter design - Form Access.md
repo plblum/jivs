@@ -52,7 +52,7 @@ A form represents a collection of ValueHosts.
 
 A form may represent:
 
-* All ValueHosts managed by a ValidationManager
+* All ValueHosts managed by a ValueHostsManager
 * A subset of ValueHosts associated with a Validation Group
 
 Examples:
@@ -67,16 +67,16 @@ const [form, validationState] =
 
 ---
 
-## Relationship to ValidationManager
+## Relationship to ValueHostsManager
 
-All forms originate from a ValidationManager.
+All forms originate from a ValueHostsManager.
 
-When no Validation Group is specified, the form represents all ValueHosts managed by the ValidationManager.
+When no Validation Group is specified, the form represents all ValueHosts managed by the ValueHostsManager.
 
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 All ValueHosts
         ↓
@@ -105,7 +105,7 @@ A Validation Group identifies the ValueHosts that participate in the form.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 ValueHosts
         ↓
@@ -174,7 +174,7 @@ useFormValidation(
 
 Optional Validation Group name.
 
-When omitted, the hook operates on all ValueHosts managed by the ValidationManager.
+When omitted, the hook operates on all ValueHosts managed by the ValueHostsManager.
 
 When supplied, the hook operates on the subset of ValueHosts associated with the specified Validation Group.
 
@@ -255,7 +255,7 @@ Conceptually, JivsForm exposes:
 | ---------------------- | -------------------------------------------------- |
 | `groupName`            | Validation Group represented by the form.          |
 | `validate()`           | Executes validation. Async process.                |
-| getValidationManager() | Provides access to the ValidationManager directly. |
+| getValueHostsManager() | Provides access to the ValueHostsManager directly. |
 |                        |                                                    |
 
 
@@ -265,7 +265,7 @@ This document focuses on form-oriented usage patterns.
 interface JivsForm {
     readonly groupName: string | null;
     validate(): Promise<ValidationState>;
-    getValidationManager(): ValidationManager;
+    getValueHostsManager(): ValueHostsManager;
 }
 ```
 
@@ -604,14 +604,14 @@ Form Access provides React-oriented access to aggregate Validation State across 
 
 A form represents either:
 
-* All ValueHosts managed by a ValidationManager
+* All ValueHosts managed by a ValueHostsManager
 * A subset of ValueHosts associated with a Validation Group
 
 Unlike Field Access, which exposes ValueHostValidationState for individual ValueHosts, Form Access exposes a ValidationState object designed for aggregate validation scenarios.
 
 The architecture is built around:
 
-* ValidationManager
+* ValueHostsManager
 * ValueHosts
 * Validation Groups
 * ValidationState

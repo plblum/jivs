@@ -1,25 +1,25 @@
-import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
+import { BuildersFactoryInstaller } from '../../src/Services/BuildersFactoryInstaller';
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
-import { IFormConfigAdapter, IValidationManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
-import { IAdaptModelRulesToForm, RulesConfigOptions } from "../../src/Interfaces/ModelRules";
-import { RulesBase } from "../../src/ModelRules/ModelRules";
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
+import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
+import { IAdaptModelRulesToForm, ValueHostRulesOptions } from "../../src/Interfaces/ValueHostRules";
+import { ValueHostRulesBase } from "../../src/ValueHostRules/ValueHostRules";
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 class Person
 {
     firstName: string = '';
     lastName: string = '';
 }
-class PersonModelRules extends RulesBase {
-    constructor(services: IValidationServices) {
+class PersonModelRules extends ValueHostRulesBase {
+    constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
         builder.field('firstName', LookupKey.String).requireText();
         builder.field('lastName', LookupKey.String).requireText();
         if (options?.variantName === 'variant1') {
@@ -27,18 +27,18 @@ class PersonModelRules extends RulesBase {
         }
     }
 
-    public exposeCacheKey(options?: RulesConfigOptions): string {
+    public exposeCacheKey(options?: ValueHostRulesOptions): string {
         return this.createConfigCacheKey(options);
     }
 }
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
-describe('RulesBase subclass for a single Model and no form involvement', () => {
+describe('ValueHostRulesBase subclass for a single Model and no form involvement', () => {
 
     test('configureRules adds rules for the model', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure();
         // find 2 propertyValueHostConfigs, each with one validator and the RequiredText condition
@@ -52,13 +52,13 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
             expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
-        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
         expect(cachedConfig).not.toBeNull();
         expect(cachedConfig).toBe(config);
     });
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonModelRules(services);
         let config = rules.configure( { variantName: 'variant1' });
         // check that the second config has the age property
@@ -70,7 +70,7 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
     describe('caching use cases', () => {
         test('configureRules uses cached config when available', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure();
@@ -78,17 +78,17 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // options.disableCache = true
         test('configureRules does not use cached config when options.disableCache = true', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure({ disableCache: true });
             let config2 = rules.configure({ disableCache: true });
             expect(config2).not.toBe(config1);
-            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
             expect(cachedConfig).toBeUndefined();
         });
         // options.disableCache = false
         test('configureRules uses cached config when options.disableCache = false', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ disableCache: false });
@@ -96,14 +96,14 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
         });
         // variantName = 'variant1' on second call caches two different configs
         test('configureRules uses variantName to create a different config', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let rules = new PersonModelRules(services);
             let config1 = rules.configure();
             let config2 = rules.configure({ variantName: 'variant1' });
             expect(config2).not.toBe(config1);
-            let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+            let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
             expect(cachedConfig).toBe(config1);
-            let cachedConfig2 = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey({ variantName: 'variant1' }));
+            let cachedConfig2 = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey({ variantName: 'variant1' }));
             expect(cachedConfig2).toBe(config2);
 
         });
@@ -112,12 +112,12 @@ describe('RulesBase subclass for a single Model and no form involvement', () => 
 
 });
 
-describe('RulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
+describe('ValueHostRulesBase subclass for a single Model and a Form that adapts the Model rules', () => {
     class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
-        constructor(services: IValidationServices) {
+        constructor(services: IJivsServices) {
             super(services);
         }
-        adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+        adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
             // add form-specific rules and adjustments such as to labels and error messages here
             // note that PropertyValueHosts from the Model class have been converted 
             // to FieldValueHosts prior to calling this due to builder.startUILayerConfig().
@@ -130,7 +130,7 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
     }
     // same tests as above, but using the FormRules subclass instead of the ModelRules subclass
     test('configureRules adds rules for the model and form', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure();
         // find 2 fieldValueHostConfigs, each with one validator and the RequiredText condition
@@ -145,14 +145,14 @@ describe('RulesBase subclass for a single Model and a Form that adapts the Model
             expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
-        let cachedConfig = services.cachingService.get<ValidationManagerConfigBuilder>(rules.exposeCacheKey());
+        let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
         expect(cachedConfig).not.toBeNull();
         expect(cachedConfig).toBe(config);
     });
 
     // variantName = 'variant1'
     test('configureRules uses variantName to create a different config', () => {
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         let rules = new PersonEditFormRules(services);
         let config = rules.configure({ variantName: 'variant1' });
         // check that the second config has the age property

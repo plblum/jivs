@@ -2,10 +2,10 @@
  * This is the syntax to build the ValueHostConfig (with all of its children) quickly
  * and succinctly. It is a fluent syntax that allows the developer to chain operations.
  * 
- * These tools are used in the Builder API (ValidationManagerConfigBuilder class), 
+ * These tools are used in the Builder API (ValueHostsManagerConfigBuilder class), 
  * which is what the developer creates with the ValidatorManagerConfig that they are constructing.
  * 
- * With the following, assume 'let builder = new ValidationManagerConfigBuilder(vmConfig)'.
+ * With the following, assume 'let builder = new ValueHostsManagerConfigBuilder(vmConfig)'.
  * 
  * The user will start the fluent syntax with builder.field(), 
  * builder.static(), or builder.calc().
@@ -31,12 +31,12 @@
  * 
  * For example:
  * ```ts
- * let builder = new ValidationManagerConfigBuilder(services);
+ * let builder = new ValueHostsManagerConfigBuilder(services);
  * builder.static('productVisible', LookupKey.Boolean);
  * builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
  * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
  * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
- * let vm = new ValidationManager(builder);
+ * let vhm = new ValueHostsManager(builder);
  * ```
  * 
  * ## How this system works
@@ -46,7 +46,7 @@
  * class appear to be part of ValidatorBuilder and FluentConditionBuilder, classes that connect
  * the conditions to the FieldValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - ValidationManagerConfigBuilder - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
+ * - ValueHostsManagerConfigBuilder - Class that starts a fluent chain. Its methods start FieldValueHost (field()),
  *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  *   ```ts
  *   let builder = new ValueHostConfigBuilder(services);
@@ -149,9 +149,9 @@
  *          }
  *     }
  *     ```
- * 3. Register your custom builders with the BuildersFactory which is in ValidationServices.
+ * 3. Register your custom builders with the BuildersFactory which is in JivsServices.
  *      ```ts
- *      // within the createValidationServices function, this code already exists, 
+ *      // within the createJivsServices function, this code already exists, 
  *      // only needing removing comments:
  *      // --- BuildersFactory -------------------------------------------
  *      let ff = new BuildersFactory();
@@ -169,7 +169,7 @@
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
  * allows replacing the ValidatorBuilder and ConditionBuilder classes with your own.
- * Just register them within the BuilderFactory in ValidationServices.
+ * Just register them within the BuilderFactory in JivsServices.
  * @module jivs-builder/Builders/ConcreteClasses
  */
 

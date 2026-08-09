@@ -6,11 +6,11 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
-import { ValidationManagerConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
@@ -32,11 +32,11 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
-let services: IValidationServices;
+let services: IJivsServices;
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-    services = createValidationServicesForTesting();
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
+    services = createJivsServicesForTesting();
 });
 
 describe('ConditionBuilder', () => {
@@ -97,7 +97,7 @@ describe('dataTypeCheck on conditions', () => {
     });
     // checking from the validator starting point, using when with this condition type in the thenBuilder
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().dataTypeCheck()
@@ -218,7 +218,7 @@ describe('regExp on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().regExp('\\d', true)
@@ -311,7 +311,7 @@ describe('range on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().range(1, 4)
@@ -409,7 +409,7 @@ describe('equalToValue on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
@@ -506,7 +506,7 @@ describe('equalTo on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().equalTo('F3')
@@ -601,7 +601,7 @@ describe('notEqualToValue on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
@@ -694,7 +694,7 @@ describe('notEqualTo on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notEqualTo('F3')
@@ -789,7 +789,7 @@ describe('lessThanValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
@@ -914,7 +914,7 @@ describe('lessThan on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThan('F3')
@@ -1053,7 +1053,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
@@ -1178,7 +1178,7 @@ describe('lessThanOrEqual on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual('F3')
@@ -1319,7 +1319,7 @@ describe('greaterThanValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
@@ -1457,7 +1457,7 @@ describe('greaterThan on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThan('F3')
@@ -1593,7 +1593,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
@@ -1731,7 +1731,7 @@ describe('greaterThanOrEqual on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqual('F3')
@@ -1823,7 +1823,7 @@ describe('stringLength on conditions', () => {
     });
 
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().stringLength(4)
@@ -1913,7 +1913,7 @@ describe('requireText on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().requireText()
@@ -1970,7 +1970,7 @@ describe('notNull on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().notNull()
@@ -2027,7 +2027,7 @@ describe('positive on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().positive()
@@ -2084,7 +2084,7 @@ describe('integer on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().integer()
@@ -2143,7 +2143,7 @@ describe('maxDecimals on conditions', () => {
         expect(parentBuilder.getConfig()).toBeUndefined();
     });
     test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValidationManagerConfigBuilder(services);
+        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
             (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
             (thenBuilder) => thenBuilder.parentValue().maxDecimals(2)

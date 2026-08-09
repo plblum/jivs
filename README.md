@@ -56,8 +56,8 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
 
 -	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
     ```ts
-    export class PersonModelRules extends ModelRulesBase {
-      protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+    export class PersonModelRules extends ValueHostRulesBase {
+      protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
         builder.field('firstName').requireText().regExp('^[\\w\\s''\\-']*$');
         builder.field('lastName').requireText().regExp('^[\\w\\s''\\-]*$');
       }
@@ -68,7 +68,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
       export class PersonFormEditorRules 
         extends PersonModelRules 
         implements IAdaptModelRulesToForm {
-        protected adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+        protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
           // apply some properties to the fields and validators
           adapter.modify('firstName', {label: 'First Name'}).validator(ConditionType.RequireText, '{Label} is required.');
           adapter.modify('lastName', {label: 'Last Name'}).whenToEnable((whenBuilder) =>
@@ -240,31 +240,31 @@ npm install --save @plblum/jivs-engine
 
 Add the contents of this file to your project. It results in several new functions starting with this one.
 ```ts
-export function createValidationServices(... parameters ...): ValidationServices {
+export function createJivsServices(... parameters ...): JivsServices {
 …
 }
 // also many register() functions plus configureCultures() and createTextLocalizerService
 ```
 Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-For more, see [ValidationServices](#validationservices).
+For more, see [JivsServices](#jivsservices).
 
 # Digging in
 Please use these documents:
 
 - [Terminology](./docs/Terminology.md)
 - [Learning Jivs](./docs/Learning.md)
-- [Configuring the Validation Manager](./docs/Configuring.md)
+- [Configuring the ValueHosts](./docs/Configuring.md)
 - [The API](./docs/Jivs_API.md)
   + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)
   + [ValueHosts](./docs/Jivs_API.md#valuehosts)
   + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
-  + [ValidationManager](./docs/Jivs_API.md#validationmanager)
-  + [Rules](./docs/Jivs_API.md#rules)
-  + [ValidationServices](./docs/Jivs_API.md#validationservices)
+  + [ValueHostsManager](./docs/Jivs_API.md#valuehostsmanager)
+  + [Rules](./docs/Jivs_API.md#valuehost-rules)
+  + [JivsServices](./docs/Jivs_API.md#jivsservices)
+- Supporting topics
   + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)
   + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)
   + [Localization](./docs/Jivs_API.md#localization)
   + [Validation Deep Dive](./docs/Jivs_API.md#validation-deep-dive)
-  + [Setting and Getting Values](./docs/Jivs_API.md#setting-and-getting-values)
   + [Logging](./docs/Jivs_API.md#logging)
   + [Testing your work](./docs/Jivs_API.md#testing-your-work)

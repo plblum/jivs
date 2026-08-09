@@ -1,7 +1,7 @@
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
 import { IDataTypeComparer } from "@plblum/jivs-engine/build/Interfaces/DataTypeComparers";
 import { ComparersResult } from "@plblum/jivs-engine/build/Interfaces/DataTypeComparerService";
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
@@ -9,7 +9,7 @@ import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Con
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { BooleanDataTypeComparer } from '@plblum/jivs-engine/build/DataTypes/DataTypeComparers';
 import { ComparerServiceCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
-import { createValidationServicesForTesting } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 import { setupHelper } from '../TestSupport/support';
 import { DataTypeComparerAnalyzer } from '../../src/Analyzers/DataTypeComparerAnalyzer';
 
@@ -49,8 +49,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
         }
     }
 
-    function setupServices() : IValidationServices {
-        let services = createValidationServicesForTesting({ registerConditions: 'all'});
+    function setupServices() : IJivsServices {
+        let services = createJivsServicesForTesting({ registerConditions: 'all'});
         services.cultureService.register({ cultureId: 'en', fallbackCultureId: null });
         services.dataTypeComparerService.register(new NumberHosterComparer());
         services.dataTypeIdentifierService.register(new NumberHosterIdentifier());

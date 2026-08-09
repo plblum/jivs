@@ -1,4 +1,4 @@
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
@@ -33,7 +33,7 @@ class MockConditionConfigAnalyzer implements IConditionConfigAnalyzer {
     public ranCount: number = 0;
     
 }
-function setupHelperForTheseTests(services: IValidationServices): AnalysisResultsHelper<IValidationServices>
+function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelper<IJivsServices>
 {
     let helper = setupHelper(services);
     helper.analysisArgs.conditionConfigAnalyzer = new MockConditionConfigAnalyzer();
@@ -44,7 +44,7 @@ function ranCountOfPropertyAnalyzers(propertyAnalyzers: Array<IValidatorConfigPr
     propertyAnalyzers.forEach(pa => ranCount += (pa as TestValidatorConfigPropertyAnalyzer).ranCount);
     return ranCount;
 }   
-function ranCountOfMockConditionConfigAnalyzer(helper: AnalysisResultsHelper<IValidationServices>): number {
+function ranCountOfMockConditionConfigAnalyzer(helper: AnalysisResultsHelper<IJivsServices>): number {
     return (helper.analysisArgs.conditionConfigAnalyzer as MockConditionConfigAnalyzer).ranCount;
 } 
 describe('ValidatorConfigAnalyzer', () => {

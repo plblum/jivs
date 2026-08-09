@@ -1,31 +1,31 @@
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
-import { ValidationManagerConfigBuilder } from "../../src/Builder/ValidationManagerConfigBuilder";
+import { ValueHostsManagerConfigBuilder } from "../../src/Builder/ValueHostsManagerConfigBuilder";
 import { ValidatorBuilder } from "../../src/Builder/ValidatorBuilder";
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from '../../src/Interfaces/ChildBuilders';
 import { BuildersFactory } from "../../src/Services/BuildersFactory";
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 
 
-class SubstituteManagerConfigBuilder extends ValidationManagerConfigBuilder
+class SubstituteManagerConfigBuilder extends ValueHostsManagerConfigBuilder
 {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
 }
 
 class SubstituteValidatorBuilder extends ValidatorBuilder
 {
-    constructor(services: IValidationServices, parentConfig: FieldValueHostConfig) {
+    constructor(services: IJivsServices, parentConfig: FieldValueHostConfig) {
         super(services, parentConfig);
     }
 }
 
 class SubstituteConditionBuilder extends ConditionBuilder
 {
-    constructor(services: IValidationServices, parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) {
+    constructor(services: IJivsServices, parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) {
         super(services, parentBuilder, completed);
     }
 }
@@ -53,15 +53,15 @@ describe('BuildersFactory', () => {
     // createManagerConfigBuilder test
     test('createManagerConfigBuilder should return a valid builder', () => {
         const buildersFactory = new BuildersFactory();
-        buildersFactory.services = createValidationServicesForTesting();
+        buildersFactory.services = createJivsServicesForTesting();
         const builder = buildersFactory.createManagerConfigBuilder(null);
         expect(builder).toBeDefined();
-        expect(builder).toBeInstanceOf(ValidationManagerConfigBuilder);
+        expect(builder).toBeInstanceOf(ValueHostsManagerConfigBuilder);
     });
 
    test('createValidatorBuilder should return a valid builder', () => {
        const buildersFactory = new BuildersFactory();
-       buildersFactory.services = createValidationServicesForTesting();
+       buildersFactory.services = createJivsServicesForTesting();
        let parentConfig: FieldValueHostConfig = {
            name: 'Field1',
            validatorConfigs: []
@@ -74,7 +74,7 @@ describe('BuildersFactory', () => {
     
     test('createConditionBuilder should return a valid builder', () => {
         const buildersFactory = new BuildersFactory();
-        buildersFactory.services = createValidationServicesForTesting();
+        buildersFactory.services = createJivsServicesForTesting();
         const parentBuilder = new TestParentBuilder();
         const builder = buildersFactory.createConditionBuilder(parentBuilder);
         expect(builder).toBeDefined();
@@ -83,7 +83,7 @@ describe('BuildersFactory', () => {
 
     test('Replace ManagerConfigBuilder with SubstituteManagerConfigBuilder', () => {
         const buildersFactory = new BuildersFactory();
-        buildersFactory.services = createValidationServicesForTesting();  
+        buildersFactory.services = createJivsServicesForTesting();  
         buildersFactory.setManagerConfigBuilder(
             (services) => new SubstituteManagerConfigBuilder(buildersFactory.services));
         const builder = buildersFactory.createManagerConfigBuilder(null);
@@ -92,7 +92,7 @@ describe('BuildersFactory', () => {
     });
 
     test('Replace ValidatorBuilder with SubstituteValidatorBuilder', () => {   
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         const buildersFactory = new BuildersFactory();
         buildersFactory.services = services;
         buildersFactory.setValidatorBuilderCreator(
@@ -110,7 +110,7 @@ describe('BuildersFactory', () => {
 
     test('Replace ConditionBuilder with SubstituteConditionBuilder', () => {
         const buildersFactory = new BuildersFactory();
-        buildersFactory.services = createValidationServicesForTesting();
+        buildersFactory.services = createJivsServicesForTesting();
 
         buildersFactory.setConditionBuilderCreator(
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>

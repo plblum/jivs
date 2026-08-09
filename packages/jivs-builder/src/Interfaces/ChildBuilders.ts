@@ -130,7 +130,7 @@ export type CompleteConfigBuilderHandler<TConfig extends object> = (config: TCon
 export interface IValidatorBuilder extends IBuilderConfigHost<object>
 {
     /**
-     * The FieldValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
+     * The FieldValueHostConfig that is being constructed and will be supplied to ValueHostsManagerConfig.valueHostConfigs.
      */
     parentConfig: FieldValueHostConfig;    
     /**
@@ -1296,8 +1296,8 @@ export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
 // require explicit specification of the valuehostName property.
 // As a result, you see /*'valueHostName' |*/ in the definitions below.
 // ```ts
-//  protected configureRules(builder: IValidationManagerConfigBuilder,
-//      options?: RulesConfigOptions): void {
+//  protected configureRules(builder: IValueHostsManagerConfigBuilder,
+//      options?: ValueHostRulesOptions): void {
 //      builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
 //          .lessThan('EndDate')
 //          .lessThanOrEqual('NumOfDays',   // right operand of the comparison

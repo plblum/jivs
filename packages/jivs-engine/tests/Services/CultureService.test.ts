@@ -9,16 +9,15 @@ import { CultureIdFallback } from "../../src/Interfaces/CultureService";
 
 describe('constructor and properties', () => {
 
-    test('Constructor with no parameters', () => {
-        let testItem = new CultureService();
-        expect(testItem.activeCultureId).toBe('en');
+    test('Constructor', () => {
+        let testItem = new CultureService('en');
+        expect(testItem.defaultCultureId).toBe('en');
         expect(testItem.find('en')).toBeDefined();
     });
 
-    test('Change activeCultureID in Services impacts cultureIdFallback', () => {
-        let testItem = new CultureService();
-        testItem.activeCultureId = 'fr';
-        expect(testItem.activeCultureId).toBe('fr');
+    test('Change defaultCultureId in Services impacts cultureIdFallback', () => {
+        let testItem = new CultureService('fr');
+        expect(testItem.defaultCultureId).toBe('fr');
         let result: CultureIdFallback | null = null;
         expect(() => result = testItem.find('fr')).not.toThrow();
         expect(result).toBeDefined();
@@ -28,38 +27,36 @@ describe('constructor and properties', () => {
     });
 });
 describe('register and find, ', () => {
-    test('Nothing registered and request non-activeCultureID returns null', () => {
-        let testItem = new CultureService();
+    test('Nothing registered and request non-defaultCultureId returns null', () => {
+        let testItem = new CultureService('fr');
         expect(testItem.find('es')).toBeNull();
     });    
-    test('Register 1 returns the same instance in find and update activeCultureId', () => {
-        let testItem = new CultureService();
+    test('Register 1 returns the same instance in find and update defaultCultureId', () => {
+        let testItem = new CultureService('fr');
         let cif: CultureIdFallback = {
             cultureId: 'fr'
         }
         expect(() => testItem.register(cif)).not.toThrow();
         expect(testItem.find('fr')).toBe(cif);
-        expect(testItem.activeCultureId).toBe('fr');
+        expect(testItem.defaultCultureId).toBe('fr');
     });
-    test('Explicitly set activeCultureID to en and register 1 returns the same instance in find and retains activeCultureId=en', () => {
-        let testItem = new CultureService();
-        testItem.activeCultureId = 'en';
+    test('Explicitly set defaultCultureId to en and register 1 returns the same instance in find and retains defaultCultureId=en', () => {
+        let testItem = new CultureService('en');
         let cif: CultureIdFallback = {
             cultureId: 'fr'
         }
         expect(() => testItem.register(cif)).not.toThrow();
         expect(testItem.find('fr')).toBe(cif);
-        expect(testItem.activeCultureId).toBe('en');
+        expect(testItem.defaultCultureId).toBe('en');
  
     });    
-    test('When activeCultureId is explicitly set to en, while there is a registration for fr and none for en, the activeCultureId ensures find returns en', () => {
-        let testItem = new CultureService();
-        testItem.activeCultureId = 'en';
+    test('When defaultCultureId is explicitly set to en, while there is a registration for fr and none for en, the defaultCultureId ensures find returns en', () => {
+        let testItem = new CultureService('en');
         expect(() => testItem.register(<CultureIdFallback>{ cultureId: 'fr'})).not.toThrow();
         expect(testItem.find('en')).toEqual(<CultureIdFallback>{ cultureId: 'en' });                        
     });        
     test('Register several and all are returned by find', () => {
-        let testItem = new CultureService();
+        let testItem = new CultureService('en');
         let fr: CultureIdFallback = {
             cultureId: 'fr'
         };
@@ -79,8 +76,7 @@ describe('register and find, ', () => {
         expect(testItem.find('fr-DE')).toBe(frDE);
     });
     test('Register same cultureID twice replaces', () => {
-        let testItem = new CultureService();
-        testItem.activeCultureId = 'en';
+        let testItem = new CultureService('en');
         let cif: CultureIdFallback = {
             cultureId: 'en-US',
             fallbackCultureId: 'en'
@@ -96,7 +92,7 @@ describe('register and find, ', () => {
  
     });        
     test('Invalid parameters', () => {
-        let testItem = new CultureService();
+        let testItem = new CultureService('en');
         expect(() => testItem.register(null!)).toThrow(/culture/);
     });        
 });
@@ -104,7 +100,7 @@ describe('register and find, ', () => {
 describe('CultureServices.getClosestCultureId', () => {
     describe('getClosestCultureId with en as final fallback', () => {
         test('Various', () => {
-            let testItem = new CultureService();
+            let testItem = new CultureService('en');
             registerCultureIdFallbacksForEn(testItem);
             expect(testItem.getClosestCultureId('en')).toBe('en');
             expect(testItem.getClosestCultureId('fr')).toBe('fr');
@@ -118,7 +114,7 @@ describe('CultureServices.getClosestCultureId', () => {
     });
     describe('getClosestCultureId with fr as final fallback', () => {
         test('Various', () => {
-            let testItem = new CultureService();
+            let testItem = new CultureService('fr');
             registerCultureIdFallbacksForFR(testItem);
             expect(testItem.getClosestCultureId('fr')).toBe('fr');
             expect(testItem.getClosestCultureId('fr-FR')).toBe('fr-FR');
@@ -146,15 +142,14 @@ describe('cultureLanguageCode', () => {
 describe('dispose()', () => {
 
     test('Nothing defined demonstrates exceptions are thrown after dispose', () => {
-        let testItem = new CultureService();
+        let testItem = new CultureService('en');
         testItem.dispose();
 
         expect(()=> testItem.find('en')).toThrow(TypeError);
     });
 
-    test('Change activeCultureID in Services impacts cultureIdFallback', () => {
-        let testItem = new CultureService();
-        testItem.activeCultureId = 'fr';
+    test('Change defaultCultureId in Services impacts cultureIdFallback', () => {
+        let testItem = new CultureService('fr');
         testItem.dispose();
 
         expect(() => testItem.find('fr')).toThrow(TypeError);
@@ -165,28 +160,27 @@ describe('availableCultures', () => {
     let testItem: CultureService;
 
     beforeEach(() => {
-        testItem = new CultureService();
+        testItem = new CultureService('en');
     });
 
-    test('Initially empty when no cultures are registered', () => {
-        expect(testItem.availableCultures()).toEqual([]);
+    test('Initially the defaultCultureId alone when no cultures are registered', () => {
+        expect(testItem.availableCultures()).toEqual(['en']);
     });
 
-    test('Returns a single registered culture', () => {
+    test('Register new culture returns default and new culture', () => {
         let culture: CultureIdFallback = { cultureId: 'en-US' };
         testItem.register(culture);
-        expect(testItem.availableCultures()).toEqual(['en-US']);
+        expect(testItem.availableCultures()).toEqual(['en', 'en-US']);
     });
 
     test('Returns multiple registered cultures', () => {
         let cultures: CultureIdFallback[] = [
             { cultureId: 'en-US', fallbackCultureId: 'en' },
-            { cultureId: 'en' },
             { cultureId: 'fr-FR' },
             { cultureId: 'es-ES' }
         ];
         cultures.forEach(culture => testItem.register(culture));
-        expect(testItem.availableCultures()).toEqual(['en-US','en', 'fr-FR', 'es-ES']);
+        expect(testItem.availableCultures()).toEqual(['en', 'en-US','fr-FR', 'es-ES']);
     });
 
     test('Does not return duplicates if the same culture is registered multiple times', () => {
@@ -197,7 +191,7 @@ describe('availableCultures', () => {
         ];
         cultures.forEach(culture => testItem.register(culture));
         expect(testItem.find('en-US')).toEqual({ cultureId: 'en-US' });
-        expect(testItem.availableCultures()).toEqual(['en-US', 'en']);
+        expect(testItem.availableCultures()).toEqual(['en', 'en-US']);
     });
 
 });
@@ -206,11 +200,11 @@ describe('availableLanguages', () => {
     let testItem: CultureService;
 
     beforeEach(() => {
-        testItem = new CultureService();
+        testItem = new CultureService('en');
     });
 
-    test('Initially empty when no cultures are registered', () => {
-        expect(testItem.availableLanguages()).toEqual([]);
+    test('Initially the default CultureId when no cultures are registered', () => {
+        expect(testItem.availableLanguages()).toEqual(['en']);
     });
 
     test('Returns a single language code when one culture is registered', () => {

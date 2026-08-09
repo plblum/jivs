@@ -5,7 +5,7 @@
 import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import {
     CompleteConfigBuilderHandler,
     IBuilderConfigHost,
@@ -22,7 +22,7 @@ import { ConditionBuilderBase } from './ConditionBuilderBase';
 export class StartConditionBuilder
     extends ConditionBuilderBase<ConditionConfig>
     implements IStartConditionBuilder {
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object> | null,
         completed?: CompleteConfigBuilderHandler<ConditionConfig>
     ) {
@@ -55,7 +55,7 @@ export class StartConditionBuilder
      * Will pass up the config to the parent builder's setConfig method.
      * @param config
      */
-    public setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
+    public override setConfig(config: ConditionConfig, options?: SetConfigOptions): void {
         const revise = !options || options.applyValueHostName != false;
         if (revise)
             this.reviseValueHostName(config);

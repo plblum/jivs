@@ -1,14 +1,14 @@
 import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../../src/Interfaces/LoggerService';
-import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { IJivsServices } from '../../src/Interfaces/JivsServices';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { ServiceWithAccessorBase } from '../../src/Services/ServiceWithAccessorBase';
 import { TestLogCallsLoggingService } from '../TestSupport/TestLogCallsLoggingService';
 
-function createServices(): { logger: TestLogCallsLoggingService, services: IValidationServices } {
-    let services = createValidationServicesForTesting();    // has both resolvers created
+function createServices(): { logger: TestLogCallsLoggingService, services: IJivsServices } {
+    let services = createJivsServicesForTesting();    // has both resolvers created
     return { logger: setupTestLogCallsLogger(services, LoggingLevel.Error), services: services };
 }
-function setupTestLogCallsLogger(services: IValidationServices, level: LoggingLevel): TestLogCallsLoggingService {
+function setupTestLogCallsLogger(services: IJivsServices, level: LoggingLevel): TestLogCallsLoggingService {
     let logger = new TestLogCallsLoggingService();
     services.loggerService = logger;
     return logger;
@@ -43,7 +43,7 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
         test('create, attach services, and dispose ', () => {
             let testItem = new Publicify_ServiceWithAccessorBase();
             expect(testItem.publicify_hasServices()).toBe(false);
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             expect(() => testItem.services = services).not.toThrow();
             expect(testItem.publicify_hasServices()).toBe(true);
             expect(() => testItem.dispose()).not.toThrow();

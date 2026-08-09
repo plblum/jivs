@@ -7,7 +7,7 @@
  * Provides a way to associate any value with a datatype lookupkey based on its actual datatype.
  * This interface is implemented for number as "Number", Date as "Date",
  * Boolean as "Boolean", and String as "String".
- * Register your implementation with ValidationServices.dataTypeIdentifierService.
+ * Register your implementation with JivsServices.dataTypeIdentifierService.
  */
 export interface IDataTypeIdentifier
 {

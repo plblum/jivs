@@ -1,10 +1,10 @@
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ValidatableValueHostConfigBuilder, ValueHostConfigBuilder } from '../../src/Builder/ValueHostConfigBuilder';
 
 class Publicify_ValueHostConfigBuilder extends ValueHostConfigBuilder { 
@@ -19,22 +19,22 @@ class Publicify_ValidatableValueHostConfigBuilder extends ValidatableValueHostCo
 }
 
 function createVMBuilder(): Publicify_ValidatableValueHostConfigBuilder {
-    return new Publicify_ValidatableValueHostConfigBuilder(null, createValidationServicesForTesting());
+    return new Publicify_ValidatableValueHostConfigBuilder(null, createJivsServicesForTesting());
 }
 function createVHBuilder(): Publicify_ValueHostConfigBuilder {
-    return new Publicify_ValueHostConfigBuilder(null, createValidationServicesForTesting());
+    return new Publicify_ValueHostConfigBuilder(null, createJivsServicesForTesting());
 }
 
 describe('ValueHostConfigBuilder', () => {
     describe('constructor', () => {
         test('null first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let testItem = new Publicify_ValueHostConfigBuilder(null, services);
             expect(testItem.services).toBe(services);
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
         });
         test('valueHostConfig array in first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             const valueHostConfigs: Array<ValueHostConfig> = [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1',
@@ -51,7 +51,7 @@ describe('ValueHostConfigBuilder', () => {
         });
 
         describe('static()', () => {
-            test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+            test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().static('Field1', null, { label: 'Field 1' });
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Static,
@@ -59,7 +59,7 @@ describe('ValueHostConfigBuilder', () => {
                     label: 'Field 1'
                 });
             });
-            test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+            test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().static('Field1', 'Test');
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Static,
@@ -68,7 +68,7 @@ describe('ValueHostConfigBuilder', () => {
                 });
             });
 
-            test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+            test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().static('Field1');
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Static,
@@ -76,7 +76,7 @@ describe('ValueHostConfigBuilder', () => {
                 });
             });
 
-            test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+            test('Pass in a StaticValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Static,
@@ -107,10 +107,10 @@ describe('ValueHostConfigBuilder', () => {
             });        
         });        
         describe('calc()', () => {
-            function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+            function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
                 return 1;
             }
-            test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+            test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().calc('Field1', null, calcFnForTests);
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Calc,
@@ -118,7 +118,7 @@ describe('ValueHostConfigBuilder', () => {
                     calcFn: calcFnForTests
                 });
             });
-            test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+            test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().calc('Field1', 'Test', calcFnForTests);
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Calc,
@@ -128,7 +128,7 @@ describe('ValueHostConfigBuilder', () => {
                 });
             });
 
-            test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+            test('Pass in a CalcValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().calc({ name: 'Field1', dataType: 'Test', calcFn: calcFnForTests });
                 expect(testItem).toEqual({
                     valueHostType: ValueHostType.Calc,
@@ -160,7 +160,7 @@ describe('ValueHostConfigBuilder', () => {
     });
     describe('dispose', () => {
         test('dispose sets services to undefined and later calls throw', () => {
-            let testItem = new Publicify_ValueHostConfigBuilder(null, createValidationServicesForTesting());
+            let testItem = new Publicify_ValueHostConfigBuilder(null, createJivsServicesForTesting());
             testItem.dispose();
             expect(() => testItem.services).toThrow();
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
@@ -173,7 +173,7 @@ describe('ValueHostConfigBuilder', () => {
                 dataType: LookupKey.Currency
             }];
 
-            let testItem = new Publicify_ValueHostConfigBuilder(valueHostConfigs, createValidationServicesForTesting());
+            let testItem = new Publicify_ValueHostConfigBuilder(valueHostConfigs, createJivsServicesForTesting());
             testItem.dispose();
             expect(() => testItem.services).toThrow();
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
@@ -183,13 +183,13 @@ describe('ValueHostConfigBuilder', () => {
 describe('ValidatableValueHostConfigBuilder', () => {
     describe('constructor', () => {
         test('null first parameter sets up without overrides', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             let testItem = new Publicify_ValidatableValueHostConfigBuilder(null, services);
             expect(testItem.services).toBe(services);
             expect(testItem.publicify_existingValueHostConfigs).toBeNull();
         });
         test('valueHostConfig array in first parameter sets up', () => {
-            let services = createValidationServicesForTesting();
+            let services = createJivsServicesForTesting();
             const valueHostConfigs: Array<ValueHostConfig> = [{
                 valueHostType: ValueHostType.Static,
                 name: 'Field1',
@@ -207,7 +207,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
     });
 
     describe('withoutValidators()', () => {
-        test('Valid name, null data type and defined vhConfig. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        test('Valid name, null data type and defined vhConfig. Adds ValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withoutValidators('TestType', 'Field1', null, { label: 'Field 1' });
             expect(testItem).toEqual({
                 valueHostType: 'TestType', 
@@ -215,7 +215,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
                 label: 'Field 1'
             });
         });
-        test('Valid name, data type assigned. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        test('Valid name, data type assigned. Adds ValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withoutValidators('TestType', 'Field1', 'Test');
             expect(testItem).toEqual({
                 valueHostType: 'TestType', 
@@ -224,7 +224,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             });
         });
 
-        test('Valid name. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        test('Valid name. Adds ValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withoutValidators('TestType', 'Field1');
             expect(testItem).toEqual({
                 valueHostType: 'TestType', 
@@ -232,7 +232,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             });
         });
 
-        test('Pass in a ValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        test('Pass in a ValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withoutValidators('TestType', { name: 'Field1', dataType: 'Test', label: 'Field 1' });
             expect(testItem).toEqual({
                 valueHostType: 'TestType', 
@@ -264,7 +264,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
         });    
     });
     describe('field()', () => {
-        test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
+        test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all fields plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().field('Field1', null, { label: 'Field 1' });
             expect(testItem).toEqual({
                 valueHostType: ValueHostType.Field,
@@ -273,7 +273,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
                 validatorConfigs: []
             });
         });
-        test('Name, data type supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
+        test('Name, data type supplied. Adds ValueHostConfig with all fields plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().field('Field1', 'Test');
             let expected = {
                 valueHostType: ValueHostType.Field,
@@ -284,7 +284,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             expect(testItem).toEqual(expected);
             
         });
-        test('Name supplied. Adds ValueHostConfig with all fields plus type to ValidationManagerConfig', () => {
+        test('Name supplied. Adds ValueHostConfig with all fields plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().field('Field1');
             let expected = {
                 valueHostType: ValueHostType.Field,
@@ -293,7 +293,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             };
             expect(testItem).toEqual(expected);
         });
-        test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        test('Pass in a FieldValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().field({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
             let expected = {
                 valueHostType: ValueHostType.Field,
@@ -323,7 +323,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
     });
 
     describe('withValidators()', () => {
-        test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        test('Valid name, null data type and defined vhConfig. Adds FieldValueHostConfig with all parameters plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withValidators(ValueHostType.Field, 'Field1', null, { label: 'Field 1' });
             expect(testItem).toEqual({
                 valueHostType: ValueHostType.Field,
@@ -332,7 +332,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
                 validatorConfigs: []
             });
         });
-        test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withValidators(ValueHostType.Field, 'Field1', 'Test');
             let expected = {
                 valueHostType: ValueHostType.Field,
@@ -343,7 +343,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             expect(testItem).toEqual(expected);
         
         });
-        test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withValidators(ValueHostType.Field, 'Field1');
             let expected = {
                 valueHostType: ValueHostType.Field,
@@ -352,7 +352,7 @@ describe('ValidatableValueHostConfigBuilder', () => {
             };
             expect(testItem).toEqual(expected);
         });
-        test('Pass in a FieldValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        test('Pass in a FieldValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
             let testItem = createVMBuilder().withValidators(ValueHostType.Field, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
             let expected = {
                 valueHostType: ValueHostType.Field,

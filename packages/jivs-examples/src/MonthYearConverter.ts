@@ -1,7 +1,7 @@
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses the month and year.
 
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
@@ -35,10 +35,10 @@ export class UTCMonthYearConverter extends DataTypeConverterBase
     
 }
 
-// Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerMonthYear(validationServices: IValidationServices): void
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerMonthYear(services: IJivsServices): void
 {
-    let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
+    let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
     dtcs.register(new UTCMonthYearConverter()); 
 

@@ -2,25 +2,25 @@
 
 // create a subclass of ModuleServicesInstaller to test the base class functionality
 import { ModuleServicesInstaller } from "../../src/Services/ModuleServicesInstaller";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { ValidationServices } from "../../src/Services/ValidationServices";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
+import { JivsServices } from "../../src/Services/JivsServices";
 
 class TestServiceInstaller extends ModuleServicesInstaller<string> {
     constructor() {
         super("testService");
     }
-    protected createDefaultService(services: IValidationServices): string {
+    protected createDefaultService(services: IJivsServices): string {
         return "defaultTestService";
     }
 }
 
-declare module "../../src/Interfaces/ValidationServices" {
-    interface IValidationServices {
+declare module "../../src/Interfaces/JivsServices" {
+    interface IJivsServices {
         testService?: string;
     }
 }
-declare module "../../src/Services/ValidationServices" {
-    interface ValidationServices {
+declare module "../../src/Services/JivsServices" {
+    interface JivsServices {
         testService?: string;
     }
 }
@@ -35,18 +35,18 @@ afterEach(() => {
 });
 
 describe('ModuleServicesInstaller', () => {
-    test('installs the property definition into the prototype of ValidationServices', () => {
+    test('installs the property definition into the prototype of JivsServices', () => {
         expect(installer.installed).toBe(true);
-        expect(Object.getOwnPropertyDescriptor(ValidationServices.prototype, 'testService')).toBeDefined();
+        expect(Object.getOwnPropertyDescriptor(JivsServices.prototype, 'testService')).toBeDefined();
     });
-    test('should install a new service property on ValidationServices', () => {
-        const services = new ValidationServices();
+    test('should install a new service property on JivsServices', () => {
+        const services = new JivsServices();
 
         // Access the testService property to trigger lazy installation
         expect(services.getService("testService")).toBeDefined();
         expect(services.testService).toBe("defaultTestService");
     });
-    test('should not overwrite an existing service property on ValidationServices', () => {
+    test('should not overwrite an existing service property on JivsServices', () => {
         const installer2 = new TestServiceInstaller(); // Attempt to install again
         expect(installer.installed).toBe(true); // Should not install again
         expect(installer2.installed).toBe(false);

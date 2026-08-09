@@ -11,7 +11,7 @@ import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound,
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 
 
 /**
@@ -20,8 +20,8 @@ import { IValidationManager } from '../Interfaces/ValidationManager';
  */
 export class ModelValidatorsValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
-    constructor(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState) {
-        super(validationManager, config, state);
+    constructor(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState) {
+        super(valueHostsManager, config, state);
 
     }    
 
@@ -97,8 +97,8 @@ export class ModelValidatorsValueHostGenerator extends ValidatableValueHostBaseG
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
         return config.valueHostType === ModelValidatorsValueHostType;
     }
-    public create(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
-        return new ModelValidatorsValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
+        return new ModelValidatorsValueHost(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do

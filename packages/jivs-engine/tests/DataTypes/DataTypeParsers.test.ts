@@ -5,7 +5,7 @@ import {
 } from '../../src/DataTypes/DataTypeParserBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { MockJivsServices } from '../TestSupport/mocks';
 import {
     BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser, NumberParser,
     Percentage100Parser, PercentageParser, ShortDatePatternParser
@@ -119,8 +119,8 @@ describe('DataTypeParserBase', () => {
         let x: any;
         expect(() => x = testItem.services).toThrow(/Register/);
     });
-    test('Services to return same ValidationService as assigned', () => {
-        let services = new MockValidationServices(false, false);
+    test('Services to return same JivsServices as assigned', () => {
+        let services = new MockJivsServices(false, false);
         let testItem = new TestDataTypeParserBase('lookupKey', {});
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
@@ -128,7 +128,7 @@ describe('DataTypeParserBase', () => {
     });
 
     test('dispose then get services throws TypeError', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new TestDataTypeParserBase('lookupKey', {});
         testItem.services = services;
         testItem.dispose();
@@ -238,7 +238,7 @@ describe('StrongPatternParserBase', () => {
         expect(testItem.supportedLookupKey).toBe('KEY');
         expect(testItem.supports('KEY', '', '00')).toBe(true);
         expect(testItem.supports('NOTKEY', '', '00')).toBe(false);
-        expect(testItem.supports('KEY', '', 'a0')).toBe(false);        
+        expect(testItem.supports('KEY', '', 'a0')).toBe(false);      
     });
     test('parse() calls createRegExp only once, but always returns the correct result', () => {
         let testItem = new TestStrongPatternParserBase('KEY');
@@ -251,7 +251,15 @@ describe('StrongPatternParserBase', () => {
     test('parse() returns an error message when the pattern does not match', () => {
         let testItem = new TestStrongPatternParserBase('KEY');
         
-        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual({ errorMessage: "ERROR" });
+        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: "ERROR",
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_KEY_l10n`,
+                }
+            }
+        );
     });
 });
 
@@ -309,8 +317,21 @@ describe('SpecificCulturesPatternParserBase', () => {
         expect(testItem!.parse('12', 'KEY', 'en')).toEqual({ value: 12 });
         expect(testItem!.parse('12', 'KEY', 'fr')).toEqual({ value: 12 });
         expect(testItem!.parse('12', 'WRONGKEY', 'en-US')).toEqual({ value: 12 });
-        expect(testItem!.parse('1', 'KEY', 'en-US')).toEqual({ errorMessage: 'ERROR' });
-        expect(testItem!.parse('ab', 'KEY', 'en-US')).toEqual({ errorMessage: 'ERROR' });
+        expect(testItem!.parse('1', 'KEY', 'en-US')).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: 'ERROR',
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_KEY_l10n`,
+                }
+            });
+        expect(testItem!.parse('ab', 'KEY', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: 'ERROR',
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_KEY_l10n`
+            }
+         });
     });       
 });
 
@@ -384,28 +405,71 @@ describe('DatePatternParserBase', () => {
         let testItem = new TestDatePatternParserBase('KEY', ['en'], { order: 'mdy', shortDateSeparator:'/' }, true);
         let result: DataTypeResolution<Date>;
         expect(()=> result = testItem.publicify_toDate('a' as any, 0, 1)).not.toThrow();
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
+        expect(result!).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: DatePatternParserBase.badDataMessage,
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_KEY_l10n`
+                }
+            });
     });    
     test('toDate with UTC=true reports "Invalid date" when parameters are out of range', () => {
         let testItem = new TestDatePatternParserBase('KEY', ['en'], { order: 'mdy', shortDateSeparator:'/' }, true);
         let result: DataTypeResolution<Date>;
         expect(()=> result = testItem.publicify_toDate(2000, -1, 1)).not.toThrow();
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });
 
         result = testItem.publicify_toDate(2000, 12, 1);
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });
 
         result = testItem.publicify_toDate(1990, 0, 0);
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });
 
         result = testItem.publicify_toDate(1990, 0, 32);
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });        
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });        
 
         result = testItem.publicify_toDate(2001, 1, 29);    // not a leap year
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });        
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });        
 
         result = testItem.publicify_toDate(2004, 1, 30);    // leap year
-        expect(result!).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });              
+        expect(result!).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_KEY_l10n`
+            }
+        });              
     });
 
 
@@ -490,20 +554,87 @@ describe('ShortDatePatternParser', () => {
     });            
     test('parse with text does not conform to the date pattern returns an error message', () => {
         let testItem = new ShortDatePatternParser('SHORT', ['en', 'en-US'], { order: 'mdy', shortDateSeparator: '/' }, true);
-        expect(testItem!.parse('120/01/2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
-        expect(testItem!.parse('12/001/2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
-        expect(testItem!.parse('5/31', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
-        expect(testItem!.parse('garbage', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
-        expect(testItem!.parse('12-01-2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });     
-        expect(testItem!.parse('12012000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });        
-        expect(testItem!.parse('12 / 01 / 2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.badDataMessage });
+        expect(testItem!.parse('120/01/2000', 'SHORT', 'en-US')).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: DatePatternParserBase.badDataMessage,
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+                }
+            });
+        expect(testItem!.parse('12/001/2000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('5/31', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('garbage', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('12-01-2000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('12012000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('12 / 01 / 2000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.badDataMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_SHORT_l10n`
+            }
+        });
     });    
     test('parse with text that matches mdy order and but has values out or range returns an out of range error message', () => {
         let testItem = new ShortDatePatternParser('SHORT', ['en', 'en-US'], { order: 'mdy', shortDateSeparator: '/' }, true);
-        expect(testItem!.parse('13/01/2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
-        expect(testItem!.parse('12/0/2000', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
-        expect(testItem!.parse('0/15/2001', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
-        expect(testItem!.parse('01/32/2001', 'SHORT', 'en-US')).toEqual({ errorMessage: DatePatternParserBase.invalidDateMessage });
+        expect(testItem!.parse('13/01/2000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('12/0/2000', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('0/15/2001', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_SHORT_l10n`
+            }
+        });
+        expect(testItem!.parse('01/32/2001', 'SHORT', 'en-US')).toEqual({
+            errorDetails: {
+                errorMessage: DatePatternParserBase.invalidDateMessage,
+                errorCode: DatePatternParserBase.invalidDateErrorCode,
+                errorMessagel10n: `${ DatePatternParserBase.invalidDateErrorCode }_SHORT_l10n`
+            }
+        });
     });          
     test('parse with text that matches dmy order and is a valid date returns a Date object', () => {
         let testItem = new ShortDatePatternParser('SHORT', ['en-GB'], { order: 'dmy', shortDateSeparator: '/' }, true);
@@ -692,7 +823,14 @@ describe('NumberParserBase', () => {
           
     });    
     test('parse() with number without thousands separators, (), and characters to strip', () => {
-        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        const errResult = {
+            errorDetails:
+            {
+                errorMessage: NumberParserBase.badNumberMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_KEY_l10n`
+            }
+        };
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: null,
@@ -740,7 +878,13 @@ describe('NumberParserBase', () => {
 
     });
     test('parse() with number allowing () and negative symbol is !', () => {
-        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        const errResult = {
+            errorDetails: {
+                errorMessage: NumberParserBase.badNumberMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_KEY_l10n`
+            }
+        };
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '!', thousandsSeparator: ',',
@@ -793,7 +937,13 @@ describe('NumberParserBase', () => {
 
     });    
     test('parse() with stripTheseStrings containing an array', () => {
-        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        const errResult = {
+            errorDetails: {
+                errorMessage: NumberParserBase.badNumberMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${ DataTypeParserBase.ParserErrorCode }_KEY_l10n`
+            
+        } };
 
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
@@ -866,7 +1016,13 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('-1.0%', 'KEY', 'en')).toEqual({ value: -1 }); 
     });        
     test('parse() with number with decimalSeparator is !', () => {
-        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        const errResult = {
+            errorDetails: {
+                errorMessage: NumberParserBase.badNumberMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_KEY_l10n`
+            }
+        };
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
             {
                 decimalSeparator: '!', negativeSymbol: '-', thousandsSeparator: ',',
@@ -882,7 +1038,13 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('1.1', 'KEY', 'en')).toEqual(errResult);
     });
     test('parse() with number with thousandsSeparator is _', () => {
-        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        const errResult = {
+            errorDetails: {
+                errorMessage: NumberParserBase.badNumberMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_KEY_l10n`
+            }
+        };
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
             {
                 decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: '_',
@@ -972,7 +1134,14 @@ describe('PercentageParser', () => {
         });
         expect(testItem.parse('1', LookupKey.Percentage, 'en')).toEqual({ value: 0.01 });
         expect(testItem.parse('100', LookupKey.Percentage, 'en')).toEqual({ value: 1 });
-        expect(testItem.parse('X', LookupKey.Percentage, 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('X', LookupKey.Percentage, 'en')).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: NumberParserBase.badNumberMessage,
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_Percentage_l10n`
+                }
+            });
     });
 });
 
@@ -1011,7 +1180,14 @@ describe('Percentage100Parser', () => {
          });
         expect(testItem.parse('1', LookupKey.Percentage, 'en')).toEqual({ value: 1 });
         expect(testItem.parse('100', LookupKey.Percentage, 'en')).toEqual({ value: 100 });
-        expect(testItem.parse('X', LookupKey.Percentage, 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('X', LookupKey.Percentage, 'en')).toEqual(
+            {
+                errorDetails: {
+                    errorMessage: NumberParserBase.badNumberMessage,
+                    errorCode: DataTypeParserBase.ParserErrorCode,
+                    errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_Percentage100_l10n`
+                }
+            });
     });
 });
 describe('BooleanParser', () => {
@@ -1056,7 +1232,13 @@ describe('BooleanParser', () => {
         expect(testItem.parse('', LookupKey.Boolean, 'en')).toEqual({ value: false });
         expect(testItem.parse('yes', LookupKey.Boolean, 'en')).toEqual({ value: true });
         expect(testItem.parse('Yes', LookupKey.Boolean, 'en')).toEqual({ value: true });
-        expect(testItem.parse('X', LookupKey.Boolean, 'en')).toEqual({ errorMessage: BooleanParserBase.badTextMessage });
+        expect(testItem.parse('X', LookupKey.Boolean, 'en')).toEqual({
+            errorDetails: {
+                errorMessage: BooleanParserBase.badTextMessage,
+                errorCode: DataTypeParserBase.ParserErrorCode,
+                errorMessagel10n: `${DataTypeParserBase.ParserErrorCode}_Boolean_l10n`
+            }
+        });
     });
 });
 

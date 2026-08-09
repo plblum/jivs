@@ -13,15 +13,15 @@ import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
-import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
+import { IJivsServices } from '../../src/Interfaces/JivsServices';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 
-function createServices(): { logger: CapturingLogger, services: IValidationServices }
+function createServices(): { logger: CapturingLogger, services: IJivsServices }
 {
-    let services = createValidationServicesForTesting();    // has both resolvers created
+    let services = createJivsServicesForTesting();    // has both resolvers created
     return { logger: setupLogger(services, LoggingLevel.Error), services: services };
 }
-function setupLogger(services: IValidationServices, level: LoggingLevel): CapturingLogger
+function setupLogger(services: IJivsServices, level: LoggingLevel): CapturingLogger
 {
     let logger = new CapturingLogger();
     logger.chainedLogger = new ConsoleLoggerService();

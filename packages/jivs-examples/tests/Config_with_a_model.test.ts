@@ -3,7 +3,7 @@ import {
     configPersonEditFormRules
 } from '../src/Config_with_a_model';
 
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 
@@ -23,13 +23,13 @@ afterEach(() => {
 });
 
 describe('configPersonEditFormRules', () => {
-    it('should configure validation manager correctly', () => {
+    it('should configure ValueHostsManager correctly', () => {
         // Execute configExample
-        let vm: ValidationManager;
-        expect(() => vm = configPersonEditFormRules()).not.toThrow();
-        let vh1 = vm!.getValueHost('FirstName');
-        let vh2 = vm!.getValueHost('LastName');
-        let vh3 = vm!.getValueHost('BirthDate');
+        let vhm: ValueHostsManager;
+        expect(() => vhm = configPersonEditFormRules()).not.toThrow();
+        let vh1 = vhm!.getValueHost('FirstName');
+        let vh2 = vhm!.getValueHost('LastName');
+        let vh3 = vhm!.getValueHost('BirthDate');
         expect(vh1).toBeInstanceOf(FieldValueHost);
         expect(vh1!.getDataType()).toBe(LookupKey.String);
         expect(vh1!.getLabel()).toBe('First name');

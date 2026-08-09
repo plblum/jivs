@@ -2,6 +2,28 @@
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
 
+## 0.21.0
+- **Breaking API change** - With a goal of establishing clearer terminology and usage patterns, major types have been renamed.
+  + ValidationServices -> JivsServices
+  + ValidationManager -> ValueHostsManager
+  + ModelRules -> ValueHostRules. RulesBase, ModelRulesBase, and FormRulesBase have been consolidated into ValueHostRulesBase.
+- **Breaking API change** -  DataTypeResolution type returned by DataTypeFormatters and DataTypeParsers handles errors differently.
+Instead of supplying just an errorMessage, it has an object with errorMessage, localization, error code, etc.
+- **Breaking API change** - InjectedErrors feature introduced, replacing options.conversionErrorTokenValue, to let your parsers supply much better information
+  and have it appear upon validation, without even setting up a validator. The DataTypeCheckCondition no longer handles this task,
+  nor offers the {ConversionError} token in error messages. InjectedErrors supports localization and error codes.
+- **New Feature** - FieldValueHost.setValue() now can format the native value and assign the result to the text value. It uses the existing DataTypeFormatter system.
+- **New Feature** - FieldValueHost.setTextValue() can now reformat the text value based on the associated parser and formatter, notifying your UI through
+the ValueHostsManager.onTextValueChanged callback if you like.
+- **Breaking API change** - Removed these two properties on FieldValueHostConfig: parserCreator and formatterCreator. Trying to reduce complexity.
+User can still create the same code as an actual DataTypeParser or DataTypeFormatter.
+- Behaviors feature introduced. This object let you configure behaviors of the ValueHostsManager. Set it up on builder.behaviors. Change on demand on ValueHostsManager.behaviors.
+It offers activeCultureId, disableParserOnValueChange, and disableFormatterOnValueChange.
+- **Breaking API change** - CultureService.activeCultureId is no longer used to set the active culture used for localization. Its property is readonly and named defaultCultureId.
+Instead, use the Behaviors.activeCultureId to change the default CultureID. This avoids services changing state. The result is JivsService constructor now optionally
+takes the value for CultureService.defaultCultureId.
+- **Major New Feature** - Use the ModelReader to assign the properties from the model to the associated ValueHosts. Use the ModelWriter to do the reverse.
+
 ## 0.20.0
 - **Breaking API change** - The Builder features are in a separate module, jivs-builder.
 - **Major feature** - Introduce IRules, ModelRulesBase, and FormRulesBase, which are the new way to configure the ValidationManager. It still uses the builder API,

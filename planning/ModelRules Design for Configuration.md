@@ -30,28 +30,28 @@ The goal here is to define a configuration abstraction that is:
 
 ## 2. Design Direction
 
-This design defines a configuration abstraction focused entirely on producing a configured `ValidationManager`.
+This design defines a configuration abstraction focused entirely on producing a configured `ValueHostsManager`.
 
 The key types are:
 
-* `IRules` - interface
-* `RulesBase` - abstract base implementing IRules
-* `ModelRulesBase` - abstract base subclassing RulesBase specifically targetting business logic model rules
-* `FormRulesBase` - abstract base subclassing RulesBase specifically targetting Forms that do not have an associated Model.
+* `IValueHostRules` - interface
+* `ValueHostRulesBase` - abstract base implementing IValueHostRules
+* `ValueHostRulesBase` - abstract base subclassing ValueHostRulesBase specifically targetting business logic model rules
+* `FormRulesBase` - abstract base subclassing ValueHostRulesBase specifically targetting Forms that do not have an associated Model.
 * `IAdaptModelRulesToForm` - Interface used by Form developers who subclass from a ModelRules class to adapt it to their form.
 
-The IRules public entry point is:
+The IValueHostRules public entry point is:
 
 * `configure()`
 
-`configure()` returns a `ValidationManagerConfig`.
+`configure()` returns a `ValueHostsManagerConfig`.
 
 The scope of this abstraction is:
 
 * configuration only
 * no validation workflow behavior
 * no factory-based creation
-* callers create an instance directly and pass in `ValidationServices`
+* callers create an instance directly and pass in `JivsServices`
 
 Example direction:
 
@@ -59,7 +59,7 @@ Example direction:
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vhm = new ValueHostsManager(config);
 ```
 
 ---
@@ -67,21 +67,21 @@ const vm = new ValidationManager(config);
 ## 3. API overview
 
 ```ts
-interface IRules {
+interface IValueHostRules {
   configure(
-    options?: RulesConfigOptions
-  ): ValidationManagerConfig;
+    options?: ValueHostRulesOptions
+  ): ValueHostsManagerConfig;
 }
 
-abstract class RulesBase implements IRules {}
+abstract class ValueHostRulesBase implements IValueHostRules {}
 
-abstract class ModelRulesBase extends RulesBase {}
+abstract class ValueHostRulesBase extends ValueHostRulesBase {}
 
-abstract class FormRulesBase extends RulesBase {}
+abstract class FormRulesBase extends ValueHostRulesBase {}
 
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: IValidationManagerConfigBuilder,
+    builder: IValueHostsManagerConfigBuilder,
     options?: RulesConfigureOptions,
   ): void;
 }
@@ -91,7 +91,7 @@ interface IAdaptModelRulesToForm {
 
 ## 4. Primary Developer Story
 
-The preferred structured way to configure the ValidationManager is through this system (`IRules`, `RulesBase`, etc)
+The preferred structured way to configure the ValueHostsManager is through this system (`IValueHostRules`, `ValueHostRulesBase`, etc)
 instead of using the Builder directly because it wraps fixed rules in a class with these benefits:
 
 * keeps configuration out of page/component code
@@ -104,7 +104,7 @@ This applies to both:
 * business-logic-authored reusable model rules
 * UI-authored reusable rules classes
 
-`RulesBase` consumes the Builder so that the developer can create fluent syntax for configurations. Thus the Builder
+`ValueHostRulesBase` consumes the Builder so that the developer can create fluent syntax for configurations. Thus the Builder
 remains an essential tool, but the developer doesn't create it. They just consume it.
 
 Direct Builder without it usage remains available as a lower-level alternative, consistent with existing Jivs documentation.
@@ -115,14 +115,14 @@ Direct Builder without it usage remains available as a lower-level alternative, 
 
 ### 5.1 Business-logic model rules
 
-A business logic developer defines a rules class for a model by subclassing `ModelRulesBase`.
-The class defines the model's configuration through `configureRules()` which is abstract in `ModelRulesBase`.
+A business logic developer defines a rules class for a model by subclassing `ValueHostRulesBase`.
+The class defines the model's configuration through `configureRules()` which is abstract in `ValueHostRulesBase`.
 
 Example:
 
 ```ts
-class PersonModelRules extends ModelRulesBase {
-  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
+class PersonModelRules extends ValueHostRulesBase {
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions)
   {
     // setup rules for Person model using the builder
   }
@@ -141,8 +141,8 @@ Example:
 
 ```ts
 class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
-  public adaptToForm(builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions): void {
+  public adaptToForm(builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions): void {
       // update existing ValueHosts and add any that are Form specific
     }
 }
@@ -160,7 +160,7 @@ Example:
 
 ```ts
 class LoginFormRules extends FormRulesBase {
-  public configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions)
+  public configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions)
   {
     // setup rules for Login form using the builder
   }  
@@ -173,7 +173,7 @@ class LoginFormRules extends FormRulesBase {
 ### 6.1 Configure options
 
 ```ts
-interface RulesConfigOptions {
+interface ValueHostRulesOptions {
   configAnalysisOptions?: unknown;
   disableCache?: boolean;
   variantName?: string;
@@ -188,32 +188,32 @@ Its used at the developer's discretion.
 * `configAnalysisOptions` enables config analysis when it is not `null` or `undefined`. It is passed through to the IConfigAnalysisService.analyze() method to dictate how the analysis works. 
 * The shape of `configAnalysisOptions` belongs to the installed config-analysis module, not to `jivs-engine`
 
-### 6.2 IRules
+### 6.2 IValueHostRules
 
 ```ts
-interface IRules {
+interface IValueHostRules {
   configure(
-    options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+    options?: ValueHostRulesOptions,
+  ): ValueHostsManagerConfig;
 }
 ```
 
-`configure()` is the single public entry point. It returns a new ValidationManager.
+`configure()` is the single public entry point. It returns a new ValueHostsManager.
 
 ### 6.3 IAdaptModelRulesToForm
 
 ```ts
 interface IAdaptModelRulesToForm {
   adaptToForm(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions
   ): void;
 }
 ```
 
 This is a narrow capability interface.
 
-It is not intended to replace `IRules`.
+It is not intended to replace `IValueHostRules`.
 
 Its purpose is to mark subclasses that add Form modification after Model configuration has run.
 It targets the UI developer who is working on a form against a business logic model so they
@@ -224,48 +224,48 @@ can focus on the changes needed to achieve the correct user experience.
 ## 7. Base Class Shape
 
 ```ts
-abstract class RulesBase implements IRules {
+abstract class ValueHostRulesBase implements IValueHostRules {
   protected constructor(
-    protected readonly services: ValidationServices,
+    protected readonly services: JivsServices,
   );
 
   public configure(
-    options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+    options?: ValueHostRulesOptions,
+  ): ValueHostsManagerConfig;
 
   protected abstract configureRules(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions,
   ): void;
 
-  protected getModelRulesKey(): string;
+  protected getValueHostRulesKey(): string;
 
   protected createConfigCacheKey(
-    options?: RulesConfigOptions,
+    options?: ValueHostRulesOptions,
   ): string;
 
   protected createBuilder(
-    options?: RulesConfigOptions,
-  ): ValidationManagerConfigBuilder;
+    options?: ValueHostRulesOptions,
+  ): ValueHostsManagerConfigBuilder;
 
   protected buildConfig(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions,
-  ): ValidationManagerConfig;
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions,
+  ): ValueHostsManagerConfig;
 
-  protected configAnalysis(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void;
+  protected configAnalysis(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void;
 
 }
 
-abstract class ModelRulesBase extends RulesBase {}
-abstract class FormRulesBase extends RulesBase {}
+abstract class ValueHostRulesBase extends ValueHostRulesBase {}
+abstract class FormRulesBase extends ValueHostRulesBase {}
 ```
 
 ### Method purposes
 
 #### `constructor(services)`
 
-Stores the `ValidationServices` instance used by the rules object.
+Stores the `JivsServices` instance used by the rules object.
 
 Subclasses call this through `super(services)`.
 
@@ -295,7 +295,7 @@ This is the required subclass hook (an abstract method).
 
 Override to define the model-oriented rules for a business model, or the full rules for a standalone UI-only rules class.
 
-#### `getModelRulesKey()`
+#### `getValueHostRulesKey()`
 
 Part of caching the configuration.
 
@@ -311,13 +311,13 @@ Part of caching the configuration.
 
 Builds the full cache key used for configuration caching.
 
-Its default implementation should use `getModelRulesKey()` together with `variantName` and may be extended by subclasses when additional options affect the produced configuration.
+Its default implementation should use `getValueHostRulesKey()` together with `variantName` and may be extended by subclasses when additional options affect the produced configuration.
 
 It is intended to be overridable when a subclass needs extra cache-key components.
 
 #### `createBuilder(options)`
 
-Creates the `ValidationManagerConfigBuilder` used during configuration.
+Creates the `ValueHostsManagerConfigBuilder` used during configuration.
 
 Most subclasses should not need to override this.
 
@@ -325,7 +325,7 @@ Keep this protected support method available for framework extensibility.
 
 #### `buildConfig(builder, options)`
 
-Finalizes the builder into `ValidationManagerConfig`.
+Finalizes the builder into `ValueHostsManagerConfig`.
 
 Most subclasses should not need to override this.
 
@@ -339,7 +339,7 @@ it performs the analysis. It outputs results usually to the console. Use during 
 
 ## 8. Configuration Flow
 
-`RulesBase.configure()` owns the overall configuration process.
+`ValueHostRulesBase.configure()` owns the overall configuration process.
 
 The high-level behavior is:
 
@@ -351,11 +351,11 @@ The high-level behavior is:
    1. Create the builder.
    2. Run `configureRules()`.
    3. If the instance has `adaptToForm()`, call `builder.startUILayerConfig()`. Then call `adaptToForm()`.
-   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `ValidationServices` and, 
+   4. If `configAnalysisOptions` is not `null` or `undefined`, look up the config-analysis service from `JivsServices` and, 
       if it exposes `analyze()`, call it with the builder and `configAnalysisOptions`.
    5. Finalize the builder into config.
    6. Store config in cache if enabled.
-5. Return the `ValidationManagerConfig`.
+5. Return the `ValueHostsManagerConfig`.
 
 Important rule:
 
@@ -367,9 +367,9 @@ It is not called before `configureRules()`.
 
 ```ts
 public configure(
-  options?: RulesConfigOptions,
-): ValidationManager {
-  let config: ValidationManagerConfig | null = null;
+  options?: ValueHostRulesOptions,
+): ValueHostsManager {
+  let config: ValueHostsManagerConfig | null = null;
   const cacheKey = this.createConfigCacheKey(options);
   const useCache = !options?.options?.disableCache;
 
@@ -413,14 +413,14 @@ Only the method name is checked at runtime.
 ### 9.1 Model alone
 
 ```ts
-class PersonModelRules extends ModelRulesBase {
+class PersonModelRules extends ValueHostRulesBase {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -437,12 +437,12 @@ class PersonEditFormRules
   implements IAdaptModelRulesToForm
 {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   public adaptToForm(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -454,12 +454,12 @@ This class inherits base model rules and adds UI-layer modifications.
 ```ts
 class LoginFormRules extends FormRulesBase {
   public constructor(
-    services: ValidationServices,
+    services: JivsServices,
   );
 
   protected override configureRules(
-    builder: IValidationManagerConfigBuilder,
-    options?: RulesConfigOptions,
+    builder: IValueHostsManagerConfigBuilder,
+    options?: ValueHostRulesOptions,
   ): void;
 }
 ```
@@ -474,27 +474,27 @@ Caching remains a first-class part of this design.
 
 The cached artifact is:
 
-* `ValidationManagerConfig`
+* `ValueHostsManagerConfig`
 
 The following is **not** cached:
 
-* `ValidationManager`
+* `ValueHostsManager`
 
 Reason:
 
 * configuration is static and reusable
-* `ValidationManager` is stateful and must be created anew for each `configure()` call
+* `ValueHostsManager` is stateful and must be created anew for each `configure()` call
 
 #### Caching Configuration Notes
 A configuration may contain callbacks and function pointers. These are not intended to survive
 a page regeneration. 
 
-* Callbacks are found on the top level ValidationManagerConfig, like onValidationStateChanged. They are expected to be reassigned 
+* Callbacks are found on the top level ValueHostsManagerConfig, like onValidationStateChanged. They are expected to be reassigned 
 as part of the Rules configuration like this:
   ```ts
   let config = rules.configure(options);
   config.onValidationStateChanged = (params)=> {};  // and others
-  let vm = new ValidationManager(config);
+  let vhm = new ValueHostsManager(config);
   ```
 * Functions are buried inside of conditions and cannot be restored. In this case, do not use caching.
 
@@ -504,7 +504,7 @@ as part of the Rules configuration like this:
 
 `ICachingService` is a general Jivs infrastructure service, not a model-rules-specific one.
 
-It should be exposed on `ValidationServices`.
+It should be exposed on `JivsServices`.
 
 ```ts
 interface ICachingService {
@@ -521,12 +521,12 @@ interface ICachingService {
 }
 ```
 
-### 10.2 ValidationServices
+### 10.2 JivsServices
 
-`ValidationServices` should expose caching directly.
+`JivsServices` should expose caching directly.
 
 ```ts
-class ValidationServices {
+class JivsServices {
   public cachingService: ICachingService;
 }
 ```
@@ -548,17 +548,17 @@ The cache key should be built from:
 The first component comes from:
 
 ```ts
-protected getModelRulesKey(): string {
+protected getValueHostRulesKey(): string {
   return this.constructor.name;
 }
 ```
 
 Subclasses may override either:
 
-* `getModelRulesKey()`
+* `getValueHostRulesKey()`
 * `createConfigCacheKey()`
 
-The expected pattern is that `createConfigCacheKey()` uses `getModelRulesKey()` as its first component and may append subclass-specific values.
+The expected pattern is that `createConfigCacheKey()` uses `getValueHostRulesKey()` as its first component and may append subclass-specific values.
 
 ---
 
@@ -585,7 +585,7 @@ Subclassing was chosen because it keeps the configuration story simpler.
 
 The UI subclass can inherit model configuration directly and then optionally provide UI modification, without requiring that extra public builder-population method.
 
-### 11.2 Why `adaptToForm()` is not on `RulesBase`
+### 11.2 Why `adaptToForm()` is not on `ValueHostRulesBase`
 
 `adaptToForm()` is intentionally not part of the base class contract.
 
@@ -605,13 +605,13 @@ This is sufficient for the intended pattern.
 
 ## 12. Config Analysis Integration
 
-Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in validationServices via setService().
+Config analysis is optional and requires the jivs-configanalysis module to be installed and its IConfigAnalysisService to be registered in services via setService().
 
-When the user installs and registers the config-analysis module into `ValidationServices`, `RulesBase.configure()` may invoke it before building the final config.
+When the user installs and registers the config-analysis module into `JivsServices`, `ValueHostRulesBase.configure()` may invoke it before building the final config.
 
 ### 12.1 Service lookup
 
-`jivs-engine` should define a constant service name used to retrieve the config-analysis service from `ValidationServices`.
+`jivs-engine` should define a constant service name used to retrieve the config-analysis service from `JivsServices`.
 
 That same constant should be used by the config-analysis module when registering its service.
 
@@ -630,7 +630,7 @@ Config analysis runs only when:
 * that service exposes an `analyze()` function
 
 ```ts
-protected configAnalysis(builder: ValidationManager, options?: RulesConfigOptions): void
+protected configAnalysis(builder: ValueHostsManager, options?: ValueHostRulesOptions): void
 {
     if (!options?.configAnalysisOptions)
       return;
@@ -658,10 +658,10 @@ It does not know the options type.
 
 It only:
 
-* retrieves the registered service by name through ValidationServices.getService()
+* retrieves the registered service by name through JivsServices.getService()
 * checks whether `analyze` exists as a function
 * calls `analyze(builder, params.options.configAnalysisOptions)`
-* Provides the validationServices object to allow analyze to access many other services,
+* Provides the services object to allow analyze to access many other services,
 including the loggerService through which it may generate a report.
 
 ### 12.4 What the config-analysis module owns
@@ -676,7 +676,7 @@ The config-analysis module owns:
 
 ### 12.5 Why this approach was chosen
 
-This keeps `jivs-engine` decoupled from the config-analysis module while still allowing optional integration through `ValidationServices`.
+This keeps `jivs-engine` decoupled from the config-analysis module while still allowing optional integration through `JivsServices`.
 
 It also lets the config-analysis module remain independently customizable.
 
@@ -686,39 +686,39 @@ It also lets the config-analysis module remain independently customizable.
 
 *This is not really a configuration issue as much as its a workflow that happens side-by-side with configuration.*
 
-The ValidationManager gets discarded when a page posts back and gets a fresh copy.
+The ValueHostsManager gets discarded when a page posts back and gets a fresh copy.
 This process happens in many situations like MVC and ASP.NET webforms.
 
 A round-trip may be the result of errors on the server, and the server will
 supply those errors in some way to the client. The configuration process is followed by
-applying those errors to the new ValidationManager instance.
+applying those errors to the new ValueHostsManager instance.
 
 ### Jivs on the server-side
-The server side code must pass along the string from its ValidationManager.toValidationPayload().
+The server side code must pass along the string from its ValueHostsManager.toValidationPayload().
 
-The client adds this call to the ValidationManager: `vm.fromValidationPayload(payload)`.
+The client adds this call to the ValueHostsManager: `vhm.fromValidationPayload(payload)`.
 
 ```ts
 let payload = getJivsPayload(); // user's code
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vhm = new ValueHostsManager(config);
 if (payload)
-  vm.fromValidationPayload(payload);
+  vhm.fromValidationPayload(payload);
 ```
 
 ### Other server side code
 The server sends errors to the client in its own format. On the client,
 retrieve them and convert them into an array of `IssueFound`. Then pass the 
-IssuesFound to ValidationManager: `vm.addExternalIssuesFound(issuesFound, false)`.
+IssuesFound to ValueHostsManager: `vhm.addExternalIssuesFound(issuesFound, false)`.
 
 ```ts
 let issuesFound = getIssuesFound(); // user's code to retrieve errors and return an array of IssueFound objects.
 const rules = new PersonEditFormRules(services);
 const config = rules.configure();
 config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-const vm = new ValidationManager(config);
+const vhm = new ValueHostsManager(config);
 if (issuesFound?.length > 0)
-  vm.addExternalIssuesFound(issuesFound, false);
+  vhm.addExternalIssuesFound(issuesFound, false);
 ```

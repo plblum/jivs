@@ -15,7 +15,7 @@ import { IDisposable } from './General_Purpose';
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
- * That data ends up in the ValidationManager as part of its state,
+ * That data ends up in the ValueHostsManager as part of its state,
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  */
@@ -102,7 +102,7 @@ export interface ValidatorConfig {
     // -----------------------
     // There are two ways to supply this validator's Condition.
     // 1. Pass a ConditionConfig and we'll create the correct Condition instance
-    // registered with the ValidationServices.ConditionFactory.
+    // registered with the JivsServices.ConditionFactory.
     // This is limited to Condition instances that implement IConditionCore<ConditionConfig>.
     // 2. Provide a function that will return the instance.
     // This is ideal for when the Condition does not implement IConditionCore<ConditionConfig>
@@ -173,7 +173,7 @@ export interface ValidatorConfig {
 
     /**
      * Localization key for errorMessage. Its value will be matched to an entry
-     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * made to JivsServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the errorMessage property is used.
      */
@@ -199,7 +199,7 @@ export interface ValidatorConfig {
 
     /**
      * Localization key for summaryMessage. Its value will be matched to an entry
-     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * made to JivsServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the errorMessage property is used.
      */
@@ -249,4 +249,3 @@ export interface IValidatorFactory {
     create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator;
     canCreate(config: ValidatorConfig): boolean;
 }
-

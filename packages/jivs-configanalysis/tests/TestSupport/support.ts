@@ -1,11 +1,11 @@
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { CultureService } from "@plblum/jivs-engine/build/Services/CultureService";
-import { createValidationServicesForTesting, CvstOptions } from "@plblum/jivs-engine/build/Support/createValidationServicesForTesting";
+import { createJivsServicesForTesting, CvstOptions } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 
 import { SampleValues } from "../../src/SampleValues";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
@@ -31,17 +31,17 @@ new BuildersFactoryInstaller();
  *  When cultures=[], it starts without cultures, expecting the caller to add them
  * @returns 
  */
-export function createServices(options?: CvstOptions): IValidationServices {
+export function createServices(options?: CvstOptions): IJivsServices {
     if (!options)
         options = {};
     if (!options.cultures)
         options.cultures = [{ cultureId: 'en', fallbackCultureId: null }];
-    return createValidationServicesForTesting(options);
+    return createJivsServicesForTesting(options);
 }
 
-export function setupHelper(services: IValidationServices, options: ConfigAnalysisOptions = {}): AnalysisResultsHelper<IValidationServices> {
+export function setupHelper(services: IJivsServices, options: ConfigAnalysisOptions = {}): AnalysisResultsHelper<IJivsServices> {
     let args = createAnalysisArgs(services, [], options);
-    let helper = new AnalysisResultsHelper<IValidationServices>(args);
+    let helper = new AnalysisResultsHelper<IJivsServices>(args);
     return helper;
 }
 export function createConfigAnalysisResults(valueHostNames: Array<string>): IConfigAnalysisResults {
@@ -56,20 +56,20 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
     return results;
 }
 
-export function createAnalysisArgs(services: IValidationServices,
+export function createAnalysisArgs(services: IJivsServices,
     valueHostConfigs: Array<ValueHostConfig>,
     options?: ConfigAnalysisOptions
-): AnalysisArgs<IValidationServices> {
+): AnalysisArgs<IJivsServices> {
 
     if (!options)
         options = {};
 
-    let mockAnalysisArgs: AnalysisArgs<IValidationServices>;
+    let mockAnalysisArgs: AnalysisArgs<IJivsServices>;
     mockAnalysisArgs = {
         services: services,
         options: options,
         results: createConfigAnalysisResults(valueHostConfigs.map(vh => vh.name)),
-        sampleValues: new SampleValues<IValidationServices>(services, options),
+        sampleValues: new SampleValues<IJivsServices>(services, options),
         valueHostConfigs: valueHostConfigs,
         conditionConfigAnalyzer: null!
     };
@@ -141,7 +141,7 @@ export class MockAnalyzerWithFallback extends MockAnalyzer {
 
     private _rejectedLookupKey: string;
 
-    analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
+    public override analyze(key: string, valueHostConfig: ValueHostConfig | null): ServiceWithLookupKeyCAResultBase {
         if (key === this._rejectedLookupKey) {
             return { feature: this.feature, tryFallback: true, message: 'testFallback' } as any;
         }
@@ -150,7 +150,7 @@ export class MockAnalyzerWithFallback extends MockAnalyzer {
     }
 }
 
-export function sampleValueByLookupKey(services: IValidationServices, key: string): any {
+export function sampleValueByLookupKey(services: IJivsServices, key: string): any {
     let dti = services.dataTypeIdentifierService.getAll().find(dti => dti.dataTypeLookupKey === key);
     if (dti)
         return dti.sampleValue();

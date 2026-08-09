@@ -8,7 +8,7 @@ import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Condi
 import { ConditionWithOneChildBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithOneChildBase';
 import { ConditionCategory, ConditionConfig, SupportsDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 
-import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';

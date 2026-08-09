@@ -1,7 +1,7 @@
 import { IDataTypeIdentifier } from '@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier';
 import { IDataTypeFormatter } from "@plblum/jivs-engine/build/Interfaces/DataTypeFormatters";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { NumberFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
@@ -39,13 +39,15 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
                 };
             }
             return {
-                errorMessage: 'TEST ERROR'
+                errorDetails: {
+                    errorMessage: 'TEST ERROR'
+                }
             };
         }
     }
 
 
-    function setupServices() : IValidationServices {
+    function setupServices() : IJivsServices {
         let services = createServices({ cultures: [{ cultureId: 'en'}] , registerFormatters: false});
         services.dataTypeIdentifierService.register(new TestToNumberIdentifier());
         services.dataTypeFormatterService.register(new TestToNumberFormatter());
@@ -159,10 +161,12 @@ describe('DataTypeFormatterLookupKeyAnalyzer', () => {
                         };
                     }
                     return {
-                        errorMessage: 'TEST ERROR'
+                        errorDetails: {
+                            errorMessage: 'TEST ERROR'
+                        }
                     };
                 }
-            }            
+            }
             let services = setupServices(); // already has 'en'
             services.cultureService.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
             services.dataTypeFormatterService.register(new ENOnlyNumberFormatter());

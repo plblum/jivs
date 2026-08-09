@@ -52,7 +52,7 @@ The React Adapter Architecture document defines:
 * `JivsReactContext`
 * Wrapper caches
 * Subscription routers
-* ValidationManager integration
+* ValueHostsManager integration
 * Infrastructure lifecycle management
 
 This document focuses on how React Hooks consume that infrastructure and expose Validation State to React components.
@@ -86,7 +86,7 @@ The React Hook architecture exists to provide:
 
 React components should not manage subscriptions directly.
 
-React components should not interact directly with ValidationManager notification callbacks.
+React components should not interact directly with ValueHostsManager notification callbacks.
 
 React components should consume Validation State and render UI.
 
@@ -111,7 +111,7 @@ React Hook
         ↓
 React Adapter Infrastructure
         ↓
-ValidationManager
+ValueHostsManager
         ↓
 Validation State
 ```
@@ -157,7 +157,7 @@ Hooks do not create:
 * Validation infrastructure
 * Wrapper caches
 * Subscription routers
-* ValidationManager integrations
+* ValueHostsManager integrations
 
 The architecture and implementation of `JivsProvider` are defined by the React Adapter Architecture document.
 
@@ -339,14 +339,14 @@ Validation State changes originate within the Jivs Engine.
 
 React components must be notified when those changes occur.
 
-The React Adapter provides a subscription architecture that bridges ValidationManager notifications and React rendering.
+The React Adapter provides a subscription architecture that bridges ValueHostsManager notifications and React rendering.
 
 Conceptually:
 
 ```text
 Validation State Changed
         ↓
-ValidationManager Notification
+ValueHostsManager Notification
         ↓
 Subscription Routing
         ↓
@@ -392,7 +392,7 @@ Components subscribe to a particular field through `useFieldValidation()`.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 Field Subscription Routing
         ↓
@@ -444,7 +444,7 @@ Conceptually:
 ```text
 FirstName Validation State Changed
                 ↓
-ValidationManager Notification
+ValueHostsManager Notification
                 ↓
 Field Subscription Routing
                 ↓
@@ -506,7 +506,7 @@ Form subscriptions are aggregate.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 Form Subscription Routing
         ↓
@@ -669,7 +669,7 @@ React Hooks are not responsible for:
 * Managing validation configuration
 * Creating validation infrastructure
 * Implementing subscription routing
-* Managing ValidationManager integrations
+* Managing ValueHostsManager integrations
 
 These responsibilities belong elsewhere in the architecture.
 
@@ -749,7 +749,7 @@ React-specific subscription behavior is implemented by the React Adapter infrast
 
 React components consume Validation State.
 
-React components do not interact directly with ValidationManager notification callbacks.
+React components do not interact directly with ValueHostsManager notification callbacks.
 
 ---
 
@@ -784,4 +784,4 @@ The architecture is built around:
 
 Hooks consume Validation State produced by the Jivs Engine and expose it through React-oriented APIs while keeping subscription management and React integration hidden from application components.
 
-The implementation details of `JivsProvider`, `JivsReactContext`, subscription routers, caches, and ValidationManager integration are defined by the React Adapter Architecture document.
+The implementation details of `JivsProvider`, `JivsReactContext`, subscription routers, caches, and ValueHostsManager integration are defined by the React Adapter Architecture document.

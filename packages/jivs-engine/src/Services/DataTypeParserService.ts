@@ -16,7 +16,7 @@ import { LookupKeyFallbackService } from './LookupKeyFallbackService';
  * A service for parsing strings into the native data type
  * using {@link jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
  * 
- * This class is available on {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeParserService | ValidationServices.dataTypeParserService}.
+ * This class is available on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices.dataTypeParserService | JivsServices.dataTypeParserService}.
  */
 export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<any>>
     implements IDataTypeParserService {
@@ -97,7 +97,12 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         catch (e) {
             const err = ensureError(e);
             this.logger.error(err); // will throw if SevereErrorBase
-            return { errorMessage: err.message };
+            return {
+                errorDetails: {
+                    errorMessage: err.message,
+                    // note: No errorcode or l10n because this is a configuration problem.
+                }
+             };
         }
 
     }

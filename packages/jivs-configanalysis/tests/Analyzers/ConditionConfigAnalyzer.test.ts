@@ -1,4 +1,4 @@
-import { IValidationServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
@@ -22,14 +22,14 @@ class TestConditionConfigPropertyAnalyzer implements IConditionConfigPropertyAna
     public ranCount: number = 0;
 }
 
-function createServicesForTheseTests(): IValidationServices {
+function createServicesForTheseTests(): IJivsServices {
     let services = createServices();
     services.conditionFactory.register<ConditionConfig>('TestCondition', (config)=> new AlwaysMatchesCondition(config));
     return services;
 
 }
 
-function setupHelperForTheseTests(services: IValidationServices): AnalysisResultsHelper<IValidationServices>
+function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelper<IJivsServices>
 {
     let helper = setupHelper(services);
     return helper;

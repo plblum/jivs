@@ -6,8 +6,8 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
 import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
 import { ConditionConfig } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import {
     ConditionBuilder
 } from "../../src/Builder/ConditionBuilder";
@@ -36,11 +36,11 @@ class TestParentBuilder implements IBuilderConfigHost<object> {
     completed?: CompleteConfigBuilderHandler<object>;
 }
 
-let services: IValidationServices;
+let services: IJivsServices;
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
-    services = createValidationServicesForTesting(); 
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
+    services = createJivsServicesForTesting(); 
 });
 
 describe('StartConditionBuilder', () => {
@@ -184,7 +184,7 @@ describe('StartConditionBuilder', () => {
  */
 class TopLevelStartConditionBuilder extends StartConditionBuilder {
     constructor(
-        services: IValidationServices, parentBuilder: IBuilderConfigHost<object>,
+        services: IJivsServices, parentBuilder: IBuilderConfigHost<object>,
         completed?: CompleteConfigBuilderHandler<ConditionConfig>
     ) {
         super(services, parentBuilder, completed);

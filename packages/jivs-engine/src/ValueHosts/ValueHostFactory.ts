@@ -7,7 +7,7 @@
  * @module jivs-engine/ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
-import type { IValidationManager } from '../Interfaces/ValidationManager';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IValueHost, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
@@ -22,12 +22,12 @@ import { StaticValueHostGenerator } from './StaticValueHost';
 export class ValueHostFactory implements IValueHostFactory {
     /**
      * Creates the instance.
-     * @param validationManager 
+     * @param valueHostsManager 
      * @param config 
      * @param state 
      */
-    public create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
-        assertNotNull(validationManager, 'validationManager');
+    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
+        assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
         const generator = this.resolveConfig(config);
@@ -36,7 +36,7 @@ export class ValueHostFactory implements IValueHostFactory {
         // if (!state && config.InitialValue !== undefined) {
         //     state = generator.createInstanceState(config);
         // }        
-        return generator.create(validationManager, config, state);
+        return generator.create(valueHostsManager, config, state);
     }
     /**
      * Always returns a Generator or throws an exception if it fails.

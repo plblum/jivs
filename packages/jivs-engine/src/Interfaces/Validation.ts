@@ -6,7 +6,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatorValidateResult } from './Validator';
 
 /**
- * Parameter for the validate() function on Validatable ValueHosts and ValidationManager.
+ * Parameter for the validate() function on Validatable ValueHosts and ValueHostsManager.
  * It provides additional guidance on how to get the validators involved.
  */
 export interface ValidateOptions
@@ -14,11 +14,11 @@ export interface ValidateOptions
     /**
      * Group validation name, a tool to group Validatable ValueHosts with a specific submit command when validating.
      * Use when there is more than one group of Validatable ValueHosts to be validated together.
-     * For example, the ValidationManager handles two forms at once. Give
+     * For example, the ValueHostsManager handles two forms at once. Give
      * the ValidatableValueHostConfig.group a name for each form. Then make their submit command
      * pass in the same group name.
      * When Group is undefined or "*", validate() does not check group names. All Validatable ValueHosts 
-     * within the ValidationManager are validated.
+     * within the ValueHostsManager are validated.
      * When assigned, only Validatable ValueHosts with a matching group name (case insensitive) will be involved.
      */
     group?: string;
@@ -218,7 +218,7 @@ export interface IssueFound {
 /**
  * Packages key values of the state of validation to be returned
  * by validate() and in the onValidationStateChanged callback.
- * The same values are also available directly on ValidationManager.
+ * The same values are also available directly on ValueHostsManager.
  */
 export interface ValidationState
 {

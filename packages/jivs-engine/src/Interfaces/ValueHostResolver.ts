@@ -37,7 +37,7 @@ export interface IValueHostResolver extends IServicesAccessor {
     getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null;    
 
     //FYI: Any ValueHost that is based on ValidatableValueHostBase has its get function
-    // in IValidationManager.
+    // in IValueHostsManager.
 
 
     /**

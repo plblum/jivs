@@ -9,7 +9,7 @@ import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost'
 
 import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer } from '../Types/Analyzers';
@@ -24,7 +24,7 @@ import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../Types/Co
  * There are no tests for duplicates.
  * There are no child configs to check.
  */
-export class ConditionConfigAnalyzer<TServices extends IValidationServices>
+export class ConditionConfigAnalyzer<TServices extends IJivsServices>
     extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult>
 implements IConditionConfigAnalyzer {
 
@@ -42,7 +42,7 @@ implements IConditionConfigAnalyzer {
             properties: []
         };
     }    
-    public analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
+    public override analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
         const result = super.analyze(config, valueHostConfig, existingResults);
         if (valueHostConfig && this.helper.analysisArgs.comparerAnalyzer) {
             const checkResult = this.helper.analysisArgs.comparerAnalyzer.checkConditionConfig(config, valueHostConfig);

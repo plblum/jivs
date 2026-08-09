@@ -3,6 +3,8 @@
  */
 
 import { IServiceWithAccessor } from './Services';
+import type { InjectedError } from './ValidatorsValueHostBase';
+
 
 /**
  * Base interface for Data Type services.
@@ -43,7 +45,8 @@ export interface DataTypeResolution<T>
      */
     value?: T;
     /**
-     * If assigned, the value failed to resolve and this is a description of what happened.
+     * If assigned, the value was not resolved and this is a description of what happened
+     * with optional localization keys for the error message and summary message.
      */
-    errorMessage?: string;
+    errorDetails?: InjectedError;
 }

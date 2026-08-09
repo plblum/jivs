@@ -5,7 +5,7 @@
 
 /**
  * General in memory caching service.
- * Found on IValidationServices.cachingService.
+ * Found on IJivsServices.cachingService.
  */
 export interface ICachingService {
   get<TValue>(key: string): TValue | null | undefined;

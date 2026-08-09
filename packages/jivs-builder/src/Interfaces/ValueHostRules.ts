@@ -1,6 +1,6 @@
 /**
  * In Jivs, users are expected to place their validation rules in separate areas from their UI code,
- * and if possible, do it in a reusable and testable way. The Rules classes, inheriting from IRules,
+ * and if possible, do it in a reusable and testable way. The Rules classes, inheriting from IValueHostRules,
  * encapsolate a configuration abstraction that is:
  * - reusable
  * - testable
@@ -8,26 +8,26 @@
  * - compatible with both business-logic-owned and UI-authored rules
  * - suitable for subclass-based UI augmentation
  * 
- * Subclass from abstract ModelRulesBase or FormRulesBase to implement your own rules.
+ * Subclass from abstract ValueHostRulesBase to implement your own rules.
  * 
- * Then use it to create a ValidationManagerConfig object, which can be used to create a ValidationManager.
+ * Then use it to create a ValueHostsManagerConfig object, which can be used to create a ValueHostsManager.
  * 
     ```ts
     const rules = new PersonEditFormRules(services);
     const config = rules.configure();
     config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
-    const vm = new ValidationManager(config);
+    const vhm = new ValueHostsManager(config);
     ```
- * @module jivs-builder/ModelRules/Types
+ * @module jivs-builder/ValueHostRules/Types
  */
 
-import { IFormConfigAdapter } from '../Interfaces/ManagerConfigBuilder';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IFormConfigAdapter } from './ManagerConfigBuilder';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 
 /**
- * Extends the behavior within IRules.configure.
+ * Extends the behavior within IValueHostRules.configure.
  */
-export interface RulesConfigOptions {
+export interface ValueHostRulesOptions {
     /**
      * When `true`, disables caching of the rules configuration. This is useful for testing and debugging.
      */
@@ -49,23 +49,23 @@ export interface RulesConfigOptions {
 }
 
 /**
- * Top level interface for rules classes. It is implemented by RuleBase.
- * It is used to create a ValidationManagerConfig object from any rules built 
+ * Top level interface for rules classes. It is implemented by ValueHostRulesBase.
+ * It is used to create a ValueHostsManagerConfig object from any rules built 
  * into each concrete class. Create concrete classes for each Model
  * or Form that uses Jivs validation. 
  */
-export interface IRules {
-  configure(options?: RulesConfigOptions): ValidationManagerConfig;
+export interface IValueHostRules {
+  configure(options?: ValueHostRulesOptions): ValueHostsManagerConfig;
 }
 
 /**
- * Interface used by Form developers who subclass from a ModelRules class to adapt it to their form.
- * It ensures that the form starts with the ModelRules configuration, 
+ * Interface used by Form developers who subclass from a ValueHost rules class defined by business logic
+ * to adapt it to their form.
+ * It ensures that the form starts with the business logic's configuration, 
  * and then adds any form-specific rules to it.
- * It is not used when subclassing FormRulesBase, which is already a form-specific rules class.
  * @param adapter - the IFormConfigAdapter that is used to adapt the model configuration
  * to the form.
  */
 export interface IAdaptModelRulesToForm {
-  adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void;
+  adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void;
 }
