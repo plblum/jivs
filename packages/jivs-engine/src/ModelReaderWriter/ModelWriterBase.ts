@@ -39,16 +39,16 @@ export abstract class ModelWriterBase<T extends object>
      * It uses the FieldValueHostConfig to determine how to write the data and convert it to the correct type.
      * In particular, dataType to ensure the value is converted to the correct type.
      * It writes to the log for each field written, and logs errors if any occur.
-     * Invalid values are handled by the ModelWriterRuleService and the error message is logged.
+     * Invalid values are handled by the DataCleanupService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
-    public write(): void
+    public writeToModel(): void
     {
         let generator = this.valueHostsManager.enumerateValueHosts((valueHost) => valueHost instanceof FieldValueHost);
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            this.writeOne(valueHost);
+            this.writeToProperty(valueHost);
         }
     }
 
@@ -60,7 +60,7 @@ export abstract class ModelWriterBase<T extends object>
      * @param modelPropertyName The name of the model property to write to.
      * When not provided, it is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
      */
-    public writeOne(source: IFieldValueHost, modelPropertyName?: string): boolean 
+    public writeToProperty(source: IFieldValueHost, modelPropertyName?: string): boolean 
     {
         if (!modelPropertyName) {
             modelPropertyName = source.getPropertyName();
@@ -70,7 +70,7 @@ export abstract class ModelWriterBase<T extends object>
         let valueHostName = source.getName();
         this.logger.message(LoggingLevel.Debug, () => `Preparing to move value from ValueHost '${ valueHostName }' to model property '${ modelPropertyName }'.`);
 
-        return this.applyRuleAndSetValue(source, modelPropertyName);
+        return this.setValueWithRule(source, modelPropertyName);
     }
 
     /**
@@ -79,7 +79,7 @@ export abstract class ModelWriterBase<T extends object>
      * @param modelPropertyName The name of the model property to set.
      * @returns True if the value was successfully written, false otherwise.
      */
-    public applyRuleAndSetValue(source: IFieldValueHost, modelPropertyName: string): boolean
+    public setValueWithRule(source: IFieldValueHost, modelPropertyName: string): boolean
     {
         let modelPropertyValue = source.getValue();
         let rule = this.getRule(source);

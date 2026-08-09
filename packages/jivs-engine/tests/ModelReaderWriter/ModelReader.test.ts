@@ -377,27 +377,27 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBeNull();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
-        // same using readOne(valueHost) on prop1
-        test('readOne with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        // same using readFromProperty(valueHost) on prop1
+        test('readFromProperty with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.readOne(valueHost);
+            reader.readFromProperty(valueHost);
             expect(valueHost.getValue()).toBeNull();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
-        // same using readOne('prop1', valueHost)
-        test('readOne with a model property name and valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        // same using readFromProperty('prop1', valueHost)
+        test('readFromProperty with a model property name and valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.readOne('prop1', valueHost);
+            reader.readFromProperty('prop1', valueHost);
             expect(valueHost.getValue()).toBeNull();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
@@ -407,7 +407,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 5, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBe(5);
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
@@ -417,7 +417,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'unassigned');
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBeUndefined();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value of undefined`, LoggingLevel.Info)).toBeTruthy();
@@ -426,7 +426,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'keep');
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBeNull();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
@@ -437,7 +437,7 @@ describe('ModelReader', () =>
         {
             let model = { prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBeUndefined();
             expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' does not exist in the model.`, LoggingLevel.Warn)).toBeTruthy();
@@ -453,7 +453,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost.getName()] = 'someValue'; // add a property with the same name as the valueHost, but not the propertyName
 
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost.getValue()).toBe('someValue'); // the valueHost name matches a property on the model, so it will be set to that value
         });
         // ValueHosts for all properties on the model and no adjustments (best happy path test)
@@ -474,7 +474,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             (model as any)[valueHost3.getName()] = true;
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             logger.toConsole();
             expect(valueHost1.getValue()).toBe('value1');
             expect(valueHost2.getValue()).toBe(42);
@@ -492,7 +492,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             (model as any)[valueHost3.getName()] = 'hello';            
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost1.getValue()).toBeNull();
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBe('hello');
@@ -509,7 +509,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             (model as any)[valueHost3.getName()] = 0;
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost1.getValue()).toBe('value1');
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBeNull();   
@@ -528,7 +528,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             // valueHost3 does not have a corresponding property in the model
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost1.getValue()).toBe('value1');
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBeUndefined();
@@ -555,7 +555,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             (model as any)[valueHost3.getName()] = 100;
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost1.getValue()).toBeNull();
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBe(10); // static valueHost should not be changed by ModelReader
@@ -582,7 +582,7 @@ describe('ModelReader', () =>
             (model as any)[valueHost2.getName()] = 42;
             (model as any)[valueHost3.getName()] = 100;
             let reader = new PublicifyModelReader(valueHostsManager, model);
-            reader.read();
+            reader.readFromModel();
             expect(valueHost1.getValue()).toBeNull();
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBe(20);

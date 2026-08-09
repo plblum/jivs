@@ -1265,13 +1265,13 @@ The actual transfer process is pretty simple, but requires configuration describ
 let vhm = new ValueHostsManager(builder.complete());
 let model = getMyModel(); // your code
 let reader = new ModelReader(vhm, model);
-reader.read();  // data is now in the ValueHosts
+reader.readFromModel();  // data is now in the ValueHosts
 
 // ... interact with the data and finish up with validation before trying to save it ...
 
 let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
 let writer = new ModelWriter(vhm, model);
-writer.write(); // your model is updated
+writer.writeToModel(); // your model is updated
 ```
 
 If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [ValueHost Formatting](#decisions-around-jivs-built-in-formatting).
@@ -1281,25 +1281,25 @@ let vhm = new ValueHostsManager(builder.complete());
 ```
 
 ### Available operations on ModelReader
-- `read()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the rule indicates.
-- `readOne(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
+- `readFromModel()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the rule indicates.
+- `readFromProperty(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
   and applying its rules before setting it in the `ValueHost`. Will skip when the rule indicates.
-- `readOne(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
+- `readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeOne('property1', vhm.getFieldValueHost('field1'));
-    writer.writeOne('property2', vhm.getFieldValueHost('field2'));
+    writer.writeToProperty('property1', vhm.getFieldValueHost('field1'));
+    writer.writeToProperty('property2', vhm.getFieldValueHost('field2'));
     ```
 ### Available operations on ModelWriter
-- `write()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the rule indicates.
-- `writeOne(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
+- `writeToModel()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the rule indicates.
+- `writeToProperty(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
   and applying its rules before setting it in the model. Will skip when the rule indicates.
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeOne(vhm.getFieldValueHost('field1'), 'property1');
-    writer.writeOne(vhm.getFieldValueHost('field2'), 'property2');
+    writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
+    writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
     ```
 
 ### Configuring the ValueHosts
@@ -1410,7 +1410,7 @@ function replaceWithYear2000(value: any): DataCleanupResolution {
 ```
 Register in the service:
 ```ts
-jivsServices.modelWriterRuleService.registerThenFunction('year2000', replaceWithYear2000);
+jivsServices.dataCleanupService.registerThenFunction('year2000', replaceWithYear2000);
 ```
 
 ---

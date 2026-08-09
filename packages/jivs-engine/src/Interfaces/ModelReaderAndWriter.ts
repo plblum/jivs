@@ -25,7 +25,7 @@
  * 
  * The rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
  * 
- * Rules are defined in the ModelWriterRuleService. 
+ * Rules are defined in the DataCleanupService. 
  * 
  * # ModelWriter (IModelWriter interface)
  * FieldValueHost native value -> Native value on model
@@ -95,7 +95,7 @@ export interface IModelReader
      * Invalid values are handled by the DataTypeFormatterService and the error message is injected into the ValueHost using InjectedError.
      * They do not throw errors, but log them and continue reading the rest of the fields.
      */
-    read(): void;
+    readFromModel(): void;
 }
 
 /**
@@ -139,7 +139,7 @@ export interface IModelReader
  *          { when: 'nullorundefined', then: 'zero' }    // write 0 when the value is null or undefined
  *          { when: 'undefined', then: 'keep' }          // write undefined as-is
  *          ```
- *      + The ModelWriterRuleService is used to register the functions behind the when/then names. See below for details.
+ *      + The DataCleanupService is used to register the functions behind the when/then names. See below for details.
  *          - The factory registers two types of functions: When and Then. Each function is registered with a name. The name is used in the when/then properties of the rule.
  *          - Predefined rules are shown below and registered in the factory.
  *          - Expect the user to create very data specific rules like returning an object with a specific shape or a specific value. Date object is a good example.
@@ -158,8 +158,8 @@ export interface IModelWriter
      * It uses the FieldValueHostConfig to determine how to write the data and convert it to the correct type.
      * In particular, dataType to ensure the value is converted to the correct type.
      * It writes to the log for each field written, and logs errors if any occur.
-     * Invalid values are handled by the ModelWriterRuleService and the error message is logged.
+     * Invalid values are handled by the DataCleanupService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
-    write(): void;
+    writeToModel(): void;
 }

@@ -69,6 +69,8 @@ export abstract class ModelReaderBase<T extends object>
     private _skipValueChangedCallback: boolean;
 
     /**
+     * Reads all values from the model into the corresponding ValueHosts.
+     * 
      * Loops through all ValueHosts to determine their values.
      * If the model has a value, it is assigned to the ValueHost.
      * Any value is run through the rule on FieldValueHostsConfig.modelReaderRule
@@ -82,13 +84,13 @@ export abstract class ModelReaderBase<T extends object>
      *   * 2. Override getRule to provide a rule for the model property that supersedes the
      *      FieldValueHostConfig.modelReaderRule. The default returns valueHost.getModelReaderRule().
      */
-    public read(): void
+    public readFromModel(): void
     {
         let generator = this.valueHostsManager.enumerateValueHosts((valueHost) => valueHost instanceof FieldValueHost);
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            this.readOne(valueHost);
+            this.readFromProperty(valueHost);
         }
     }
 
@@ -99,16 +101,16 @@ export abstract class ModelReaderBase<T extends object>
      * with its FieldValueHostConfig.propertyName. If that is not set, it uses the ValueHostConfig.name.
      * @returns True if the value was successfully read, false otherwise.
      */
-    public readOne(destination: IFieldValueHost): boolean;
+    public readFromProperty(destination: IFieldValueHost): boolean;
     /**
      * Reads the value of a specified model property, applies the rules, and sets it into the specified ValueHost if appropriate.
      * @param modelPropertyName The name of the model property to read.
      * @param destination The destination ValueHost.
      * @returns True if the value was successfully read, false otherwise.
      */
-    public readOne(modelPropertyName: string, destination: IFieldValueHost): boolean;
+    public readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean;
     
-    public readOne(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
+    public readFromProperty(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
     {
         let modelPropertyName: string;
         let destination: IFieldValueHost;
@@ -131,19 +133,20 @@ export abstract class ModelReaderBase<T extends object>
             this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' does not exist in the model. ValueHost '${ destination.getName() }' will be treated as unassigned.`);
             return false;
         }
-        return this.applyRuleAndSetValue(modelPropertyName, modelPropertyResult.value, destination);
+        return this.setValueWithRule(modelPropertyName, modelPropertyResult.value, destination);
     }
 
     /**
-     * Sets the value of a model property into a specified ValueHost. It is up to the caller to resolve the model property value.
+     * Sets the value of a model property into a specified ValueHost.
      * It applies the rules supporting adjustments or skipping the value, and calling ValueHost.setValue if appropriate.
+     * It is up to the caller to resolve the model property value.
      * 
      * @param modelPropertyName The name of the model property.
      * @param modelPropertyValue The value of the model property.
      * @param destination The destination ValueHost or its name.
      * @returns True if the value was successfully set, false otherwise.
      */
-    public applyRuleAndSetValue(modelPropertyName: string, modelPropertyValue: any, destination: IFieldValueHost | string): boolean
+    public setValueWithRule(modelPropertyName: string, modelPropertyValue: any, destination: IFieldValueHost | string): boolean
     {
         let valueHost: IFieldValueHost;
         if (typeof destination === "string") {

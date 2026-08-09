@@ -89,7 +89,7 @@
  * ```
  * Register in the service:
  * ```ts
- * jivsServices.modelWriterRuleService.registerThenFunction('negativeOne', negativeOne);
+ * jivsServices.dataCleanupService.registerThenFunction('negativeOne', negativeOne);
  * ```
  * @module jivs-engine/Services/Types/DataCleanupService
  */
@@ -106,7 +106,7 @@ import { IServiceWithAccessor } from './Services';
 export interface DataCleanupRule
 {
     /**
-     * The name of the function registered in ModelReader/WriterRuleService to determine 
+     * The name of the function registered in DataCleanupService to determine 
      * if the value is invalid and needs to be replaced.
      * Predefined values are:
      * - 'undefined':       true when value === undefined.
@@ -125,7 +125,7 @@ export interface DataCleanupRule
      */
     when: string;
     /**
-     * The name of the function registered in ModelReader/WriterRuleService to determine 
+     * The name of the function registered in DataCleanupService to determine 
      * what to do with the value identified by the When function.
      * 
      * Predefined values are:
@@ -177,10 +177,6 @@ export type DataCleanupResolution = { skip?: boolean, value?: any; };
  * - when() and then() retrieve and execute the When and Then functions by name.
  * - registerWhenFunction() and registerThenFunction() register the When and Then functions by name.
  * 
- * There are two implementations: DataCleanupService and ModelWriterRuleService.
- * Each has its own set of pre-registered functions.
- * They are registered in JivsServices and can be accessed via 
- * jivsServices.modelReaderRuleService and jivsServices.modelWriterRuleService.
  * It supports case-insensitive name lookup.
  */
 export interface IDataCleanupService extends IServiceWithAccessor

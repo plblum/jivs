@@ -106,7 +106,7 @@ vhm.vh('LastName').setValue(person.lastName, { validate: false, reset: true });
 ... and so forth ...
 /* Or use the ModelReader class to copy values from model to all valuehosts together.
 let modelReader = new ModelReader(vhm, person);
-modelReader.read(); // ValueHosts are now updated!
+modelReader.readFromModel(); // ValueHosts are now updated!
 */
 
 // Wire up your submit handler to use ValuesHostManager
@@ -132,7 +132,7 @@ function submitTheForm(vhm: ValueHostsManager): void
             // or use our ModelWriter class
             let person = new Person();
             let modelWriter = new ModelWriter(vhm, person);
-            modelWriter.write(); // now person is updated!
+            modelWriter.writeToModel(); // now person is updated!
             return person;
         }
         */
@@ -188,7 +188,7 @@ vhm.vh('LastName').setValue(person.lastName, { validate: false });
 ... and so forth ...
 /* Or use the ModelReader class to copy values from model to all valuehosts together.
 let modelReader = new ModelReader(vhm, person);
-modelReader.read(); // ValueHosts are now updated!
+modelReader.readFromModel(); // ValueHosts are now updated!
 */
 
 

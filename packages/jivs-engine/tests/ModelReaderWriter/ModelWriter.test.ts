@@ -325,7 +325,7 @@ describe('ModelWriter', () =>
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.write();
+            writer.writeToModel();
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
@@ -333,25 +333,25 @@ describe('ModelWriter', () =>
 
         });
 
-        // same but specifically calling writeOne with the ValueHost for prop1
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeOne', () =>
+        // same but specifically calling writeToProperty with the ValueHost for prop1
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeToProperty', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeOne(valueHost);
+            writer.writeToProperty(valueHost);
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
-        // same but passes the model property name explicitly to writeOne
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeOne with explicit model property name', () =>
+        // same but passes the model property name explicitly to writeToProperty
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeToProperty with explicit model property name', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeOne(valueHost, 'prop1');
+            writer.writeToProperty(valueHost, 'prop1');
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
@@ -363,7 +363,7 @@ describe('ModelWriter', () =>
             let model = { prop1: 5, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(5);
-            writer.write();
+            writer.writeToModel();
             expect(model.prop1).toBe(5);
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
@@ -375,7 +375,7 @@ describe('ModelWriter', () =>
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'unassigned');
             valueHost.setValue(0);
-            writer.write();
+            writer.writeToModel();
             expect(model.prop1).toBeUndefined();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
@@ -386,7 +386,7 @@ describe('ModelWriter', () =>
             let model = { prop1: 1, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'keep');
             valueHost.setValue(null);
-            writer.write();
+            writer.writeToModel();
             expect(model.prop1).toBeNull();
             logger.toConsole();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
@@ -398,7 +398,7 @@ describe('ModelWriter', () =>
             let model = { prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.write();
+            writer.writeToModel();
             expect((model as any).prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
@@ -430,7 +430,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = true;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(2);
             expect((model as any)[propName3]).toBe(false);
@@ -453,7 +453,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 'hello';
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBeNull();
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBe('hello-changed');
@@ -476,7 +476,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 0;  // this will be adjusted to null
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBeNull();
@@ -500,7 +500,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             // valueHost3 does not have a corresponding property in the model
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBe('hello-changed');
@@ -532,7 +532,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
             expect((model as any)[propName3]).toBe(100);    // not changed to 10 like the static valueHost would have done if it was processed by ModelWriter
@@ -567,7 +567,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.write();
+            writer.writeToModel();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
             expect((model as any)[propName3]).toBe(100);    // not changed to 20 like the calc valueHost would have done if it was processed by ModelWriter
