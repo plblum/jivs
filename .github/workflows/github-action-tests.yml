@@ -20,7 +20,7 @@ jobs:
       - name: Test using Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
         # node_modules is in the root of the repo. So install it there.
       - run: npm install
       - run: npm run test:github
