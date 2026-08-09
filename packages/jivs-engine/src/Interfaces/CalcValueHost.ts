@@ -22,9 +22,9 @@
  * 
  * Here is pseudo code for configuring the CalcValueHost used in this example. It assumes
  * that you have a builder object, and that is provided so long as you are writing configuration 
- * code using the ModelRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
+ * code using the ValueHostRulesBase class. Builder has the method calc() which takes the name of the CalcValueHost, its dataType, and the calculation function.
  * ```ts
- * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager)
+ * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
  * : SimpleValueType
  * {
  *      let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
@@ -34,7 +34,7 @@
  *      return Math.abs(totalDays2 - totalDays1);
  * }
  * 
- * // create the CalcValueHostConfig to supply to the ValidationManager
+ * // create the CalcValueHostConfig to supply to the ValueHostsManager
  * builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
  * // create the 'StartDate' field with a LessThanCondition
@@ -47,18 +47,19 @@
 
 import { LookupKey } from '../DataTypes/LookupKeys';
 import { SimpleValueType } from './DataTypeConverterService';
-import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
-import { IValidationManager } from './ValidationManager';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState, SetValueOptions } from './ValueHost';
+import { IValueHostsManager } from './ValueHostsManager';
 
 /**
  * Function definition for calculation functions used by CalcValueHost
  */
-export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValidationManager) => SimpleValueType;
+export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => SimpleValueType;
 
 /**
  * Structure of CalcValueHost
  */
-export interface ICalcValueHost extends IValueHost
+export interface ICalcValueHost<TOptions extends CalcValueHostSetValueOptions = CalcValueHostSetValueOptions>
+    extends IValueHost<TOptions>
 {
     /**
      * Provides conversion support against the original value using the DataTypeConverters
@@ -115,4 +116,8 @@ export interface CalcValueHostConfig extends ValueHostConfig
 export interface CalcValueHostInstanceState extends ValueHostInstanceState
 {
     
+}
+
+export interface CalcValueHostSetValueOptions extends SetValueOptions
+{
 }

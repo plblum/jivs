@@ -14,7 +14,7 @@ Part 1 defined:
 
 * JivsProvider
 * JivsReactContext
-* ValidationManager integration
+* ValueHostsManager integration
 
 Part 2 defined:
 
@@ -303,13 +303,13 @@ JivsProvider Created
         ↓
 JivsReactContext Created
         ↓
-ValidationManager Created
+ValueHostsManager Created
         ↓
 Caches Created
         ↓
 Subscription Services Created
         ↓
-ValidationManager Notifications Wired
+ValueHostsManager Notifications Wired
 ```
 
 The exact construction sequence remains implementation-defined.
@@ -327,7 +327,7 @@ JivsProvider Removed
         ↓
 JivsReactContext Disposed
         ↓
-ValidationManager Notifications Unwired
+ValueHostsManager Notifications Unwired
         ↓
 Infrastructure Released
 ```
@@ -455,7 +455,7 @@ Field validation changes follow the architecture established in Parts 1 and 2.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValueHostValidationStateChanged
         ↓
@@ -485,7 +485,7 @@ Form validation changes follow the architecture established in Parts 1 and 2.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValidationStateChanged
         ↓

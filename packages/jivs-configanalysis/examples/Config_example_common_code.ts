@@ -5,16 +5,16 @@
  https://github.com/plblum/jivs/tree/main#apioverview
 
  You will find:
- - How to configure the ValidationServices object by adding conditions, localizable error messages, 
+ - How to configure the JivsServices object by adding conditions, localizable error messages, 
    parsers, formatters, and converters.
  - The model used in the examples.
- - Callback functions used by the ValidationManager.
+ - Callback functions used by the ValueHostsManager.
  - Unit testing Mocks for the document.getElementById function and the HTMLSelectElement 'timeZonePicker'
 
 
 */
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
-import { createMinimalValidationServices } from "./support";
+import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
+import { createMinimalJivsServices } from "./support";
 import {
     DataTypeCheckConditionConfig, DataTypeCheckCondition,
     LessThanConditionConfig, LessThanCondition,
@@ -34,7 +34,7 @@ import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/Dat
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 
 // Our model
 export interface FilterDatesModel {
@@ -57,7 +57,7 @@ export interface FilterDatesModel {
 export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
-export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
     let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), null, LookupKey.TotalDays);
     let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
@@ -70,8 +70,8 @@ export function differenceBetweenDates(callingValueHost: ICalcValueHost, findVal
 // with the exception of default error messages.
 // Here we show how to prepare it from scratch configured
 // for this example.
-export function createValidationServices(cultureID: string): ValidationServices {
-    let services = createMinimalValidationServices(cultureID);
+export function createJivsServices(cultureID: string): JivsServices {
+    let services = createMinimalJivsServices(cultureID);
     // We are expecting to use Data Types: Date, Integer, String. 
     // Jivs preconfigures Date and String.
     // Integer is supported as "Number" automatically. We only need to
@@ -107,7 +107,7 @@ export function createValidationServices(cultureID: string): ValidationServices 
     formatterService.register(new NumberFormatter());  // for {CompareTo} token in error message
 
     // provide default error messages. 
-    // These will override any passed through the ValidationManagerConfig as the supplied messages are assumed to
+    // These will override any passed through the ValueHostsManagerConfig as the supplied messages are assumed to
     // come from business logic, not the UI layer.
     // In this case, our error message for LessThan will be a custom one, so we will set it later.
     let textLocalizationService = services.textLocalizerService as TextLocalizerService;

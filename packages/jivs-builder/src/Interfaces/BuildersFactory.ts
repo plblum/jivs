@@ -6,7 +6,7 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IServiceWithAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import {
     CompleteConfigBuilderHandler,
@@ -74,7 +74,7 @@ export interface IBuildersFactory extends IServiceWithAccessor
      * @param parentConfig - Config object from the parent to host this builder.
      * It can be null, in which case the builder will use the services object that owns this factory.
      */
-    createManagerConfigBuilder(parentConfig: ValidationManagerConfig | null): IManagerConfigBuilder<ValidationManagerConfig>;
+    createManagerConfigBuilder(parentConfig: ValueHostsManagerConfig | null): IManagerConfigBuilder<ValueHostsManagerConfig>;
     
     /**
      * Creates the instance of ValidatorBuilder.

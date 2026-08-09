@@ -1,6 +1,6 @@
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
-import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 
@@ -20,9 +20,9 @@ import { setupHelper, createServices, checkValueHostConfigResults, checkProperty
  * @param addCultures - set to empty array if already configured
  * @returns 
  */
-function setupForTheseTests(services: IValidationServices,
+function setupForTheseTests(services: IJivsServices,
     config: ValueHostConfig): {
-    helper: AnalysisResultsHelper<IValidationServices>
+    helper: AnalysisResultsHelper<IJivsServices>
     results: ValueHostConfigCAResult
     } {
         
@@ -595,7 +595,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
     // subclass CalcFnPropertyAnalyzer to override its calcValueHostType with "TEST" and write a test to confirm it works
     test('user should be able to subclass CalcFnPropertyAnalyzer and override calcValueHostType with "TEST" to support custom CalcValueHostConfigs', () => {
         class TestCalcFnPropertyAnalyzer extends CalcFnPropertyAnalyzer {
-            protected get calcValueHostType(): string
+            protected override get calcValueHostType(): string
             {
                 return 'TEST';
             }

@@ -7,7 +7,7 @@
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { CodingError } from '../Utilities/ErrorHandling';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
@@ -31,20 +31,20 @@ export abstract class TextValueConditionBase<TConfig extends TextValueConditionB
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
-     * @param validationManager 
+     * @param valueHostsManager 
      */
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         if (!toIFieldValueHost(valueHost)) {
             const error = new CodingError('Invalid ValueHost used. Must be an FieldValueHost');
-            this.logger(validationManager.services).error(error);
+            this.logger(valueHostsManager.services).error(error);
         }
         const iValueHost = valueHost as unknown as IFieldValueHost;
         const textValue = iValueHost.getTextValue();
         if (textValue === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        return this.evaluateTextValue(textValue, iValueHost, validationManager);
+        return this.evaluateTextValue(textValue, iValueHost, valueHostsManager);
     }
-    protected abstract evaluateTextValue(textValue: string | undefined, valueHost: IFieldValueHost, validationManager: IValidationManager): ConditionEvaluateResult;
+    protected abstract evaluateTextValue(textValue: string | undefined, valueHost: IFieldValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 }

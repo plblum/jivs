@@ -14,7 +14,7 @@ import {
 
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
@@ -23,8 +23,8 @@ import { deepClone, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Ut
 import { IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManagerConfig, createBehaviors, Behaviors } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
@@ -34,21 +34,21 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * (although its great if you have to write conversion between your own business logic
  * and Jivs).
  * 
- * The Builder provides a fluent API to create the ValueHostConfig objects and add them to the ValidationManagerConfig.
+ * The Builder provides a fluent API to create the ValueHostConfig objects and add them to the ValueHostsManagerConfig.
  * ManagerConfigBuilderBase is the base class.
  * 
  * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
  * 
  * Here are two ways to use it. 
- * 1) Wrapped in a ModelRulesBase subclass, so that your model has a single source of truth for its validation rules.
+ * 1) Wrapped in a ValueHostRulesBase subclass, so that your model has a single source of truth for its validation rules.
  * 2) Stand-alone.
  * 
-  * ## Using ModelRulesBase
+  * ## Using ValueHostRulesBase
   * Let's assume that you have a Model with 3 fields, firstname, lastname, and birthdate. 
   * You want to require that first and last name are not empty, and that the birthdate is a valid date.
  * ```ts
- * export class PersonModelRules extends ModelRulesBase {
- *  protected configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions): void {
+ * export class PersonModelRules extends ValueHostRulesBase {
+ *  protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
  *      builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  *      builder.field('birthdate', LookupKey.Date);
@@ -59,14 +59,14 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * and implement the IAdaptModelRulesToForm interface, again using the Builder.
  * ```ts
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
- *   adaptToForm(adapter: IFormConfigAdapter, options?: RulesConfigOptions): void {
+ *   adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
  *      adapter.field('birthDate', null, { label: 'Birth date' })
  *        .lessThan('today');
  *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });
  *   }
  * }
  * ```
- * ## Without the ModelRulesBase, using the Builder directly.
+ * ## Without the ValueHostRulesBase, using the Builder directly.
  * The code is very similar to that above, except you explicitly create the Builder and add the ValueHostConfigs to it.
  * In this case, you are likely to be working only on the UI, and can declare all fields at once.
  * ```ts
@@ -77,23 +77,23 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
  *        .lessThan('today');
  * builder.static('today', LookupKey.Date, { initialValue: new Date() });
- * let vm = new ValidationManager(builder); // consider builder disposed at this point
+ * let vhm = new ValueHostsManager(builder); // consider builder disposed at this point
  * ```
  */
-export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig>
+export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
     implements IManagerConfigBuilder<T> {
 
-    constructor(services: IValidationServices)
+    constructor(services: IJivsServices)
     constructor(config: T)
     constructor(state: BuilderState<T>) // eslint-disable-line @typescript-eslint/unified-signatures
-    constructor(arg1: IValidationServices | T | BuilderState<T>) {
+    constructor(arg1: IJivsServices | T | BuilderState<T>) {
         assertNotNull(arg1);
         if (arg1 instanceof BuilderState)
         {
             this._state = arg1;
             return;
         }
-        const services = toIServices(arg1) as IValidationServices;
+        const services = toIServices(arg1) as IJivsServices;
         if (services) {
             this._state = new BuilderState<T>({
                 services: services,
@@ -129,8 +129,26 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         return this.state;
     }
 
-    public get services(): IValidationServices {
+    public get services(): IJivsServices {
         return this.baseConfig.services;
+    }
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Supplied by either the ValueHostsManagerConfig.behaviors or Builder.behaviors property.
+     * 
+     * Here are its options with their default values:
+     * - activeCultureID = from CultureService.defaultCultureId
+     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
+     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * `setValue(value, { disableParser: true });` to selectively turn off parsing.
+     * 
+     * You can later change its values in the ValueHostsManager.behaviors property.
+     */ 
+    public get behaviors(): Behaviors {
+        if (!this.baseConfig.behaviors)
+            this.baseConfig.behaviors = createBehaviors(this.services);
+        return this.baseConfig.behaviors;
     }
     
     //#region logging
@@ -173,7 +191,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     }
 
     /**
-     * A ValidationManagerConfig that is getting overridden ValueHost configurations.
+     * A ValueHostsManagerConfig that is getting overridden ValueHost configurations.
      * Each are created by the addOverride() function.
      * They retain a reference to services.
      */
@@ -238,7 +256,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
     public snapshot(): T {
         this.assertNotDisposed();
         
-        const destination = ValidationManager.safeConfigClone(this.baseConfig) as T;
+        const destination = ValueHostsManager.safeConfigClone(this.baseConfig) as T;
         const vhms = destination.services.valueHostConfigMergeService;
 
         this.overriddenValueHostConfigs.forEach((o) => {
@@ -331,7 +349,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
 
     //#region fluent for creating ValueHosts
     /**
-     * Utility to use the Fluent system to add a ValueHostConfig to the ValidationManagerConfig.
+     * Utility to use the Fluent system to add a ValueHostConfig to the ValueHostsManagerConfig.
      * @param valueHostType 
      * @param arg1 
      * @param arg2 
@@ -467,7 +485,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
         
         const vhConfig = this.getValueHostConfig(valueHostName, true);
         const startBuilder = new StartConditionWithOneChildBuilder(
-            this.services as IValidationServices,
+            this.services as IJivsServices,
             null,
             (conditionConfig) => {
             if (conditionConfig)
@@ -485,7 +503,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValidationManagerConfig
  * Each private storage field in ManagerConfigBuilderBase is stored here,
  * so this object can be transferred to companion builders who will do additional work.
  */
-export class BuilderState<T extends ValidationManagerConfig>
+export class BuilderState<T extends ValueHostsManagerConfig>
 {
     constructor(baseConfig: T) {
         this.baseConfig = baseConfig;

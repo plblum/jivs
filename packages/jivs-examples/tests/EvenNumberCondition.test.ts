@@ -1,20 +1,20 @@
-import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { ValueHostsManager } from "@plblum/jivs-engine/build/Validation/ValueHostsManager";
 import { EvenNumberCondition, EvenNumberConditionConfig, EvenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
-import { createMinimalValidationServices } from "../src/support";
+import { createMinimalJivsServices } from "../src/support";
 
 describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
-        let services = createMinimalValidationServices('en');
+        let services = createMinimalJivsServices('en');
         registerEvenNumberCondition(services);
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number);
 
-        let vm = new ValidationManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: EvenNumberConditionType,
             valueHostName: 'Field1',
@@ -22,33 +22,33 @@ describe('EvenNumberCondition tests', () => {
         let testItem = new EvenNumberCondition(config);
 
         vh.setValue(2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);    
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);    
         vh.setValue(1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);            
         vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);        
         vh.setValue(-1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(-2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);            
     // anything other than an integer is Undetermined
         vh.setValue(1.5);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('TEXT');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);        
         vh.setValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);            
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);            
         vh.setValue(new Date());
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
-        let services = createMinimalValidationServices('en');
+        let services = createMinimalJivsServices('en');
         registerEvenNumberCondition(services);
         let builder = createConfigBuilder(services);
         builder.field('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vm = new ValidationManager(builder.complete());
-        let vh = vm.getFieldValueHost('Field1')!;
+        let vhm = new ValueHostsManager(builder.complete());
+        let vh = vhm.getFieldValueHost('Field1')!;
 
         vh.setValue(2);
         let valResult = vh.validate();

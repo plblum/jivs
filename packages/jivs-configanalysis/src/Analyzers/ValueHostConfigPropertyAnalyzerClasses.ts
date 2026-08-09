@@ -5,7 +5,7 @@
 
 import { CalcValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { ensureError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';

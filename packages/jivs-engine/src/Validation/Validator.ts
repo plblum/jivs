@@ -12,28 +12,31 @@
   * @module jivs-engine/Validator/ConcreteClasses
  */
 
-import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import type { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory } from '../Interfaces/Validator';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
-import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import { toIValidationManagerAccessor } from '../Interfaces/ValidationManager';
-import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
-import { ValidationManager } from './ValidationManager';
-import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
-import { resolveErrorCode } from '../Utilities/Validation';
+import { ValueHostName } from '../DataTypes/BasicTypes';
+import
+    {
+        type ICondition, ConditionCategory, ConditionEvaluateResult,
+        IEvaluateConditionDuringEdits, toIEvaluateConditionDuringEdits
+    } from '../Interfaces/Conditions';
+import { toIDisposable } from '../Interfaces/General_Purpose';
+import type { IJivsServices } from '../Interfaces/JivsServices';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
+import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
+import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from '../Interfaces/ValueHost';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
+import { cleanString } from '../Utilities/Utilities';
+import { resolveErrorCode } from '../Utilities/Validation';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
+import { ValueHostsManager } from './ValueHostsManager';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -42,7 +45,7 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
- * That data ends up in the ValidationManager as part of its state,
+ * That data ends up in the ValueHostsManager as part of its state,
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  * 
@@ -71,8 +74,8 @@ export class Validator implements IValidator {
         return this._config;
     }
 
-    protected get services(): IValidationServices {
-        return this.validationManager.services;
+    protected get services(): IJivsServices {
+        return this.valueHostsManager.services;
     }
 
     protected get valueHost(): IValidatorsValueHostBase {
@@ -80,15 +83,15 @@ export class Validator implements IValidator {
         return this._valueHost.deref()!;
     }
 
-    protected get validationManager(): IValidationManager {
-        const vm = toIValidationManagerAccessor(this.valueHost)?.validationManager;
-        if (vm) {
-            if (vm instanceof ValidationManager || toIValidationManager(vm))
-                return vm as IValidationManager;
-            throw new CodingError('ValueHost.validationManager must contain IValidationManager');
+    protected get valueHostsManager(): IValueHostsManager {
+        const vhm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
+        if (vhm) {
+            if (vhm instanceof ValueHostsManager || toIValueHostsManager(vhm))
+                return vhm as IValueHostsManager;
+            throw new CodingError('ValueHost.valueHostsManager must contain IValueHostsManager');
         }
         /* istanbul ignore next */
-        throw new CodingError('ValueHost must implement IValidationManagerAccessor');
+        throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
     }
     /**
      * Always supplied by constructor. Treat it as immutable.
@@ -180,7 +183,7 @@ export class Validator implements IValidator {
                 // errors creating these conditions are handled internally
                 // and bad conditions get replaced by ErrorResponseCondition
                 // so we can continue to execute the validation.
-                const { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.validationManager);
+                const { whenToEnableCondition: enabler, thenCondition: child } = this._condition.extractConditions(this.valueHostsManager);
                 this._condition = child;
                 this._enabler = enabler;
             }
@@ -269,12 +272,12 @@ export class Validator implements IValidator {
         let msg = direct as string | null;
         const l10n = this.config.errorMessagel10n as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
+            msg = this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId,
                 l10n, msg);
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getErrorMessage(this.services.cultureService.activeCultureId,
-                this.errorCode, this.valueHost.getDataType());
+            msg = this.services.textLocalizerService.getErrorMessage(this.services.cultureService.defaultCultureId,
+                this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null) {
             msg = Validator.errorMessageMissing;
@@ -304,12 +307,12 @@ export class Validator implements IValidator {
         let msg = direct as string | null;
         const l10n = this.config.summaryMessagel10n as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
+            msg = this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId,
                 l10n, msg ?? '');
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getSummaryMessage(this.services.cultureService.activeCultureId,
-                this.errorCode, this.valueHost.getDataType());
+            msg = this.services.textLocalizerService.getSummaryMessage(this.services.cultureService.defaultCultureId,
+                this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null)
             return this.getErrorMessageTemplate();
@@ -351,7 +354,7 @@ export class Validator implements IValidator {
                 // When that is the case, their ConditionConfig.valueHostName
                 // must be setup to retrieve the correct one.
                 // ValueHostName takes precedence.
-                const result = enabler.evaluate(this.valueHost, this.validationManager);
+                const result = enabler.evaluate(this.valueHost, this.valueHostsManager);
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
@@ -373,7 +376,7 @@ export class Validator implements IValidator {
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
-            const pendingCER = this.condition.evaluate(this.valueHost, this.validationManager);
+            const pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
 
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
@@ -489,11 +492,11 @@ export class Validator implements IValidator {
         issueFound.severity = this.severity;
         const errorMessage = this.getErrorMessageTemplate();
         issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
-            errorMessage, this.valueHost, this.validationManager, this);
+            errorMessage, this.valueHost, this.valueHostsManager, this);
         const summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
-            services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.validationManager, this) :
-            undefined;
+            services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.valueHostsManager, this) :
+            issueFound.errorMessage;
         issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning; // default to blocking save for errors, but not warnings. This can be overridden by the caller by directly setting doNotSave on the IssueFound.
     }
 

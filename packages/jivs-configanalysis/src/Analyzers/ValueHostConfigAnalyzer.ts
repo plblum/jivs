@@ -6,7 +6,7 @@
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { cleanString } from '@plblum/jivs-engine/build/Utilities/Utilities';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer } from '../Types/Analyzers';
@@ -19,7 +19,7 @@ import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult }
  * - Confirms properties with lookup keys using gatherer.tryAdd()
  * - Each condition class may have its own tests, although many are generalized in this class.
  */
-export class ValueHostConfigAnalyzer<TServices extends IValidationServices>
+export class ValueHostConfigAnalyzer<TServices extends IJivsServices>
     extends ConfigAnalyzerBase<ValueHostConfig, ValueHostConfigCAResult>
 implements IValueHostConfigAnalyzer {
 

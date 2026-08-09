@@ -5,7 +5,7 @@
 
 import { toIServicesAccessor } from '../Interfaces/Services';
 import { IDataTypeService } from '../Interfaces/DataTypes';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { toIDisposable } from '../Interfaces/General_Purpose';
@@ -25,7 +25,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
         super.dispose();
         this._registeredClasses.forEach((item) => {
@@ -38,7 +38,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      * Changes the services on all implementations of IServicesAccessor
      * @param services 
      */
-    protected updateServices(services: IValidationServices): void
+    protected override updateServices(services: IJivsServices): void
     {
         this.getAll().forEach((registered) => {
             const sa = toIServicesAccessor(registered);

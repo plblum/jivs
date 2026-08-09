@@ -18,7 +18,7 @@ builder.model()
 
 ### I-02
 RESOLVED
-The parameters supplied are great for initial setup in `ModelRulesBase.configureRules`, because the user is dumping the full definition of a value host and its validators. However, when the UI developer works with Form Adapter and wants to override a value host label, validator error message, or other non-invasive aspect of value hosts and validators, the parameters and syntax are too complex.
+The parameters supplied are great for initial setup in `ValueHostRulesBase.configureRules`, because the user is dumping the full definition of a value host and its validators. However, when the UI developer works with Form Adapter and wants to override a value host label, validator error message, or other non-invasive aspect of value hosts and validators, the parameters and syntax are too complex.
 
 ```ts
 adapter.field('FirstName', null, { label: 'First name' })
@@ -546,7 +546,7 @@ adapter.combineWithRule('Field1', 'NotNull',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.combineWithRule('Field1', 'NotNull',
   (combiningBuilder, existingConditionConfig) => {
@@ -588,7 +588,7 @@ adapter.combineWithRule(
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.combineWithRule(
   'Field1',
@@ -626,7 +626,7 @@ adapter.replaceRule('Field1', 'NotNull',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.replaceRule('Field1', 'NotNull',
   (replacementBuilder) => replacementBuilder.requireText()
@@ -663,7 +663,7 @@ adapter.enabler('Field1', {
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.enabler('Field1', {
   conditionType: ConditionType.EqualToValue,
@@ -700,7 +700,7 @@ adapter.enabler('Field1',
 ```
 
 ```ts
-const modifier = vm.startModifying();
+const modifier = vhm.startModifying();
 
 modifier.enabler('Field1',
   (enablerBuilder) => enablerBuilder.equalToValue('YES', null, 'Field2')

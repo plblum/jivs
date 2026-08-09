@@ -61,7 +61,7 @@ export interface TokenLabelAndValue {
      * 'label' - the target of the message, such as the ValueHost's label. {Label} is an example
      * 'parameter' - configuration data, such as a ConditionConfig's rules. {Minimum} is an example
      * 'value' - some live data, such as the ValueHost's current value. {Value} is an example
-     * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
+     * 'message' - text just augments the error message
      */
     purpose?: 'label' | 'parameter' | 'value' | 'message';
 }

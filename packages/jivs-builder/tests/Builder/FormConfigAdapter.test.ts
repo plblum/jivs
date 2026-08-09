@@ -5,8 +5,8 @@ import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCo
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
@@ -14,17 +14,17 @@ import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLoc
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
-import { createConfigBuilder } from '../../src/Builder/ValidationManagerConfigBuilder';
+import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
-import { createValidationServicesForTesting } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
 {
-    constructor(state: BuilderState<ValidationManagerConfig>, options?: BuilderOverrideOptions)
+    constructor(state: BuilderState<ValueHostsManagerConfig>, options?: BuilderOverrideOptions)
     {
         super(state, options);
     }
@@ -32,7 +32,7 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
         return this.destinationValueHostConfigs();
     }
 
-    public get publicify_baseConfig(): ValidationManagerConfig {
+    public get publicify_baseConfig(): ValueHostsManagerConfig {
         return this.baseConfig;
     }
     public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
@@ -61,9 +61,9 @@ class Publicify_FormConfigAdapter extends FormConfigAdapter
     }
 }
 
-function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
-    let vmConfig: ValidationManagerConfig = {
-        services: createValidationServicesForTesting(),
+function createVMConfig(standardDataTypes?: boolean): ValueHostsManagerConfig {
+    let vmConfig: ValueHostsManagerConfig = {
+        services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
     vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Info, vmConfig.services.loggerService);
@@ -71,24 +71,24 @@ function createVMConfig(standardDataTypes?: boolean): ValidationManagerConfig {
 }
 
 function setupPublicifyFormAdapter(options?: BuilderOverrideOptions, standardDataTypes?: boolean): Publicify_FormConfigAdapter {
-    let state = new BuilderState<ValidationManagerConfig>(createVMConfig(standardDataTypes));
+    let state = new BuilderState<ValueHostsManagerConfig>(createVMConfig(standardDataTypes));
     return new Publicify_FormConfigAdapter(state);
 }
-function setupFallbackService(services: IValidationServices): IValidationServices {
+function setupFallbackService(services: IJivsServices): IJivsServices {
     services.lookupKeyFallbackService.register('NewString', LookupKey.String);
     services.lookupKeyFallbackService.register('NewNumber', LookupKey.Number);
     return services;
 }
 
 beforeAll(() => {
-    new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+    new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 });
 
 describe('constructor', () => {
 
     test('Basic state', () => {
-        let services = createValidationServicesForTesting();
-        let state = new BuilderState<ValidationManagerConfig>({
+        let services = createJivsServicesForTesting();
+        let state = new BuilderState<ValueHostsManagerConfig>({
             services: services,
             valueHostConfigs: []
         });
@@ -551,7 +551,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'NewPropertyName',
             // validatorConfigs is NEVER here
         };
@@ -573,7 +572,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: expect.any(Function),
             propertyName: 'NewPropertyName'
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
@@ -664,7 +662,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'OldGroup',
             parserLookupKey: 'OldParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'OldPropertyName'
         };
         let adjustments: AdapterValueHostConfig = {
@@ -677,7 +674,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: (value: any) => { return value; },
             propertyName: 'NewPropertyName'
         };
         let expectedValueHostConfig: FieldValueHostConfig = {
@@ -698,7 +694,6 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             },
             group: 'NewGroup',
             parserLookupKey: 'NewParserLookupKey',
-            parserCreator: expect.any(Function),
             propertyName: 'NewPropertyName'
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);

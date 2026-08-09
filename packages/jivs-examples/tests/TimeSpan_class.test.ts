@@ -6,7 +6,7 @@ import {
     TimeSpan, TimeSpanIdentifier, TimeSpanConverter,
     TimeSpanLookupKey, TimeSpanAsSecondsLookupKey, TimeSpanAsHoursLookupKey,
 } from '../src/TimeSpan_class';
-import { createMinimalValidationServices } from '../src/support';
+import { createMinimalJivsServices } from '../src/support';
 
 // All test relative to 2001-05-15
 function testTimeSpanToHours(timeSpan: TimeSpan, expected: number)
@@ -56,7 +56,7 @@ test('Register and test values against the TimeSpanIdentifier', () => {
 });
 
 test('Register and test values against TimeSpanConverter', () => {
-    let vs = createMinimalValidationServices('en');
+    let vs = createMinimalJivsServices('en');
     let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
     dtcs.register(new TimeSpanConverter());
     let timeSpan1 = new TimeSpan(1, 0);

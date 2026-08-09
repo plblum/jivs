@@ -58,7 +58,7 @@ The original design tried to make one service abstraction carry too much respons
 It attempted to package:
 
 * configuration through Builder
-* `ValidationManager` creation
+* `ValueHostsManager` creation
 * Jivs validation orchestration
 * additional business validation work
 * business-error application
@@ -106,7 +106,7 @@ Examples:
 * Server-side pre-save business checks
 * Post-save failure handling
 * Returning server errors to the client
-* Reapplying returned errors into `ValidationManager`
+* Reapplying returned errors into `ValueHostsManager`
 
 These are related, but they are not the same kind of work.
 
@@ -179,7 +179,7 @@ The current planning assumes the following workflow conclusions.
 
 ### 6.1 Client-side Jivs validation remains central
 
-On the client, `ValidationManager.validate()` remains the main Jivs validation step after editing is complete.
+On the client, `ValueHostsManager.validate()` remains the main Jivs validation step after editing is complete.
 
 That produces:
 
@@ -188,7 +188,7 @@ That produces:
 
 ### 6.2 Server-side Jivs validation is also central
 
-On the server, `ValidationManager.validate()` must also run against the applicable model rules.
+On the server, `ValueHostsManager.validate()` must also run against the applicable model rules.
 
 The server cannot trust the client.
 
@@ -211,7 +211,7 @@ That is a normal outcome, not an edge case.
 
 ### 6.4 Returned server errors must fit back into the Jivs-driven UI story
 
-After save is attempted, returned errors may need to be pushed back into `ValidationManager` so Jivs-connected UI components update consistently.
+After save is attempted, returned errors may need to be pushed back into `ValueHostsManager` so Jivs-connected UI components update consistently.
 
 That means the design must treat server-response error application as a first-class workflow concern.
 
@@ -299,7 +299,7 @@ The future validation-side design document will likely need to answer questions 
 * How should pre-save business checks be represented?
 * How should save failures be represented?
 * How should `IssuesFound` and `ExternalIssuesFound` move from server to client?
-* What helper APIs, if any, should exist for pushing returned server errors back into `ValidationManager`?
+* What helper APIs, if any, should exist for pushing returned server errors back into `ValueHostsManager`?
 
 ---
 
@@ -329,7 +329,7 @@ Until later detailed documents settle the implementation, future work should kee
 * Do not assume that server-only security checks belong in a client-shared model-rules object.
 * Do not assume that post-save failures are just another validator result.
 * Do not weaken the shared-configuration story just because the validation workflow has to be split.
-* Do preserve the central role of `ValidationManager.validate()` on both client and server.
+* Do preserve the central role of `ValueHostsManager.validate()` on both client and server.
 * Do preserve the possibility of returning either or both `IssuesFound` and `ExternalIssuesFound` from the server.
 * Do preserve support for shared business-authored rules, UI extension of those rules, and client-authored model rules.
 

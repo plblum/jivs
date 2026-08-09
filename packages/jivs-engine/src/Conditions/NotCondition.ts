@@ -6,7 +6,7 @@
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionType } from './ConditionTypes';
 import { ConditionWithOneChildBaseConfig, ConditionWithOneChildBase } from './ConditionWithOneChildBase';
 
@@ -28,12 +28,12 @@ export class NotCondition extends ConditionWithOneChildBase<NotConditionConfig>
     /**
      * Evaluates the child condition and returns the opposite result, unless the child condition returns Undetermined.
      * @param valueHost 
-     * @param validationManager 
+     * @param valueHostsManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, validationManager: IValidationManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        const condition = this.condition(validationManager);
-        const result = condition.evaluate(valueHost, validationManager);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        const condition = this.condition(valueHostsManager);
+        const result = condition.evaluate(valueHost, valueHostsManager);
         this.ensureNoPromise(result);
         switch (result) {
             case ConditionEvaluateResult.Match:

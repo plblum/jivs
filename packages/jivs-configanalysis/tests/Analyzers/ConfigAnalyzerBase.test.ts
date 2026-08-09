@@ -1,4 +1,4 @@
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
 import { ConfigAnalyzerBase } from "../../src/Analyzers/ConfigAnalyzerBase";
@@ -10,7 +10,7 @@ import { setupHelper, createServices, checkPropertyCAResultsFromArray } from "..
 // generate a Publicify_ConfigAnalyzerBase class from ConfigAnalyzerBase
 class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestConfigResults> {
 
-    constructor(helper: AnalysisResultsHelper<IValidationServices>,
+    constructor(helper: AnalysisResultsHelper<IJivsServices>,
         propertyAnalyzers: Array<TestConfigPropertyAnalyzer>
     ) {
         super(helper, propertyAnalyzers);

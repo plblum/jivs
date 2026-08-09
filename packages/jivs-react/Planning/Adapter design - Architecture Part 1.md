@@ -27,7 +27,7 @@ It defines:
 
 * Infrastructure ownership
 * Runtime composition
-* ValidationManager integration
+* ValueHostsManager integration
 * Context architecture
 * Provider responsibilities
 * Architectural service boundaries
@@ -189,10 +189,10 @@ JivsReactContext
         ├── JivsFormCache
         ├── ReactFieldSubscriptions
         ├── ReactFormSubscriptions
-        └── ValidationManager
+        └── ValueHostsManager
 ```
 
-Part 1 introduces the provider, context, and ValidationManager integration.
+Part 1 introduces the provider, context, and ValueHostsManager integration.
 
 Part 2 introduces cache and subscription infrastructure.
 
@@ -214,7 +214,7 @@ useFormValidation()
         ↓
 JivsReactContext
         ↓
-ValidationManager
+ValueHostsManager
         ↓
 Validation State
 ```
@@ -247,7 +247,7 @@ JivsReactContext
 JivsReactContext
         owns
             ↓
-ValidationManager Integration
+ValueHostsManager Integration
             &
 JivsFieldCache
             &
@@ -276,7 +276,7 @@ Without a provider, hooks have no mechanism for locating the infrastructure asso
 
 From the React user's perspective, this is a component that supplies a React Context (in the form of JivsReactContext). It must be present in the UI and contain the entire form.
 
-It sets up and owns a ValidationManager instance, which is responsible for only one form, typically associated with a model.
+It sets up and owns a ValueHostsManager instance, which is responsible for only one form, typically associated with a model.
 
 Conceptually:
 
@@ -298,7 +298,7 @@ Conceptually:
 ```ts
 function JivsProvider(
 {
-    validationManager,
+    valueHostsManager,
     children
 })
 ```
@@ -307,15 +307,15 @@ The final component signature may evolve.
 
 The architectural responsibility remains the same.
 
-The provider receives a ValidationManager and exposes React Adapter infrastructure to descendant components.
+The provider receives a ValueHostsManager and exposes React Adapter infrastructure to descendant components.
 
 ## Pending
 
-PENDING: We will be replacing validationManager parameter. JivsProvider must be supplied a string name or constructor of a class that identifies the model. JivsProvider passes this along to JivsReactContext which uses ModelRulesServiceFactory to build the configuration and then create a ValidationManager from it. The React UI developer will never directly see the ValidationManager. It still needs access to the ValidationServices object which should be created as a singleton when the app starts up or its first needed.
+PENDING: We will be replacing valueHostsManager parameter. JivsProvider must be supplied a string name or constructor of a class that identifies the model. JivsProvider passes this along to JivsReactContext which uses ModelRulesServiceFactory to build the configuration and then create a ValueHostsManager from it. The React UI developer will never directly see the ValueHostsManager. It still needs access to the JivsServices object which should be created as a singleton when the app starts up or its first needed.
 
 PENDING: There will be an additional parameter to let the user forward anything they want to the ModelRulesService object that is used for configuration. For example, they may pass an object with a property of "variant" and the ModelRulesService may configure differently when that property is "XYZ".
 
-PENDING: Another required parameter takes the global ValidationServices instance (a Jivs Engine object)
+PENDING: Another required parameter takes the global JivsServices instance (a Jivs Engine object)
 
 PENDING: We will be renaming this class. The name "Jivs" is less meaningful than "Validation". It may be ValidationProvider or similar.
 
@@ -325,7 +325,7 @@ PENDING: We will be renaming this class. The name "Jivs" is less meaningful than
 
 ```tsx
 <JivsProvider
-    validationManager={vm}
+    valueHostsManager={vhm}
 >
     <CustomerEditor />
 </JivsProvider>
@@ -335,7 +335,7 @@ Field-oriented components:
 
 ```tsx
 <JivsProvider
-    validationManager={vm}
+    valueHostsManager={vhm}
 >
     <FirstNameField />
     <LastNameField />
@@ -346,7 +346,7 @@ Form-oriented components:
 
 ```tsx
 <JivsProvider
-    validationManager={vm}
+    valueHostsManager={vhm}
 >
     <ValidationSummary />
     <SaveButton />
@@ -406,12 +406,12 @@ All React Adapter infrastructure is accessed through JivsReactContext.
 
 ## Pending
 
-PENDING: This class requires a model identifier (string or type) to work, getting it from JivsProvider. It also needs access to the Jivs Engine's ValidationServices object, so it can get to the ModelRulesServicesFactory to create the IModelRulesServices object associated with the model identifier. From there, it creates a configuration and then creates the ValidationManager itself from that configuration. It defines the Builder object that will collect the configuration, and passes it to IModelRulesServices.configure(builder)
+PENDING: This class requires a model identifier (string or type) to work, getting it from JivsProvider. It also needs access to the Jivs Engine's JivsServices object, so it can get to the ModelRulesServicesFactory to create the IModelRulesServices object associated with the model identifier. From there, it creates a configuration and then creates the ValueHostsManager itself from that configuration. It defines the Builder object that will collect the configuration, and passes it to IModelRulesServices.configure(builder)
 
 PENDING: So expect the constructor to have these parameters:
 
 * modelIdentifier: string|constructor
-* services: ValidationServices
+* services: JivsServices
 * payload: any -- optional. Allows the caller to pass along information to the IModelRulesService.configure() method.
 
 ---
@@ -425,7 +425,7 @@ JivsProvider
         ↓
 JivsReactContext
         │
-        ├── ValidationManager
+        ├── ValueHostsManager
         ├── JivsFieldCache
         ├── JivsFormCache
         ├── ReactFieldSubscriptions
@@ -441,8 +441,8 @@ Conceptually:
 ```ts
 class JivsReactContext
 {
-    readonly validationManager:
-        ValidationManager;
+    readonly valueHostsManager:
+        ValueHostsManager;
 
     readonly fieldCache:
         JivsFieldCache;
@@ -517,11 +517,11 @@ context
 
 JivsReactContext is responsible for:
 
-* Owning ValidationManager integration
-* PENDING: Creating ValidationManager for a given model identifier
+* Owning ValueHostsManager integration
+* PENDING: Creating ValueHostsManager for a given model identifier
 * Owning wrapper caches
 * Owning subscription infrastructure
-* Wiring ValidationManager notifications
+* Wiring ValueHostsManager notifications
 * Supplying infrastructure to React Hooks
 * Managing infrastructure lifetime
 
@@ -541,15 +541,15 @@ These responsibilities belong elsewhere.
 
 ---
 
-# ValidationManager Integration
+# ValueHostsManager Integration
 
 ## Purpose
 
-ValidationManager is the source of Validation State and validation notifications.
+ValueHostsManager is the source of Validation State and validation notifications.
 
-The React Adapter integrates with ValidationManager through JivsReactContext.
+The React Adapter integrates with ValueHostsManager through JivsReactContext.
 
-ValidationManager remains part of the Jivs Engine.
+ValueHostsManager remains part of the Jivs Engine.
 
 The React Adapter consumes its notifications.
 
@@ -557,14 +557,14 @@ The React Adapter consumes its notifications.
 
 ## Integration Ownership
 
-ValidationManager integration is owned by JivsReactContext.
+ValueHostsManager integration is owned by JivsReactContext.
 
-Neither React Hooks nor wrapper objects interact directly with ValidationManager notification callbacks.
+Neither React Hooks nor wrapper objects interact directly with ValueHostsManager notification callbacks.
 
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 JivsReactContext
         ↓
@@ -584,7 +584,7 @@ The React Adapter consumes two categories of notifications.
 Field notifications originate from:
 
 ```text
-ValidationManager
+ValueHostsManager
     .onValueHostValidationStateChanged
 ```
 
@@ -595,7 +595,7 @@ These notifications represent validation changes associated with a specific Valu
 Form notifications originate from:
 
 ```text
-ValidationManager
+ValueHostsManager
     .onValidationStateChanged
 ```
 
@@ -608,7 +608,7 @@ These notifications represent aggregate Validation State changes.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValueHostValidationStateChanged
         ↓
@@ -634,7 +634,7 @@ Field notification routing is defined in Part 2.
 Conceptually:
 
 ```text
-ValidationManager
+ValueHostsManager
         ↓
 onValidationStateChanged
         ↓
@@ -672,13 +672,13 @@ JivsReactContext is the composition root of the React Adapter.
 
 ## RA-008
 
-ValidationManager integration is owned by JivsReactContext.
+ValueHostsManager integration is owned by JivsReactContext.
 
 ---
 
 ## RA-009
 
-ValidationManager notifications are routed through dedicated subscription infrastructure.
+ValueHostsManager notifications are routed through dedicated subscription infrastructure.
 
 ---
 
@@ -698,12 +698,12 @@ JivsProvider creates and exposes JivsReactContext.
 
 JivsReactContext owns:
 
-* ValidationManager integration
+* ValueHostsManager integration
 * Wrapper caches
 * Subscription infrastructure
 
-ValidationManager remains the owner of Validation State.
+ValueHostsManager remains the owner of Validation State.
 
-The React Adapter consumes ValidationManager notifications and exposes infrastructure that allows React Hooks to participate in React rendering behavior.
+The React Adapter consumes ValueHostsManager notifications and exposes infrastructure that allows React Hooks to participate in React rendering behavior.
 
 Part 2 defines the cache and subscription infrastructure owned by JivsReactContext.

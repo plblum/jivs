@@ -73,7 +73,7 @@ When ExternalIssueFound.errorCode matches an existing validator:
 ```
 ValidatableValueHostBase
 └── ValidatorsValueHostBase (validators + field-level features)
-    ├── InputValueHost
+    ├── TextValueHost
     ├── PropertyValueHost
     └── BusinessLogicErrorsValueHost (no validators, just errors)
 ```
@@ -83,7 +83,7 @@ ValidatableValueHostBase
 ValidatableValueHostBase
 └── ValidatorsValueHostBase (NEW - validators only)
     ├── FieldValidatorsValueHostBase (RENAMED - field-level features)
-    │   ├── InputValueHost
+    │   ├── TextValueHost
     │   └── PropertyValueHost
     └── ModelValidatorsValueHost (RENAMED - model-level + validators)
 ```
@@ -107,7 +107,7 @@ Must distinguish between:
 - `BusinessLogicErrorsValueHostType` → `ModelValidatorsValueHostType`
 - All references to "businessLogicError" in method params, variables
 
-### New Methods - ValidationManager
+### New Methods - ValueHostsManager
 
 ```typescript
 /**
@@ -154,7 +154,7 @@ setExternalIssuesFound(errors: Array<ExternalIssueFound> | null): boolean
 
 ```typescript
 builder.model() // Returns ModelValidatorsValueHostBuilder
-    .custom((valueHost, validationManager) => {
+    .custom((valueHost, valueHostsManager) => {
         // Custom validator logic
         // Must specify valueHostName when referencing fields
     })
@@ -166,7 +166,7 @@ builder.model() // Returns ModelValidatorsValueHostBuilder
 
 ```typescript
 /**
- * Protected helper on ValidationManager.
+ * Protected helper on ValueHostsManager.
  * Gets existing ModelValidatorsValueHost or creates if missing.
  * Used by setBusinessLogicErrors, setValidationPayload, builder.model()
  */
@@ -199,12 +199,12 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 2. Rename old ValidatorsValueHostBase → FieldValidatorsValueHostBase
    - Keep field-specific features
    - Extend new ValidatorsValueHostBase
-3. Update InputValueHost, PropertyValueHost to extend FieldValidatorsValueHostBase
+3. Update TextValueHost, PropertyValueHost to extend FieldValidatorsValueHostBase
 4. Run full test suite
 
 **Files affected:**
 - ValidatorsValueHostBase.ts (split into two files)
-- InputValueHost.ts, PropertyValueHost.ts (update extends)
+- TextValueHost.ts, PropertyValueHost.ts (update extends)
 - All related interfaces
 
 ### Phase 3: Rename & Enhance BusinessLogicErrorsValueHost
@@ -216,12 +216,12 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 3. Add validatorConfigs support to config
 4. Update validate() to run validators
 5. Update builder to support model() method
-6. Implement getOrCreateModelValueHost() on ValidationManager
+6. Implement getOrCreateModelValueHost() on ValueHostsManager
 7. Update tests
 
 **Files affected:**
 - BusinessLogicErrorsValueHost.ts → ModelValidatorsValueHost.ts
-- ValidationManager.ts
+- ValueHostsManager.ts
 - Builder classes
 
 ### Phase 4: Add displayOnly Flag & doNotSave Logic
@@ -244,15 +244,15 @@ protected getOrCreateModelValueHost(): IModelValidatorsValueHost
 
 **Tasks:**
 1. Create ValidationPayload interface
-2. Implement getValidationPayload() on ValidationManager
-3. Implement setValidationPayload() on ValidationManager
+2. Implement getValidationPayload() on ValueHostsManager
+3. Implement setValidationPayload() on ValueHostsManager
    - Sets displayOnly=true on all externalIssues
    - Calls existing setIssuesFound + setBusinessLogicErrors internally
 4. Add documentation and examples
 5. Update tests
 
 **Files affected:**
-- ValidationManager.ts (interface + implementation)
+- ValueHostsManager.ts (interface + implementation)
 - Validation.ts (new interface)
 - Tests
 

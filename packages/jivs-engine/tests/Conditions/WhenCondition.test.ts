@@ -12,7 +12,7 @@ import {
     DisposableConditionType
 } from "../../src/Support/conditionsForTesting";
 import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 describe('WhenCondition', () => {
@@ -22,12 +22,12 @@ describe('WhenCondition', () => {
     function testEvaluateWithEnabler(enablerResult: ConditionEvaluateResult, childResult: ConditionEvaluateResult,
         expectedResult: ConditionEvaluateResult, logContent?: string) {
 
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let whenToEnableConfig: WhenConditionConfig = {
@@ -38,8 +38,8 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(whenToEnableConfig);
         
-        expect(testItem.evaluate(null, vm)).toBe(expectedResult);
-        expect(testItem.evaluate(vh, vm)).toBe(expectedResult);
+        expect(testItem.evaluate(null, vhm)).toBe(expectedResult);
+        expect(testItem.evaluate(vh, vhm)).toBe(expectedResult);
         if (logContent) {
             expect(logger.findMessage(logContent, LoggingLevel.Info, null)).toBeTruthy();
         }
@@ -61,10 +61,10 @@ describe('WhenCondition', () => {
     });
 
     test('with invalid childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -75,18 +75,18 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });
     test('with null childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -97,17 +97,17 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(CodingError);
         expect(logger.findMessage('thenConfig: must be assigned', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
     test('with invalid whenToEnableConfig, logs error and evaluate returns undetermined', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -118,17 +118,17 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(()=> testItem.evaluate(null, vm)).toThrow(/ConditionType/);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(/ConditionType/);
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });        
     test('with null whenToEnableConfig, logs error and throws', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -139,16 +139,16 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(() => testItem.evaluate(null, vm)).toThrow(CodingError);
+        expect(() => testItem.evaluate(null, vhm)).toThrow(CodingError);
         expect(logger.findMessage('whenToEnableConfig: must be assigned', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
 
     });    
 
     test('with evaluate returning a promise in child condition, throws', () => {
-        let services = new MockValidationServices(false, true);
+        let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
 
         let config: WhenConditionConfig = {
@@ -161,14 +161,14 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(() => testItem.evaluate(null, vm)).toThrow();
+        expect(() => testItem.evaluate(null, vhm)).toThrow();
 
     });    
 
     test('extractConditions()', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
+        let vhm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -177,7 +177,7 @@ describe('WhenCondition', () => {
         };
 
         let testItem = new WhenCondition(config);
-        let result = testItem.extractConditions(vm);
+        let result = testItem.extractConditions(vhm);
         expect(result.whenToEnableCondition.conditionType).toBe(AlwaysMatchesConditionType);
         expect(result.thenCondition.conditionType).toBe(NeverMatchesConditionType);
     });
@@ -212,9 +212,9 @@ describe('WhenCondition', () => {
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
     test('gatherValueHostNames where child and enabler each have a different ValueHostName. Expect both ValueHostNames', () => {
-        let services = new MockValidationServices(true, true);
+        let services = new MockJivsServices(true, true);
         
-        let vm = new MockValidationManager(services);
+        let vhm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -230,14 +230,14 @@ describe('WhenCondition', () => {
         };
         let condition = new WhenCondition(config);
         let testItem = new Set<ValueHostName>();
-        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(() => condition.gatherValueHostNames(testItem, vhm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
     });        
     test('gatherValueHostNames where child and enabler each have the same ValueHostName. Expect one ValueHostName', () => {
-        let services = new MockValidationServices(true, true);
-        let vm = new MockValidationManager(services);
+        let services = new MockJivsServices(true, true);
+        let vhm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -253,14 +253,14 @@ describe('WhenCondition', () => {
         };
         let condition = new WhenCondition(config);
         let testItem = new Set<ValueHostName>();
-        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(() => condition.gatherValueHostNames(testItem, vhm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Field1')).toBe(true);
     });        
     test('gatherValueHostNames where enabler does not support it. Expect one ValueHostName', () => {
-        let services = new MockValidationServices(true, true);
+        let services = new MockJivsServices(true, true);
         
-        let vm = new MockValidationManager(services);
+        let vhm = new MockValueHostsManager(services);
 
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -273,15 +273,15 @@ describe('WhenCondition', () => {
         };
         let condition = new WhenCondition(config);
         let testItem = new Set<ValueHostName>();
-        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(() => condition.gatherValueHostNames(testItem, vhm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Field1')).toBe(true);
     });        
     test('dispose', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -289,15 +289,15 @@ describe('WhenCondition', () => {
             thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
-        testItem.evaluate(null, vm);    // ensures conditions are created
+        testItem.evaluate(null, vhm);    // ensures conditions are created
         testItem.dispose();
-        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(TypeError);
     });    
     test('dispose with IDisposable condition in enabler', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -305,16 +305,16 @@ describe('WhenCondition', () => {
             thenConfig: { conditionType: NeverMatchesConditionType }
         };
         let testItem = new WhenCondition(config);
-        testItem.evaluate(null, vm);    // ensures conditions are created
+        testItem.evaluate(null, vhm);    // ensures conditions are created
         testItem.dispose();
-        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(TypeError);
     });    
     test('dispose with IDisposable condition in childconfig', () => {
 
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost(
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: WhenConditionConfig = {
             conditionType: ConditionType.When,
@@ -322,8 +322,8 @@ describe('WhenCondition', () => {
             thenConfig: { conditionType: DisposableConditionType }
         };
         let testItem = new WhenCondition(config);
-        testItem.evaluate(null, vm);    // ensures conditions are created
+        testItem.evaluate(null, vhm);    // ensures conditions are created
         testItem.dispose();
-        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
+        expect(()=> testItem.evaluate(null, vhm)).toThrow(TypeError);
     });            
 });

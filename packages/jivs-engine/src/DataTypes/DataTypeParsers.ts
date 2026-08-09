@@ -1,5 +1,13 @@
 /**
- * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeParser!IDataTypeParser:interface }
+ * Implementations of IDataTypeParser for common data types:
+ * - {@link CleanUpStringParser }
+ * - {@link ShortDatePatternParser }
+ * - {@link NumberParser }
+ * - {@link CurrencyParser }
+ * - {@link Percentage100Parser }
+ * - {@link PercentageParser }
+ * - {@link BooleanParser }
+ * - {@link EmptyStringIsFalseParser }
  * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeParsers
  */
 
@@ -152,7 +160,7 @@ export class PercentageParser extends PercentageParserBase
         super(LookupKey.Percentage, supportedCultures, options);
     }
 
-    protected parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
+    protected override parseCleanedText(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
         const result = super.parseCleanedText(text, dataTypeLookupKey, cultureId);
         if (typeof result.value === 'number')
             result.value = result.value / 100.0;

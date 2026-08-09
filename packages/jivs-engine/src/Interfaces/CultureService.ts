@@ -15,7 +15,7 @@ export interface ICultureService extends IService {
    * The culture shown to the user in the app. Its the ISO language-region format.
      This value is the starting point to search through localizations.
    */
-  activeCultureId: string;
+  readonly defaultCultureId: string;
 
   /**
    * Add a culture and its fallback.

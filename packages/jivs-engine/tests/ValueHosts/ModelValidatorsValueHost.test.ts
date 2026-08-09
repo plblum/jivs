@@ -1,14 +1,14 @@
 import { ModelValidatorsValueHostGenerator, ModelValidatorsValueHostName } from '../../src/ValueHosts/ModelValidatorsValueHost';
 import { ModelValidatorsValueHost, ModelValidatorsValueHostType } from "../../src/ValueHosts/ModelValidatorsValueHost";
-import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
+import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { ValidationStatus, ValueHostValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
 
 
 interface ITestSetupConfig {
-    services: MockValidationServices,
-    validationManager: MockValidationManager,
+    services: MockJivsServices,
+    valueHostsManager: MockValueHostsManager,
     config: ValidatableValueHostBaseConfig,
     state: ValidatableValueHostBaseInstanceState,
     valueHost: ModelValidatorsValueHost
@@ -18,8 +18,8 @@ interface ITestSetupConfig {
 function setupFieldValueHost(
     config?: Partial<ValidatableValueHostBaseConfig> | null,
     state?: Partial<ValidatableValueHostBaseInstanceState> | null): ITestSetupConfig {
-    let services = new MockValidationServices(true, true);
-    let vm = new MockValidationManager(services);
+    let services = new MockJivsServices(true, true);
+    let vhm = new MockValueHostsManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
         valueHostType: ModelValidatorsValueHostType,
         name: ModelValidatorsValueHostName,
@@ -37,11 +37,11 @@ function setupFieldValueHost(
     let updatedState: ValidatableValueHostBaseInstanceState = (!state) ?
         defaultState :
         { ...defaultState, ...state };
-    let vh = new ModelValidatorsValueHost(vm,
+    let vh = new ModelValidatorsValueHost(vhm,
         updatedConfig, updatedState);
     return {
         services: services,
-        validationManager: vm,
+        valueHostsManager: vhm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh
@@ -287,8 +287,8 @@ describe('ModelValidatorsValueHostGenerator members', () => {
         })).toBe(false);
     });
     test('create returns instance of ModelValidatorsValueHost with VM, Config and InstanceState established', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
             valueHostType: ModelValidatorsValueHostType,
@@ -302,7 +302,7 @@ describe('ModelValidatorsValueHostGenerator members', () => {
         };
         let testItem = new ModelValidatorsValueHostGenerator();
         let vh: IValidatableValueHostBase | null = null;
-        expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
+        expect(() => vh = testItem.create(vhm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(ModelValidatorsValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config value

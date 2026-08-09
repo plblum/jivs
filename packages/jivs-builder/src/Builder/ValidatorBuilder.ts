@@ -57,7 +57,7 @@ import {
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
@@ -66,9 +66,9 @@ import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 
 /**
  * Supplies Conditions and Validators the preceding FieldValueHost in a fluent chain. 
- * It is returned by ValidationManagerConfigBuilder.field() and each chained object that follows.
+ * It is returned by ValueHostsManagerConfigBuilder.field() and each chained object that follows.
  * 
- * See {@link jivs-builder/Builders/ConcreteClasses!ValidationManagerConfigBuilder:class | Builder Overview}
+ * See {@link jivs-builder/Builders/ConcreteClasses!ValueHostsManagerConfigBuilder:class | Builder Overview}
  */
 export class ValidatorBuilder
     extends BuilderConfigHostBase<object>
@@ -77,7 +77,7 @@ export class ValidatorBuilder
      * Constructor
      * @param parentConfig - Config object from the parent to host this validator.
      */
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentConfig: FieldValueHostConfig,
         completed?: CompleteConfigBuilderHandler<object>) {
         super(services, null, completed);
@@ -88,7 +88,7 @@ export class ValidatorBuilder
     }
 
     /**
-     * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
+     * This is the value ultimately passed to the ValueHostsManager config.ValueHostConfigs.
      */
     public get parentConfig(): FieldValueHostConfig {
         return this._parentConfig;
@@ -188,7 +188,7 @@ export class ValidatorBuilder
 
     /**
      * Creates the ConditionBuilder used by each Fluent validator function
-     * using the one defined in BuildersFactory on ValidationServices.
+     * using the one defined in BuildersFactory on JivsServices.
      * @returns 
      */
     protected createConditionBuilder(completed?: CompleteConfigBuilderHandler<any>): IConditionBuilder

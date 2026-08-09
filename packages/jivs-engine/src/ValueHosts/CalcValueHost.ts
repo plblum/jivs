@@ -2,10 +2,10 @@
  * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost}
  * @module jivs-engine/ValueHosts/ConcreteClasses/CalcValueHost
  */
-import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
+import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalcValueHostSetValueOptions } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValidationManager } from '../Interfaces/ValidationManager';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
@@ -16,12 +16,15 @@ import { LookupKey } from '../DataTypes/LookupKeys';
 /**
  * {@inheritDoc jivs-engine/ValueHosts/Types/CalcValueHost} 
  */
-export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
-    implements ICalcValueHost
+export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostConfig,
+    TState extends CalcValueHostInstanceState = CalcValueHostInstanceState,
+    TOptions extends CalcValueHostSetValueOptions = CalcValueHostSetValueOptions>
+    extends ValueHostBase<TConfig, TState, TOptions>
+    implements ICalcValueHost<TOptions>
 {
-    constructor(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState)
     {
-        super(validationManager, config, state);
+        super(valueHostsManager, config, state);
     }
 
     /**
@@ -39,7 +42,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType
     {
-        const result = this.validationManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
+        const result = this.valueHostsManager.services.dataTypeConverterService.convert(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
     /**
@@ -61,7 +64,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType
     {
-        const result = this.validationManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
+        const result = this.valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, sourceLookupKey, resultLookupKey);
         return result.value;
     }
 
@@ -69,13 +72,13 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * Returns the calculated value or undefined if it could not calculate.
      * @returns 
      */
-    public getValue(): SimpleValueType {
+    public override getValue(): SimpleValueType {
         if (this._reentrantCount > 0)
             throw new CodingError('Recursive call from your Calculation function not allowed.');
         try {
             this._reentrantCount++;
             if (this.config.calcFn)
-                return this.config.calcFn(this, this.validationManager);
+                return this.config.calcFn(this, this.valueHostsManager);
 
             this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
@@ -102,7 +105,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param options 
      */
-    public setValue(value: any, options?: SetValueOptions  ): void {
+    public override setValue(value: any, options?: TOptions): void {
         // does nothing
         this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
     }
@@ -116,8 +119,8 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Calc;
     }
-    public create(validationManager: IValidationManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
-        return new CalcValueHost(validationManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
+        return new CalcValueHost(valueHostsManager, config, state);
     }
 
     public cleanupInstanceState(state: CalcValueHostInstanceState, config: CalcValueHostConfig): void {

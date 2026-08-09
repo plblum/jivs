@@ -2,7 +2,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
 import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { type IJivsServices } from "../../src/Interfaces/JivsServices";
 import type {
     IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig,
     ValueChangedHandler, ValueHostInstanceStateChangedHandler
@@ -11,7 +11,8 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import {
     IFieldValueHost, TextValueChangedHandler,
-    FieldValueHostConfig, FieldValueHostInstanceState
+    FieldValueHostConfig, FieldValueHostInstanceState,
+    FieldValueHostSetValueOptions
 } from "../../src/Interfaces/FieldValueHost";
 import {
     ValidateOptions, ValueHostValidateResult,
@@ -19,10 +20,10 @@ import {
 } from "../../src/Interfaces/Validation";
 import { IValidator, IValidatorFactory } from "../../src/Interfaces/Validator";
 import {
-    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig,
-    ValidationManagerConfigChangedHandler,
-    ValidationManagerInstanceState, ValidationManagerInstanceStateChangedHandler, ValidationStateChangedHandler
-} from "../../src/Interfaces/ValidationManager";
+    IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig,
+    ValueHostsManagerConfigChangedHandler,
+    ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler, ValidationStateChangedHandler
+} from "../../src/Interfaces/ValueHostsManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -39,14 +40,14 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
-import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createValidationServicesForTesting";
+import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
 import { ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 
 import { ICultureService } from "../../src/Interfaces/CultureService";
 import { CultureService } from "../../src/Services/CultureService";
@@ -57,35 +58,39 @@ import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserServi
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { IValueHostConfigMergeService, IValidatorConfigMergeService } from "../../src/Interfaces/ConfigMergeService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
+import { ValueAdapterRule, IValueAdapterService } from '../../src/Interfaces/ValueAdapterService';
+import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
+import { IObjectFinderService } from '../../src/Interfaces/ObjectFinderService';
+import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
 
-
-
-export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
+export function createMockValueHostsManagerForMessageTokenResolver(registerLookupKeys: boolean = true,
+    defaultCultureId: string = 'en'
+): IValueHostsManager
 {
-    let services = new MockValidationServices(false, false);
-    populateServicesWithManyCultures(services, 'en', registerLookupKeys);
-    return new MockValidationManager(services);
+    let services = new MockJivsServices(false, false, defaultCultureId);
+    populateServicesWithManyCultures(services, registerLookupKeys);
+    return new MockValueHostsManager(services);
 }
 
 export class MockValueHost implements IValueHost
 {
-    constructor(validationManager: IValidationManager, name: string, dataTypeLookupKey: string, label?: string)
+    constructor(valueHostsManager: IValueHostsManager, name: string, dataTypeLookupKey: string, label?: string)
     {
-        this._validationManager = validationManager;
+        this._valueHostsManager = valueHostsManager;
         this._name = name;
         this._dataTypeLookupKey = dataTypeLookupKey;
         this._label = label ?? name;
         this._value = undefined;
     }
     dispose(): void {}
-    _validationManager: IValidationManager;
+    _valueHostsManager: IValueHostsManager;
     _name: string;
     _label: string;
     _value: any;
@@ -101,8 +106,8 @@ export class MockValueHost implements IValueHost
         }
     }
 
-    public get validationManager(): IValidationManager {
-        return this._validationManager;
+    public get valueHostsManager(): IValueHostsManager {
+        return this._valueHostsManager;
     }
     getName(): string {
         return this._name;
@@ -164,10 +169,10 @@ export class MockFieldValueHost extends MockValueHost
 {
 
     _textValue: string | undefined = undefined;
-    _conversionErrorMessage: string | undefined;
+    _injectedError: InjectedError | undefined;
     _parserLookupKey: string | null | undefined;
 
-    public get config(): FieldValueHostConfig
+    public override get config(): FieldValueHostConfig
     {
         return {
             ...super.config,
@@ -176,30 +181,37 @@ export class MockFieldValueHost extends MockValueHost
         };
     }    
 
-    public override setValue(value: any, options?: SetValueOptions | undefined): void {
+    public override setValue(value: any, options?: FieldValueHostSetValueOptions | undefined): void {
         super.setValue(value, options);
-        if (value === undefined && options && options.conversionErrorTokenValue)
-            this._conversionErrorMessage = options.conversionErrorTokenValue;
+        if (value === undefined && options && options.injectedError)
+            this._injectedError = options.injectedError;
         else
-            this._conversionErrorMessage = undefined;        
+            this._injectedError = undefined;
+ 
     }
 
     public getTextValue() : string | undefined {
         return this._textValue;
     }
-    setTextValue(value: string | undefined, options?: SetValueOptions | undefined): void {
+    setTextValue(value: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
         this._textValue = value;
-        this._conversionErrorMessage = undefined;
+        this._injectedError = undefined;
     }
-    setValues(nativeValue: any, textValue: string | undefined, options?: SetValueOptions | undefined): void {
-        this.setValue(nativeValue);
-        this.setTextValue(textValue);
-        if (nativeValue === undefined && options && options.conversionErrorTokenValue)
-            this._conversionErrorMessage = options.conversionErrorTokenValue;
+    setValues(nativeValue: any, textValue: string | undefined, options?: FieldValueHostSetValueOptions | undefined): void {
+        this.setValue(nativeValue, options);
+        this.setTextValue(textValue, options);
+        if (nativeValue === undefined && options && options.injectedError)
+            this._injectedError = options.injectedError;
         else
-            this._conversionErrorMessage = undefined;
+            this._injectedError = undefined;
     }
     getPropertyName(): string {
+        throw new Error("Method not implemented.");
+    }    
+    public getModelReaderRule(): ValueAdapterRule | undefined {
+        throw new Error("Method not implemented.");
+    }
+    public getModelWriterRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }    
     validate(options?: ValidateOptions): ValueHostValidateResult {
@@ -242,10 +254,17 @@ export class MockFieldValueHost extends MockValueHost
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }    
-
-    public getConversionErrorMessage(): string | null
+    public getInjectedError(): InjectedError | null
     {
-        return this._conversionErrorMessage ?? null;
+        return this._injectedError ?? null;
+    }
+    setInjectedError(injectedError: InjectedError): void
+    {
+        this._injectedError = injectedError;
+    }
+    clearInjectedError(): void
+    {
+        this._injectedError = undefined;
     }
     public getParserLookupKey(): string | null | undefined
     {
@@ -272,10 +291,10 @@ export class MockFieldValueHost extends MockValueHost
 }
 
 /**
- * Flexible Mock ValidationServices with CapturingLogger.
+ * Flexible Mock JivsServices with CapturingLogger.
  * Optionally populated with standard Conditions and data types.
  */
-export class MockValidationServices implements IValidationServices
+export class MockJivsServices implements IJivsServices
 {
     /**
      * 
@@ -287,6 +306,7 @@ export class MockValidationServices implements IValidationServices
      */
     constructor(registerStandardConditions: boolean,
         registerStandardDataTypes: boolean,
+        defaultCultureId: string = 'en',
         powerLogging: boolean = false,
         powerLoggingTypeFilter: string | null = null)
     {
@@ -295,8 +315,7 @@ export class MockValidationServices implements IValidationServices
         this._valueHostFactory = factory;
         this._validatorFactory = new ValidatorFactory();
 
-        this._cultureService = new CultureService();
-        this.cultureService.activeCultureId = 'en';
+        this._cultureService = new CultureService(defaultCultureId);
         this._conditionFactory = new ConditionFactory();
         this.dataTypeFormatterService = new DataTypeFormatterService();
         this.dataTypeParserService = new DataTypeParserService();
@@ -314,6 +333,8 @@ export class MockValidationServices implements IValidationServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
+        this.valueAdapterService = new ValueAdapterService();
+        this.objectFinderService = new ObjectFinderService();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -352,7 +373,7 @@ export class MockValidationServices implements IValidationServices
     /**
      * Adds or replaces a service.
      * If the supplied service implements IServicesAccessor, its own
-     * services property is assigned to this ValidationServices instance.
+     * services property is assigned to this JivsServices instance.
      * @param serviceName - name that identifies this service and
      * will be used in getService().
      * @param service - the service. It can be a class, object, or primitive.
@@ -526,38 +547,58 @@ export class MockValidationServices implements IValidationServices
         this._cachingService = service;
     }
     private _cachingService!: ICachingService;
+
+    public get valueAdapterService(): IValueAdapterService
+    {
+        return this._valueAdapterService;
+    }
+    public set valueAdapterService(service: IValueAdapterService)
+    {
+        this._valueAdapterService = service;
+    }
+    private _valueAdapterService!: IValueAdapterService;
+
+    public get objectFinderService(): IObjectFinderService
+    {
+        return this._objectFinderService;
+    }
+    public set objectFinderService(service: IObjectFinderService)
+    {
+        this._objectFinderService = service;
+    }
+    private _objectFinderService!: IObjectFinderService;
 }
 
 /**
- * MockValidationManager limited to implementing support for 
+ * MockValueHostsManager limited to implementing support for 
  * child ValueHosts.
  */
-export class MockValidationManager extends ValidationManager<ValidationManagerInstanceState>
-    implements IValidationManager, IValidationManagerCallbacks
+export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState>
+    implements IValueHostsManager, IValueHostsManagerCallbacks
 {
-    constructor(services: IValidationServices)
+    constructor(services: IJivsServices)
     {
         super({ services: services, valueHostConfigs: [] });
         this.config.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
     }
     notifyValidationStateChangedDelay?: number | undefined;
 
-    public get config(): ValidationManagerConfig
+    public override get config(): ValueHostsManagerConfig
     {
-        return super.config as ValidationManagerConfig;
+        return super.config as ValueHostsManagerConfig;
     }
 
-    public get services(): IValidationServices {
-        return super.services as IValidationServices;
+    public override get services(): IJivsServices {
+        return super.services as IJivsServices;
     }
 
-    public getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {
+    public override getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {
         let vh = this.getValueHost(valueHostName);
         if (vh instanceof ValidatorsValueHostBase)
             return vh;
         return null;
     }
-    getFieldValueHost(valueHostName: string): IFieldValueHost | null {
+    public override getFieldValueHost(valueHostName: string): IFieldValueHost | null {
         let vh = this.getValueHost(valueHostName);
         if (vh instanceof FieldValueHost)
             return vh;
@@ -604,89 +645,89 @@ export class MockValidationManager extends ValidationManager<ValidationManagerIn
         return this._hostInstanceStateChanges;
     }    
 
-    validate(options?: ValidateOptions): ValidationState {
+    public override validate(options?: ValidateOptions): ValidationState {
         throw new Error("Method not implemented.");
     }
-    clearValidation(options?: ValidateOptions): boolean {
+    public override clearValidation(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
 
     // isValid: boolean = true;        
 
     // doNotSave: boolean = false;
-    addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
+    public override addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-    addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
+    public override addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
         throw new Error("Method not implemented.");
     }
-    toValidationPayload(externalIssues: IssueFound[] | null): string {
+    public override toValidationPayload(externalIssues: IssueFound[] | null): string {
         throw new Error("Method not implemented.");
     }
-    fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
+    public override fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
         throw new Error("Method not implemented.");
     }
    
-    getIssuesForField(valueHostName: string): IssueFound[] {
+    public override getIssuesForField(valueHostName: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }
-    getIssuesFound(group?: string | undefined): IssueFound[] {
+    public override getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }
 
-    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
+    public override notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
     {
 
     }
     
-    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+    public override get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
         return this.config.onConfigChanged ?? null;
     }
 
 
-    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+    public override get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
         return this.config.onInstanceStateChanged ?? null;
     }
-    public set onInstanceStateChanged(fn: ValidationManagerInstanceStateChangedHandler) {
+    public override set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
         this.config.onInstanceStateChanged = fn;
     }
 
 
-    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
+    public override get onValidationStateChanged(): ValidationStateChangedHandler | null {
         return this.config.onValidationStateChanged ?? null;
     }
-    public set onValidationStateChanged(fn: ValidationStateChangedHandler) {
+    public override set onValidationStateChanged(fn: ValidationStateChangedHandler) {
         this.config.onValidationStateChanged = fn;
     }
 
 
-    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
+    public override get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
         return this.config.onValueHostValidationStateChanged ?? null;
     }
-    public set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
+    public override set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
         this.config.onValueHostValidationStateChanged = fn;
     }
 
     
-    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
+    public override get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
         return this.config.onValueHostInstanceStateChanged ?? null;
     }
-    public set onValueHostInstanceStateChanged(fn: ValueHostInstanceStateChangedHandler) {
+    public override set onValueHostInstanceStateChanged(fn: ValueHostInstanceStateChangedHandler) {
         this.config.onValueHostInstanceStateChanged = fn;
     }
 
-    public get onValueChanged(): ValueChangedHandler | null {
+    public override get onValueChanged(): ValueChangedHandler | null {
         return this.config.onValueChanged ?? null;
     }
-    public set onValueChanged(fn: ValueChangedHandler) {
+    public override set onValueChanged(fn: ValueChangedHandler) {
         this.config.onValueChanged = fn;
     }
 
 
-    public get onTextValueChanged(): TextValueChangedHandler | null {
+    public override get onTextValueChanged(): TextValueChangedHandler | null {
         return this.config.onTextValueChanged ?? null;
     }    
-    public set onTextValueChanged(fn: TextValueChangedHandler) {
+    public override set onTextValueChanged(fn: TextValueChangedHandler) {
         this.config.onTextValueChanged = fn;
     }    
 }

@@ -1,6 +1,6 @@
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { createMockValidationManagerForMessageTokenResolver } from "../TestSupport/mocks";
+import { createMockValueHostsManagerForMessageTokenResolver } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IFieldValueHost } from "../../src/Interfaces/FieldValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -8,40 +8,40 @@ import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/Me
 import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
 
 
-// resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
+// resolveTokens(message: string, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
 describe('resolveTokens', () => {
     test('Invalid parameters', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue> {
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue> {
                 return [];
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(() => testItem.resolveTokens(null!, null!, vm, messageTokeSource)).toThrow(/message/);
+        testItem.services = vhm.services;
+        expect(() => testItem.resolveTokens(null!, null!, vhm, messageTokeSource)).toThrow(/message/);
         expect(() => testItem.resolveTokens('message', null!, null!, messageTokeSource)).toThrow(/valueHostResolver/);
-        expect(() => testItem.resolveTokens('message', null!, vm, null!)).toThrow(/hosts/);
+        expect(() => testItem.resolveTokens('message', null!, vhm, null!)).toThrow(/hosts/);
     });
     test('Message with no tokens returns verbatim', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [];
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('message', null!, vm, messageTokeSource)).toBe('message');
-        expect(testItem.resolveTokens('message{', null!, vm, messageTokeSource)).toBe('message{');
-        expect(testItem.resolveTokens('message}', null!, vm, messageTokeSource)).toBe('message}');
-        expect(testItem.resolveTokens('{ message }', null!, vm, messageTokeSource)).toBe('{ message }');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('message', null!, vhm, messageTokeSource)).toBe('message');
+        expect(testItem.resolveTokens('message{', null!, vhm, messageTokeSource)).toBe('message{');
+        expect(testItem.resolveTokens('message}', null!, vhm, messageTokeSource)).toBe('message}');
+        expect(testItem.resolveTokens('{ message }', null!, vhm, messageTokeSource)).toBe('{ message }');
     });    
     test('Message with {token} gets token replaced. Token value is a string.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -51,18 +51,18 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('replacement');
-        expect(testItem.resolveTokens('{token} after', null!, vm, messageTokeSource)).toBe('replacement after');
-        expect(testItem.resolveTokens('before {token}', null!, vm, messageTokeSource)).toBe('before replacement');
-        expect(testItem.resolveTokens('before{token}after', null!, vm, messageTokeSource)).toBe('beforereplacementafter');
-        expect(testItem.resolveTokens('{token} and another {token}', null!, vm, messageTokeSource)).toBe('replacement and another replacement');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token}', null!, vhm, messageTokeSource)).toBe('replacement');
+        expect(testItem.resolveTokens('{token} after', null!, vhm, messageTokeSource)).toBe('replacement after');
+        expect(testItem.resolveTokens('before {token}', null!, vhm, messageTokeSource)).toBe('before replacement');
+        expect(testItem.resolveTokens('before{token}after', null!, vhm, messageTokeSource)).toBe('beforereplacementafter');
+        expect(testItem.resolveTokens('{token} and another {token}', null!, vhm, messageTokeSource)).toBe('replacement and another replacement');
         
     });
     test('Message with {token} gets token replaced. Token value is a Date.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -72,13 +72,13 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('1/15/2000');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token}', null!, vhm, messageTokeSource)).toBe('1/15/2000');
     });      
     test('Message with {token} gets token replaced. Token value is a Number.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -88,13 +88,13 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('2,100');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token}', null!, vhm, messageTokeSource)).toBe('2,100');
     });            
     test('Message with {token} gets token replaced. Token value is a Boolean.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -103,14 +103,14 @@ describe('resolveTokens', () => {
                 }];
             }
         };
-        let testItem = vm.services.messageTokenResolverService;
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('false');
+        let testItem = vhm.services.messageTokenResolverService;
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token}', null!, vhm, messageTokeSource)).toBe('false');
     });            
     test('Message with {token} gets token replaced using formatters. Token value is a String.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -120,15 +120,15 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token:' + LookupKey.Uppercase + '}', null!, vm, messageTokeSource)).toBe('ABC DEF');
-        expect(testItem.resolveTokens('{token:' + LookupKey.Lowercase + '}', null!, vm, messageTokeSource)).toBe('abc def');
-        expect(testItem.resolveTokens('{token:' + LookupKey.Capitalize + '}', null!, vm, messageTokeSource)).toBe('ABC dEF');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token:' + LookupKey.Uppercase + '}', null!, vhm, messageTokeSource)).toBe('ABC DEF');
+        expect(testItem.resolveTokens('{token:' + LookupKey.Lowercase + '}', null!, vhm, messageTokeSource)).toBe('abc def');
+        expect(testItem.resolveTokens('{token:' + LookupKey.Capitalize + '}', null!, vhm, messageTokeSource)).toBe('ABC dEF');
     });          
     test('Message with {token} gets token replaced using formatters. Token value is a Date.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -138,15 +138,15 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token:' + LookupKey.AbbrevDate + '}', null!, vm, messageTokeSource)).toBe('Jan 15, 2000');
-        expect(testItem.resolveTokens('{token:' + LookupKey.DateTime + '}', null!, vm, messageTokeSource)).toBe('1/15/2000, 1:30 PM');
-        expect(testItem.resolveTokens('{token:' + LookupKey.LongDOWDate + '}', null!, vm, messageTokeSource)).toBe('Saturday, January 15, 2000');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token:' + LookupKey.AbbrevDate + '}', null!, vhm, messageTokeSource)).toBe('Jan 15, 2000');
+        expect(testItem.resolveTokens('{token:' + LookupKey.DateTime + '}', null!, vhm, messageTokeSource)).toBe('1/15/2000, 1:30 PM');
+        expect(testItem.resolveTokens('{token:' + LookupKey.LongDOWDate + '}', null!, vhm, messageTokeSource)).toBe('Saturday, January 15, 2000');
     });          
     test('Message with {token1} and {token2} gets tokens replaced using formatters. Token1 is a Date; Token2 is a string.', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token1',
@@ -162,16 +162,16 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token1} and {token2}', null!, vm, messageTokeSource)).toBe('1/15/2000 and aBC dEF');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token1} and {token2}', null!, vhm, messageTokeSource)).toBe('1/15/2000 and aBC dEF');
 
-        expect(testItem.resolveTokens('{token2} and {token1:' + LookupKey.AbbrevDate + '}', null!, vm, messageTokeSource)).toBe('aBC dEF and Jan 15, 2000');
+        expect(testItem.resolveTokens('{token2} and {token1:' + LookupKey.AbbrevDate + '}', null!, vhm, messageTokeSource)).toBe('aBC dEF and Jan 15, 2000');
     });       
     test('Message with {token:formatter} where formatter does not support value is not replaced and gets logged', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.services.loggerService as CapturingLogger;
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
+        let logger = vhm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -181,17 +181,18 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
+        testItem.services = vhm.services;
+        expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vhm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
         expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();        
         expect(logger.findMessage('not replaced', LoggingLevel.Warn)).toBeTruthy();        
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.services.loggerService as CapturingLogger;
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
+        vhm.services.cultureService.register({ cultureId: 'de-DE' });
+        let logger = vhm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     tokenLabel: 'token',
@@ -201,16 +202,16 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        vm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
-        expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vm, messageTokeSource)).toThrow();
-
+        testItem.services = vhm.services;
+        vhm.behaviors.activeCultureId = 'de-DE';  // not configured in LA
+        expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vhm, messageTokeSource)).toThrow();
+        logger.toConsole();
         expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });        
     test('getValuesForTokens function throws an error', () => {
-        let vm = createMockValidationManagerForMessageTokenResolver(false);
+        let vhm = createMockValueHostsManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
-            getValuesForTokens: function (valueHost : IFieldValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue> {
+            getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue> {
                 return [{
                     tokenLabel: 'token',
                     associatedValue: new Date(2000, 0, 15, 13, 30),
@@ -219,9 +220,9 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        testItem.services = vm.services;
-        expect(() => testItem.resolveTokens('{token:INVALID}', null!, vm, messageTokeSource)).toThrow(/No DataTypeFormatter for LookupKey/);
-        let logger = vm.services.loggerService as CapturingLogger;
+        testItem.services = vhm.services;
+        expect(() => testItem.resolveTokens('{token:INVALID}', null!, vhm, messageTokeSource)).toThrow(/No DataTypeFormatter for LookupKey/);
+        let logger = vhm.services.loggerService as CapturingLogger;
         expect(logger.findMessage('No DataTypeFormatter for LookupKey', null, null, {
             type: MessageTokenResolverService
         })).toEqual(

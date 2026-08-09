@@ -1,9 +1,9 @@
 # Examples of using and extending Jivs
 The following examples are found here, with separate files for source code and unit tests.
 ## Configuration
-- Config_with_a_model - Create a subclass of ModelRulesBase to configure your model's 
+- Config_with_a_model - Create a subclass of ValueHostRulesBase to configure your model's 
 business logic rules.
-- Config_without_a_model - Create a subclass of FormRulesBase to configure fields
+- Config_without_a_model - Create a subclass of ValueHostRulesBase to configure fields
 on a form when you don't have a model.
 ## Conditions
 - EvenNumberCondition - Create a new Condition that will require even numbers.

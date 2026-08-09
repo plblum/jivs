@@ -1,39 +1,39 @@
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
-import { RulesConfigOptions } from '@plblum/jivs-builder/build/Interfaces/ModelRules';
-import { FormRulesBase } from '@plblum/jivs-builder/build/ModelRules/ModelRules';
+import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
+import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { LogDetails, LogOptions, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
-import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 
-import { IValidationManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
+import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { installConfigAnalysisService } from '../src/ConfigAnalysisService';
 import { ConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter } from '../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { IConfigAnalysisOutputFormatter, IConfigAnalysisSearchCriteria } from '../src/Types/Explorer';
 import { CAIssueSeverity } from '../src/Types/ConfigAnalysisResults';
-import { createValidationServices } from './Config_example_common_code';
+import { createJivsServices } from './Config_example_common_code';
 
-new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 
 
 /**
  * Start here to learn about jivs-ConfigAnalysis: https://github.com/plblum/jivs/main/packages/jivs-configanalysis
  *
  * Instructions for using ConfigAnalysis:
- * 1. Perform the normal steps to create your configuration with a ModelRulesBases or FormRulesBase subclass.
+ * 1. Perform the normal steps to create your configuration with a ValueHostRulesBase subclass.
  *    See DateRangeFormRules below for that.
- * 2. Create the normal code to create the ValidationManager.
+ * 2. Create the normal code to create the ValueHostsManager.
  * ```ts
- * let services = createValidationServices('en');
+ * let services = createJivsServices('en');
  * let rules = new DateRangeFormRules(services);
  * let config = rules.configure();
- * let validationManager = new ValidationManager(config, services);
+ * let valueHostsManager = new ValueHostsManager(config, services);
  * ```
- * 3. Insert your config analysis code before you create the ValidationManager.
+ * 3. Insert your config analysis code before you create the ValueHostsManager.
  * ```ts
  * let configAnalysisService = installConfigAnalysisService(services);
  * let options: ConfigAnalysisOptions = { };
@@ -56,7 +56,7 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on Validat
  * Here we use Jest and explorer.hasErrors() to confirm that there are no errors in the configuration.
  * ```ts
  * test('Configuration has no errors', () => {
- *   let services = createValidationServices('en');
+ *   let services = createJivsServices('en');
  *   let rules = new DateRangeFormRules(services);
  *   let config = rules.configure();
  *   let configAnalysisService = installConfigAnalysisService(services);
@@ -66,16 +66,16 @@ new BuildersFactoryInstaller();  // this will install buildersFactory on Validat
  */
 
 /**
- * Our Forms rules class, which is a subclass of FormRulesBase.
+ * Our Forms rules class.
  * This is Phase 1.
  */
-export class DateRangeFormRules extends FormRulesBase
+export class DateRangeFormRules extends ValueHostRulesBase
 {
-    constructor(services: IValidationServices) {
+    constructor(services: IJivsServices) {
         super(services);
     }
-    protected configureRules(builder: IValidationManagerConfigBuilder,
-        options?: RulesConfigOptions): void {
+    protected configureRules(builder: IValueHostsManagerConfigBuilder,
+        options?: ValueHostRulesOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
             .lessThan('EndDate')
             .lessThanOrEqual('NumOfDays',   // right operand of the comparison
@@ -89,7 +89,7 @@ export class DateRangeFormRules extends FormRulesBase
         builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);        
     }
     // For our DiffDays CalcValueHost
-    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValidationManager): SimpleValueType {
+    private differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         let totalDays1 = callingValueHost.convert(
             findValueHosts.getValueHost('StartDate')?.getValue(),
             null, LookupKey.TotalDays);
@@ -106,10 +106,10 @@ export class DateRangeFormRules extends FormRulesBase
 /**
  * Example to throw an error if there are any errors in the configuration.
  */
-export function example_throwOnErrors(): IValidationManager
+export function example_throwOnErrors(): IValueHostsManager
 {
     // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -121,18 +121,18 @@ export function example_throwOnErrors(): IValidationManager
     explorer.throwOnErrors(includeCompleteResults);
     // errors are in the thrown Errors object message
 
-    // if we get this far, there are no errors in the configuration. We can now create the ValidationManager.
-    return new ValidationManager(config);
+    // if we get this far, there are no errors in the configuration. We can now create the ValueHostsManager.
+    return new ValueHostsManager(config);
 }
 
 /**
  * Example that also uses throwOnErrors, but also writes the errors to the console.
  */
-export function example_throwOnErrors_And_Write_To_Console(): IValidationManager
+export function example_throwOnErrors_And_Write_To_Console(): IValueHostsManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -144,19 +144,19 @@ export function example_throwOnErrors_And_Write_To_Console(): IValidationManager
     explorer.throwOnErrors(includeCompleteResults, new ConsoleConfigAnalysisOutputter());
     // errors are in the thrown Errors object message, and showing on the console
 
-    // if we get this far, there are no errors in the configuration. We can now create the ValidationManager.
-    return new ValidationManager(config);
+    // if we get this far, there are no errors in the configuration. We can now create the ValueHostsManager.
+    return new ValueHostsManager(config);
 }
 
 
 /**
  * Example that also uses throwOnErrors, but also writes the errors to a log.
  */
-export function example_throwOnErrors_And_Write_To_Log(): IValidationManager
+export function example_throwOnErrors_And_Write_To_Log(): IValueHostsManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -173,19 +173,19 @@ export function example_throwOnErrors_And_Write_To_Log(): IValidationManager
     
     // errors are in the thrown Errors object message, and showing on the log
 
-    // if we get this far, there are no errors in the configuration. We can now create the ValidationManager.
-    return new ValidationManager(config);
+    // if we get this far, there are no errors in the configuration. We can now create the ValueHostsManager.
+    return new ValueHostsManager(config);
 }
 
 /**
  * Example that generates a report to console. It is supplied criteria
  * to limit the output to errors and warnings.
  */
-export function reportToConsole(): IValidationManager
+export function reportToConsole(): IValueHostsManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
 
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -224,17 +224,17 @@ export function reportToConsole(): IValidationManager
     const includeCompleteResults = false;
     explorer.reportToConsole(valueHostCriteria, lookupKeyCriteria, includeCompleteResults);
 
-    // if we get this far, there are no errors in the configuration. We can now create the ValidationManager.
-    return new ValidationManager(config);
+    // if we get this far, there are no errors in the configuration. We can now create the ValueHostsManager.
+    return new ValueHostsManager(config);
 }
 
 /**
  * Example that generates a report to log. It is supplied criteria
  */
-export function example_hasErrors_report_to_log(): IValidationManager
+export function example_hasErrors_report_to_log(): IValueHostsManager
 {
 // See this in action in the tests: ./tests/examples/Using_ConfigAnalysis.test.ts
-    let services = createValidationServices('en');
+    let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
 
@@ -250,8 +250,8 @@ export function example_hasErrors_report_to_log(): IValidationManager
         explorer.report(valueHostCriteria, lookupKeyCriteria, includeCompleteResults,
             new LoggerConfigAnalysisOutputter(null, new MockWriteLog()));
     }
-    // if we get this far, there are no errors in the configuration. We can now create the ValidationManager.
-    return new ValidationManager(config);
+    // if we get this far, there are no errors in the configuration. We can now create the ValueHostsManager.
+    return new ValueHostsManager(config);
 }
 
 

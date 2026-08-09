@@ -128,7 +128,7 @@ import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Condi
 import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import {
     CompleteConfigBuilderHandler,
@@ -169,7 +169,7 @@ export abstract class ConditionBuilderBase<TConfig extends ConditionConfig = Con
      * );
      * ```
      */
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object> | null, // intentionally not <ConditionConfig> because the parent might not be creating a condition config
         completed?: CompleteConfigBuilderHandler<TConfig>) {
         super(services, parentBuilder, completed);

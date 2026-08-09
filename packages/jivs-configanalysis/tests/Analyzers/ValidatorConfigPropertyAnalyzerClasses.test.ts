@@ -1,7 +1,7 @@
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createValidationServicesForTesting';
+import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { IValidationServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
+import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
@@ -12,7 +12,7 @@ import { ValidatorConfigCAResult, CAFeature, IConfigAnalysisResults, PropertyCAR
 import { createServices, setupHelper, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkSyntaxError, checkLocalizedPropertyResultFromArray, checkPropertyCAResultsFromArray } from "../TestSupport/support";
 
 
-function createServicesForTheseTests(serviceOptions?: CvstOptions): IValidationServices {
+function createServicesForTheseTests(serviceOptions?: CvstOptions): IJivsServices {
     let services = createServices(serviceOptions);
     let dtfs = new DataTypeFormatterService();
     services.dataTypeFormatterService = dtfs;
@@ -20,7 +20,7 @@ function createServicesForTheseTests(serviceOptions?: CvstOptions): IValidationS
 
     return services;
 }
-function setupHelperForTheseTests(services: IValidationServices): AnalysisResultsHelper<IValidationServices>
+function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelper<IJivsServices>
 {
     let helper = setupHelper(services);
     helper.registerLookupKeyAnalyzer(ServiceName.formatter,
@@ -49,7 +49,7 @@ function createValueHostConfig(valC: ValidatorConfig): ValidatorsValueHostBaseCo
 describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
 
-    function executeFunction(services: IValidationServices,
+    function executeFunction(services: IJivsServices,
         validatorConfig: Partial<ValidatorConfig>): {
             argResults: IConfigAnalysisResults,
             vcResults: ValidatorConfigCAResult
@@ -421,7 +421,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
     });
 });
 describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
-    function executeFunction(services: IValidationServices,
+    function executeFunction(services: IJivsServices,
         validatorConfig: Partial<ValidatorConfig>): {
             argResults: IConfigAnalysisResults,
             vcResults: ValidatorConfigCAResult

@@ -343,7 +343,7 @@ Notes:
 * Replace public usage with `IssueFound`.
 * Keep only as a temporary compatibility layer if needed during transition.
 
-### `ValidationManager`
+### `ValueHostsManager`
 
 #### `addExternalIssueFound(issueFound, determinedLocally, options?)`
 
@@ -416,7 +416,7 @@ Notes:
 * Clears the external issue path without clearing validator-managed validation state.
 * Supports the payload import workflow where imported issues replace the current external issue layer.
 
-#### Protected helper methods on `ValidationManager`
+#### Protected helper methods on `ValueHostsManager`
 
 * Add a protected method whose job is to create `ModelValidatorsValueHost` if it does not already exist.
 * Add a protected method whose job is to assign `"*"` as the `valueHostName` for issues routed to `ModelValidatorsValueHost`.
@@ -474,7 +474,7 @@ Notes:
 
 ## Unit test cases
 
-### `ValidationManager.addExternalIssueFound()`
+### `ValueHostsManager.addExternalIssueFound()`
 
 * Adds a field-level `IssueFound` to the matching `ValueHost.externalIssuesFound`.
 * Adds a model-level `IssueFound` with no `valueHostName` by creating `ModelValidatorsValueHost` when missing.
@@ -485,13 +485,13 @@ Notes:
 * Keeps the added issue out of validator-managed issue storage.
 * Preserves issue state for round-trip regeneration.
 
-### `ValidationManager.addExternalIssuesFound()`
+### `ValueHostsManager.addExternalIssuesFound()`
 
 * Adds each item by delegating to `addExternalIssueFound()`.
 * Supports a mixed list of field-level and model-level issues.
 * Preserves list order in the resulting visible issue list when order matters.
 
-### `ValidationManager.toValidationPayload()`
+### `ValueHostsManager.toValidationPayload()`
 
 * Returns one combined transported `IssueFound[]` list.
 * Includes validator-generated issues.
@@ -500,7 +500,7 @@ Notes:
 * Includes model-level issues.
 * Produces the same visible issue set as `getIssuesFound()`.
 
-### `ValidationManager.fromValidationPayload()`
+### `ValueHostsManager.fromValidationPayload()`
 
 * Imports a payload containing one `IssueFound[]` list.
 * Begins by calling `clearExternalIssuesFound()`.
@@ -518,7 +518,7 @@ Notes:
 * Ensures imported issues are visible through `getIssuesFound()`.
 * Ensures imported issues do not cause `ValidationState.doNotSave` to block client-side progression.
 
-### `ValidationManager.clearExternalIssuesFound()`
+### `ValueHostsManager.clearExternalIssuesFound()`
 
 * Clears externally added issues.
 * Does not clear validator-managed issues.
@@ -549,7 +549,7 @@ Notes:
 
 * Contributes model-level externally added issues through the combined `getIssuesFound()` flow.
 * Supports multiple model-level issues.
-* Continues to work when created lazily by `ValidationManager`.
+* Continues to work when created lazily by `ValueHostsManager`.
 
 ### `ValidationState`
 

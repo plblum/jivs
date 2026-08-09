@@ -7,7 +7,7 @@
  * To make this work, the form developer will use IAdaptModelRulesToForm.adaptToForm()
  * with this FormConfigAdapter class. FormConfigAdapter is designed to allow these kinds of modifications:
  * 1. Add entirely new ValueHosts, field(), static() and calc(), using the standard syntax
- *    built into the ValidationManagerConfigBuilder. However, if those functions are used
+ *    built into the ValueHostsManagerConfigBuilder. However, if those functions are used
  *    on existing valuehosts, it is an error.
  * 2. Modify existing ValueHost own properties through the modify(valueHostName) method.
  *    It does not change validators, and only allows changing the data type if the introduced
@@ -91,8 +91,8 @@ import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { ValidatableValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -108,11 +108,11 @@ import {
     AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
     IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
 } from '../Interfaces/ManagerConfigBuilder';
-import { RulesConfigOptions } from '../Interfaces/ModelRules';
+import { ValueHostRulesOptions } from '../Interfaces/ValueHostRules';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
-import { ValidationManagerConfigBuilder } from './ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder';
 
 /**
  * Creates a FormConfigAdapter from a source IManagerConfigBuilder.
@@ -120,23 +120,23 @@ import { ValidationManagerConfigBuilder } from './ValidationManagerConfigBuilder
  * @param options 
  * @returns 
  */
-export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: RulesConfigOptions): IFormConfigAdapter
+export function createFormConfigAdapter(source: IManagerConfigBuilder<any>, options?: ValueHostRulesOptions): IFormConfigAdapter
 {
     if (source instanceof ManagerConfigBuilderBase) {
-        const state = (source as ManagerConfigBuilderBase<ValidationManagerConfig>).handOffState();
+        const state = (source as ManagerConfigBuilderBase<ValueHostsManagerConfig>).handOffState();
         return new FormConfigAdapter(state, { favorUIMessages: options?.favorUIMessages });
     }
     throw new CodingError('createFormAdapter() expects a ManagerConfigBuilderBase instance.');
 }
 
 /** 
- * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
+ * Variation of ValueHostsManagerConfigBuilder with extensions designed for the UI layer
  * to override and extend the business layer configuration.
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
 export class FormConfigAdapter
-    extends ValidationManagerConfigBuilder
+    extends ValueHostsManagerConfigBuilder
     implements IFormConfigAdapter
 {
     /**
@@ -146,7 +146,7 @@ export class FormConfigAdapter
      * it will run favorUIMessages() to remove any error messages supplied by business logic,
      * so long as they are covered in TextLocalizationServices.
      */
-    constructor(state: BuilderState<ValidationManagerConfig>, options?: BuilderOverrideOptions) {
+    constructor(state: BuilderState<ValueHostsManagerConfig>, options?: BuilderOverrideOptions) {
         super(state);
         this.addOverride();
         if (!options || options.favorUIMessages !== false)
@@ -164,7 +164,7 @@ export class FormConfigAdapter
      *    To use them, there should not be any error message already
      *    supplied to the validator and business layer messages get in the way.
      * 
-     * This function should be called prior to creating ValidationManager
+     * This function should be called prior to creating ValueHostsManager
      * to remove all error messages supplied by business logic,
      * so long as they are covered in TextLocalizationServices.
      * Be sure that TextLocalizationServices is setup as desired
@@ -260,7 +260,7 @@ export class FormConfigAdapter
      * adapter.field('newfield', { group: 'groupname' });
      * ```
      * @param groupName - validation group name. Same name used in 
-     * ValidationManager.validate(groupName) to validate all valuehosts in the group.
+     * ValueHostsManager.validate(groupName) to validate all valuehosts in the group.
      * @param valueHostNames - names on ValueHosts already declared.
      */
     public assignToGroup(groupName: string, valueHostNames: Array<ValueHostName>): void
@@ -391,7 +391,7 @@ export class ModifyFieldBuilder
     extends BuilderConfigHostBase<ValueHostConfig>
     implements IModifyFieldBuilder
 {
-    constructor(services: IValidationServices, parentConfig: ValueHostConfig) {
+    constructor(services: IJivsServices, parentConfig: ValueHostConfig) {
         super(services, null);
         assertNotNull(parentConfig, 'parentConfig');
         this.setConfig(parentConfig, { bubbleUp: false });
@@ -532,7 +532,7 @@ export class ModifyFieldBuilder
         
         const vhConfig = this.getConfig()! as ValidatableValueHostBaseConfig;
         const startBuilder = new StartConditionWithOneChildBuilder(
-            this.services as IValidationServices,
+            this.services as IJivsServices,
             null,
             (conditionConfig) => {
             if (conditionConfig)
@@ -550,7 +550,7 @@ export class ModifyFieldBuilder
      * Use case 2: The business layer specified a data type, but the UI layer needs to change it to a different one.
      * In this case, the new data type must be compatible with the original data type. If it is not, it is an error.
      * By "compatible", there must be a fallback defined between the new data type and existing one
-     * in the LookupKeyFallbackService within the ValidationServices. If there is no fallback, it is an error.
+     * in the LookupKeyFallbackService within the JivsServices. If there is no fallback, it is an error.
      * @param newDataType - the new data type to apply to this ValueHost. It must be compatible with the existing data type.
      * @returns The IModifyFieldBuilder for further modifications.
      */
@@ -582,7 +582,7 @@ export class ModifyValidatorBuilder
     extends BuilderConfigHostBase<ValidatorConfig>
     implements IModifyValidatorBuilder {
     
-    constructor(services: IValidationServices,
+    constructor(services: IJivsServices,
         parentBuilder: IBuilderConfigHost<object>,
         existingValidator: ValidatorConfig,
         completed?: CompleteConfigBuilderHandler<any>) {

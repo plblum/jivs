@@ -23,7 +23,7 @@
  * 
  * You can have several converters for the same non-standard type.
  * The Data Type Lookup key supplied on the ValueHost can be used to pick a specific one.
- * Register your implementation with ValidationServices.dataTypeConverterService.
+ * Register your implementation with JivsServices.dataTypeConverterService.
  */
 export interface IDataTypeConverter {
     /**

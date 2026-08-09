@@ -8,7 +8,7 @@ import { ICachingService } from '../Interfaces/CachingService';
 /**
  * General in memory caching service.
  * NOTE: Supports a value of null. Uses undefined to indicate that a value is not set.
- * Found on IValidationServices.cachingService.
+ * Found on IJivsServices.cachingService.
  */
 export class CachingService implements ICachingService {
     private readonly _cache: Map<string, any> = new Map<string, any>();

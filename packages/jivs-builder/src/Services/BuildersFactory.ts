@@ -5,14 +5,14 @@
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ServiceWithAccessorBase } from '@plblum/jivs-engine/build/Services/ServiceWithAccessorBase';
 import { ConditionBuilder } from '../Builder/ConditionBuilder';
 import { StartConditionBuilder } from '../Builder/StartConditionBuilder';
 import { StartConditionWithChildrenBuilder } from '../Builder/StartConditionWithChildrenBuilder';
 import { StartConditionWithOneChildBuilder } from '../Builder/StartConditionWithOneChildBuilder';
-import { ValidationManagerConfigBuilder } from '../Builder/ValidationManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilder } from '../Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from '../Builder/ValidatorBuilder';
 import { IBuildersFactory } from '../Interfaces/BuildersFactory';
 import {
@@ -31,8 +31,8 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
 {
     constructor() {
         super();
-        this._managerConfigBuilder = (parentConfig: ValidationManagerConfig | null) : IManagerConfigBuilder<ValidationManagerConfig> =>
-            new ValidationManagerConfigBuilder(parentConfig as ValidationManagerConfig ?? this.services);
+        this._managerConfigBuilder = (parentConfig: ValueHostsManagerConfig | null) : IManagerConfigBuilder<ValueHostsManagerConfig> =>
+            new ValueHostsManagerConfigBuilder(parentConfig as ValueHostsManagerConfig ?? this.services);
         this._validatorBuilderCreator =
             (parentConfig: FieldValueHostConfig): IValidatorBuilder =>
                 new ValidatorBuilder(this.services, parentConfig);
@@ -49,7 +49,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
             (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>): IStartConditionWithOneChildBuilder =>
                 new StartConditionWithOneChildBuilder(this.services, parentBuilder, completed);
     }
-    private _managerConfigBuilder: (parentConfig: ValidationManagerConfig | null) => IManagerConfigBuilder<ValidationManagerConfig>;
+    private _managerConfigBuilder: (parentConfig: ValueHostsManagerConfig | null) => IManagerConfigBuilder<ValueHostsManagerConfig>;
     private _validatorBuilderCreator: (parentConfig: FieldValueHostConfig) => IValidatorBuilder;
     private _conditionBuilderCreator: (parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
         IConditionBuilder;
@@ -65,7 +65,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * @param replacement 
      */
     public setManagerConfigBuilder(replacement:
-        (parentConfig: ValidationManagerConfig | null) => IManagerConfigBuilder<ValidationManagerConfig>): void
+        (parentConfig: ValueHostsManagerConfig | null) => IManagerConfigBuilder<ValueHostsManagerConfig>): void
     {
         this._managerConfigBuilder = replacement;
     }
@@ -122,7 +122,7 @@ export class BuildersFactory extends ServiceWithAccessorBase implements IBuilder
      * @param parentConfig - Config object from the parent to host this manager config builder.
      * @returns The instance of IManagerConfigBuilder.
      */
-    public createManagerConfigBuilder(parentConfig: ValidationManagerConfig | null): IManagerConfigBuilder<ValidationManagerConfig>
+    public createManagerConfigBuilder(parentConfig: ValueHostsManagerConfig | null): IManagerConfigBuilder<ValueHostsManagerConfig>
     {
         return this._managerConfigBuilder(parentConfig);
     }

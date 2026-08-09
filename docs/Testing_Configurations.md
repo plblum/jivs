@@ -1,6 +1,6 @@
 # Testing your configurations
 Use the `Jivs-ConfigAnalysis` module to ensure that your configuration is as expected,
-even before you create a `ValidationManager` object from it.
+even before you create a `ValueHostsManager` object from it.
 
 ## Problem it solves
 When you code with services and dependency injection, the code becomes very disconnected.
@@ -17,7 +17,7 @@ When services own the Parsers, Formatters, Conditions, etc, you no longer see th
 
 ```ts
 let birthDateVH = new FieldValueHost('birthDate', LookupKey.Date);
-// when birthDate needs a parser, it asks ValidationServices to get it one by LookupKey.Date.
+// when birthDate needs a parser, it asks JivsServices to get it one by LookupKey.Date.
 // same for formatter.
 ```
 Similar issues arise with regard to error messages, which are expected to be localized
@@ -45,9 +45,9 @@ Consider adding it directly into your normal execution process, although doing s
 - Run it only when not in production. The same below includes a isAppRunningInDeveloper(), which is up to you to create.
 - It means that deployment will include the jivs-configanalysis package. If you limit working with it to unit tests, then you can omit jivs-configanalysis within the main codebase.
 ```ts
-// this is the normal setup for any ModelRules used to configure...
-let services = createValidationServices('en-US');
-let rules = new YourModelRules();
+// this is the normal setup for any ValueHost Rules used to configure...
+let services = createJivsServices('en-US');
+let rules = new MyValueHostRules();
 let config = rules.configure();
 
 // now insert the jivs-configanalysis tool
@@ -58,15 +58,15 @@ let config = rules.configure();
     explorer.throwOnErrors(false, new ConsoleConfigAnalysisOutputter());  // injects a report into the console and throws
  }
  // back to normal
- let vm = new ValidationManager(config);
+ let vhm = new ValueHostsManager(config);
 ```
 ## Adding to a unit test
-We recommend that you create unit tests for each ModelRules subclass
-that uses your production version of `ValidationServices`.
+We recommend that you create unit tests for each ValueHostRulesBase subclass
+that uses your production version of `JivsServices`.
 ```ts
-test('Check YourModelRules against the services', () => {
-    let services = createValidationServices('en-US');    // your production services 
-    let rules = new YourModelRules(services);
+test('Check ValueHostRules against the services', () => {
+    let services = createJivsServices('en-US');    // your production services 
+    let rules = new ValueHostRules(services);
     let config = rules.configure();
 
     let configAnalysisService = installConfigAnalysisService(services);
@@ -82,7 +82,7 @@ test('Check YourModelRules against the services', () => {
           includeLookupKeyResults,
           includeCompleteResults, 2);      
     }
-    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ModelRules against the validationservices.
+    expect(explorer.hasErrors()).toBeFalse(); // if it fails, you know to review your ValueHost Rules against the jivsservices.
 });
 ```
 ## Sample output: Conditions are not registered
@@ -223,18 +223,18 @@ npm install --save @plblum/jivs-configanalysis
 
 # Using Jivs-ConfigAnalysis
 Call the `analyze() function` on `ConfigAnalysisServices` after configuring, but before creating
-the `ValidationManager`.
+the `ValueHostsManager`.
 
 ```ts
 import { installConfigAnalysisService } from "@plblum/jivs-configanalysis/build/ConfigAnalysisService";
-let services = createValidationServices('en');
-let rules = new YourModelRules();
+let services = createJivsServices('en');
+let rules = new MyValueHostRules();
 let config = rules.configure();
 
 let configAnalysisService = installConfigAnalysisService(services);
 let explorer = configAnalysisService.analyze(config);
 ... test against the explorer object ...
-let vm = new ValidationManager(config);
+let vhm = new ValueHostsManager(config);
 ```
 ## explorer: ConfigAnalysisResultsExplorer
 *explorer* is a `ConfigAnalysisResultsExplorer object`, with the complete results of the analysis in its `results property`. It is a tree with some depth, so it's not easy to manually navigate. So `ConfigAnalysisResultsExplorer` includes a number of helper functions to focus on specific information.
@@ -322,12 +322,12 @@ Many functions on `ConfigAnalysisResultsExplorer` query the results, and depend 
 #### Example
 Let's suppose that you wanted to see all errors, and one was found, where you had requested a parser that was not registered.
 ```ts
-class MyModelRules extends ModelRulesBase
+class MyValueHostRules extends ValueHostRulesBase
 {
-  constructor(services: IValidationServices) {
+  constructor(services: IJivsServices) {
       super(services);
   }
-  protected override configureRules(builder: IValidationManagerConfigBuilder, options?: RulesConfigOptions | undefined): void {
+  protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
     builder.input('NewField', LookupKey.Date, 
     {
       parserLookupKey: LookupKey.Date,    // wants a parser, which should be ShortDatePatternParser
@@ -335,8 +335,8 @@ class MyModelRules extends ModelRulesBase
   }
 
 }
-let services = createValidationServices('en-US');
-let rules = new MyModelRules(services);
+let services = createJivsServices('en-US');
+let rules = new MyValueHostRules(services);
 let config = rules.configure();
 
 let configAnalysisService = installConfigAnalysisService(services);

@@ -12,7 +12,7 @@ import {
 } from './Validation';
 
 import {
-    IGatherValueHostNames, IValueHostCallbacks, toIValueHost,
+    IGatherValueHostNames, IValueHostCallbacks, SetValueOptions, toIValueHost,
     toIValueHostCallbacks,
     type IValueHost, type ValueHostConfig, type ValueHostInstanceState
 } from './ValueHost';
@@ -20,7 +20,9 @@ import {
 /**
 * Manages a value that may use field validation.
 */
-export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
+export interface IValidatableValueHostBase<TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
+    extends IValueHost<TOptions>, IGatherValueHostNames
+{
 
     /**
      * When the value changes,
@@ -239,6 +241,10 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
     asyncProcessing?: boolean;
 }
 
+export interface ValidatableValueHostBaseSetValueOptions extends SetValueOptions
+{
+}
+
 
 export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
 
@@ -299,7 +305,7 @@ export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks 
      * such as showing error messages and changing style sheets.
      * Use to change the disabled state of the submit button based on validity.
      * See also onValidationStateChanged for a similar callback from
-     * the ValidationManager.
+     * the ValueHostsManager.
      */
     onValueHostValidationStateChanged?: ValueHostValidationStateChangedHandler | null;
 }

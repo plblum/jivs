@@ -3,10 +3,10 @@ import { DataTypeIdentifierService } from './../../src/Services/DataTypeIdentifi
 import { DateTimeConverter, LocalDateOnlyConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
-import { ValidationServices } from "../../src/Services/ValidationServices";
+import { JivsServices } from "../../src/Services/JivsServices";
 import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
 import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { MockJivsServices } from '../TestSupport/mocks';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { ConversionResult, SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -432,7 +432,7 @@ function resultValueSuppliedWasNullOrUndefined(testItem: DataTypeConverterServic
 
 function setupDTCS(): DataTypeConverterService {
     let testItem = new DataTypeConverterService();
-    testItem.services = new MockValidationServices(false, false);
+    testItem.services = new MockJivsServices(false, false);
     let logger = testItem.services.loggerService as CapturingLogger;
     logger.minLevel = LoggingLevel.Debug;
     logger.chainedLogger = new ConsoleLoggerService(logger.minLevel, undefined, true);
@@ -443,7 +443,7 @@ describe('DataTypeComparerService constructor, register, and find', () => {
 
     test('register and find matching only value', () => {
         let testItem = new DataTypeConverterService();
-        testItem.services = new MockValidationServices(false, false);
+        testItem.services = new MockJivsServices(false, false);
         testItem.register(new TestDataTypeAsNumberConverter());
         expect(testItem.find(new TestDataTypeAsNumber(10), null, LookupKey.Number)).toBeInstanceOf(TestDataTypeAsNumberConverter);
         expect(testItem.find(new TestDataTypeAsNumber(10), testNumberLookupKey, LookupKey.Number)).toBeInstanceOf(TestDataTypeAsNumberConverter);
@@ -453,7 +453,7 @@ describe('DataTypeComparerService constructor, register, and find', () => {
     });
     test('register and find matching only values that are string and lookupKey = TEST', () => {
         let testItem = new DataTypeConverterService();
-        testItem.services = new MockValidationServices(false, false);
+        testItem.services = new MockJivsServices(false, false);
         testItem.register(new TestConverterToLowerCase());
         expect(testItem.find("ABC", testLowerCaseLookupKey, LookupKey.String)).toBeInstanceOf(TestConverterToLowerCase);
         expect(testItem.find("ABC", testLowerCaseLookupKey, LookupKey.Boolean)).toBeNull();
@@ -465,7 +465,7 @@ describe('DataTypeComparerService constructor, register, and find', () => {
     });
     test('find returns null when nothing is registered', () => {
         let testItem = new DataTypeConverterService();
-        testItem.services = new MockValidationServices(false, false);
+        testItem.services = new MockJivsServices(false, false);
         expect(testItem.find(new TestDataTypeAsNumber(10), null, LookupKey.Number)).toBeNull();
         let result = testItem.compatibleSources(new TestDataTypeAsNumber(10), null);
         expect(result.length).toBe(0);
@@ -474,7 +474,7 @@ describe('DataTypeComparerService constructor, register, and find', () => {
     test('find returns null when there is a registration but its the wrong data type', () => {
 
         let testItem = new DataTypeConverterService();
-        testItem.services = new MockValidationServices(false, false);
+        testItem.services = new MockJivsServices(false, false);
         testItem.register(new TestDataTypeAsNumberConverter());
         expect(testItem.find(new TestDataTypeAsString(''), null, LookupKey.Number)).toBeNull();
         let result = testItem.compatibleSources(new TestDataTypeAsString(''), null);
@@ -515,7 +515,7 @@ describe('DataTypeComparerService constructor, register, and find', () => {
 
 
         let testItem = new DataTypeConverterService();
-        testItem.services = new MockValidationServices(false, false);
+        testItem.services = new MockJivsServices(false, false);
         testItem.register(new Test1());
         testItem.register(new Test2());
         testItem.register(new TestConverterToLowerCase());  // something unrelated
@@ -615,7 +615,7 @@ describe('convert() function', () => {
     });
 
     test('Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
-        let services = new ValidationServices();
+        let services = new JivsServices();
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
         services.loggerService = logger;
@@ -629,7 +629,7 @@ describe('convert() function', () => {
     });
 
     test('Converter that throws severe is handled by throwing and adding to the log.', () => {
-        let services = new ValidationServices();
+        let services = new JivsServices();
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
         services.loggerService = logger;
@@ -815,7 +815,7 @@ describe('convertUntilResult', () => {
 
     describe('Error handling cases', () => {
         test('Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             let logger = new CapturingLogger();
             logger.minLevel = LoggingLevel.Debug;
@@ -830,7 +830,7 @@ describe('convertUntilResult', () => {
         });
 
         test('Converter that throws severe is handled by throwing and adding to the log.', () => {
-            let services = new ValidationServices();
+            let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             let logger = new CapturingLogger();
             logger.minLevel = LoggingLevel.Debug;

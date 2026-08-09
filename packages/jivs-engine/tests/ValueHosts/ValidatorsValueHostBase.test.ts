@@ -9,12 +9,12 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
-import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
-import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
-import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
+import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
@@ -28,8 +28,8 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { ValidationServices } from "../../src/Services/ValidationServices";
-import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { JivsServices } from "../../src/Services/JivsServices";
+import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -40,10 +40,11 @@ import {
     UserSuppliedResultConditionConfig, registerTestingOnlyConditions,
     NeverMatchesCondition, ThrowsSevereExceptionConditionType
 } from "../../src/Support/conditionsForTesting";
-import { createValidationServicesForTesting } from '../../src/Support/createValidationServicesForTesting';
-import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
+import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.
@@ -54,7 +55,7 @@ class TestValidatorsValueHost extends ValidatorsValueHostBase<ValidatorsValueHos
     {
         return this.validators();
     }
-    public get exposeServices(): IValidationServices {
+    public get exposeServices(): IJivsServices {
         return this.services;
     }
 
@@ -79,8 +80,8 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === TestValueHostType;
     }
-    public create(validationManager : IValidationManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
-        return new TestValidatorsValueHost(validationManager, config, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
+        return new TestValidatorsValueHost(valueHostsManager, config, state);
     }
     // public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValueHostConfig): void {
     // }
@@ -96,7 +97,7 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
 
 }
 
-function supportTestValueHostInServices(services: IValidationServices): void
+function supportTestValueHostInServices(services: IJivsServices): void
 {
     let factory = new ValueHostFactory();
     factory.register(new TestValidatorsValueHostGenerator());
@@ -104,15 +105,15 @@ function supportTestValueHostInServices(services: IValidationServices): void
 }
 
 interface ITestSetupConfigWithMocks {
-    services: MockValidationServices,
-    validationManager: MockValidationManager,
+    services: MockJivsServices,
+    valueHostsManager: MockValueHostsManager,
     config: ValidatorsValueHostBaseConfig,
     state: ValidatorsValueHostBaseInstanceState,
     valueHost: TestValidatorsValueHost
 };
 interface ITestSetupConfig {
-    services: IValidationServices,
-    validationManager: IValidationManager,
+    services: IJivsServices,
+    valueHostsManager: IValueHostsManager,
     config: ValidatorsValueHostBaseConfig,
     state: ValidatorsValueHostBaseInstanceState,
     valueHost: TestValidatorsValueHost
@@ -218,25 +219,25 @@ function finishPartialValidatorsValueHostBaseInstanceState(partialState: Partial
  * IssuesFound: null,
  * ValidationStatus: NotAttempted
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Config,
+ * ValueHostsManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
 function setupValidatorsValueHostBase(
     partialIVHConfig?: Partial<ValidatorsValueHostBaseConfig> | null,
     partialState?: Partial<ValidatorsValueHostBaseInstanceState> | null): ITestSetupConfigWithMocks {
-    let services = new MockValidationServices(true, true);
+    let services = new MockJivsServices(true, true);
     supportTestValueHostInServices(services);
 
-    let vm = new MockValidationManager(services);
+    let vhm = new MockValueHostsManager(services);
     let updatedConfig = finishPartialValidatorsValueHostBaseConfig(partialIVHConfig ?? null);
     let updatedState = finishPartialValidatorsValueHostBaseInstanceState(partialState ?? null);
 
-    let vh = vm.addValueHost(updatedConfig, updatedState) as TestValidatorsValueHost;
+    let vh = vhm.addValueHost(updatedConfig, updatedState) as TestValidatorsValueHost;
 
-    //new ValidatorsValueHostBase(vm, updatedConfig, updatedState);
+    //new ValidatorsValueHostBase(vhm, updatedConfig, updatedState);
     return {
         services: services,
-        validationManager: vm,
+        valueHostsManager: vhm,
         config: updatedConfig,
         state: updatedState,
         valueHost: vh as TestValidatorsValueHost
@@ -385,7 +386,7 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
     expect(vrDetails!.issuesFound).toEqual(expectedIssuesFound);
     expect(vrDetails!.pending).toBeUndefined();
 
-    let stateChanges = setup.validationManager.getHostStateChanges();
+    let stateChanges = setup.valueHostsManager.getHostStateChanges();
     expect(stateChanges).not.toBeNull();
     expect(stateChanges.length).toBe(expectedStateChanges);
 
@@ -411,7 +412,7 @@ function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorCon
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
     expect(vrDetails).toBeNull();
-    let stateChanges = setup.validationManager.getHostStateChanges();
+    let stateChanges = setup.valueHostsManager.getHostStateChanges();
     expect(stateChanges).not.toBeNull();
     expect(stateChanges.length).toBe(expectedStateChanges);
 
@@ -435,10 +436,10 @@ function createIssueFound(errorCode: string,
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
-        let services = new MockValidationServices(true, true);
-        let vm = new MockValidationManager(services);
+        let services = new MockJivsServices(true, true);
+        let vhm = new MockValueHostsManager(services);
         let testItem: TestValidatorsValueHost | null = null;
-        expect(()=> testItem = new TestValidatorsValueHost(vm, {
+        expect(()=> testItem = new TestValidatorsValueHost(vhm, {
             name: 'Field1',
             valueHostType: TestValueHostType,
             validatorConfigs: []
@@ -450,7 +451,7 @@ describe('constructor and resulting property values', () => {
                 value: undefined
             })).not.toThrow();
 
-        expect(testItem!.validationManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vhm);
 
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('');
@@ -462,7 +463,6 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.corrected).toBe(false);        
     });
 });
-
 
 describe('ValidatorsValueHostBase.validate', () => {
     //NOTE: Validator tests already handle testing Validator property of Enabled, Enabler,
@@ -792,7 +792,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -820,7 +820,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -1076,16 +1076,16 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
     test('Confirm the OnValueHostValidate event is called and captures the correct ValidationStatus', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -1121,16 +1121,16 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
     test('Confirm the OnValueHostValidate event is setup but not called due to option.skipCallback', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -1247,6 +1247,312 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
 });
+
+describe('injectedErrors', () =>
+{
+    // tests additionalInstanceStateUpdatesOnSetValue and clearValidationDataFromInstanceState
+    describe('setValue with options to test options.injectErrors', () =>
+    {
+        test('InjectedError added to state when value supplied is undefined.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBeUndefined();
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        test('InjectedError added to state when value supplied is supplied.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+        // full set of properties on injectedError
+        test('InjectedError added to state and all properties are retained.', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setValue(10, {
+                injectedError: {
+                    errorMessage: 'ERROR',
+                    errorCode: 'ERROR_CODE',
+                    errorMessagel10n: 'l10n',
+                    summaryMessage: 'SUMMARY',
+                    summaryMessagel10n: 'SUMMARY_L10N',
+                }
+            });
+            const expectedInjectedError: InjectedError = {
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            };
+            expect(setup.valueHost.getValue()).toBe(10);
+            expect(setup.valueHost.getInjectedError()).toEqual(expectedInjectedError);
+        });
+
+        test('injectedError supplied in one call which saves it but a follow up call without it abandons it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            setup.valueHost.setValue(10, {
+                injectedError: { errorMessage: 'ERROR' }
+            });
+            setup.valueHost.setValue(20);
+            expect(setup.valueHost.getValue()).toBe(20);
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+        });
+        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+
+            expect(() => setup.valueHost.setValue(undefined, {
+                injectedError: { errorMessage: 'ERROR' },
+                reset: true
+            })).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            expect(setup.valueHost.isChanged).toBe(false);
+        });
+    });
+
+    describe('setInjectedError and clearInjectedError', () =>
+    {
+        test('setInjectedError sets the error', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toEqual({ errorMessage: 'ERROR' });
+        });
+        test('setInjectedError sets the error and clearInjectedError clears it', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            setup.valueHost.setInjectedError({ errorMessage: 'ERROR' });
+            setup.valueHost.clearInjectedError();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+        });
+        // clearInjectedError when injectedError is null should not throw
+        test('clearInjectedError when injectedError is null should not throw', () =>
+        {
+            let setup = setupValidatorsValueHostBase();
+            expect(() => setup.valueHost.clearInjectedError()).not.toThrow();
+            expect(setup.valueHost.getInjectedError()).toBeNull();
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeUndefined();
+
+        });
+    });
+
+    describe('validate() and its impact on injectedError', () =>
+    {
+        // ensure that when InjectedError is present, it creates a Validator object within the validate()
+        // function. That validator is first amongst all, and is severe, with the same properties
+        // as found on the InjectedError. The result of validate() is Invalid, and the IssuesFound contains the injected error.
+        // The injected error is not removed from the state, and remains there until clearInjectedError() is called.
+        test('InjectedError present without errorcode, validate() returns Invalid and IssuesFound contains the injected error', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorMessage: 'ERROR',
+                errorCode: InjectedErrorValidatorErrorCode,
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+        test('InjectedError present with errorcode, validate() returns Invalid and IssuesFound contains the injected error', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                errorMessagel10n: 'l10n',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'SUMMARY_L10N'
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorMessage: 'ERROR',
+                errorCode: 'ERROR_CODE',
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+
+        test('Several validators exist, InjectedError present, validate() returns Invalid and IssuesFound contains the injected error first', () =>
+        {
+            let ivConfigs: Array<Partial<ValidatorConfig>> = [
+                {
+                    // while it should be reported normally, the injected error should be first in the list of issues found
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    }
+                },
+                {   
+                    conditionConfig: {
+                        conditionType: AlwaysMatchesConditionType
+                    }
+                }
+            ];
+        
+            let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, null);
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            // only the injected error
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR',    // carried over from errorMessage
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+
+        // setup TextLocalizerService to have supporting error message but not summary for the injected error, and ensure that the l10n messages are used in the IssuesFound
+        test('InjectedError present with localized error message and summary setup uses those localized versions when summary is unassigned', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR'
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'Localized Error Message',
+            // summary happens because the injectedError.summaryMessage is blank
+                summaryMessage: 'Localized Summary Message',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });
+        test('InjectedError present with localized error message and summary setup uses those localized versions when summary is assigned', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: TextLocalizerService.getSummaryMessagel10nText(errorCode, null),
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'Localized Error Message',
+                // summary happens because the injectedError.summaryMessage is blank
+                summaryMessage: 'Localized Summary Message',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });        
+        test('InjectedError present with localized error message and summary setup, injectedError has the unassigned l10n values uses original text', () =>
+        {
+            let setup = setupValidatorsValueHostBaseForValidate(null, null);
+            let errorCode = InjectedErrorValidatorErrorCode;
+            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
+            textLocalizerService.registerErrorMessage(errorCode, null, {
+                "*": 'Localized Error Message',
+            });
+            textLocalizerService.registerSummaryMessage(errorCode, null, {
+                "*": 'Localized Summary Message',
+            });
+            setup.valueHost.setInjectedError({
+                errorMessage: 'ERROR',
+                errorMessagel10n: 'Unknown l10n text',
+                summaryMessage: 'SUMMARY',
+                summaryMessagel10n: 'Unknown l10n text',
+            });
+            let vr = setup.valueHost.validate();
+            expect(vr).toBeDefined();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([{
+                errorMessage: 'ERROR',
+                summaryMessage: 'SUMMARY',
+                severity: ValidationSeverity.Severe,
+                doNotSave: true,
+                valueHostName: 'Field1',
+                errorCode: InjectedErrorValidatorErrorCode,
+            }]);
+            let state = setup.valueHost.exposeState;
+            expect(state).not.toBeNull();
+            expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
+        });        
+    });
+
+});
+
 describe('corrected property', () => {
 
     test('Validate without validators, corrected=false', () => {
@@ -1393,16 +1699,16 @@ describe('corrected property', () => {
     test('onValueHostValidationStateChanged setup. corrected reported as true after Invalid->Valid and omitted any other time', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [{
@@ -1430,7 +1736,7 @@ describe('corrected property', () => {
             doNotSave: true
         };
 
-        let snapshot = vm.validate(); // ensure we have an invalid state without business logic
+        let snapshot = vhm.validate(); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -1449,7 +1755,7 @@ describe('corrected property', () => {
         vh.getValidator(NeverMatchesConditionType)?.setEnabled(false);
         vh.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
 
-        snapshot = vm.validate();
+        snapshot = vhm.validate();
         expect(snapshot).toEqual(<ValidationState>{
             isValid: true,
             doNotSave: false,
@@ -1524,8 +1830,8 @@ function testValidateFunctionWithPromise(
     onValidationStateChanged: ValueHostValidationStateChangedHandler,
     onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler,
     validationGroup?: string | undefined): {
-        services: IValidationServices,
-        vm: IValidationManager,
+        services: IJivsServices,
+        vhm: IValueHostsManager,
         vh: TestValidatorsValueHost,
         promises: Array<Promise<ValidatorValidateResult>>
     } {
@@ -1535,9 +1841,8 @@ function testValidateFunctionWithPromise(
         valueHostType: TestValueHostType,
         validatorConfigs: finishPartialValidatorConfigs(validatorConfigs ?? null)
     };
-    let services = new ValidationServices();
+    let services = new JivsServices('en');
     supportTestValueHostInServices(services);
-    services.cultureService.activeCultureId = 'en';
     services.conditionFactory = new ConditionFactory();
     services.loggerService = new CapturingLogger();
     registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
@@ -1548,16 +1853,16 @@ function testValidateFunctionWithPromise(
     services.autoGenerateDataTypeCheckService = new AutoGenerateDataTypeCheckService();
     services.autoGenerateDataTypeCheckService.enabled = false;
     services.messageTokenResolverService = new MessageTokenResolverService();
-    let vm = new ValidationManager({
+    let vhm = new ValueHostsManager({
         services: services,
         valueHostConfigs: [],
         onValueHostValidationStateChanged: onValidationStateChanged,
         onValueHostInstanceStateChanged: onValueHostInstanceStateChanged
     });
-    let vh = vm.addValueHost(vhd1, null) as TestValidatorsValueHost;
+    let vh = vhm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
     // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState);
-    // setup.validationManager.onValueHostValidationStateChanged = onValidationStateChanged;
+    // setup.valueHostsManager.onValueHostValidationStateChanged = onValidationStateChanged;
 
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = vh.validate({ group: validationGroup })).not.toThrow();
@@ -1565,7 +1870,7 @@ function testValidateFunctionWithPromise(
     expect(vrDetails!.pending).not.toBeNull();
     return {
         services: services,
-        vm: vm,
+        vhm: vhm,
         vh: vh,
         promises: vrDetails!.pending!
     };
@@ -1606,27 +1911,27 @@ function validateWithAsyncConditions(
     let handlerCount = 0;
     let onValidateHandler: ValueHostValidationStateChangedHandler =
         (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => {
-            let vm = (valueHost as TestValidatorsValueHost).validationManager as IValidationManager;
+            let vhm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValueHostsManager;
             let evr = expectedValidateResults[handlerCount];
             expect(snapshot.isValid).toBe(evr.status !== ValidationStatus.Invalid);
             expect(snapshot.issuesFound).toEqual(evr.issuesFound);
             if (evr.pending) {
                 expect(snapshot.asyncProcessing).toBe(true);
                 expect(valueHost.asyncProcessing).toBe(true);
-                expect(vm.asyncProcessing).toBe(true);
+                expect(vhm.asyncProcessing).toBe(true);
             }
             else {
                 expect(snapshot.asyncProcessing).toBe(false);
                 expect(valueHost.asyncProcessing).toBe(false);
-                expect(vm.asyncProcessing).toBe(false);
+                expect(vhm.asyncProcessing).toBe(false);
             }
             handlerCount++;
             if (doneTime) {
-                expect(vm.doNotSave).toBe(evr.status === ValidationStatus.Invalid);
+                expect(vhm.doNotSave).toBe(evr.status === ValidationStatus.Invalid);
                 done();
             }
             else
-                expect(vm.doNotSave).toBe(true);
+                expect(vhm.doNotSave).toBe(true);
         };
     let stateChangeCounter = 0;
     let onStateChangedHandler: ValueHostInstanceStateChangedHandler =
@@ -1644,7 +1949,7 @@ function validateWithAsyncConditions(
     // we are awaiting a callback to onValueHostValidationStateChanged to finish,
     // but only if the expected result is Invalid
     doneTime = true;
-    expect(setup.vm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
+    expect(setup.vhm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
 }
 describe('validate with async Conditions', () => {
     test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
@@ -1977,7 +2282,7 @@ describe('clearValidation', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
-        let stateChanges = setup.validationManager.getHostStateChanges();
+        let stateChanges = setup.valueHostsManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
         expect(stateChanges.length).toBe(2);
         let expectedChanges: Array<ValidatorsValueHostBaseInstanceState> = [
@@ -2013,7 +2318,7 @@ describe('clearValidation', () => {
         expect(result).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
-        let stateChanges = setup.validationManager.getHostStateChanges();
+        let stateChanges = setup.valueHostsManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
         expect(stateChanges.length).toBe(0);
 
@@ -2054,7 +2359,7 @@ describe('clearValidation', () => {
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
-        let stateChanges = setup.validationManager.getHostStateChanges();
+        let stateChanges = setup.valueHostsManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
         expect(stateChanges.length).toBe(2);
         let expectedChanges: Array<ValidatorsValueHostBaseInstanceState> = [
@@ -2083,16 +2388,16 @@ describe('clearValidation', () => {
     test('onValueHostValidationStateChanged called', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -2114,7 +2419,7 @@ describe('clearValidation', () => {
             doNotSave: true
         };
 
-        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -2138,16 +2443,16 @@ describe('clearValidation', () => {
     test('onValueHostValidationStateChanged not called when options.skipCallback = true', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -2169,7 +2474,7 @@ describe('clearValidation', () => {
             doNotSave: true
         };
 
-        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -2190,16 +2495,16 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
     test('With existing validator using the same errorcode as externalIssueFound and the validator was previously valid, add an issueFound and not a externalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -2239,7 +2544,7 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             doNotSave: true
         };        
 
-        vm.validate(); 
+        vhm.validate(); 
         expect(vh.getIssuesFound()).toEqual([neverMatchIssueFound]);        
 
         let result = vh.addExternalIssueFound({
@@ -2262,16 +2567,16 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
     test('With existing validator using the same errorcode as externalIssueFound and the validator was previously invalid, replace that validators IssueFound and do not add the externalIssueFound', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
-        let vmConfig: ValidationManagerConfig = {
-            services: createValidationServicesForTesting(),
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
             valueHostConfigs: [],
             onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
         supportTestValueHostInServices(vmConfig.services);
-        let vm = new ValidationManager(vmConfig);
-        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
@@ -2311,7 +2616,7 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             severity: ValidationSeverity.Error,
             doNotSave: true
         };        
-        vm.validate(); 
+        vhm.validate(); 
         expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
 
         let result = vh.addExternalIssueFound({
@@ -2496,7 +2801,7 @@ describe('ValidatorsValueHostBase.gatherValueHostNames', () => {
         };
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let collection = new Set<ValueHostName>();
-        expect(() => setup.valueHost.gatherValueHostNames(collection, setup.validationManager)).not.toThrow();
+        expect(() => setup.valueHost.gatherValueHostNames(collection, setup.valueHostsManager)).not.toThrow();
         expect(collection.size).toBe(2);
         expect(collection.has('Field1')).toBe(true);
         expect(collection.has('Field2')).toBe(true);
@@ -2504,14 +2809,14 @@ describe('ValidatorsValueHostBase.gatherValueHostNames', () => {
 });
 
 
-describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValues triggering ValidationManager.notifyOtherValueHostsOfValueChange to call otherValueHostChangedNotification', () => {
+describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValues triggering ValueHostsManager.notifyOtherValueHostsOfValueChange to call otherValueHostChangedNotification', () => {
 
     // field1 has an Equals condition compared to field2
     // field2 will always validate as NoMatch
     // field3 will always validate as NoMatch
     function setupWithThreeValueHosts(): {
-        vm: IValidationManager,
-        services: IValidationServices,
+        vhm: IValueHostsManager,
+        services: IJivsServices,
         field1: IValidatorsValueHostBase,
         field2: IValidatorsValueHostBase,
         field3: IValidatorsValueHostBase
@@ -2564,20 +2869,20 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 }]                
             }
         ];
-        let services = createValidationServicesForTesting();
+        let services = createJivsServicesForTesting();
         supportTestValueHostInServices(services);
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<EqualToConditionConfig>(
             ConditionType.EqualTo, (config) => new EqualToCondition(config));
-        let vm = new ValidationManager({ services: services, valueHostConfigs: vhConfigs });   // the real thing so we use real ValidatorsValueHostBases
+        let vhm = new ValueHostsManager({ services: services, valueHostConfigs: vhConfigs });   // the real thing so we use real ValidatorsValueHostBases
 
 
         return {
-            vm: vm,
+            vhm: vhm,
             services: services,
-            field1: vm.getValueHost('Field1') as IValidatorsValueHostBase,
-            field2: vm.getValueHost('Field2') as IValidatorsValueHostBase,
-            field3: vm.getValueHost('Field3') as IValidatorsValueHostBase
+            field1: vhm.getValueHost('Field1') as IValidatorsValueHostBase,
+            field2: vhm.getValueHost('Field2') as IValidatorsValueHostBase,
+            field3: vhm.getValueHost('Field3') as IValidatorsValueHostBase
         };
     }
     test('No field previously validated or changed. Use Notification from field1 to field2 with revalidate = false. ValidationStatus should not change.', () => {
@@ -2693,8 +2998,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
 
 describe('toIValidatorsValueHostBase function', () => {
     test('Passing actual ValidatorsValueHostBase matches interface returns same object.', () => {
-        let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new TestValidatorsValueHost(vm, {
+        let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
+        let testItem = new TestValidatorsValueHost(vhm, {
             name: 'Field1',
             label: 'Label1',
             validatorConfigs: []
@@ -2715,7 +3020,7 @@ describe('toIValidatorsValueHostBase function', () => {
         private hostTextValue: string | undefined = undefined;
         private hostEnabled: boolean = true;
 
-        validationManager: IValidationManager = {} as IValidationManager;
+        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
         }
@@ -2769,9 +3074,17 @@ describe('toIValidatorsValueHostBase function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             return this.issues;
         }  
-        getConversionErrorMessage(): string | null {
+        getInjectedError(): InjectedError | null {
             return null;
         }
+        setInjectedError(injectedError: InjectedError): void
+        {
+            throw new Error('Method not implemented.');
+        }
+        clearInjectedError(): void
+        {
+            throw new Error('Method not implemented.');
+        }        
         required: boolean = false;
         getName(): string {
             return 'TestHost';
@@ -3304,7 +3617,7 @@ describe('dispose', () => {
             x: {},
             dispose: () => { (vhConfig.x as any) = undefined }
         };
-        let newVH = setup.validationManager.addOrUpdateValueHost(vhConfig, null);
+        let newVH = setup.valueHostsManager.addOrUpdateValueHost(vhConfig, null);
         setup.valueHost = newVH as TestValidatorsValueHost;
 
         setup.valueHost.validate();         

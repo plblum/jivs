@@ -3,7 +3,7 @@
  */
 
 import { IDataTypeFormatter } from '@plblum/jivs-engine/build/Interfaces/DataTypeFormatters';
-import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ensureError, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { MultipleClassesPerLookupKeyAnalyzer } from './LookupKeyAnalyzerClasses';
@@ -48,8 +48,8 @@ import { AnalysisArgs } from '../Types/ConfigAnalysis';
  *   }
  *   ```
  */
-export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookupKeyAnalyzer<IDataTypeFormatter, IValidationServices> {
-    constructor(args: AnalysisArgs<IValidationServices>) {
+export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookupKeyAnalyzer<IDataTypeFormatter, IJivsServices> {
+    constructor(args: AnalysisArgs<IJivsServices>) {
         super(args);
     }
 

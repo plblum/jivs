@@ -13,17 +13,14 @@ import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/Da
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { MessageTokenResolverService } from "@plblum/jivs-engine/build/Services/MessageTokenResolverService";
 import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
-import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
+import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
 
-new BuildersFactoryInstaller();  // this will install buildersFactory on ValidationServices.prototype
+new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
 
 
 
-export function createMinimalValidationServices(activeCultureId: string): ValidationServices {
-    let vs = new ValidationServices();
-
-    // --- CultureServices ----------------------------
-    vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
+export function createMinimalJivsServices(defaultCultureId: string): JivsServices {
+    let vs = new JivsServices(defaultCultureId);
 
     vs.conditionFactory = new ConditionFactory();
     // no Conditions pre-installed except DataTypecheck because

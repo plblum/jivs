@@ -10,8 +10,8 @@ import {
 import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockFieldValueHost } from "../TestSupport/mocks";
+import type { IJivsServices } from "../../src/Interfaces/JivsServices";
+import { MockValueHostsManager, MockJivsServices, MockFieldValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
@@ -22,12 +22,12 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { registerAllConditions } from "../../src/Support/createValidationServicesForTesting";
+import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { IValidationManager } from "../../src/Interfaces/ValidationManager";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 
@@ -38,11 +38,11 @@ class PublicifiedValidator extends Validator {
     public exposeConfig(): ValidatorConfig {
         return this.config;
     }
-    public exposeServices(): IValidationServices {
+    public exposeServices(): IJivsServices {
         return this.services;
     }
-    public exposeValidationManager(): IValidationManager {
-        return this.validationManager;
+    public exposeValueHostsManager(): IValueHostsManager {
+        return this.valueHostsManager;
     }
     public exposeValueHost(): IValidatorsValueHostBase {
         return this.valueHost;
@@ -63,28 +63,30 @@ class PublicifiedValidator extends Validator {
 }
 /**
  * Returns an Validator (PublicifiedValidator subclass) ready for testing.
- * The returned ValidationManager includes two FieldValueHosts with IDs "Field1" and "Field2".
+ * The returned ValueHostsManager includes two FieldValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * ConditionConfig - RequireTextConditiontType, ValueHostName: null
  * errorMessage: 'Local'
  * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, two ValueHosts, the complete Config,
+ * ValueHostsManager, Services, two ValueHosts, the complete Config,
  * and the Validator.
  */
-function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
-    vm: MockValidationManager,
-    services: MockValidationServices,
+function setupWithField1AndField2(config?: Partial<ValidatorConfig>,
+    defaultCultureId: string = 'en'
+): {
+    vhm: MockValueHostsManager,
+    services: MockJivsServices,
     valueHost1: MockFieldValueHost,
     valueHost2: MockFieldValueHost,
     config: ValidatorConfig,
     validator: PublicifiedValidator
 } {
-    let services = new MockValidationServices(true, true);
-    let vm = new MockValidationManager(services);
-    let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
-    let vh2 = vm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
+    let services = new MockJivsServices(true, true, defaultCultureId);
+    let vhm = new MockValueHostsManager(services);
+    let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vhm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
@@ -98,7 +100,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
 
     let testItem = new PublicifiedValidator(vh, updatedConfig);
     return {
-        vm: vm,
+        vhm: vhm,
         services: services,
         valueHost1: vh,
         valueHost2: vh2,
@@ -145,9 +147,9 @@ describe('Validator.constructor and initial property values', () => {
         expect(() => new Validator(null!, config)).toThrow(/valueHost/);
     });
     test('config parameter null throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = new MockFieldValueHost(vm, '', '',);
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
+        let vh = new MockFieldValueHost(vhm, '', '',);
         expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
     test('Valid parameters create and setup supporting properties', () => {
@@ -155,7 +157,7 @@ describe('Validator.constructor and initial property values', () => {
             conditionConfig: { conditionType: '' },
         });
         expect(setup.validator.exposeConfig()).toBe(setup.config);
-        expect(setup.validator.exposeValidationManager()).toBe(setup.vm);
+        expect(setup.validator.exposeValueHostsManager()).toBe(setup.vhm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
 });
@@ -223,7 +225,7 @@ describe('Validator.condition', () => {
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
-                    evaluate: (valueHost, validationManager) => {
+                    evaluate: (valueHost, valueHostsManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     category: ConditionCategory.Undetermined
@@ -236,7 +238,7 @@ describe('Validator.condition', () => {
         expect(condition).not.toBeNull();
         expect(condition!.conditionType).toBe('TEST');
         expect(condition!.category).toBe(ConditionCategory.Undetermined);
-        expect(condition!.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        expect(condition!.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Neither Config or Creator setup throws', () => {
         let setup = setupWithField1AndField2({
@@ -252,7 +254,7 @@ describe('Validator.condition', () => {
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
-                    evaluate: (valueHost, validationManager) => {
+                    evaluate: (valueHost, valueHostsManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     category: ConditionCategory.Undetermined
@@ -503,7 +505,7 @@ function setupForLocalization(activeCultureID: string): PublicifiedValidator {
         errorMessagel10n: 'EM',
         summaryMessage: 'SEM-fallback',
         summaryMessagel10n: 'SEM'
-    });
+    }, activeCultureID);
     let tlService = setup.services.textLocalizerService as TextLocalizerService;
     tlService.register('EM', {
         'en': 'enErrorMessage',
@@ -513,7 +515,6 @@ function setupForLocalization(activeCultureID: string): PublicifiedValidator {
         'en': 'enSummaryMessage',
         'es': 'esSummaryMessage'
     });
-    setup.services.cultureService.activeCultureId = activeCultureID;
     return setup.validator;
 }
 describe('Validator.getErrorMessageTemplate', () => {
@@ -570,11 +571,10 @@ describe('Validator.getErrorMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -584,12 +584,11 @@ describe('Validator.getErrorMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'supplied',
             errorMessagel10n: null,
-        });
+        }, 'en');
 
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('supplied');
@@ -602,12 +601,11 @@ describe('Validator.getErrorMessageTemplate', () => {
             },
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -620,7 +618,7 @@ describe('Validator.getErrorMessageTemplate', () => {
             },
             errorMessage: null,
             errorMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
@@ -629,7 +627,6 @@ describe('Validator.getErrorMessageTemplate', () => {
         {
             '*': 'Default Error Message-String'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
@@ -706,11 +703,10 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
@@ -720,12 +716,11 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             summaryMessage: 'supplied',
             summaryMessagel10n: null,
-        });
+        }, 'en');
 
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('supplied');
@@ -738,12 +733,11 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             },
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
@@ -756,7 +750,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             },
             summaryMessage: null,
             summaryMessagel10n: null,
-        });
+        }, 'en');
         (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
@@ -765,7 +759,6 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         {
             '*': 'Default Error Message-String'
         });
-        setup.services.cultureService.activeCultureId = 'en';
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
@@ -1011,14 +1004,14 @@ describe('Validator.validate', () => {
     });
 
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
-        vm: MockValidationManager,
-        services: MockValidationServices,
+        vhm: MockValueHostsManager,
+        services: MockJivsServices,
         vh: IFieldValueHost,
         testItem: Validator
     } {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
             conditionConfig: null,
@@ -1032,7 +1025,7 @@ describe('Validator.validate', () => {
 
         let testItem = new Validator(vh, config);
         return {
-            vm: vm,
+            vhm: vhm,
             services: services,
             vh: vh,
             testItem: testItem
@@ -1113,7 +1106,7 @@ describe('Validator.gatherValueHostNames', () => {
                 { conditionType: ConditionType.RequireText, valueHostName: 'Property1' },
         });
         let collection = new Set<ValueHostName>();
-        expect(() => setup.validator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
+        expect(() => setup.validator.gatherValueHostNames(collection, setup.vhm)).not.toThrow();
         expect(collection.size).toBe(1);
         expect(collection.has('Property1')).toBe(true);
     });
@@ -1129,7 +1122,7 @@ describe('getValuesForTokens', () => {
         });
         setup.valueHost1.setTextValue('Value1');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vhm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1161,7 +1154,7 @@ describe('getValuesForTokens', () => {
             ConditionType.RegExp, (config) => new RangeCondition(config));                
         setup.valueHost1.setTextValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vhm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1195,15 +1188,15 @@ describe('getValuesForTokens', () => {
 
 describe('ValidatorFactory.create', () => {
     function setupValidatorFactory(): {
-        vm: MockValidationManager,
+        vhm: MockValueHostsManager,
         vh: MockFieldValueHost,
         validatorConfig: ValidatorConfig,
         factory: ValidatorFactory
     }
     {
-        let services = new MockValidationServices(true, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
+        let services = new MockJivsServices(true, true);
+        let vhm = new MockValueHostsManager(services);
+        let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1214,7 +1207,7 @@ describe('ValidatorFactory.create', () => {
         };
         let factory = new ValidatorFactory();
         return {
-            vm: vm,
+            vhm: vhm,
             vh: vh,
             validatorConfig: config,
             factory: factory

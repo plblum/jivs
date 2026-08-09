@@ -1,20 +1,20 @@
 /**
- * ValidationManager is the central object for using this system.
+ * ValueHostsManager is the central object for using this system.
  * It is where you describe the shape of your fields and their validation rules.
  * Its methods provide validation and the results of validation.
- * @module jivs-engine/ValidationManager/ConcreteClasses
+ * @module jivs-engine/ValueHostsManager/ConcreteClasses
  */
 import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValidationManagerConfigChangedHandler, ValidationManagerInstanceStateChangedHandler } from '../Interfaces/ValidationManager';
+import { type ValueHostsManagerInstanceState, type IValueHostsManager, type ValueHostsManagerConfig, type IValueHostsManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler, Behaviors, createBehaviors } from '../Interfaces/ValueHostsManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { Debouncer } from '../Utilities/Debounce';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
@@ -30,22 +30,22 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
 
 
 /**
- * ValidationManager is the central object for using this system.
+ * ValueHostsManager is the central object for using this system.
  * It is where you describe the shape of your fields and their validation rules.
  * Once setup, it keeps a list of ValueHost objects that represent the elements of your model
  * or form, even if they don't need validation.
  * 
  * Configs are interfaces you use with plain objects to fashion them into 
- * ValidationManager's configuration. ValueHostConfig describes a ValueHost.
+ * ValueHostsManager's configuration. ValueHostConfig describes a ValueHost.
  * FieldValueHostConfig describes an FieldValueHost (which supports validation).
  * An FieldValueHost takes ValidatorConfigs to fashion its list of Validators.
  * An Validator takes various ConditionConfigs to fashion the specific 
  * validation rule.
  * 
- * ValidationManager's constructor takes a single parameter, but its a potent one:
- * it's Configuration object (type=ValidationManagerConfig). By the time you 
- * create the ValidationManager, you have provided all of those configs to
- * the Configuration object. It also supplies the ValidationServices object,
+ * ValueHostsManager's constructor takes a single parameter, but its a potent one:
+ * it's Configuration object (type=ValueHostsManagerConfig). By the time you 
+ * create the ValueHostsManager, you have provided all of those configs to
+ * the Configuration object. It also supplies the JivsServices object,
  * state data, and callbacks. See the constructor's documentation for a sample of 
  * the Configuration object.
  * 
@@ -54,10 +54,10 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
  * Try to keep validation rules separate from your UI's code.
  * 
  * All Configs are considered immutable. If you need to make a change, you can
- * create a new instance of ValidationManager, or call its addValueHost, addOrUpdateValueHost,
+ * create a new instance of ValueHostsManager, or call its addValueHost, addOrUpdateValueHost,
  * or discardValueHost methods to keep the existing instance.
  * 
- * ValidationManager's job is:
+ * ValueHostsManager's job is:
  * - Create and retain all ValueHosts.
  * - Provide access to all ValueHosts with its getValueHost() function.
  * - Retain InstanceState objects that reflects the states of all ValueHost instances.
@@ -76,26 +76,26 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends ValidationManagerInstanceState = ValidationManagerInstanceState>
-    implements IValidationManager, IValidationManagerCallbacks {
+export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = ValueHostsManagerInstanceState>
+    implements IValueHostsManager, IValueHostsManagerCallbacks {
     /**
      * Constructor
-     * @param config - Provides ValidationManager with numerous configuration settings.
+     * @param config - Provides ValueHostsManager with numerous configuration settings.
      * It is just a simple object that you may initialize like this:
      * @example
      * ```ts
      * {
-     *   services: createValidationServices(); <-- see and customize your create_services.ts file
+     *   services: createJivsServices(); <-- see and customize your create_services.ts file
      *   valueHostConfigs: [
      *     // see elsewhere for details on ValueHostConfigs as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
-     *     // to the Validation Manager
+     *     // to the ValueHostsManager
      *      ],
      *   savedInstanceState: null, // or the state object previously returned with OnInstanceStateChanged
      *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
-     *   onInstanceStateChanged: (validationManager, state)=> { },
+     *   onInstanceStateChanged: (valueHostsManager, state)=> { },
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
-     *   onValidationStateChanged: (validationManager, validationState)=> { },
+     *   onValidationStateChanged: (valueHostsManager, validationState)=> { },
      *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onTextValueChanged: (valueHost, oldValue) => { }
@@ -103,18 +103,20 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * }
      * ```
      */
-    constructor(config: ValidationManagerConfig) {
+    constructor(config: ValueHostsManagerConfig) {
         assertNotNull(config, 'config');
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         // let savedServices = config.services;
         // config.services = null as any; // to ignore during DeepClone
-        // let internalConfig = deepClone(config) as ValidationManagerConfig;
+        // let internalConfig = deepClone(config) as ValueHostsManagerConfig;
         // config.services = savedServices;
         // internalConfig.services = savedServices;
 
         // this._config = internalConfig;
-        const internalConfig = this._config = ValidationManager.safeConfigClone(config);
+        const internalConfig = this._config = ValueHostsManager.safeConfigClone(config);
+        if (!this._config.behaviors)
+            this._config.behaviors = createBehaviors(this._config.services);
 
         this._instanceState = internalConfig.savedInstanceState ?? {};
         if (typeof this._instanceState.stateChangeCounter !== 'number')
@@ -136,11 +138,11 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         this._config.onConfigChanged = saveOnChangeConfig;
     }
 
-    public static safeConfigClone(config: ValidationManagerConfig): ValidationManagerConfig {
+    public static safeConfigClone(config: ValueHostsManagerConfig): ValueHostsManagerConfig {
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         const savedServices = config.services;
         config.services = null as any; // to ignore during DeepClone
-        const internalConfig = deepClone(config) as ValidationManagerConfig;
+        const internalConfig = deepClone(config) as ValueHostsManagerConfig;
         config.services = savedServices;
         internalConfig.services = savedServices;
         return internalConfig;
@@ -183,17 +185,32 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
     private _logger: LoggerFacade | null = null;
 
-    protected get config(): ValidationManagerConfig {
+    protected get config(): ValueHostsManagerConfig {
         return this._config;
     }
-    private readonly _config: ValidationManagerConfig;
+    private readonly _config: ValueHostsManagerConfig;
 
     /**
-     * Access to the ValidationServices.
+     * Access to the JivsServices.
      */
-    public get services(): IValidationServices {
+    public get services(): IJivsServices {
         return this._config.services!;
     }
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Supplied by either the ValueHostsManagerConfig.behaviors or Builder.behaviors property.
+     * 
+     * Here are its options with their default values:
+     * - activeCultureID = from CultureService.defaultCultureId
+     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
+     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * `setValue(value, { disableParser: true });` to selectively turn off parsing.
+     */
+    public get behaviors(): Behaviors
+    {
+        return this._config.behaviors!; // assigned in constructor when missing
+    }    
     /**
      * ValueHosts for all ValueHostConfigs.
      * Always replace a ValueHost when the associated Config or InstanceState are changed.
@@ -232,12 +249,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     /**
      * ValueHostInstanceStates and more.
      * A copy of this is expected to be retained (redux/localstorage/etc)
-     * by the caller to support recreating the ValidationManager in a stateless situation.
+     * by the caller to support recreating the ValueHostsManager in a stateless situation.
      */
-    protected get instanceState(): ValidationManagerInstanceState {
+    protected get instanceState(): ValueHostsManagerInstanceState {
         return this._instanceState;
     }
-    private _instanceState: ValidationManagerInstanceState;
+    private _instanceState: ValueHostsManagerInstanceState;
 
     /**
      * Value retained from the constructor to share with calls to addValueHost,
@@ -249,7 +266,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     private readonly _lastValueHostInstanceStates: Map<string, ValueHostInstanceState> = new Map<string, ValueHostInstanceState>();
 
     /**
-     * Use to change anything in ValidationManagerInstanceState without impacting the immutability 
+     * Use to change anything in ValueHostsManagerInstanceState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
@@ -278,9 +295,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Can use builder.static(), builder.calc() or any ValueConfigHost. 
      * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
-     * It overrides any state supplied by the ValidationManager constructor.
+     * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
-     * When null, the state supplied in the ValidationManager constructor will be used if available.
+     * When null, the state supplied in the ValueHostsManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
     public addValueHost(config: ValueHostConfig,
@@ -307,7 +324,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Can use builder.static(), builder.calc() or any ValueConfigHost. 
      * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
-     * It overrides any state supplied by the ValidationManager constructor.
+     * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
     public addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
@@ -332,7 +349,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * Can use builder.static(), builder.calc() or any ValueConfigHost. 
      * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
-     * It overrides any state supplied by the ValidationManager constructor.
+     * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
     public addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
@@ -375,12 +392,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
     /**
      * Creates the IValueHost based on the config and ensures
-     * ValidationManager has correct and corresponding instances of ValueHost,
+     * ValueHostsManager has correct and corresponding instances of ValueHost,
      * ValueHostConfig and ValueHostInstanceState.
      * Any previous ValueHost and its config will be disposed.
      * @param config - a clone of this instance will be retained
      * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
-     * It overrides any state supplied by the ValidationManager constructor.
+     * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      * @returns 
      */
@@ -450,7 +467,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
         return toICalcValueHost(this.getValueHost(valueHostName));
     }
-    //FYI: other getValueHosts are built around validation and declared in IValidationManager
+    //FYI: other getValueHosts are built around validation and declared in IValueHostsManager
 
     /**
      * Alternative to getValueHost that returns strongly typed valuehosts 
@@ -496,7 +513,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         }
     }
 
-    //#region IValidationManagerCallbacks
+    //#region IValueHostsManagerCallbacks
     protected resolveCallback<T>(callback: T | null | undefined, name: string): T | null {
         if (callback) {
             this.logger.message(LoggingLevel.Info, () => name);
@@ -505,25 +522,25 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return null;
     }
     /**
-     * Use this when caching the configuration for a later creation of ValidationManager.
+     * Use this when caching the configuration for a later creation of ValueHostsManager.
      * 
      * Called when the configuration of ValueHosts has been changed by these members
-     * of ValidationManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
+     * of ValueHostsManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
      * discardValueHost.
-     * The supplied object is a clone so modifications will not impact the ValidationManager.
+     * The supplied object is a clone so modifications will not impact the ValueHostsManager.
      */
-    public get onConfigChanged(): ValidationManagerConfigChangedHandler | null {
+    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
 
-        return this.resolveCallback<ValidationManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
+        return this.resolveCallback<ValueHostsManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
     }
 
     /**
-     * Called when the ValidationManager's state has changed.
+     * Called when the ValueHostsManager's state has changed.
      * React example: React component useState feature retains this value
      * and needs to know when to call its setState function with the stateToRetain
      */
-    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
-        return this.resolveCallback<ValidationManagerInstanceStateChangedHandler>(this.config.onInstanceStateChanged, 'onInstanceStateChanged');
+    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
+        return this.resolveCallback<ValueHostsManagerInstanceStateChangedHandler>(this.config.onInstanceStateChanged, 'onInstanceStateChanged');
     }
 
     /**
@@ -557,7 +574,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     public get onTextValueChanged(): TextValueChangedHandler | null {
         return this.resolveCallback<TextValueChangedHandler>(this.config.onTextValueChanged, 'onTextValueChanged');
     }
-    //#endregion IValidationManagerCallbacks
+    //#endregion IValueHostsManagerCallbacks
     /**
      * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
@@ -630,9 +647,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
      * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
-     * at the validationManager level to know.
+     * at the valueHostsManager level to know.
      * This function is optionally debounced with a delay in ms coming from
-     * ValidationManagerConfig.notifyValidationStateChangedDelay
+     * ValueHostsManagerConfig.notifyValidationStateChangedDelay
      * @param validationState
      * @param options
      * @param force - when true, override the debouncer and execute immediately.
@@ -922,10 +939,10 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
     }
     //#endregion Payload
 
-    //#region IValidationManagerCallbacks
+    //#region IValueHostsManagerCallbacks
 
     /**
-     * Called when ValidationManager's validate() function has returned.
+     * Called when ValueHostsManager's validate() function has returned.
      * Supplies the result to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
@@ -948,7 +965,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
         return this.resolveCallback<ValueHostValidationStateChangedHandler>(this.config.onValueHostValidationStateChanged, 'onValueHostValidationStateChanged');
     }
 
-    //#endregion IValidationManagerCallbacks
+    //#endregion IValueHostsManagerCallbacks
 }
 
 type notifyValidationStateChangedWorkerHandler = (validationState: ValidationState | null, options?: ValidateOptions) => void;

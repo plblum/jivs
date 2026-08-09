@@ -2,7 +2,7 @@
  * Provide a logging service for this library to report into.
  * It provides one such logger class, ConsoleLoggerService, which works with the JavaScript console object.
  * Use your own logger by implementating the ILogger interface.
- * Assign your class to {@link jivs-engine/Services/ConcreteClasses/ValidationServices!ValidationServices | ValidationServices }
+ * Assign your class to {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices | JivsServices }
  * @module jivs-engine/Services/Types/ILoggerService
  */
 
@@ -10,7 +10,7 @@ import { IService } from './Services';
 
 /**
  * Provide a logging service for this system to report into.
- * Attach an instance to ValidationServices.loggerService.
+ * Attach an instance to JivsServices.loggerService.
  */
 export interface ILoggerService extends IService
 {

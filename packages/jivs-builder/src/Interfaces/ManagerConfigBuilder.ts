@@ -10,10 +10,10 @@ import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/Field
 import { IDisposable } from '@plblum/jivs-engine/build/Interfaces/General_Purpose';
 import { StaticValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/StaticValueHost';
 import {
-    IValidationManagerCallbacks, ValidationManagerConfig,
-    ValidationManagerInstanceState
-} from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import type { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+    IValueHostsManagerCallbacks, ValueHostsManagerConfig,
+    ValueHostsManagerInstanceState, Behaviors
+} from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import {
@@ -25,14 +25,28 @@ import {
     FluentStaticParameters, FluentValidatorConfig
 } from './ValueHostConfigBuilders';
 /**
- * Base interface for a ValidationManagerConfigBuilder.
+ * Base interface for a ValueHostsManagerConfigBuilder.
  * The ManagerConfigBuilder provides a way to configure ValueHostManagerConfig
- * and ValidationManagerConfig through meaningful code.
+ * and ValueHostsManagerConfig through meaningful code.
  */
-export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
-    extends IDisposable, IValueHostsForValidationManagerConfig<T>
+export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
+    extends IDisposable, IValueHostsForValueHostsManagerConfig<T>
 {
-    services: IValidationServices;
+    services: IJivsServices;
+
+    /**
+     * Behavioral settings for how ValueHostsManager should operate. Supplied by either the ValueHostsManagerConfig.behaviors or Builder.behaviors property.
+     * 
+     * Here are its options with their default values:
+     * - activeCultureID = from CultureService.defaultCultureId
+     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
+     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * `setValue(value, { disableParser: true });` to selectively turn off parsing.
+     * 
+     * They can be changed on the ValueHostsManager.behaviors property.
+     */
+    behaviors: Behaviors;    
     /**
      * Delivers a complete ValueHostConfig and shuts down this instance.
      * You cannot use the instance after this point.
@@ -69,24 +83,24 @@ export interface IManagerConfigBuilder<T extends ValidationManagerConfig>
 }
 
 /**
- * A builder for preparing ValidationManagerConfig.
+ * A builder for preparing ValueHostsManagerConfig.
  */
-export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig = ValidationManagerConfig>
+export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig>
     extends IManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder,
-    IValidationManagerCallbacks, IValidationManagerConfigExtensions
+    IValueHostsManagerCallbacks, IValueHostsManagerConfigExtensions
 {
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedInstanceState
      */
-    savedInstanceState?: ValidationManagerInstanceState | null;
+    savedInstanceState?: ValueHostsManagerInstanceState | null;
 
     /**
-     * @inheritDoc jivs-engine/ValidationManager/Types!ValidationManagerConfig.savedValueHostInstanceStates
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedValueHostInstanceStates
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
 }
 
-export interface IValidationManagerConfigExtensions
+export interface IValueHostsManagerConfigExtensions
 {
 
 }
@@ -106,9 +120,9 @@ export interface BuilderOverrideOptions
 }
 
 /**
- * Provides value host creation functions for ValidationManagerConfigBuilder.
+ * Provides value host creation functions for ValueHostsManagerConfigBuilder.
  */
-export interface IValueHostsForValidationManagerConfig<T extends ValidationManagerConfig>
+export interface IValueHostsForValueHostsManagerConfig<T extends ValueHostsManagerConfig>
 {
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -164,7 +178,7 @@ export interface IValueHostsForValidationManagerConfig<T extends ValidationManag
 }
 
 /**
- * Provides value host creation functions for ValidationManagerConfigBuilder.
+ * Provides value host creation functions for ValueHostsManagerConfigBuilder.
  */
 export interface IValueHostsForValidatorManagerConfigBuilder
 {
@@ -204,12 +218,12 @@ export interface IValueHostsForValidatorManagerConfigBuilder
 //#region FormConfigAdapter
 
 /** 
- * Variation of ValidationManagerConfigBuilder with extensions designed for the UI layer
+ * Variation of ValueHostsManagerConfigBuilder with extensions designed for the UI layer
  * to override and extend the business layer configuration.
  * It allows us to isolate methods specific to the UI layer, 
  * so that the business layer does not have to know about them.
 */
-export interface IFormConfigAdapter extends IValidationManagerConfigBuilder<ValidationManagerConfig> {
+export interface IFormConfigAdapter extends IValueHostsManagerConfigBuilder<ValueHostsManagerConfig> {
     /**
      * When adapting rules inherited from a model, it may have more fields than the UI layer is going to use. This function
      * will disable any ValueHostConfigs that are not in the list of modelFieldNames. 
@@ -333,7 +347,7 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      * Use case 2: The business layer specified a data type, but the UI layer needs to change it to a different one.
      * In this case, the new data type must be compatible with the original data type. If it is not, it is an error.
      * By "compatible", there must be a fallback defined between the new data type and existing one
-     * in the LookupKeyFallbackService within the ValidationServices. If there is no fallback, it is an error.
+     * in the LookupKeyFallbackService within the JivsServices. If there is no fallback, it is an error.
      * @param newDataType - the new data type to apply to this ValueHost. It must be compatible with the existing data type.
      * @returns The IModifyFieldBuilder for further modifications.
      */

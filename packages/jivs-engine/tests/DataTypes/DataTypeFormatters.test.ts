@@ -1,17 +1,20 @@
 import {
     AbbrevDOWDateFormatter, AbbrevDateFormatter, BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter,
-    DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
+    DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
     LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
     TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter,
     IntegerFormatter,
     BooleanFormatterBase,
-    DefaultLabelsForBoolean
+    DefaultLabelsForBoolean,
+    NumberFormatterBase,
+    DateTimeFormatterBase
 } from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
-import { MockValidationServices } from '../TestSupport/mocks';
+import { MockJivsServices } from '../TestSupport/mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
+import { DataTypeFormatterBase } from '../../src/DataTypes/DataTypeFormatterBase';
 
 describe('DataTypeFormatterBase', () => {
     class TestClass extends DataTypeFormatterBase
@@ -32,15 +35,15 @@ describe('DataTypeFormatterBase', () => {
         let x: any;
         expect(() => x = testItem.services).toThrow(/Register/);
     });
-    test('Services to return same ValidationService as assigned', () => {
-        let services = new MockValidationServices(false, false);
+    test('Services to return same JivsServices as assigned', () => {
+        let services = new MockJivsServices(false, false);
         let testItem = new TestClass();
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
     });
 
     test('dispose then get services throws TypeError', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let testItem = new TestClass();
         testItem.services = services;
         testItem.dispose();
@@ -62,7 +65,7 @@ describe('StringFormatter', () => {
         let dts = testItem.format('A', LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
 
     test('fr: format with string parameter', () => {
@@ -70,7 +73,7 @@ describe('StringFormatter', () => {
         let dts = testItem.format('A', LookupKey.String, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });    
     test('format with number parameter is converted to string', () => {
         let testItem = new StringFormatter();
@@ -78,7 +81,7 @@ describe('StringFormatter', () => {
         let dts = testItem.format(15, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('15');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with null parameter returns empty string', () => {
@@ -87,7 +90,7 @@ describe('StringFormatter', () => {
         let dts = testItem.format(null, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with undefined parameter returns empty string', () => {
@@ -96,7 +99,7 @@ describe('StringFormatter', () => {
         let dts = testItem.format(undefined, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with object parameter is an error', () => {
@@ -105,7 +108,10 @@ describe('StringFormatter', () => {
         let dts = testItem.format({}, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a string or primitive');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a string or primitive',
+            errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
+        });
     });
 });
 describe('CapitalizeStringFormatter', () => {
@@ -122,7 +128,7 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
 
         dts = testItem.format('a', LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -140,7 +146,7 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Capitalize, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         dts = testItem.format('a', LookupKey.Capitalize, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
@@ -157,7 +163,7 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format(15, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('15');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with null parameter returns empty string', () => {
@@ -166,7 +172,7 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format(null, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with undefined parameter returns empty string', () => {
@@ -175,7 +181,7 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format(undefined, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with object parameter is an error', () => {
@@ -184,7 +190,10 @@ describe('CapitalizeStringFormatter', () => {
         let dts = testItem.format({}, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a string or primitive');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a string or primitive',
+            errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
+        });
     });
 });
 describe('UppercaseStringFormatter', () => {
@@ -201,7 +210,7 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
 
         dts = testItem.format('a', LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -222,7 +231,7 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Uppercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         dts = testItem.format('a', LookupKey.Uppercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
@@ -242,7 +251,7 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format(15, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('15');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with null parameter returns empty string', () => {
@@ -251,7 +260,7 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format(null, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with undefined parameter returns empty string', () => {
@@ -260,7 +269,7 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format(undefined, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with object parameter is an error', () => {
@@ -269,7 +278,10 @@ describe('UppercaseStringFormatter', () => {
         let dts = testItem.format({}, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a string or primitive');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a string or primitive',
+            errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode,
+        });
     });
 });
 describe('LowercaseStringFormatter', () => {
@@ -286,7 +298,7 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('a');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
 
         dts = testItem.format('a', LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -307,7 +319,7 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format('A', LookupKey.Lowercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('a');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         dts = testItem.format('a', LookupKey.Lowercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('a');
@@ -327,8 +339,7 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format(15, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('15');
-        expect(dts.errorMessage).toBeUndefined();
-        
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('format with null parameter returns empty string', () => {
         let testItem = new LowercaseStringFormatter();
@@ -336,7 +347,7 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format(null, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with undefined parameter returns empty string', () => {
@@ -345,7 +356,7 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format(undefined, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('format with object parameter is an error', () => {
@@ -354,7 +365,10 @@ describe('LowercaseStringFormatter', () => {
         let dts = testItem.format({}, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a string or primitive');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a string or primitive',
+            errorCode: DataTypeFormatterBase.IncompatibleDataTypeErrorCode
+        });
     });
 });
 
@@ -377,7 +391,7 @@ describe('NumberFormatter', () => {
         let dts = testItem.format(1, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
@@ -399,7 +413,7 @@ describe('NumberFormatter', () => {
         let dts = testItem.format(1, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1.00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
@@ -412,7 +426,7 @@ describe('NumberFormatter', () => {
         let dts = testItem.format(1, LookupKey.Number, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Number, 'fr');
         expect(dts).not.toBeNull();
@@ -431,7 +445,7 @@ describe('NumberFormatter', () => {
         let dts = testItem.format(null, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
@@ -444,11 +458,17 @@ describe('NumberFormatter', () => {
         let dts = testItem.format('A', LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
         dts = testItem.format({}, LookupKey.Number, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
     });
 });
@@ -472,7 +492,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('$1.00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -495,7 +515,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1.00 US dollars');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -510,7 +530,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1,00\xA0€');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Currency, 'fr');
         expect(dts).not.toBeNull();
@@ -531,7 +551,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1,00\xA0€');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
@@ -552,7 +572,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1,00\xA0€');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });       
     test('With global default currency code of USD and currencycode is missing in constructor, use default currency code', () => {
         let testItem = new CurrencyFormatter('USD', null);
@@ -560,7 +580,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1,00\xA0$US'); // fr formatting, but US currency symbol
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
 
     });         
     test('With EUR as default currency code, LookupKey.Currency uses EUR when currencycode is missing in constructor', () => {
@@ -569,12 +589,12 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1,00\xA0€');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         // try english and get its formatting, but still uses the fr currency symbol
         dts = testItem.format(1, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('€1.00');
-        expect(dts.errorMessage).toBeUndefined();        
+        expect(dts.errorDetails).toBeUndefined();        
     });                    
     test('null and undefined input results in empty string', () => {
         let testItem = new CurrencyFormatter('USD');
@@ -582,7 +602,7 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format(null, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -594,11 +614,17 @@ describe('CurrencyFormatter', () => {
         let dts = testItem.format('A', LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
         dts = testItem.format({}, LookupKey.Currency, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
     });    
 });
@@ -621,7 +647,7 @@ describe('IntegerFormatter', () => {
         let dts = testItem.format(1, LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
@@ -646,7 +672,7 @@ describe('IntegerFormatter', () => {
         let dts = testItem.format(1, LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1 m');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid numbers', () => {
         let testItem = new IntegerFormatter();
@@ -655,7 +681,7 @@ describe('IntegerFormatter', () => {
         let dts = testItem.format(1, LookupKey.Integer, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Integer, 'fr');
         expect(dts).not.toBeNull();
@@ -674,7 +700,7 @@ describe('IntegerFormatter', () => {
         let dts = testItem.format(null, LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
@@ -687,11 +713,17 @@ describe('IntegerFormatter', () => {
         let dts = testItem.format('A', LookupKey.Integer, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
         dts = testItem.format({}, LookupKey.Integer, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
     });
 });
@@ -715,7 +747,7 @@ describe('PercentageFormatter', () => {
         let dts = testItem.format(1, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('100%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(0.15, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -737,7 +769,7 @@ describe('PercentageFormatter', () => {
         let dts = testItem.format(1, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('100.00%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -749,7 +781,7 @@ describe('PercentageFormatter', () => {
         let dts = testItem.format(1, LookupKey.Percentage, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('100\xA0%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(0.15, LookupKey.Percentage, 'fr');
         expect(dts).not.toBeNull();
@@ -767,7 +799,7 @@ describe('PercentageFormatter', () => {
         let dts = testItem.format(null, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -779,11 +811,17 @@ describe('PercentageFormatter', () => {
         let dts = testItem.format('A', LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
         dts = testItem.format({}, LookupKey.Percentage, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
         
     });
 });
@@ -809,7 +847,7 @@ describe('Percentage100Formatter', () => {
         let dts = testItem.format(100, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('100%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         // Intl rounds percentage by default.
         dts = testItem.format(15.2, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -834,7 +872,7 @@ describe('Percentage100Formatter', () => {
         let dts = testItem.format(1, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1.00%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(1.5, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -846,7 +884,7 @@ describe('Percentage100Formatter', () => {
         let dts = testItem.format(100, LookupKey.Percentage100, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('100\xA0%');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         // Intl rounds percentage by default
         dts = testItem.format(15.2, LookupKey.Percentage100, 'fr');
         expect(dts).not.toBeNull();
@@ -867,7 +905,7 @@ describe('Percentage100Formatter', () => {
         let dts = testItem.format(null, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -879,11 +917,17 @@ describe('Percentage100Formatter', () => {
         let dts = testItem.format('A', LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
-        
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
+
         dts = testItem.format({}, LookupKey.Percentage100, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a number');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a number',
+            errorCode: NumberFormatterBase.NotANumberErrorCode
+        });
     });
 });
 
@@ -914,7 +958,7 @@ describe('BooleanFormatter', () => {
         let dts = testItem.format(true, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('true');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -926,14 +970,14 @@ describe('BooleanFormatter', () => {
         let dts = testItem.format(true, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('T');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('F');
     });    
     test('TextLocalizationService used for labels unless the culture is not setup', () => {
-        let services = new MockValidationServices(false, false);
+        let services = new MockJivsServices(false, false);
         let tlService = services.textLocalizerService as TextLocalizerService;
         tlService.register('TRUE', {
             'en': 'enTRUE',
@@ -949,25 +993,25 @@ describe('BooleanFormatter', () => {
         let dts = testItem.format(true, LookupKey.Boolean, 'en');    // uses global default
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('enTRUE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         dts = testItem.format(false, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('enFALSE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
 
         dts = testItem.format(true, LookupKey.Boolean, 'en-US');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('enTRUE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         dts = testItem.format(false, LookupKey.Boolean, 'en-US');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('enFALSE');        
-        expect(dts.errorMessage).toBeUndefined();       
+        expect(dts.errorDetails).toBeUndefined();       
         
         dts = testItem.format(true, LookupKey.Boolean, 'en-GB'); // fallback to global default
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('enTRUE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'en-GB');
         expect(dts).not.toBeNull();
@@ -976,7 +1020,7 @@ describe('BooleanFormatter', () => {
         dts = testItem.format(true, LookupKey.Boolean, 'es'); 
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('esTRUE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'es');
         expect(dts).not.toBeNull();
@@ -985,7 +1029,7 @@ describe('BooleanFormatter', () => {
         dts = testItem.format(true, LookupKey.Boolean, 'es-SP'); 
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('esTRUE');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'es-SP');
         expect(dts).not.toBeNull();
@@ -994,7 +1038,7 @@ describe('BooleanFormatter', () => {
         dts = testItem.format(true, LookupKey.Boolean, 'fr'); // fallback to defaults
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('true');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(false, LookupKey.Boolean, 'fr');
         expect(dts).not.toBeNull();
@@ -1006,7 +1050,7 @@ describe('BooleanFormatter', () => {
         let dts = testItem.format(null, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -1018,11 +1062,17 @@ describe('BooleanFormatter', () => {
         let dts = testItem.format('A', LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a boolean');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a boolean',
+            errorCode: BooleanFormatterBase.NotABooleanErrorCode
+        });
         
         dts = testItem.format(1, LookupKey.Boolean, 'en');
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a boolean');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a boolean',
+            errorCode: BooleanFormatterBase.NotABooleanErrorCode
+        });
         
     });
     test('Using BooleanFormatterBase with defaults that are null sets up with "true", "false", and LookupKey.Boolean', () => {
@@ -1074,7 +1124,7 @@ describe('DateTimeFormatter', () => {
         let dts = testItem.format(date1, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('10/31/2000, 12:00 AM');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.DateTime, 'en');
@@ -1099,7 +1149,7 @@ describe('DateTimeFormatter', () => {
         let dts = testItem.format(date1, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('October 31, 2000 at 12:00 AM');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     
     });    
 
@@ -1110,7 +1160,7 @@ describe('DateTimeFormatter', () => {
         let dts = testItem.format(date1, LookupKey.DateTime, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('31/10/2000 00:00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.DateTime, 'fr');
@@ -1127,12 +1177,12 @@ describe('DateTimeFormatter', () => {
         let dts = testItem.format(null, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Calues other than Date, null or undefined are errors', () => {
@@ -1141,22 +1191,34 @@ describe('DateTimeFormatter', () => {
         let dts = testItem.format({}, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format('', LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });
 });
@@ -1181,7 +1243,7 @@ describe('DateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('10/31/2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.Date, 'en');
@@ -1204,7 +1266,7 @@ describe('DateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('10/31/00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid dates', () => {
         let testItem = new DateFormatter();
@@ -1213,7 +1275,7 @@ describe('DateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.Date, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('31/10/2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.Date, 'fr');
@@ -1230,12 +1292,12 @@ describe('DateFormatter', () => {
         let dts = testItem.format(null, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1244,22 +1306,33 @@ describe('DateFormatter', () => {
         let dts = testItem.format({}, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
-        
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         dts = testItem.format('', LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });
 
@@ -1284,7 +1357,7 @@ describe('AbbrevDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Oct 31, 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.AbbrevDate, 'en');
@@ -1307,7 +1380,7 @@ describe('AbbrevDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Oct 31, 00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDateFormatter();
@@ -1316,7 +1389,7 @@ describe('AbbrevDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDate, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('31 oct. 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.AbbrevDate, 'fr');
@@ -1333,12 +1406,12 @@ describe('AbbrevDateFormatter', () => {
         let dts = testItem.format(null, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1347,22 +1420,34 @@ describe('AbbrevDateFormatter', () => {
         let dts = testItem.format({}, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format('', LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });
 });
@@ -1387,7 +1472,7 @@ describe('AbbrevDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Tue, Oct 31, 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 2, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.AbbrevDOWDate, 'en');
@@ -1411,7 +1496,7 @@ describe('AbbrevDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Tue, Oct 31, 00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDOWDateFormatter();
@@ -1420,7 +1505,7 @@ describe('AbbrevDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.AbbrevDOWDate, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('mar. 31 oct. 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 3, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.AbbrevDOWDate, 'fr');
@@ -1437,12 +1522,12 @@ describe('AbbrevDOWDateFormatter', () => {
         let dts = testItem.format(null, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1451,22 +1536,34 @@ describe('AbbrevDOWDateFormatter', () => {
         let dts = testItem.format({}, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format('', LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });    
 });
@@ -1490,7 +1587,7 @@ describe('LongDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('October 31, 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.LongDate, 'en');
@@ -1513,7 +1610,7 @@ describe('LongDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('October 31, 00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid dates', () => {
         let testItem = new LongDateFormatter();
@@ -1522,7 +1619,7 @@ describe('LongDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDate, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('31 octobre 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.LongDate, 'fr');
@@ -1539,12 +1636,12 @@ describe('LongDateFormatter', () => {
         let dts = testItem.format(null, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1553,22 +1650,34 @@ describe('LongDateFormatter', () => {
         let dts = testItem.format({}, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format('', LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });
 });
@@ -1593,7 +1702,7 @@ describe('LongDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Tuesday, October 31, 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 2, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.LongDOWDate, 'en');
@@ -1617,7 +1726,7 @@ describe('LongDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Tuesday, October 31, 00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
     });
     test('fr culture with various valid dates', () => {
         let testItem = new LongDOWDateFormatter();
@@ -1626,7 +1735,7 @@ describe('LongDOWDateFormatter', () => {
         let dts = testItem.format(date1, LookupKey.LongDOWDate, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('mardi 31 octobre 2000');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 3, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.LongDOWDate, 'fr');
@@ -1643,12 +1752,12 @@ describe('LongDOWDateFormatter', () => {
         let dts = testItem.format(null, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1657,22 +1766,34 @@ describe('LongDOWDateFormatter', () => {
         let dts = testItem.format({}, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format('', LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a date',
+            errorCode: DateTimeFormatterBase.NotADateErrorCode
+        });
                 
     });        
 });
@@ -1696,7 +1817,7 @@ describe('TimeofDayFormatter', () => {
         let dts = testItem.format(date1, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('12:00 AM');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.TimeOfDay, 'en');
@@ -1715,7 +1836,7 @@ describe('TimeofDayFormatter', () => {
         let dts = testItem.format(date1, LookupKey.TimeOfDay, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('00:00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.TimeOfDay, 'fr');
@@ -1733,12 +1854,12 @@ describe('TimeofDayFormatter', () => {
         let dts = testItem.format(null, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('values other than Date, null or undefined are errors', () => {
@@ -1747,22 +1868,34 @@ describe('TimeofDayFormatter', () => {
         let dts = testItem.format({}, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
         
         dts = testItem.format('', LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
                 
     });    
 });
@@ -1787,7 +1920,7 @@ describe('TimeofDayHMSFormatter', () => {
         let dts = testItem.format(date1, LookupKey.TimeOfDayHMS, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('00:00:00');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
         dts = testItem.format(date2, LookupKey.TimeOfDayHMS, 'fr');
@@ -1804,12 +1937,12 @@ describe('TimeofDayHMSFormatter', () => {
         let dts = testItem.format(null, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
         dts = testItem.format(undefined, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
-        expect(dts.errorMessage).toBeUndefined();
+        expect(dts.errorDetails).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
@@ -1818,22 +1951,34 @@ describe('TimeofDayHMSFormatter', () => {
         let dts = testItem.format({}, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
         
         dts = testItem.format('', LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
         
         dts = testItem.format(10, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
             
         dts = testItem.format(true, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
         expect(dts.value).toBeUndefined();
-        expect(dts.errorMessage).toBe('Not a date');
+        expect(dts.errorDetails).toEqual({
+            errorMessage: 'Not a time',
+            errorCode: TimeofDayFormatter.NotATimeErrorCode
+        });
                 
     });        
 });

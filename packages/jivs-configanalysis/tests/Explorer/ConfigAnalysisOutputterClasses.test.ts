@@ -25,7 +25,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
             public get publicify_formatter(): IConfigAnalysisOutputFormatter {
                 return super.formatter;
             }
-            protected format(reportData: ConfigAnalysisOutputReportData): any {
+            protected override format(reportData: ConfigAnalysisOutputReportData): any {
                 this.formatCount++;
                 return super.format(reportData);
             }

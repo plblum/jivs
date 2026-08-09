@@ -11,7 +11,7 @@
  * - EvaluatesAsPromiseCondition: Returns a Promise that resolves to Match
  * - DisposableCondition: Returns a result supplied in the config and implements IDisposable
  * 
- * Add to an existing ValidationService by calling registerTestingOnlyConditions(services.conditionsFactory).
+ * Add to an existing JivsServices by calling registerTestingOnlyConditions(services.conditionsFactory).
  * @module jivs-engine/Support/ConditionsForTesting
  */
 import { ConditionFactory } from '../Conditions/ConditionFactory';
@@ -21,7 +21,7 @@ import {
 } from '../Interfaces/Conditions';
 import { IDisposable } from '../Interfaces/General_Purpose';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { CodingError } from '../Utilities/ErrorHandling';
@@ -96,7 +96,7 @@ export class AlwaysMatchesCondition extends MockConditionBase<ConditionConfig> i
         return ConditionEvaluateResult.Match;
     }
 
-    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
         return ConditionEvaluateResult.Match;
     }
 }
@@ -113,7 +113,7 @@ export class NeverMatchesCondition extends MockConditionBase<ConditionConfig> im
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.NoMatch;
     }
-    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
         return ConditionEvaluateResult.NoMatch;
     }
 }
@@ -186,7 +186,7 @@ export class UserSuppliedResultCondition extends MockConditionBase<UserSuppliedR
 export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResultCondition
     implements IEvaluateConditionDuringEdits
 {
-    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IValidationServices): ConditionEvaluateResult {
+    public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
         return this.config.result;
     }
 }
