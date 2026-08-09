@@ -1,6 +1,6 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
-import { DataCleanupResolution, DataCleanupRule } from '../../src/Interfaces/DataCleanupService';
+import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
@@ -9,7 +9,7 @@ import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ModelWriter } from '../../src/ModelReaderWriter/ModelWriter_classes';
-import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
@@ -47,12 +47,12 @@ class PublicifyModelWriter extends ModelWriter<object>
 
     // create 'publicify_name' versions of protected methods for testing
     public publicify_adjustValueByRule(
-        modelPropertyValue: any, rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
+        modelPropertyValue: any, rule: ValueAdapterRule, valueHost: IFieldValueHost): ValueAdapterResolution
 {
         return this.adjustValueByRule(modelPropertyValue, rule, valueHost);
     }
 
-    public publicify_getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
+    public publicify_getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
         return this.getRule(valueHost);
     }
@@ -75,8 +75,8 @@ function setup(model: object, propertyName: string,
     let services = new MockJivsServices(false, false);
     let logger = services.loggerService as CapturingLogger;
     logger.minLevel = LoggingLevel.Debug;
-    services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
-    services.dataCleanupService.services = services;
+    services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
+    services.valueAdapterService.services = services;
 
     let valueHostsManager = new MockValueHostsManager(services);
     let valueHost = valueHostsManager.addValueHost(
@@ -168,7 +168,7 @@ describe('ModelWriter', () =>
 
     describe('adjustValueByRule via publicify_', () =>
     {
-        // most of the work is in DataCleanupService with full tests.
+        // most of the work is in ValueAdapterService with full tests.
         // This just performs a few tests to confirm the ModelWriter is using the service correctly.
         // No logging is reviewed here.
 
@@ -251,7 +251,7 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
-            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
+            services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             let valueHostsManager = new MockValueHostsManager(services);
             // not modelWriterRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
@@ -329,7 +329,7 @@ describe('ModelWriter', () =>
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
 
         });
 
@@ -343,7 +343,7 @@ describe('ModelWriter', () =>
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
         // same but passes the model property name explicitly to writeToProperty
         test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeToProperty with explicit model property name', () =>
@@ -355,7 +355,7 @@ describe('ModelWriter', () =>
             expect(model.prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
         test('modelWriterRule does not adjust the value. Expect the original value to be set into the model', () =>
@@ -367,7 +367,7 @@ describe('ModelWriter', () =>
             expect(model.prop1).toBe(5);
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService When rule 'zero' has indicated the original value will be retained.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService When rule 'zero' has indicated the original value will be retained.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
         test('modelWriterRule that has a rule that adjusts the value to unassigned. Expect the model property  to be set to undefined.', () =>
@@ -379,7 +379,7 @@ describe('ModelWriter', () =>
             expect(model.prop1).toBeUndefined();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService Then rule 'unassigned' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService Then rule 'unassigned' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
         test('modelWriterRule that has a rule that adjusts the value to keep. Expect the model property to be set to null.', () =>
         {
@@ -402,7 +402,7 @@ describe('ModelWriter', () =>
             expect((model as any).prop1).toBeNull();
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
             expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`DataCleanupService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
         // ValueHosts for all properties on the model and no adjustments (best happy path test)
@@ -411,8 +411,8 @@ describe('ModelWriter', () =>
         {
             // using matching name and propertyname, Field1, Field2, etc.
             let services = new MockJivsServices(false, false);
-            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
-            services.dataCleanupService.services = services;
+            services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
+            services.valueAdapterService.services = services;
             let logger = services.loggerService as CapturingLogger;
             logger.minLevel = LoggingLevel.Debug;
             let valueHostsManager = new MockValueHostsManager(services);

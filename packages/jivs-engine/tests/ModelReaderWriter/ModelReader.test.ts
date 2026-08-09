@@ -1,6 +1,6 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
-import { DataCleanupResolution, DataCleanupRule } from '../../src/Interfaces/DataCleanupService';
+import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
@@ -8,7 +8,7 @@ import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
-import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
@@ -54,7 +54,7 @@ class PublicifyModelReader extends ModelReader<object>
 
     // create 'publicify_name' versions of protected methods for testing
     public publicify_adjustValueByRule(
-        modelPropertyValue: any, rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
+        modelPropertyValue: any, rule: ValueAdapterRule, valueHost: IFieldValueHost): ValueAdapterResolution
         
     {
         return this.adjustValueByRule(modelPropertyValue, rule, valueHost);
@@ -74,7 +74,7 @@ class PublicifyModelReader extends ModelReader<object>
         this.setValueIntoValueHost(valueHost, value, options);
     }
 
-    public publicify_getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
+    public publicify_getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
         return this.getRule(valueHost);
     }
@@ -94,7 +94,7 @@ function setup(model: object, propertyName: string,
     let services = new MockJivsServices(false, false);
     let logger = services.loggerService as CapturingLogger;
     logger.minLevel = LoggingLevel.Debug;
-    services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
+    services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
     let valueHostsManager = new MockValueHostsManager(services);
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
@@ -201,7 +201,7 @@ describe('ModelReader', () =>
 
     describe('adjustValueByRule via publicify_', () =>
     {
-        // most of the work is in DataCleanupService with full tests.
+        // most of the work is in ValueAdapterService with full tests.
         // This just performs a few tests to confirm the ModelReader is using the service correctly.
         // No logging is reviewed here.
 
@@ -348,7 +348,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
-            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
+            services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             let valueHostsManager = new MockValueHostsManager(services);
             // not modelReaderRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
@@ -446,7 +446,7 @@ describe('ModelReader', () =>
         test('read with a valueHost that has a propertyName that does not exist on the model. Expect the valueHost to be set to undefined and a warning logged.', () =>
         {
             let services = new MockJivsServices(false, false);
-            services.dataCleanupService = new DataCleanupService();
+            services.valueAdapterService = new ValueAdapterService();
             let valueHostsManager = new MockValueHostsManager(services);
             let valueHost = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
             let model = {}; // propertyName is field1, same as generated name for valueHost
@@ -462,7 +462,7 @@ describe('ModelReader', () =>
         {
             // using matching name and propertyname, Field1, Field2, etc.
             let services = new MockJivsServices(false, false);
-            services.dataCleanupService = new DataCleanupService(); // supplies the standard rules for when and then
+            services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             let logger = services.loggerService as CapturingLogger;
             logger.minLevel = LoggingLevel.Debug;
             let valueHostsManager = new MockValueHostsManager(services);

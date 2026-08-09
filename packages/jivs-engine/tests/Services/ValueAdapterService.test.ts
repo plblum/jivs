@@ -1,18 +1,18 @@
-import { IDataCleanupService } from '../../src/Interfaces/DataCleanupService';
+import { IValueAdapterService } from '../../src/Interfaces/ValueAdapterService';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
 import
     {
-        DataCleanupService, thenEmptyArray, thenEmptyObject, thenEmptyString,
+        ValueAdapterService, thenEmptyArray, thenEmptyObject, thenEmptyString,
         thenFalse, thenKeep, thenNull, thenSkip, thenTrue,
         thenUndefined, thenZero, whenEmptyString, whenEmptyStringNullOrUndefined,
         whenEmptyStringOrNull, whenNull, whenNullOrUndefined, whenUndefined, whenZero,
         whenZeroNullOrUndefined, whenZeroOrNull
-    } from '../../src/Services/DataCleanupService';
+    } from '../../src/Services/ValueAdapterService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 
-class TestDataCleanupService extends DataCleanupService
+class TestValueAdapterService extends ValueAdapterService
 {
     protected override ensureWhenPopulated(): void
     {
@@ -35,7 +35,7 @@ class TestDataCleanupService extends DataCleanupService
 
 /**
  * Simple non-mock versions of services with one FieldValueHost named "Field1".
- * Get the correct DataCleanupService for the test from services returned.
+ * Get the correct ValueAdapterService for the test from services returned.
  * @param model 
  * @param propertyName 
  * @param rule 
@@ -45,24 +45,24 @@ function setup():
     {
         services: IJivsServices,
         logger: CapturingLogger,
-        dataCleanupService: IDataCleanupService
+        valueAdapterService: IValueAdapterService
     }
 {
     let services = createJivsServicesForTesting({ logger: 'capturing'});
-    // will already have default dataCleanupService and dataCleanupService. So the caller should 
+    // will already have default valueAdapterService and valueAdapterService. So the caller should 
     // use the right one for the test.
     let logger = services.loggerService as CapturingLogger;
     logger.minLevel = LoggingLevel.Debug;
 
-    return { services, logger, dataCleanupService: services.dataCleanupService as IDataCleanupService };
+    return { services, logger, valueAdapterService: services.valueAdapterService as IValueAdapterService };
 }
 
-describe('DataCleanupService', () =>
+describe('ValueAdapterService', () =>
 {
 
     test('confirm lazy load has not run until getWhen is called', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredWhen()).toBeNull();
         expect(dcService.getRegisteredThen()).toBeNull();
         dcService.getWhen('testWhen');
@@ -71,7 +71,7 @@ describe('DataCleanupService', () =>
     });
     test('confirm lazy load has not run until getThen is called', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredWhen()).toBeNull();
         expect(dcService.getRegisteredThen()).toBeNull();
         dcService.getThen('testThen');
@@ -80,7 +80,7 @@ describe('DataCleanupService', () =>
     });
     test('confirm lazy load has not run until when is called', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredWhen()).toBeNull();
         expect(dcService.getRegisteredThen()).toBeNull();
         dcService.when('testWhen', 'test');
@@ -89,7 +89,7 @@ describe('DataCleanupService', () =>
     });
     test('confirm lazy load has not run until then is called', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredWhen()).toBeNull();
         expect(dcService.getRegisteredThen()).toBeNull();
         dcService.then('testThen', 'test');
@@ -98,7 +98,7 @@ describe('DataCleanupService', () =>
     });
     test('registerWhenFunction, including confirming lazy load check', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredWhen()).toBeNull();
         dcService.registerWhenFunction('test', (value) => value === 'test');
         expect(dcService.getRegisteredWhen()).not.toBeNull();
@@ -109,7 +109,7 @@ describe('DataCleanupService', () =>
     });
     test('registerThenFunction, including confirming lazy load check', () =>
     {
-        const dcService = new TestDataCleanupService();
+        const dcService = new TestValueAdapterService();
         expect(dcService.getRegisteredThen()).toBeNull();
         dcService.registerThenFunction('test', (value) => ({ value: value }));
         expect(dcService.getRegisteredThen()).not.toBeNull();
@@ -123,7 +123,7 @@ describe('DataCleanupService', () =>
     {
         test('should return the correct When function for a registered name', () =>
         {
-            const dcService = new TestDataCleanupService();
+            const dcService = new TestValueAdapterService();
             const whenFunction = (value: any) => value === 'test';
             dcService.registerWhenFunction('test', whenFunction);
             const retrievedFunction = dcService.getWhen('test');
@@ -132,7 +132,7 @@ describe('DataCleanupService', () =>
 
         test('should return undefined for an unregistered When name', () =>
         {
-            const dcService = new TestDataCleanupService();
+            const dcService = new TestValueAdapterService();
             const retrievedFunction = dcService.getWhen('unregistered');
             expect(retrievedFunction).toBeUndefined();
         });
@@ -141,7 +141,7 @@ describe('DataCleanupService', () =>
     {
         test('should return the correct Then function for a registered name', () =>
         {
-            const dcService = new TestDataCleanupService();
+            const dcService = new TestValueAdapterService();
             const thenFunction = (value: any) => ({ value: value });
             dcService.registerThenFunction('test', thenFunction);
             const retrievedFunction = dcService.getThen('test');
@@ -149,7 +149,7 @@ describe('DataCleanupService', () =>
         });
         test('should return undefined for an unregistered Then name', () =>
         {
-            const dcService = new TestDataCleanupService();
+            const dcService = new TestValueAdapterService();
             const retrievedFunction = dcService.getThen('unregistered');
             expect(retrievedFunction).toBeUndefined();
         });
@@ -160,14 +160,14 @@ describe('DataCleanupService', () =>
     {
         let _services: IJivsServices | null = null;
         let _logger: CapturingLogger | null = null;
-        let _dataCleanupService: IDataCleanupService | null = null;
+        let _valueAdapterService: IValueAdapterService | null = null;
 
         beforeEach(() =>
         {
             let setupResult = setup();
             _services = setupResult.services;
             _logger = setupResult.logger;
-            _dataCleanupService = setupResult.dataCleanupService;
+            _valueAdapterService = setupResult.valueAdapterService;
         });
 
         test('when lookup in dcService fails:  when=unknown,then=known. Expect skip true and logged error', () =>
@@ -175,11 +175,11 @@ describe('DataCleanupService', () =>
             let model = { prop1: 'value1', prop2: 42 };
             let rule = { when: 'unknown', then: 'skip' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve('value1', rule!);
+            let result = _valueAdapterService!.resolve('value1', rule!);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
 
-            expect(_logger!.findMessage(`DataCleanupService When rule '${ rule.when }' is not registered in the DataCleanupService.`, LoggingLevel.Error)).toBeTruthy();
+            expect(_logger!.findMessage(`ValueAdapterService When rule '${ rule.when }' is not registered in the ValueAdapterService.`, LoggingLevel.Error)).toBeTruthy();
         });
         // just with Writer especially with log entries to confirm "Writer"
 
@@ -188,10 +188,10 @@ describe('DataCleanupService', () =>
             let model = { prop1: null, prop2: 42 };
             let rule = { when: 'nullorundefined', then: 'unknown' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve(model.prop1, rule!);
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
-            expect(_logger!.findMessage(`DataCleanupService Then rule '${ rule.then }' is not registered in the DataCleanupService.`, LoggingLevel.Error)).toBeTruthy();
+            expect(_logger!.findMessage(`ValueAdapterService Then rule '${ rule.then }' is not registered in the ValueAdapterService.`, LoggingLevel.Error)).toBeTruthy();
         });
         // when function returns false, indicating the value is valid and does not need to be replaced. Expect skip true and no value.
         test('when function returns false, indicating the value is valid and does not need to be replaced. Expect skip false and value=originalValue.', () =>
@@ -199,7 +199,7 @@ describe('DataCleanupService', () =>
             let model = { prop1: 'value1', prop2: 42 };
             let rule = { when: 'undefined', then: 'keep' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve(model.prop1, rule!);
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(model.prop1);
         });
@@ -209,7 +209,7 @@ describe('DataCleanupService', () =>
             let model = { prop1: null, prop2: 42 };
             let rule = { when: 'nullorundefined', then: 'null' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve(model.prop1, rule!);
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(null);
         });
@@ -218,17 +218,17 @@ describe('DataCleanupService', () =>
             let model = { prop1: null, prop2: 42 };
             let rule = { when: 'nullorundefined', then: 'undefined' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve(model.prop1, rule!);
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
             expect(result.skip).toBe(false);
             expect(result.value).toBeUndefined();
-            expect(_logger!.findMessage(`DataCleanupService Then rule '${ rule.then }' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(_logger!.findMessage(`ValueAdapterService Then rule '${ rule.then }' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
         test('when tests for null and finds null, then=keep. Expect skip=false, value=null.', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let rule = { when: 'nullorundefined', then: 'keep' };
             expect(rule).toBeDefined();
-            let result = _dataCleanupService!.resolve(model.prop1, rule!);
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
             expect(result.skip).toBe(false);
             expect(result.value).toBeNull();
             // Expect no log message about value adjusted by the rule, since the value is already null and does not need to be changed.
@@ -238,7 +238,7 @@ describe('DataCleanupService', () =>
     });
     test('should return the correct When function for all predefined names', () =>
     {
-        const dcService = new DataCleanupService();
+        const dcService = new ValueAdapterService();
         const predefinedWhenNames = new Map<string, any>();
         predefinedWhenNames.set('undefined', whenUndefined);
         predefinedWhenNames.set('null', whenNull);
@@ -261,7 +261,7 @@ describe('DataCleanupService', () =>
     });
     test('should return the correct Then function for all predefined names', () =>
     {
-        const dcService = new DataCleanupService();
+        const dcService = new ValueAdapterService();
         const predefinedThenNames = new Map<string, any>();
         predefinedThenNames.set('skip', thenSkip);
         predefinedThenNames.set('omit', thenSkip);

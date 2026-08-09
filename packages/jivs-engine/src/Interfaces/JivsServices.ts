@@ -25,7 +25,7 @@ import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
-import { IDataCleanupService } from './DataCleanupService';
+import { IValueAdapterService } from './ValueAdapterService';
 import { IObjectFinderService } from './ObjectFinderService';
 
 /**
@@ -147,11 +147,11 @@ export interface IJivsServices extends IServices {
     cachingService: ICachingService;
 
     /**
-     * Service for cleaning up data when reading from or writing to a model.
+     * Service for adapting values between two systems: the external source (such as a model) and the ValueHost.
      * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
      * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
      */
-    dataCleanupService: IDataCleanupService;
+    valueAdapterService: IValueAdapterService;
 
     /**
      * Service for finding the object that hosts a property in a model, given a path to that property.
@@ -241,9 +241,9 @@ export enum ServiceName {
     cache = 'Cache',
 
     /**
-     * DataCleanupService
+     * ValueAdapterService
      */
-    dataCleanup = 'DataCleanup',
+    valueAdapter = 'ValueAdapter',
 
     /**
      * IObjectFinderService

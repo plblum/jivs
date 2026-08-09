@@ -64,8 +64,8 @@ import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { CachingService } from "../../src/Services/CachingService";
-import { DataCleanupRule, IDataCleanupService } from '../../src/Interfaces/DataCleanupService';
-import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { ValueAdapterRule, IValueAdapterService } from '../../src/Interfaces/ValueAdapterService';
+import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { IObjectFinderService } from '../../src/Interfaces/ObjectFinderService';
 import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
@@ -208,10 +208,10 @@ export class MockFieldValueHost extends MockValueHost
     getPropertyName(): string {
         throw new Error("Method not implemented.");
     }    
-    public getModelReaderRule(): DataCleanupRule | undefined {
+    public getModelReaderRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }
-    public getModelWriterRule(): DataCleanupRule | undefined {
+    public getModelWriterRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }    
     validate(options?: ValidateOptions): ValueHostValidateResult {
@@ -333,7 +333,7 @@ export class MockJivsServices implements IJivsServices
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
         this.cachingService = new CachingService();
-        this.dataCleanupService = new DataCleanupService();
+        this.valueAdapterService = new ValueAdapterService();
         this.objectFinderService = new ObjectFinderService();
 
         let logger = new CapturingLogger();
@@ -548,15 +548,15 @@ export class MockJivsServices implements IJivsServices
     }
     private _cachingService!: ICachingService;
 
-    public get dataCleanupService(): IDataCleanupService
+    public get valueAdapterService(): IValueAdapterService
     {
-        return this._dataCleanupService;
+        return this._valueAdapterService;
     }
-    public set dataCleanupService(service: IDataCleanupService)
+    public set valueAdapterService(service: IValueAdapterService)
     {
-        this._dataCleanupService = service;
+        this._valueAdapterService = service;
     }
-    private _dataCleanupService!: IDataCleanupService;
+    private _valueAdapterService!: IValueAdapterService;
 
     public get objectFinderService(): IObjectFinderService
     {

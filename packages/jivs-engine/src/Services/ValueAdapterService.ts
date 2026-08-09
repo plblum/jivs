@@ -1,52 +1,52 @@
 /**
- * @inheritdoc jivs-engine/Services/Types/DataCleanupService
- * @module jivs-engine/Services/ConcreteClasses/DataCleanupService
+ * @inheritdoc jivs-engine/Services/Types/ValueAdapterService
+ * @module jivs-engine/Services/ConcreteClasses/ValueAdapterService
  */
 
 import
     {
-        DataCleanupResolution,
-        DataCleanupRule, DataCleanupThenFunction,
-        DataCleanupWhenFunction,
-        IDataCleanupService
-    } from '../Interfaces/DataCleanupService';
+        ValueAdapterResolution,
+        ValueAdapterRule, ValueAdapterThenFunction,
+        ValueAdapterWhenFunction,
+        IValueAdapterService
+    } from '../Interfaces/ValueAdapterService';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { assertFunction, assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
 /**
- * @inheritdoc jivs-engine/Services/Types/DataCleanupService!IDataCleanupService
+ * @inheritdoc jivs-engine/Services/Types/ValueAdapterService!IValueAdapterService
  */
-export class DataCleanupService
+export class ValueAdapterService
     extends ServiceWithAccessorBase
-    implements IDataCleanupService
+    implements IValueAdapterService
 {
     constructor()
     {
         super();
     }
-    protected get registeredWhen(): Map<string, DataCleanupWhenFunction> | null
+    protected get registeredWhen(): Map<string, ValueAdapterWhenFunction> | null
     {
         return this._registeredWhen;
     }
-    private _registeredWhen: Map<string, DataCleanupWhenFunction> | null = null;
-    protected get registeredThen(): Map<string, DataCleanupThenFunction> | null
+    private _registeredWhen: Map<string, ValueAdapterWhenFunction> | null = null;
+    protected get registeredThen(): Map<string, ValueAdapterThenFunction> | null
     {
         return this._registeredThen;
     }
-    private _registeredThen: Map<string, DataCleanupThenFunction> | null = null;
+    private _registeredThen: Map<string, ValueAdapterThenFunction> | null = null;
 
     protected ensureBuiltIn(): void
     {
         if (!this._registeredWhen)
         {
-            this._registeredWhen = new Map<string, DataCleanupWhenFunction>();
+            this._registeredWhen = new Map<string, ValueAdapterWhenFunction>();
             this.ensureWhenPopulated();
         }
         if (!this._registeredThen)
         {
-            this._registeredThen = new Map<string, DataCleanupThenFunction>();
+            this._registeredThen = new Map<string, ValueAdapterThenFunction>();
             this.ensureThenPopulated();
         }
     }
@@ -93,7 +93,7 @@ export class DataCleanupService
     }
 
     /**
-     * Evaluate the original value and using When and Then rules, return the DataCleanupResolution
+     * Evaluate the original value and using When and Then rules, return the ValueAdapterResolution
      * where you use its value or take no action if skip is true.
      * The Then function only executes if the When function returns true, indicating the value is invalid 
      * and needs to be replaced.
@@ -104,13 +104,13 @@ export class DataCleanupService
      * If skip is true, the value will be ignored.
      * If skip is false, the value will be used. It can be undefined as a valid value to write.
      */
-    public resolve(originalValue: any, rule: DataCleanupRule): DataCleanupResolution
+    public resolve(originalValue: any, rule: ValueAdapterRule): ValueAdapterResolution
     {
         let adjustedValue: any = originalValue;
         let whenFunc = this.getWhen(rule.when);
         if (whenFunc === undefined)
         {
-            this.logger.message(LoggingLevel.Error, () => `DataCleanupService When rule '${ rule.when }' is not registered in the DataCleanupService.`);
+            this.logger.message(LoggingLevel.Error, () => `ValueAdapterService When rule '${ rule.when }' is not registered in the ValueAdapterService.`);
             return { skip: true };
         }
         if (whenFunc(originalValue))
@@ -118,22 +118,22 @@ export class DataCleanupService
             let thenFunc = this.getThen(rule.then);
             if (thenFunc === undefined)
             {
-                this.logger.message(LoggingLevel.Error, () => `DataCleanupService Then rule '${ rule.then }' is not registered in the DataCleanupService.`);
+                this.logger.message(LoggingLevel.Error, () => `ValueAdapterService Then rule '${ rule.then }' is not registered in the ValueAdapterService.`);
                 return { skip: true };
             }
             let thenResult = thenFunc(originalValue);
             if (thenResult.skip)
             {
-                this.logger.message(LoggingLevel.Debug, () => `DataCleanupService Then rule '${ rule.then }' has indicated to skip the source value.`);
+                this.logger.message(LoggingLevel.Debug, () => `ValueAdapterService Then rule '${ rule.then }' has indicated to skip the source value.`);
                 return { skip: true };
             }
             adjustedValue = thenResult.value;
             if (!deepEquals(adjustedValue, originalValue))
-                this.logger.message(LoggingLevel.Debug, () => `DataCleanupService Then rule '${ rule.then }' has adjusted the source value.`);
+                this.logger.message(LoggingLevel.Debug, () => `ValueAdapterService Then rule '${ rule.then }' has adjusted the source value.`);
         }
         else
         {
-            this.logger.message(LoggingLevel.Debug, () => `DataCleanupService When rule '${ rule.when }' has indicated the original value will be retained.`);
+            this.logger.message(LoggingLevel.Debug, () => `ValueAdapterService When rule '${ rule.when }' has indicated the original value will be retained.`);
         }
 
         return { skip: false, value: adjustedValue };
@@ -144,7 +144,7 @@ export class DataCleanupService
      * @param name The name of the When function to retrieve.
      * @returns The When function if found, otherwise undefined.
      */
-    public getWhen(name: string): DataCleanupWhenFunction | undefined
+    public getWhen(name: string): ValueAdapterWhenFunction | undefined
     {
         assertNotNull(name, 'name');
         this.ensureBuiltIn();
@@ -170,7 +170,7 @@ export class DataCleanupService
      * @param name The name of the Then function to retrieve.
      * @returns The Then function if found, otherwise undefined.
      */
-    public getThen(name: string): DataCleanupThenFunction | undefined
+    public getThen(name: string): ValueAdapterThenFunction | undefined
     {
         assertNotNull(name, 'name');
         this.ensureBuiltIn();
@@ -182,7 +182,7 @@ export class DataCleanupService
      * @param value The value to pass to the Then function.
      * @returns The result of the Then function if found, otherwise undefined.
      */
-    public then(name: string, value: any): DataCleanupResolution | undefined
+    public then(name: string, value: any): ValueAdapterResolution | undefined
     {
         assertNotNull(name, 'name');
         this.ensureBuiltIn();
@@ -196,7 +196,7 @@ export class DataCleanupService
      * @param name The name of the When function to register.
      * @param func The When function to register.
      */
-    public registerWhenFunction(name: string, func: DataCleanupWhenFunction): void
+    public registerWhenFunction(name: string, func: ValueAdapterWhenFunction): void
     {
         assertNotNull(name, 'name');
         assertFunction(func);
@@ -210,7 +210,7 @@ export class DataCleanupService
      * @param name The name of the Then function to register.
      * @param func The Then function to register.
      */
-    public registerThenFunction(name: string, func: DataCleanupThenFunction): void
+    public registerThenFunction(name: string, func: ValueAdapterThenFunction): void
     {
         assertNotNull(name, 'name');
         assertFunction(func);
@@ -220,7 +220,7 @@ export class DataCleanupService
 }
 
 //#region predefined When functions
-// All functions use type DataCleanupWhenFunction = (value: any) => boolean;
+// All functions use type ValueAdapterWhenFunction = (value: any) => boolean;
 // They return true to indicate that the value is considered invalid and needs to be replaced, false when the value is valid.
 
 // name: 'undefined'
@@ -272,54 +272,54 @@ export function whenEmptyStringNullOrUndefined(value: any): boolean
 //#endregion predefined When functions
 
 //#region predefined Then functions
-// All functions use type DataCleanupThenFunction = (value: any) => DataCleanupResolution;
+// All functions use type ValueAdapterThenFunction = (value: any) => ValueAdapterResolution;
 // name: 'skip' or'omit'
-export function thenSkip(value: any): DataCleanupResolution
+export function thenSkip(value: any): ValueAdapterResolution
 {
     return { skip: true };
 }
 // name: 'keep' or 'nochange'
-export function thenKeep(value: any): DataCleanupResolution
+export function thenKeep(value: any): ValueAdapterResolution
 {
     return { value: value };
 }
 // name: 'undefined'
-export function thenUndefined(value: any): DataCleanupResolution
+export function thenUndefined(value: any): ValueAdapterResolution
 {
     return { value: undefined };
 }
 // name: 'null'
-export function thenNull(value: any): DataCleanupResolution
+export function thenNull(value: any): ValueAdapterResolution
 {
     return { value: null };
 }
 // name: '0' or 'zero'
-export function thenZero(value: any): DataCleanupResolution
+export function thenZero(value: any): ValueAdapterResolution
 {
     return { value: 0 };
 }
 // name: 'emptystring' or ''
-export function thenEmptyString(value: any): DataCleanupResolution
+export function thenEmptyString(value: any): ValueAdapterResolution
 {
     return { value: '' };
 }
 // name: 'false'
-export function thenFalse(value: any): DataCleanupResolution
+export function thenFalse(value: any): ValueAdapterResolution
 {
     return { value: false };
 }
 // name: 'true'
-export function thenTrue(value: any): DataCleanupResolution
+export function thenTrue(value: any): ValueAdapterResolution
 {
     return { value: true };
 }
 // name: '[]' or 'emptyarray'
-export function thenEmptyArray(value: any): DataCleanupResolution
+export function thenEmptyArray(value: any): ValueAdapterResolution
 {
     return { value: [] };
 }
 // name: '{}' or 'emptyobject'
-export function thenEmptyObject(value: any): DataCleanupResolution
+export function thenEmptyObject(value: any): ValueAdapterResolution
 {
     return { value: {} };
 }

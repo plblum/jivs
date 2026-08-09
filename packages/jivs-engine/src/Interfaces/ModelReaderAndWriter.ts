@@ -25,7 +25,7 @@
  * 
  * The rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
  * 
- * Rules are defined in the DataCleanupService. 
+ * Rules are defined in the ValueAdapterService. 
  * 
  * # ModelWriter (IModelWriter interface)
  * FieldValueHost native value -> Native value on model
@@ -37,9 +37,9 @@
  * and be used when there are non-undefined values. For example, when 'null' then 'zero' would 
  * convert a null value to 0 in the model.
  * 
- * Rules are defined in the DataCleanupService.
+ * Rules are defined in the ValueAdapterService.
  * 
- * See {@link jivs-engine/Services/Types/DataCleanupService} for details.
+ * See {@link jivs-engine/Services/Types/ValueAdapterService} for details.
  * 
  * @module jivs-engine/ModelReaderWriter/Types
  */
@@ -139,7 +139,7 @@ export interface IModelReader
  *          { when: 'nullorundefined', then: 'zero' }    // write 0 when the value is null or undefined
  *          { when: 'undefined', then: 'keep' }          // write undefined as-is
  *          ```
- *      + The DataCleanupService is used to register the functions behind the when/then names. See below for details.
+ *      + The ValueAdapterService is used to register the functions behind the when/then names. See below for details.
  *          - The factory registers two types of functions: When and Then. Each function is registered with a name. The name is used in the when/then properties of the rule.
  *          - Predefined rules are shown below and registered in the factory.
  *          - Expect the user to create very data specific rules like returning an object with a specific shape or a specific value. Date object is a good example.
@@ -158,7 +158,7 @@ export interface IModelWriter
      * It uses the FieldValueHostConfig to determine how to write the data and convert it to the correct type.
      * In particular, dataType to ensure the value is converted to the correct type.
      * It writes to the log for each field written, and logs errors if any occur.
-     * Invalid values are handled by the DataCleanupService and the error message is logged.
+     * Invalid values are handled by the ValueAdapterService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
     writeToModel(): void;

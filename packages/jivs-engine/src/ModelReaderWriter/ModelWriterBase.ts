@@ -3,7 +3,7 @@
  * @module jivs-engine/ModelReaderWriter/AbstractClasses
  * 
  */
-import { DataCleanupRule } from '../Interfaces/DataCleanupService';
+import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IModelWriter } from '../Interfaces/ModelReaderAndWriter';
@@ -17,7 +17,7 @@ import { ModelReaderWriterBase } from './ModelReaderWriterBase';
  * See {@link jivs-engine/ModelReaderWriter/Types!IModelWriter} for details.
  *
  * - Supports objects and arrays as the model.
- * - Uses the DataCleanupService to determine if a value should be adjusted or skipped when writing to the model.
+ * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when writing to the model.
  * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  */
 
@@ -39,7 +39,7 @@ export abstract class ModelWriterBase<T extends object>
      * It uses the FieldValueHostConfig to determine how to write the data and convert it to the correct type.
      * In particular, dataType to ensure the value is converted to the correct type.
      * It writes to the log for each field written, and logs errors if any occur.
-     * Invalid values are handled by the DataCleanupService and the error message is logged.
+     * Invalid values are handled by the ValueAdapterService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
     public writeToModel(): void
@@ -113,7 +113,7 @@ export abstract class ModelWriterBase<T extends object>
      * @param valueHost
      * @returns The rule for the model property, or undefined if no rule applies.
      */
-    protected getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
+    protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
         return valueHost.getModelWriterRule();
     }

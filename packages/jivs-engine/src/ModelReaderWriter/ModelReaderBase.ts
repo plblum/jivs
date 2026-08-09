@@ -3,7 +3,7 @@
  * @module jivs-engine/ModelReaderWriter/AbstractClasses
  */
 
-import { DataCleanupRule } from '../Interfaces/DataCleanupService';
+import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost, FieldValueHostSetValueOptions } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IModelReader } from '../Interfaces/ModelReaderAndWriter';
@@ -17,7 +17,7 @@ import { ModelReaderWriterBase } from './ModelReaderWriterBase';
  * to the ValueHosts.
  *
  * - Supports objects and arrays as the model.
- * - Uses the DataCleanupService to determine if a value should be adjusted or skipped when reading from the model.
+ * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when reading from the model.
  * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  */
 
@@ -202,13 +202,13 @@ export abstract class ModelReaderBase<T extends object>
      * This class uses model[modelPropertyName] to get the value.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
-     * While data cleanup is permitted, you could use the rule feature instead to handle that.
+     * While data adjustment is permitted, you could use the rules of the ValueAdapterService instead to handle that.
      *
      * Supports arrays and objects with child objects or arrays using the programming syntax
      * of dot notation and bracket notation. For example, 'prop1.prop2[0].prop3'
      * will resolve to the value of prop3 in the first element of the array prop2 in the object prop1.
      *
-     * The syntax can be reworked by implementing IObjectFinder and overriding the objectFinder property.
+     * The syntax can be reworked by implementing IObjectFinderService.
      *
      * @param modelPropertyName
      * @param valueHost
@@ -247,7 +247,7 @@ export abstract class ModelReaderBase<T extends object>
      * @param valueHost
      * @returns The rule for the model property, or undefined if no rule applies.
      */
-    protected getRule(valueHost: IFieldValueHost): DataCleanupRule | undefined
+    protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
         return valueHost.getModelReaderRule();
     }

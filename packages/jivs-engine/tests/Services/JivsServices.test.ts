@@ -23,7 +23,7 @@ import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { MockJivsServices } from "../TestSupport/mocks";
-import { DataCleanupService } from '../../src/Services/DataCleanupService';
+import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
 
@@ -52,7 +52,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.validatorConfigMergeService).toBeInstanceOf(ValidatorConfigMergeService);
         expect(testItem.cachingService).toBeInstanceOf(CachingService);
-        expect(testItem.dataCleanupService).toBeInstanceOf(DataCleanupService);
+        expect(testItem.valueAdapterService).toBeInstanceOf(ValueAdapterService);
         expect(testItem.objectFinderService).toBeInstanceOf(ObjectFinderService);
 
     });
@@ -169,12 +169,12 @@ describe('Replace factories and services', () => {
         testItem.cachingService = replacement;
         expect(testItem.cachingService).toBe(replacement);
     });
-    test('Replace dataCleanupService', () =>
+    test('Replace valueAdapterService', () =>
     {
-        let replacement = new DataCleanupService();
+        let replacement = new ValueAdapterService();
         let testItem = new JivsServices();
-        testItem.dataCleanupService = replacement;
-        expect(testItem.dataCleanupService).toBe(replacement);
+        testItem.valueAdapterService = replacement;
+        expect(testItem.valueAdapterService).toBe(replacement);
     });
     test('Replace objectFinderService', () => {
         let replacement = new ObjectFinderService();

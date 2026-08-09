@@ -1,7 +1,7 @@
 /**
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
-import { DataCleanupRule } from './DataCleanupService';
+import { ValueAdapterRule } from './ValueAdapterService';
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
 import
     {
@@ -150,12 +150,12 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
-    getModelReaderRule(): DataCleanupRule | undefined;
+    getModelReaderRule(): ValueAdapterRule | undefined;
     /**
      * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
-    getModelWriterRule(): DataCleanupRule | undefined;
+    getModelWriterRule(): ValueAdapterRule | undefined;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -255,12 +255,12 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * Supports the ModelReader to determine how to handle unassigned values in the model source.
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
-    modelReaderRule?: DataCleanupRule;
+    modelReaderRule?: ValueAdapterRule;
     /**
      * Supports the ModelWriter to determine how to handle the native value when writing to the model. 
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
-    modelWriterRule?: DataCleanupRule;    
+    modelWriterRule?: ValueAdapterRule;    
 }
 
 /**

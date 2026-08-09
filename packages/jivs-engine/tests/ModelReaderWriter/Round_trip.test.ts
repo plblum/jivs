@@ -44,7 +44,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         // provide a default for birthDate being undefined.
-        services.dataCleanupService.registerThenFunction('twoThousand', (value: any) => { return { value: new Date('2000-01-01') }; });
+        services.valueAdapterService.registerThenFunction('twoThousand', (value: any) => { return { value: new Date('2000-01-01') }; });
         let valueHostsManagerConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: []

@@ -411,8 +411,8 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         reformatTextValue?: boolean;
         group?: null | string | string[];
         propertyName?: string;
-        modelReaderRule?: DataCleanupRule;
-        modelWriterRule?: DataCleanupRule;
+        modelReaderRule?: ValueAdapterRule;
+        modelWriterRule?: ValueAdapterRule;
     }
     ```
     This variant takes one parameter, an object with all properties on the `FieldValueHostConfig`.
@@ -502,8 +502,8 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 It has no impact on `setValues()` or `setTextValue()`.
 - `reformatTextValue` - When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
 - `propertyName` – The actual property name on the model. If its the same as `ValueHostConfig.name`, this can be undefined. Helps mapping between model and valuehost, especially when using the [ModelReader and ModelWriter](#modelreader-and-modelwriter). `ModelReader` and `ModelWriter` permit dot notation to locate a property of a child, such as "Address.Street1".
-- `modelReaderRule` - Assists the `ModelReader` to convert and cleanup data between the model and the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
-- `modelWriterRule` - Assists the `ModelWriter` to convert and cleanup data between the ValueHost and model. See [ModelWriter](#modelreader-and-modelwriter).
+- `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
+- `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](#modelreader-and-modelwriter).
 ### Getting a ValueHost
 Start with a `ValueHostsManager` instance. It should already be configured with ValueHosts. Supposing *vhm* has that `ValueHostsManager`, do this to get a `ValueHost`:
 
@@ -1251,11 +1251,11 @@ ValueHost → model property
 
 Your initial reaction is that using `FieldValueHost.setValue()` and `FieldValueHost.getValue()` will get the job done. However, there is more to it.
 ```
-model property → clean up the value for use by ValueHost → ValueHost.setValue
+model property → adapt the value to any requirements of the ValueHost → ValueHost.setValue
     optionally format into text and assign it to the input field too
 ```
 ```
-ValueHost.getValue → clean up the value for storing into the model property → model property
+ValueHost.getValue → adapt the value to any requirements of the model property → model property
 ```
 
 Jivs provides another approach: using the `ModelReader` to copy from model to `ValueHosts` and the `ModelWriter` to copy from the `ValueHosts` to the model. This approach allows business rules to be defined for each field so that nobody can code up transfer errors.
@@ -1301,11 +1301,10 @@ let vhm = new ValueHostsManager(builder.complete());
     writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
     writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
     ```
-
 ### Configuring the ValueHosts
 There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
 1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.
-2. Values may be represented differently and require conversion or cleanup. For example, your model has a numeric property, 'Count', that stores -1 to indicate the field is actually not in use. In that case, we want to setup the `ValueHost` with a value of `undefined` (use `FieldValueHost.setValueToUndefined()`.) This is a data cleanup task.
+2. Values may be represented differently and require adjustment. They need a "value adapter". For example, your model has a numeric property, 'Count', that stores -1 to indicate the field is actually not in use. In that case, we want to setup the `ValueHost` with a value of `undefined` (use `FieldValueHost.setValueToUndefined()`.) 
 
 ### Handling a different property name
 When configuring the `FieldValueHost`, you can supply the name of the property explicitly like this:
@@ -1334,8 +1333,13 @@ builder.field('Field1', LookupKey.Number, {
 ```
 > When using the `ModelWriter`, you are expected to pass in a model with child objects already created. Otherwise, `ModelWriter` will not transfer the value. 
 
-### Data cleanup rules
-When a value needs cleanup, setup rules to handle the cleanup again in the `FieldValueHostConfig`, this time within the `modelReaderRules` or `modelWriterRules` properties.
+### Value Adapter rules
+We are moving data between two different systems, your model and Jivs ValueHost. We can insert a **Value Adapter** into this process to catch values that cannot be transferred
+without some adjustment, or may need to be skipped. The `ValueAdapterService` handles this.
+
+Frequently the value representing "unassigned" differs. Jivs uses the JavaScript value `undefined` to mean unassigned. You might use undefined, null, 0, etc. This is a typical case for adapting values.
+
+When a value needs adjustment, setup rules within the `modelReaderRules` or `modelWriterRules` properties of `FieldValueHostConfig`.
 ```ts
 builder.field('Field1', LookupKey.Number, { 
     modelReaderRules: // if undefined in the model, use 0 in the ValueHost
@@ -1350,7 +1354,7 @@ builder.field('Field1', LookupKey.Number, {
     }
 });
 ```
-The values for _when_ and _then_ are strings that lookup functions from the `DataCleanupService`. It already has many functions. But you will likely add your own.
+The values for _when_ and _then_ are strings that lookup functions from the `ValueAdapterService`. It already has many functions. But you will likely add your own.
 
 #### When Rules
 |Rule name|Values that trigger the Then function
@@ -1378,7 +1382,7 @@ The values for _when_ and _then_ are strings that lookup functions from the `Dat
 
  Register in the service:
  ```ts
- jivsServices.dataCleanupService.registerWhenFunction('isNegative', isNegative);
+ jivsServices.valueAdapterService.registerWhenFunction('isNegative', isNegative);
  ```
 #### Then Rules
 |Rule name|Value that will be transferred
@@ -1404,13 +1408,13 @@ The values for _when_ and _then_ are strings that lookup functions from the `Dat
 
 ##### Creating your own Then rule
 ```ts
-function replaceWithYear2000(value: any): DataCleanupResolution {
+function replaceWithYear2000(value: any): ValueAdapterResolution {
     return { value: new Date('2000-01-01') };
 }
 ```
 Register in the service:
 ```ts
-jivsServices.dataCleanupService.registerThenFunction('year2000', replaceWithYear2000);
+jivsServices.valueAdapterService.registerThenFunction('year2000', replaceWithYear2000);
 ```
 
 ---
@@ -1472,7 +1476,7 @@ interface IJivsServices {
     lookupKeyFallbackService: ILookupKeyFallbackService;
     messageTokenResolverService: IMessageTokenResolverService;    
     cachingService: ICachingService;
-    dataCleanupService: IDataCleanupService;
+    valueAdapterService: IValueAdapterService;
     objectFinderService: IObjectFinderService;
 }
 ```

@@ -42,8 +42,8 @@ import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService'
 import { IConditionFactory } from '../Interfaces/Conditions';
 
 import { ValueHostConfigMergeService } from './ConfigMergeService';
-import { IDataCleanupService } from '../Interfaces/DataCleanupService';
-import { DataCleanupService } from './DataCleanupService';
+import { IValueAdapterService } from '../Interfaces/ValueAdapterService';
+import { ValueAdapterService } from './ValueAdapterService';
 import { IObjectFinderService } from '../Interfaces/ObjectFinderService';
 import { ObjectFinderService } from './ObjectFinderService';
 /**
@@ -372,28 +372,28 @@ export class JivsServices extends Services implements IJivsServices
         this.setService(ServiceName.cache, service);
     }            
 
-    //#region DataCleanupService
+    //#region ValueAdapterService
     /**
-     * Provides a service for cleaning up data when reading from or writing to a model.
+     * Service for adapting values between two systems: the external source (such as a model) and the ValueHost.
      * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
      * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
      */
-    public get dataCleanupService(): IDataCleanupService
+    public get valueAdapterService(): IValueAdapterService
     {
-        let service = this.getService<IDataCleanupService>(ServiceName.dataCleanup);
+        let service = this.getService<IValueAdapterService>(ServiceName.valueAdapter);
         if (!service)
         {
-            service = new DataCleanupService();
-            this.setService(ServiceName.dataCleanup, service);
+            service = new ValueAdapterService();
+            this.setService(ServiceName.valueAdapter, service);
         }
         return service;
     }
-    public set dataCleanupService(factory: IDataCleanupService)
+    public set valueAdapterService(factory: IValueAdapterService)
     {
-        this.setService(ServiceName.dataCleanup, factory);
+        this.setService(ServiceName.valueAdapter, factory);
     }
 
-    //#endregion DataCleanupService
+    //#endregion ValueAdapterService
 
     //#region ObjectFinderService
     /**

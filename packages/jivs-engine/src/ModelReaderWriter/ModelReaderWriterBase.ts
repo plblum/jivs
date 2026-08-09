@@ -3,7 +3,7 @@
  * @module jivs-engine/ModelReaderWriter/AbstractClasses
  */
 
-import { DataCleanupResolution, DataCleanupRule } from '../Interfaces/DataCleanupService';
+import { ValueAdapterResolution, ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -73,13 +73,13 @@ export abstract class ModelReaderWriterBase<T extends object>
      * should not be assigned to the ValueHost.
      * @param modelPropertyValue 
      * @param rule 
-     * @param valueHost - while not used by DataCleanupService, it is provided for subclasses that may need to use it.
+     * @param valueHost - while not used by ValueAdapterService, it is provided for subclasses that may need to use it.
      * @returns An object with either skip: true, or adjustedValue: any. 
      * If skip is true, the value will be ignored.
      */
     protected adjustValueByRule(modelPropertyValue: any,
-        rule: DataCleanupRule, valueHost: IFieldValueHost): DataCleanupResolution
+        rule: ValueAdapterRule, valueHost: IFieldValueHost): ValueAdapterResolution
     {
-        return this.services.dataCleanupService.resolve(modelPropertyValue, rule);
+        return this.services.valueAdapterService.resolve(modelPropertyValue, rule);
     }
 }
