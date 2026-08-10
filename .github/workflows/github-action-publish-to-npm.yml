@@ -31,7 +31,7 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'   # creates .npmrc wired to NODE_AUTH_TOKEN
 
-      - run: npm install
+      - run: npm ci   #instead of npm install to ensure a clean install of dependencies and avoid changing package-lock.json, which will block lerna from publishing packages due to uncommitted changes
 
       - name: Configure git for lerna
         run: |
