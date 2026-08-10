@@ -5,6 +5,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
   "description": "Tools to create the configuration of a ValidationManager using a fluent syntax.",
   "displayName": "Jivs Builder",
   "license": "MIT",
