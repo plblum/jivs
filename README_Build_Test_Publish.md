@@ -82,6 +82,12 @@ npm run clean          # or: gulp clean
 cd packages/<package-name>
 npm run clean          # or: gulp clean
 ```
+## Versioning
+All projects share a common version number. They are in the format: major.minor.patch, like 20.10.5.
+
+- major: breaking change or significant revision
+- minor: non-breaking change introducing something new
+- patch: anything else
 
 ## 📦 Publish to NPM
 NPM is not updated from github merges. You must run it manually.
