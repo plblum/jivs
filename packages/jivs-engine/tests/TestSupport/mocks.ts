@@ -214,6 +214,16 @@ export class MockFieldValueHost extends MockValueHost
     public getModelWriterRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }    
+
+    getElementIdentifier(template?: string): string | null | undefined
+    {
+        throw new Error("Method not implemented.");
+    }
+
+    setElementIdentifier(elementIdentifier: string | null | undefined): void
+    {
+        throw new Error("Method not implemented.");
+    }    
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }

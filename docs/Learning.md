@@ -51,7 +51,7 @@ Same for most API calls, because it uses HTTP which is a textual format. These a
         }
     }
     ```
-- Due to separation of UI from business logic, when the form wants to use the Model's configuration, it likely will need to make adjustments. such as changing labels and error messages. The form is expected to subclass the Model's configuration and use the `IAdaptModelRulesToForm` interface.
+- Due to separation of UI from business logic, when the form wants to use the Model's configuration, it likely will need to make adjustments such as changing labels and error messages. The form is expected to subclass the Model's configuration and use the `IAdaptModelRulesToForm` interface.
     ```ts
     class PersonFormRules
         extends PersonModelRules
@@ -209,10 +209,10 @@ else
 ## Where you want to use validation
 
 ### As focus leaves an Input and its value changed
-* Use the onchange event to tell the `ValueHostsManager` about the data change and run validation. 
-  * You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-  * Jivs lets you assign a parser to each FieldValueHost. Just use: `valueHostsManager.vh.field('name').setTextValue(textValue, { validate: true });`
-  * If you want to handle parsing elsewhere, use: `valueHostsManager.vh.field('name').setValues(nativeValue, textValue, { validate: true });`
+* Use the _onchange event_ to tell the `FieldValueHost` about the data change and run validation. 
+  * You will need to have two values, the text value from the Input element and the resulting value that is compatible with the property on your Model ("Native Value").
+  * Jivs lets you assign a parser to each `FieldValueHost`. Use `FieldValueHost.setTextValue(textValue)` to use its parser and resolve the native value.
+  * If you want to handle parsing elsewhere, use: `FieldValueHost.setValues(nativeValue, textValue);`
 * The `ValueHostsManager` will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -225,20 +225,52 @@ Suppose that you have this HTML:
     <button>Submit</button>
 </form>
 ```
+First let's look at its Configuration rules object:
+```ts
+class PersonFormRules
+    extends PersonModelRules
+    implements IAdaptModelRulesToForm
+{
+    public adaptToForm(
+        adapter: IFormConfigAdapter,
+        options?: ValueHostRulesOptions
+    ): void {
+        adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
+        // let's change some text on the model's FirstName and LastName ValueHosts
+        adapter.modify('FirstName', 
+            { 
+                label: 'First name',
+                elementIdentifier: 'FirstName'  // taken from the HTML element's id attribute
+            })
+            .validator(ConditionType.StringLength, 
+                'No more than {maximum} characters. You entered {length}.');
+        // using the alternative syntax which supports many more properties...
+        adapter.modify('LastName', 
+            { 
+                label: 'Last name',
+                elementIdentifier: 'FirstName'  // taken from the HTML element's id attribute
+            })
+            .validator(ConditionType.StringLength, { 
+                errorMessage: 'No more than {maximum} characters. You entered {length}.'
+            });
+    }
+}
+```
+
 This code initializes a `ValueHostsManager` and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the `ValueHostsManager` instance should be accessible to the rest of this form's code.
 
 ```ts
 let services = createJivsServices('en-US');
-let rules = new PersonModelRules(services);  // subclass of ValueHostRulesBase for your PersonModel class
+let rules = new PersonFormRules(services); // we added elementIdentifier properties to each FieldValueHost to align it with the HTML inputs
 let config = rules.configure();
 config.onValueHostValidationStateChanged = fieldValidated;
 let vhm = new ValueHostsManager(config);
 
 // Direct validation changes to the HTML elements
 // of a specific field, so they can update their appearance
-function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+function fieldValidated(valueHost: IFieldValueHost, validationState: ValueHostValidationState): void
 {
-    let fldId = valueHost.getName();
+    let fldId = valueHost.getElementIdentifier();   // from FieldValueHostConfig.elementIdentifier. See PersonFormRules above.
     let editor = document.getElementById(fldId);
     let errorHost = document.querySelector('.errorHost[data-for=' + fldId + ']');
     if (validationState.isValid)
@@ -268,23 +300,32 @@ function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidat
 ```
 This code sets up the onchange event with built-in parsing:
 ```ts
-let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchange', (evt)=>{
-    let textValue = evt.target.value;
-    vhm.vh.field('FirstName').setTextValue(textValue, { validate: true });
-});
+function setupOnChange(valueHost: IFieldValueHost)
+{ 
+    let fldId = valueHost.getElementIdentifier();
+    let fld = document.getElementById(fldId);
+    fld.attachEventListener('onchange', (evt)=> 
+    {
+        let textValue = evt.target.value;
+        valueHost.setTextValue(textValue);  // will validate automatically
+    });
+}
 ```
 This code sets up the onchange event with your own parsing:
 ```ts
-let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchange', (evt)=>{
-    let textValue = evt.target.value;
-    let { nativeValue, errorMessage } = myParser(textValue);	// return nativeValue=undefined when there is an error
-    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
-        validate: true, 
-        injectedError: errorMessage ? { errorMessage: errorMessage } : undefined
+function setupOnChange(valueHost: IFieldValueHost)
+{ 
+    let fldId = valueHost.getElementIdentifier();
+    let fld = document.getElementById(fldId);
+    fld.attachEventListener('onchange', (evt)=> 
+    {
+        let textValue = evt.target.value;
+        let { nativeValue, errorMessage } = myParser(textValue);	// return nativeValue=undefined when there is an error
+        vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
+            injectedError: errorMessage ? { errorMessage: errorMessage } : undefined
+        });
     });
-});
+}
 ```
 See [Injecting errors on demand](#injecting-errors-on-demand) for more on the injectingErrors parameter.
 
@@ -296,13 +337,15 @@ Show or hide the error state as the user types. This is limited to Validators th
 
 All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
-let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('oninput', (evt)=>{
-    vhm.vh.field('FirstName').setTextValue(evt.target.value, { 
-        validate: true, 
-        duringEdit: true 
+function setupOnInput(valueHost: IFieldValueHost)
+{ 
+    let fldId = valueHost.getElementIdentifier();
+    let fld = document.getElementById(fldId);
+    fld.attachEventListener('oninput', (evt)=>
+    {
+        vhm.vh.field('FirstName').setTextValue(evt.target.value, { duringEdit: true });
     });
-});
+}
 ```
 ### When the browser submits data to the server
 
@@ -428,11 +471,15 @@ if (!validationState.doNotSave)
 1. Review the submitted request for attacks (for example, SQL Injection) and stop if found.
 2. Retrieve the submitted model. 
 3. Configure and create a `ValueHostsManager` instance for that model.
-4. Distribute fields from the model into Jivs through one of these:
-    * `ValueHostsManager.getValueHost(fieldname).setValue(property value)`
-    * If your data comes from a raw string, and not its native value in the model, run it through a parser.
+4. Distribute fields from the model into each `FieldValueHost`:
+    * Letting Jivs do most of the work
+        * When your model is an object with properties already in their native values: Use the [ModelReader](Jivs_API.md#modelreader-and-modelwriter) class.
+        * When your data is an HTML form post, get its value using the Express library and pass it into the [FormReader](Jivs_API.md#modelreader-and-modelwriter) class.
+    * More hand's on:
+        * If you have a native value, use `ValueHostsManager.getValueHost(fieldname).setValue(value)`
+        * If you have a text value that isn't the native value, use `ValueHostsManager.getValueHost(fieldname).setTextValue(value)`. It has a parser to convert it to Native Value.
     See the next topic.
-5. Call ValueHostsManager.validate(). It returns a ValidationStatus object
+5. Call `ValueHostsManager.validate()`. It returns a `ValidationStatus` object.
     * If `ValidationStatus.doNotSave` is true, there are errors that must be sent back to the client.
     * Call `ValueHostsManager.toValidationPayload()` and include its result (a string) with your response to the client.
 6. Execute additional pre-save actions such as: duplicate check, complex logic against the overall model, etc.

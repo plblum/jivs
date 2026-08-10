@@ -413,6 +413,7 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         propertyName?: string;
         modelReaderRule?: ValueAdapterRule;
         modelWriterRule?: ValueAdapterRule;
+        elementIdentifier:? string | null;
     }
     ```
     This variant takes one parameter, an object with all properties on the `FieldValueHostConfig`.
@@ -504,6 +505,29 @@ It has no impact on `setValues()` or `setTextValue()`.
 - `propertyName` – The actual property name on the model. If its the same as `ValueHostConfig.name`, this can be undefined. Helps mapping between model and valuehost, especially when using the [ModelReader and ModelWriter](#modelreader-and-modelwriter). `ModelReader` and `ModelWriter` permit dot notation to locate a property of a child, such as "Address.Street1".
 - `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
 - `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](#modelreader-and-modelwriter).
+- `elementIdentifier` - 
+    When provided, this is used to identify the input element in the UI that is associated with this `FieldValueHost`.
+
+    Some usages:
+    - Match to the id= attribute of an HTML input element.
+    - Match to the name= attribute of an HTML input element.
+    - Match to a data-* attribute of an HTML input element.
+    - Selector syntax for document.querySelector() or jQuery to find the element.
+
+    ```ts
+    let fvh = vhm.getFieldValueHost('fieldName');
+    let fldId = fvh.getElementIdentifier();
+    let fld = document.getElementById(fldId);
+    ```
+    FieldValueHost.getElementIdentifier() method allows you to supply a template
+    for which this value is inserted where the "{0}" is found.
+
+    This value is sometimes resolved after configuration. In that case, you can set it later:
+    ```ts
+    let fvh = vhm.getFieldValueHost('fieldName');
+    fvh.setElementIdentifier('resolved ID');
+    ```
+
 ### Getting a ValueHost
 Start with a `ValueHostsManager` instance. It should already be configured with ValueHosts. Supposing *vhm* has that `ValueHostsManager`, do this to get a `ValueHost`:
 
@@ -602,12 +626,12 @@ Your `ValueHost` configuration determines if formatting will happen.
 - Using the resulting text value in your user interface element
     ```ts
     builder.field('BirthDate', LookupKey.Date, { // will use DateFormatter
-        propertyName: 'idForBirthdate'  // use propertyName to hold the id attribute value of the input if different from the ValueHost name
+        elementIdentifier: 'idForBirthdate'  // hold the id attribute value of the input if different from the ValueHost name
     });
     builder.onTextValueChanged = (fieldValueHost, oldValue)=>{
         let newTextValue = fieldValueHost.getTextValue();
         // assign it to the input's value attribute
-        document.getElementById(fieldValueHost.getPropertyName()).value = newTextValue;
+        document.getElementById(fieldValueHost.getElementIdentifier()).value = newTextValue;
     };
     let vhm = new ValueHostsManager(builder.completed());
     // suppose your have a model object with a 'BirthDate' property

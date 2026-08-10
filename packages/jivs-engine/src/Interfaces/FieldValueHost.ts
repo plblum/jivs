@@ -156,6 +156,30 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     getModelWriterRule(): ValueAdapterRule | undefined;
+
+    /**
+     * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.
+     * This is useful for UI frameworks that need to bind the FieldValueHost to a specific input element.
+     * If not provided, the FieldValueHost will not have a direct association with any specific input element.
+     * @param template - Optional template to format the element identifier. If provided, the elementIdentifier will be inserted into the template.
+     * The string must contain "{0}" as a placeholder for the elementIdentifier. 
+     * 
+     * The template strategy allows for dynamic generation of element identifiers based on the FieldValueHost's configuration or other context.
+     * For example, if the template is "container_{0}_input" and the elementIdentifier is "firstName", the resulting identifier will be "container_firstName_input".
+     * 
+     * If no template is provided, the raw elementIdentifier will be returned as-is.
+     * 
+     * Note: This method may return null or undefined if no elementIdentifier has been set for this FieldValueHost.
+     */
+    getElementIdentifier(template?: string): string | null | undefined;
+
+    /**
+     * Sometimes the element identifier is not known at configuration time and is only known at runtime.
+     * This method allows you to set it later, so that the FieldValueHost can be associated with the correct input element in the UI.
+     * 
+     * @param elementIdentifier - The identifier of the input element associated with this FieldValueHost. Can be null or undefined if no association is needed.
+     */
+    setElementIdentifier(elementIdentifier: string | null | undefined): void;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -261,6 +285,28 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * See {@link jivs-engine/ModelReaderWriter/Types} for details.
      */
     modelWriterRule?: ValueAdapterRule;    
+
+    /**
+     * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.
+     * This is useful for UI frameworks that need to bind the FieldValueHost to a specific input element.
+     * If not provided, the FieldValueHost will not have a direct association with any specific input element.
+     * 
+     * Some usages:
+     * - Match to the id= attribute of an HTML input element.
+     * - Match to the name= attribute of an HTML input element.
+     * - Match to a data-* attribute of an HTML input element.
+     * - Selector syntax for document.querySelector() or jQuery to find the element.
+     * 
+     * When you retrieve it, the FieldValueHost.getElementIdentifier() method allows you to supply a template
+     * for which this value is inserted. So this could be the local part of the element, with the prefix covering the container for example.
+     * The template could be something like "container_{0}_input" where {0} is replaced with the elementIdentifier.
+     * 
+     * Sometimes this value is unknown at the time of configuration, and is only known at runtime. In that case, you can set it to null or undefined in the config, 
+     * and then set it later using the FieldValueHost.setElementIdentifier() method.
+     * 
+     * Note: This property is optional and may be null if no specific element is associated with this FieldValueHost.
+     */
+    elementIdentifier?: string | null;
 }
 
 /**
@@ -276,6 +322,12 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
      * Will be 'undefined' if the value has not been retrieved.
      */
     textValue?: string | undefined;
+
+    /**
+     * If the FieldValueHostConfig.elementIdentifier is set after configuration, it is part of state
+     * and stored here.
+     */
+    elementIdentifier?: string | null;
 
 }
 
