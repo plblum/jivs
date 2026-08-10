@@ -24,17 +24,14 @@
       "jest": true
     }
   },
-  "dependencies": {
-    "@plblum/jivs-builder": "file:../jivs-builder",
-    "@plblum/jivs-engine": "file:../jivs-engine"
-  },  
   "peerDependencies": {
     "@angular/animations": "^19.0.0",
     "@angular/common": "^19.0.0",
     "@angular/core": "^19.0.0",
     "@angular/forms": "^19.0.0",
     "@angular/platform-browser": "^19.0.0",
-    "@angular/router": "^19.0.0"
+    "@angular/router": "^19.0.0",
+    "@plblum/jivs-engine": "file:../jivs-engine"
   },
   "devDependencies": {
     "@angular/animations": "19.2.25",
