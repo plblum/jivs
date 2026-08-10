@@ -5,6 +5,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
   "description": "Tools for analyzing and validating Jivs configuration objects to find setup issues early on.",
   "displayName": "Jivs Configuration Analysis",
   "license": "MIT",
