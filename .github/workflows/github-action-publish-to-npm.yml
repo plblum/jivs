@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write          # required for OIDC token exchange with npm
+
     steps:
       - name: Verify branch is main
         run: |
@@ -29,7 +31,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'   # creates .npmrc wired to NODE_AUTH_TOKEN
 
       - run: npm ci   #instead of npm install to ensure a clean install of dependencies and avoid changing package-lock.json, which will block lerna from publishing packages due to uncommitted changes
 
@@ -49,4 +50,4 @@ jobs:
       - name: Publish to npm
         run: lerna publish from-package --no-private --yes
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
