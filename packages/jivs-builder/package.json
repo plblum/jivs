@@ -1,9 +1,13 @@
 {
   "name": "@plblum/jivs-builder",
   "type": "module",
-  "version": "0.20.2",
+  "version": "0.22.0",
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
   },
   "description": "Tools to create the configuration of a ValidationManager using a fluent syntax.",
   "displayName": "Jivs Builder",

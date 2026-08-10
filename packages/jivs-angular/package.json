@@ -4,6 +4,10 @@
   "publishConfig": {
     "access": "public"
   },  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
   "type": "module",
   "version": "0.20.1",
   "description": "Delivers Jivs support for Angular applications",
