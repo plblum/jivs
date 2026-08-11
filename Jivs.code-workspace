@@ -148,6 +148,8 @@
 		"js/ts.preferences.importModuleSpecifier": "relative",
 		"js/ts.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
-		]
+		],
+		"explorerExcludeManager.backup": {},
+		"explorerExcludeManager.showPicker": false
 	}
 }
