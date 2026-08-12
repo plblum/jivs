@@ -180,7 +180,7 @@ Learning.md
     ValueHostsManager
     Jivs Participation
 
-Configuring.md
+ValueHostsManager_Configuration_Guide.md
     Configuration Guidance
 
 Jivs_API.md

@@ -43,11 +43,11 @@ flowchart LR
     SE --> ERR["Error Response"]
 ```
 
-The surrounding participants differ, but the Value Managers perform the same central function: values pass through them before becoming usable final data, while validation issues take a different path. Despite differences in environment, both client and server implementations rely on the same **value-management tools**.
+The surrounding participants differ, but the Value Managers perform the same central function: values pass through them before becoming usable final data, while error messages take a different path. Despite differences in environment, both client and server implementations rely on the same **value-management tools**.
 
-On the client, the Value Manager participates throughout editing. It receives initial data, exchanges values with input controls, produces validation issues for display, and ultimately provides the final data that can be saved.
+On the client, the Value Manager participates throughout editing. It receives initial data, exchanges values with input controls, produces error messages for display, and ultimately provides the final data that can be saved.
 
-On the server, incoming values may arrive through different application boundaries. A user-facing client might submit text-oriented form data, while a published API might receive JSON that has already been deserialized into an object. The corresponding validation issues may also be returned differently. These boundary concerns can vary, while the underlying value-management responsibilities remain substantially the same.
+On the server, incoming values may arrive through different application boundaries. A user-facing client might submit text-oriented form data, while a published API might receive JSON that has already been deserialized into an object. The corresponding error messages may also be returned differently. These boundary concerns can vary, while the underlying value-management responsibilities remain substantially the same.
 
 ## Inside the Value Manager
 

@@ -18,7 +18,7 @@ The repository already contains:
 
 - README.md
 - Learning.md
-- Configuring.md
+- ValueHostsManager_Configuration_Guide.md
 - Jivs_API.md
 - TypeDoc-generated API reference
 

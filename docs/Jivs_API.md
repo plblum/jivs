@@ -1176,7 +1176,7 @@ export class PersonFormRules extends ValueHostRulesBase {
 You can see that both Model and Form representations are identical aside from the class name.
 
 The builder's class has a rich API called **Builder API**. Learn about it here:
-[Builder](Configuring.md#the-valuehostsmanagerconfigbuilder-class)
+[Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 When a form uses those model rules, subclass that model's ValueHost rules class and implement `IAdaptModelRulesToForm`.
 
@@ -1198,7 +1198,7 @@ class PersonEditFormRules
 
 The adapter's class inherits from the builder, and introduces methods to carefully adapt your form's requirements without breaking the business logic rules.
 Learn about it here: 
-[Adapter](Configuring.md#the-form-configuration-adapter)
+[Adapter](ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
 
 ### Consuming the ValueHostRules subclass
 ```ts
@@ -1236,7 +1236,7 @@ For more, see [ValueHost members](#valuehost-members).
 - `builder.calc(valueHostName, parameters)` adds a `CalcValueHost` configuration. 
 For more, see [Using CalcValueHost](#using-calcvaluehost).
     
-[Builder](Configuring.md#the-valuehostsmanagerconfigbuilder-class)
+[Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 ### Short intro to methods on Adapter
 The `FormConfigAdapter` has these features:
@@ -1257,7 +1257,7 @@ The `FormConfigAdapter` has these features:
 - Assign a validation group name if using it.
     + `adapter.assignToGroup('group name', [field names])`
 
-[Adapter](Configuring.md#the-form-configuration-adapter)
+[Adapter](ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
 
 ---
 ## ModelReader and ModelWriter
