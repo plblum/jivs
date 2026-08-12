@@ -453,3 +453,382 @@ On the server, the Value Manager communicates Error Messages outward as data tha
 Mermaid flowchart.
 
 Orientation: left-to-right.
+
+# Understanding_Jivs.md
+
+## UJ Diagram 1 — Jivs and the UI/Application
+
+### Used in
+
+`Understanding_Jivs.md` — **What Jivs Is Trying to Do**
+
+### Purpose
+
+Show the basic separation between Jivs and the surrounding UI/application before introducing Jivs-specific classes.
+
+Connect the earlier Value Manager concept to Jivs while keeping the interaction intentionally high-level.
+
+### Participants
+
+* UI / Application
+* Jivs
+
+### Relationships
+
+* UI / Application supplies Values to Jivs.
+* Jivs returns Validation State and Error Messages to the UI / Application.
+
+### Emphasis
+
+* Keep the diagram extremely simple.
+* Jivs does not know or manipulate the UI.
+* Values flow into Jivs.
+* Validation information flows back to application code.
+* Do not introduce callbacks yet.
+* Do not introduce `ValueHost`, `FieldValueHost`, or `ValueHostsManager` in this diagram.
+* Use **Validation State** as the Jivs term.
+* Use **Error Messages** as the tangible representation of validation problems.
+* The diagram should reinforce separation of concerns without exposing implementation mechanics.
+
+### Reader takeaway
+
+The application supplies values to Jivs, and Jivs supplies validation information back without knowing anything about the application's UI.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## UJ Diagram 2 — Core Jivs Concepts
+
+### Used in
+
+`Understanding_Jivs.md` — **The Core Jivs Concepts**
+
+### Purpose
+
+Give the reader a simple visual relationship between the four Jivs concepts introduced immediately before the diagram:
+
+* `ValueHost`
+* `FieldValueHost`
+* `ValueHostsManager`
+* `JivsServices`
+
+### Participants
+
+* ValueHostsManager
+* FieldValueHost
+* ValueHost
+* ValueHost
+* JivsServices
+
+### Relationships
+
+* `ValueHostsManager` visually contains a collection of ValueHosts.
+* One contained item is explicitly shown as a `FieldValueHost`.
+* Other contained items are shown generically as `ValueHost`.
+* `ValueHostsManager` uses `JivsServices`.
+* One representative `FieldValueHost` uses `JivsServices`.
+
+### Emphasis
+
+* Use containment to represent the collection of ValueHosts inside the `ValueHostsManager`.
+* Do not add a separate label such as "ValueHosts" to the collection; the preceding text already explains it.
+* Showing one `FieldValueHost` among generic ValueHosts reinforces that it is a kind of ValueHost without requiring an inheritance diagram.
+* The arrows toward `JivsServices` mean that these objects consume its services.
+* Do not imply that `JivsServices` owns or creates the objects merely because it is required.
+* A single representative ValueHost-to-`JivsServices` arrow is sufficient; do not draw an arrow from every ValueHost.
+* Do not introduce validators, Conditions, Builder configuration, callbacks, or other implementation details.
+
+### Reader takeaway
+
+A `ValueHostsManager` coordinates a collection of ValueHosts, `FieldValueHost` is an important kind of ValueHost, and both the manager and its ValueHosts can use the required `JivsServices`.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+`ValueHostsManager` is represented as a subgraph containing three representative ValueHosts.
+
+---
+
+# Intro_to_Creating_a_ValueHostsManager.md
+
+## CVHM Diagram 1 — Creating a ValueHostsManager
+
+### Used in
+
+`Intro_to_Creating_a_ValueHostsManager.md` — opening section
+
+### Purpose
+
+Introduce the conceptual construction path before showing the recurring TypeScript creation pattern.
+
+Prepare the reader to understand the relationship between a rules class, the Builder API, configuration, `ValueHostsManager`, and `JivsServices`.
+
+### Participants
+
+* Rules
+* Builder
+* Configuration
+* ValueHostsManager
+* JivsServices
+
+### Relationships
+
+* Rules use the Builder.
+* Builder produces Configuration.
+* Configuration is used to create the ValueHostsManager.
+* JivsServices supports the ValueHostsManager.
+
+### Emphasis
+
+* This is intentionally a simplified construction picture.
+* `Rules → Builder → Configuration` is conceptual; in actual code the rules class uses a Builder supplied during configuration.
+* The diagram should not explain `configureRules()` or other method mechanics.
+* The Builder should be visible because it is an important concept used throughout the document.
+* `configure()` itself is introduced later in the code-based creation pattern, not in the diagram explanation.
+* `JivsServices` is required.
+* Do not expand `JivsServices` into its parsers, formatters, Conditions, or other services here.
+* Do not show callbacks or UI integration.
+* The endpoint is construction of a configured `ValueHostsManager`.
+
+### Reader takeaway
+
+Rules use the Builder to produce the configuration from which a `ValueHostsManager` is created, with `JivsServices` supplying required infrastructure.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+# Using_the_ValueHostsManager_within_the_Client.md
+
+## Client Diagram 1 — Two-Way Client Interaction
+
+### Used in
+
+`Using_the_ValueHostsManager_within_the_Client.md` — opening section
+
+### Purpose
+
+Establish the basic interactive relationship between UI components and an already-configured `ValueHostsManager`.
+
+Reinforce the separation-of-concerns concept introduced in `Understanding_Jivs.md`, now using the concrete Jivs manager.
+
+### Participants
+
+* UI Components
+* ValueHostsManager
+
+### Relationships
+
+* UI Components supply Values to the ValueHostsManager.
+* ValueHostsManager reports Changes and Validation back toward the UI Components.
+
+### Emphasis
+
+* Keep this diagram high-level.
+* The training remains UI-framework agnostic.
+* Do not show callbacks yet; they are introduced later in the document.
+* Do not imply that the ValueHostsManager knows or manipulates UI components.
+* The arrows describe the application's interactive exchange, with application glue omitted at this level.
+* Framework-specific modules may later show how actual framework components participate.
+
+### Reader takeaway
+
+Client interaction is two-way: the UI supplies values to the `ValueHostsManager`, while Jivs reports value and validation changes that application code can reflect in the UI.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## Client Diagram 2 — Sending User Input to Jivs
+
+### Used in
+
+`Using_the_ValueHostsManager_within_the_Client.md` — **Sending User Input to Jivs**
+
+### Purpose
+
+Show the simple path from an edited input through a `FieldValueHost` and into parsing and validation.
+
+Connect the generic parsing workflow from `Understanding_Value_Management.md` to the Jivs-specific `FieldValueHost`.
+
+### Participants
+
+* Input Element
+* FieldValueHost
+* Validation
+
+### Relationships
+
+* Input Element supplies a Text Value to the FieldValueHost.
+* The FieldValueHost parses and validates the supplied value.
+* The result participates in Validation.
+
+### Emphasis
+
+* Label the first arrow **Text Value**.
+* Label the second arrow **Parse and Validate**.
+* Keep event details out of the diagram; `change`, `input`, and `duringEdit` are explained by the nearby code.
+* `setTextValue()` automatically triggers validation for the FieldValueHost.
+* Do not expand parsers or validators into separate objects here.
+* The purpose is to show the Jivs-specific equivalent of the earlier generic workflow.
+
+### Reader takeaway
+
+Client code supplies an input's Text Value to its `FieldValueHost`, which handles the Jivs parsing and field-validation process.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## Client Diagram 3 — Field Validation Callback
+
+### Used in
+
+`Using_the_ValueHostsManager_within_the_Client.md` — **When a Field's Validation Changes**
+
+### Purpose
+
+Show the separation between a `FieldValueHost` reporting a validation change and application code deciding how to represent that change as a Field Error.
+
+### Participants
+
+* FieldValueHost
+* Application Code
+* Field Error
+
+### Relationships
+
+* FieldValueHost invokes a validation callback.
+* Application Code responds to the callback.
+* Application Code updates the Field Error.
+
+### Emphasis
+
+* Keep the UI implementation outside Jivs.
+* The diagram should pair with the nearby HTML showing an input and its companion Field Error holder.
+* The application code may use `ElementIdentifier` and `getElement(valueHost, '{0}-error')` to locate that companion element, but do not put that lookup detail in the diagram.
+* The callback example is lightweight glue, not a prescribed presentation.
+* Framework-specific modules may provide richer presentation patterns.
+* Do not imply that Jivs renders the Field Error.
+
+### Reader takeaway
+
+A field-level validation change comes from the `FieldValueHost`; application code receives the callback and decides how the corresponding Field Error should be updated.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## Client Diagram 4 — Overall Validation Callback
+
+### Used in
+
+`Using_the_ValueHostsManager_within_the_Client.md` — **When Overall Validation Changes**
+
+### Purpose
+
+Show how a validation-state change for the entire `ValueHostsManager` can be communicated to application code and then to a Validation Summary.
+
+### Participants
+
+* ValueHostsManager
+* Application Code
+* Validation Summary
+
+### Relationships
+
+* ValueHostsManager invokes a validation callback.
+* Application Code responds to the callback.
+* Application Code updates the Validation Summary.
+
+### Emphasis
+
+* This is the manager-level counterpart to the field-level callback diagram.
+* The `ValueHostsManager` reports the change; it does not know about or render the Validation Summary.
+* Keep callback signatures and error enumeration out of the diagram.
+* The Validation Summary is one possible consumer of overall validation state.
+* Application code may also use overall Validation State for other decisions, such as whether an action remains available.
+* Keep presentation framework agnostic.
+
+### Reader takeaway
+
+The `ValueHostsManager` reports overall validation changes, and application code decides how those changes are represented to the user, such as through a Validation Summary.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## Client Diagram 5 — The Interactive Connection
+
+### Used in
+
+`Using_the_ValueHostsManager_within_the_Client.md` — **The Interactive Connection**
+
+### Purpose
+
+Summarize the interactive client-side connection after the reader has learned how values enter Jivs and how callbacks communicate changes outward.
+
+Bring the document's major concepts together before transitioning to form initialization and submission.
+
+### Participants
+
+* UI Input
+* FieldValueHost
+* ValueHostsManager
+* UI
+
+### Relationships
+
+* UI Input supplies a Text Value to the FieldValueHost.
+* FieldValueHost participates in the ValueHostsManager.
+* ValueHostsManager reports validation callbacks toward the UI.
+* FieldValueHost reports value and field callbacks toward the UI.
+
+### Emphasis
+
+* This is a summary diagram, not a detailed implementation diagram.
+* Values enter through a `FieldValueHost`.
+* Manager-level validation callbacks originate with the `ValueHostsManager`.
+* Value- and field-specific callbacks originate with the `FieldValueHost`.
+* The arrows terminating at UI represent application code reacting to callbacks; they must not imply that Jivs directly manipulates the UI.
+* The UI framework remains outside Jivs.
+* Keep initialization and submission outside this diagram; those belong in `Managing_the_Client_Form_Lifecycle.md`.
+* This diagram closes the interactive-connection portion of the learning sequence.
+
+### Reader takeaway
+
+The Client supplies values through `FieldValueHost`s, while field-level and manager-level callbacks provide the information application code needs to keep the UI synchronized with Jivs.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
