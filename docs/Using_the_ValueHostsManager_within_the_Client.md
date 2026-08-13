@@ -250,4 +250,4 @@ The UI framework remains outside that process. Whether the application uses nati
 
 ---
 
-Next, we'll look at [managing the Client form lifecycle](Managing_the_Client_Form_Lifecycle.md), including initialization and submission.
+Next, we'll look at [the form initialization process](Initializing_the_Client_Form.md).

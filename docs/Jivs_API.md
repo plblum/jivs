@@ -1085,12 +1085,16 @@ interface IValueHostsManager {
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
     addExternalIssuesFound(issuesFound, developedLocally, options?): boolean;
+    addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean;
         
     isValid: boolean;
     doNotSave: boolean;
     asyncProcessing?: boolean;
     getIssuesForInput(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];
+
+    toValidationPayload(externalIssues: Array<IssueFound> | null): string;
+    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean; 
 }
 ```
 
@@ -2195,18 +2199,18 @@ Let's go through `ValueHostValidationState` properties:
 Here is the `IssueFound type`, which is supplied in the issuesFound array above:
 ```ts
 interface IssueFound {
-    valueHostName: string;
-    errorCode: string;
-    severity: ValidationSeverity;
     errorMessage: string;
+    errorCode?: string;
+    valueHostName?: string;
+    severity?: ValidationSeverity;
     summaryMessage?: string;
 }
 ```
 Going through its properties:
-- `valueHostName` - The name of the ValueHost supplying this IssueFound.
-- `errorCode` - The error code from the Validator supplying this IssueFound. Error codes default to the ConditionType value used to select the Condition, but can be supplied as you configure the Validator in ValidatorConfig.errorCode.
-- `severity` - The severity: Severe, Error, or Warning. When Warning, the value is considered valid, but you wanted to show the user some message anyway.
 - `errorMessage` - The error message, fully localized and prepared to display.
+- `errorCode` - The error code from the Validator supplying this IssueFound. Error codes default to the ConditionType value used to select the Condition, but can be supplied as you configure the Validator in ValidatorConfig.errorCode.
+- `valueHostName` - The name of the ValueHost supplying this IssueFound.
+- `severity` - The severity: Severe, Error, or Warning. When Warning, the value is considered valid, but you wanted to show the user some message anyway.
 - `summaryMessage` - The error message that targets the ValidationSummary. 
 
 ### Current validation state on ValueHostsManager

@@ -118,11 +118,45 @@ Jivs does not require a particular HTTP library, API design, or submission mecha
 
 Client-side validation also does not replace validation on the server. The server must determine whether the submitted data is actually acceptable before saving it.
 
+## Handle Request Failures
+
+Sending the Model can fail for reasons unrelated to validation.
+
+Examples include:
+
+- the server cannot be reached;
+- the request times out;
+- the server returns an unexpected error response;
+- an internal server failure prevents the request from being completed.
+
+These are not validation issues. Handle them through the application's normal request/error UI rather than adding them to the `ValueHostsManager`.
+
+For example:
+
+```ts
+let response: SavePersonResponse;
+
+try {
+    response = await savePerson(person);
+}
+catch (error) {
+    handleConnectionFailure(error);
+    return;
+}
+
+if (handleHttpFailure(response))
+    return;
+```
+
+This example assumes validation results are returned as part of a successful response. That is a useful convention because it keeps expected validation outcomes separate from operational failures.
+
+An existing API may instead use a non-success HTTP status for validation. Keep that API contract; its request-handling code should recognize those responses as validation results before applying general HTTP error handling.
+
 ## Handle Server Validation Results
 
-A successful server response completes the submission.
+After the request completes normally, the server may still report validation issues.
 
-When the server reports validation issues, provide them to Jivs so the existing validation UI is refreshed.
+Provide those issues to Jivs so the existing validation UI is refreshed.
 
 There are two equally valid approaches.
 
@@ -169,7 +203,20 @@ async function submitPerson(vhm: ValueHostsManager): Promise<void> {
         return;
     }
 
-    const response = await savePerson(person);
+    let response: SavePersonResponse;
+
+    try {
+        response = await savePerson(person);
+    }
+    catch (error) {
+        handleConnectionFailure(error);
+        return;
+    }
+
+    if (handleHttpFailure(response))
+    {
+        return;
+    }
 
     if (handleServerIssues(response, vhm)) {
         return;
@@ -178,6 +225,7 @@ async function submitPerson(vhm: ValueHostsManager): Promise<void> {
     submissionSucceeded(person);
 }
 ```
+`handleHttpFailure()` handles HTTP or server failures that are not validation results.
 
 `handleServerIssues()` determines whether the response contains validation issues and provides them to Jivs. Its implementation depends on whether the server uses Jivs or another validation system.
 
@@ -210,7 +258,7 @@ function handleServerIssues(
     response: SavePersonResponse,
     vhm: ValueHostsManager
 ): boolean {
-    if (response.validationErrors.length === 0) {
+    if (!response.validationErrors || response.validationErrors.length === 0) {
         return false;
     }
 
