@@ -2,7 +2,7 @@
 
 The server does not need to use Jivs for the client to benefit from Jivs validation.
 
-Keep the server's existing validation system, business logic, request handling, and response contract. The client-side integration translates the server's validation results into the form Jivs needs.
+Keep the server's existing validation system, business logic, request handling, and response contract. The client-side integration can translate the server's validation results into the information Jivs needs.
 
 This follows the same architecture introduced in [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
 
@@ -20,7 +20,7 @@ flowchart LR
     OPERATION --> RESPONSE["Prepare Response"]
 ```
 
-The technologies and APIs used for each stage are application-owned.
+The technologies and APIs used for each stage remain application-owned.
 
 ## Prepare Values
 
@@ -30,11 +30,11 @@ For example:
 
 - JSON values may already be deserialized into useful native types;
 - form posts may provide strings that require parsing or conversion;
-- existing application code may already perform mapping or normalization.
+- existing application code may already perform mapping, conversion, or normalization.
 
-Unlike Jivs with `FormReader`, a non-Jivs server normally performs parsing through its own request-processing or validation code.
+A non-Jivs server normally performs parsing through its own request-processing or validation code.
 
-Parsing failures are validation issues. Add them to the same validation results returned for other rejected input rather than treating them as operational server failures.
+Parsing failures are validation issues. Include them with the other validation results rather than treating them as operational server failures.
 
 ## Validate Values
 
@@ -55,20 +55,20 @@ The server remains responsible for independently validating incoming data even w
 
 Once the incoming values are usable, build or populate the application's Model using its existing code.
 
-The Model does not need to resemble the client's ValueHosts. Field names, datatypes, and internal structure remain application-owned.
+The Model does not need to resemble the client's ValueHosts. Property names, datatypes, and internal structure remain application-owned.
 
 ## Model Validation
 
 Run the application's broader business validation against the completed Model.
 
-Typical examples include:
+Common examples include:
 
-- rules involving several Model properties;
-- checking whether an operation is allowed for the current state;
+- checking relationships across several Model properties;
+- determining whether an operation is allowed for the current state;
 - checking whether a username, email address, or other value is already in use;
-- other business rules that require information beyond individual input values.
+- applying other business rules that require the completed Model or additional application data.
 
-Add these issues to the server's normal validation error collection.
+Gather these problems into the server's normal validation error collection.
 
 ## Perform the Operation
 
@@ -86,7 +86,7 @@ Validation issues belong in the validation response. Operational failures, such 
 
 Keep the server's existing validation response format.
 
-For example, an application might already return:
+For example:
 
 ```json
 {
@@ -100,150 +100,34 @@ For example, an application might already return:
 }
 ```
 
-There is no need to rename these properties or replace the server's error codes with Jivs values.
+There is no need to rename these properties, replace the server's field names, or adopt Jivs error codes.
 
-As described in [Error Messages, Error Codes, and Field Names](Understanding_Server_Side_Validation.md#error-messages-error-codes-and-field-names), stable error codes and field identifiers make the response much easier for the client to integrate.
+As described in [Error Messages, Error Codes, and Field Names](Understanding_Server_Side_Validation.md#error-messages-error-codes-and-field-names), a useful validation response should provide enough information for the client to understand the issue and, when available, identify what kind of issue occurred and where it belongs.
 
-Published APIs should preserve their established contracts. Change the server response only when the existing contract does not provide enough information for the caller to understand and associate validation issues.
+In particular:
 
-## Adapt Server Validation to Jivs on the Client
+- a **message** communicates what was rejected;
+- a stable **error code** gives the client something it can map to a corresponding Jivs error code or `ConditionType`;
+- a stable **field name** gives the client something it can map to the appropriate `ValueHostName`.
 
-The client-side integration converts the server's validation errors into Jivs `IssueFound` objects.
+The server can continue using its own names and codes. The client performs the mapping when integrating the response with Jivs.
 
-Suppose the server uses this application-defined type:
+Published APIs should preserve their established contracts. Change the server response only when the existing contract does not provide enough validation information for the caller to understand and associate what was rejected.
 
-```ts
-interface ServerValidationError {
-    message: string;
-    code?: string;
-    field?: string;
-}
-```
+## What Happens on the Client
 
-The adapter can translate it into Jivs:
+The server does not need to translate its validation results into Jivs.
 
-```ts
-function convertToIssueFound(
-    errors: ServerValidationError[]
-): IssueFound[] {
-    return errors.map(error => ({
-        errorMessage: error.message,
-        errorCode: mapErrorCode(error.code),
-        valueHostName: mapFieldName(error.field)
-    }));
-}
-```
+When the response reaches the client, application code converts the server's validation errors into Jivs `IssueFound` objects. That client-side integration can:
 
-`convertToIssueFound()` is application code. It is the integration boundary between the server's validation contract and Jivs.
+- use the server message as the `errorMessage`;
+- map the server error code to a Jivs `errorCode` or `ConditionType`;
+- map the server field name to a `ValueHostName`.
 
-### Map Error Codes
+When both mappings identify a validator on the destination ValueHost, Jivs can restore the issue through that validator as though the validation problem had been found on the client.
 
-The server should continue using its own stable error codes.
-
-The client maps those codes to Jivs values when a useful equivalent exists:
-
-```ts
-function mapErrorCode(
-    errorCode?: string
-): string | undefined {
-    switch (errorCode) {
-        case 'REQUIRED':
-            return ConditionType.RequireText;
-
-        case 'TOO_LONG':
-            return ConditionType.StringLength;
-
-        default:
-            return errorCode;
-    }
-}
-```
-
-For example:
-
-```mermaid
-flowchart LR
-    SERVER["Server error code<br/>REQUIRED"] --> MAP["Client Mapping"]
-    MAP --> JIVS["ConditionType.RequireText"]
-    JIVS --> VALIDATOR["Existing requireText()<br/>Validator"]
-```
-
-When the mapped error code matches a validator on the destination ValueHost, Jivs can activate that validator as though the validation issue had been found on the client. Jivs can then use its configured error message, including localization, instead of relying on the server's message.
-
-If there is no useful mapping, keep the server's error code or omit it. The server's `message` still provides the required `IssueFound.errorMessage`.
-
-### Map Field Names
-
-The server can also keep its existing field names.
-
-Map them to the ValueHostNames used by the client:
-
-```ts
-function mapFieldName(
-    fieldName?: string
-): string | undefined {
-    switch (fieldName) {
-        case 'first_name':
-            return 'FirstName';
-
-        case 'last_name':
-            return 'LastName';
-
-        default:
-            return undefined;
-    }
-}
-```
-
-The mapped `valueHostName` tells Jivs where the issue belongs and allows it to appear with the correct ValueHost's error display.
-
-When both the mapped `valueHostName` and `errorCode` identify a validator on that ValueHost, Jivs can restore the issue directly into that validator's state.
-
-## Add the Issues to Jivs
-
-After converting the server errors, add them to the client's `ValueHostsManager`:
-
-```ts
-const issuesFound = convertToIssueFound(
-    response.validationErrors
-);
-
-vhm.addExternalIssuesFound(issuesFound, false);
-```
-
-The `false` argument allows these imported issues to be cleared by the next client-side validation attempt.
-
-The client does not need the server to understand Jivs. It only needs an adapter that translates the server's validation contract into `IssueFound`.
-
-## Putting the Client Integration Together
-
-A typical response-handling path looks like this:
-
-```ts
-function handleServerValidation(
-    response: SavePersonResponse,
-    vhm: ValueHostsManager
-): boolean {
-    if (
-        !response.validationErrors ||
-        response.validationErrors.length === 0
-    ) {
-        return false;
-    }
-
-    const issuesFound = convertToIssueFound(
-        response.validationErrors
-    );
-
-    vhm.addExternalIssuesFound(issuesFound, false);
-    return true;
-}
-```
-
-Returning `true` means validation issues were found and handled, so submission processing should stop. Returning `false` means there were no server validation issues.
-
-The complete client submission flow is covered in [Submitting the Client Form](Submitting_the_Client_Form.md).
+The complete mapping and integration code is covered in [When the Server Uses Another Validation System](Submitting_the_Client_Form.md#when-the-server-uses-another-validation-system).
 
 ---
 
-For the common server-side architecture behind both approaches, return to [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
+For the common server-side architecture behind both server approaches, return to [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).

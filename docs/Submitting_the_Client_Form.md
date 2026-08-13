@@ -225,6 +225,7 @@ async function submitPerson(vhm: ValueHostsManager): Promise<void> {
     submissionSucceeded(person);
 }
 ```
+
 `handleHttpFailure()` handles HTTP or server failures that are not validation results.
 
 `handleServerIssues()` determines whether the response contains validation issues and provides them to Jivs. Its implementation depends on whether the server uses Jivs or another validation system.
@@ -251,7 +252,99 @@ function handleServerIssues(
 
 ### When the Server Uses Another Validation System
 
-An application using another server-side validation system can convert its errors into `IssueFound` objects:
+A server using another validation system can keep its existing error format, field names, and error codes. The client adapts those values into Jivs `IssueFound` objects.
+
+Suppose the server returns errors using this application-defined type:
+
+```ts
+interface ServerValidationError {
+    message: string;
+    code?: string;
+    field?: string;
+}
+```
+
+`convertToIssueFound()` provides the integration boundary between that server contract and Jivs:
+
+```ts
+function convertToIssueFound(
+    errors: ServerValidationError[]
+): IssueFound[] {
+    return errors.map(error => ({
+        errorMessage: error.message,
+        errorCode: mapErrorCode(error.code),
+        valueHostName: mapFieldName(error.field)
+    }));
+}
+```
+
+The server's message becomes the required `IssueFound.errorMessage`. Its error code and field name can be mapped when corresponding Jivs values are available.
+
+#### Map Error Codes
+
+An error code identifies what kind of validation problem occurred. The server does not need to use Jivs error codes.
+
+Map the server's codes to Jivs values where a useful equivalent exists:
+
+```ts
+function mapErrorCode(
+    errorCode?: string
+): string | undefined {
+    switch (errorCode) {
+        case 'REQUIRED':
+            return ConditionType.RequireText;
+
+        case 'TOO_LONG':
+            return ConditionType.StringLength;
+
+        default:
+            return errorCode;
+    }
+}
+```
+
+For example:
+
+```mermaid
+flowchart LR
+    SERVER["Server error code<br/>REQUIRED"] --> MAP["Client Mapping"]
+    MAP --> JIVS["ConditionType.RequireText"]
+```
+
+The mapped error code lets Jivs identify the kind of validation issue and use configured error messages, including localized messages, instead of relying only on the server's message.
+
+If there is no useful mapping, the server's error code can be retained or omitted. The server message remains available as `errorMessage`.
+
+#### Map Field Names
+
+A field name identifies where the validation issue belongs. The server can continue using its own field naming.
+
+Map that value to the appropriate client `ValueHostName`:
+
+```ts
+function mapFieldName(
+    fieldName?: string
+): string | undefined {
+    switch (fieldName) {
+        case 'first_name':
+            return 'FirstName';
+
+        case 'last_name':
+            return 'LastName';
+
+        default:
+            return undefined;
+    }
+}
+```
+
+The mapped `valueHostName` allows Jivs to attach the issue to the correct ValueHost and its error display.
+
+When both the mapped `valueHostName` and error code identify a validator on that ValueHost, Jivs can activate that validator as though the validation issue had been found on the client.
+
+#### Handle the Server Issues
+
+Use the adapter when the server response contains validation errors:
 
 ```ts
 function handleServerIssues(
@@ -273,8 +366,12 @@ function handleServerIssues(
 }
 ```
 
-The submission function itself does not change. Only the application-specific handling of server issues depends on how validation is implemented on the server.
+The `false` argument allows these imported issues to be cleared by the next client-side validation attempt.
+
+Returning `true` means validation issues were found and handled, so submission processing stops. Returning `false` means there were no server validation issues.
+
+The server does not need to understand Jivs. The client-side adapter translates the server's validation contract into the `IssueFound` information Jivs needs.
 
 ---
 
-Next, we'll look at how Jivs participates in validation on the server.
+Next, we'll look at [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
