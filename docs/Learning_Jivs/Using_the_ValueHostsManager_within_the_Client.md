@@ -46,8 +46,10 @@ function getElement(
     return fldId ? document.getElementById(fldId) : null;
 }
 ```
-
-An ElementIdentifier can be established in two common ways:
+By default, `getElementIdentifier()` returns the same value as `getName()`.
+Frequently `getName()` does not match to your UI, and you have to use the element identifier feature
+on the `FieldValueHost`.
+An element identifier can be established in two common ways:
 
 * If the element identifier is known while the rules are being configured, assign it through the Builder.
 
@@ -63,9 +65,7 @@ An ElementIdentifier can be established in two common ways:
   valueHost.setElementIdentifier('generated-FirstName');
   ```
 
-`ElementIdentifier` is optional. Its advantage is that callback functions can use a consistent lookup pattern without separately maintaining the relationship between each `FieldValueHost` and its UI element.
-
-Common ways to interpret an ElementIdentifier include:
+Common ways to interpret an element identifier include:
 
 * An HTML `id`:
 

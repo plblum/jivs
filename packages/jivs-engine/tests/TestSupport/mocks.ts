@@ -215,15 +215,19 @@ export class MockFieldValueHost extends MockValueHost
         throw new Error("Method not implemented.");
     }    
 
-    getElementIdentifier(template?: string): string | null | undefined
+    getElementIdentifier(template?: string): string
     {
         throw new Error("Method not implemented.");
     }
 
-    setElementIdentifier(elementIdentifier: string | null | undefined): void
+    setElementIdentifier(elementIdentifier: string): void
     {
         throw new Error("Method not implemented.");
     }    
+    hasElementIdentifier(): boolean
+    {
+        throw new Error("Method not implemented.");
+    }
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }

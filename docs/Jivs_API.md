@@ -525,7 +525,8 @@ It has no impact on `setValues()` or `setTextValue()`.
     This value is sometimes resolved after configuration. In that case, you can set it later:
     ```ts
     let fvh = vhm.getFieldValueHost('fieldName');
-    fvh.setElementIdentifier('resolved ID');
+    if (!fvh.hasElementIdentifier())    // suggested - means the config property was not used
+        fvh.setElementIdentifier('resolved ID');
     ```
 
 ### Getting a ValueHost

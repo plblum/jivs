@@ -158,20 +158,29 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
     getModelWriterRule(): ValueAdapterRule | undefined;
 
     /**
-     * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.
+     * Identifies the input element in the UI that is associated with this FieldValueHost by either
+     * the FieldValueHostConfig.elementIdentifier property or the ValueHost name.
      * This is useful for UI frameworks that need to bind the FieldValueHost to a specific input element.
-     * If not provided, the FieldValueHost will not have a direct association with any specific input element.
      * @param template - Optional template to format the element identifier. If provided, the elementIdentifier will be inserted into the template.
      * The string must contain "{0}" as a placeholder for the elementIdentifier. 
      * 
      * The template strategy allows for dynamic generation of element identifiers based on the FieldValueHost's configuration or other context.
-     * For example, if the template is "container_{0}_input" and the elementIdentifier is "firstName", the resulting identifier will be "container_firstName_input".
+     * For example, if the template is "container_{0}_input" and the elementIdentifier is "firstName", 
+     * the resulting identifier will be "container_firstName_input".
      * 
      * If no template is provided, the raw elementIdentifier will be returned as-is.
      * 
-     * Note: This method may return null or undefined if no elementIdentifier has been set for this FieldValueHost.
+     * @returns The identifier of the input element associated with this FieldValueHost, 
+     * formatted according to the provided template if applicable. 
+     * It always returns a value, whether its based on the elementIdentifier or the ValueHost name.
      */
-    getElementIdentifier(template?: string): string | null | undefined;
+    getElementIdentifier(template?: string): string;
+    /**
+     * Returns true if the FieldValueHostConfig.elementIdentifier is set or setElementIdentifier set it.
+     * Use it to determine you need to use setElementIdentifier() when your plan is to assign it based on
+     * the state of the HTML after configuration.
+     */
+    hasElementIdentifier(): boolean;
 
     /**
      * Sometimes the element identifier is not known at configuration time and is only known at runtime.
@@ -289,7 +298,7 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
     /**
      * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.
      * This is useful for UI frameworks that need to bind the FieldValueHost to a specific input element.
-     * If not provided, the FieldValueHost will not have a direct association with any specific input element.
+     * If not provided, the user may want to use the ValueHost name of the FieldValueHost to identify the specific input element.
      * 
      * Some usages:
      * - Match to the id= attribute of an HTML input element.

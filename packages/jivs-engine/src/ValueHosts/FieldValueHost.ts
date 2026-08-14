@@ -544,9 +544,9 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     }
 
     /**
-     * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.
+     * Identifies the input element in the UI that is associated with this FieldValueHost by either
+     * the FieldValueHostConfig.elementIdentifier property or the ValueHost name.
      * This is useful for UI frameworks that need to bind the FieldValueHost to a specific input element.
-     * If not provided, the FieldValueHost will not have a direct association with any specific input element.
      * @param template - Optional template to format the element identifier. If provided, the elementIdentifier will be inserted into the template.
      * The string must contain "{0}" as a placeholder for the elementIdentifier. 
      * 
@@ -555,23 +555,25 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      * 
      * If no template is provided, the raw elementIdentifier will be returned as-is.
      * 
-     * Note: This method may return null or undefined if no elementIdentifier has been set for this FieldValueHost.
-     * @returns The element identifier, optionally formatted with the provided template, or null/undefined if not set.
+     * @returns The identifier of the input element associated with this FieldValueHost, 
+     * formatted according to the provided template if applicable. 
+     * It always returns a value, whether its based on the elementIdentifier or the ValueHost name.
      */
-    public getElementIdentifier(template?: string): string | null | undefined
+    public getElementIdentifier(template?: string): string
     {
         const elementIdentifier = this.instanceState.elementIdentifier ?? this.config.elementIdentifier;
         if (template && elementIdentifier) {
             return template.replace("{0}", elementIdentifier);
         }
-        return elementIdentifier;
+        return elementIdentifier ?? this.getName();
     }
 
     /**
      * Sometimes the element identifier is not known at configuration time and is only known at runtime.
      * This method allows you to set it later, so that the FieldValueHost can be associated with the correct input element in the UI.
      * 
-     * @param elementIdentifier - The identifier of the input element associated with this FieldValueHost. Can be null or undefined if no association is needed.
+     * @param elementIdentifier - The identifier of the input element associated with this FieldValueHost. 
+     * Can be null or undefined if no association is needed in which case getElementIdentifier will return getName().
      */
     public setElementIdentifier(elementIdentifier: string | null | undefined): void
     {
@@ -580,6 +582,17 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
             stateToUpdate.elementIdentifier = elementIdentifier;
             return stateToUpdate;
         }, this);
+    }
+
+    /**
+     * Returns true if the FieldValueHostConfig.elementIdentifier is set or setElementIdentifier set it.
+     * Use it to determine you need to use setElementIdentifier() when your plan is to assign it based on
+     * the state of the HTML after configuration.
+     */
+    public hasElementIdentifier(): boolean
+    {
+        const elementIdentifier = this.instanceState.elementIdentifier ?? this.config.elementIdentifier;
+        return elementIdentifier != null && elementIdentifier !== '';
     }
 }
 
