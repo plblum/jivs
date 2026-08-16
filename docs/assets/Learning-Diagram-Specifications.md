@@ -708,7 +708,9 @@ Orientation: left-to-right.
 
 ### Purpose
 
-Show the separation between a `FieldValueHost` reporting a validation change and application code deciding how to represent that change as a Field Error.
+Show the separation between a `FieldValueHost` reporting a validation change and application code deciding how that change reaches field-level validation UI.
+
+Introduce the callback boundary without teaching the more detailed Dispatcher Function / Presentation Function architecture yet.
 
 ### Participants
 
@@ -718,28 +720,34 @@ Show the separation between a `FieldValueHost` reporting a validation change and
 
 ### Relationships
 
-* FieldValueHost invokes a validation callback.
-* Application Code responds to the callback.
+* `FieldValueHost` reports a validation change through a callback.
+* Application Code receives that change.
 * Application Code updates the Field Error.
 
 ### Emphasis
 
-* Keep the UI implementation outside Jivs.
-* The diagram should pair with the nearby HTML showing an input and its companion Field Error holder.
-* The application code may use `ElementIdentifier` and `getElement(valueHost, '{0}-error')` to locate that companion element, but do not put that lookup detail in the diagram.
-* The callback example is lightweight glue, not a prescribed presentation.
-* Framework-specific modules may provide richer presentation patterns.
-* Do not imply that Jivs renders the Field Error.
+* Keep UI implementation outside Jivs.
+* `Application Code` is intentionally generic in this diagram.
+* Later learning material expands that application-code responsibility into a **Dispatcher Function** that delivers state to UI consumers and **Presentation Functions** that own their presentation.
+* Do not retrofit those later concepts into this introductory diagram unless the end-user diagram itself is revised.
+* The nearby example uses a simple Field Error presentation only to demonstrate the callback boundary.
+* The later `Building_Client_Validation_UI.md` document introduces the broader term **Field Error Display** and shows several possible presentations.
+* Application code may use the `FieldValueHost` element identifier to locate related UI, but lookup mechanics do not belong in this diagram.
+* A validation change can affect more than the Field Error Display, including the editor, label, or other field UI.
+* Do not imply that Jivs renders or directly manipulates any field UI.
+* Framework-specific integrations may deliver the same validation state through framework-native mechanisms.
 
 ### Reader takeaway
 
-A field-level validation change comes from the `FieldValueHost`; application code receives the callback and decides how the corresponding Field Error should be updated.
+A `FieldValueHost` reports validation changes to application code; presentation of those changes remains outside Jivs.
 
 ### Current representation
 
 Mermaid flowchart.
 
 Orientation: left-to-right.
+
+The current end-user diagram uses the simplified label **Field Error**.
 
 ---
 
@@ -751,7 +759,9 @@ Orientation: left-to-right.
 
 ### Purpose
 
-Show how a validation-state change for the entire `ValueHostsManager` can be communicated to application code and then to a Validation Summary.
+Show how a validation-state change for the complete `ValueHostsManager` reaches application code and can be reflected in form-level UI.
+
+Introduce the manager-level callback boundary without teaching the detailed form Dispatcher Function / Presentation Function architecture yet.
 
 ### Participants
 
@@ -761,22 +771,25 @@ Show how a validation-state change for the entire `ValueHostsManager` can be com
 
 ### Relationships
 
-* ValueHostsManager invokes a validation callback.
-* Application Code responds to the callback.
+* `ValueHostsManager` reports an overall validation change through a callback.
+* Application Code receives that change.
 * Application Code updates the Validation Summary.
 
 ### Emphasis
 
 * This is the manager-level counterpart to the field-level callback diagram.
-* The `ValueHostsManager` reports the change; it does not know about or render the Validation Summary.
-* Keep callback signatures and error enumeration out of the diagram.
-* The Validation Summary is one possible consumer of overall validation state.
-* Application code may also use overall Validation State for other decisions, such as whether an action remains available.
-* Keep presentation framework agnostic.
+* `Application Code` is intentionally generic.
+* Later learning material expands this responsibility into a form **Dispatcher Function** and form-level **Presentation Functions**.
+* Do not add those later implementation concepts to this diagram unless the end-user diagram changes.
+* The Validation Summary is one possible consumer of overall `ValidationState`.
+* Other form-level consumers can include Submit / Save Controls and application-specific UI.
+* The `ValueHostsManager` reports state; it does not know about or render the Validation Summary.
+* Keep callback signatures, `IssueFound` details, DOM lookup, and presentation mechanics outside the diagram.
+* Keep the presentation framework agnostic.
 
 ### Reader takeaway
 
-The `ValueHostsManager` reports overall validation changes, and application code decides how those changes are represented to the user, such as through a Validation Summary.
+The `ValueHostsManager` reports overall validation changes to application code, which decides how form-level UI should respond.
 
 ### Current representation
 
@@ -794,9 +807,9 @@ Orientation: left-to-right.
 
 ### Purpose
 
-Summarize the interactive client-side connection after the reader has learned how values enter Jivs and how callbacks communicate changes outward.
+Summarize the essential two-way client connection after the reader has learned how values enter Jivs and how callbacks report changes outward.
 
-Bring the document's major concepts together before transitioning to form initialization and submission.
+Close the introductory client-interaction document without expanding into detailed validation-UI architecture.
 
 ### Participants
 
@@ -807,31 +820,41 @@ Bring the document's major concepts together before transitioning to form initia
 
 ### Relationships
 
-* UI Input supplies a Text Value to the FieldValueHost.
-* FieldValueHost participates in the ValueHostsManager.
-* ValueHostsManager reports validation callbacks toward the UI.
-* FieldValueHost reports value and field callbacks toward the UI.
+* UI Input supplies a Text Value to the `FieldValueHost`.
+* The `FieldValueHost` participates in the `ValueHostsManager`.
+* `ValueHostsManager` validation callbacks report changes toward the UI.
+* `FieldValueHost` value and field callbacks report changes toward the UI.
 
 ### Emphasis
 
 * This is a summary diagram, not a detailed implementation diagram.
 * Values enter through a `FieldValueHost`.
 * Manager-level validation callbacks originate with the `ValueHostsManager`.
-* Value- and field-specific callbacks originate with the `FieldValueHost`.
-* The arrows terminating at UI represent application code reacting to callbacks; they must not imply that Jivs directly manipulates the UI.
+* Field-specific callbacks originate from field-related Jivs activity.
+* Arrows terminating at UI represent application code reacting to callbacks.
+* They must not imply that Jivs directly manipulates UI elements.
+* Application glue is deliberately omitted.
+* `Building_Client_Validation_UI.md` later expands validation-state delivery into:
+  * a Jivs callback;
+  * a Dispatcher Function;
+  * an interested UI consumer;
+  * its Presentation Function.
+* Do not add that detailed chain here; this diagram intentionally precedes it.
 * The UI framework remains outside Jivs.
-* Keep initialization and submission outside this diagram; those belong in `Managing_the_Client_Form_Lifecycle.md`.
-* This diagram closes the interactive-connection portion of the learning sequence.
+* Keep initialization and submission outside this diagram.
 
 ### Reader takeaway
 
-The Client supplies values through `FieldValueHost`s, while field-level and manager-level callbacks provide the information application code needs to keep the UI synchronized with Jivs.
+The client supplies values to Jivs through `FieldValueHost`s, while Jivs callbacks provide the information application code needs to keep the UI synchronized.
 
 ### Current representation
 
 Mermaid flowchart.
 
 Orientation: left-to-right.
+
+---
+
 # Submitting_the_Client_Form.md
 
 ## Submit Diagram 1 — Submission Stages
@@ -865,10 +888,10 @@ Establish that Jivs validation is one stage in a broader process that can also i
 * This is an orientation diagram, not the complete control flow.
 * Jivs validation runs before the completed Model is submitted.
 * Business logic validation is a separate concern and may run after Jivs validation.
-* Server validation is represented within the broad Submit/result portion here rather than expanded.
-* Any validation stage may ultimately prevent successful submission.
+* Server validation is represented within the broad Submit/result portion rather than expanded.
+* Validation at any stage may ultimately prevent successful submission.
 * Do not expose `ModelWriter`, `IssueFound`, payloads, HTTP handling, or other implementation mechanics.
-* The next diagram provides the more detailed workflow.
+* The next diagram provides the detailed workflow.
 
 ### Reader takeaway
 
@@ -921,16 +944,16 @@ Make clear that validation problems from several stages converge on the same cli
 * Building the Model occurs only after Jivs validation permits submission.
 * Business logic validation runs against the completed Model.
 * The server remains responsible for validating submitted data.
-* Refreshing Error Displays represents the validation UI already connected to the `ValueHostsManager`.
-* Do not treat request/transport failures as validation issues in this diagram.
+* Refreshing Error Displays represents validation UI already connected to the `ValueHostsManager`.
+* Do not treat request or transport failures as validation issues in this diagram.
 * Operational failures are handled separately in the document.
-* Do not prescribe whether the server itself uses Jivs.
-* Both Jivs and non-Jivs server validation can ultimately provide issues to the client.
+* Do not prescribe whether server validation itself uses Jivs.
+* Both Jivs and non-Jivs server validation can ultimately supply issues to the client.
 * Successful submission is the only path that reaches Submission Complete.
 
 ### Reader takeaway
 
-Submission advances only while each validation stage succeeds; issues found by Jivs, business logic, or the server stop the process and return the user to the same validation UI.
+Submission advances only while each validation stage succeeds; issues found by Jivs, business logic, or the server stop the process and return the user to the validation UI.
 
 ### Current representation
 
@@ -966,27 +989,30 @@ Show how a Jivs validation notification reaches UI presentation without implying
 
 ### Relationships
 
-* a Jivs Validation Callback invokes application integration code.
+* a Jivs validation callback invokes application integration code.
 * the Dispatcher Function locates interested UI Consumers.
-* a UI Consumer exposes its Presentation Function.
+* each UI Consumer exposes a Presentation Function.
 * the Presentation Function applies that consumer's presentation through DOM, CSS, ARIA, or equivalent UI mechanisms.
 
 ### Emphasis
 
 * Keep Jivs separate from presentation.
+* **Dispatcher Function** and **Presentation Function** are the terms taught by this document.
 * The Dispatcher Function distributes validation state; it does not render widgets.
-* Each UI Consumer owns its Presentation Function.
-* Presentation Functions may update DOM content, expose CSS state, manage visibility, or update accessibility attributes.
-* The diagram represents the plain-DOM implementation taught by this document.
-* Framework integrations may replace DOM lookup and element callbacks with framework-native subscriptions, components, props, hooks, directives, services, or equivalent mechanisms.
-* Do not imply that the Dispatcher Function must know the behavior of individual UI widgets.
-* Do not imply that CSS or ARIA belongs inside Jivs.
-* Field-level and form-level flows are instances of this same architecture.
+* A UI Consumer owns its Presentation Function.
+* Presentation Functions can update DOM content, expose CSS state, manage visibility, and update accessibility attributes.
+* Field Error Displays, editors, labels, Validation Summaries, and Submit / Save Controls are examples of consumers.
+* An enclosing container does not necessarily need to be a consumer; CSS such as `:has()` may derive its presentation from descendant state.
+* The diagram represents the plain-DOM architecture taught by this document.
+* Framework integrations may replace DOM lookup and element callbacks with components, props, hooks, directives, services, subscriptions, or other framework-native mechanisms.
+* Do not imply that the Dispatcher Function understands the behavior of individual widgets.
+* Do not imply that Jivs owns CSS, ARIA, popup behavior, or other presentation mechanics.
+* Field-level and form-level flows are instances of the same architecture.
 * This is a summary architecture diagram, not a detailed event sequence.
 
 ### Reader takeaway
 
-Jivs reports validation state, application integration code dispatches that state to interested UI Consumers, and each consumer owns how the state is presented.
+Jivs reports validation state, application integration code dispatches that state to interested UI Consumers, and each consumer owns how that state is presented.
 
 ### Current representation
 
@@ -994,4 +1020,4 @@ Mermaid flowchart.
 
 Orientation: left-to-right.
 
-The diagram forms a single chain from **Jivs Validation Callback** through **DOM / CSS / ARIA**.
+The diagram forms one chain from **Jivs Validation Callback** through **DOM / CSS / ARIA**.
