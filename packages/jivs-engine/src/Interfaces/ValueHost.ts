@@ -32,6 +32,10 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
     extends IValueHostsManagerAccessor, IDisposable
 {
     /**
+     * Gets the type of ValueHost. See ValueHostType enumeration for the possible values.
+     */
+    getType(): string;
+    /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)

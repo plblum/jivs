@@ -3086,6 +3086,9 @@ describe('toIValidatorsValueHostBase function', () => {
             throw new Error('Method not implemented.');
         }        
         required: boolean = false;
+        getType(): string {
+            return 'TestType';
+        }
         getName(): string {
             return 'TestHost';
         }

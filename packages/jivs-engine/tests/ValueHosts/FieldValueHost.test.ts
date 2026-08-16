@@ -154,6 +154,7 @@ describe('constructor and resulting property values', () => {
 
         expect(testItem!.valueHostsManager).toBe(vhm);
 
+        expect(testItem!.getType()).toBe(ValueHostType.Field);
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Field1');
         expect(testItem!.getElementIdentifier()).toBe('Field1');
@@ -2078,6 +2079,9 @@ describe('toIFieldValueHost function', () => {
             throw new Error("Method not implemented.");
         }        
         required: boolean = false;
+        getType(): ValueHostType {
+            throw new Error("Method not implemented.");
+        }
         getName(): string {
             throw new Error("Method not implemented.");
         }

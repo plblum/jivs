@@ -57,6 +57,7 @@ describe('CalcValueHost constructor', () => {
 
         expect(testItem!.valueHostsManager).toBe(vhm);
 
+        expect(testItem!.getType()).toBe(ValueHostType.Calc);
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
         expect(testItem!.getDataType()).toBeNull();
@@ -338,6 +339,9 @@ describe('toICalcValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         convertToPrimitive(value: any, dataTypeLookupKey: string | null): string | number | Date | null | undefined {
+            throw new Error("Method not implemented.");
+        }
+        getType(): string {
             throw new Error("Method not implemented.");
         }
         getName(): string {

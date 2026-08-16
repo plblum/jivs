@@ -81,6 +81,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
 
     //#region IValueHost
     /**
+ * Gets the type of ValueHost. See ValueHostType enumeration for the possible values.
+ */
+    public getType(): string
+    {
+        return this.config.valueHostType ?? 'Unknown';
+    }
+    /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)

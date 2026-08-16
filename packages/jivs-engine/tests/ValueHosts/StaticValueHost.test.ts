@@ -24,6 +24,7 @@ describe('StaticValueHost constructor', () => {
 
         expect(testItem!.valueHostsManager).toBe(vhm);
 
+        expect(testItem!.getType()).toBe(ValueHostType.Static);
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
         expect(testItem!.getDataType()).toBeNull();
@@ -195,6 +196,9 @@ describe('toIStaticValueHost function', () => {
     class TestIStaticValueHostImplementation implements IStaticValueHost {
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
+        getType(): string {
+            throw new Error("Method not implemented.");
+        }
         getName(): string {
             throw new Error("Method not implemented.");
         }

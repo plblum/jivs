@@ -109,6 +109,10 @@ export class MockValueHost implements IValueHost
     public get valueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
+    getType(): string
+    {
+        return 'MockValueHost';
+    }
     getName(): string {
         return this._name;
     }
