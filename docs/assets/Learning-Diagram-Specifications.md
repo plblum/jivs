@@ -832,3 +832,166 @@ The Client supplies values through `FieldValueHost`s, while field-level and mana
 Mermaid flowchart.
 
 Orientation: left-to-right.
+# Submitting_the_Client_Form.md
+
+## Submit Diagram 1 — Submission Stages
+
+### Used in
+
+`Submitting_the_Client_Form.md` — opening section
+
+### Purpose
+
+Orient the reader to the major stages a client submission can pass through before showing the more detailed submission workflow.
+
+Establish that Jivs validation is one stage in a broader process that can also include business logic validation and server validation.
+
+### Participants
+
+* Jivs Validation
+* Additional Business Logic Validation
+* Submit
+* Success or Show Errors
+
+### Relationships
+
+* Jivs Validation precedes Additional Business Logic Validation.
+* Additional Business Logic Validation precedes Submit.
+* Submit produces either successful completion or errors that must be shown.
+
+### Emphasis
+
+* Keep this diagram deliberately high-level.
+* This is an orientation diagram, not the complete control flow.
+* Jivs validation runs before the completed Model is submitted.
+* Business logic validation is a separate concern and may run after Jivs validation.
+* Server validation is represented within the broad Submit/result portion here rather than expanded.
+* Any validation stage may ultimately prevent successful submission.
+* Do not expose `ModelWriter`, `IssueFound`, payloads, HTTP handling, or other implementation mechanics.
+* The next diagram provides the more detailed workflow.
+
+### Reader takeaway
+
+Submitting a form may involve several validation stages: Jivs validation, additional business logic validation, and validation associated with submission to the server.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+---
+
+## Submit Diagram 2 — Complete Submission Flow
+
+### Used in
+
+`Submitting_the_Client_Form.md` — opening section
+
+### Purpose
+
+Show the complete decision path from an attempt to submit through client validation, Model construction, business logic validation, server submission, and either successful completion or refreshed error displays.
+
+Make clear that validation problems from several stages converge on the same client-side correction cycle.
+
+### Participants
+
+* Attempt Submit
+* Jivs Validation
+* Build Model
+* Business Logic Validation
+* Send to Server
+* Submission Complete
+* Refresh Error Displays and Stop
+
+### Relationships
+
+* Attempt Submit starts Jivs Validation.
+* Successful Jivs Validation proceeds to Build Model.
+* A built Model proceeds to Business Logic Validation.
+* Successful Business Logic Validation proceeds to Send to Server.
+* Server success proceeds to Submission Complete.
+* Issues from Jivs Validation stop submission and refresh Error Displays.
+* Issues from Business Logic Validation stop submission and refresh Error Displays.
+* Issues returned by the server stop submission and refresh Error Displays.
+
+### Emphasis
+
+* Validation issues from all three validation locations converge on the same error-presentation path.
+* Building the Model occurs only after Jivs validation permits submission.
+* Business logic validation runs against the completed Model.
+* The server remains responsible for validating submitted data.
+* Refreshing Error Displays represents the validation UI already connected to the `ValueHostsManager`.
+* Do not treat request/transport failures as validation issues in this diagram.
+* Operational failures are handled separately in the document.
+* Do not prescribe whether the server itself uses Jivs.
+* Both Jivs and non-Jivs server validation can ultimately provide issues to the client.
+* Successful submission is the only path that reaches Submission Complete.
+
+### Reader takeaway
+
+Submission advances only while each validation stage succeeds; issues found by Jivs, business logic, or the server stop the process and return the user to the same validation UI.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: top-to-bottom.
+
+Issue paths converge on a shared **Refresh Error Displays and Stop** node.
+
+---
+
+# Building_Client_Validation_UI.md
+
+## Validation UI Diagram 1 — Validation State Delivery
+
+### Used in
+
+`Building_Client_Validation_UI.md` — **Putting It Together**
+
+### Purpose
+
+Summarize the separation of responsibilities established throughout the document.
+
+Show how a Jivs validation notification reaches UI presentation without implying that Jivs directly manipulates the DOM or owns UI behavior.
+
+### Participants
+
+* Jivs Validation Callback
+* Dispatcher Function
+* UI Consumer
+* Presentation Function
+* DOM / CSS / ARIA
+
+### Relationships
+
+* a Jivs Validation Callback invokes application integration code.
+* the Dispatcher Function locates interested UI Consumers.
+* a UI Consumer exposes its Presentation Function.
+* the Presentation Function applies that consumer's presentation through DOM, CSS, ARIA, or equivalent UI mechanisms.
+
+### Emphasis
+
+* Keep Jivs separate from presentation.
+* The Dispatcher Function distributes validation state; it does not render widgets.
+* Each UI Consumer owns its Presentation Function.
+* Presentation Functions may update DOM content, expose CSS state, manage visibility, or update accessibility attributes.
+* The diagram represents the plain-DOM implementation taught by this document.
+* Framework integrations may replace DOM lookup and element callbacks with framework-native subscriptions, components, props, hooks, directives, services, or equivalent mechanisms.
+* Do not imply that the Dispatcher Function must know the behavior of individual UI widgets.
+* Do not imply that CSS or ARIA belongs inside Jivs.
+* Field-level and form-level flows are instances of this same architecture.
+* This is a summary architecture diagram, not a detailed event sequence.
+
+### Reader takeaway
+
+Jivs reports validation state, application integration code dispatches that state to interested UI Consumers, and each consumer owns how the state is presented.
+
+### Current representation
+
+Mermaid flowchart.
+
+Orientation: left-to-right.
+
+The diagram forms a single chain from **Jivs Validation Callback** through **DOM / CSS / ARIA**.
