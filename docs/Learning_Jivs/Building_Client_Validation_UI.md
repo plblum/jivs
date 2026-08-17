@@ -10,11 +10,247 @@ Validation UI commonly includes:
 * Validation Summaries
 * Submit / Save Controls
 
-This document uses basic HTML, CSS, and browser DOM APIs to show how those UI elements connect to Jivs.
+## Introducing Jivs SimpleDom
 
-These examples are **not a UI component library**. Jivs modules for specific frameworks and UI libraries can provide these behaviors through components, directives, hooks, or other framework-native mechanisms.
+This document has two purposes: to explain how client validation UI connects to Jivs and to provide working tooling that implements the approach. That tooling is called **Jivs SimpleDom**.
 
-The examples here show the underlying responsibilities those integrations implement while also providing reusable starting points for applications that work directly with the DOM.
+Jivs SimpleDom combines a small set of conventions with supplied TypeScript and CSS. It provides one architecture for building client validation UI, but Jivs does not require applications to use it. At its core, Jivs remains independent of the UI.
+
+The Jivs SimpleDom source code and examples cover:
+
+* an architectural strategy for delivering Jivs validation state to the UI
+* HTML and custom attributes for identifying fields and validation UI elements
+* CSS for presenting validation state
+* TypeScript for connecting the HTML to Jivs
+* Presentation Functions for editors, labels, Field Error Displays, Required Indicators, Validation Summaries, and Submit controls
+
+Readers who want a working validation UI can use Jivs SimpleDom as a starting point. Readers building another integration can use its implementation to understand the responsibilities their own UI must provide.
+
+## How to Use This Guide
+
+This guide develops a working validation UI in stages using **Jivs SimpleDom**.
+
+Experienced web developers who are comfortable adding supplied TypeScript and CSS and making small additions to their HTML can begin with the [Quick Start](#quick-start). It gets the default Jivs SimpleDom validation UI working without first studying its implementation.
+
+The remainder of the guide explains each part, fills in the concepts behind the setup, presents alternatives, and shows where to customize the result.
+
+### Align Your HTML with Jivs SimpleDom
+
+Continue building your form with ordinary HTML. When an element participates in the validation UI, add the Jivs SimpleDom attributes applicable to that element.
+
+For example, identify an editor like this:
+
+```html
+<input
+    id="first-name"
+    data-field="first-name"
+    data-jivs-role="editor"
+    data-jivs-presentation="invalidEditor">
+```
+
+Jivs SimpleDom uses three custom attributes:
+
+* `data-field` connects related elements to the same field.
+* `data-jivs-role` identifies what an element does in the validation UI. Roles include `editor`, `label`, `container`, `error`, `required`, `summary`, and `submit`.
+* `data-jivs-presentation` selects how an element presents changing validation state. Jivs SimpleDom supplies several Presentation Functions. Later sections of this guide show how to create your own.
+
+As the guide introduces the parts it interacts with, it shows the corresponding attributes to add to your HTML.
+
+[Plan Predictable UI Markup](#plan-predictable-ui-markup) defines the Jivs SimpleDom conventions and provides complete field and form examples. The later [Build the Field Validation UI](#build-the-field-validation-ui) and [Build the Form Validation UI](#build-the-form-validation-ui) sections explain the code that uses them.
+
+### Use the Jivs SimpleDom Files
+
+The reusable TypeScript and CSS developed by this guide are available in these files:
+
+* [`jivs-simpledom.ts`](jivs-simpledom.ts)
+* [`jivs-simpledom.css`](jivs-simpledom.css)
+
+Add these files to your application as a starting point instead of assembling their contents from the individual snippets. The snippets remain in the guide to explain the code and identify the parts you are likely to customize.
+
+### Choose the Presentations Your UI Needs
+
+The complete Jivs SimpleDom HTML examples select default presentations supplied by the guide. These defaults produce a working validation UI and provide a useful starting point.
+
+Later sections also show alternatives, particularly under [Present a Field Error Display](#present-a-field-error-display). For example, an application might present Error Messages inline, through an icon, in a tooltip, or with a component supplied by its UI library.
+
+Use the default presentation first or select the alternatives appropriate for your application. You do not need to implement every presentation shown in the guide.
+
+Presentation names and their implementations belong to Jivs SimpleDom. They can be changed or replaced without changing Jivs.
+
+### Work Through the Guide in Order
+
+The remaining sections build upon one another:
+
+1. [Before Building the UI](#before-building-the-ui) establishes the shared security, markup, validation-state, and Error Message support.
+2. [Build the Field Validation UI](#build-the-field-validation-ui) connects field validation state to editors, labels, and Field Error Displays.
+3. [Build the Form Validation UI](#build-the-form-validation-ui) connects form validation state to the Validation Summary and Submit control.
+4. [Accessible Validation Presentation](#accessible-validation-presentation) adds the accessibility behavior required by the presentations being used.
+5. [Putting It Together](#putting-it-together) shows how the completed pieces work together.
+
+## Quick Start
+
+This section is for experienced web developers who are comfortable adding supplied TypeScript and CSS, applying a few HTML conventions, and consulting the source when an adjustment is needed.
+
+It shows the basics to apply Jivs SimpleDom to your UI. Continue through the rest of the guide when you need more explanation, an alternative presentation, or a customized implementation.
+
+### Add the Default Validation UI
+
+#### 1. Add the Jivs SimpleDom Files
+
+Add these files to your application:
+
+* [`jivs-simpledom.ts`](jivs-simpledom.ts)
+* [`jivs-simpledom.css`](jivs-simpledom.css)
+
+Import the TypeScript exports and load the stylesheet using your application's normal mechanisms.
+
+#### 2. Disable Native Browser Validation
+
+Add `novalidate` to the form so native browser validation does not compete with Jivs:
+
+```html
+<form id="person-form" novalidate>
+    ...
+</form>
+```
+
+See [Disable Native Browser Validation](#disable-native-browser-validation) for details.
+
+#### 3. Protect Error Messages from XSS
+
+Replace the default `messageTokenResolverService` before creating the `ValueHostsManager`:
+
+```ts
+services.messageTokenResolverService =
+    new HtmlMessageTokenResolverService();
+```
+
+See [Protect Error Messages from XSS](#protect-error-messages-from-xss) for details.
+
+#### 4. Tag Each Editor
+
+Add the field identifier, editor role, and default editor presentation:
+
+```html
+<input
+    id="first-name"
+    data-field="first-name"
+    data-jivs-role="editor"
+    data-jivs-presentation="invalidEditor">
+```
+
+The `data-field` value must match the field's Jivs element identifier. Configure `elementIdentifier` on the `FieldValueHost` when it differs from the ValueHost name.
+
+See [Connect the FieldValueHost to the Field Identifier](#connect-the-fieldvaluehost-to-the-field-identifier) for details.
+
+#### 5. Tag Each Label You Want Styled
+
+Labels are optional validation consumers. To have a label respond when its field is invalid, add:
+
+```html
+<label
+    for="first-name"
+    data-field="first-name"
+    data-jivs-role="label"
+    data-jivs-presentation="invalidLabel">
+    First name
+</label>
+```
+
+See [Present Validation on the Label](#present-validation-on-the-label) for details.
+
+#### 6. Add a Field Error Display
+
+Add the default inline Field Error Display for each field:
+
+```html
+<div
+    data-field="first-name"
+    data-jivs-role="error"
+    data-jivs-presentation="inlineError">
+</div>
+```
+
+See [Inline Error Display](#inline-error-display) for details and [Present a Field Error Display](#present-a-field-error-display) for alternative presentations.
+
+#### 7. Add a Required Indicator If Desired
+
+A Required Indicator does not need a Presentation name:
+
+```html
+<span
+    data-field="first-name"
+    data-jivs-role="required">
+    *
+</span>
+```
+
+The supplied code determines whether it should appear from the field's Validators. See [Field Markup](#field-markup) for its place within the complete field.
+
+#### 8. Add a Validation Summary If Desired
+
+Place the Validation Summary within the form:
+
+```html
+<div
+    data-jivs-role="summary"
+    data-jivs-presentation="validationSummary">
+</div>
+```
+
+See [Validation Summary](#validation-summary) for details.
+
+#### 9. Tag the Submit Button If Desired
+
+To have form validation control the Submit button, add:
+
+```html
+<button
+    type="submit"
+    data-jivs-role="submit"
+    data-jivs-presentation="disableSubmit">
+    Save
+</button>
+```
+
+See [Submit / Save Control](#submit--save-control) for details.
+
+#### 10. Wire Field and Form Validation
+
+Use the supplied Dispatcher Functions as the `ValueHostsManager` callbacks:
+
+```ts
+config.onValueHostValidationStateChanged =
+    fieldValidated;
+
+config.onValidationStateChanged =
+    formValidated;
+```
+
+See [The Dispatcher Function](#the-dispatcher-function) for field validation and [Dispatching Form Validation Changes](#dispatching-form-validation-changes) for form validation.
+
+#### 11. Initialize the Validation UI
+
+After the form's HTML is available, attach the selected Presentation Functions:
+
+```ts
+attachFieldPresentations();
+attachFormPresentations();
+```
+
+The default Field Validation UI and Form Validation UI are now connected to Jivs.
+
+### Continue Through the Guide When Needed
+
+The Quick Start deliberately leaves out most implementation detail. Continue through the rest of the guide when you need to:
+
+* understand or change the [HTML conventions](#plan-predictable-ui-markup)
+* customize the supplied CSS under [Use CSS to Drive Presentation](#use-css-to-drive-presentation)
+* select another [Field Error Display](#present-a-field-error-display)
+* create or register a new [Presentation Function](#the-presentation-functions)
+* change how [validation state reaches the UI](#deliver-validation-state-to-the-ui)
+* understand [`ValidationState` and `ValueHostValidationState`](#validationstate-and-valuehostvalidationstate) or [`IssueFound`](#understanding-issuefound)
+* add [accessible validation behavior](#accessible-validation-presentation)
 
 ## Before Building the UI
 
