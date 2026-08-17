@@ -22,7 +22,7 @@ The Jivs SimpleDom source code and examples cover:
 * HTML and custom attributes for identifying fields and validation UI elements
 * CSS for presenting validation state
 * TypeScript for connecting the HTML to Jivs
-* Presentation Functions for editors, labels, Field Error Displays, Required Indicators, Validation Summaries, and Submit controls
+* Presentation Functions for editors, labels, Field Error Displays, Validation Summaries, and Submit controls, plus initialization for Required Indicators
 
 Readers who want a working validation UI can use Jivs SimpleDom as a starting point. Readers building another integration can use its implementation to understand the responsibilities their own UI must provide.
 
@@ -71,7 +71,7 @@ Add these files to your application as a starting point instead of assembling th
 
 The complete Jivs SimpleDom HTML examples select default presentations supplied by the guide. These defaults produce a working validation UI and provide a useful starting point.
 
-Later sections also show alternatives, particularly under [Present a Field Error Display](#present-a-field-error-display). For example, an application might present Error Messages inline, through an icon, in a tooltip, or with a component supplied by its UI library.
+Later sections also show alternatives, particularly under [Presentation for a Field Error Display](#presentation-for-a-field-error-display). For example, an application might present Error Messages inline, through an icon, in a tooltip, or with a component supplied by its UI library.
 
 Use the default presentation first or select the alternatives appropriate for your application. You do not need to implement every presentation shown in the guide.
 
@@ -81,11 +81,13 @@ Presentation names and their implementations belong to Jivs SimpleDom. They can 
 
 The remaining sections build upon one another:
 
-1. [Before Building the UI](#before-building-the-ui) establishes the shared security, markup, validation-state, and Error Message support.
-2. [Build the Field Validation UI](#build-the-field-validation-ui) connects field validation state to editors, labels, and Field Error Displays.
-3. [Build the Form Validation UI](#build-the-form-validation-ui) connects form validation state to the Validation Summary and Submit control.
-4. [Accessible Validation Presentation](#accessible-validation-presentation) adds the accessibility behavior required by the presentations being used.
-5. [Putting It Together](#putting-it-together) shows how the completed pieces work together.
+1. [Before Building the UI](#before-building-the-ui) establishes the browser and security requirements that apply before validation UI is introduced.
+2. [Plan the Jivs SimpleDom UI](#plan-the-jivs-simpledom-ui) establishes the CSS and markup conventions used by the supplied implementation.
+3. [Prepare Jivs Validation for Presentation](#prepare-jivs-validation-for-presentation) explains the validation state received from Jivs, generates Error Messages, and delivers validation changes to the UI.
+4. [Build the Field Validation UI](#build-the-field-validation-ui) connects field validation to editors, labels, and Field Error Displays and initializes Required Indicators.
+5. [Build the Form Validation UI](#build-the-form-validation-ui) connects form validation to Validation Summaries and Submit / Save Controls.
+
+Accessible validation behavior is covered separately in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md).
 
 ## Quick Start
 
@@ -157,7 +159,7 @@ Labels are optional validation consumers. To have a label respond when its field
 </label>
 ```
 
-See [Present Validation on the Label](#present-validation-on-the-label) for details.
+See [Presentation for a Label](#presentation-for-a-label) for details.
 
 #### 6. Add a Field Error Display
 
@@ -171,7 +173,7 @@ Add the default inline Field Error Display for each field:
 </div>
 ```
 
-See [Inline Error Display](#inline-error-display) for details and [Present a Field Error Display](#present-a-field-error-display) for alternative presentations.
+See [Presentation for a Field Error Display](#presentation-for-a-field-error-display) for details and alternative presentations.
 
 #### 7. Add a Required Indicator If Desired
 
@@ -185,7 +187,9 @@ A Required Indicator does not need a Presentation name:
 </span>
 ```
 
-The supplied code determines whether it should appear from the field's Validators. See [Field Markup](#field-markup) for its place within the complete field.
+The supplied initialization code reads `FieldValueHost.required` to determine whether the indicator should appear.
+
+See [Field Markup](#field-markup) for its place within the complete field and [Initialize Required Indicators](#initialize-required-indicators) for initialization details.
 
 #### 8. Add a Validation Summary If Desired
 
@@ -198,7 +202,7 @@ Place the Validation Summary within the form:
 </div>
 ```
 
-See [Validation Summary](#validation-summary) for details.
+See [Presentation for a Validation Summary](#presentation-for-a-validation-summary) for details.
 
 #### 9. Tag the Submit Button If Desired
 
@@ -213,7 +217,7 @@ To have form validation control the Submit button, add:
 </button>
 ```
 
-See [Submit / Save Control](#submit--save-control) for details.
+See [Presentation for a Submit / Save Control](#presentation-for-a-submit-save-control) for details.
 
 #### 10. Wire Field and Form Validation
 
@@ -227,15 +231,16 @@ config.onValidationStateChanged =
     formValidated;
 ```
 
-See [The Dispatcher Function](#the-dispatcher-function) for field validation and [Dispatching Form Validation Changes](#dispatching-form-validation-changes) for form validation.
+See [The Field Dispatcher Function](#the-field-dispatcher-function) and [The Form Dispatcher Function](#the-form-dispatcher-function) for details.
 
 #### 11. Initialize the Validation UI
 
-After the form's HTML is available, attach the selected Presentation Functions:
+After the `ValueHostsManager` has been created and the form's HTML is available, attach the selected Presentation Functions and initialize the Required Indicators:
 
 ```ts
 attachFieldPresentations();
 attachFormPresentations();
+initializeRequiredIndicators(vhm);
 ```
 
 The default Field Validation UI and Form Validation UI are now connected to Jivs.
@@ -244,37 +249,24 @@ The default Field Validation UI and Form Validation UI are now connected to Jivs
 
 The Quick Start deliberately leaves out most implementation detail. Continue through the rest of the guide when you need to:
 
+* understand the browser and security requirements under [Before Building the UI](#before-building-the-ui)
 * understand or change the [HTML conventions](#plan-predictable-ui-markup)
 * customize the supplied CSS under [Use CSS to Drive Presentation](#use-css-to-drive-presentation)
-* select another [Field Error Display](#present-a-field-error-display)
-* create or register a new [Presentation Function](#the-presentation-functions)
-* change how [validation state reaches the UI](#deliver-validation-state-to-the-ui)
 * understand [`ValidationState` and `ValueHostValidationState`](#validationstate-and-valuehostvalidationstate) or [`IssueFound`](#understanding-issuefound)
-* add [accessible validation behavior](#accessible-validation-presentation)
+* customize [Error Message generation](#generate-error-messages)
+* change how [validation state reaches the UI](#deliver-validation-state-to-the-ui)
+* select another [Field Error Display](#presentation-for-a-field-error-display)
+* create or register a [Field Presentation Function](#the-field-presentation-functions) or [Form Presentation Function](#the-form-presentation-functions)
+* add behavior described in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md)
 
 ## Before Building the UI
 
-Before building validation UI, two general requirements apply:
+Before choosing how validation should appear, prepare two behaviors that apply to every client validation UI:
 
 * disable native browser validation so it does not compete with Jivs
 * protect Error Messages from XSS attacks
 
-The remainder of this section prepares the concepts and shared code used by both Field UI and Form UI:
-
-* using CSS to react to validation state
-* designing predictable field and form markup
-* understanding the validation state Jivs supplies
-* understanding the `IssueFound` objects that describe validation issues
-* generating reusable Error Message HTML and text
-* delivering validation state to the UI elements that will present it
-
-The first two requirements apply regardless of how the application implements its validation UI.
-
-The remaining topics use the plain-DOM techniques developed by this guide. They are not required implementation patterns. Applications and framework integrations can use other approaches while following the same underlying concepts.
-
-A useful principle throughout this document is:
-
-> **Expose validation state to the appropriate UI element, then let that element decide how to present it.**
+These requirements apply whether the application uses Jivs SimpleDom, a framework-specific Jivs integration, or another UI architecture.
 
 ### Disable Native Browser Validation
 
@@ -298,7 +290,7 @@ Also avoid depending on native validation attributes such as `required` to defin
 
 Error messages contain tokens, some of which can echo back user input. For example, "You entered {value}." Because these token values may originate from untrusted user input, they must be HTML-encoded before being inserted into the final message to prevent XSS.
 
-The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file. You can use it from that file instead of copying it from this section.
+The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file. You can use it from that file instead of copying it from this section.
 
 ```ts
 export function encodeHtml(
@@ -359,6 +351,25 @@ services.messageTokenResolverService =
 ```
 
 All user-controlled data included in an Error Message should be supplied through message tokens so this service can encode it.
+
+## Plan the Jivs SimpleDom UI
+
+Jivs SimpleDom needs a predictable way to identify validation UI elements and determine how those elements should respond.
+
+This section establishes the HTML and CSS conventions used throughout the implementation:
+
+* expose changing state through CSS classes
+* let containers respond to state exposed by their descendants
+* associate the elements belonging to the same field
+* identify what each validation UI element does
+* let validation consumers select their Presentation Functions
+* connect each `FieldValueHost` to the identifier used by its UI
+
+These conventions belong to Jivs SimpleDom. They are not requirements imposed by Jivs, and applications or framework integrations can replace them with another approach.
+
+A useful principle throughout Jivs SimpleDom is:
+
+> **Expose validation state to the appropriate UI element, then let that element decide how to present it.**
 
 ### Use CSS to Drive Presentation
 
@@ -465,9 +476,9 @@ CSS determines which surrounding elements should react.
 
 ### Plan Predictable UI Markup
 
-Validation callbacks need a reliable way to connect validation state with the UI elements interested in that state.
+Jivs SimpleDom needs a reliable way to connect validation state with the UI elements interested in that state.
 
-The conventions below are used by the plain-DOM approach developed in this guide. They are **not Jivs requirements**. Applications and framework integrations may use other names or other mechanisms entirely.
+The conventions below are used by Jivs SimpleDom. They are **not Jivs requirements**. Applications and framework integrations may use other names or other mechanisms entirely.
 
 #### Field Markup
 
@@ -501,7 +512,7 @@ The markup conventions use three custom attributes:
 * `data-jivs-role` identifies what the element does within the validation UI.
 * `data-jivs-presentation` names the Presentation Function requested by an element that consumes validation state.
 
-The field-related `data-jivs-role` values used by this guide are:
+The field-related `data-jivs-role` values used by Jivs SimpleDom are:
 
 * `container` — encloses the UI elements associated with one field
 * `label` — identifies the field's label
@@ -558,7 +569,7 @@ The complete field markup can look like this:
 </div>
 ```
 
-The label, editor, and Field Error Display consume changing validation state, so each requests one of the functions developed under [The Presentation Functions](#the-presentation-functions):
+The label, editor, and Field Error Display consume changing validation state, so each requests one of the functions developed under [The Field Presentation Functions](#the-field-presentation-functions):
 
 * The label requests `data-jivs-presentation="invalidLabel"`. This guide's Presentation Function adds or removes the `invalid` class based on `ValueHostValidationState.isValid`.
 * The editor requests `data-jivs-presentation="invalidEditor"`. Its Presentation Function also adds or removes the `invalid` class based on `ValueHostValidationState.isValid`.
@@ -574,7 +585,7 @@ The enclosing container does not need its own Presentation Function because CSS 
 }
 ```
 
-The Required Indicator is initialized separately from changing validation state, so it also does not declare `data-jivs-presentation`. Later, you will learn how to make it appear only when the field has a Validator that requires a value.
+The Required Indicator is initialized separately from changing validation state, so it also does not declare `data-jivs-presentation`. Later, you will initialize its visibility from `FieldValueHost.required`.
 
 ##### Connect the FieldValueHost to the Field Identifier
 
@@ -642,7 +653,7 @@ Form-level validation can also have several UI consumers. Common examples includ
 
 These consumers belong to the form rather than to an individual field, so they do not need a `data-field` attribute.
 
-This guide uses two additional `data-jivs-role` values for form-level consumers:
+Jivs SimpleDom uses two additional `data-jivs-role` values for form-level consumers:
 
 * `summary` — identifies the form's Validation Summary
 * `submit` — identifies the form's Submit button
@@ -683,15 +694,28 @@ Application code can locate these consumers by role:
 [data-jivs-role="submit"]
 ```
 
-As with the field-related role and Presentation names, these are conventions used by this guide. Applications can replace them with other names or another discovery mechanism.
+As with the field-related role and Presentation names, these are Jivs SimpleDom conventions. Applications can replace them with other names or another discovery mechanism.
 
 The important idea is that form-level validation consumers can be discovered and connected to their Presentation Functions without tying validation-state delivery to one particular UI implementation.
+
+## Prepare Jivs Validation for Presentation
+
+With the Jivs SimpleDom HTML and CSS conventions planned, the next step is to understand the information Jivs supplies and prepare the shared content used by the Presentation Functions.
+
+This section:
+
+* explains the field and form validation-state objects
+* identifies the information available through each `IssueFound`
+* generates reusable Error Message HTML and plain text
+* establishes how Jivs validation state reaches the appropriate UI elements
+
+The state objects and `IssueFound` belong to Jivs. The Error Message generators and callback-and-dispatcher design are the implementation developed by this guide.
 
 ### Understand Validation State and Issues
 
 Jivs reports validation results through state objects. These objects give the UI the information it needs without requiring the UI to inspect individual Validators.
 
-The same state model supports both Field UI and Form UI.
+The same state model supports both the Field Validation UI and Form Validation UI.
 
 #### ValidationState and ValueHostValidationState
 
@@ -724,7 +748,7 @@ They share four properties:
 
 * `isValid` — whether validation currently considers the ValueHost or complete `ValueHostsManager` valid
 * `doNotSave` — whether the current state should prevent saving
-* `issuesFound` — the issues currently associated with that scope. This will be your source for error messages.
+* `issuesFound` — the issues currently associated with that scope. This will be your source for Error Messages.
 * `asyncProcessing` — whether asynchronous validation is running within that scope. While it is running, `doNotSave` prevents form submission.
 
 The scope depends on which state object was supplied. For example, `ValueHostValidationState.issuesFound` contains issues for one ValueHost, while `ValidationState.issuesFound` contains issues collected across the complete `ValueHostsManager`.
@@ -736,7 +760,7 @@ The scope depends on which state object was supplied. For example, `ValueHostVal
 * `status` — the ValueHost's current `ValidationStatus`
 * `corrected` — whether previously invalid Validators have been corrected
 
-Their field-specific presentation uses are covered later when building the Field UI.
+Their field-specific presentation uses are covered later when building the Field Validation UI.
 
 Both state types use the same `IssueFound` type to describe individual validation issues.
 
@@ -835,7 +859,7 @@ The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup HT
 
 By default, the generator uses `IssueFound.errorMessage`, making it suitable for Field Error Displays. Pass `true` for `useSummaryMessage` to use `summaryMessage` for a Validation Summary. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
-The following functions are also available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file:
 
 ```ts
 export const severityNames: Array<string | null> = [
@@ -951,7 +975,7 @@ The First name is invalid.
 
 The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup ensures that token replacement values were HTML-encoded before the prepared Error Message reached this function.
 
-The following functions are also available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file:
 
 ```ts
 export function buildErrorMessagesText(
@@ -991,7 +1015,7 @@ The First name requires a value. • This value is unusual.
 
 Jivs reports validation changes through callbacks supplied in the `ValueHostsManager` configuration. Application code must deliver the supplied state to the UI elements that want to present it.
 
-The plain-DOM approach in this guide has three parts:
+The Jivs SimpleDom approach has three parts:
 
 1. **ValueHostsManager callback** — reports that validation state changed and supplies the new state.
 2. **Dispatcher Function** — locates the UI elements interested in that state and calls each element's Presentation Function.
@@ -1019,33 +1043,35 @@ A form Dispatcher Function locates consumers such as the Validation Summary and 
 
 During UI initialization, `data-jivs-presentation` identifies the Presentation Function requested by each consumer. The Dispatcher Function does not need to know how those functions present the state. It only delivers the appropriate state to them.
 
-The later Field UI and Form UI sections implement their callbacks, Dispatcher Functions, and Presentation Functions.
+The later [Build the Field Validation UI](#build-the-field-validation-ui) and [Build the Form Validation UI](#build-the-form-validation-ui) sections implement their callbacks, Dispatcher Functions, and Presentation Functions.
 
-This callback-and-dispatcher design is the approach used by this guide, not a requirement imposed by Jivs. Applications and framework integrations can deliver validation state to their UI in other ways.
+This callback-and-dispatcher design belongs to Jivs SimpleDom. It is not a requirement imposed by Jivs. Applications and framework integrations can deliver validation state to their UI in other ways.
+
 
 ## Build the Field Validation UI
 
-A field may have several UI elements that respond to validation: its editor, label, Field Error Display, and sometimes application-specific widgets.
+A field may have several UI elements that respond to validation: its editor, label, Field Error Display, and sometimes application-specific widgets. Required Indicators are also part of the Field Validation UI, but they are initialized separately because required status is field configuration rather than changing validation state.
 
-The preparation from **Before Building the UI** now pays off:
+The preparation from **Before Building the UI**, **Plan the Jivs SimpleDom UI**, and **Prepare Jivs Validation for Presentation** now pays off:
 
-* We need a Dispatcher Function that dispatches validation changes to interested UI elements.
-* We need Presentation Functions for each approach to presenting validation in the UI.
+* We need a Field Dispatcher Function that dispatches validation changes to interested UI elements.
+* We need Field Presentation Functions for each approach to presenting validation in the UI.
 * `elementIdentifier` connects the `FieldValueHost` to its field identifier.
 * The `data-field` attribute lets us find elements belonging to that field.
 * The `data-jivs-role` attribute identifies what each element does.
 
 The work ahead:
 
-* Build your Dispatcher Function and wire it to `ValueHostsManager.onValueHostValidationStateChanged`.
-* Build Presentation Functions for each use case and connect them to the `onFieldValidationStateChanged` callback of the relevant elements.
+* Build your Field Dispatcher Function and wire it to `ValueHostsManager.onValueHostValidationStateChanged`.
+* Build Field Presentation Functions for each use case and connect them to the `onFieldValidationStateChanged` callback of the relevant elements.
+* Initialize Required Indicators from `FieldValueHost.required`.
 
-### The Dispatcher Function
+### The Field Dispatcher Function
 
-A field Dispatcher Function has this TypeScript contract:
+A Field Dispatcher Function has this TypeScript contract:
 
 ```ts
-type FieldDispatcher = (
+export type FieldDispatcher = (
     valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
 ) => void;
@@ -1059,10 +1085,10 @@ config.onValueHostValidationStateChanged = yourFieldDispatcher;
 const vhm = new ValueHostsManager(config);
 ```
 
-This Dispatcher Function locates every validation consumer associated with that field and calls its `onFieldValidationStateChanged` Presentation Function:
+This Field Dispatcher Function locates every validation consumer associated with that field and calls its `onFieldValidationStateChanged` Presentation Function:
 
 ```ts
-function fieldValidated(
+export function fieldValidated(
     valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
 ): void {
@@ -1085,13 +1111,13 @@ function fieldValidated(
 }
 ```
 
-The Dispatcher Function does not change CSS classes, rebuild Error Messages, manage ARIA attributes, or otherwise decide how validation should appear.
+The Field Dispatcher Function does not change CSS classes, rebuild Error Messages, manage accessibility attributes, or otherwise decide how validation should appear.
 
-Those decisions belong to the individual Presentation Functions.
+Those decisions belong to the individual Field Presentation Functions.
 
-### The Presentation Functions
+### The Field Presentation Functions
 
-Presentation Functions receive validation state from the Dispatcher Function and decide how an individual UI element should respond.
+Field Presentation Functions receive validation state from the Field Dispatcher Function and decide how an individual UI element should respond.
 
 Field validation commonly affects three kinds of UI elements:
 
@@ -1103,7 +1129,7 @@ Each is an independent validation consumer. They receive the same `ValueHostVali
 
 A Presentation Function may change content, expose state through CSS classes, manage visibility, update accessibility attributes, or perform other presentation work appropriate to its element.
 
-#### Initialize Presentation Functions
+#### Initialize Field Presentation Functions
 
 Each of these elements needs to identify the Presentation Function it wants to use. Jivs SimpleDom uses the custom `data-jivs-presentation` attribute for that purpose.
 
@@ -1267,7 +1293,7 @@ CSS determines how that state looks:
 }
 ```
 
-The editor can also own its validation-related ARIA attributes. Those are covered later under **Accessible Validation Presentation**.
+The editor can also own its validation-related accessibility attributes. Those are covered in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md).
 
 #### Presentation for a Label
 
@@ -1382,7 +1408,7 @@ CSS can hide the Error Display when there are no issues:
 
 The Error Display tests `issuesFound`, not `isValid`, because it should also present issues such as Warnings that do not make the field invalid.
 
-*Accessibility requirements for dynamically presented Error Messages are covered later in **Accessible Validation Presentation**.*
+*Accessibility requirements for dynamically presented Error Messages are covered in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md).*
 
 ##### Error Icon with a Native Tooltip
 
@@ -1439,7 +1465,7 @@ CSS controls whether the icon is shown:
 
 This gives pointer users a compact native tooltip presentation.
 
-*The later **Accessible Validation Presentation** section covers the additional accessibility needed beyond a native `title` tooltip.*
+*The additional accessibility needed beyond a native `title` tooltip is covered in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md).*
 
 ##### Put the Editor's Errors in a Native Tooltip
 
@@ -1487,7 +1513,7 @@ Because the container closely surrounds the editor, pointing within that area ma
 
 The Presentation Function does not need to modify the editor itself, and the Dispatcher Function does not need any special knowledge of this presentation.
 
-*The later **Accessible Validation Presentation** section covers the additional accessibility needed beyond a native `title` tooltip.*
+*The additional accessibility needed beyond a native `title` tooltip is covered in [Accessible Client Validation UI](Accessible_Client_Validation_UI.md).*
 
 ##### Use a UI-Library Popup, Alert, or Popover
 
@@ -1536,7 +1562,7 @@ The UI library remains responsible for popup behavior such as positioning, dismi
 
 #### Use Other Field Validation State
 
-The same Dispatcher Function can support optional field presentation without learning about those features itself.
+The same Field Dispatcher Function can support optional field presentation without learning about those features itself.
 
 For example, a consumer may use `corrected`:
 
@@ -1630,23 +1656,23 @@ A form may have several UI elements that respond to validation across the comple
 
 The primary Form Validation UI consumers in Jivs SimpleDom are the Validation Summary and Submit / Save Control.
 
-The preparation from **Before Building the UI** now pays off:
+The preparation from **Before Building the UI**, **Plan the Jivs SimpleDom UI**, and **Prepare Jivs Validation for Presentation** now pays off:
 
-* We need a Dispatcher Function that dispatches form validation changes to interested UI elements.
-* We need Presentation Functions for each approach to presenting form validation in the UI.
+* We need a Form Dispatcher Function that dispatches form validation changes to interested UI elements.
+* We need Form Presentation Functions for each approach to presenting form validation in the UI.
 * The `data-jivs-role` attribute identifies what each element does.
 
 The work ahead:
 
-* Build your Dispatcher Function and wire it to `ValueHostsManager.onValidationStateChanged`.
-* Build Presentation Functions for each use case and connect them to the `onFormValidationStateChanged` callback of the relevant elements.
+* Build your Form Dispatcher Function and wire it to `ValueHostsManager.onValidationStateChanged`.
+* Build Form Presentation Functions for each use case and connect them to the `onFormValidationStateChanged` callback of the relevant elements.
 
-### The Dispatcher Function
+### The Form Dispatcher Function
 
-A form Dispatcher Function has this TypeScript contract:
+A Form Dispatcher Function has this TypeScript contract:
 
 ```ts
-type FormDispatcher = (
+export type FormDispatcher = (
     valueHostsManager: IValueHostsManager,
     validationState: ValidationState
 ) => void;
@@ -1660,10 +1686,10 @@ config.onValidationStateChanged = yourFormDispatcher;
 const vhm = new ValueHostsManager(config);
 ```
 
-This Dispatcher Function locates every Jivs SimpleDom form validation consumer and calls its `onFormValidationStateChanged` Presentation Function:
+This Form Dispatcher Function locates every Jivs SimpleDom form validation consumer and calls its `onFormValidationStateChanged` Presentation Function:
 
 ```ts
-function formValidated(
+export function formValidated(
     vhm: IValueHostsManager,
     validationState: ValidationState
 ): void {
@@ -1683,13 +1709,13 @@ function formValidated(
 }
 ```
 
-The Dispatcher Function does not rebuild the Validation Summary, enable or disable the Submit button, or otherwise decide how form validation should appear.
+The Form Dispatcher Function does not rebuild the Validation Summary, enable or disable the Submit button, or otherwise decide how form validation should appear.
 
-Those decisions belong to the individual Presentation Functions.
+Those decisions belong to the individual Form Presentation Functions.
 
-### The Presentation Functions
+### The Form Presentation Functions
 
-Presentation Functions receive validation state from the Dispatcher Function and decide how an individual UI element should respond.
+Form Presentation Functions receive validation state from the Form Dispatcher Function and decide how an individual UI element should respond.
 
 Form validation commonly affects two kinds of UI elements:
 
@@ -1698,7 +1724,7 @@ Form validation commonly affects two kinds of UI elements:
 
 Each is an independent validation consumer. They receive the same `ValidationState`, but their Presentation Functions use different parts of it and produce different results.
 
-#### Initialize Presentation Functions
+#### Initialize Form Presentation Functions
 
 Each of these elements needs to identify the Presentation Function it wants to use. Jivs SimpleDom uses the custom `data-jivs-presentation` attribute for that purpose.
 
@@ -1918,162 +1944,6 @@ export function submitValidationChanged(
 
 `doNotSave` is preferred over `isValid` because it represents whether the current validation state is ready to save, including states where validation still needs to complete.
 
-## Accessible Validation Presentation
-
-Validation information should be communicated both visually and to assistive technologies.
-
-The same validation state delivered to each Presentation Function can drive the ARIA attributes owned by that UI element. Framework-specific Jivs modules can automate these responsibilities. The examples here show the underlying DOM behavior.
-
-### Input ARIA State
-
-The editor commonly manages:
-
-* `aria-invalid`
-* `aria-required`
-* `aria-errormessage`
-
-`aria-invalid` follows validation state:
-
-```ts
-editor.setAttribute(
-    'aria-invalid',
-    String(validationState.isValid === false)
-);
-```
-
-`aria-required` follows the FieldValueHost's required state:
-
-```ts
-if (valueHost.requiresInput) {
-    editor.setAttribute(
-        'aria-required',
-        'true'
-    );
-}
-else {
-    editor.removeAttribute(
-        'aria-required'
-    );
-}
-```
-
-### Linking Editors and Field Error Displays
-
-The predictable ID convention established earlier makes `aria-errormessage` straightforward.
-
-For:
-
-```html
-<input
-    id="first-name"
-    aria-errormessage="first-name_errorMessages">
-
-<div
-    id="first-name_errorMessages"
-    data-field="first-name"
-    data-jivs-role="error">
-</div>
-```
-
-the Field Error Display ID can also be obtained with:
-
-```ts
-const errorId =
-    valueHost.getElementIdentifier(
-        '{0}_errorMessages'
-    );
-```
-
-If an editor has no ID, omit `aria-errormessage`.
-
-Dynamic or repeated forms must keep IDs unique.
-
-### Field Error Display ARIA State
-
-The Field Error Display owns ARIA that describes its own state.
-
-For example:
-
-```ts
-const hasIssues =
-    Boolean(validationState.issuesFound?.length);
-
-element.setAttribute(
-    'aria-hidden',
-    String(!hasIssues)
-);
-
-element.setAttribute(
-    'aria-live',
-    hasIssues ? 'polite' : 'off'
-);
-```
-
-An application may choose `"assertive"` for issues that require more immediate announcement. Severity-aware behavior should inspect the individual `IssueFound` objects.
-
-### Role Description
-
-A Field Error Display may use a localized `aria-roledescription`:
-
-```html
-<div
-    id="first-name_errorMessages"
-    data-field="first-name"
-    data-jivs-role="error"
-    aria-roledescription="Error message">
-</div>
-```
-
-Framework integrations can configure and localize this text.
-
-### Hidden and Popup Error Displays
-
-Some UIs reveal validation messages through a popup, icon, notification, or editor focus instead of displaying them inline.
-
-In those designs, visual visibility and accessibility visibility need to remain coordinated.
-
-If error content is completely unavailable while hidden, do not assume `aria-errormessage` alone makes it available to assistive technology. Either expose the content when needed or use the UI's accessible popup or notification mechanism.
-
-Other ARIA attributes needed by specialized controls remain the responsibility of those controls.
-
-## Putting It Together
-
-The basic relationship throughout this document is:
-
-```mermaid
-flowchart LR
-    JIVS["Jivs Validation Callback"] --> DISPATCH["Dispatcher Function"]
-    DISPATCH --> CONSUMER["UI Consumer"]
-    CONSUMER --> PRESENT["Presentation Function"]
-    PRESENT --> DOM["DOM / CSS / ARIA"]
-```
-
-For fields:
-
-```text
-onValueHostValidationStateChanged
-            ↓
-      fieldValidated()
-            ↓
-onFieldValidationStateChanged()
-            ↓
- field presentation
-```
-
-For the form:
-
-```text
-onValidationStateChanged
-          ↓
-    formValidated()
-          ↓
-onFormValidationStateChanged()
-          ↓
- form presentation
-```
-
-The application can implement these responsibilities directly with browser APIs or replace them with framework-specific Jivs modules.
-
-Jivs remains responsible for validation state. The application or framework integration remains responsible for presenting that state.
-
 ---
+
+Continue with [Accessible Client Validation UI](Accessible_Client_Validation_UI.md) to learn about accessibility in validation UIs.
