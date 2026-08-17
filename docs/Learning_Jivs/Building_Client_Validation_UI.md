@@ -1160,6 +1160,7 @@ export function getFieldPresentationFunction(
         case 'editorTooltip':
             return editorTooltipChanged;
     }
+    return undefined;
 }
 
 // Attach one Presentation Function when its name is already known.
@@ -1552,52 +1553,114 @@ A Field Error Display may inspect each `IssueFound.severity` to distinguish Warn
 
 These are additional uses of the same field validation state, not additional responsibilities for the Dispatcher Function.
 
+### Initialize Required Indicators
 
-## Form UI
+When building each field individually, the developer can add a Required Indicator only to fields that require one.
 
-Form UI responds to validation state across the complete `ValueHostsManager`.
+Reusable field templates need a different approach. A template can include the Required Indicator with every field and let Jivs SimpleDom determine whether it should appear:
 
-The primary Form UI consumers in these examples are the Validation Summary and Submit / Save Control.
+```html
+<span
+    data-field="first-name"
+    data-jivs-role="required">
+    *
+</span>
+```
 
-### Receiving Form Validation Changes
+The Required Indicator belongs to the field UI, but it does not respond to validation changes. Its visibility is determined by the `FieldValueHost.required` property, which remains static throughout the `FieldValueHost` lifecycle.
 
-`onValidationStateChanged` supplies the `ValueHostsManager` and a `ValidationState`:
+For that reason, the Required Indicator does not declare a `data-jivs-presentation` name and does not receive validation state through the Field Dispatcher Function.
 
-```ts
-interface ValidationState {
-    isValid: boolean;
-    doNotSave: boolean;
-    issuesFound: Array<IssueFound> | null;
-    asyncProcessing: boolean;
+CSS hides the indicator unless initialization adds the `active` class:
+
+```css
+[data-jivs-role="required"]:not(.active) {
+    display: none;
 }
 ```
 
-The properties answer different questions:
+No visible `display` value needs to be specified. When the `active` class is present, the element uses its normal display behavior.
 
-* `isValid` — whether validation currently knows of an error that makes the data invalid
-* `doNotSave` — whether the current state should prevent saving
-* `issuesFound` — the current validation issues
-* `asyncProcessing` — whether asynchronous validation is still running
-
-For Save and Submit decisions, prefer `doNotSave`.
-
-### Form Validation Consumers
-
-Form UI uses a corresponding consumer interface:
+The initialization function enumerates the `FieldValueHosts`, locates their Required Indicators, and activates those belonging to required fields:
 
 ```ts
-interface IFormValidationConsumerElement extends HTMLElement {
-    onFormValidationStateChanged?: (
-        element: HTMLElement,
-        valueHostsManager: IValueHostsManager,
-        validationState: ValidationState
-    ) => void;
+export function initializeRequiredIndicators(
+    valueHostsManager: IValueHostsManager
+): void {
+    const valueHosts =
+        valueHostsManager.enumerateValueHosts(
+            (valueHost) =>
+                valueHost instanceof FieldValueHost
+        );
+
+    for (const valueHost of valueHosts) {
+        const fieldValueHost =
+            valueHost as IFieldValueHost;
+
+        const fieldId =
+            fieldValueHost.getElementIdentifier();
+
+        const indicators =
+            document.querySelectorAll<HTMLElement>(
+                `[data-field="${CSS.escape(fieldId)}"]` +
+                `[data-jivs-role="required"]`
+            );
+
+        for (const indicator of indicators) {
+            indicator.classList.toggle(
+                'active',
+                fieldValueHost.required
+            );
+        }
+    }
 }
 ```
 
-### Dispatching Form Validation Changes
+Call the function after the `ValueHostsManager` has been created and the field HTML is available:
 
-`formValidated()` locates Form UI consumers and notifies them:
+```ts
+initializeRequiredIndicators(vhm);
+```
+
+Call it again after replacing field HTML generated from a template. Toggling the class makes repeated initialization safe.
+
+## Build the Form Validation UI
+
+A form may have several UI elements that respond to validation across the complete `ValueHostsManager`.
+
+The primary Form Validation UI consumers in Jivs SimpleDom are the Validation Summary and Submit / Save Control.
+
+The preparation from **Before Building the UI** now pays off:
+
+* We need a Dispatcher Function that dispatches form validation changes to interested UI elements.
+* We need Presentation Functions for each approach to presenting form validation in the UI.
+* The `data-jivs-role` attribute identifies what each element does.
+
+The work ahead:
+
+* Build your Dispatcher Function and wire it to `ValueHostsManager.onValidationStateChanged`.
+* Build Presentation Functions for each use case and connect them to the `onFormValidationStateChanged` callback of the relevant elements.
+
+### The Dispatcher Function
+
+A form Dispatcher Function has this TypeScript contract:
+
+```ts
+type FormDispatcher = (
+    valueHostsManager: IValueHostsManager,
+    validationState: ValidationState
+) => void;
+```
+
+It is attached to the `ValueHostsManager` through its `onValidationStateChanged` callback:
+
+```ts
+config.onValidationStateChanged = yourFormDispatcher;
+
+const vhm = new ValueHostsManager(config);
+```
+
+This Dispatcher Function locates every Jivs SimpleDom form validation consumer and calls its `onFormValidationStateChanged` Presentation Function:
 
 ```ts
 function formValidated(
@@ -1620,102 +1683,192 @@ function formValidated(
 }
 ```
 
-Wire it to the `ValueHostsManager` configuration:
+The Dispatcher Function does not rebuild the Validation Summary, enable or disable the Submit button, or otherwise decide how form validation should appear.
 
-```ts
-config.onValidationStateChanged =
-    formValidated;
-```
+Those decisions belong to the individual Presentation Functions.
 
-As with `fieldValidated()`, the Dispatcher Function only distributes state. Each Form UI element determines how it responds.
+### The Presentation Functions
 
-### Validation Summary
+Presentation Functions receive validation state from the Dispatcher Function and decide how an individual UI element should respond.
 
-A Validation Summary presents issues across the complete `ValueHostsManager`.
+Form validation commonly affects two kinds of UI elements:
+
+* **Validation Summary** — presents issues from across the complete `ValueHostsManager`
+* **Submit / Save Control** — enables or disables the operation based on whether the current state can be saved
+
+Each is an independent validation consumer. They receive the same `ValidationState`, but their Presentation Functions use different parts of it and produce different results.
+
+#### Initialize Presentation Functions
+
+Each of these elements needs to identify the Presentation Function it wants to use. Jivs SimpleDom uses the custom `data-jivs-presentation` attribute for that purpose.
+
+`data-jivs-role` identifies what the element does. `data-jivs-presentation` names how that element presents validation.
+
+For example, this Validation Summary requests the `validationSummary` presentation:
 
 ```html
 <div
-    data-jivs-role="summary">
+    data-jivs-role="summary"
+    data-jivs-presentation="validationSummary">
 </div>
 ```
 
-Its Presentation Function can rebuild the issue list:
+The setup has four parts:
+
+* `FormPresentationHandler` defines the common signature used by form Presentation Functions.
+* Each participating element declares a Presentation name through `data-jivs-presentation`.
+* `getFormPresentationFunction()` is a small factory that maps each name to its Presentation Function.
+* The attachment functions `attachFormPresentation()` and `attachFormPresentations()` assign Presentation Functions to one or many elements.
+
+This code is supplied in [`jivs-simpledom.ts`](jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
 
 ```ts
-function validationSummaryChanged(
+export type FormPresentationHandler = (
     element: HTMLElement,
-    _vhm: IValueHostsManager,
+    valueHostsManager: IValueHostsManager,
     validationState: ValidationState
+) => void;
+
+export interface IFormValidationConsumerElement extends HTMLElement {
+    onFormValidationStateChanged?: FormPresentationHandler;
+}
+
+// Return the Presentation Function associated with a name.
+// Add or replace cases as the application adds Presentation Functions.
+export function getFormPresentationFunction(
+    presentationName: string
+): FormPresentationHandler | undefined {
+    switch (presentationName) {
+        case 'validationSummary':
+            return validationSummaryChanged;
+
+        case 'disableSubmit':
+            return submitValidationChanged;
+    }
+    return undefined;
+}
+
+// Attach one Presentation Function when its name is already known.
+export function attachFormPresentation(
+    element: IFormValidationConsumerElement,
+    presentationName: string
 ): void {
-    element.replaceChildren();
-
-    const issues =
-        validationState.issuesFound;
-
-    if (!issues?.length) {
-        element.classList.remove(
-            'has-errors'
-        );
+    // Leave an element alone when it has already been attached.
+    if (element.onFormValidationStateChanged) {
         return;
     }
 
-    const list =
-        document.createElement('ul');
+    const presentationFunction =
+        getFormPresentationFunction(
+            presentationName
+        );
 
-    for (const issue of issues) {
-        const item =
-            document.createElement('li');
-
-        item.textContent =
-            issue.summaryMessage ??
-            issue.errorMessage;
-
-        list.append(item);
+    if (presentationFunction) {
+        element.onFormValidationStateChanged =
+            presentationFunction;
     }
+}
 
-    element.append(list);
+// Read the Presentation name declared on one element and attach it.
+export function attachFormPresentationFromAttribute(
+    element: IFormValidationConsumerElement
+): void {
+    const presentationName =
+        element.dataset.jivsPresentation;
 
-    element.classList.add(
-        'has-errors'
-    );
+    if (presentationName) {
+        attachFormPresentation(
+            element,
+            presentationName
+        );
+    }
+}
+
+// Find matching elements and attach each declared presentation.
+export function attachFormPresentations(
+    selector =
+        '[data-jivs-role="summary"][data-jivs-presentation],' +
+        '[data-jivs-role="submit"][data-jivs-presentation]'
+): void {
+    const elements =
+        document.querySelectorAll<IFormValidationConsumerElement>(
+            selector
+        );
+
+    for (const element of elements) {
+        attachFormPresentationFromAttribute(
+            element
+        );
+    }
 }
 ```
 
-```css
-[data-jivs-role="summary"] {
-    display: none;
-}
+* Call `attachFormPresentations()` as part of your page initialization. For example:
 
-[data-jivs-role="summary"].has-errors {
-    display: block;
-}
+  ```ts
+  attachFormPresentations();
+  ```
+
+* Call `attachFormPresentations()` again after replacing part of the form. The attachment functions skip elements already attached, leaving existing elements untouched while initializing replacement elements.
+
+* We will provide each of the named Presentation Functions next.
+
+* Expect to rework `getFormPresentationFunction()` as you adjust your Presentation Functions.
+
+#### Presentation for a Validation Summary
+
+A Validation Summary presents issues across the complete `ValueHostsManager`.
+
+Select the Presentation Function in the Validation Summary's markup:
+
+```html
+<div
+    data-jivs-role="summary"
+    data-jivs-presentation="validationSummary">
+</div>
 ```
 
-`summaryMessage` is intended for Validation Summary presentation. When it is absent, use `errorMessage`.
-
-Applications can have several Validation Summaries with different Presentation Functions. The Form Dispatcher Function does not need to change.
-
-### Submit / Save Control
-
-A Submit or Save Control uses `doNotSave` to determine whether the operation should currently be allowed:
+Its Presentation Function generates the Summary Messages and exposes whether there are any issues:
 
 ```ts
-function submitValidationChanged(
+export function validationSummaryChanged(
     element: HTMLElement,
     _vhm: IValueHostsManager,
     validationState: ValidationState
 ): void {
-    const button =
-        element as HTMLButtonElement;
+    const issues =
+        validationState.issuesFound;
 
-    button.disabled =
-        validationState.doNotSave;
+    element.classList.toggle(
+        'has-issues',
+        Boolean(issues?.length)
+    );
+
+    element.innerHTML =
+        issues?.length
+            ? buildErrorMessagesHtml(
+                issues,
+                true
+            )
+            : '';
 }
 ```
 
-`doNotSave` is preferred over `isValid` because it represents whether the current validation state is ready to save, including states where validation still needs to complete.
+Passing `true` to `buildErrorMessagesHtml()` selects each issue's `summaryMessage`. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
-### Helping Users Reach Validation Problems
+CSS can hide the Validation Summary when there are no issues:
+
+```css
+[data-jivs-presentation="validationSummary"]:not(.has-issues) {
+    display: none;
+}
+```
+
+The Validation Summary tests `issuesFound`, not `isValid`, because it may also present issues such as Warnings that do not make the form invalid.
+
+Applications can have several Validation Summaries with different Presentation Functions. The Form Dispatcher Function does not need to change.
+
+##### Helping Users Reach Validation Problems
 
 A Validation Summary can do more than list messages.
 
@@ -1731,6 +1884,39 @@ That can support interactions such as:
 * revealing a popup Field Error Display
 
 Navigation remains application-owned because it depends on the surrounding UI structure.
+
+#### Presentation for a Submit / Save Control
+
+A Submit or Save Control uses `doNotSave` to determine whether the operation should currently be allowed.
+
+Select the Presentation Function in the control's markup:
+
+```html
+<button
+    type="submit"
+    data-jivs-role="submit"
+    data-jivs-presentation="disableSubmit">
+    Save
+</button>
+```
+
+Its Presentation Function enables or disables the button:
+
+```ts
+export function submitValidationChanged(
+    element: HTMLElement,
+    _vhm: IValueHostsManager,
+    validationState: ValidationState
+): void {
+    const button =
+        element as HTMLButtonElement;
+
+    button.disabled =
+        validationState.doNotSave;
+}
+```
+
+`doNotSave` is preferred over `isValid` because it represents whether the current validation state is ready to save, including states where validation still needs to complete.
 
 ## Accessible Validation Presentation
 
