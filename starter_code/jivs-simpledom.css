@@ -1,0 +1,82 @@
+/**
+ * Starter styles for the Jivs SimpleDom validation UI.
+ *
+ * This file accompanies:
+ * docs/Learning_Jivs/Building_Client_Validation_UI.md
+ *
+ * Keep these styles synchronized with the CSS examples in that guide.
+ * Documentation paths in this file are relative to the repository root.
+ *
+ * The styles intentionally use currentColor and minimal visual decisions so
+ * applications can adapt them to their own design system.
+ */
+
+/**
+ * Highlight an editor while its field is invalid.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#presentation-for-an-editor
+ */
+[data-jivs-role="editor"].invalid {
+    border: 2px solid currentColor;
+}
+
+/**
+ * Emphasize a label while its field is invalid.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#presentation-for-a-label
+ */
+[data-jivs-role="label"].invalid {
+    font-weight: 700;
+}
+
+/**
+ * Highlight a field container when it contains an invalid editor.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#style-containers-based-on-invalid-fields
+ */
+[data-jivs-role="container"]:has([data-jivs-role="editor"].invalid) {
+    outline: 2px solid currentColor;
+}
+
+/**
+ * Hide an inline Field Error Display while it has no issues.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#inline-error-display
+ */
+[data-jivs-presentation="inlineError"]:not(.has-issues) {
+    display: none;
+}
+[data-jivs-presentation="inlineError"] {
+    color: red;
+}
+
+/**
+ * Hide an error icon while it has no issues.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#error-icon-with-a-native-tooltip
+ */
+.field-error-icon:not(.has-issues) {
+    display: none;
+}
+
+/**
+ * Hide a Required Indicator unless initialization activates it.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#initialize-required-indicators
+ */
+[data-jivs-role="required"]:not(.active) {
+    display: none;
+}
+[data-jivs-role="required"]
+{
+    color: red;
+}
+
+/**
+ * Hide a Validation Summary while it has no issues.
+ *
+ * @see docs/Learning_Jivs/Building_Client_Validation_UI.md#presentation-for-a-validation-summary
+ */
+[data-jivs-presentation="validationSummary"]:not(.has-issues) {
+    display: none;
+}

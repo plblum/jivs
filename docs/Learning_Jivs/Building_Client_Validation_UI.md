@@ -62,8 +62,8 @@ As the guide introduces the parts it interacts with, it shows the corresponding 
 
 The reusable TypeScript and CSS developed by this guide are available in these files:
 
-* [`jivs-simpledom.ts`](jivs-simpledom.ts)
-* [`jivs-simpledom.css`](jivs-simpledom.css)
+* [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts)
+* [`jivs-simpledom.css`](../../starter_code/jivs-simpledom.css)
 
 Add these files to your application as a starting point instead of assembling their contents from the individual snippets. The snippets remain in the guide to explain the code and identify the parts you are likely to customize.
 
@@ -101,8 +101,10 @@ It shows the basics to apply Jivs SimpleDom to your UI. Continue through the res
 
 Add these files to your application:
 
-* [`jivs-simpledom.ts`](jivs-simpledom.ts)
-* [`jivs-simpledom.css`](jivs-simpledom.css)
+* [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts)
+* [`jivs-simpledom.css`](../../starter_code/jivs-simpledom.css)
+
+> If needed, you can locate them in the Jivs repo here: [starter_code](https://github.com/plblum/jivs/tree/main/starter_code)
 
 Import the TypeScript exports and load the stylesheet using your application's normal mechanisms.
 
@@ -290,7 +292,7 @@ Also avoid depending on native validation attributes such as `required` to defin
 
 Error messages contain tokens, some of which can echo back user input. For example, "You entered {value}." Because these token values may originate from untrusted user input, they must be HTML-encoded before being inserted into the final message to prevent XSS.
 
-The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file. You can use it from that file instead of copying it from this section.
+The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts) file. You can use it from that file instead of copying it from this section.
 
 ```ts
 export function encodeHtml(
@@ -859,7 +861,7 @@ The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup HT
 
 By default, the generator uses `IssueFound.errorMessage`, making it suitable for Field Error Displays. Pass `true` for `useSummaryMessage` to use `summaryMessage` for a Validation Summary. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
-The following functions are also available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts) file:
 
 ```ts
 export const severityNames: Array<string | null> = [
@@ -975,7 +977,7 @@ The First name is invalid.
 
 The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup ensures that token replacement values were HTML-encoded before the prepared Error Message reached this function.
 
-The following functions are also available in the companion [`jivs-simpledom.ts`](jivs-simpledom.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts) file:
 
 ```ts
 export function buildErrorMessagesText(
@@ -1152,7 +1154,7 @@ The setup has four parts:
 * `getFieldPresentationFunction()` is a small factory that maps each name to its Presentation Function.
 * The attachment functions `attachFieldPresentation()` and `attachFieldPresentations()` assign Presentation Functions to one or many elements.
 
-This code is supplied in [`jivs-simpledom.ts`](jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
+This code is supplied in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
 
 ```ts
 export type FieldPresentationHandler = (
@@ -1746,7 +1748,7 @@ The setup has four parts:
 * `getFormPresentationFunction()` is a small factory that maps each name to its Presentation Function.
 * The attachment functions `attachFormPresentation()` and `attachFormPresentations()` assign Presentation Functions to one or many elements.
 
-This code is supplied in [`jivs-simpledom.ts`](jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
+This code is supplied in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
 
 ```ts
 export type FormPresentationHandler = (
