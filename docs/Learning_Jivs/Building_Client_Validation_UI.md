@@ -1059,9 +1059,7 @@ config.onValueHostValidationStateChanged = yourFieldDispatcher;
 const vhm = new ValueHostsManager(config);
 ```
 
-*Before showing our implementation, remember this is just one way to do things. It's modeled after the strategy for HTML attributes and the element identifier described in **Before Building the UI**.*
-
-This function locates every validation consumer associated with that field and calls its `onFieldValidationStateChanged` Presentation Function:
+This Dispatcher Function locates every validation consumer associated with that field and calls its `onFieldValidationStateChanged` Presentation Function:
 
 ```ts
 function fieldValidated(
@@ -1107,7 +1105,7 @@ A Presentation Function may change content, expose state through CSS classes, ma
 
 #### Initialize Presentation Functions
 
-Each of these elements needs to identify the Presentation Function it wants to use. HTML supports application-defined `data-*` attributes, so these examples introduce the custom `data-jivs-presentation` attribute for that purpose.
+Each of these elements needs to identify the Presentation Function it wants to use. Jivs SimpleDom uses the custom `data-jivs-presentation` attribute for that purpose.
 
 `data-jivs-role` identifies what the element does. `data-jivs-presentation` names how that element presents validation.
 
@@ -1126,9 +1124,9 @@ The setup has four parts:
 * `FieldPresentationHandler` defines the common signature used by field Presentation Functions.
 * Each participating element declares a Presentation name through `data-jivs-presentation`.
 * `getFieldPresentationFunction()` is a small factory that maps each name to its Presentation Function.
-* The attachment functions assign Presentation Functions to one or many elements. They skip elements already attached, allowing initialization to run again after elements are replaced.
+* The attachment functions `attachFieldPresentation()` and `attachFieldPresentations()` assign Presentation Functions to one or many elements.
 
-Go ahead and copy this entire TypeScript block into your client code as a starting point. The individual Presentation Functions referenced by the factory are developed next.
+This code is supplied in [`jivs-simpledom.ts`](jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
 
 ```ts
 export type FieldPresentationHandler = (
@@ -1202,7 +1200,8 @@ export function attachFieldPresentationFromAttribute(
 
 // Find matching elements and attach each declared presentation.
 export function attachFieldPresentations(
-    selector: string
+    selector =
+        '[data-field][data-jivs-presentation]'
 ): void {
     const elements =
         document.querySelectorAll<IFieldValidationConsumerElement>(
@@ -1220,75 +1219,16 @@ export function attachFieldPresentations(
 * Call `attachFieldPresentations()` as part of your page initialization. For example:
 
   ```ts
-  attachFieldPresentations(
-      '[data-field][data-jivs-presentation]'
-  );
+  attachFieldPresentations();
   ```
 
-* Call `attachFieldPresentations()` again after replacing part of the form. Elements already attached are left untouched, while replacement elements are initialized.
+* Call `attachFieldPresentations()` again after replacing part of the form. The attachment functions skip elements already attached, leaving existing elements untouched while initializing replacement elements.
 
 * We will provide each of the named Presentation Functions in later parts of this document.
 
 * Expect to rework `getFieldPresentationFunction()` as you adjust your Presentation Functions.
 
-#### Understanding ValueHostValidationState
-
-Every field Presentation Function receives the same `ValueHostValidationState`.
-
-The complete state available to the Presentation Function is:
-
-```ts
-interface ValueHostValidationState {
-    isValid: boolean;
-    doNotSave: boolean;
-    issuesFound: IssueFound[] | null;
-    asyncProcessing: boolean;
-    status: ValidationStatus;
-    corrected: boolean;
-}
-```
-
-Its properties are:
-
-* `isValid` — whether validation currently considers the field valid
-* `doNotSave` — whether the field's current validation state should prevent saving
-* `issuesFound` — the issues currently associated with the field
-* `asyncProcessing` — whether asynchronous validation is running
-* `status` — the current `ValidationStatus`
-* `corrected` — whether previously invalid Validators have been corrected
-
-`isValid` and `doNotSave` answer different questions. For example, a Warning produces an `IssueFound` while the value remains valid due to `severity = Warning`. `doNotSave` also accounts for states such as validation still being required or asynchronous validation still running.
-
-##### Understanding IssueFound
-
-Each entry in `issuesFound` is an `IssueFound`:
-
-```ts
-interface IssueFound {
-    valueHostName?: ValueHostName;
-    errorCode?: string;
-    severity?: ValidationSeverity;
-    errorMessage: string;
-    summaryMessage?: string;
-    doNotSave?: boolean;
-}
-```
-
-For Field Error Displays, the most important properties are:
-
-* `errorMessage` — the fully prepared Error Message normally presented for the field
-* `severity` — identifies the severity of the issue
-* `summaryMessage` — an alternative message intended for a form-level Validation Summary
-* `valueHostName` — identifies the ValueHost associated with the issue
-* `errorCode` — identifies the type of issue or Validator that supplied it
-
-A field can have more than one `IssueFound`. The Field Error Display decides whether to present one issue, every issue, selected severities, or another presentation entirely.
-
-Warnings illustrate an important distinction. A Warning can appear in `issuesFound` while `validationState.isValid` remains `true`. This allows the Field Error Display to present the Warning without applying invalid styling to the editor, label, or surrounding containers.
-
-A Presentation Function normally uses only the pieces of state relevant to that UI element.
-
-#### Present Validation on the Editor
+#### Presentation for an Editor
 
 The editor commonly changes appearance when the field becomes invalid.
 
@@ -1328,11 +1268,11 @@ CSS determines how that state looks:
 
 The editor can also own its validation-related ARIA attributes. Those are covered later under **Accessible Validation Presentation**.
 
-#### Present Validation on the Label
+#### Presentation for a Label
 
 A label may also change appearance when its field is invalid.
 
-Because the label may not have a predictable sibling relationship with the editor, give it its own Presentation Function:
+Its Presentation Function can expose that validation state through a CSS class:
 
 ```ts
 export function labelValidationChanged(
@@ -1367,37 +1307,7 @@ Then CSS owns the appearance:
 }
 ```
 
-#### Style Enclosing Containers
-
-A container often needs to change appearance when a field inside it is invalid.
-
-It does not necessarily need its own Presentation Function.
-
-Because the editor exposes the field's invalid state using `validationState.isValid`, CSS can react to it:
-
-```css
-[data-jivs-role="container"]:has(
-    [data-jivs-role="editor"].invalid
-) {
-    outline: 2px solid currentColor;
-}
-```
-
-The same technique can reach larger structures:
-
-```css
-.field-group:has(
-    [data-jivs-role="editor"].invalid
-) {
-    outline: 2px solid currentColor;
-}
-```
-
-A Warning can therefore appear in a Field Error Display without causing these invalid styles to appear.
-
-This keeps knowledge of the page hierarchy out of the Dispatcher Function and the individual Presentation Functions.
-
-#### Present a Field Error Display
+#### Presentation for a Field Error Display
 
 Field Error Displays vary widely. Some forms show Error Messages directly below the editor, some use a compact icon or native tooltip, and others hand the messages to a popup or alert component supplied by a UI library.
 
@@ -1410,10 +1320,10 @@ Applications commonly use approaches such as:
 * an error icon that reveals messages on interaction
 * application-specific components or notifications
 
-This section separates the common work from those presentation choices. We'll:
+The shared Error Message HTML and text generators were developed under [Generate Error Messages](#generate-error-messages).
 
-* generate reusable HTML for one or multiple Error Messages
-* generate plain text for native browser tooltips
+This section separates the common work from the presentation choices. We'll:
+
 * build an inline Error Display
 * show an error icon with a native tooltip
 * attach a native tooltip to the container around an editor
@@ -1425,178 +1335,6 @@ Most Field Error Displays have two parts:
 2. **Present those Error Messages** — decide where and how they appear.
 
 Keeping those responsibilities separate lets several Field Error Display designs share the same Error Message generation.
-
-##### Generate Error Message HTML
-
-Most validation systems present one Error Message at a time, so the single-message case should remain simple.
-
-For one issue, generate a containing `<span>`:
-
-```html
-<span data-error-code="RequireText">
-    The First name requires a value.
-</span>
-```
-
-For multiple issues, generate a list:
-
-```html
-<ul>
-    <li data-error-code="RequireText">
-        The First name requires a value.
-    </li>
-    <li
-        data-error-code="UnusualValue"
-        data-severity="warning">
-        This value is unusual.
-    </li>
-</ul>
-```
-
-Each Error Message element can expose information from its `IssueFound` for CSS and other presentation logic:
-
-* `data-error-code` contains `IssueFound.errorCode` when supplied
-* `data-severity` contains the severity name when the severity is not the normal `Error`
-
-Error Messages may also contain prepared HTML, such as `<span>` elements inserted while resolving message tokens. The HTML generator preserves that prepared markup.
-
-The same generator can later be used by a Validation Summary by selecting `summaryMessage` instead of `errorMessage`. When `summaryMessage` is not supplied, it falls back to `errorMessage`.
-
-```ts
-export const severityNames: Array<string | null> = [
-    'warning',
-    null,
-    'severe'
-];
-
-export function buildErrorMessagesHtml(
-    issues: IssueFound[],
-    useSummaryMessage = false
-): string {
-    if (issues.length === 0) {
-        return '';
-    }
-
-    if (issues.length === 1) {
-        return buildErrorMessageHtml(
-            'span',
-            issues[0],
-            useSummaryMessage
-        );
-    }
-
-    const items =
-        issues
-            .map(issue =>
-                buildErrorMessageHtml(
-                    'li',
-                    issue,
-                    useSummaryMessage
-                )
-            )
-            .join('');
-
-    return `<ul>${items}</ul>`;
-}
-
-export function buildErrorMessageHtml(
-    tagName: 'span' | 'li',
-    issue: IssueFound,
-    useSummaryMessage: boolean
-): string {
-    const attributes: string[] = [];
-
-    if (issue.errorCode) {
-        attributes.push(
-            `data-error-code="${issue.errorCode}"`
-        );
-    }
-
-    const severity =
-        issue.severity === undefined
-            ? null
-            : severityNames[issue.severity];
-
-    if (severity) {
-        attributes.push(
-            `data-severity="${severity}"`
-        );
-    }
-
-    const attributeText =
-        attributes.length
-            ? ` ${attributes.join(' ')}`
-            : '';
-
-    const message =
-        useSummaryMessage
-            ? issue.summaryMessage ?? issue.errorMessage
-            : issue.errorMessage;
-
-    return (
-        `<${tagName}${attributeText}>` +
-        message +
-        `</${tagName}>`
-    );
-}
-```
-
-For Field Error Displays:
-
-```ts
-buildErrorMessagesHtml(issues);
-```
-
-Later, a Validation Summary can use the same function:
-
-```ts
-buildErrorMessagesHtml(
-    issues,
-    true
-);
-```
-
-The normal `Error` severity does not need a `data-severity` attribute. `issue.errorMessage` and `issue.summaryMessage` are deliberately inserted as prepared HTML rather than encoded as text.
-
-##### Generate Error Message Text
-
-A native browser tooltip uses the `title` attribute, which accepts plain text rather than HTML.
-
-Because an Error Message may contain prepared HTML, the text builder first lets the browser parse that markup and then extracts its text.
-
-```ts
-export function buildErrorMessagesText(
-    issues: IssueFound[]
-): string {
-    return issues
-        .map(issue =>
-            errorMessageToText(
-                issue.errorMessage
-            )
-        )
-        .join(' • ');
-}
-
-export function errorMessageToText(
-    errorMessage: string
-): string {
-    const container =
-        document.createElement('div');
-
-    container.innerHTML =
-        errorMessage;
-
-    return container.textContent ?? '';
-}
-```
-
-When there are several issues, the visible `•` separator avoids depending on how a browser chooses to render line breaks in its native tooltip.
-
-For example:
-
-```text
-The First name requires a value. • This value is unusual.
-```
 
 ##### Inline Error Display
 
@@ -1636,12 +1374,8 @@ export function inlineErrorDisplayChanged(
 CSS can hide the Error Display when there are no issues:
 
 ```css
-[data-jivs-role="error"] {
+[data-jivs-presentation="inlineError"]:not(.has-issues) {
     display: none;
-}
-
-[data-jivs-role="error"].has-issues {
-    display: block;
 }
 ```
 
@@ -1697,12 +1431,8 @@ export function errorIconChanged(
 CSS controls whether the icon is shown:
 
 ```css
-.field-error-icon {
+.field-error-icon:not(.has-issues) {
     display: none;
-}
-
-.field-error-icon.has-issues {
-    display: inline;
 }
 ```
 
@@ -1792,7 +1522,7 @@ export function popupErrorDisplayChanged(
 }
 ```
 
-`showErrorPopup()` and `hideErrorPopup()` represent the application's UI-library integration.
+You will write `showErrorPopup()` and `hideErrorPopup()` to work with the application's UI-library integration.
 
 Add a corresponding name to `getFieldPresentationFunction()` when using this Presentation Function:
 
@@ -1821,6 +1551,7 @@ A widget may use `asyncProcessing` to show that validation for the field is stil
 A Field Error Display may inspect each `IssueFound.severity` to distinguish Warnings, Errors, and Severe issues.
 
 These are additional uses of the same field validation state, not additional responsibilities for the Dispatcher Function.
+
 
 ## Form UI
 
