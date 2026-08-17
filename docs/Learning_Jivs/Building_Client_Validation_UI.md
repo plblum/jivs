@@ -4,30 +4,37 @@ Jivs determines validation state. The application decides how that state should 
 
 Validation UI commonly includes:
 
-- Field Error Displays
-- Required Indicators
-- styling that responds to field validation
-- Validation Summaries
-- Submit / Save Controls
+* Field Error Displays
+* Required Indicators
+* styling that responds to field validation
+* Validation Summaries
+* Submit / Save Controls
 
 This document uses basic HTML, CSS, and browser DOM APIs to show how those UI elements connect to Jivs.
 
-These examples are **not a UI component library** and are not intended to become application copy-and-paste infrastructure. Jivs modules for specific frameworks and UI libraries can provide these behaviors through components, directives, hooks, or other framework-native mechanisms.
+These examples are **not a UI component library**. Jivs modules for specific frameworks and UI libraries can provide these behaviors through components, directives, hooks, or other framework-native mechanisms.
 
-The examples here show the underlying responsibilities those integrations implement.
+The examples here show the underlying responsibilities those integrations implement while also providing reusable starting points for applications that work directly with the DOM.
 
 ## Before Building the UI
 
-Before building validation UI, it helps to make a few decisions about how the browser, CSS, markup, and Jivs validation state will work together.
+Before building validation UI, two general requirements apply:
 
-This section covers the setup choices that make the later UI examples simpler:
+* disable native browser validation so it does not compete with Jivs
+* protect Error Messages from XSS attacks
 
-- disabling native browser validation
-- using CSS to react to validation state
-- designing predictable field and form markup
-- delivering validation state to the UI elements that will present it
+The remainder of this section prepares the concepts and shared code used by both Field UI and Form UI:
 
-These are not required implementation patterns. They are the plain-DOM techniques used by this document so the later Field UI and Form UI examples can stay focused on the widgets themselves.
+* using CSS to react to validation state
+* designing predictable field and form markup
+* understanding the validation state Jivs supplies
+* understanding the `IssueFound` objects that describe validation issues
+* generating reusable Error Message HTML and text
+* delivering validation state to the UI elements that will present it
+
+The first two requirements apply regardless of how the application implements its validation UI.
+
+The remaining topics use the plain-DOM techniques developed by this guide. They are not required implementation patterns. Applications and framework integrations can use other approaches while following the same underlying concepts.
 
 A useful principle throughout this document is:
 
@@ -51,6 +58,72 @@ The examples in this document use `novalidate`.
 
 Also avoid depending on native validation attributes such as `required` to define Jivs validation rules. Jivs validation state should remain the source used by the validation UI.
 
+### Protect Error Messages from XSS
+
+Error messages contain tokens, some of which can echo back user input. For example, "You entered {value}." Because these token values may originate from untrusted user input, they must be HTML-encoded before being inserted into the final message to prevent XSS.
+
+The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file. You can use it from that file instead of copying it from this section.
+
+```ts
+export function encodeHtml(
+    value: string
+): string {
+    const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    };
+
+    return value.replace(
+        /[&<>"']/g,
+        character => entities[character]
+    );
+}
+
+export class HtmlMessageTokenResolverService
+    extends MessageTokenResolverService {
+
+    protected override finalizeReplacement(
+        replacement: string,
+        tav: TokenLabelAndValue
+    ): string {
+        const encodedValue =
+            encodeHtml(replacement);
+
+        const purposeClass =
+            tav.purpose
+                ? ` ${tav.purpose}`
+                : '';
+
+        return (
+            `<span class="token${purposeClass}">` +
+            encodedValue +
+            '</span>'
+        );
+    }
+}
+```
+
+The resulting markup identifies the replacement as a token and includes its purpose when supplied:
+
+```html
+<span class="token label">First name</span>
+```
+
+Install the subclass on the `JivsServices` instance before creating the `ValueHostsManager`:
+
+```ts
+const services =
+    createJivsServices('en-US');
+
+services.messageTokenResolverService =
+    new HtmlMessageTokenResolverService();
+```
+
+All user-controlled data included in an Error Message should be supplied through message tokens so this service can encode it.
+
 ### Use CSS to Drive Presentation
 
 JavaScript does not need to control every visual detail of validation UI.
@@ -59,53 +132,91 @@ A useful pattern is:
 
 > **Use JavaScript to expose changing validation state on the elements that own that state. Use CSS to decide how that state should look.**
 
-For example, an editor may receive an `invalid` class:
+For example, this markup has two field containers inside a larger field group. The First name editor currently exposes an invalid state:
 
 ```html
-<input
-    class="validation-editor invalid">
+<div class="field-group">
+    <div
+        data-field="first-name"
+        data-jivs-role="container">
+
+        <label
+            for="first-name"
+            data-field="first-name"
+            data-jivs-role="label">
+            First name
+        </label>
+
+        <input
+            id="first-name"
+            class="invalid"
+            data-field="first-name"
+            data-jivs-role="editor">
+    </div>
+
+    <div
+        data-field="last-name"
+        data-jivs-role="container">
+
+        <label
+            for="last-name"
+            data-field="last-name"
+            data-jivs-role="label">
+            Last name
+        </label>
+
+        <input
+            id="last-name"
+            data-field="last-name"
+            data-jivs-role="editor">
+    </div>
+</div>
 ```
 
-CSS can style that state directly:
+Under the conventions used by this guide, `data-jivs-role` identifies what each element does. The `invalid` class exposes the editor's current state for CSS:
 
 ```css
-.validation-editor.invalid {
+[data-jivs-role="editor"].invalid {
     border: 2px solid currentColor;
 }
 ```
 
-This keeps presentation rules in CSS instead of spreading them through validation-related JavaScript.
+The Presentation Functions developed later will add and remove state classes such as `invalid`. CSS remains responsible for deciding how those states look.
 
 #### Style Containers Based on Invalid Fields
 
-A validation state may belong to one editor, while the visual response belongs to a larger part of the UI.
+An invalid state may be exposed on one editor, while the visual response belongs to a larger part of the UI.
 
 For example, an invalid editor may need to change the appearance of:
 
-- its field container
-- a surrounding fieldset
-- a card or panel
-- a larger group of related fields
+* its field container
+* a surrounding fieldset
+* a card or panel
+* a larger group of related fields
 
 JavaScript could locate and update each enclosing element, but that couples validation code to the page layout.
 
-Modern CSS `:has()` lets a container respond to an invalid field inside it:
+Using the markup above, CSS `:has()` lets the First name field container respond to its invalid editor:
 
 ```css
-.field-container:has(.validation-editor.invalid) {
+[data-jivs-role="container"]:has(
+    [data-jivs-role="editor"].invalid
+) {
     outline: 2px solid currentColor;
 }
 ```
 
-A larger container can use the same technique:
+The larger `.field-group` can respond to the same editor:
 
 ```css
-.field-group:has(.validation-editor.invalid) {
+.field-group:has(
+    [data-jivs-role="editor"].invalid
+) {
     outline: 2px solid currentColor;
 }
 ```
 
-JavaScript only needs to expose the state where it belongs:
+JavaScript only needs to expose the state on the editor:
 
 ```ts
 editor.classList.toggle(
@@ -120,17 +231,17 @@ CSS determines which surrounding elements should react.
 
 Validation callbacks need a reliable way to connect validation state with the UI elements interested in that state.
 
-The conventions below are used by the plain-DOM examples in this document. They are **not Jivs requirements**. Applications and framework integrations may use other names or other mechanisms entirely.
+The conventions below are used by the plain-DOM approach developed in this guide. They are **not Jivs requirements**. Applications and framework integrations may use other names or other mechanisms entirely.
 
 #### Field Markup
 
 A field commonly has several related UI elements:
 
-- editor, often an `<input>`, `<select>`, or `<textarea>`
-- label
-- Field Error Display
-- Required Indicator
-- an enclosing field container
+* editor, often an `<input>`, `<select>`, or `<textarea>`
+* label
+* Field Error Display
+* Required Indicator
+* an enclosing field container
 
 Start with one identifier for the field:
 
@@ -148,48 +259,49 @@ first-name_required
 first-name_container
 ```
 
-We'll take advantage of HTML's ability to add custom attributes and the associated selector support by adding these attributes:
+The markup conventions use three custom attributes:
 
-- `data-field` identifies which field an element belongs to. For example:
+* `data-field` identifies which field an element belongs to.
+* `data-jivs-role` identifies what the element does within the validation UI.
+* `data-jivs-presentation` names the Presentation Function requested by an element that consumes validation state.
 
-  ```css
-  [data-field="first-name"]
-  ```
+The field-related `data-jivs-role` values used by this guide are:
 
-- `data-validation-role` identifies the validation-related role of that element. For example:
+* `container` — encloses the UI elements associated with one field
+* `label` — identifies the field's label
+* `editor` — identifies the element that edits the field's value
+* `error` — identifies a Field Error Display
+* `required` — identifies a Required Indicator
 
-  ```css
-  [data-validation-role="error"]
-  ```
+Because related elements share the same `data-field` value and have distinct roles, application code can construct selectors generically for any field.
 
-These names are conventions introduced by this document. They are not required by Jivs.
-
-The attributes can be combined to locate a particular validation element for a particular field:
+For example, this selector locates the Field Error Display belonging to `first-name`:
 
 ```css
-[data-field="first-name"][data-validation-role="error"]
+[data-field="first-name"][data-jivs-role="error"]
 ```
 
-For example:
+The complete field markup can look like this:
 
 ```html
 <div
     id="first-name_container"
     class="field-container"
     data-field="first-name"
-    data-validation-role="container">
+    data-jivs-role="container">
 
     <label
         id="first-name_label"
         for="first-name"
         data-field="first-name"
-        data-validation-role="label">
+        data-jivs-role="label"
+        data-jivs-presentation="invalidLabel">
         First name
 
         <span
             id="first-name_required"
             data-field="first-name"
-            data-validation-role="required">
+            data-jivs-role="required">
             *
         </span>
     </label>
@@ -198,37 +310,55 @@ For example:
         id="first-name"
         class="validation-editor"
         data-field="first-name"
-        data-validation-role="editor">
+        data-jivs-role="editor"
+        data-jivs-presentation="invalidEditor">
 
     <div
         id="first-name_errorMessages"
         data-field="first-name"
-        data-validation-role="error">
+        data-jivs-role="error"
+        data-jivs-presentation="inlineError">
     </div>
 </div>
 ```
 
-Application code can construct the same kind of selector generically for any field.
+The label, editor, and Field Error Display consume changing validation state, so each requests one of the functions developed under [The Presentation Functions](#the-presentation-functions):
+
+* The label requests `data-jivs-presentation="invalidLabel"`. This guide's Presentation Function adds or removes the `invalid` class based on `ValueHostValidationState.isValid`.
+* The editor requests `data-jivs-presentation="invalidEditor"`. Its Presentation Function also adds or removes the `invalid` class based on `ValueHostValidationState.isValid`.
+* The Field Error Display requests `data-jivs-presentation="inlineError"`. Its Presentation Function generates content from `ValueHostValidationState.issuesFound` and exposes whether issues are present.
+
+The enclosing container does not need its own Presentation Function because CSS can react to the invalid editor inside it. For example:
+
+```css
+[data-jivs-role="container"]:has(
+    [data-jivs-role="editor"].invalid
+) {
+    outline: 2px solid currentColor;
+}
+```
+
+The Required Indicator is initialized separately from changing validation state, so it also does not declare `data-jivs-presentation`. Later, you will learn how to make it appear only when the field has a Validator that requires a value.
 
 ##### Connect the FieldValueHost to the Field Identifier
 
-The validation state changed callback gives us the `FieldValueHost` that changed. To update its UI, application code needs to locate the elements associated with that field.
+The markup conventions above prepare the UI elements for validation. We now need to connect their shared field identifier to the `FieldValueHost` representing that field in Jivs.
 
-So far, our HTML examples use a shared field identifier such as:
+When a field's validation state changes, the callback supplies the `FieldValueHost` that changed. Application code then needs to locate the UI elements associated with that ValueHost.
+
+The markup developed above uses a shared field identifier:
 
 ```text
 first-name
 ```
 
-That may not match the ValueHost name:
+That identifier may differ from the ValueHost name:
 
 ```text
 FirstName
 ```
 
-We therefore need a reliable way to get the UI's field identifier from the `FieldValueHost`.
-
-By default, that identifier is the ValueHost's name. When the UI uses a different identifier, set `elementIdentifier` during configuration:
+The ValueHost therefore needs to know the identifier used by its UI. When configuring the field, assign that identifier to `elementIdentifier`:
 
 ```ts
 builder.field('FirstName', LookupKey.String, {
@@ -236,7 +366,7 @@ builder.field('FirstName', LookupKey.String, {
 });
 ```
 
-`getElementIdentifier()` returns the configured `elementIdentifier`, or falls back to `valueHost.getName()` when one is not configured:
+`getElementIdentifier()` returns the configured `elementIdentifier`:
 
 ```ts
 const fieldId =
@@ -244,7 +374,18 @@ const fieldId =
 // "first-name"
 ```
 
-`getElementIdentifier()` also accepts a template for related element IDs that use a suffix. Place `{0}` where the resolved identifier should appear:
+When `elementIdentifier` has not been configured, it falls back to `valueHost.getName()`.
+
+The resolved identifier can be used with the markup conventions introduced above:
+
+```ts
+const fieldElements =
+    document.querySelectorAll(
+        `[data-field=${CSS.escape(fieldId)}]`
+    );
+```
+
+`getElementIdentifier()` can also generate the predictable element IDs introduced earlier. Pass a template containing `{0}` where the resolved identifier belongs:
 
 ```ts
 const errorId =
@@ -254,164 +395,414 @@ const errorId =
 // "first-name_errorMessages"
 ```
 
+This gives application code one consistent connection between the `FieldValueHost` and either the field's shared `data-field` value or the ID of a specific related element.
+
 #### Form Markup
 
-Form-level validation can have several UI consumers, such as a Validation Summary or Submit button.
+Form-level validation can also have several UI consumers. Common examples include:
 
-Just as field-level code can use custom HTML attributes to locate the UI for a particular field, form-level code can use `data-validation-role` to locate these consumers with CSS selectors.
+* a Validation Summary that presents issues from across the form
+* a Submit button whose availability reflects whether the form can be saved
+
+These consumers belong to the form rather than to an individual field, so they do not need a `data-field` attribute.
+
+This guide uses two additional `data-jivs-role` values for form-level consumers:
+
+* `summary` — identifies the form's Validation Summary
+* `submit` — identifies the form's Submit button
+
+For example:
 
 ```html
-<div
-    data-validation-role="summary">
-</div>
+<form
+    id="person-form"
+    novalidate>
 
-<button
-    type="submit"
-    data-validation-role="submit">
-    Save
-</button>
+    <div
+        data-jivs-role="summary"
+        data-jivs-presentation="validationSummary">
+    </div>
+
+    <!-- Field markup appears here. -->
+
+    <button
+        type="submit"
+        data-jivs-role="submit"
+        data-jivs-presentation="disableSubmit">
+        Save
+    </button>
+</form>
 ```
 
-Application code can then locate form-level consumers by role:
+The Validation Summary and Submit button consume changing form validation state, so each requests one of the Presentation Functions developed later:
+
+* The Validation Summary requests `data-jivs-presentation="validationSummary"`. This guide's Presentation Function rebuilds its content from `ValidationState.issuesFound`, using each issue's `summaryMessage` when available.
+* The Submit button requests `data-jivs-presentation="disableSubmit"`. Its Presentation Function enables or disables the button based on `ValidationState.doNotSave`.
+
+Application code can locate these consumers by role:
 
 ```css
-[data-validation-role="summary"]
+[data-jivs-role="summary"]
 
-[data-validation-role="submit"]
+[data-jivs-role="submit"]
 ```
 
-The exact role names are application-owned. The important idea is that form-level validation consumers are discoverable without tying the Dispatcher Function to one particular widget implementation.
+As with the field-related role and Presentation names, these are conventions used by this guide. Applications can replace them with other names or another discovery mechanism.
+
+The important idea is that form-level validation consumers can be discovered and connected to their Presentation Functions without tying validation-state delivery to one particular UI implementation.
+
+### Understand Validation State and Issues
+
+Jivs reports validation results through state objects. These objects give the UI the information it needs without requiring the UI to inspect individual Validators.
+
+The same state model supports both Field UI and Form UI.
+
+#### ValidationState and ValueHostValidationState
+
+Jivs supplies two related validation-state types:
+
+* `ValueHostValidationState` describes validation for one ValueHost.
+* `ValidationState` describes validation across the complete `ValueHostsManager`.
+
+Their complete definitions are:
+
+```ts
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: IssueFound[] | null;
+    asyncProcessing: boolean;
+}
+
+interface ValueHostValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: IssueFound[] | null;
+    asyncProcessing: boolean;
+    status: ValidationStatus;
+    corrected: boolean;
+}
+```
+
+They share four properties:
+
+* `isValid` — whether validation currently considers the ValueHost or complete `ValueHostsManager` valid
+* `doNotSave` — whether the current state should prevent saving
+* `issuesFound` — the issues currently associated with that scope. This will be your source for error messages.
+* `asyncProcessing` — whether asynchronous validation is running within that scope. While it is running, `doNotSave` prevents form submission.
+
+The scope depends on which state object was supplied. For example, `ValueHostValidationState.issuesFound` contains issues for one ValueHost, while `ValidationState.issuesFound` contains issues collected across the complete `ValueHostsManager`.
+
+`isValid` and `doNotSave` answer different questions. A severity of *Warning* can produce an `IssueFound` while `isValid` remains `true`. `doNotSave` also accounts for states where validation is not yet ready to permit saving, such as required validation that has not run or asynchronous validation that is still processing.
+
+`ValueHostValidationState` adds two field-specific properties:
+
+* `status` — the ValueHost's current `ValidationStatus`
+* `corrected` — whether previously invalid Validators have been corrected
+
+Their field-specific presentation uses are covered later when building the Field UI.
+
+Both state types use the same `IssueFound` type to describe individual validation issues.
+
+#### Understanding IssueFound
+
+Each entry in `issuesFound` is an `IssueFound`. Field Error Displays and Validation Summaries use these objects as the source of their Error Messages.
+
+```ts
+interface IssueFound {
+    errorMessage: string;
+    summaryMessage?: string;
+    severity?: ValidationSeverity;
+    valueHostName?: ValueHostName;
+    errorCode?: string;
+    doNotSave?: boolean;
+}
+```
+
+Its properties are:
+
+* `errorMessage` — the fully prepared Error Message normally presented by a Field Error Display
+* `summaryMessage` — an alternative Error Message intended for a Validation Summary
+* `severity` — identifies the severity of the issue
+* `valueHostName` — identifies the ValueHost associated with the issue
+* `errorCode` — identifies the type of issue or Validator that supplied it
+* `doNotSave` — indicates whether this issue should prevent saving
+
+A Validation Summary normally uses `summaryMessage` when it is supplied and falls back to `errorMessage` when it is not.
+
+`valueHostName` lets form-level UI connect an issue back to its field. For example, a Validation Summary can use it to locate, focus, or scroll to the corresponding editor. Some issues may not identify a specific ValueHost, so this property is optional.
+
+A validation state can contain more than one `IssueFound`. Each Error Message consumer decides whether to present one issue, every issue, selected severities, or another presentation entirely.
+
+A `Warning` can appear in `issuesFound` while `isValid` remains `true`. Error Message consumers should therefore inspect `issuesFound` rather than relying on `isValid` to decide whether messages should be presented.
+
+The validation state's `doNotSave` property already represents whether the complete state should prevent saving. A Submit Presentation Function can use that property directly rather than recalculating it from individual issues.
+
+### Generate Error Messages
+
+Field Error Displays and Validation Summaries both turn `IssueFound` objects into Error Message content.
+
+Most Error Message consumers have two responsibilities:
+
+1. **Generate the Error Messages** — turn `issuesFound` into HTML or plain text.
+2. **Present the Error Messages** — decide where and how that content appears.
+
+Keeping these responsibilities separate lets several Presentation Functions share the same Error Message generation. This section explains those choices and provides code you can use.
+
+#### Generate Error Message HTML
+
+The code in this section generates HTML-formatted Error Messages. They can be used by:
+
+* Field Error Displays, including inline and popup presentations
+* Validation Summaries
+* UI-library tooltips, popovers, and other HTML-capable hints attached to the editor, label, or container
+
+Native browser tooltips do not accept HTML. The plain-text generator developed next supports those presentations.
+
+The generated HTML uses different elements depending on whether there is one issue or multiple issues.
+
+When there is one issue, it generates a containing `<span>`:
+
+```html
+<span data-error-code="RequireText">
+    The First name requires a value.
+</span>
+```
+
+When there are multiple issues, it generates a list:
+
+```html
+<ul>
+    <li data-error-code="RequireText">
+        The First name requires a value.
+    </li>
+    <li
+        data-error-code="UnusualValue"
+        data-severity="warning">
+        This value is unusual.
+    </li>
+</ul>
+```
+
+Each message is tagged with custom attributes so CSS and other presentation logic can respond to its characteristics:
+
+* `data-error-code` contains `IssueFound.errorCode` when supplied.
+* `data-severity` contains the severity name when the severity is not the normal `Error`.
+
+Jivs supplies Error Message strings that may contain internal HTML markup around resolved tokens. For example:
+
+```html
+The <span class="token label">First name</span> is invalid.
+```
+
+The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup HTML-encodes the replacement value before adding these tags. The HTML generator is deliberately designed to preserve this prepared markup when building the final Error Message content.
+
+By default, the generator uses `IssueFound.errorMessage`, making it suitable for Field Error Displays. Pass `true` for `useSummaryMessage` to use `summaryMessage` for a Validation Summary. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
+
+The following functions are also available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file:
+
+```ts
+export const severityNames: Array<string | null> = [
+    'warning',
+    null,
+    'severe'
+];
+
+export function buildErrorMessagesHtml(
+    issues: IssueFound[],
+    useSummaryMessage = false
+): string {
+    if (issues.length === 0) {
+        return '';
+    }
+
+    if (issues.length === 1) {
+        return buildErrorMessageHtml(
+            'span',
+            issues[0],
+            useSummaryMessage
+        );
+    }
+
+    const items =
+        issues
+            .map(issue =>
+                buildErrorMessageHtml(
+                    'li',
+                    issue,
+                    useSummaryMessage
+                )
+            )
+            .join('');
+
+    return `<ul>${items}</ul>`;
+}
+
+export function buildErrorMessageHtml(
+    tagName: 'span' | 'li',
+    issue: IssueFound,
+    useSummaryMessage: boolean
+): string {
+    const attributes: string[] = [];
+
+    if (issue.errorCode) {
+        attributes.push(
+            `data-error-code="${encodeHtml(issue.errorCode)}"`
+        );
+    }
+
+    const severity =
+        issue.severity === undefined
+            ? null
+            : severityNames[issue.severity];
+
+    if (severity) {
+        attributes.push(
+            `data-severity="${severity}"`
+        );
+    }
+
+    const attributeText =
+        attributes.length
+            ? ` ${attributes.join(' ')}`
+            : '';
+
+    const message =
+        useSummaryMessage
+            ? issue.summaryMessage ?? issue.errorMessage
+            : issue.errorMessage;
+
+    return (
+        `<${tagName}${attributeText}>` +
+        message +
+        `</${tagName}>`
+    );
+}
+```
+
+A Field Error Display uses the default behavior:
+
+```ts
+buildErrorMessagesHtml(issues);
+```
+
+A Validation Summary requests summary messages:
+
+```ts
+buildErrorMessagesHtml(
+    issues,
+    true
+);
+```
+
+The normal `Error` severity does not need a `data-severity` attribute.
+
+#### Generate Error Message Text
+
+Native browser tooltips and other text-only consumers cannot use the prepared HTML contained in an Error Message.
+
+The text generator lets the browser parse the prepared markup in a detached element and then extracts its text content. For example:
+
+```html
+The <span class="token label">First name</span> is invalid.
+```
+
+becomes:
+
+```text
+The First name is invalid.
+```
+
+The [Protect Error Messages from XSS](#protect-error-messages-from-xss) setup ensures that token replacement values were HTML-encoded before the prepared Error Message reached this function.
+
+The following functions are also available in the companion [`building-client-validation-ui.ts`](building-client-validation-ui.ts) file:
+
+```ts
+export function buildErrorMessagesText(
+    issues: IssueFound[]
+): string {
+    return issues
+        .map(issue =>
+            errorMessageToText(
+                issue.errorMessage
+            )
+        )
+        .join(' • ');
+}
+
+export function errorMessageToText(
+    errorMessage: string
+): string {
+    const container =
+        document.createElement('div');
+
+    container.innerHTML =
+        errorMessage;
+
+    return container.textContent ?? '';
+}
+```
+
+When there are several issues, the visible `•` separator keeps the messages distinct without depending on how a browser renders line breaks in its native tooltip.
+
+For example:
+
+```text
+The First name requires a value. • This value is unusual.
+```
 
 ### Deliver Validation State to the UI
 
-For a UI element to update as validation state changes, three things need to be set up:
+Jivs reports validation changes through callbacks supplied in the `ValueHostsManager` configuration. Application code must deliver the supplied state to the UI elements that want to present it.
 
-1. **A callback on ValueHostsManager** — tells application code that validation state changed and supplies the new state. It calls the Dispatcher Function.
-2. **A Dispatcher Function** — locates the UI elements interested in that change and calls the Presentation Function on matching elements. You have to write this, although it's usually boilerplate.
-3. **A Presentation Function** — creates the presentation specific to the element based on the validation state passed to it. It gets wired to the element as a callback that is invoked by the Dispatcher Function.
+The plain-DOM approach in this guide has three parts:
 
-The Dispatcher Function is the bridge between Jivs and the UI.
+1. **ValueHostsManager callback** — reports that validation state changed and supplies the new state.
+2. **Dispatcher Function** — locates the UI elements interested in that state and calls each element's Presentation Function.
+3. **Presentation Function** — decides how one UI element should respond to the supplied state.
 
-For example, consider just one Field Error Display:
+The Dispatcher Function is the bridge between Jivs and the UI:
 
-```html
-<div
-    data-field="first-name"
-    data-validation-role="error">
-</div>
+```text
+ValueHostsManager callback
+    → Dispatcher Function
+        → Presentation Function
+            → UI element
 ```
 
-`basicErrorDisplay()` is this example's overly simplistic Presentation Function for the Field Error Display:
+Jivs provides separate callbacks for field and form validation:
 
-```ts
-function basicErrorDisplay(
-    element: HTMLElement,
-    _valueHost: IFieldValueHost,
-    validationState: ValueHostValidationState
-): void {
-    element.textContent =
-        validationState.issuesFound?.[0]?.errorMessage ?? '';
-}
-```
+| Scope                      | ValueHostsManager callback          | State supplied             |
+| -------------------------- | ----------------------------------- | -------------------------- |
+| One ValueHost              | `onValueHostValidationStateChanged` | `ValueHostValidationState` |
+| Complete ValueHostsManager | `onValidationStateChanged`          | `ValidationState`          |
 
-Wire the function to Field Error Displays:
+A field Dispatcher Function uses the ValueHost's element identifier and the `data-field` convention to locate consumers belonging to that field.
 
-```ts
-const errorDisplays =
-    document.querySelectorAll<IFieldValidationConsumerElement>(
-        '[data-validation-role="error"]'
-    );
+A form Dispatcher Function locates consumers such as the Validation Summary and Submit button by their `data-jivs-role`.
 
-for (const errorDisplay of errorDisplays) {
-    errorDisplay.onFieldValidationStateChanged =
-        basicErrorDisplay;
-}
-```
+During UI initialization, `data-jivs-presentation` identifies the Presentation Function requested by each consumer. The Dispatcher Function does not need to know how those functions present the state. It only delivers the appropriate state to them.
 
-To make TypeScript aware of the Presentation Function on these HTML elements, declare an interface:
+The later Field UI and Form UI sections implement their callbacks, Dispatcher Functions, and Presentation Functions.
 
-```ts
-interface IFieldValidationConsumerElement extends HTMLElement {
-    onFieldValidationStateChanged?: (
-        element: HTMLElement,
-        valueHost: IFieldValueHost,
-        validationState: ValueHostValidationState
-    ) => void;
-}
-```
-
-The `fieldValidated()` Dispatcher Function uses the field identifier and the custom attributes planned earlier to find matching Field Error Displays and notify them:
-
-```ts
-function fieldValidated(
-    valueHost: IFieldValueHost,
-    validationState: ValueHostValidationState
-): void {
-    const elemId =
-        valueHost.getElementIdentifier();
-
-    const errorDisplays =
-        document.querySelectorAll<IFieldValidationConsumerElement>(
-            `[data-field="${CSS.escape(elemId)}"]` +
-            `[data-validation-role="error"]`
-        );
-
-    for (const errorDisplay of errorDisplays) {
-        errorDisplay.onFieldValidationStateChanged?.(
-            errorDisplay,
-            valueHost,
-            validationState
-        );
-    }
-}
-```
-
-Wire the Dispatcher Function to the `ValueHostsManager` callback:
-
-```ts
-config.onValueHostValidationStateChanged =
-    fieldValidated;
-
-const vhm =
-    new ValueHostsManager(config);
-```
-
-The later field and form sections build out this pattern for their individual UI elements. Form-level consumers will use the corresponding `IFormValidationConsumerElement` and `onFormValidationStateChanged` callback.
+This callback-and-dispatcher design is the approach used by this guide, not a requirement imposed by Jivs. Applications and framework integrations can deliver validation state to their UI in other ways.
 
 ## Build the Field Validation UI
 
-A field may have several UI elements that respond to validation: its editor, label, Field Error Display, Required Indicator, and sometimes application-specific widgets.
+A field may have several UI elements that respond to validation: its editor, label, Field Error Display, and sometimes application-specific widgets.
 
 The preparation from **Before Building the UI** now pays off:
 
-- We need a Dispatcher Function that dispatches validation changes to interested UI elements.
-- We need Presentation Functions for each approach to presenting validation in the UI.
-- `elementIdentifier` connects the `FieldValueHost` to its field identifier.
-- The `data-field` attribute lets us find elements belonging to that field.
-- The `data-validation-role` attribute identifies what each element does.
+* We need a Dispatcher Function that dispatches validation changes to interested UI elements.
+* We need Presentation Functions for each approach to presenting validation in the UI.
+* `elementIdentifier` connects the `FieldValueHost` to its field identifier.
+* The `data-field` attribute lets us find elements belonging to that field.
+* The `data-jivs-role` attribute identifies what each element does.
 
 The work ahead:
 
-- Build your Dispatcher Function and wire it to `ValueHostsManager.onValueHostValidationStateChanged`.
-- Build Presentation Functions for each use case and connect them to the `onFieldValidationStateChanged` callback of the relevant elements.
-
-### Code Prerequisite
-
-The plain-DOM design used in this document adds an `onFieldValidationStateChanged` callback to elements that consume field validation state.
-
-TypeScript needs to know about that callback:
-
-```ts
-interface IFieldValidationConsumerElement extends HTMLElement {
-    onFieldValidationStateChanged?: (
-        element: HTMLElement,
-        valueHost: IFieldValueHost,
-        validationState: ValueHostValidationState
-    ) => void;
-}
-```
-
-`IFieldValidationConsumerElement` supports the design shown here. It is not required by Jivs. An application or framework integration that delivers validation state another way does not need this interface.
+* Build your Dispatcher Function and wire it to `ValueHostsManager.onValueHostValidationStateChanged`.
+* Build Presentation Functions for each use case and connect them to the `onFieldValidationStateChanged` callback of the relevant elements.
 
 ### The Dispatcher Function
 
@@ -447,7 +838,7 @@ function fieldValidated(
     const consumers =
         document.querySelectorAll<IFieldValidationConsumerElement>(
             `[data-field="${CSS.escape(fieldId)}"]` +
-            `[data-validation-role]`
+            `[data-jivs-role]`
         );
 
     for (const consumer of consumers) {
@@ -460,7 +851,7 @@ function fieldValidated(
 }
 ```
 
-The Dispatcher Function does not change CSS classes, rebuild Error Messages, manage ARIA attributes, or decide whether a Required Indicator is visible.
+The Dispatcher Function does not change CSS classes, rebuild Error Messages, manage ARIA attributes, or otherwise decide how validation should appear.
 
 Those decisions belong to the individual Presentation Functions.
 
@@ -468,9 +859,141 @@ Those decisions belong to the individual Presentation Functions.
 
 Presentation Functions receive validation state from the Dispatcher Function and decide how an individual UI element should respond.
 
-A Presentation Function may change content, expose state through CSS classes, manage visibility, update accessibility attributes, or perform other presentation work appropriate to that element.
+Field validation commonly affects three kinds of UI elements:
 
-Each one is connected to the `onFieldValidationStateChanged` callback of the elements it manages.
+* **editor** — changes its styling or accessibility state when the field is invalid
+* **label** — changes its appearance to draw attention to the invalid field
+* **Field Error Display** — presents the issues found for the field
+
+Each is an independent validation consumer. They receive the same `ValueHostValidationState`, but their Presentation Functions use different parts of it and produce different results.
+
+A Presentation Function may change content, expose state through CSS classes, manage visibility, update accessibility attributes, or perform other presentation work appropriate to its element.
+
+#### Initialize Presentation Functions
+
+Each of these elements needs to identify the Presentation Function it wants to use. HTML supports application-defined `data-*` attributes, so these examples introduce the custom `data-jivs-presentation` attribute for that purpose.
+
+`data-jivs-role` identifies what the element does. `data-jivs-presentation` names how that element presents validation.
+
+For example, this Field Error Display requests the `inlineError` presentation:
+
+```html
+<div
+    data-field="first-name"
+    data-jivs-role="error"
+    data-jivs-presentation="inlineError">
+</div>
+```
+
+The setup has four parts:
+
+* `FieldPresentationHandler` defines the common signature used by field Presentation Functions.
+* Each participating element declares a Presentation name through `data-jivs-presentation`.
+* `getFieldPresentationFunction()` is a small factory that maps each name to its Presentation Function.
+* The attachment functions assign Presentation Functions to one or many elements. They skip elements already attached, allowing initialization to run again after elements are replaced.
+
+Go ahead and copy this entire TypeScript block into your client code as a starting point. The individual Presentation Functions referenced by the factory are developed next.
+
+```ts
+export type FieldPresentationHandler = (
+    element: HTMLElement,
+    valueHost: IFieldValueHost,
+    validationState: ValueHostValidationState
+) => void;
+
+export interface IFieldValidationConsumerElement extends HTMLElement {
+    onFieldValidationStateChanged?: FieldPresentationHandler;
+}
+
+// Return the Presentation Function associated with a name.
+// Add or replace cases as the application adds Presentation Functions.
+export function getFieldPresentationFunction(
+    presentationName: string
+): FieldPresentationHandler | undefined {
+    switch (presentationName) {
+        case 'invalidEditor':
+            return editorValidationChanged;
+
+        case 'invalidLabel':
+            return labelValidationChanged;
+
+        case 'inlineError':
+            return inlineErrorDisplayChanged;
+
+        case 'errorIcon':
+            return errorIconChanged;
+
+        case 'editorTooltip':
+            return editorTooltipChanged;
+    }
+}
+
+// Attach one Presentation Function when its name is already known.
+export function attachFieldPresentation(
+    element: IFieldValidationConsumerElement,
+    presentationName: string
+): void {
+    // Leave an element alone when it has already been attached.
+    if (element.onFieldValidationStateChanged) {
+        return;
+    }
+
+    const presentationFunction =
+        getFieldPresentationFunction(
+            presentationName
+        );
+
+    if (presentationFunction) {
+        element.onFieldValidationStateChanged =
+            presentationFunction;
+    }
+}
+
+// Read the Presentation name declared on one element and attach it.
+export function attachFieldPresentationFromAttribute(
+    element: IFieldValidationConsumerElement
+): void {
+    const presentationName =
+        element.dataset.jivsPresentation;
+
+    if (presentationName) {
+        attachFieldPresentation(
+            element,
+            presentationName
+        );
+    }
+}
+
+// Find matching elements and attach each declared presentation.
+export function attachFieldPresentations(
+    selector: string
+): void {
+    const elements =
+        document.querySelectorAll<IFieldValidationConsumerElement>(
+            selector
+        );
+
+    for (const element of elements) {
+        attachFieldPresentationFromAttribute(
+            element
+        );
+    }
+}
+```
+
+* Call `attachFieldPresentations()` as part of your page initialization. For example:
+
+  ```ts
+  attachFieldPresentations(
+      '[data-field][data-jivs-presentation]'
+  );
+  ```
+
+* Call `attachFieldPresentations()` again after replacing part of the form. Elements already attached are left untouched, while replacement elements are initialized.
+
+* We will provide each of the named Presentation Functions in later parts of this document.
+
+* Expect to rework `getFieldPresentationFunction()` as you adjust your Presentation Functions.
 
 #### Understanding ValueHostValidationState
 
@@ -491,12 +1014,12 @@ interface ValueHostValidationState {
 
 Its properties are:
 
-- `isValid` — whether validation currently considers the field valid
-- `doNotSave` — whether the field's current validation state should prevent saving
-- `issuesFound` — the issues currently associated with the field
-- `asyncProcessing` — whether asynchronous validation is running
-- `status` — the current `ValidationStatus`
-- `corrected` — whether previously invalid Validators have been corrected
+* `isValid` — whether validation currently considers the field valid
+* `doNotSave` — whether the field's current validation state should prevent saving
+* `issuesFound` — the issues currently associated with the field
+* `asyncProcessing` — whether asynchronous validation is running
+* `status` — the current `ValidationStatus`
+* `corrected` — whether previously invalid Validators have been corrected
 
 `isValid` and `doNotSave` answer different questions. For example, a Warning produces an `IssueFound` while the value remains valid due to `severity = Warning`. `doNotSave` also accounts for states such as validation still being required or asynchronous validation still running.
 
@@ -517,11 +1040,11 @@ interface IssueFound {
 
 For Field Error Displays, the most important properties are:
 
-- `errorMessage` — the fully prepared Error Message normally presented for the field
-- `severity` — identifies the severity of the issue
-- `summaryMessage` — an alternative message intended for a form-level Validation Summary
-- `valueHostName` — identifies the ValueHost associated with the issue
-- `errorCode` — identifies the type of issue or Validator that supplied it
+* `errorMessage` — the fully prepared Error Message normally presented for the field
+* `severity` — identifies the severity of the issue
+* `summaryMessage` — an alternative message intended for a form-level Validation Summary
+* `valueHostName` — identifies the ValueHost associated with the issue
+* `errorCode` — identifies the type of issue or Validator that supplied it
 
 A field can have more than one `IssueFound`. The Field Error Display decides whether to present one issue, every issue, selected severities, or another presentation entirely.
 
@@ -536,7 +1059,7 @@ The editor commonly changes appearance when the field becomes invalid.
 Its Presentation Function can expose that validation state through a CSS class:
 
 ```ts
-function editorValidationChanged(
+export function editorValidationChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -548,24 +1071,21 @@ function editorValidationChanged(
 }
 ```
 
-Wire that function to editor elements:
+Select this Presentation Function in the editor's markup:
 
-```ts
-const editors =
-    document.querySelectorAll<IFieldValidationConsumerElement>(
-        '[data-validation-role="editor"]'
-    );
-
-for (const editor of editors) {
-    editor.onFieldValidationStateChanged =
-        editorValidationChanged;
-}
+```html
+<input
+    id="first-name"
+    class="validation-editor"
+    data-field="first-name"
+    data-jivs-role="editor"
+    data-jivs-presentation="invalidEditor">
 ```
 
 CSS determines how that state looks:
 
 ```css
-[data-validation-role="editor"].invalid {
+[data-jivs-role="editor"].invalid {
     border: 2px solid currentColor;
 }
 ```
@@ -579,7 +1099,7 @@ A label may also change appearance when its field is invalid.
 Because the label may not have a predictable sibling relationship with the editor, give it its own Presentation Function:
 
 ```ts
-function labelValidationChanged(
+export function labelValidationChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -591,24 +1111,22 @@ function labelValidationChanged(
 }
 ```
 
-Wire it to labels:
+Select this Presentation Function in the label's markup:
 
-```ts
-const labels =
-    document.querySelectorAll<IFieldValidationConsumerElement>(
-        '[data-validation-role="label"]'
-    );
-
-for (const label of labels) {
-    label.onFieldValidationStateChanged =
-        labelValidationChanged;
-}
+```html
+<label
+    for="first-name"
+    data-field="first-name"
+    data-jivs-role="label"
+    data-jivs-presentation="invalidLabel">
+    First name
+</label>
 ```
 
 Then CSS owns the appearance:
 
 ```css
-[data-validation-role="label"].invalid {
+[data-jivs-role="label"].invalid {
     font-weight: 700;
 }
 ```
@@ -622,8 +1140,8 @@ It does not necessarily need its own Presentation Function.
 Because the editor exposes the field's invalid state using `validationState.isValid`, CSS can react to it:
 
 ```css
-[data-validation-role="container"]:has(
-    [data-validation-role="editor"].invalid
+[data-jivs-role="container"]:has(
+    [data-jivs-role="editor"].invalid
 ) {
     outline: 2px solid currentColor;
 }
@@ -633,7 +1151,7 @@ The same technique can reach larger structures:
 
 ```css
 .field-group:has(
-    [data-validation-role="editor"].invalid
+    [data-jivs-role="editor"].invalid
 ) {
     outline: 2px solid currentColor;
 }
@@ -649,23 +1167,21 @@ Field Error Displays vary widely. Some forms show Error Messages directly below 
 
 Applications commonly use approaches such as:
 
-- one Error Message at a time
-- all Error Messages displayed together
-- a native browser tooltip
-- a popup, alert, or popover
-- an error icon that reveals messages on interaction
-- application-specific components or notifications
+* one Error Message at a time
+* all Error Messages displayed together
+* a native browser tooltip
+* a popup, alert, or popover
+* an error icon that reveals messages on interaction
+* application-specific components or notifications
 
 This section separates the common work from those presentation choices. We'll:
 
-- generate reusable HTML for one or multiple Error Messages
-- generate plain text for native browser tooltips
-- build an inline Error Display
-- show an error icon with a native tooltip
-- attach a native tooltip to the container around an editor
-- show how the same generated HTML can be handed to a UI-library popup, alert, or popover
-
-These are intentionally different presentations of the same `issuesFound` data. Their Presentation Functions decide how the messages appear; the Dispatcher Function does not change.
+* generate reusable HTML for one or multiple Error Messages
+* generate plain text for native browser tooltips
+* build an inline Error Display
+* show an error icon with a native tooltip
+* attach a native tooltip to the container around an editor
+* show how the same generated HTML can be handed to a UI-library popup, alert, or popover
 
 Most Field Error Displays have two parts:
 
@@ -703,21 +1219,21 @@ For multiple issues, generate a list:
 
 Each Error Message element can expose information from its `IssueFound` for CSS and other presentation logic:
 
-- `data-error-code` contains `IssueFound.errorCode` when supplied
-- `data-severity` contains the severity name when the severity is not the normal `Error`
+* `data-error-code` contains `IssueFound.errorCode` when supplied
+* `data-severity` contains the severity name when the severity is not the normal `Error`
 
 Error Messages may also contain prepared HTML, such as `<span>` elements inserted while resolving message tokens. The HTML generator preserves that prepared markup.
 
 The same generator can later be used by a Validation Summary by selecting `summaryMessage` instead of `errorMessage`. When `summaryMessage` is not supplied, it falls back to `errorMessage`.
 
 ```ts
-const severityNames: Array<string | null> = [
+export const severityNames: Array<string | null> = [
     'warning',
     null,
     'severe'
 ];
 
-function buildErrorMessagesHtml(
+export function buildErrorMessagesHtml(
     issues: IssueFound[],
     useSummaryMessage = false
 ): string {
@@ -747,7 +1263,7 @@ function buildErrorMessagesHtml(
     return `<ul>${items}</ul>`;
 }
 
-function buildErrorMessageHtml(
+export function buildErrorMessageHtml(
     tagName: 'span' | 'li',
     issue: IssueFound,
     useSummaryMessage: boolean
@@ -813,7 +1329,7 @@ A native browser tooltip uses the `title` attribute, which accepts plain text ra
 Because an Error Message may contain prepared HTML, the text builder first lets the browser parse that markup and then extracts its text.
 
 ```ts
-function buildErrorMessagesText(
+export function buildErrorMessagesText(
     issues: IssueFound[]
 ): string {
     return issues
@@ -825,7 +1341,7 @@ function buildErrorMessagesText(
         .join(' • ');
 }
 
-function errorMessageToText(
+export function errorMessageToText(
     errorMessage: string
 ): string {
     const container =
@@ -853,14 +1369,15 @@ The simplest Field Error Display places the generated HTML directly in the page.
 ```html
 <div
     data-field="first-name"
-    data-validation-role="error">
+    data-jivs-role="error"
+    data-jivs-presentation="inlineError">
 </div>
 ```
 
 Its Presentation Function generates the messages and exposes whether there are any issues:
 
 ```ts
-function inlineErrorDisplayChanged(
+export function inlineErrorDisplayChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -883,11 +1400,11 @@ function inlineErrorDisplayChanged(
 CSS can hide the Error Display when there are no issues:
 
 ```css
-[data-validation-role="error"] {
+[data-jivs-role="error"] {
     display: none;
 }
 
-[data-validation-role="error"].has-issues {
+[data-jivs-role="error"].has-issues {
     display: block;
 }
 ```
@@ -906,7 +1423,8 @@ This example uses the ❗ symbol:
 <span
     class="field-error-icon"
     data-field="first-name"
-    data-validation-role="error">
+    data-jivs-role="error"
+    data-jivs-presentation="errorIcon">
     &#x2757;
 </span>
 ```
@@ -914,7 +1432,7 @@ This example uses the ❗ symbol:
 The Presentation Function adds or removes the tooltip text and exposes whether the icon should be visible:
 
 ```ts
-function errorIconChanged(
+export function errorIconChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -966,19 +1484,21 @@ Wrap the editor in a container with no additional spacing:
 <span
     class="editor-error-container"
     data-field="first-name"
-    data-validation-role="error">
+    data-jivs-role="error"
+    data-jivs-presentation="editorTooltip">
 
     <input
         id="first-name"
         data-field="first-name"
-        data-validation-role="editor">
+        data-jivs-role="editor"
+        data-jivs-presentation="invalidEditor">
 </span>
 ```
 
 The container is the Field Error Display, and in this case it is always visible. Its Presentation Function adds or removes the native tooltip:
 
 ```ts
-function editorTooltipChanged(
+export function editorTooltipChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -1008,15 +1528,15 @@ Applications that need richer popup behavior should usually use the popup, alert
 
 The Presentation Function still has the same responsibilities:
 
-- determine whether issues exist
-- generate the Error Message content
-- provide that content to the UI-library component
-- show or hide the component as appropriate
+* determine whether issues exist
+* generate the Error Message content
+* provide that content to the UI-library component
+* show or hide the component as appropriate
 
 For example, conceptually:
 
 ```ts
-function popupErrorDisplayChanged(
+export function popupErrorDisplayChanged(
     element: HTMLElement,
     _valueHost: IFieldValueHost,
     validationState: ValueHostValidationState
@@ -1038,42 +1558,14 @@ function popupErrorDisplayChanged(
 
 `showErrorPopup()` and `hideErrorPopup()` represent the application's UI-library integration.
 
-The UI library remains responsible for popup behavior such as positioning, dismissal, focus handling, keyboard interaction, and accessibility. Jivs supplies the validation state, while the Presentation Function supplies the Error Message content and decides when the popup is needed.
-
-#### Build a Required Indicator
-
-A Required Indicator communicates `valueHost.requiresInput`.
-
-There are two reasonable ways to present it.
-
-A Required Indicator can be a validation consumer with its own Presentation Function:
+Add a corresponding name to `getFieldPresentationFunction()` when using this Presentation Function:
 
 ```ts
-function requiredIndicatorChanged(
-    element: HTMLElement,
-    valueHost: IFieldValueHost,
-    _validationState: ValueHostValidationState
-): void {
-    element.classList.toggle(
-        'required',
-        valueHost.requiresInput
-    );
-}
+case 'popupError':
+    return popupErrorDisplayChanged;
 ```
 
-```css
-[data-validation-role="required"] {
-    display: none;
-}
-
-[data-validation-role="required"].required {
-    display: inline;
-}
-```
-
-Or, when required state is already exposed elsewhere in the field markup, CSS can derive the Required Indicator's visibility from that state.
-
-The Presentation Function approach is useful when the Required Indicator has its own behavior or presentation responsibilities.
+The UI library remains responsible for popup behavior such as positioning, dismissal, focus handling, keyboard interaction, and accessibility. Jivs supplies the validation state, while the Presentation Function supplies the Error Message content and decides when the popup is needed.
 
 #### Use Other Field Validation State
 
@@ -1115,10 +1607,10 @@ interface ValidationState {
 
 The properties answer different questions:
 
-- `isValid` — whether validation currently knows of an error that makes the data invalid
-- `doNotSave` — whether the current state should prevent saving
-- `issuesFound` — the current validation issues
-- `asyncProcessing` — whether asynchronous validation is still running
+* `isValid` — whether validation currently knows of an error that makes the data invalid
+* `doNotSave` — whether the current state should prevent saving
+* `issuesFound` — the current validation issues
+* `asyncProcessing` — whether asynchronous validation is still running
 
 For Save and Submit decisions, prefer `doNotSave`.
 
@@ -1147,8 +1639,8 @@ function formValidated(
 ): void {
     const consumers =
         document.querySelectorAll<IFormValidationConsumerElement>(
-            '[data-validation-role="summary"],' +
-            '[data-validation-role="submit"]'
+            '[data-jivs-role="summary"],' +
+            '[data-jivs-role="submit"]'
         );
 
     for (const consumer of consumers) {
@@ -1176,7 +1668,7 @@ A Validation Summary presents issues across the complete `ValueHostsManager`.
 
 ```html
 <div
-    data-validation-role="summary">
+    data-jivs-role="summary">
 </div>
 ```
 
@@ -1223,11 +1715,11 @@ function validationSummaryChanged(
 ```
 
 ```css
-[data-validation-role="summary"] {
+[data-jivs-role="summary"] {
     display: none;
 }
 
-[data-validation-role="summary"].has-errors {
+[data-jivs-role="summary"].has-errors {
     display: block;
 }
 ```
@@ -1264,12 +1756,12 @@ When an `IssueFound` supplies `valueHostName`, application code can resolve the 
 
 That can support interactions such as:
 
-- focusing the editor
-- scrolling it into view
-- opening an accordion
-- selecting a tab
-- opening a dialog
-- revealing a popup Field Error Display
+* focusing the editor
+* scrolling it into view
+* opening an accordion
+* selecting a tab
+* opening a dialog
+* revealing a popup Field Error Display
 
 Navigation remains application-owned because it depends on the surrounding UI structure.
 
@@ -1283,9 +1775,9 @@ The same validation state delivered to each Presentation Function can drive the 
 
 The editor commonly manages:
 
-- `aria-invalid`
-- `aria-required`
-- `aria-errormessage`
+* `aria-invalid`
+* `aria-required`
+* `aria-errormessage`
 
 `aria-invalid` follows validation state:
 
@@ -1326,7 +1818,7 @@ For:
 <div
     id="first-name_errorMessages"
     data-field="first-name"
-    data-validation-role="error">
+    data-jivs-role="error">
 </div>
 ```
 
@@ -1374,7 +1866,7 @@ A Field Error Display may use a localized `aria-roledescription`:
 <div
     id="first-name_errorMessages"
     data-field="first-name"
-    data-validation-role="error"
+    data-jivs-role="error"
     aria-roledescription="Error message">
 </div>
 ```
@@ -1432,5 +1924,3 @@ The application can implement these responsibilities directly with browser APIs 
 Jivs remains responsible for validation state. The application or framework integration remains responsible for presenting that state.
 
 ---
-
-Continue with [Submitting the Client Form](Submitting_the_Client_Form.md) to see how validation UI participates when submission is stopped or validation issues return from the server.
