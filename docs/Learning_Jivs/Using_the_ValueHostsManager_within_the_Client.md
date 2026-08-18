@@ -16,6 +16,8 @@ flowchart LR
 
 The code that connects those two sides can remain small. Its job is to move values into Jivs and respond to callbacks when Jivs has something the UI needs to know.
 
+> Many code snippets here can also be found in this source code file intended to be added to your application as a quick start: [`jivs-DOM_helpers.ts`](../../starter_code/jivs-DOM_helpers.ts)
+
 ## Finding the UI Element for a FieldValueHost
 
 Consider a `FieldValueHost` for `FirstName` and the input element that edits it:
@@ -46,6 +48,7 @@ function getElement(
     return fldId ? document.getElementById(fldId) : null;
 }
 ```
+> Found in [`jivs-DOM_helpers.ts`](../../starter_code/jivs-DOM_helpers.ts)
 By default, `getElementIdentifier()` returns the same value as `getName()`.
 Frequently `getName()` does not match to your UI, and you have to use the element identifier feature
 on the `FieldValueHost`.
@@ -100,7 +103,7 @@ flowchart LR
 A small setup function can connect the element to its `FieldValueHost`:
 
 ```ts
-function connectInputToField(
+function attachJivsToInput(
     input: HTMLInputElement,
     fieldValueHost: FieldValueHost,
     duringEdit: boolean = false
@@ -118,6 +121,7 @@ function connectInputToField(
     }
 }
 ```
+> Found in [`jivs-DOM_helpers.ts`](../../starter_code/jivs-DOM_helpers.ts) along with support for select and textarea tags.
 
 Using `change` waits until the edit is committed. Adding `input` lets Jivs validate while the user is still editing.
 
@@ -212,8 +216,11 @@ function onValueHostValidationStateChanged(
         validationState.issuesFound?.[0]?.errorMessage ?? '';
 }
 ```
+> See the `fieldValidated()` function within [Build the Field Validation UI](./Building_Client_Validation_UI.md#build-the-field-validation-ui) for a fully implemented callback.
 
 This example shows only the first Error Message. An application may instead display several messages, change field styling, or use another presentation appropriate to its UI.
+
+For much more, see [Build the Field Validation UI](./Building_Client_Validation_UI.md#build-the-field-validation-ui).
 
 ### When Overall Validation Changes
 
@@ -230,6 +237,8 @@ flowchart LR
 A callback can inspect the current Validation State and available Error Messages, then pass that information to the application's Validation Summary.
 
 The details of that presentation belong to the UI. What matters here is the boundary: Jivs reports the change, and application code decides how to communicate it.
+
+For much more, see [Build the Form Validation UI](./Building_Client_Validation_UI.md#build-the-form-validation-ui).
 
 ## The Interactive Connection
 
