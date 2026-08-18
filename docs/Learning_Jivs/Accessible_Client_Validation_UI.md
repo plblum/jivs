@@ -4,7 +4,7 @@ Validation information should be communicated both visually and to assistive tec
 
 Jivs supplies the required and validation state used by the UI, but it does not require a particular accessibility implementation. Each application or framework integration is responsible for applying the appropriate HTML semantics, ARIA attributes, announcements, focus behavior, and keyboard interaction.
 
-The examples in this document use the HTML attributes and Presentation Functions introduced in [Building Client Validation UI](Building_Client_Validation_UI.md). Those Jivs SimpleDom conventions provide a familiar DOM implementation for the examples, but the accessibility responsibilities apply to any UI built with Jivs.
+The examples in this document use the HTML attributes and Presentation Functions introduced in [Jivs Presentation Learning Guide](Client_Presentation_of_Jivs_Validation.md). Those Jivs SimpleDom conventions provide a familiar DOM implementation for the examples, but the accessibility responsibilities apply to any UI built with Jivs.
 
 ## Prefer Native HTML Semantics
 

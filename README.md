@@ -251,8 +251,8 @@ For more, see [JivsServices](#jivsservices).
 # Digging in
 Please use these documents:
 
+- [Learning Jivs](./docs/Learning_Jivs_Home.md)
 - [Terminology](./docs/Terminology.md)
-- [Learning Jivs](./docs/Learning.md)
 - [Configuring the ValueHosts](./docs/ValueHostsManager_Configuration_Guide.md)
 - [The API](./docs/Jivs_API.md)
   + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)

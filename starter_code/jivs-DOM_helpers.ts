@@ -22,7 +22,7 @@
  *
  * It has a companion, jivs-simpleDom.ts, which offers the Jivs SimpleDom architecture for presentation
  * of validation issues in the DOM. It is described in the learning guide 
- * [Building Client Validation UI](docs/Learning_Jivs/Building_Client_Validation_UI.md)
+ * [Jivs Presentation Learning Guide](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md)
  ------------------------------------------------------------------------------------------ */
 import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { type IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';

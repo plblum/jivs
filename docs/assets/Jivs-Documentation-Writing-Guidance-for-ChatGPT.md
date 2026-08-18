@@ -42,6 +42,9 @@ The target is:
 
 > **The author after a strong edit, not generic documentation prose.**
 
+## Asking questions
+When you have a question, give it the next unique sequence number, using S01, S02, so I can respond to it directly.
+
 ## Shape the Writing Around the Reader
 
 ### Lead the Reader In
