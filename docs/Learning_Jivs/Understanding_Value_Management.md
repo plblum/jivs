@@ -187,3 +187,5 @@ The user interface and transport mechanisms remain outside the Value Manager.
 ---
 
 Now let's see how [Jivs provides this](Understanding_Jivs.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

@@ -285,3 +285,8 @@ Pay particular attention to duplicate announcements, missing Error Messages, une
 
 * [WAI-ARIA 1.2: `aria-errormessage`](https://www.w3.org/TR/wai-aria-1.2/#aria-errormessage)
 * [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/)
+
+---
+Next on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

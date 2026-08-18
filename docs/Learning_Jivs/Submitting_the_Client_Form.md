@@ -185,6 +185,8 @@ When the server accepts the submitted data, the submission pipeline is complete.
 
 Here is the complete client-side submission process. Application-specific business validation, server communication, and handling of server issues are represented by functions supplied by the application.
 
+> We have creating actual classes that let you get started more quickly in [jivs-DOM_Helpers.ts](../../starter_code/jivs-DOM_helpers.ts). Consider subclassing from either ClientSubmitsToJivsOnServerBase or ClientSubmitsToServerBase as you develop submit code to handle your server-side infrastructure and various models.
+
 ```ts
 async function submitPerson(vhm: ValueHostsManager): Promise<void> {
     const validationState = vhm.validate();
@@ -373,5 +375,8 @@ Returning `true` means validation issues were found and handled, so submission p
 The server does not need to understand Jivs. The client-side adapter translates the server's validation contract into the `IssueFound` information Jivs needs.
 
 ---
+Next, we'll look at [Client Presentation of Jivs Validation](./Client_Presentation_of_Jivs_Validation.md)
 
-Next, we'll look at [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
+Or start on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

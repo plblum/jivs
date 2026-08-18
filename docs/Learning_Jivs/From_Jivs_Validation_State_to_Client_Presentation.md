@@ -367,3 +367,5 @@ The later [Field Presentation of Jivs Validation](Field_Presentation_of_Jivs_Val
 ---
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Field Presentation of Jivs Validation](Field_Presentation_of_Jivs_Validation.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

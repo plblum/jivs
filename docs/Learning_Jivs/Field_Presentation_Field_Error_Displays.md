@@ -235,3 +235,5 @@ The UI library remains responsible for popup behavior such as positioning, dismi
 ---
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Form Presentation of Jivs Validation](Form_Presentation_of_Jivs_Validation.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

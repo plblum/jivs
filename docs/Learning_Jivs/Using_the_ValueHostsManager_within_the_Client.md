@@ -238,7 +238,7 @@ A callback can inspect the current Validation State and available Error Messages
 
 The details of that presentation belong to the UI. What matters here is the boundary: Jivs reports the change, and application code decides how to communicate it.
 
-For much more, see [Build the Form Validation UI](./Form_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function).
+For much more, see [Build the Form Validation UI](./Form_Presentation_of_Jivs_Validation.md).
 
 ## The Interactive Connection
 
@@ -260,3 +260,5 @@ The UI framework remains outside that process. Whether the application uses nati
 ---
 
 Next, we'll look at [the form initialization process](Initializing_the_Client_Form.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

@@ -193,3 +193,5 @@ From this point, the connections established in [Using the ValueHostsManager wit
 ---
 
 Next, learn how to [submit the client form](Submitting_the_Client_Form.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

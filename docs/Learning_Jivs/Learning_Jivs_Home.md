@@ -44,22 +44,24 @@ Client presentation appears at the end because it builds on the validation state
 
    Follow the complete submission process: validate with Jivs, build the Model, perform additional business validation, send the request, and integrate server validation results.
 
+7. [Client Presentation of Jivs Validation](Client_Presentation_of_Jivs_Validation.md)
+
+    Build the client validation presentation, including Field Error Displays, Required Indicators, validation styling, Validation Summaries, and Submit / Save Controls. This guide introduces Jivs SimpleDom as a complete working approach while preserving Jivs' independence from the UI.
+
 ### Validate on the Server
 
-7. [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md)
+8. [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md)
 
    Begin with the technology-independent server workflow. Learn why the server must validate every request and how validation issues differ from operational failures.
 
-8. [Using Jivs for Server-Side Validation](Using_Jivs_for_Server_Side_Validation.md)
+9. [Using Jivs for Server-Side Validation](Using_Jivs_for_Server_Side_Validation.md)
 
    Use Jivs on a Node.js server to prepare and validate request values, build Models, and share Model validation rules between the client and server.
 
-9. [Integrating Non-Jivs Server Validation](Integrating_Non_Jivs_Server_Validation.md)
+10. [Integrating Non-Jivs Server Validation](Integrating_Non_Jivs_Server_Validation.md)
 
    Keep an existing server validation system while translating its validation results into the information Jivs needs on the client.
 
-### Present Validation in the Client
 
-10. [Client Presentation of Jivs Validation](Client_Presentation_of_Jivs_Validation.md)
-
-    Build the client validation presentation, including Field Error Displays, Required Indicators, validation styling, Validation Summaries, and Submit / Save Controls. This guide introduces Jivs SimpleDom as a complete working approach while preserving Jivs' independence from the UI.
+---
+Get started with [Understanding Value Management](Understanding_Value_Management.md).

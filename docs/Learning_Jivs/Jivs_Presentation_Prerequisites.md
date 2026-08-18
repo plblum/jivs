@@ -94,3 +94,5 @@ All user-controlled data included in an Error Message should be supplied through
 ---
 
 Continue to the next section of the Jivs Presentation Learning Guide: [The Jivs SimpleDom Approach](The_Jivs_SimpleDom_Approach.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).

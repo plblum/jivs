@@ -221,3 +221,5 @@ In both cases, the result is a configured `ValueHostsManager` ready for values a
 ---
 
 Now let's [use the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md).
+
+Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
