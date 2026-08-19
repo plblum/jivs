@@ -69,7 +69,7 @@ The calls that follow add validation rules. This search value is required and ca
 
 The Builder API can configure considerably more than this. For now, the important point is that **configuration describes what the ValueHostsManager will contain and how those ValueHosts should behave**.
 
-See the [ValueHostsManager Configuration Guide](ValueHostsManager_Configuration_Guide.md) when you need the available configuration options.
+See the [ValueHostsManager Configuration Guide](../ValueHostsManager_Configuration_Guide.md) when you need the available configuration options.
 
 ## Example: Starting with Rules from a Model
 

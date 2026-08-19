@@ -13,7 +13,7 @@ Applications commonly use approaches such as:
 - an error icon that reveals messages on interaction
 - application-specific components or notifications
 
-The shared Error Message HTML and text generators were developed under [Generating Error Messages from `IssueFound` Objects](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-issuefound-objects).
+The shared Error Message HTML and text generators were developed under [Generating Error Messages from `IssueFound` Objects](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-objects).
 
 This section separates the common work from the presentation choices. We'll:
 

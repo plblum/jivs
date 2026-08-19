@@ -114,7 +114,7 @@ builder.field('Count', LookupKey.Number, {
 
 Here, an `undefined` Model value becomes `0` in the `FieldValueHost`.
 
-See [Value Adapter rules](Jivs_API.md#value-adapter-rules) for the available rules and customization options.
+See [Value Adapter rules](../Jivs_API.md#value-adapter-rules) for the available rules and customization options.
 
 ### Form / Text Values
 
@@ -202,7 +202,7 @@ builder.field('FirstName', LookupKey.String, {
 
 Here, an empty string in the ValueHost becomes `undefined` when written to the Model.
 
-See [Value Adapter rules](Jivs_API.md#value-adapter-rules) for the available rules and customization options.
+See [Value Adapter rules](../Jivs_API.md#value-adapter-rules) for the available rules and customization options.
 
 ## Representing Additional Validation Issues
 
