@@ -413,6 +413,7 @@ The [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder
         propertyName?: string;
         modelReaderRule?: ValueAdapterRule;
         modelWriterRule?: ValueAdapterRule;
+        elementIdentifier:? string | null;
     }
     ```
     This variant takes one parameter, an object with all properties on the `FieldValueHostConfig`.
@@ -504,6 +505,30 @@ It has no impact on `setValues()` or `setTextValue()`.
 - `propertyName` – The actual property name on the model. If its the same as `ValueHostConfig.name`, this can be undefined. Helps mapping between model and valuehost, especially when using the [ModelReader and ModelWriter](#modelreader-and-modelwriter). `ModelReader` and `ModelWriter` permit dot notation to locate a property of a child, such as "Address.Street1".
 - `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
 - `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](#modelreader-and-modelwriter).
+- `elementIdentifier` - 
+    When provided, this is used to identify the input element in the UI that is associated with this `FieldValueHost`.
+
+    Some usages:
+    - Match to the id= attribute of an HTML input element.
+    - Match to the name= attribute of an HTML input element.
+    - Match to a data-* attribute of an HTML input element.
+    - Selector syntax for document.querySelector() or jQuery to find the element.
+
+    ```ts
+    let fvh = vhm.getFieldValueHost('fieldName');
+    let fldId = fvh.getElementIdentifier();
+    let fld = document.getElementById(fldId);
+    ```
+    FieldValueHost.getElementIdentifier() method allows you to supply a template
+    for which this value is inserted where the "{0}" is found.
+
+    This value is sometimes resolved after configuration. In that case, you can set it later:
+    ```ts
+    let fvh = vhm.getFieldValueHost('fieldName');
+    if (!fvh.hasElementIdentifier())    // suggested - means the config property was not used
+        fvh.setElementIdentifier('resolved ID');
+    ```
+
 ### Getting a ValueHost
 Start with a `ValueHostsManager` instance. It should already be configured with ValueHosts. Supposing *vhm* has that `ValueHostsManager`, do this to get a `ValueHost`:
 
@@ -602,12 +627,12 @@ Your `ValueHost` configuration determines if formatting will happen.
 - Using the resulting text value in your user interface element
     ```ts
     builder.field('BirthDate', LookupKey.Date, { // will use DateFormatter
-        propertyName: 'idForBirthdate'  // use propertyName to hold the id attribute value of the input if different from the ValueHost name
+        elementIdentifier: 'idForBirthdate'  // hold the id attribute value of the input if different from the ValueHost name
     });
     builder.onTextValueChanged = (fieldValueHost, oldValue)=>{
         let newTextValue = fieldValueHost.getTextValue();
         // assign it to the input's value attribute
-        document.getElementById(fieldValueHost.getPropertyName()).value = newTextValue;
+        document.getElementById(fieldValueHost.getElementIdentifier()).value = newTextValue;
     };
     let vhm = new ValueHostsManager(builder.completed());
     // suppose your have a model object with a 'BirthDate' property
@@ -1061,12 +1086,16 @@ interface IValueHostsManager {
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
     addExternalIssuesFound(issuesFound, developedLocally, options?): boolean;
+    addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean;
         
     isValid: boolean;
     doNotSave: boolean;
     asyncProcessing?: boolean;
     getIssuesForInput(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];
+
+    toValidationPayload(externalIssues: Array<IssueFound> | null): string;
+    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean; 
 }
 ```
 
@@ -1152,7 +1181,7 @@ export class PersonFormRules extends ValueHostRulesBase {
 You can see that both Model and Form representations are identical aside from the class name.
 
 The builder's class has a rich API called **Builder API**. Learn about it here:
-[Builder](Configuring.md#the-valuehostsmanagerconfigbuilder-class)
+[Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 When a form uses those model rules, subclass that model's ValueHost rules class and implement `IAdaptModelRulesToForm`.
 
@@ -1174,7 +1203,7 @@ class PersonEditFormRules
 
 The adapter's class inherits from the builder, and introduces methods to carefully adapt your form's requirements without breaking the business logic rules.
 Learn about it here: 
-[Adapter](Configuring.md#the-form-configuration-adapter)
+[Adapter](ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
 
 ### Consuming the ValueHostRules subclass
 ```ts
@@ -1212,7 +1241,7 @@ For more, see [ValueHost members](#valuehost-members).
 - `builder.calc(valueHostName, parameters)` adds a `CalcValueHost` configuration. 
 For more, see [Using CalcValueHost](#using-calcvaluehost).
     
-[Builder](Configuring.md#the-valuehostsmanagerconfigbuilder-class)
+[Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 ### Short intro to methods on Adapter
 The `FormConfigAdapter` has these features:
@@ -1233,7 +1262,7 @@ The `FormConfigAdapter` has these features:
 - Assign a validation group name if using it.
     + `adapter.assignToGroup('group name', [field names])`
 
-[Adapter](Configuring.md#the-form-configuration-adapter)
+[Adapter](ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
 
 ---
 ## ModelReader and ModelWriter
@@ -2171,18 +2200,18 @@ Let's go through `ValueHostValidationState` properties:
 Here is the `IssueFound type`, which is supplied in the issuesFound array above:
 ```ts
 interface IssueFound {
-    valueHostName: string;
-    errorCode: string;
-    severity: ValidationSeverity;
     errorMessage: string;
+    errorCode?: string;
+    valueHostName?: string;
+    severity?: ValidationSeverity;
     summaryMessage?: string;
 }
 ```
 Going through its properties:
-- `valueHostName` - The name of the ValueHost supplying this IssueFound.
-- `errorCode` - The error code from the Validator supplying this IssueFound. Error codes default to the ConditionType value used to select the Condition, but can be supplied as you configure the Validator in ValidatorConfig.errorCode.
-- `severity` - The severity: Severe, Error, or Warning. When Warning, the value is considered valid, but you wanted to show the user some message anyway.
 - `errorMessage` - The error message, fully localized and prepared to display.
+- `errorCode` - The error code from the Validator supplying this IssueFound. Error codes default to the ConditionType value used to select the Condition, but can be supplied as you configure the Validator in ValidatorConfig.errorCode.
+- `valueHostName` - The name of the ValueHost supplying this IssueFound.
+- `severity` - The severity: Severe, Error, or Warning. When Warning, the value is considered valid, but you wanted to show the user some message anyway.
 - `summaryMessage` - The error message that targets the ValidationSummary. 
 
 ### Current validation state on ValueHostsManager

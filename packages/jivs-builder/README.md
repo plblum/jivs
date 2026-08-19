@@ -11,7 +11,7 @@ It provides the classes referred to as "Builder" and "Builder API", which includ
 ```ts
 builder.field('FirstName', LookupKeys.String).requireText().stringLength(50);
 ```
-[Documentation](../../docs/Configuring.md)
+[Documentation](../../docs/ValueHostsManager_Configuration_Guide.md)
 
 [Source code](https://github.com/plblum/jivs/tree/main/packages/jivs-builder)
 

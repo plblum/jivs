@@ -1522,7 +1522,7 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
         expect(() => initialValueHost.getFromInstanceState('anything')).toThrow();  // deref error
     });
 });
-describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueHost, getStaticValueHost', () => {
+describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueHost, getStaticValueHost, getFieldByElementIdentifier, getFieldByPropertyName', () => {
     test('With 2 FieldValueHostConfigs, get each with all functions. Expect null for Calc and Static', () => {
 
         let config1: FieldValueHostConfig = {
@@ -1652,6 +1652,69 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(() => vh5 = testItem.getStaticValueHost('Unknown')).not.toThrow();
         expect(vh5).toBeNull();
     });
+
+    // getFieldByElementIdentifier(elementIdentifier: string): IFieldValueHost | null
+    test('getFieldByElementIdentifier returns the expected FieldValueHost when both have elementIdentifier established', () =>
+    {
+        let config1: FieldValueHostConfig = {
+            name: 'Field1',
+            valueHostType: ValueHostType.Field,
+            label: 'Field 1',
+            elementIdentifier: 'A',
+            validatorConfigs: null,
+        };
+        let config2: FieldValueHostConfig = {
+            name: 'Field2',
+            valueHostType: ValueHostType.Field,
+            label: 'Field 2',
+            elementIdentifier: 'B',
+            validatorConfigs: null,
+        };
+        let testItem = new PublicifiedValueHostsManager({
+            services: new MockJivsServices(false, false),
+            valueHostConfigs: [config1, config2]
+        });
+        let vh1: IFieldValueHost | null = testItem.getFieldByElementIdentifier('A');
+        expect(vh1).toBeInstanceOf(FieldValueHost);
+        expect(vh1!.getName()).toBe('Field1');
+        let vh2: IFieldValueHost | null = testItem.getFieldByElementIdentifier('B');
+        expect(vh2).toBeInstanceOf(FieldValueHost);
+        expect(vh2!.getName()).toBe('Field2');
+        // no match returns null
+        let vh3: IFieldValueHost | null = testItem.getFieldByElementIdentifier('C');
+        expect(vh3).toBeNull();
+    });
+    // getFieldByPropertyName(propertyName: string): IFieldValueHost | null
+    test('getFieldByPropertyName returns the expected FieldValueHost when both have propertyName established', () =>
+    {
+        let config1: FieldValueHostConfig = {
+            name: 'Field1',
+            valueHostType: ValueHostType.Field,
+            label: 'Field 1',
+            propertyName: 'A',
+            validatorConfigs: null,
+        };
+        let config2: FieldValueHostConfig = {
+            name: 'Field2',
+            valueHostType: ValueHostType.Field,
+            label: 'Field 2',
+            propertyName: 'B',
+            validatorConfigs: null,
+        };
+        let testItem = new PublicifiedValueHostsManager({
+            services: new MockJivsServices(false, false),
+            valueHostConfigs: [config1, config2]
+        });
+        let vh1: IFieldValueHost | null = testItem.getFieldByPropertyName('A');
+        expect(vh1).toBeInstanceOf(FieldValueHost);
+        expect(vh1!.getName()).toBe('Field1');
+        let vh2: IFieldValueHost | null = testItem.getFieldByPropertyName('B');
+        expect(vh2).toBeInstanceOf(FieldValueHost);
+        expect(vh2!.getName()).toBe('Field2');
+        // no match returns null
+        let vh3: IFieldValueHost | null = testItem.getFieldByPropertyName('C');
+        expect(vh3).toBeNull();
+    });    
 });
 
 // validate(group?: string): Array<ValueHostValidateResult>
@@ -3580,6 +3643,16 @@ describe('toIValueHostsManager function', () => {
                 throw new Error('Function not implemented.');
             },
 
+            getFieldByElementIdentifier(elementIdentifier: string): IFieldValueHost | null
+            {
+                throw new Error('Function not implemented.');
+            },
+
+            getFieldByPropertyName(propertyName: string): IFieldValueHost | null
+            {
+                throw new Error('Function not implemented.');
+            },
+    
             notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
                 throw new Error('Function not implemented.');
             },
@@ -3647,6 +3720,16 @@ describe('toIValueHostsManagerAccessor function', () => {
                 enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
                     throw new Error("Function not implemented.");
                 },
+                getFieldByElementIdentifier(elementIdentifier: string): IFieldValueHost | null
+                {
+                    throw new Error('Function not implemented.');
+                },
+
+                getFieldByPropertyName(propertyName: string): IFieldValueHost | null
+                {
+                    throw new Error('Function not implemented.');
+                },
+
                 notifyValueHostInstanceStateChanged: function (valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
                     throw new Error("Function not implemented.");
                 },

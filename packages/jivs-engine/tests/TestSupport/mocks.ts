@@ -109,6 +109,10 @@ export class MockValueHost implements IValueHost
     public get valueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
+    getType(): string
+    {
+        return 'MockValueHost';
+    }
     getName(): string {
         return this._name;
     }
@@ -214,6 +218,20 @@ export class MockFieldValueHost extends MockValueHost
     public getModelWriterRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }    
+
+    getElementIdentifier(template?: string): string
+    {
+        throw new Error("Method not implemented.");
+    }
+
+    setElementIdentifier(elementIdentifier: string): void
+    {
+        throw new Error("Method not implemented.");
+    }    
+    hasElementIdentifier(): boolean
+    {
+        throw new Error("Method not implemented.");
+    }
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }

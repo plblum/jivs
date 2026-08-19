@@ -2,6 +2,9 @@
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
 
+## 0.22.0 
+Same as 0.21.0
+
 ## 0.21.0
 - **Breaking API change** - With a goal of establishing clearer terminology and usage patterns, major types have been renamed.
   + ValidationServices -> JivsServices
