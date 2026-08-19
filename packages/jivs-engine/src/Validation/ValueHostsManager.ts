@@ -591,6 +591,40 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     public getFieldValueHost(valueHostName: ValueHostName): IFieldValueHost | null {
         return toIFieldValueHost(this.getValueHost(valueHostName));
     }
+    /**
+     * Retrieves the FieldValueHost identified by the element identifier.
+     * Element Identifier is either from FieldValueHostConfig.elementIdentifier, setElementIdentifer(), or falls back to FieldValueHostConfig.name.
+     * @param elementIdentifier - The unique element identifier associated with the FieldValueHost.
+     * @returns The FieldValueHost instance or null if not found or found a different type of value host.
+     */
+    public getFieldByElementIdentifier(elementIdentifier: string): IFieldValueHost | null
+    {
+        const generator = this.enumerateValueHosts();
+        for (let vh of generator)
+        {
+            let fieldVh = toIFieldValueHost(vh);
+            if (fieldVh && (fieldVh.getElementIdentifier() === elementIdentifier)) {
+                return fieldVh;
+            }
+        }
+        return null;
+    }
+    /**
+     * Retrieves the FieldValueHost identified by the property name.
+     * Property name is either from FieldValueHostConfig.propertyName or falls back to FieldValueHostConfig.name.
+     * @param propertyName - The unique property name associated with the FieldValueHost.
+     * @returns The FieldValueHost instance or null if not found or found a different type of value host.
+     */
+    public getFieldByPropertyName(propertyName: string): IFieldValueHost | null {
+        const generator = this.enumerateValueHosts();
+        for (let vh of generator) {
+            let fieldVh = toIFieldValueHost(vh);
+            if (fieldVh && (fieldVh.getPropertyName() === propertyName)) {
+                return fieldVh;
+            }
+        }
+        return null;
+    }
     // /**
     //  * Retrieves the PropertyValueHost of the identified by valueHostName
     //  * @param valueHostName - Matches to the IPropertyValueHost.name property

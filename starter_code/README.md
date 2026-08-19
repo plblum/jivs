@@ -1,6 +1,14 @@
-# Creating JivsServices
-Add the code of the **create_services.ts file** to your app. It provides the `createJivsServices() function` that you will need in order to create a ValueHostsManager. See [Configuring JivsServices](../README.md#configuring-jivsservices).
+# Starter_Code folder
+This folder provides several TypeScript and CSS files for you to add to your application.
 
+- create_services.ts - Provides the createJivsServices() function. See below.
+- jivs-DOM_helpers.ts - Sources for your web app to get you started.
+- jivs-simpleDom.ts and jivs-simpleDom.css - Jivs SimpleDom is a framework for the presentation of validation issues.
+
+Each of these files has specific instructions.
+
+## Creating JivsServices
+Add the code of the **create_services.ts file** to your app. It provides the `createJivsServices() function` that you will need in order to create a ValueHostsManager. See [Configuring JivsServices](../README.md#configuring-jivsservices).
 
 `createJivsServices()` creates and configures the `JivsServices object`, which has extensive configuration options. Many have defaults.
 Jivs is designed to be flexible and extensible, and much of that is done within the `JivsServices object`. You may add your own classes or replace existing ones

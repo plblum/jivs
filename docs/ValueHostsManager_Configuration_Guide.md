@@ -1,4 +1,4 @@
-# Configuring the ValueHostsManager
+# ValueHostsManager Configuration Guide
 The `ValueHostsManager` is the central object you use with a form or model. It contains the list of fields (called `ValueHosts`), their rules, callback hooks, and more.
  Use it to get and set values, validate, retrieve validation results, and report additional errors determined by your business logic.
 

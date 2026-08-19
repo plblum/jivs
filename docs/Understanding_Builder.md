@@ -1,7 +1,7 @@
 # Understanding jivs-builder
 
 > This document is for developers who want to understand or extend the Builder and ValueHostRulesBase classes. It is not a Builder API syntax guide; see the jivs README.md for syntax and usage examples. 
-> If you want to consume the builder, start with [Configuring ValueHostsManager](Configuring.md). 
+> If you want to consume the builder, start with [Configuring ValueHostsManager](ValueHostsManager_Configuration_Guide.md). 
 
 `@plblum/jivs-builder` is the package that creates the configuration objects used by `ValueHostsManager`. It should have already been installed, but if needed, get it from [https://www.npmjs.com/package/@plblum/jivs-builder](https://www.npmjs.com/package/@plblum/jivs-builder).
 

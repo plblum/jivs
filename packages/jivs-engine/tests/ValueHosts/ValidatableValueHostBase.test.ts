@@ -1963,6 +1963,9 @@ describe('toIValidatableValueHostBase', () => {
             getIssuesFound: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
+            getType(): string {
+                throw new Error('Function not implemented.');
+            },
 
             getLabel: function (): string {
                 throw new Error('Function not implemented.');
@@ -2276,6 +2279,10 @@ describe('toIValidatableValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
         required: boolean = false;
+        getType(): string
+        {
+            throw new Error("Method not implemented.");
+        }
         getName(): string {
             throw new Error("Method not implemented.");
         }

@@ -46,9 +46,41 @@ export class DictionaryReader<T extends { [key: string]: any; } = { [key: string
  * Writes the text values using FieldValueHost.setTextValue() instead of FieldValueHost.setValue().
  * That will allow the FieldValueHost to convert the text value to a native value using its DataTypeParser.
  * Each ValueHost must be setup for parsing features to work. 
+ * 
+ * The structure passed in is expected to be a plain object with string keys and string values. 
+ * The keys are the names of the form fields, and the values are the text values to be set into the form fields.
+ * Use this in node.js together with the express library to get the form data from the request body and 
+ * set it into the form fields.
+ * ```ts
+ * const express = require("express");
+ * const app = express();
+ * app.use(express.urlencoded({ extended: true }));
+ *
+ * app.post("/submit", (req, res) => {
+ *      const formData = req.body;
+ *      const formReader = new FormReader(valueHostsManager, formData);
+ *      formReader.readFromModel();
+ * });
+ * ```
  */
 export class FormReader extends ModelReaderBase<{ [key: string]: string; }>
 {
+    /**
+     * 
+     * @param valueHostsManager 
+     * @param model - Use the Express library to supply this model.
+     * ```ts
+     * app.post("/submit", (req, res) => {
+     *      const formData = req.body;
+     *      const formReader = new FormReader(valueHostsManager, formData);
+     *      formReader.readFromModel();
+     * });
+     * ```
+     * @param reformatTextValues - When true, enables the reformatTextValues feature that can be used to reformat the text values in the form. 
+     * When false, the text values are not reformatted. ValueHosts must be setup for both
+     * parsing and formatting features to work. The reformatTextValues feature is useful for forms that
+     * @param skipValueChangedCallback - When true, the valueChangedCallback is not called when setting the value into the ValueHost.
+     */
     constructor(valueHostsManager: IValueHostsManager, model: { [key: string]: string; },
         reformatTextValues: boolean = false,
         skipValueChangedCallback: boolean = false
