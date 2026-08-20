@@ -1368,15 +1368,15 @@ without some adjustment, or may need to be skipped. The `ValueAdapterService` ha
 
 Frequently the value representing "unassigned" differs. Jivs uses the JavaScript value `undefined` to mean unassigned. You might use undefined, null, 0, etc. This is a typical case for adapting values.
 
-When a value needs adjustment, setup rules within the `modelReaderRules` or `modelWriterRules` properties of `FieldValueHostConfig`.
+When a value needs adjustment, setup rules within the `modelReaderRule` or `modelWriterRule` properties of `FieldValueHostConfig`.
 ```ts
 builder.field('Field1', LookupKey.Number, { 
-    modelReaderRules: // if undefined in the model, use 0 in the ValueHost
+    modelReaderRule: // if undefined in the model, use 0 in the ValueHost
     {
         when: 'undefined',
         then: '0'
     },
-    modelWriterRules: // if 0 in the valuehost, assign undefined in the model
+    modelWriterRule: // if 0 in the valuehost, assign undefined in the model
     {
         when: '0',
         then: 'undefined'

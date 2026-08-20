@@ -8,63 +8,63 @@ Where those values enter Jivs depends on how the application already initializes
 
 Three common initialization flows are shown below. None is more correct than the others. Jivs should fit into the application's existing initialization approach rather than require that approach to be replaced.
 
-## API / JSON Initialization
+- **Getting values from a Model.** Supply Native Values to Jivs through `ModelReader` or `setValue()`. The Model may be embedded in the page or retrieved from an API.
+- **Getting values already embedded in HTML.** Read the Text Values placed into controls by the server and supply them to Jivs through `setTextValue()`.
+- **Getting values from existing application initialization code.** Extend code that already distributes initial values so it supplies the same values to Jivs.
 
-```mermaid
-flowchart LR
-    API["API / JSON"] --> MODEL["Model"]
-    MODEL --> VHM["ValueHostsManager"]
-    VHM --> INPUT["Input Elements"]
-```
-
-When data arrives from an API as JSON, the application deserializes it into a Model containing Native Values. Those values can initialize the `ValueHostsManager` before the user begins editing.
-
-When Jivs formatting is used to initialize the inputs, first connect the `onTextValueChanged` callback introduced in [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md):
+The examples assume that the application has configured its Rules. Each approach begins by creating the `ValueHostsManager` with the familiar pattern:
 
 ```ts
 const services = createJivsServices('en-US');
-const rules = new PersonFormRules(services);
+const rules = new SomeRulesObject(services);
 const config = rules.configure();
 
-config.onTextValueChanged = onTextValueChanged;
+// Assign any callbacks required by the initialization flow.
 
 const vhm = new ValueHostsManager(config);
 ```
 
-Now `ModelReader` can copy the Model properties into their corresponding `FieldValueHosts`:
+For more, see [Intro to Creating a ValueHostsManager](Intro_to_Creating_a_ValueHostsManager.md).
+
+## Getting Values from a Model
+
+```mermaid
+flowchart LR
+    MODEL["Model"] --> VHM["ValueHostsManager"]
+```
+
+### Get the Model
+
+The Model may be embedded in the page or retrieved from an API as JSON. In either case, the application makes a Model containing Native Values available to the client.
+
+### Use ModelReader to Transfer Values
+
+The `ModelReader` supplied by Jivs makes quick work of transferring values from a Model into the `ValueHostsManager`. It uses each `FieldValueHost` configuration to map Model properties and adapt incoming values.
 
 ```ts
 const reader = new ModelReader(vhm, person);
 reader.readFromModel();
 ```
 
-`ModelReader` uses the Model property name configured for each `FieldValueHost`. By default, that property name is the name supplied to `builder.field()`.
-
-When the `FieldValueHost` name and Model property name differ, set `propertyName` while configuring the field:
+`ModelReader` uses the Model property name configured for each `FieldValueHost`. By default, that name is the same as the `FieldValueHost` name. When they differ, set `propertyName` while configuring the field:
 
 ```ts
 builder.field('FirstName', LookupKey.String, {
-    propertyName: 'firstName'
+    propertyName: 'firstName',
+    modelReaderRule: {
+        when: 'null',
+        then: 'emptystring'
+    }
 });
 ```
 
-Now `ModelReader` knows that the `FirstName` ValueHost gets its initial Native Value from `person.firstName`.
+`ModelReader` now knows that the `FieldValueHost` named `FirstName` receives its initial Native Value from `person.firstName`. The `modelReaderRule` configuration also converts a `null` value to an empty string.
 
-The same mapping is later used in the opposite direction by `ModelWriter` when building a Model for submission.
+The same `propertyName` mapping is later used by `ModelWriter` when building a Model for submission.
 
-Each `FieldValueHost` now has its initial Native Value. When Jivs formatting is configured, setting that value also produces the Text Value used by the input element.
+### Use FieldValueHost.setValue() Instead of ModelReader
 
-The `onTextValueChanged` callback can place that Text Value into the associated input.
-
-```mermaid
-flowchart LR
-    MODEL["Model<br/>Native Value"] --> READER["ModelReader"]
-    READER --> FIELD["FieldValueHost"]
-    FIELD -->|"Format"| TEXT["Text Value"]
-    TEXT -->|"onTextValueChanged"| INPUT["Input Element"]
-```
-
-`ModelReader` is convenient when initializing a group of fields from a Model. An individual Native Value can also be supplied directly:
+To initialize selected fields individually, skip `ModelReader` and call `setValue()` on each `FieldValueHost`:
 
 ```ts
 vhm.vh('FirstName').setValue(person.firstName, {
@@ -73,17 +73,29 @@ vhm.vh('FirstName').setValue(person.firstName, {
 });
 ```
 
-Both approaches establish the same starting point: Jivs receives the Native Values from the Model, and its Text Values can initialize the inputs.
+### Wire Up the onTextValueChanged Callback
 
-## Server-Rendered Initialization
+After initialization, each `FieldValueHost` has a Text Value in addition to its Native Value. If your editor elements need their values set, wire up the `onTextValueChanged` callback of the `ValueHostsManager`.
+
+Configure this callback before creating the `ValueHostsManager` and initializing its values.
 
 ```mermaid
 flowchart LR
-    SERVER["Server rendered"] --> INPUT["Input Elements"]
+    MODEL["Model"] --> VHM["ValueHostsManager"]
+    VHM --> INPUT["Editor Elements"]
+```
+
+See [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md) for guidance on creating the function and assigning it to the `ValueHostsManager` configuration.
+
+## Getting Values Already Embedded in HTML
+
+```mermaid
+flowchart LR
+    SERVER["Server-Rendered Page"] --> INPUT["Editor Elements"]
     INPUT --> VHM["ValueHostsManager"]
 ```
 
-With server-rendered HTML, the input elements already contain their initial Text Values when the client-side code begins. Instead of recreating those values from a Model, initialize Jivs from the inputs.
+Server-rendered pages commonly arrive in the browser with their initial Text Values already embedded in `input`, `select`, and `textarea` elements. Instead of recreating those values from a Model, initialize Jivs from the elements.
 
 For example:
 
@@ -119,9 +131,9 @@ flowchart LR
     FIELD -->|"Parse"| NATIVE["Native Value"]
 ```
 
-### Using ElementIdentifier
+### Scraping the Entire Form
 
-For a larger form, assigning each field individually becomes repetitive. If the `FieldValueHosts` have ElementIdentifiers, application code can enumerate them and locate their corresponding inputs.
+For a larger form, initializing each field individually becomes repetitive. If the `FieldValueHost` instances have **Element Identifiers**, application code can enumerate them and locate their corresponding elements. See [Finding the UI Element for a FieldValueHost](Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost).
 
 ```ts
 const valueHosts = vhm.enumerateValueHosts(
@@ -129,11 +141,15 @@ const valueHosts = vhm.enumerateValueHosts(
 );
 
 for (const vh of valueHosts) {
-    const valueHost = vh as IFieldValueHost;
+    const valueHost = vh as FieldValueHost;
     const element = getElement(valueHost);
     // getElement() was defined in the previous document.
 
-    if (element instanceof HTMLInputElement) {
+    if (
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement
+    ) {
         valueHost.setTextValue(element.value, {
             validate: false,
             reset: true
@@ -142,20 +158,18 @@ for (const vh of valueHosts) {
 }
 ```
 
-This uses the same `ElementIdentifier` relationship introduced in [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md), but in the opposite direction: instead of finding an input after Jivs reports a change, initialization finds each input so its existing value can be supplied to Jivs.
-
-## Existing Application Initialization
+## Getting Values from Existing Application Initialization Code
 
 ```mermaid
 flowchart LR
     MODEL["Model"] --> APP["Existing App Init Code"]
-    APP --> INPUT["Input Elements"]
+    APP --> INPUT["Editor Elements"]
     APP --> VHM["ValueHostsManager"]
 ```
 
-An application may already have initialization code that takes Model values and supplies them to its inputs. Jivs does not require replacing that code.
+An application may already have initialization code that takes Model values and supplies them to its editors. Jivs does not require replacing that code.
 
-Instead, include the corresponding `FieldValueHost` when the application initializes each input, and supply the same initial Text Value to Jivs.
+Instead, include the corresponding `FieldValueHost` when the application initializes each editor, and supply the same initial Text Value to Jivs.
 
 For example, an application component that creates an input might already receive its identifier and initial Text Value. It can also receive the `FieldValueHost` associated with that input:
 
@@ -186,7 +200,7 @@ The important point is to preserve the existing initialization flow and make Jiv
 
 ## Ready for Editing
 
-Regardless of the initialization flow, the goal is the same: the input elements contain their starting Text Values, and the `ValueHostsManager` has the corresponding values it needs for validation.
+Regardless of the initialization flow, the goal is the same: the editors contain their starting Text Values, and the `ValueHostsManager` contains the corresponding values needed for validation.
 
 From this point, the connections established in [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md) handle values and validation as the user edits the form.
 

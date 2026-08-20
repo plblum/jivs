@@ -12,6 +12,10 @@
  * - attachJivsToInput(): Attaches an input element's event listeners to update a FieldValueHost's text value.
  * - attachJivsToTextarea(): Attaches a textarea element's event listeners to update a FieldValueHost's text value.
  * - attachJivsToSelect(): Attaches a select element's event listeners to update a FieldValueHost's value.
+ * - onTextValueChanged(): Callback function for ValueHostsManager.onTextValueChanged to update the text value 
+ *      of the associated HTML form control element.
+ * - jivsAttachedToEvents(): Use within your own attach() functions. Checks if event listeners have already been attached
+ *      to a given HTML element to prevent duplicate attachments.
  * 
  * It provides types and classes that get you started with client-side submission too,
  * fleshing out what you learn in 
@@ -98,6 +102,7 @@ export function attachJivsToInput(
     duringEdit: boolean = false
 ): void
 {
+    if (jivsAttachedToEvents(input)) return;
     if (input.type === 'checkbox' || input.type === 'radio')
     {
         // this isn't required. We could send input.value directly.
@@ -139,6 +144,7 @@ export function attachJivsToSelect(
     fieldValueHost: IFieldValueHost
 ): void
 {
+    if (jivsAttachedToEvents(select)) return;
     select.addEventListener('change', () =>
     {
         fieldValueHost.setTextValue(select.value);
@@ -159,6 +165,7 @@ export function attachJivsToTextarea(
     duringEdit: boolean = false
 ): void
 {
+    if (jivsAttachedToEvents(textarea)) return;
     textarea.addEventListener('change', () =>
     {
         fieldValueHost.setTextValue(textarea.value);
@@ -175,6 +182,32 @@ export function attachJivsToTextarea(
     }
 }
 
+//#region one-time attachment check support
+/**
+ * Use jivsAttachedToEvents() in your own attachment functions.
+ * This prevents multiple event listeners from being attached to the same element.
+ * Its intent is to allow you to use a selector to find all targets and let them
+ * be passed to your attachment function, even if some of them have already been attached.
+ * For example, after discarding and rebuilding those elements, but not all elements in the page.
+ */
+interface IJivsAttachedToEvents extends HTMLElement
+{
+    jivsAttachedToEvents?: boolean;
+}
+
+export function jivsAttachedToEvents(
+    element: IJivsAttachedToEvents
+): boolean
+{
+    if (element.jivsAttachedToEvents)
+    {
+        return true;
+    }
+
+    element.jivsAttachedToEvents = true;
+    return false;
+}
+//#endregion
 /**
  * Callback function for ValueHostsManager.onTextValueChanged to 
  * update the text value of the associated HTML form control element.

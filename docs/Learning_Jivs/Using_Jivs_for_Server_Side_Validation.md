@@ -101,11 +101,11 @@ This mapping lets `ModelReader` obtain the Native Value from `requestData.firstN
 
 Sometimes the Model value itself needs adjustment before it can be assigned to the `FieldValueHost`. For example, the Model and Jivs may use different values to represent an unassigned field.
 
-Use `modelReaderRules` to adapt the value during transfer:
+Use `modelReaderRule` to adapt the value during transfer:
 
 ```ts id="4kc105"
 builder.field('Count', LookupKey.Number, {
-    modelReaderRules: {
+    modelReaderRule: {
         when: 'undefined',
         then: '0'
     }

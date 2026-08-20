@@ -50,6 +50,8 @@ function getElement(
 ```
 > Found in [`jivs-DOM_helpers.ts`](../../starter_code/jivs-DOM_helpers.ts)
 By default, `getElementIdentifier()` returns the same value as `getName()`.
+
+### The elementIdentifier property
 Frequently `getName()` does not match to your UI, and you have to use the element identifier feature
 on the `FieldValueHost`.
 An element identifier can be established in two common ways:
