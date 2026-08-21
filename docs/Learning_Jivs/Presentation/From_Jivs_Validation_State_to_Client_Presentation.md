@@ -98,7 +98,7 @@ A `Warning` can appear in `issuesFound` while `isValid` remains `true`. Error Me
 
 The validation state's `doNotSave` property already represents whether the complete state should prevent saving. A Submit Presentation Function can use that property directly rather than recalculating it from individual issues.
 
-## Generating Error Messages from `IssueFound` Objects
+## Generating Error Messages from IssueFound Objects
 
 Field Error Displays and Validation Summaries both turn `IssueFound` objects into Error Message content.
 

@@ -37,7 +37,7 @@ services.messageTokenResolverService =
 ```
 
 - [Protect Error Messages from XSS](Jivs_Presentation_Prerequisites.md#protect-error-messages-from-xss)
-- [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-objects)
+- [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-issuefound-objects)
 
 ### 4. Tag Each Editor
 
@@ -87,7 +87,7 @@ Add the default inline Field Error Display for each field:
 
 - [Field Markup](The_Jivs_SimpleDom_Approach.md#field-markup) for the Jivs SimpleDom syntax
 - [Field Presentation: Field Error Displays](Field_Presentation_Field_Error_Displays.md)
-- [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-objects)
+- [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-issuefound-objects)
 - [Field Error Display Accessibility](Accessible_Client_Validation_UI.md#field-error-display-accessibility)
 
 ### 7. Add a Required Indicator If Desired
