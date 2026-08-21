@@ -54,8 +54,8 @@ Jivs SimpleDom supplies default Presentation Functions for common UI elements. S
 
 The reusable TypeScript and CSS used throughout the Jivs Presentation Learning Guide are available in these files:
 
-- [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts)
-- [`jivs-simpledom.css`](../../starter_code/jivs-simpledom.css)
+- [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts)
+- [`jivs-simpledom.css`](../../../starter_code/jivs-simpledom.css)
 
 > If needed, you can locate them in the Jivs repo here: [starter\_code](https://github.com/plblum/jivs/tree/main/starter_code)
 
@@ -83,4 +83,4 @@ To get the big picture or dive right in, continue to [Presentation Quick Start](
 
 To begin the detailed guide, continue to [Jivs Presentation Prerequisites](Jivs_Presentation_Prerequisites.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).

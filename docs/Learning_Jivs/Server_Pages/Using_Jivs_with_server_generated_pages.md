@@ -63,7 +63,7 @@ Applications can choose their own convention for locating and associating these 
 
 Custom attributes allow client code to find elements by purpose instead of depending on application-specific element IDs. IDs remain available for their normal HTML responsibilities, such as connecting a `<label>` to an editor.
 
-See [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_client.md#finding-the-ui-element-for-a-fieldvaluehost) for detailed guidance.
+See [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) for detailed guidance.
 
 ## Build the Configuration Rules
 
@@ -271,7 +271,7 @@ attachPresentationHandlers(vhm);
 
 A restoring workflow assigns the transported saved state to `config.savedState` before creating the `ValueHostsManager`. A new Page Load omits this assignment.
 
-`onTextValueChanged` allows Jivs to supply Text Values to the editors. Omit it when Jivs does not need to supply values to the editors. See [When a Text Value Changes](Using_the_ValueHostsManager_within_the_Client.md#when-a-text-value-changes).
+`onTextValueChanged` allows Jivs to supply Text Values to the editors. Omit it when Jivs does not need to supply values to the editors. See [When a Text Value Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-a-text-value-changes).
 
 `fieldValidated` receives field validation changes. Jivs SimpleDom supplies the [Field Dispatcher Function](../Presentation/Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function). Otherwise, the application supplies it. See [When a Field’s Validation Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-a-fields-validation-changes).
 

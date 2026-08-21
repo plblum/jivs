@@ -6,7 +6,7 @@ Successful client validation and submission do not complete the save. The server
 
 > Traditional server-generated pages often inject validation messages directly into their output. With Jivs, the server places the validation information in a hidden input and generates the HTML elements that will present it. After the page reloads, client-side Jivs supplies the validation information to the Field Error Displays, Validation Summary, and other presentation elements.
 
-This document focuses on the client workflow and the information the regenerated page must provide. For the server validation process, see [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
+This document focuses on the client workflow and the information the regenerated page must provide. For the server validation process, see [Understanding Server-Side Validation](../Understanding_Server_Side_Validation.md).
 
 This workflow has two distinct stages:
 
@@ -29,7 +29,7 @@ The saved state retains the values and Jivs state that existed when the user sub
 
 ## Validate and Submit the Current Page
 
-This process begins with the client-side validation described in [Submitting the Client Form](Submitting_the_Client_Form.md). The application then performs a normal server-page submission instead of making an API request.
+This process begins with the client-side validation described in [Submitting the Client Form](../Submitting_the_Client_Form.md). The application then performs a normal server-page submission instead of making an API request.
 
 Call `ValueHostsManager.validate()` and stop when the resulting `ValidationState` prevents saving:
 
@@ -41,7 +41,7 @@ if (validationState.doNotSave) {
 }
 ```
 
-See [Validate the Form](Submitting_the_Client_Form.md#validate-the-form).
+See [Validate the Form](../Submitting_the_Client_Form.md#validate-the-form).
 
 > When validation prevents saving, the existing validation callbacks update the presentation.
 
@@ -70,7 +70,7 @@ The application can then submit the form through its normal server-page mechanis
 
 ## Process the Save on the Server
 
-The server has its own validation and save responsibilities, as described in [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
+The server has its own validation and save responsibilities, as described in [Understanding Server-Side Validation](../Understanding_Server_Side_Validation.md).
 
 The request body contains the application’s form data and the Jivs saved state. Use the form data for validation and the save operation. The saved state is client restoration data that the server returns unchanged when validation prevents the save.
 
@@ -134,8 +134,8 @@ handleServerIssues(serverIssuesInput.value, vhm);
 
 `handleServerIssues()` interprets the transported string and provides the validation issues to Jivs. Its implementation depends on the server:
 
-- When the server uses Jivs, it passes the Validation Payload to `vhm.fromValidationPayload()`. See [When the Server Uses Jivs](Submitting_the_Client_Form.md#when-the-server-uses-jivs).
-- When the server uses another validation system, it deserializes and converts the errors before calling `vhm.addExternalIssuesFound()`. See [When the Server Uses Another Validation System](Submitting_the_Client_Form.md#when-the-server-uses-another-validation-system).
+- When the server uses Jivs, it passes the Validation Payload to `vhm.fromValidationPayload()`. See [When the Server Uses Jivs](../Submitting_the_Client_Form.md#when-the-server-uses-jivs).
+- When the server uses another validation system, it deserializes and converts the errors before calling `vhm.addExternalIssuesFound()`. See [When the Server Uses Another Validation System](../Submitting_the_Client_Form.md#when-the-server-uses-another-validation-system).
 
 The returned page follows this order:
 
@@ -149,4 +149,4 @@ Applying the errors last allows the validation callbacks to update the restored 
 
 For a server-generated page that preserves Jivs state without attempting a save, continue to [Server Pages Workflow: Round Trip](Server_pages_workflow_round_trip.md).
 
-Return to [Learning Jivs](Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Learning_Jivs_Home.md).

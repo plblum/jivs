@@ -218,11 +218,11 @@ function onValueHostValidationStateChanged(
         validationState.issuesFound?.[0]?.errorMessage ?? '';
 }
 ```
-> See the `fieldValidated()` function within [Build the Field Validation UI](./Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function) for a fully implemented callback.
+> See the `fieldValidated()` function within [Build the Field Validation UI](./Presentation/Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function) for a fully implemented callback.
 
 This example shows only the first Error Message. An application may instead display several messages, change field styling, or use another presentation appropriate to its UI.
 
-For much more, see [Build the Field Validation UI](./Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function).
+For much more, see [Build the Field Validation UI](./Presentation/Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function).
 
 ### When Overall Validation Changes
 
@@ -240,7 +240,7 @@ A callback can inspect the current Validation State and available Error Messages
 
 The details of that presentation belong to the UI. What matters here is the boundary: Jivs reports the change, and application code decides how to communicate it.
 
-For much more, see [Build the Form Validation UI](./Form_Presentation_of_Jivs_Validation.md).
+For much more, see [Build the Form Validation UI](./Presentation/Form_Presentation_of_Jivs_Validation.md).
 
 ## The Interactive Connection
 

@@ -159,7 +159,7 @@ The [Protect Error Messages from XSS](Jivs_Presentation_Prerequisites.md#protect
 
 By default, the generator uses `IssueFound.errorMessage`, making it suitable for Field Error Displays. Pass `true` for `useSummaryMessage` to use `summaryMessage` for a Validation Summary. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
-The following functions are also available in the companion [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts) file:
 
 ```ts
 export const severityNames: Array<string | null> = [
@@ -275,7 +275,7 @@ The First name is invalid.
 
 The [Protect Error Messages from XSS](Jivs_Presentation_Prerequisites.md#protect-error-messages-from-xss) setup ensures that token replacement values were HTML-encoded before the prepared Error Message reached this function.
 
-The following functions are also available in the companion [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts) file:
+The following functions are also available in the companion [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts) file:
 
 ```ts
 export function buildErrorMessagesText(
@@ -368,4 +368,4 @@ The later [Field Presentation of Jivs Validation](Field_Presentation_of_Jivs_Val
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Field Presentation of Jivs Validation](Field_Presentation_of_Jivs_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).

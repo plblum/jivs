@@ -58,7 +58,7 @@ export function formValidated(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 The Form Dispatcher Function does not rebuild the Validation Summary, enable or disable the Submit button, or otherwise decide how form validation should appear.
 
@@ -178,7 +178,7 @@ export function attachFormPresentations(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 - Call `attachFormPresentations()` as part of your page initialization. For example:
 
@@ -231,7 +231,7 @@ export function validationSummaryChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 Passing `true` to `buildErrorMessagesHtml()` selects each issue's `summaryMessage`. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
@@ -295,7 +295,7 @@ export function submitValidationChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 `doNotSave` is preferred over `isValid` because it represents whether the current validation state is ready to save, including states where validation still needs to complete.
 
@@ -303,6 +303,6 @@ You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledo
 
 Continue with [Accessible Client Validation UI](Accessible_Client_Validation_UI.md) to learn about accessibility in validation UIs.
 
-Or start on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
+Or start on the server with [how Jivs participates in validation on the server](../Understanding_Server_Side_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).

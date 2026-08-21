@@ -6,8 +6,8 @@ Use this as a way to get the big picture or to dive right in.
 
 Add these files to your application:
 
-- [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts)
-- [`jivs-simpledom.css`](../../starter_code/jivs-simpledom.css)
+- [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts)
+- [`jivs-simpledom.css`](../../../starter_code/jivs-simpledom.css)
 
 > If needed, you can locate them in the Jivs repo here: [starter\_code](https://github.com/plblum/jivs/tree/main/starter_code)
 
@@ -54,7 +54,7 @@ Add the field identifier, editor role, and default editor presentation:
 The `data-field` value must match the field's Jivs element identifier. Configure `elementIdentifier` on the `FieldValueHost` when it differs from the ValueHost name.
 
 - [Connect the FieldValueHost to the Field Identifier](The_Jivs_SimpleDom_Approach.md#connect-the-fieldvaluehost-to-the-field-identifier) for the Jivs SimpleDom convention
-- [Finding the UI Element for a FieldValueHost](Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) for the underlying Jivs connection
+- [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) for the underlying Jivs connection
 
 ### 5. Tag Each Label You Want Styled
 
@@ -139,7 +139,7 @@ To have form validation control the Submit button, add:
 - [Form Markup](The_Jivs_SimpleDom_Approach.md#form-markup) for the Jivs SimpleDom syntax
 - [Presentation for a Submit / Save Control](Form_Presentation_of_Jivs_Validation.md#presentation-for-a-submit-save-control)
 - [Submit / Save Control Accessibility](Accessible_Client_Validation_UI.md#submit-save-control-accessibility)
-- [Submitting the Client Form](Submitting_the_Client_Form.md)
+- [Submitting the Client Form](../Submitting_the_Client_Form.md)
 
 ### 10. Wire Field and Form Validation
 
@@ -178,4 +178,4 @@ The default field and form presentations are now connected to Jivs.
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Jivs Presentation Prerequisites](Jivs_Presentation_Prerequisites.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).

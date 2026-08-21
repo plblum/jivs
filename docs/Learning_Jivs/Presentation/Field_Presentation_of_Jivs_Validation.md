@@ -61,7 +61,7 @@ export function fieldValidated(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 The Field Dispatcher Function does not change CSS classes, rebuild Error Messages, manage accessibility attributes, or otherwise decide how validation should appear.
 
@@ -104,7 +104,7 @@ The setup has four parts:
 - `getFieldPresentationFunction()` is a small factory that maps each name to its Presentation Function.
 - The attachment functions `attachFieldPresentation()` and `attachFieldPresentations()` assign Presentation Functions to one or many elements.
 
-This code is supplied in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
+This code is supplied in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts). It is shown here to explain the implementation and identify the parts you are likely to customize.
 
 ```ts
 export type FieldPresentationHandler = (
@@ -226,7 +226,7 @@ export function editorValidationChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 Select this Presentation Function in the editor's markup:
 
@@ -268,7 +268,7 @@ export function labelValidationChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 Select this Presentation Function in the label's markup:
 
@@ -376,7 +376,7 @@ export function initializeRequiredIndicators(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 Call the function after the `ValueHostsManager` has been created and the field HTML is available:
 
@@ -390,4 +390,4 @@ Call it again after replacing field HTML generated from a template. Toggling the
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Field Presentation: Field Error Displays](Field_Presentation_Field_Error_Displays.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).

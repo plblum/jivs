@@ -46,7 +46,7 @@ if (validationState.doNotSave) {
 }
 ```
 
-`validate()` runs the validation needed for submission. `ValueHostsManager` distributes the results to the UI through the `onValidationStateChanged` callback. See [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md) for details.
+`validate()` runs the validation needed for submission. `ValueHostsManager` distributes the results to the UI through the `onValidationStateChanged` callback. See [Using the ValueHostsManager within the Client](./Using_the_ValueHostsManager_within_the_Client.md) for details.
 
 If `doNotSave` is `true`, submission stops here.
 
@@ -375,7 +375,7 @@ Returning `true` means validation issues were found and handled, so submission p
 The server does not need to understand Jivs. The client-side adapter translates the server's validation contract into the `IssueFound` information Jivs needs.
 
 ---
-Next, we'll look at [Client Presentation of Jivs Validation](./Client_Presentation_of_Jivs_Validation.md)
+Next, we'll look at [Client Presentation of Jivs Validation](./Presentation/Client_Presentation_of_Jivs_Validation.md)
 
 Or start on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
 

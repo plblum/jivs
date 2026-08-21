@@ -2,7 +2,7 @@
 
 A server-page Round Trip occurs when the application submits the form so the server can perform an operation and regenerate the page without attempting to save it. The client does not perform form-level validation before this submission. The regenerated page may contain a different set of editors or revised editor values.
 
-This document covers a complete page regeneration. For partial-page or AJAX replacement, see [Server Pages Workflow: Elements Replaced](Server_pages_workflow_elements_replaced.md).
+This document covers a complete page regeneration. For partial-page or AJAX replacement, see [Server Pages Workflow: Elements Changed](Server_pages_workflow_elements_changed.md).
 
 A Round Trip has three stages:
 

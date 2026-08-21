@@ -113,4 +113,4 @@ The attachment helpers should be idempotent. Existing elements retain their hand
 
 Return to [Using Jivs with Server-Generated Pages](Using_Jivs_with_server_generated_pages.md).
 
-Return to [Learning Jivs](Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Learning_Jivs_Home.md).

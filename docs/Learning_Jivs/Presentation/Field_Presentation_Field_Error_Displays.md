@@ -64,7 +64,7 @@ export function inlineErrorDisplayChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 CSS can hide the Error Display when there are no issues:
 
@@ -123,7 +123,7 @@ export function errorIconChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 CSS controls whether the icon is shown:
 
@@ -179,7 +179,7 @@ export function editorTooltipChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
 Because the container closely surrounds the editor, pointing within that area makes the Error Messages appear as a tooltip associated with the editor.
 
@@ -236,4 +236,4 @@ The UI library remains responsible for popup behavior such as positioning, dismi
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Form Presentation of Jivs Validation](Form_Presentation_of_Jivs_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
