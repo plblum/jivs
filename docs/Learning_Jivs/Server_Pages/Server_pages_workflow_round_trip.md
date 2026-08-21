@@ -149,4 +149,4 @@ The user can now continue editing the regenerated form with the retained Jivs st
 
 For partial-page replacement without a complete page reload, continue to [Server Pages Workflow: Elements Changed](Server_pages_workflow_elements_changed.md).
 
-Return to [Learning Jivs](Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Learning_Jivs_Home.md).
