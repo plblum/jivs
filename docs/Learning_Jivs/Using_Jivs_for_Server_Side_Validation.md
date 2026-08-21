@@ -143,8 +143,8 @@ app.post('/submit', (req, res) => {
 Application code can also supply individual values when needed:
 
 ```ts id="rii7mf"
-vhm.vh('BirthDate').setValue(nativeBirthDate);
-vhm.vh('BirthDateText').setTextValue(birthDateText);
+vhm.vh.field('BirthDate').setValue(nativeBirthDate);
+vhm.vh.field('BirthDateText').setTextValue(birthDateText);
 ```
 
 Use `setValue()` for Native Values and `setTextValue()` for Text Values.

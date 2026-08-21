@@ -2,9 +2,9 @@
 
 A Page Save starts when the user attempts to submit the page. At this point, the `ValueHostsManager` contains the values supplied by the editors and can perform form-level validation.
 
-Successful client validation and submission do not complete the save. The server must also validate the submitted data and may reject it. When that happens, the server returns the errors through a regenerated page.
+Successful client validation and submission do not complete the save. The server must also validate the submitted data. When server validation prevents the save, the server returns the errors through a regenerated page.
 
-> Traditional server-generated pages often inject validation messages directly into their output. With Jivs, the server injects the validation information and the HTML elements that will present it. After the page reloads, client-side Jivs supplies the messages to the Field Error Displays, Validation Summary, and other presentation elements.
+> Traditional server-generated pages often inject validation messages directly into their output. With Jivs, the server places the validation information in a hidden input and generates the HTML elements that will present it. After the page reloads, client-side Jivs supplies the validation information to the Field Error Displays, Validation Summary, and other presentation elements.
 
 This document focuses on the client workflow and the information the regenerated page must provide. For the server validation process, see [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
 
@@ -23,48 +23,31 @@ flowchart TB
 
 The important rule for the returned page is:
 
-**Restore the `ValueHostsManager` from its submitted saved state. Do not initialize its values from the Model or the page's elements.**
+**Restore the `ValueHostsManager` from its submitted saved state. Do not replace its values with values from the regenerated page’s editors.**
 
-The saved state retains the values the user actually submitted. A Model or another initialization source may still contain older values.
+The saved state retains the values and Jivs state that existed when the user submitted the form.
 
 ## Validate and Submit the Current Page
 
-This process follows the client-side validation steps described in [Submitting the Client Form](Submitting_the_Client_Form.md). The difference is that the application performs a normal server-page submission instead of making an API request.
+This process begins with the client-side validation described in [Submitting the Client Form](Submitting_the_Client_Form.md). The application then performs a normal server-page submission instead of making an API request.
 
-1. **Validate the form.** Call `ValueHostsManager.validate()` and stop when the resulting `ValidationState` prevents saving.
+Call `ValueHostsManager.validate()` and stop when the resulting `ValidationState` prevents saving:
 
-   ```ts
-   const validationState = vhm.validate();
+```ts
+const validationState = vhm.validate();
 
-   if (validationState.doNotSave) {
-       return;
-   }
-   ```
+if (validationState.doNotSave) {
+    return;
+}
+```
 
-   See [Validate the Form](Submitting_the_Client_Form.md#validate-the-form).
+See [Validate the Form](Submitting_the_Client_Form.md#validate-the-form).
 
-   > When validation prevents saving, the existing validation callbacks update the presentation.
+> When validation prevents saving, the existing validation callbacks update the presentation.
 
-2. **Optionally build and validate the Model.** Do this when the application needs additional business logic validation against a completed Model or intends to submit the Model to the server.
+After client validation succeeds, place the current saved state into the form’s state transport element.
 
-   ```ts
-   const model = new Model();
-   const writer = new ModelWriter(vhm, model);
-   writer.writeToModel();
-
-   const issuesFound = businessLogicValidation(model);
-
-   if (issuesFound.length > 0) {
-       vhm.addExternalIssuesFound(issuesFound, true);
-       return;
-   }
-   ```
-
-   See [Build the Model](Submitting_the_Client_Form.md#build-the-model) and [Run Business Logic Validation](Submitting_the_Client_Form.md#run-business-logic-validation).
-
-After all client validation succeeds, place the current saved state into the form's state transport element.
-
-The page's HTML is expected to contain this hidden input:
+The page’s HTML contains this hidden input:
 
 ```html
 <input type="hidden" id="_jivsSavedState" name="_jivsSavedState">
@@ -81,7 +64,7 @@ savedStateInput.value = vhm.getSavedState();
 
 `getSavedState()` returns an opaque string. Application code should submit and return that string without inspecting or modifying its contents.
 
-> A form submission now mixes Model-oriented fields with Jivs internal data. This can make it harder for server code to build the Model from the request body because not every submitted name and value belongs to the Model. The `_jivs` prefix makes Jivs transport fields easy to recognize and exclude from Model construction and validation.
+> The request contains the form’s application fields along with Jivs transport data. The `_jivs` prefix makes the transport fields easy for server code to recognize and exclude from normal application processing.
 
 The application can then submit the form through its normal server-page mechanism.
 
@@ -89,19 +72,21 @@ The application can then submit the form through its normal server-page mechanis
 
 The server has its own validation and save responsibilities, as described in [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
 
-The request body contains both the application data and the Jivs saved state. Use the application data for validation and the save operation. The result falls into one of three categories:
+The request body contains the application’s form data and the Jivs saved state. Use the form data for validation and the save operation. The saved state is client restoration data that the server returns unchanged when validation prevents the save.
 
-- When the save succeeds, continue with the application's normal success behavior.
-- When an operational failure occurs, use the application's normal error handling.
+The result falls into one of three categories:
+
+- When the save succeeds, continue with the application’s normal success behavior.
+- When an operational failure occurs, use the application’s normal error handling.
 - When validation prevents the save, regenerate the page so the user can correct the submitted values.
 
 ### Server Validation Prevented the Save
 
 Regenerate the page with three things:
 
-1. **The client restoration setup.** Generate client code that restores the `ValueHostsManager` using saved state instead of initializing it with initial values. It also retrieves the server validation errors and supplies them to `handleServerIssues()`.
-2. **The submitted Jivs saved state.** Return the same opaque string sent by the client. Populate the page's existing `_jivsSavedState` input with that value.
-3. **The server validation errors.** Place the validation information in the page's `_jivsServerIssues` input.
+1. **The client restoration setup.** Generate client code that restores the `ValueHostsManager` using saved state. It also retrieves the server validation errors and supplies them to `handleServerIssues()`.
+2. **The submitted Jivs saved state.** Return the same opaque string sent by the client. Populate the page’s existing `_jivsSavedState` input with that value.
+3. **The server validation errors.** Place the validation information in the page’s `_jivsServerIssues` input.
 
 The regenerated inputs will resemble this:
 
@@ -130,9 +115,10 @@ const serverIssuesInput =
 const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
-config.savedState = serverStateInput;
 
-config.onTextValueChanged = onTextValueChanged;
+config.savedState = savedStateInput.value;
+
+config.onTextValueChanged = onTextValueChanged; // optional
 config.onValueHostValidationStateChanged = fieldValidated;
 config.onValidationStateChanged = formValidated;
 
@@ -144,12 +130,12 @@ attachPresentationHandlers(vhm);
 handleServerIssues(serverIssuesInput.value, vhm);
 ```
 
-This is the restoration path. It does not call `initializeValues()`.
+> This restoration path does not call `reconcileValueHostsWithEditors()`. The submitted saved state restores the `ValueHostsManager` values.
 
 `handleServerIssues()` interprets the transported string and provides the validation issues to Jivs. Its implementation depends on the server:
 
-- When the server uses Jivs, it passes the Validation Payload to `ValueHostsManager.fromValidationPayload()`. See [When the Server Uses Jivs](Submitting_the_Client_Form.md#when-the-server-uses-jivs).
-- When the server uses another validation system, it deserializes and converts the errors before calling `ValueHostsManager.addExternalIssuesFound()`. See [When the Server Uses Another Validation System](Submitting_the_Client_Form.md#when-the-server-uses-another-validation-system).
+- When the server uses Jivs, it passes the Validation Payload to `vhm.fromValidationPayload()`. See [When the Server Uses Jivs](Submitting_the_Client_Form.md#when-the-server-uses-jivs).
+- When the server uses another validation system, it deserializes and converts the errors before calling `vhm.addExternalIssuesFound()`. See [When the Server Uses Another Validation System](Submitting_the_Client_Form.md#when-the-server-uses-another-validation-system).
 
 The returned page follows this order:
 
@@ -157,7 +143,7 @@ The returned page follows this order:
 2. Attach the editor and presentation handlers.
 3. Apply the server validation errors.
 
-Applying the errors last allows the validation callbacks to update the restored page's Field Error Displays, Validation Summary, and other validation presentation.
+Applying the errors last allows the validation callbacks to update the restored page’s Field Error Displays, Validation Summary, and other validation presentation.
 
 ---
 

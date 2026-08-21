@@ -67,7 +67,7 @@ The same `propertyName` mapping is later used by `ModelWriter` when building a M
 To initialize selected fields individually, skip `ModelReader` and call `setValue()` on each `FieldValueHost`:
 
 ```ts
-vhm.vh('FirstName').setValue(person.firstName, {
+vhm.vh.field('FirstName').setValue(person.firstName, {
     validate: false,
     reset: true
 });
@@ -112,12 +112,12 @@ const firstNameInput =
 const lastNameInput =
     document.getElementById('LastName') as HTMLInputElement;
 
-vhm.vh('FirstName').setTextValue(firstNameInput.value, {
+vhm.vh.field('FirstName').setTextValue(firstNameInput.value, {
     validate: false,
     reset: true
 });
 
-vhm.vh('LastName').setTextValue(lastNameInput.value, {
+vhm.vh.field('LastName').setTextValue(lastNameInput.value, {
     validate: false,
     reset: true
 });

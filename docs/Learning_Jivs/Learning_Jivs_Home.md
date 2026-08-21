@@ -62,6 +62,11 @@ Client presentation appears at the end because it builds on the validation state
 
    Keep an existing server validation system while translating its validation results into the information Jivs needs on the client.
 
+### Special configurations
+
+11. [Using Jivs with server generated pages](./Server_Pages/Using-Jivs-with-server-generated-pages.md)
+
+    Use server generated pages together with Jivs. Includes guidelines, code snippets, and workflows.
 
 ---
 Get started with [Understanding Value Management](Understanding_Value_Management.md).

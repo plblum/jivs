@@ -77,7 +77,7 @@ Now `ModelWriter` knows that the `FirstName` ValueHost should be written to `per
 Individual values can also be retrieved directly when needed:
 
 ```ts
-person.firstName = vhm.vh('FirstName').getValue();
+person.firstName = vhm.vh.field('FirstName').getValue();
 ```
 
 At this point the Model contains the Native Values established while the user edited the form.

@@ -106,7 +106,7 @@ config.onValidationStateChanged = formValidated;
 const vhm = new ValueHostsManager(config);
 ```
 
-The constructor restores the state available for the configured ValueHosts. This is not initial Page Load, so do not initialize the `ValueHostsManager` from a Model.
+The constructor restores the state available for the configured ValueHosts. This is not initial Page Load, so do not initialize the `ValueHostsManager` from the form elements.
 
 ### Reconcile the Regenerated Editors
 
@@ -147,6 +147,6 @@ The user can now continue editing the regenerated form with the retained Jivs st
 
 ---
 
-For partial-page replacement without a complete page reload, continue to [Server Pages Workflow: Elements Replaced](Server_pages_workflow_elements_replaced.md).
+For partial-page replacement without a complete page reload, continue to [Server Pages Workflow: Elements Changed](Server_pages_workflow_elements_changed.md).
 
 Return to [Learning Jivs](Learning_Jivs_Home.md).
