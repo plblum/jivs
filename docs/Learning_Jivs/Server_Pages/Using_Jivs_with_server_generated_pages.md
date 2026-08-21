@@ -32,10 +32,10 @@ Jivs generates the HTML used to present error messages, but the page must provid
 
 The presentation documents explain how client code uses these elements:
 
-* [Field Presentation of Jivs Validation](Field_Presentation_of_Jivs_Validation.md) covers editors, Field Error Displays, labels, and other field-level presentation.
-* [Form Presentation of Jivs Validation](Form_Presentation_of_Jivs_Validation.md) covers the Validation Summary and other form-level presentation.
+* [Field Presentation of Jivs Validation](../Presentation/Field_Presentation_of_Jivs_Validation.md) covers editors, Field Error Displays, labels, and other field-level presentation.
+* [Form Presentation of Jivs Validation](../Presentation/Form_Presentation_of_Jivs_Validation.md) covers the Validation Summary and other form-level presentation.
 
-Applications can choose their own convention for locating and associating these elements. [Jivs SimpleDom](The_Jivs_SimpleDom_Approach.md) provides an attribute-based convention for the same responsibilities:
+Applications can choose their own convention for locating and associating these elements. [Jivs SimpleDom](../Presentation/The_Jivs_SimpleDom_Approach.md) provides an attribute-based convention for the same responsibilities:
 
 ```html
 <form novalidate>
@@ -63,11 +63,11 @@ Applications can choose their own convention for locating and associating these 
 
 Custom attributes allow client code to find elements by purpose instead of depending on application-specific element IDs. IDs remain available for their normal HTML responsibilities, such as connecting a `<label>` to an editor.
 
-See [Finding the UI Element for a FieldValueHost](Using_the_ValueHostsManager_within_the_client.md#finding-the-ui-element-for-a-fieldvaluehost) for detailed guidance.
+See [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_client.md#finding-the-ui-element-for-a-fieldvaluehost) for detailed guidance.
 
 ## Build the Configuration Rules
 
-Create a Rules class derived from `ValueHostRulesBase` to configure a `ValueHostsManager`. See [Defining ValueHosts with a Rules Class](Intro_to_Creating_a_ValueHostsManager.md#defining-valuehosts-with-a-rules-class).
+Create a Rules class derived from `ValueHostRulesBase` to configure a `ValueHostsManager`. See [Defining ValueHosts with a Rules Class](../Intro_to_Creating_a_ValueHostsManager.md#defining-valuehosts-with-a-rules-class).
 
 Two details are especially important for server-generated pages:
 
@@ -76,7 +76,7 @@ Two details are especially important for server-generated pages:
 
 ### Using the Element Identifier
 
-Client code can use the Element Identifier when querying the DOM. See [Finding the UI Element for a FieldValueHost](Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) to learn more.
+Client code can use the Element Identifier when querying the DOM. See [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) to learn more.
 
 The markup introduced in [Prepare the Server-Generated HTML](#prepare-the-server-generated-html) uses `data-field` to identify a field and `data-jivs-role` to identify the purpose of an element.
 
@@ -273,19 +273,19 @@ A restoring workflow assigns the transported saved state to `config.savedState` 
 
 `onTextValueChanged` allows Jivs to supply Text Values to the editors. Omit it when Jivs does not need to supply values to the editors. See [When a Text Value Changes](Using_the_ValueHostsManager_within_the_Client.md#when-a-text-value-changes).
 
-`fieldValidated` receives field validation changes. Jivs SimpleDom supplies the [Field Dispatcher Function](Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function). Otherwise, the application supplies it. See [When a Field’s Validation Changes](Using_the_ValueHostsManager_within_the_Client.md#when-a-fields-validation-changes).
+`fieldValidated` receives field validation changes. Jivs SimpleDom supplies the [Field Dispatcher Function](../Presentation/Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function). Otherwise, the application supplies it. See [When a Field’s Validation Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-a-fields-validation-changes).
 
-`formValidated` receives changes to the overall validation state. Jivs SimpleDom supplies the [Form Dispatcher Function](Form_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function). Otherwise, the application supplies it. See [When Overall Validation Changes](Using_the_ValueHostsManager_within_the_Client.md#when-overall-validation-changes).
+`formValidated` receives changes to the overall validation state. Jivs SimpleDom supplies the [Form Dispatcher Function](../Presentation/Form_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function). Otherwise, the application supplies it. See [When Overall Validation Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-overall-validation-changes).
 
 `reconcileValueHostsWithEditors()` compares the generated editors with their `FieldValueHost` instances. It transfers editor Text Values when required and enables or disables each `FieldValueHost` based on whether its editor is present. See [Add the Editor Reconciliation Helpers](#add-the-editor-reconciliation-helpers).
 
-`attachEditorEventHandlers()` represents the application code that attaches event handlers to the editors and supplies user-entered Text Values to their `FieldValueHost` instances. See [Sending User Input to Jivs](Using_the_ValueHostsManager_within_the_Client.md#sending-user-input-to-jivs).
+`attachEditorEventHandlers()` represents the application code that attaches event handlers to the editors and supplies user-entered Text Values to their `FieldValueHost` instances. See [Sending User Input to Jivs](../Using_the_ValueHostsManager_within_the_Client.md#sending-user-input-to-jivs).
 
-`attachPresentationHandlers()` represents the application’s presentation setup. When using Jivs SimpleDom, it can attach the field and form presentations and initialize required indicators. Otherwise, the application supplies its own presentation setup. See [Initialize the Presentation](Presentation_Quick_Start.md#11-initialize-the-presentation).
+`attachPresentationHandlers()` represents the application’s presentation setup. When using Jivs SimpleDom, it can attach the field and form presentations and initialize required indicators. Otherwise, the application supplies its own presentation setup. See [Initialize the Presentation](../Presentation/Presentation_Quick_Start.md#11-initialize-the-presentation).
 
 `broadcast()` sends the current restored state through the configured callbacks after the handlers have been attached. This allows the regenerated page to present that state without changing it.
 
-`handleServerIssues()` interprets the validation information returned by the server and supplies it to Jivs. Its implementation depends on whether the server uses Jivs or another validation system. See [Handle Server Validation Results](Submitting_the_Client_Form.md#handle-server-validation-results).
+`handleServerIssues()` interprets the validation information returned by the server and supplies it to Jivs. Its implementation depends on whether the server uses Jivs or another validation system. See [Handle Server Validation Results](../Submitting_the_Client_Form.md#handle-server-validation-results).
 
 The workflow determines the remaining statements and their order:
 
@@ -309,4 +309,4 @@ Every server-generated form requires the Page Load and Page Save workflows. The 
 
 ---
 
-Return to [Learning Jivs](Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Learning_Jivs_Home.md).
