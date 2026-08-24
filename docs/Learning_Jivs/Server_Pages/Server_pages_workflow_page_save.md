@@ -50,19 +50,19 @@ After client validation succeeds, place the current saved state into the form’
 The page’s HTML contains this hidden input:
 
 ```html
-<input type="hidden" id="_jivsSavedState" name="_jivsSavedState">
+<input type="hidden" id="_jivsCapturedState" name="_jivsCapturedState">
 ```
 
 Populate it immediately before submitting the form:
 
 ```ts
-const savedStateInput =
-    document.getElementById('_jivsSavedState') as HTMLInputElement;
+const capturedStateInput =
+    document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
-savedStateInput.value = vhm.getSavedState();
+capturedStateInput.value = vhm.getCapturedState();
 ```
 
-`getSavedState()` returns an opaque string. Application code should submit and return that string without inspecting or modifying its contents.
+`getCapturedState()` returns an opaque string. Application code should submit and return that string without inspecting or modifying its contents.
 
 > The request contains the form’s application fields along with Jivs transport data. The `_jivs` prefix makes the transport fields easy for server code to recognize and exclude from normal application processing.
 
@@ -85,13 +85,13 @@ The result falls into one of three categories:
 Regenerate the page with three things:
 
 1. **The client restoration setup.** Generate client code that restores the `ValueHostsManager` using saved state. It also retrieves the server validation errors and supplies them to `handleServerIssues()`.
-2. **The submitted Jivs saved state.** Return the same opaque string sent by the client. Populate the page’s existing `_jivsSavedState` input with that value.
+2. **The submitted Jivs saved state.** Return the same opaque string sent by the client. Populate the page’s existing `_jivsCapturedState` input with that value.
 3. **The server validation errors.** Place the validation information in the page’s `_jivsServerIssues` input.
 
 The regenerated inputs will resemble this:
 
 ```html
-<input type="hidden" id="_jivsSavedState" name="_jivsSavedState"
+<input type="hidden" id="_jivsCapturedState" name="_jivsCapturedState"
     value="[HTML-attribute-encoded saved state]">
 
 <input type="hidden" id="_jivsServerIssues"
@@ -106,8 +106,8 @@ The value of `_jivsServerIssues` depends on the server:
 The restoration code is otherwise the same:
 
 ```ts
-const savedStateInput =
-    document.getElementById('_jivsSavedState') as HTMLInputElement;
+const capturedStateInput =
+    document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
 const serverIssuesInput =
     document.getElementById('_jivsServerIssues') as HTMLInputElement;
@@ -116,7 +116,7 @@ const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
 
-config.savedState = savedStateInput.value;
+config.capturedState = capturedStateInput.value;
 
 config.onTextValueChanged = onTextValueChanged; // optional
 config.onValueHostValidationStateChanged = fieldValidated;

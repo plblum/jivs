@@ -4,28 +4,39 @@
  * Its methods provide validation and the results of validation.
  * @module jivs-engine/ValueHostsManager/ConcreteClasses
  */
-import { ModelValidatorsValueHostType, ModelValidatorsValueHostName } from '../ValueHosts/ModelValidatorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValueHostsManagerInstanceState, type IValueHostsManager, type ValueHostsManagerConfig, type IValueHostsManagerCallbacks, type ValidationStateChangedHandler, DefaultNotifyValidationStateChangedDelay, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler, Behaviors, createBehaviors } from '../Interfaces/ValueHostsManager';
-import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { Debouncer } from '../Utilities/Debounce';
+import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
-import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
-import { ICalcValueHost } from '../Interfaces/CalcValueHost';
-import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
+import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
+import { type IssueFound, type ValidateOptions, ValidationState } from '../Interfaces/Validation';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
+import
+    {
+        type IValueHostsManager,
+        type IValueHostsManagerCallbacks,
+        type ValidationStateChangedHandler,
+        type ValueHostsManagerConfig,
+        type ValueHostsManagerInstanceState,
+        Behaviors, createBehaviors,
+        DefaultNotifyValidationStateChangedDelay,
+        StateContainer,
+        ValueHostsManagerConfigChangedHandler
+    } from '../Interfaces/ValueHostsManager';
+import { Debouncer } from '../Utilities/Debounce';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { toICalcValueHost } from '../ValueHosts/CalcValueHost';
+import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
+import { ModelValidatorsValueHostName, ModelValidatorsValueHostType } from '../ValueHosts/ModelValidatorsValueHost';
 import { toIStaticValueHost } from '../ValueHosts/StaticValueHost';
+import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
 
 
@@ -91,7 +102,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      *     // Just know that you need one object for each value that you want to connect
      *     // to the ValueHostsManager
      *      ],
-     *   savedInstanceState: null, // or the state object previously returned with OnInstanceStateChanged
+     *   state: undefined, // or the state string previously returned with getState
      *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
      *   onInstanceStateChanged: (valueHostsManager, state)=> { },
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
@@ -118,15 +129,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         if (!this._config.behaviors)
             this._config.behaviors = createBehaviors(this._config.services);
 
-        this._instanceState = internalConfig.savedInstanceState ?? {};
-        if (typeof this._instanceState.stateChangeCounter !== 'number')
-            this._instanceState.stateChangeCounter = 0;
-        // There may be valuehostinstancesstates that do not have an associated ValueHostConfig.
-        // This allows for calling addValueHost manually later and the new ValueHost will
-        // get attached to its instance state.
-        if (internalConfig.savedValueHostInstanceStates)
-            internalConfig.savedValueHostInstanceStates.forEach((instanceState) =>
-                this._lastValueHostInstanceStates.set(instanceState.name, instanceState));
+        this.restoreState(internalConfig);
 
         const configs = internalConfig.valueHostConfigs ?? [];
 
@@ -146,6 +149,20 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         config.services = savedServices;
         internalConfig.services = savedServices;
         return internalConfig;
+    }
+
+    private restoreState(internalConfig: ValueHostsManagerConfig): void {
+        let stateContainer: StateContainer = internalConfig.capturedState ? JSON.parse(internalConfig.capturedState) : null;
+
+        this._instanceState = stateContainer?.vhm as TState ?? {};
+        if (typeof this._instanceState.stateChangeCounter !== 'number')
+            this._instanceState.stateChangeCounter = 0;
+        // There may be valuehostinstancesstates that do not have an associated ValueHostConfig.
+        // This allows for calling addValueHost manually later and the new ValueHost will
+        // get attached to its instance state.
+        if (stateContainer?.vh)
+            stateContainer.vh.forEach((vhState) =>
+                this._lastValueHostInstanceStates.set(vhState.name, vhState));
     }
 
     /**
@@ -251,10 +268,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * A copy of this is expected to be retained (redux/localstorage/etc)
      * by the caller to support recreating the ValueHostsManager in a stateless situation.
      */
-    protected get instanceState(): ValueHostsManagerInstanceState {
+    protected get instanceState(): TState {
         return this._instanceState;
     }
-    private _instanceState: ValueHostsManagerInstanceState;
+    private _instanceState!: TState;
 
     /**
      * Value retained from the constructor to share with calls to addValueHost,
@@ -281,10 +298,30 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         if (!deepEquals(this.instanceState, updated)) {
             updated.stateChangeCounter = typeof updated.stateChangeCounter === 'number' ? updated.stateChangeCounter + 1 : 0;
             this._instanceState = updated;
-            this.onInstanceStateChanged?.(this, updated);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get the current state of the ValueHostsManager as a string.
+     * It packages state in StateContainer and converts to JSON for transfer.
+     * Typically used with the page generated on the server after a round-trip.
+     * @returns The JSON string representing the current state of the ValueHostsManager.
+     */
+    public captureState(): string
+    {
+        const stateContainer: StateContainer = {
+            jivs_state: 'internal',
+            vhm: this._instanceState,
+            vh: []
+        };
+        for (const [name, vh] of this.valueHosts)
+        {
+            vh._captureState(stateContainer);
+        }
+
+        return JSON.stringify(stateContainer);
     }
 
     /**
@@ -502,7 +539,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      */
     public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
-        this.onValueHostInstanceStateChanged?.(valueHost, instanceState);
     }
 
     protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
@@ -532,26 +568,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
 
         return this.resolveCallback<ValueHostsManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
-    }
-
-    /**
-     * Called when the ValueHostsManager's state has changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call its setState function with the stateToRetain
-     */
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
-        return this.resolveCallback<ValueHostsManagerInstanceStateChangedHandler>(this.config.onInstanceStateChanged, 'onInstanceStateChanged');
-    }
-
-    /**
-     * Called when any ValueHost had its ValueHostInstanceState changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
-     */
-    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
-        return this.resolveCallback<ValueHostInstanceStateChangedHandler>(this.config.onValueHostInstanceStateChanged, 'onValueHostInstanceStateChanged');
     }
 
     /**

@@ -206,7 +206,7 @@ flowchart TD
 
 ### Before the Postback
 
-* Call `getSavedState()`.
+* Call `getCapturedState()`.
 * Retain the opaque string through the round trip.
 * Do not prescribe its transport or storage.
 * Treat the contents as internal Jivs data.
@@ -214,7 +214,7 @@ flowchart TD
 ### When the Page Returns
 
 * Obtain the saved-state string.
-* Assign it to `ValueHostsManagerConfig.savedState`.
+* Assign it to `ValueHostsManagerConfig.capturedState`.
 * Construct the new manager.
 * Understand that construction restores the saved data internally without notifying UI consumers.
 * Reconnect editor event handlers and validation presentation.
@@ -465,11 +465,11 @@ Contents:
 * Saved-state lifecycle diagram.
 * Before the round trip:
 
-  * call `getSavedState()`;
+  * call `getCapturedState()`;
   * retain the opaque string through the application’s chosen transport.
 * When the page returns:
 
-  * supply the string through `ValueHostsManagerConfig.savedState`;
+  * supply the string through `ValueHostsManagerConfig.capturedState`;
   * construct the manager;
   * perform the normal Page Load wiring;
   * apply intentional server changes;

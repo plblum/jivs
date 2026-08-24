@@ -5,23 +5,25 @@
 
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { FieldValueHostConfig, TextValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { ValueHostValidationStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import {
-    ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState,
-    ValueHostsManagerInstanceStateChangedHandler, ValidationStateChangedHandler
-} from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
-import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import
+    {
+        ValidationStateChangedHandler,
+        ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler
+    } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IValidatorBuilder } from '../Interfaces/ChildBuilders';
-import {
-    FluentFieldParameters, FluentFieldValueConfig,
-    FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
-} from '../Interfaces/ValueHostConfigBuilders';
 import { IValueHostsManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import
+    {
+        FluentFieldParameters, FluentFieldValueConfig,
+        FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters
+    } from '../Interfaces/ValueHostConfigBuilders';
 import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { ValidatableValueHostConfigBuilder } from './ValueHostConfigBuilder';
 
@@ -85,22 +87,13 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
     //#region InstanceState
     /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.capturedState
      */
-    public get savedInstanceState(): ValueHostsManagerInstanceState | null {
-        return this.baseConfig.savedInstanceState ?? null;
+    public get capturedState(): string | undefined {
+        return this.baseConfig.capturedState;
     }
-    public set savedInstanceState(value: ValueHostsManagerInstanceState | null) {
-        this.baseConfig.savedInstanceState = value;
-    }
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedValueHostInstanceStates
-     */
-    public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
-        return this.baseConfig.savedValueHostInstanceStates ?? null;
-    }
-    public set savedValueHostInstanceStates(value: Array<ValueHostInstanceState> | null) {
-        this.baseConfig.savedValueHostInstanceStates = value;
+    public set capturedState(value: string | undefined) {
+        this.baseConfig.capturedState = value;
     }
     
     //#endregion InstanceState
@@ -176,15 +169,6 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
 
     //#region IValueHostsManagerCallbacks
     /**
-     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueHostInstanceStateChanged
-     */
-    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null | undefined {
-        return this.baseConfig.onValueHostInstanceStateChanged;
-    }
-    public set onValueHostInstanceStateChanged(value: ValueHostInstanceStateChangedHandler | null) {
-        this.baseConfig.onValueHostInstanceStateChanged = value;
-    }
-    /**
      * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
      */
     public get onValueChanged(): ValueChangedHandler | null {
@@ -221,17 +205,6 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
     public set onTextValueChanged(value: TextValueChangedHandler | null) {
         this.baseConfig.onTextValueChanged = value;
-    }
-
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onInstanceStateChanged
-     */
-
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
-        return this.baseConfig.onInstanceStateChanged ?? null;
-    }
-    public set onInstanceStateChanged(value: ValueHostsManagerInstanceStateChangedHandler | null) {
-        this.baseConfig.onInstanceStateChanged = value;
     }
 
     /**

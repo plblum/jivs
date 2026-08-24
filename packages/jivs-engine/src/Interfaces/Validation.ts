@@ -43,7 +43,7 @@ export interface ValidateOptions
      */
     duringEdit?: boolean;
     /**
-     * If you have setup a OnValidated or onValueHostValidationStateChanged callback,
+     * If you have setup a onValidationStateChanged or onValueHostValidationStateChanged callback,
      * you may not want it to fire when you expressly call validate().
      * In that case, set this to true.
      */
@@ -225,7 +225,7 @@ export interface ValidationState
     /**
      * When true, there is nothing known to block validation. However, there are other factors
      * to consider: there may be warning issues found or an async validator is still running. 
-     * So check doNotSaveValueHosts as the ultimate guide to saving.
+     * So check doNotSave as the ultimate guide to saving.
      * When false, there is at least one validation error.
      */
     isValid: boolean;

@@ -146,11 +146,11 @@ This lets one configuration support alternate layouts, conditional sections, and
 Add two hidden inputs to the server-generated form:
 
 ```html
-<input type="hidden" id="_jivsSavedState" name="_jivsSavedState">
+<input type="hidden" id="_jivsCapturedState" name="_jivsCapturedState">
 <input type="hidden" id="_jivsServerIssues">
 ```
 
-`_jivsSavedState` carries Jivs state from the client to the server and back. It has a `name` because it must be included in the form submission. `_jivsServerIssues` carries the validation issues from server to client.
+`_jivsCapturedState` carries Jivs state from the client to the server and back. It has a `name` because it must be included in the form submission. `_jivsServerIssues` carries the validation issues from server to client.
 
 ## Add the Editor Reconciliation Helpers
 
@@ -250,7 +250,7 @@ const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
 
-// A restoring workflow assigns config.savedState here.
+// A restoring workflow assigns config.capturedState here.
 
 config.onTextValueChanged = onTextValueChanged; // optional
 config.onValueHostValidationStateChanged = fieldValidated;
@@ -269,7 +269,7 @@ attachPresentationHandlers(vhm);
 
 `PersonFormRules` represents the application’s Rules implementation described in [Build the Configuration Rules](#build-the-configuration-rules).
 
-A restoring workflow assigns the transported saved state to `config.savedState` before creating the `ValueHostsManager`. A new Page Load omits this assignment.
+A restoring workflow assigns the transported saved state to `config.capturedState` before creating the `ValueHostsManager`. A new Page Load omits this assignment.
 
 `onTextValueChanged` allows Jivs to supply Text Values to the editors. Omit it when Jivs does not need to supply values to the editors. See [When a Text Value Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-a-text-value-changes).
 

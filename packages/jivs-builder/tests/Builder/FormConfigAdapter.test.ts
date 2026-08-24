@@ -95,8 +95,7 @@ describe('constructor', () => {
         let testItem = new FormConfigAdapter(state);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
-        expect(testItem.savedInstanceState).toBeNull();
-        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.capturedState).toBeUndefined();
         expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();

@@ -28,24 +28,24 @@ A Round Trip is not a save attempt, so it does not require form-level validation
 The page is expected to contain the same saved-state input used by the Page Save workflow:
 
 ```html
-<input type="hidden" id="_jivsSavedState" name="_jivsSavedState">
+<input type="hidden" id="_jivsCapturedState" name="_jivsCapturedState">
 ```
 
 Immediately before submitting the form, place the current Jivs saved state into that input:
 
 ```ts
-const savedStateInput =
-    document.getElementById('_jivsSavedState') as HTMLInputElement;
+const capturedStateInput =
+    document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
-savedStateInput.value = vhm.getSavedState();
+capturedStateInput.value = vhm.getCapturedState();
 ```
 
-`getSavedState()` returns an opaque string. Application code should submit and return it without inspecting or modifying its contents.
+`getCapturedState()` returns an opaque string. Application code should submit and return it without inspecting or modifying its contents.
 
 The application can then submit the form through its normal server-page mechanism. The request contains:
 
 - the values submitted by the form's editors
-- the Jivs saved state in `_jivsSavedState`
+- the Jivs saved state in `_jivsCapturedState`
 - any other application-specific form data
 
 ## Regenerate the Page on the Server
@@ -60,15 +60,15 @@ When generating the returned page, the server:
 
 1. Generates the form and its current editors.
 2. Returns the same Jivs saved-state string received from the client.
-3. Places that string into the regenerated `_jivsSavedState` input.
+3. Places that string into the regenerated `_jivsCapturedState` input.
 
 The server must HTML-attribute-encode the saved state when writing it into the input:
 
 ```html
 <input
     type="hidden"
-    id="_jivsSavedState"
-    name="_jivsSavedState"
+    id="_jivsCapturedState"
+    name="_jivsCapturedState"
     value="[HTML-attribute-encoded saved state]">
 ```
 
@@ -90,14 +90,14 @@ The important rule is:
 Read the saved-state input and assign its value to the configuration before constructing the `ValueHostsManager`:
 
 ```ts
-const savedStateInput =
-    document.getElementById('_jivsSavedState') as HTMLInputElement;
+const capturedStateInput =
+    document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
 const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
 
-config.savedState = savedStateInput.value;
+config.capturedState = capturedStateInput.value;
 
 config.onTextValueChanged = onTextValueChanged;
 config.onValueHostValidationStateChanged = fieldValidated;
@@ -137,7 +137,7 @@ vhm.broadcast();
 
 The complete restoration order is:
 
-1. Restore the `ValueHostsManager` from `config.savedState`.
+1. Restore the `ValueHostsManager` from `config.capturedState`.
 2. Reconcile the regenerated editors using `skipIfUnchanged: true`.
 3. Attach the editor event handlers.
 4. Attach the presentation handlers.

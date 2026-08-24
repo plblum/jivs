@@ -90,14 +90,9 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
     IValueHostsManagerCallbacks, IValueHostsManagerConfigExtensions
 {
     /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedInstanceState
+     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.capturedState
      */
-    savedInstanceState?: ValueHostsManagerInstanceState | null;
-
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!ValueHostsManagerConfig.savedValueHostInstanceStates
-     */
-    savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;    
+    capturedState?: string;
 }
 
 export interface IValueHostsManagerConfigExtensions

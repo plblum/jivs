@@ -22,7 +22,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValueHostsManagerAccessor } from './ValueHostsManager';
+import { IValueHostsManagerAccessor, StateContainer } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
 import { ConditionConfig } from './Conditions';
 /**
@@ -165,6 +165,13 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      * @param enabled 
      */
     setEnabled(enabled: boolean): void;
+
+    /**
+     * Returns the internal state of the ValueHost, which includes all the instance-specific data.
+     * This state is used internally by the ValueHost. This internally exposes it to ValueHostsManager
+     * for the ValueHostsManager to manage and persist state.
+     */
+    _captureState(stateContainer: StateContainer): void;
 }
 
 /**
@@ -391,7 +398,6 @@ export function toIGatherValueHostNames(source: any): IGatherValueHostNames | nu
 }
 
 export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
-export type ValueHostInstanceStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostInstanceState) => void;
 
 /**
  * Determines if the object implements IValueHost.
@@ -420,14 +426,6 @@ export function toIValueHost(source: any): IValueHost | null
  * Provides callback hooks for the consuming system to get feedback from ValueHosts.
  */
 export interface IValueHostCallbacks {
-    /**
-     * Called when any ValueHost had its ValueHostInstanceState changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
-     */
-    onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler | null;
 
     /**
      * Called when the ValueHost's Value property has changed.
@@ -448,8 +446,7 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
     if (source && typeof source === 'object')
     {
         const test = source as IValueHostCallbacks;     
-        if (test.onValueHostInstanceStateChanged !== undefined && 
-            test.onValueChanged !== undefined)
+        if (test.onValueChanged !== undefined)
             return test;
     }
     return null;

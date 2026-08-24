@@ -2,7 +2,7 @@ import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost }
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, StateContainer } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
@@ -235,6 +235,9 @@ describe('toIStaticValueHost function', () => {
         setEnabled(enabled: boolean): void {
             throw new Error("Method not implemented.");
         }
+        _captureState(stateContainer: StateContainer): void {
+            throw new Error("Method not implemented.");
+        }        
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIStaticValueHostImplementation();
