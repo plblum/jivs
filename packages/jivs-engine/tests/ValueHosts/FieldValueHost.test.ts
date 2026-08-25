@@ -52,7 +52,7 @@ import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../.
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { finishPartialFieldValueHostConfig, finishPartialFieldValueHostInstanceState, finishPartialValidatorConfigs, supportTestValueHostInServices, TestFieldValueHost, TestFieldValueHostType } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
-import { restoreState } from '../TestSupport/utilities';
+import { restoreCapturedState } from '../TestSupport/utilities';
 
 
 interface ITestSetupConfig {
@@ -247,7 +247,7 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe(textValue);
   
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let fvh = <FieldValueHostInstanceState> capturedState.vh[0];
         expect(fvh.textValue).toBe(textValue);
         expect(fvh.changeCounter).toBe(1);
@@ -273,7 +273,7 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getTextValue()).toBe("ABC");
 
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let vrChange = <FieldValueHostInstanceState> capturedState.vh[0];
         expect(vrChange.textValue).toBe("ABC");
         expect(vrChange.status).toBe(ValidationStatus.Undetermined);
@@ -962,7 +962,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
 
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let valueHostState = capturedState.vh[0] as FieldValueHostInstanceState;
         expect(valueHostState.value).toBe(10);
         expect(valueHostState.textValue).toBe("10");
@@ -979,7 +979,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
 
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let valueHostState = capturedState.vh[0] as FieldValueHostInstanceState;
         expect(valueHostState.value).toBe(10);
         expect(valueHostState.textValue).toBe("10");
@@ -994,7 +994,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
         
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let valueHostState = capturedState.vh[0] as FieldValueHostInstanceState;
         expect(valueHostState.value).toBe(10);
         expect(valueHostState.textValue).toBe("10");
@@ -1009,7 +1009,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
         
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let valueHostState = capturedState.vh[0] as FieldValueHostInstanceState;
         expect(valueHostState.value).toBe(10);
         expect(valueHostState.textValue).toBe("10");
@@ -1024,7 +1024,7 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getTextValue()).toBe("10");
 
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         let valueHostState = capturedState.vh[0] as FieldValueHostInstanceState;
         expect(valueHostState.value).toBe(10);
         expect(valueHostState.textValue).toBe("10");

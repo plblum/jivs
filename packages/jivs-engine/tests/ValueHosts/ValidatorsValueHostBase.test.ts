@@ -45,7 +45,7 @@ import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
-import { restoreState } from '../TestSupport/utilities';
+import { restoreCapturedState } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 
 /**
@@ -2276,7 +2276,7 @@ describe('clearValidation', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         expect(capturedState.vh[0]).toEqual({
             name: 'Field1',
             status: ValidationStatus.NotAttempted,
@@ -2301,7 +2301,7 @@ describe('clearValidation', () => {
         expect(result).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
         expect(capturedState.vhm.stateChangeCounter).toBe(0);
 
     });
@@ -2341,7 +2341,7 @@ describe('clearValidation', () => {
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
-        let capturedState = restoreState(setup.valueHostsManager);
+        let capturedState = restoreCapturedState(setup.valueHostsManager);
 
         expect(capturedState.vh[0]).toEqual({
             name: 'Field1',

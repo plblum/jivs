@@ -5,12 +5,12 @@ import type { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { logGatheringErrorHandler, logGatheringHandler, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 import
-{
-    type IValueHost,
-    IValueHostCallbacks, toIValueHostCallbacks,
-    ValueHostConfig,
-    type ValueHostInstanceState
-} from "../../src/Interfaces/ValueHost";
+    {
+        type IValueHost,
+        IValueHostCallbacks, toIValueHostCallbacks,
+        ValueHostConfig,
+        type ValueHostInstanceState
+    } from "../../src/Interfaces/ValueHost";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
@@ -23,7 +23,7 @@ import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
-import { restoreState, createCapturedStateAsString, createStateContainer } from '../TestSupport/utilities';
+import { createCapturedStateAsString } from '../TestSupport/utilities';
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState

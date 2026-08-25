@@ -18,7 +18,7 @@ import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../sr
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
-import { restoreState } from '../TestSupport/utilities';
+import { restoreCapturedState } from '../TestSupport/utilities';
 
 
 
@@ -237,7 +237,7 @@ describe('clearValidation', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         expect(state.vh[0]).toEqual({
             changeCounter: undefined,
             name: 'Field1',
@@ -256,7 +256,7 @@ describe('clearValidation', () => {
         expect(result).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         expect(state.vhm.stateChangeCounter).toBe(0);
 
     });
@@ -274,7 +274,7 @@ describe('clearValidation', () => {
         expect(result).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         expect(state.vh[0]).toEqual({
             changeCounter: undefined,
             name: 'Field1',
@@ -814,7 +814,7 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).not.toThrow();
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         let valueChange = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(
             <IssueFound>{
@@ -860,7 +860,7 @@ describe('addExternalIssueFound', () => {
         //         severity: ValidationSeverity.Warning,
         //         doNotSave: false
         //     });
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound).toBeDefined();
         expect(valueChange.externalIssuesFound![0]).toEqual(
@@ -881,7 +881,7 @@ describe('addExternalIssueFound', () => {
 
         expect(() => setup.valueHost.addExternalIssueFound(null!, true)).not.toThrow();
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound).toBeUndefined();
     });
@@ -894,7 +894,7 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).not.toThrow();
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(
             <IssueFound> {
@@ -916,7 +916,7 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
         let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
@@ -937,7 +937,7 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound).toBeDefined();
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
@@ -962,7 +962,7 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Warning
         }, true)).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
         let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeDefined();
@@ -990,7 +990,7 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
         let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeDefined();
@@ -1116,7 +1116,7 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
         let valueChange = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
@@ -1182,7 +1182,7 @@ describe('clearExternalIssuesFound', () => {
         expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(false);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
         expect(state.vhm.stateChangeCounter).toBe(0);
     });
     test('Set then Clear creates two state entries with state.ExternalIssuesFound undefined by the end', () => {
@@ -1196,7 +1196,7 @@ describe('clearExternalIssuesFound', () => {
         expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(true);
 
-        let state = restoreState(setup.valueHostsManager);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
         let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeUndefined();
