@@ -2,6 +2,11 @@
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
 
+## 0.23.0
+- **Breaking API change** - Replaced state management. Callbacks have been replaced by ValueHostsManager.getCapturedState()
+and ValueHostsManagerConfig.capturedState. This simplifies the work needed for server generated pages to retain state during
+a round trip.
+
 ## 0.22.0 
 Same as 0.21.0
 

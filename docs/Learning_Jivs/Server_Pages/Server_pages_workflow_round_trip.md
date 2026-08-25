@@ -130,10 +130,10 @@ After reconciling the editor values and enabled states, attach the page handlers
 attachEditorEventHandlers(vhm);
 attachPresentationHandlers(vhm);
 
-vhm.broadcast();
+vhm.broadcastState();
 ```
 
-`broadcast()` redistributes the current Text Values and validation state through the configured callbacks. This updates editors and validation presentation after their handlers have been attached.
+`broadcastState()` redistributes the current Text Values and validation state through the configured callbacks. This updates editors and validation presentation after their handlers have been attached.
 
 The complete restoration order is:
 
@@ -141,7 +141,7 @@ The complete restoration order is:
 2. Reconcile the regenerated editors using `skipIfUnchanged: true`.
 3. Attach the editor event handlers.
 4. Attach the presentation handlers.
-5. Call `broadcast()`.
+5. Call `broadcastState()`.
 
 The user can now continue editing the regenerated form with the retained Jivs state and any changes supplied by the server.
 

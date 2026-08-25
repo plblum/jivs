@@ -2731,17 +2731,14 @@ export interface IFivaseConfigHost {
  * 
  * ValueHostsManager and its ValueHosts have a state that should be saved and restored across sessions.
  * This service uses an implementation of IFivaseStateStore to persist form states across sessions.
- * Each form has 2 states: instanceState and valueHostInstanceStates. They are stored with these keys:
- * - instanceState: formId
- * - valueHostInstanceStates: formId + '|ValueHosts' (all ValueHosts are in the same key)
+ * Each form gets its state from ValueHostsManager.getCapturedState and its retained in the key formId within the state store.
  * 
  * As a result, every form must have a unique formId, used to register the configuration and save the state.
  * 
  * Use register() to store the configuration for a formId and getConfig() to retrieve the configuration.
  * getConfig() will supply several parts to the ValueHostsManagerConfig:
  * - The ValueHostConfigs array, which is the ValueHost configuration for the form.
- * - The savedInstanceState, which is the state of the ValueHostsManager in the session.
- * - The savedValueHostInstanceStates, which is the state of each ValueHost in the session.
+ * - The capturedState, which is the state of the ValueHostsManager in the session.
  * - The onInstanceStateChanged and onValueHostInstanceStateChanged callbacks, which are used to save the state.
  *   You can also use these callbacks to handle the state changes in the application, as yours will be called
  *   after this class saves the state.
@@ -2761,10 +2758,7 @@ export class FivaseConfigHost implements IFivaseConfigHost {
      * 
      * The returned configuration will have these assigned, but will still call your original
      * callback if it was supplied:
-     * `savedInstanceState`, 
-     * `savedValueHostInstanceStates`, 
-     * `onInstanceStateChanged`, 
-     * `onValueHostInstanceStateChanged`
+     * `capturedState`
      */
     public getConfig(formId: string): ValueHostsManagerConfig {
         const configOrFactory = this._configs.get(formId);
@@ -2777,29 +2771,14 @@ export class FivaseConfigHost implements IFivaseConfigHost {
         const config = typeof configOrFactory === 'function'
             ? (configOrFactory as (formId: string) => ValueHostsManagerConfig)(formId)
             : configOrFactory;
-        const valueHostKey = `${formId}|ValueHosts`;
 
         // Retrieve any saved state for this formId
-        const savedInstanceState = this.stateStore.getState(formId);
-        const savedValueHostInstanceStates = this.stateStore.getState(valueHostKey);
+        const capturedState = this.stateStore.getState(formId);
 
         // Assign the callbacks, preserving any that were already present in the config
         return {
             ...config,  // do not modify the original config
-            savedInstanceState: savedInstanceState ?? config.savedInstanceState ?? null,
-            savedValueHostInstanceStates: savedValueHostInstanceStates ?? config.savedValueHostInstanceStates ?? null,
-            onInstanceStateChanged: (valueHostsManager, state) : void => {
-                this.saveState(formId, state);
-                if (config.onInstanceStateChanged) {  // Call the original callback if it exists
-                    config.onInstanceStateChanged(valueHostsManager, state);
-                }
-            },
-            onValueHostInstanceStateChanged: (valueHost, state) : void => {
-                this.saveState(valueHostKey, state);
-                if (config.onValueHostInstanceStateChanged) {  // Call the original callback if it exists
-                    config.onValueHostInstanceStateChanged(valueHost, state);
-                }
-            }
+            capturedState: capturedState ?? config.capturedState ?? null,
         };
     }
 

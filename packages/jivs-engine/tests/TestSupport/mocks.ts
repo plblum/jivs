@@ -179,6 +179,10 @@ export class MockValueHost implements IValueHost
     _captureState(stateContainer: StateContainer): void {
         // Implement the logic to capture the state if needed
     }
+    broadcastState(): void
+    {
+        
+    }
 }
 
 
@@ -319,7 +323,6 @@ export class MockFieldValueHost extends MockValueHost
     gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
         throw new Error("Method not implemented.");
     }
-
 }
 
 /**

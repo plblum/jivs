@@ -263,7 +263,7 @@ const vhm = new ValueHostsManager(config);
 attachEditorEventHandlers(vhm);
 attachPresentationHandlers(vhm);
 
-// Some workflows call vhm.broadcast() here
+// Some workflows call vhm.broadcastState() here
 // A Page Save return calls handleServerIssues() here
 ```
 
@@ -283,7 +283,7 @@ A restoring workflow assigns the transported saved state to `config.capturedStat
 
 `attachPresentationHandlers()` represents the application’s presentation setup. When using Jivs SimpleDom, it can attach the field and form presentations and initialize required indicators. Otherwise, the application supplies its own presentation setup. See [Initialize the Presentation](../Presentation/Presentation_Quick_Start.md#11-initialize-the-presentation).
 
-`broadcast()` sends the current restored state through the configured callbacks after the handlers have been attached. This allows the regenerated page to present that state without changing it.
+`broadcastState()` sends the current restored state through the configured callbacks after the handlers have been attached. This allows the regenerated page to present that state without changing it.
 
 `handleServerIssues()` interprets the validation information returned by the server and supplies it to Jivs. Its implementation depends on whether the server uses Jivs or another validation system. See [Handle Server Validation Results](../Submitting_the_Client_Form.md#handle-server-validation-results).
 

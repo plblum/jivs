@@ -1969,7 +1969,11 @@ describe('toIValidatableValueHostBase', () => {
             },
             _captureState(stateContainer: StateContainer): void {
                 throw new Error("Method not implemented.");
-            }
+            },
+            broadcastState(): void
+            {
+                throw new Error("Method not implemented.");
+            }            
         }
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
@@ -2287,6 +2291,10 @@ describe('toIValidatableValueHostBase function', () => {
         {
             throw new Error("Method not implemented.");
         }
+        broadcastState(): void
+        {
+            throw new Error("Method not implemented.");
+        }        
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIValidatableValueHostBaseImplementation();

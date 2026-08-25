@@ -50,7 +50,7 @@ import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { FieldValueHost, FieldValueHostGenerator, toIFieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { finishPartialFieldValueHostConfig, finishPartialFieldValueHostInstanceState, finishPartialValidatorConfigs, supportTestValueHostInServices, TestFieldValueHost, TestFieldValueHostType } from '../TestSupport/FieldValueHostTestFunctions';
+import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig, finishPartialFieldValueHostInstanceState, finishPartialValidatorConfigs, supportTestValueHostInServices, TestFieldValueHost, TestFieldValueHostType } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { restoreCapturedState } from '../TestSupport/utilities';
 
@@ -1975,7 +1975,53 @@ describe('FieldValueHost.required', () => {
         expect(setup.valueHost.required).toBe(true);
     });    
 });
+describe('broadcastState', () =>
+{
+    // hook up all callbacks supported by broadcastState and call broadcastState
+    // to see those get called with the existing state.
+    // Setup ValueHostsManager with config.capturedState that will be checked.
+    test('Calls all registered callbacks with existing state', () =>
+    {
+        let fvhConfig = finishPartialFieldValueHostConfig({
+            dataType: LookupKey.String,
+            initialValue : undefined // we are going to expect state to replace this
+        });
+        let fvhState = createFieldValueHostInstanceState(1);
+        fvhState.textValue = 'ABC';
+        fvhState.status = ValidationStatus.Valid;
 
+        let setup = setupFieldValueHost(fvhConfig, fvhState)
+        let testItem = setup.valueHost;
+
+        let textValChangedInvoked = 0; 
+        let replacedTextValue: any;
+        setup.valueHostsManager.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            textValChangedInvoked++;
+            replacedTextValue = (<IFieldValueHost>valueHost).getTextValue();
+        };
+
+        let valChangedInvoked = 0;  // should NOT be invoked
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
+        {
+            valChangedInvoked++;
+        };
+        let valStateChangedInvoked = 0; 
+        let replacedStatus: any;
+        setup.valueHostsManager.onValueHostValidationStateChanged = (valueHost, valState) =>
+        {
+            valStateChangedInvoked++;
+            replacedStatus = valState.status;
+        };
+        testItem.broadcastState();
+        expect(textValChangedInvoked).toBe(1);
+        expect(valChangedInvoked).toBe(0);
+        expect(valStateChangedInvoked).toBe(1);
+        expect(replacedTextValue).toBe('ABC');
+        expect(replacedStatus).toBe(ValidationStatus.Valid);
+
+    });
+});
 describe('toIFieldValueHost function', () => {
     test('Passing actual FieldValueHost matches interface returns same object.', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
@@ -2135,6 +2181,10 @@ describe('toIFieldValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         _captureState(stateContainer: StateContainer): void {
+            throw new Error("Method not implemented.");
+        }        
+        broadcastState(): void
+        {
             throw new Error("Method not implemented.");
         }        
     }

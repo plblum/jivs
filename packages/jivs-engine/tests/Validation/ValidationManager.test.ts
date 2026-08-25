@@ -52,6 +52,7 @@ import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/V
 import { IDisposable } from '../../src/Interfaces/General_Purpose';
 import { createStateContainer, createCapturedStateAsString } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
+import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 
 
 class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_ValueHostsManager {
@@ -3384,6 +3385,118 @@ describe('invokeOnConfigChanged', () => {
         expect(configsReceived).toBeUndefined();
     });
 });
+describe('broadcastState', () =>
+{
+    // hook up all callbacks supported by broadcastState and call broadcastState
+    // to see those get called with the existing state.
+    // Setup ValueHostsManager with config.capturedState that will be checked.
+    test('Calls all registered callbacks with existing state', () =>
+    {
+        let services = new MockJivsServices(true, false);
+        let fvhConfig = finishPartialFieldValueHostConfig({
+            dataType: LookupKey.String,
+            initialValue: undefined, // we are going to expect state to replace this
+            validatorConfigs: [
+                { // has a validator to ensure the state round trip isn't cleaned up (Generator.cleanupInstanceState)
+                    errorMessage: 'Some error',
+                    conditionConfig: <RegExpConditionConfig>{
+                        conditionType: ConditionType.RegExp,
+                        valueHostName: 'Field1',
+                        expressionAsString: '^\\d+$', // only digits
+                    }
+                }
+            ]
+        });
+        let initialVHM = new Publicify_ValueHostsManager({
+            services: services,
+            valueHostConfigs: [fvhConfig]
+        });
+        initialVHM.vh.field('Field1').setValues('ABC', 'ABC');
+        initialVHM.validate();
+
+        let capturedState = initialVHM.captureState();
+/*
+        let fvhState = createFieldValueHostInstanceState(1);
+        fvhState.textValue = 'ABC';
+        fvhState.status = ValidationStatus.Invalid;
+        fvhState.issuesFound = [
+            {
+                errorCode: ConditionType.RegExp,
+                errorMessage: 'Some error',
+                valueHostName: 'Field1',
+                doNotSave: true
+            }
+        ];
+
+        let capturedState = createCapturedStateAsString([fvhState]);
+*/
+        let vhConfig: ValueHostsManagerConfig = {
+            services: services,
+            valueHostConfigs: [fvhConfig],
+            capturedState: capturedState
+        };
+
+        let textValChangedInvoked = 0;
+        let replacedTextValue: any;
+        vhConfig.onTextValueChanged = (valueHost, oldValue) =>
+        {
+            textValChangedInvoked++;
+            replacedTextValue = (<IFieldValueHost> valueHost).getTextValue();
+        };
+
+        let valChangedInvoked = 0;  // should NOT be invoked
+        vhConfig.onValueChanged = (valueHost, oldValue) =>
+        {
+            valChangedInvoked++;
+        };
+        let vhValStateChangedInvoked = 0;
+        let replacedStatus: ValueHostValidationState = {
+            status: ValidationStatus.NotAttempted,
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false,
+            corrected: false
+        };
+        vhConfig.onValueHostValidationStateChanged = (valueHost, valState) =>
+        {
+            vhValStateChangedInvoked++;
+            replacedStatus = valState;
+        };
+        let valStateChangedInvoked = 0; 
+        let managerState: ValidationState = {
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        };
+        vhConfig.onValidationStateChanged = (valueHost, valState) =>
+        {
+            valStateChangedInvoked++;
+            managerState = valState;
+        };
+
+        let testItem = new Publicify_ValueHostsManager(vhConfig);
+        testItem.broadcastState();
+        expect(textValChangedInvoked).toBe(1);
+        expect(valChangedInvoked).toBe(0);
+        expect(vhValStateChangedInvoked).toBe(1);
+        expect(replacedTextValue).toBe('ABC');
+        expect(replacedStatus.status).toBe(ValidationStatus.Invalid);
+        expect(replacedStatus.isValid).toBe(false);
+        expect(replacedStatus.doNotSave).toBe(true);
+        expect(replacedStatus.issuesFound!.length).toBe(1);
+        expect(replacedStatus.asyncProcessing).toBe(false);
+        expect(replacedStatus.corrected).toBe(false);
+
+        expect(valStateChangedInvoked).toBe(1);
+        expect(managerState.isValid).toBe(false);
+        expect(managerState.doNotSave).toBe(true);
+        expect(managerState.issuesFound!.length).toBe(1);
+        expect(managerState.asyncProcessing).toBe(false);
+
+    });
+});
 describe('dispose', () => {
     test('dispose kills all expected properties', () => {
         let vmConfig: ValueHostsManagerConfig = {
@@ -3658,6 +3771,10 @@ describe('toIValueHostsManager function', () => {
             captureState: function (): string
             {
                 throw new Error('Function not implemented.');
+            },
+            broadcastState: function (): void
+            {
+                throw new Error('Function not implemented.');
             }
         };
         expect(toIValueHostsManager(testItem)).toBe(testItem);
@@ -3777,6 +3894,10 @@ describe('toIValueHostsManagerAccessor function', () => {
                     throw new Error("Function not implemented.");
                 },
                 captureState: function (): string
+                {
+                    throw new Error('Function not implemented.');
+                },
+                broadcastState: function (): void
                 {
                     throw new Error('Function not implemented.');
                 }

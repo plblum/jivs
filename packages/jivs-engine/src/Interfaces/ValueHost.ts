@@ -167,6 +167,18 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
     setEnabled(enabled: boolean): void;
 
     /**
+     * Broadcasts the current state of the ValueHost to any listeners or managers that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    broadcastState(): void;
+
+    /**
      * Returns the internal state of the ValueHost, which includes all the instance-specific data.
      * This state is used internally by the ValueHost. This internally exposes it to ValueHostsManager
      * for the ValueHostsManager to manage and persist state.

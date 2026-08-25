@@ -1098,6 +1098,7 @@ interface IValueHostsManager {
     toValidationPayload(externalIssues: Array<IssueFound> | null): string;
     fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean; 
     getCapturedState(): string;
+    broadcastState(): void;
 }
 ```
 ### Getting ValueHosts Members
@@ -1174,7 +1175,13 @@ Learn about `IssueFound objects` [here](#issuefound).
     ```ts
     config.capturedState = retrievedfromServer;
     let vhm = new ValueHostsManager(config);
+    ... when finished with setup ...
+    vhm.broadcastState();
     ```
+- `broadcastState()` - Invokes these callbacks on demand: `onTextValueChanged`, `onValidationStateChanged`, `onValueHostValidationStateChanged`.
+Targets the capturedState process, as shown in the prior example. Those callbacks are used by the UI to update itself
+and are normally called automatically. However, after recreating `ValueHostsManager` with the captured state, they are not called.
+Call this to complete the `ValueHostManager` setup.
 
 ### Configuring the ValueHostsManager
 > Please visit "[Configuring Jivs](#configuring-jivs)" for an overview of the process.

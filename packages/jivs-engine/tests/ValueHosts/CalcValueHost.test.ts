@@ -381,6 +381,10 @@ describe('toICalcValueHost function', () => {
         _captureState(stateContainer: StateContainer): void {
             throw new Error("Method not implemented.");
         }
+        broadcastState(): void
+        {
+            throw new Error("Method not implemented.");
+        }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestICalcValueHostImplementation();

@@ -298,6 +298,19 @@ export interface IValueHostsManager extends IValueHostResolver {
      * @returns The JSON string representing the current state of the ValueHostsManager.
      */
     captureState(): string;
+    /**
+     * Broadcasts the current state of both ValueHostsManager and ValueHosts
+     * to any listeners that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * ValueHostsManager reports its own ValidationState through onValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    broadcastState(): void;
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 

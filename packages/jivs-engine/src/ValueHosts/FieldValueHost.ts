@@ -142,11 +142,6 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         return false;
     }
 
-    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: TOptions): void
-    {
-        if (changed && (!options || !options.skipValueChangedCallback))
-            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
-    }    
     //#region IFieldValueHost
     /**
      * Gets the current text value exactly as last provided.
@@ -594,6 +589,39 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         const elementIdentifier = this.instanceState.elementIdentifier ?? this.config.elementIdentifier;
         return elementIdentifier != null && elementIdentifier !== '';
     }
+
+    /**
+     * Invokes the ValueHostsManager.onTextValueChanged callback.
+     * Never invokes when changed = false, or options.skipValueChangedCallback is true.
+     * @param changed - Only invoked when true
+     * @param oldValue - The previous text value, which can be a string, null, or undefined.
+     * - string - The previous text value as a string.
+     * - null which means we have no value assigned
+     * - undefined which means we don't have any previous value available
+     * @param options - The options provided to the setTextValue() method.
+     */
+    protected useOnTextValueChanged(changed: boolean, oldValue: string | null | undefined, options: TOptions): void
+    {
+        if (changed && (!options || !options.skipValueChangedCallback))
+            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
+    }        
+    
+    /**
+     * Broadcasts the current state of the ValueHost to any listeners or managers that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    public override broadcastState(): void
+    {
+        super.broadcastState();
+        // Notify listeners that the text value has potentially changed.
+        this.useOnTextValueChanged(true, undefined, {} as TOptions);
+    }    
 }
 
 /**

@@ -102,12 +102,12 @@ Attach the editor and presentation handlers after reconciliation:
 attachEditorEventHandlers(vhm);
 attachPresentationHandlers(vhm);
 
-vhm.broadcast();
+vhm.broadcastState();
 ```
 
 The attachment helpers should be idempotent. Existing elements retain their handlers, while newly created elements receive the handlers they need.
 
-`broadcast()` then distributes the current Text Values and validation state through the configured callbacks. This initializes the editors and validation presentation introduced by the AJAX response.
+`broadcastState()` then distributes the current Text Values and validation state through the configured callbacks. This initializes the editors and validation presentation introduced by the AJAX response.
 
 ---
 

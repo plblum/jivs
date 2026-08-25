@@ -988,7 +988,31 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         return false;
     }
     //#endregion Payload
-
+    /**
+     * Broadcasts the current state of both ValueHostsManager and ValueHosts
+     * to any listeners that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * ValueHostsManager reports its own ValidationState through onValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    public broadcastState(): void
+    {
+        if (this.onValidationStateChanged) {
+            const snapshot = this.createValidationState();
+            this.notifyValidationStateChanged(snapshot, {}, true);
+        }
+        if (this.onTextValueChanged || this.onValueHostValidationStateChanged) {
+            for (const [name, vh] of this.valueHosts)
+            {
+                vh.broadcastState();
+            }
+        }
+    }
     //#region IValueHostsManagerCallbacks
 
     /**

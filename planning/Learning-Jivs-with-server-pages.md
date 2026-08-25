@@ -218,9 +218,9 @@ flowchart TD
 * Construct the new manager.
 * Understand that construction restores the saved data internally without notifying UI consumers.
 * Reconnect editor event handlers and validation presentation.
-* Call the working `broadcast()` operation to send the current Text Values and validation state outward through the configured callbacks.
+* Call the working `broadcastState()` operation to send the current Text Values and validation state outward through the configured callbacks.
 
-Explain that `broadcast()`:
+Explain that `broadcastState()`:
 
 * does not restore or change the manager’s internal state;
 * does not run validation;
@@ -241,7 +241,7 @@ fieldValueHost.setTextValue(textValue, {
 
 * Alternatively, apply returned Model values through the Model workflow.
 * Leave all other restored fields untouched.
-* Call `broadcast()` after the final values and UI wiring are ready.
+* Call `broadcastState()` after the final values and UI wiring are ready.
 
 Present comparison with the restored Text Value as a favorable generic approach:
 
@@ -311,7 +311,7 @@ For replacement controls that are intended to supply values:
 
 After values, editor handling, and validation presentation are ready:
 
-* call `broadcast()`;
+* call `broadcastState()`;
 * allow current Text Values to flow through `onTextValueChanged`;
 * allow current field validation state to flow through `onValueHostValidationStateChanged`;
 * allow current form validation state to flow through `onValidationStateChanged`.
@@ -323,7 +323,7 @@ Include a short note for editors whose UI value is not represented as text.
 * Standard `input`, `select`, and `textarea` controls exchange Text Values through `setTextValue()` and `onTextValueChanged`.
 * Native Value widgets exchange values through `setValue()` and `getValue()`.
 * Reconstruct Native Value widgets through application-specific, non-notifying UI updates.
-* `broadcast()` does not invoke `onValueChanged`, avoiding a feedback loop in which a widget update is interpreted as a new value supplied to Jivs.
+* `broadcastState()` does not invoke `onValueChanged`, avoiding a feedback loop in which a widget update is interpreted as a new value supplied to Jivs.
 
 ## Closing Navigation
 
@@ -473,8 +473,8 @@ Contents:
   * construct the manager;
   * perform the normal Page Load wiring;
   * apply intentional server changes;
-  * call `broadcast()`.
-* Explain what `broadcast()` does and does not do.
+  * call `broadcastState()`.
+* Explain what `broadcastState()` does and does not do.
 * Determine whether generated values replace restored values.
 * Present Text Value comparison as a favorable generic approach.
 * Explain the comparison limitations.
@@ -505,7 +505,7 @@ Contents:
 * Demonstrate the protected `jivs-DOM_helpers.ts` functions.
 * Reconnect validation presentation.
 * Demonstrate Jivs SimpleDom’s idempotent attachment.
-* Call `broadcast()` after consumers are ready.
+* Call `broadcastState()` after consumers are ready.
 * Reconstruct custom Native Value widgets without invoking `onValueChanged`.
 * Link to the presentation documents and the normal Page Load workflow.
 

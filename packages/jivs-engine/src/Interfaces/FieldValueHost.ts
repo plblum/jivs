@@ -340,7 +340,14 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
 
 }
 
-export type TextValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
+/**
+ * Represents the signature of a callback function that is invoked when the text value of a FieldValueHost changes.
+ * @param oldValue - The receiver is expecting a string. We provide 3 states:
+ * - string - The previous text value as a string.
+ * - null which means we have no value assigned
+ * - undefined which means we don't have any previous value available
+ */
+export type TextValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue?: string | null) => void;
 
 export interface IFieldValueHostChangedCallback
 {
