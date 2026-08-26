@@ -94,8 +94,39 @@ export interface IModelReader
      * It writes to the log for each field read, and logs errors if any occur.
      * Invalid values are handled by the DataTypeFormatterService and the error message is injected into the ValueHost using InjectedError.
      * They do not throw errors, but log them and continue reading the rest of the fields.
+     * @param options The options controlling how the ModelReader interacts with the ValueHostsManager.
      */
-    readFromModel(): void;
+    readFromModel(options?: ModelReaderOptions): void;
+}
+
+/**
+ * Configures options for the ModelReader, controlling how it interacts with ValueHostsManager during the reading process.
+ */
+export interface ModelReaderOptions
+{
+    /**
+     * Controls behavior of setValue to turn off its ability to
+     * convert the value to text through an associated DataTypeFormatter.
+     * When true, do not convert the value to text. Just set the native value.
+     * When false, other options remain to do the same thing:
+     *   - valueHostsManager.behaviors.disableFormatterOnValueChange
+     *   - FieldValueHostConfig.formatterLookupKey = null
+     * This effectively sets the setValue(value, { disableFormatter: value }) option.
+     */
+    disableFormatter?: boolean;
+
+    /**
+     * Controls behavior of setValue to skip the ValueHost's onValueChanged and onTextValueChanged callbacks.
+     * When true, skip the callback. When false, call it if setup.
+     * This effectively sets the setValues(value, { skipValueChangedCallback: value }) option.
+     */
+    skipValueChangedCallback?: boolean;
+
+    /**
+     * When true, each ValueHost.enabled state is based on whether the corresponding model property is defined 
+     * and not disabled by other means.
+     */
+    alignEnabled?: boolean;
 }
 
 /**

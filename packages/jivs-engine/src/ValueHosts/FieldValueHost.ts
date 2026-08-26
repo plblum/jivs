@@ -201,16 +201,27 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
 
         if (!options)
             options = {} as TOptions;
+        let oldEnabled = this.instanceState.enabled ?? true;
         if (!this.canChangeValueCheck(options))
             return;        
+        let newEnabled = this.instanceState.enabled ?? true;
+
+        // as a rule, if we enable the field via options.ensureEnabled, it also reflects a change
+        // even if skipIfUnchanged is true.
+        const oldValue: any = this.instanceState.textValue;
+        const changed = !deepEquals(textValue, oldValue) || oldEnabled !== newEnabled;        
+        if (!changed && options.skipIfUnchanged)
+        {
+            this.logger.message(LoggingLevel.Debug, () => `skipped because value is unchanged with skipIfUnchanged=true`);
+            return;
+        }
         if (this.tryParse(textValue, options))
         {
             this.tryReformatTextValue(textValue!, options);
             return; 
         }
 
-        const oldValue: any = this.instanceState.textValue;
-        const changed = !deepEquals(textValue, oldValue);
+
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -335,7 +346,6 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
                 this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. Either nativeValue is undefined or formatting is disabled.');
                 return false;
             }
-
 
             const dtfs = this.services.dataTypeFormatterService;
             if (dtfs.isActive())

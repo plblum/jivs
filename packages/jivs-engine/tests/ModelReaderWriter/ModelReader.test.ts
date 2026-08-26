@@ -1,29 +1,30 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
-import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig, IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
-import { ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
+import { IValueHostsManager, ValueHostsManagerConfig } from '../../src/Interfaces/ValueHostsManager';
+import { FormReader, FormReaderOptions, ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
+import { ModelReaderOptions } from '../../src/Interfaces/ModelReaderAndWriter';
+import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
+import { NumberParser } from '../../src/DataTypes/DataTypeParsers';
+import { NumberCultureInfo } from '../../src/DataTypes/DataTypeParserBase';
 
 /**
  * This class is used to expose the protected members of ModelReader for testing purposes.
  */
 class PublicifyModelReader extends ModelReader<object>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: object,
-        disableFormatter: boolean = false,
-        skipValueChangedCallback: boolean = false
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: object, options?: ModelReaderOptions)
     {
-        super(valueHostsManager, model, disableFormatter, skipValueChangedCallback);
+        super(valueHostsManager, model, options);
     }
 
     public get publicify_valueHostsManager(): IValueHostsManager
@@ -39,14 +40,7 @@ class PublicifyModelReader extends ModelReader<object>
     {
         return super.services;
     }
-    public get publicify_disableFormatter(): boolean
-    {
-        return super.disableFormatter;
-    }
-    public get publicify_skipValueChangedCallback(): boolean
-    {
-        return super.skipValueChangedCallback;
-    }
+
     public get publicify_logger(): any
     {
         return super.logger;
@@ -69,9 +63,10 @@ class PublicifyModelReader extends ModelReader<object>
         return super.tryGetValueFromModel(modelPropertyName, valueHost);
     }
 
-    public publicify_setValueIntoValueHost(valueHost: IFieldValueHost, value: any, options: { skipValueChangedCallback?: boolean; }): void
+    public publicify_setValueIntoValueHost(valueHost: IFieldValueHost, value: any,
+        setValueOptions: { skipValueChangedCallback?: boolean; }): void
     {
-        this.setValueIntoValueHost(valueHost, value, options);
+        this.setValueIntoValueHost(valueHost, value, setValueOptions);
     }
 
     public publicify_getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
@@ -82,8 +77,7 @@ class PublicifyModelReader extends ModelReader<object>
 }
 
 function setup(model: object, propertyName: string,
-    whenRule: string, thenRule: string,
-    disableFormatter: boolean = false, skipValueChangedCallback: boolean = false):
+    whenRule: string, thenRule: string, options?: ModelReaderOptions):
     {
         services: IJivsServices, logger: CapturingLogger,
         reader: PublicifyModelReader,
@@ -101,7 +95,7 @@ function setup(model: object, propertyName: string,
             propertyName: propertyName,
             modelReaderRule: { when: whenRule, then: thenRule },
         }, 1), null) as IFieldValueHost;
-    let reader = new PublicifyModelReader(valueHostsManager, model, disableFormatter, skipValueChangedCallback);
+    let reader = new PublicifyModelReader(valueHostsManager, model, options);
     return { services, logger, reader, valueHostsManager, valueHost };
 }
 
@@ -135,7 +129,7 @@ describe('ModelReader', () =>
 
     describe('constructor', () =>
     {
-        test('Create with first 2 parameters. Confirm properties are set correctly', () =>
+        test('Confirm properties are set correctly', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
@@ -145,25 +139,9 @@ describe('ModelReader', () =>
             expect(reader.publicify_valueHostsManager).toBe(valueHostsManager);
             expect(reader.publicify_model).toBe(model);
             expect(reader.publicify_services).toBe(services);
-            expect(reader.publicify_disableFormatter).toBe(false);
-            expect(reader.publicify_skipValueChangedCallback).toBe(false);
             expect(reader.publicify_logger).toBeDefined();
         });
-        test('Create with all parameters. Confirm properties are set correctly', () =>
-        {
-            let model = { prop1: 'value1', prop2: 42 };
-            let services = new MockJivsServices(false, false);
-            let valueHostsManager = new MockValueHostsManager(services);
-            let disableFormatter = true;
-            let skipValueChangedCallback = true;
 
-            let reader = new PublicifyModelReader(valueHostsManager, model, disableFormatter, skipValueChangedCallback);
-            expect(reader.publicify_valueHostsManager).toBe(valueHostsManager);
-            expect(reader.publicify_model).toBe(model);
-            expect(reader.publicify_services).toBe(services);
-            expect(reader.publicify_disableFormatter).toBe(disableFormatter);
-            expect(reader.publicify_skipValueChangedCallback).toBe(skipValueChangedCallback);
-        });
         test('Create with null valueHostsManager. Expect error', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
@@ -368,6 +346,88 @@ describe('ModelReader', () =>
             let options = { disableFormatter: false, skipValueChangedCallback: false, validate: false, reset: true };
             reader.publicify_setValueIntoValueHost(valueHost, value, options);
             expect(valueHost.getValue()).toBe(value);
+        });
+    });
+
+    describe('options tests', () =>
+    {
+        /**
+         * Always hooks up onTextValueChanged and onValueChanged.
+         * Decisions are based on the provided options and the initial model values.
+         * @param model 
+         * @param options 
+         * @param expectedValue 
+         * @param expectedTextValue 
+         * @param expectedOnTextValueChangedCounter 
+         * @param expectedOnValueChangedCounter 
+         */
+        function execute(model: any, options: ModelReaderOptions,
+            expectedValue: any, expectedTextValue: any,
+            expectedOnTextValueChangedCounter: number, expectedOnValueChangedCounter: number,
+            expectedEnabledState?: boolean
+        )
+        {
+            let onTextValueChangedCounter = 0;
+            let onValueChangedCounter = 0;
+            let services = new MockJivsServices(false, true);
+            services.valueAdapterService = new ValueAdapterService();
+            let logger = services.loggerService as CapturingLogger;
+            logger.minLevel = LoggingLevel.Debug;
+            let config: ValueHostsManagerConfig = {
+                services: services,
+                valueHostConfigs: [
+                    <FieldValueHostConfig>{
+                        valueHostType: 'Field',
+                        name: 'prop1',
+                        dataType: LookupKey.Number,
+                        modelReaderRule: { when: 'null', then: 'skip'}
+                    }
+                ],
+                onTextValueChanged: (valueHost, newValue) => { onTextValueChangedCounter++; },
+                onValueChanged: (valueHost, newValue) => { onValueChangedCounter++; }
+            };
+
+            let valueHostsManager = new ValueHostsManager(config);
+            let valueHost = valueHostsManager.getFieldValueHost('prop1')!;
+
+            let reader = new PublicifyModelReader(valueHostsManager, model, options);
+            reader.readFromModel();
+ //           logger.toConsole();
+            expect(valueHost.getValue()).toBe(expectedValue);
+            expect(valueHost.getTextValue()).toBe(expectedTextValue);
+            expect(onTextValueChangedCounter).toBe(expectedOnTextValueChangedCounter);
+            expect(onValueChangedCounter).toBe(expectedOnValueChangedCounter);
+            if (expectedEnabledState !== undefined)
+            {
+                expect(valueHost.isEnabled()).toBe(expectedEnabledState);
+                expect(logger.findMessage('setEnabled\\('+ expectedEnabledState + '\\)')).toBeTruthy();
+            }
+        }
+        test('pass a number and see it update the text value too, also firing the value changed callback', () =>
+        {
+            execute({ 'prop1': 25 }, {}, 25, '25', 1, 1);
+        });
+        test('with disableFormatter, expect no text value nor onTextValueChanged called', () =>
+        {
+            execute({ 'prop1': 25 }, { disableFormatter: true }, 25, undefined, 0, 1);
+        });
+        test('With skipValueChangedCallback, expect onValueChanged nor onTextValueChanged to not be called', () =>
+        {
+            execute({ 'prop1': 25 }, { skipValueChangedCallback: true }, 25, '25', 0, 0);
+        });
+        test('with alignEnabled, expect the valueHost to be enabled after reading from the model', () =>
+        {
+            execute({ 'prop1': 25 }, { alignEnabled: true }, 25, '25', 1, 1, true);
+        });
+        // property not found with alignEnabled=true, expect the valueHost to be disabled
+        test('property not found with alignEnabled=true, expect the valueHost to be disabled', () =>
+        {
+            execute({ }, { alignEnabled: true }, undefined, undefined, 0, 0, false);
+        });
+        // property is value of null, which our modelReaderRule will skip, so the valueHost should be disabled
+        test('property is value of null, which our modelReaderRule will skip, so the valueHost should be disabled', () =>
+        {
+            execute({ 'prop1': null }, { alignEnabled: true }, undefined, undefined, 0, 0, false);
         });
     });
 
@@ -591,4 +651,81 @@ describe('ModelReader', () =>
             expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
     });
+});
+describe('FormReader', () =>
+{
+    /**
+     * Always hooks up onTextValueChanged and onValueChanged.
+     * Decisions are based on the provided options and the initial model values.
+     * @param model 
+     * @param options 
+     * @param expectedValue 
+     * @param expectedTextValue 
+     * @param expectedOnTextValueChangedCounter 
+     * @param expectedOnValueChangedCounter 
+     */
+    function execute(model: any, options: FormReaderOptions,
+        expectedTextValue: any, expectedValue: any, 
+        expectedOnTextValueChangedCounter: number, expectedOnValueChangedCounter: number
+    )
+    {
+        let onTextValueChangedCounter = 0;
+        let onValueChangedCounter = 0;
+        let services = new MockJivsServices(false, true);
+        services.valueAdapterService = new ValueAdapterService();
+
+        services.dataTypeParserService.register(new NumberParser(['en', 'en-US'],
+            <NumberCultureInfo>{
+                decimalSeparator: '.',
+                negativeSymbol: '-',
+                thousandsSeparator: ',',
+                currencySymbol: '$',
+                percentSymbol: '%'
+            }
+        ));
+        let config: ValueHostsManagerConfig = {
+            services: services,
+            valueHostConfigs: [
+                {
+                    valueHostType: 'Field',
+                    name: 'prop1',
+                    dataType: LookupKey.Number
+                }
+            ],
+            onTextValueChanged: (valueHost, newValue) => { onTextValueChangedCounter++; },
+            onValueChanged: (valueHost, newValue) => { onValueChangedCounter++; }
+        };
+
+        let valueHostsManager = new ValueHostsManager(config);
+        let valueHost = valueHostsManager.getFieldValueHost('prop1')!;
+
+        let reader = new FormReader(valueHostsManager, model, options);
+        reader.readFromModel();
+        expect(valueHost.getTextValue()).toBe(expectedTextValue);
+        expect(valueHost.getValue()).toBe(expectedValue);
+        expect(onTextValueChangedCounter).toBe(expectedOnTextValueChangedCounter);
+        expect(onValueChangedCounter).toBe(expectedOnValueChangedCounter);
+    }
+    test('Pass a string that converts to a number, it gets assigned to Text Value, parsed and assigned to native value, and both callbacks execute', () =>
+    {
+        execute({ prop1: '42' }, {}, '42', 42, 1, 1);
+        execute({ prop1: '42.00' }, {}, '42.00', 42, 1, 1);
+    });
+    test('With reformatTextValue, the text value gets reformatted after parsing. Two callbacks to onTextValueChanged execute', () =>
+    {
+        execute({ prop1: '42.00' }, { reformatTextValue: true }, '42', 42, 2, 1);
+    });
+    // skipValueChangedCallback
+    test('With skipValueChangedCallback, onValueChanged and onTextValueChanged callbacks do not execute', () =>
+    {
+        execute({ prop1: '42' }, { skipValueChangedCallback: true }, '42', 42, 0, 0);
+        execute({ prop1: '42.00' }, { skipValueChangedCallback: true }, '42.00', 42, 0, 0);
+    });
+    // disableFormatter = true is ignored as if its disableFormatter = false
+    test('With disableFormatter = true, the text value still gets reformatted', () =>
+    {
+        execute({ prop1: '42.00' }, { reformatTextValue: false, disableFormatter: true }, '42.00', 42, 1, 1);
+        execute({ prop1: '42.00' }, { reformatTextValue: true, disableFormatter: true }, '42', 42, 2, 1);
+    });
+
 });

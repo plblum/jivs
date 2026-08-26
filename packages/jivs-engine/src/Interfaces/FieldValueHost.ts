@@ -384,6 +384,18 @@ export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetVal
      * the native value into its text value with setValue().
      */
     disableFormatter?: boolean;
+
+    /**
+     * Specifically used on setTextValue() but not setValue() or setValues().
+     * Use case: page generated on the server after a round trip. The server may have changed
+     * elements, but not all, and we want to retain the validation state of those unchanged.
+     * When true, the value supplied is compared to the existing value and no further action is taken
+     * for a match.
+     * Targets refreshing the UI's elements, where only specific ones have changed.
+     * In that situation, if you skipIfUnchanged is not used, all UI elements using this function
+     * may have their validation state reset when reset: true.
+     */
+    skipIfUnchanged?: boolean;
 }
 
 /**

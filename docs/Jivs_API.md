@@ -1377,7 +1377,7 @@ The actual transfer process is pretty simple, but requires configuration describ
 ```ts
 let vhm = new ValueHostsManager(builder.complete());
 let model = getMyModel(); // your code
-let reader = new ModelReader(vhm, model);
+let reader = new ModelReader(vhm, model, {});   // various options available in third parameter
 reader.readFromModel();  // data is now in the ValueHosts
 
 // ... interact with the data and finish up with validation before trying to save it ...
@@ -1414,6 +1414,38 @@ let vhm = new ValueHostsManager(builder.complete());
     writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
     writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
     ```
+### Other Readers: FormReader and DictionaryReader
+- `FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each FieldValueHost.setTextValue, instead of setValue. It uses a parser to convert the text value into the native value.
+    ```ts
+    const express = require("express");
+    const app = express();
+    app.use(express.urlencoded({ extended: true }));
+    app.post("/submit", (req, res) => {
+        const formData = req.body;
+        const formReader = new FormReader(valueHostsManager, formData, {});
+        formReader.readFromModel();
+    });
+    ```
+- `DictionaryReader` is a variation of `ModelReader` that expects its data to be a dictionary of native values. Its conceptually the same as an object supplying a model.
+    ```ts
+    let reader = new DictionaryReader(vhm, dictionaryData, options);
+    ```
+
+### Reader constructor options
+```ts
+const reader = new ModelReader(vhm, model, options);
+const reader = new FormReader(valueHostsManager, formData, options);
+const reader = new DictionaryReader(vhm, dictionaryData, options);
+```
+The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object that supports these values:
+- `disableFormatter` - (Not on `FormReader`) When true, do not convert the value to text. Just set the native value.
+    When false, these settings still disable the formatter:
+    - `valueHostsManager.behaviors.disableFormatterOnValueChange`
+    - `FieldValueHostConfig.formatterLookupKey = null`
+- `skipValueChangedCallback` - Use when you have setup `ValueHostsManager.onValueChanged` or `onTextValueChanged` callbacks to avoid them from being called. Set to true when you have them setup and expect them to be called while the user is editing the form, but not while initializing its values.
+- `alignEnabled` - When true, it updates the enabled setting on each `ValueHost`, allowing them to be determined by whether the source (model, form, dictionary) had a matching property. So long as the `ValueHost` cannot find a source, it is disabled. Otherwise, it is enabled.
+- reformatTextValue - (Only on `FormReader`) When true, allow the text value to be reformatted before assigning it to the `FieldValueHost's` text value or calling `onTextValueChanged`. Reformatting requires that both parser and formatter are setup. Even if enabled, individual `FieldValueHostConfig.reformatTextValue` can block this when false.
+
 ### Configuring the ValueHosts
 There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
 1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.

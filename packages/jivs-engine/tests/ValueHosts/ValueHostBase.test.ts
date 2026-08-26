@@ -7,7 +7,7 @@ import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 import
     {
         type IValueHost,
-        IValueHostCallbacks, toIValueHostCallbacks,
+        IValueHostCallbacks, SetValueOptions, toIValueHostCallbacks,
         ValueHostConfig,
         type ValueHostInstanceState
     } from "../../src/Interfaces/ValueHost";
@@ -923,6 +923,34 @@ describe('isEnabled and related enabled', () =>
         test('constructor with config.initialEnabled=undefined, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () =>
         {
             testConstructor(undefined, undefined, true, undefined);
+        });
+
+        // option.ensureEnabled tests
+        test('setValue with config.initialEnabled=false, option.ensureEnabled=true, results in isEnabled=true,  option.reset gets set to true', () =>
+        {
+            let setup = setupTestItem(false, undefined);
+            setup.logger.minLevel = LoggingLevel.Debug;
+            let options: SetValueOptions = { ensureEnabled: true }; 
+            setup.vh.setValue('someValue', options);
+            expect(setup.vh.isEnabled()).toBe(true);
+            expect(setup.vh.exposeState.enabled).toBe(true);
+            expect(options.reset).toBe(true);
+            expect(setup.vh.getValue()).toBe('someValue');
+            setup.logger.toConsole();
+            expect(setup.logger.findMessage('setEnabled\\(true\\)', LoggingLevel.Debug, null)).toBeTruthy();
+        });
+        // same but ensureEnabled = false having no change to enabled
+        test('setValue with config.initialEnabled=false, option.ensureEnabled=false, results in isEnabled=false, option.reset remains undefined', () =>
+        {
+            let setup = setupTestItem(false, undefined);
+            setup.logger.minLevel = LoggingLevel.Debug;
+            let options: SetValueOptions = { ensureEnabled: false }; 
+            setup.vh.setValue('someValue', options);
+            expect(setup.vh.isEnabled()).toBe(false);
+            expect(options.reset).toBeUndefined();
+            expect(setup.vh.getValue()).not.toBe('someValue');
+            setup.logger.toConsole();
+            expect(setup.logger.findMessage('Value not changed')).toBeTruthy();
         });
     });
     describe('setEnabled and isEnabled', () =>

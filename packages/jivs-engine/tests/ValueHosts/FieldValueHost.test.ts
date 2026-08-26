@@ -60,7 +60,8 @@ interface ITestSetupConfig {
     valueHostsManager: MockValueHostsManager,
     config: FieldValueHostConfig,
     state: FieldValueHostInstanceState,
-    valueHost: FieldValueHost
+    valueHost: FieldValueHost,
+    logger: CapturingLogger
 };
 
 
@@ -104,7 +105,8 @@ function setupFieldValueHost(
         valueHostsManager: vhm,
         config: updatedConfig,
         state: updatedState,
-        valueHost: vh as FieldValueHost
+        valueHost: vh as FieldValueHost,
+        logger: services.loggerService as CapturingLogger
     };
 }
 
@@ -212,7 +214,7 @@ describe('setValue', () =>
     });
 
 });
-describe('FieldValueHost.getTextValue', () => {
+describe('getTextValue', () => {
     test('Set instanceState.TextValue to undefined; getTextValue is undefined', () => {
         let setup = setupFieldValueHost(null, {
             textValue: undefined
@@ -231,6 +233,78 @@ describe('FieldValueHost.getTextValue', () => {
         expect(() => value = setup.valueHost.getTextValue()).not.toThrow();
         expect(value).toBe('abc');
     });
+
+    // options.skipIfUnchanged=true cases. Includes tests with enabled=false and options.ensureEnabled=true
+    test('options.skipIfUnchanged=true and value unchanged; value is a string, getTextValue returns current value', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: 'unchanged'
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true };
+        setup.valueHost.setTextValue('unchanged', options);
+        expect(setup.valueHost.getTextValue()).toBe('unchanged');
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeTruthy();
+    });
+    test('options.skipIfUnchanged=true and value unchanged; value is undefined, getTextValue returns current value', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: undefined
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true };
+        setup.valueHost.setTextValue(undefined, options);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeTruthy();
+    });
+    test('options.skipIfUnchanged=true and value changed; value is getTextValue returns new value', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: 'oldValue'
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true };
+        setup.valueHost.setTextValue('newValue', options);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getTextValue()).toBe('newValue');
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeFalsy();
+    });
+    test('options.skipIfUnchanged=true and value changed from undefined to a string, getTextValue returns new value', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: undefined
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true };
+        setup.valueHost.setTextValue('newValue', options);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getTextValue()).toBe('newValue');
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeFalsy();
+    });
+    test('options.skipIfUnchanged=true and value changed from a string to undefined, getTextValue returns new value', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: 'oldValue'
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true };
+        setup.valueHost.setTextValue(undefined, options);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeFalsy();
+    });
+    // using enabled=false with skipIfUnchanged=true and ensureEnabled=true should still set the value and make it enabled and options.reset=true
+    test('enabled=false with skipIfUnchanged=true and ensureEnabled=true should still set the value and make it enabled', () => {
+        let setup = setupFieldValueHost(null, {
+            textValue: 'oldValue'
+        });
+        setup.valueHost.setEnabled(false);
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let options: FieldValueHostSetValueOptions = { skipIfUnchanged: true, ensureEnabled: true };
+        setup.valueHost.setTextValue('newValue', options);
+        expect(setup.valueHost.isChanged).toBe(false);  // because of options.reset changing to true
+        expect(setup.valueHost.getTextValue()).toBe('newValue');
+        expect(setup.valueHost.isEnabled()).toBe(true);
+        expect(options.reset).toBe(true);
+        expect(setup.logger.findMessage('skipped because value is unchanged')).toBeFalsy();
+    }); 
 
 });
 
@@ -384,6 +458,35 @@ describe('setTextValue with getTextValue to check result', () => {
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
+    });    
+    test('config.initialEnabled=false, option.ensureEnabled=true, results in isEnabled=true, option.reset gets set to true', () =>
+    {
+        let setup = setupFieldValueHost({}, undefined);
+
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setEnabled(false);
+
+        let options: SetValueOptions = { ensureEnabled: true };
+        setup.valueHost.setTextValue('someValue', options);
+        expect(setup.valueHost.isEnabled()).toBe(true);
+        expect(options.reset).toBe(true);
+        expect(setup.valueHost.getTextValue()).toBe('someValue');
+        expect(setup.logger.findMessage('setEnabled\\(true\\)')).toBeTruthy();
+    });
+    // same but ensureEnabled = false having no change to enabled
+    test('config.initialEnabled=false, option.ensureEnabled=false, results in isEnabled=false, option.reset remains undefined', () =>
+    {
+        let setup = setupFieldValueHost({}, undefined);
+        setup.logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost.setEnabled(false);
+
+        let options: SetValueOptions = { ensureEnabled: false };
+        setup.valueHost.setTextValue('someValue', options);
+        expect(setup.valueHost.isEnabled()).toBe(false);
+        expect(options.reset).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).not.toBe('someValue');
+        setup.logger.toConsole();
+        expect(setup.logger.findMessage('Value not changed')).toBeTruthy();
     });    
 });
 describe('setTextValue with parserLookupKey enabled to see both text value and native values are assigned', () => {
@@ -606,7 +709,8 @@ describe('setTextValue focusing on the reformatTextValue feature ', () =>
             valueHostsManager: vhm,
             config: valueHostConfig,
             state: updatedState,
-            valueHost: vh as FieldValueHost
+            valueHost: vh as FieldValueHost,
+            logger: services.loggerService as CapturingLogger
         };
     }
     // tests initially are built around PublicifyFieldValueHost.publicify_tryReformatTextValue

@@ -42,7 +42,7 @@ The Model may be embedded in the page or retrieved from an API as JSON. In eithe
 The `ModelReader` supplied by Jivs makes quick work of transferring values from a Model into the `ValueHostsManager`. It uses each `FieldValueHost` configuration to map Model properties and adapt incoming values.
 
 ```ts
-const reader = new ModelReader(vhm, person);
+const reader = new ModelReader(vhm, person, options);
 reader.readFromModel();
 ```
 
@@ -72,7 +72,6 @@ vhm.vh.field('FirstName').setValue(person.firstName, {
     reset: true
 });
 ```
-
 ### Wire Up the onTextValueChanged Callback
 
 After initialization, each `FieldValueHost` has a Text Value in addition to its Native Value. If your editor elements need their values set, wire up the `onTextValueChanged` callback of the `ValueHostsManager`.
@@ -157,7 +156,6 @@ for (const vh of valueHosts) {
     }
 }
 ```
-
 ## Getting Values from Existing Application Initialization Code
 
 ```mermaid

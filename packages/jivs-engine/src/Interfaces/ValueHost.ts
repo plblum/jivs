@@ -235,6 +235,14 @@ export interface SetValueOptions {
      * Use case: You may want to initialize a ValueHost with a value that is disabled.
      */
     overrideDisabled?: boolean;
+
+    /**
+     * When true, ensures that the ValueHost is enabled as part of setting the value.
+     * This is useful in scenarios where the ValueHost might be disabled by default, 
+     * but you want to ensure it is enabled when setting a new value.
+     * When applied, the reset option will be forced to true to clear the validation and change state.
+     */
+    ensureEnabled?: boolean;    
 }
 
 /**

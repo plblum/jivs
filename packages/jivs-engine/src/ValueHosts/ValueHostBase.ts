@@ -162,13 +162,21 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     /**
      * For setValue functions to check for disabled before trying to change.
      */
-    protected canChangeValueCheck(options: TOptions): boolean {
-        if (!options.overrideDisabled && !this.isEnabled()) {
-            this.logger.message(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
-            return false;
-        }
-        if (options.overrideDisabled && !this.isEnabled()) {
-            this.logger.message(LoggingLevel.Info, () =>`overrideDisabled option on ValueHost "${this.getName()}". Value changed`);
+    protected canChangeValueCheck(options: TOptions): boolean
+    {
+        if (!this.isEnabled())
+        {
+            if (options.ensureEnabled) {
+                this.setEnabled(true);
+                options.reset = true;   // forced
+            }
+            else if (!options.overrideDisabled)
+            {
+                this.logger.message(LoggingLevel.Warn, () => `ValueHost "${ this.getName() }" disabled. Value not changed`);
+                return false;
+            }
+            else
+                this.logger.message(LoggingLevel.Info, () => `overrideDisabled option on ValueHost "${ this.getName() }". Value changed`);
         }
         return true;
     }
