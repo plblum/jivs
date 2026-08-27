@@ -429,18 +429,6 @@ export function registerConditions(cf: ConditionFactory): void
         ConditionType.Range, (config) => new RangeCondition(config));
     cf.register<WhenConditionConfig>(
         ConditionType.When, (config) => new WhenCondition(config));
-    // cf.register<EqualToConditionConfig>(
-    //     ConditionType.EqualTo, (config) => new EqualToCondition(config));
-    // cf.register<NotEqualToConditionConfig>
-    //     (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
-    // cf.register<GreaterThanConditionConfig>
-    //     (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
-    // cf.register<LessThanConditionConfig>
-    //     (ConditionType.LessThan, (config) => new LessThanCondition(config));
-    // cf.register<GreaterThanOrEqualConditionConfig>
-    //     (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
-    // cf.register<LessThanOrEqualConditionConfig>
-    //     (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));
     cf.register<EqualToValueConditionConfig>(
         ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
     cf.register<NotEqualToValueConditionConfig>

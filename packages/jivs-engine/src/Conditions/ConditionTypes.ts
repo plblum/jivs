@@ -42,36 +42,6 @@ export enum ConditionType
      */
     When = 'When',
 
-    // /**
-    //  * Associated with EqualToCondition class.
-    //  */
-    // EqualTo = 'EqualTo',
-
-    // /**
-    //  * Associated with NotEqualToCondition class.
-    //  */
-    // NotEqualTo = 'NotEqualTo',
-
-    // /**
-    //  * Associated with GreaterThanCondition class.
-    //  */
-    // GreaterThan = 'GreaterThan',
-
-    // /**
-    //  * Associated with LessThanCondition class.
-    //  */
-    // LessThan = 'LessThan',
-
-    // /**
-    //  * Associated with GreaterThanOrEqualCondition class.
-    //  */
-    // GreaterThanOrEqual = 'GreaterThanOrEqual',
-
-    // /**
-    //  * Associated with LessThanOrEqualCondition class.
-    //  */
-    // LessThanOrEqual = 'LessThanOrEqual',
-
     /**
      * Associated with EqualToValueCondition class.
      */

@@ -354,6 +354,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @example
      * ```ts
      * equalToValue(42);
+     * equalToValue(valueHost('field2'));
      * equalToValue(42, "Value must be {value}.");
      * equalToValue(42, "Value must be 42.", "Summary message");
      * equalToValue(42, {
@@ -362,6 +363,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname'). 
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
@@ -390,54 +392,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         secondValue: any,
         validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
 
-//     /**
-//      * Adds a validator that ensures the value is equal to the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * equalTo('fieldname2');
-//      * equalTo('fieldname2', "Value must be {value}.");
-//      * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
-//      * equalTo('fieldname2', {
-//      *      errorMessage: "Value must be same as {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */    
-//     equalTo(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-//     equalTo(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
-
-//     /**
-//      * Alias for equalTo
-//      * @param secondValueHostName 
-//      * @param errorMessage 
-//      * @param summaryMessage 
-//      */
-//     eq(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-//     eq(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
-
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
      * 
      * @example
      * ```ts
      * notEqualToValue(42);
+     * notEqualToValue(valueHost('field2'));
      * notEqualToValue(42, "Value must not be {Value}.");
      * notEqualToValue(42, "Value must not be 42.", "Summary message");
      * notEqualToValue(42, {
@@ -446,6 +407,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
@@ -474,54 +436,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         secondValue: any,
         validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
 
-//     /**
-//      * Adds a validator that ensures the value is not equal to the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * notEqualTo('fieldname2');
-//      * notEqualTo('fieldname2', "Value must not be equal to {value}.");
-//      * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
-//      * notEqualTo('fieldname2', {
-//      *      errorMessage: "Value must not be same as {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */
-//     notEqualTo(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-//     notEqualTo(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
-
-//     /**
-//      * Alias for notEqualTo
-//      * @param secondValueHostName 
-//      * @param errorMessage 
-//      * @param summaryMessage 
-//      */
-//     neq(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-//     neq(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
-
     /**
      * Adds a validator that ensures the value is less than the specified second value.
      * 
      * @example
      * ```ts
      * lessThanValue(42);
+     * lessThanValue(valueHost('field2'));
      * lessThanValue(42, "Value must be less than {value}.");
      * lessThanValue(42, "Value must be less than 42.", "Summary message");
      * lessThanValue(42, {
@@ -530,6 +451,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
@@ -558,57 +480,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         secondValue: any,
         validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
 
-//     /**
-//      * Adds a validator that ensures the value is less than the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * lessThan('fieldname2');
-//      * lessThan('fieldname2', "Value must be less than {value}.");
-//      * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
-//      * lessThan('fieldname2', {
-//      *      errorMessage: "Value must be less than {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */        
-//     lessThan(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     lessThan(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
-
-//     /**
-//      * Alias for lessThan
-//      * @param secondValueHostName 
-//      * @param errorMessage 
-//      * @param summaryMessage 
-//      */
-//     lt(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     lt(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
-
-
     /**
      * Adds a validator that ensures the value is less than or equal to the specified second value.
      * 
      * @example
      * ```ts
      * lessThanOrEqualValue(42);
+     * lessThanOrEqualValue(valueHost('field2'));
      * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
      * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
      * lessThanOrEqualValue(42, {
@@ -617,12 +495,12 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     lessThanOrEqualValue(
@@ -645,57 +523,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         secondValue: any,
         validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
 
-//     /**
-//      * Adds a validator that ensures the value is less than or equal to the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * lessThanOrEqual('fieldname2');
-//      * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
-//      * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
-//      * lessThanOrEqual('fieldname2', {
-//      *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */    
-//     lessThanOrEqual(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     lessThanOrEqual(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
-
-//     /**
-//      * Alias for lessThanOrEqual
-//      * @param secondValueHostName 
-//      * @param errorMessage 
-//      * @param summaryMessage 
-//      */
-//     lte(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     lte(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
-
-
     /**
      * Adds a validator that ensures the value is greater than the specified second value.
      * 
      * @example
      * ```ts
      * greaterThanValue(42);
+     * greaterThanValue(valueHost('field2'));
      * greaterThanValue(42, "Value must be greater than {value}.");
      * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
      * greaterThanValue(42, {
@@ -704,6 +538,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
@@ -732,56 +567,13 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         secondValue: any,
         validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
 
-//     /**
-//      * Adds a validator that ensures the value is greater than the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * greaterThan('fieldname2');
-//      * greaterThan('fieldname2', "Value must be greater than {value}.");
-//      * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
-//      * greaterThan('fieldname2', {
-//      *      errorMessage: "Value must be greater than {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */        
-//     greaterThan(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     greaterThan(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
-
-//     /**
-//      * Alias for greaterThan
-//      * @param secondValueHostName 
-//      * @param errorMessage 
-//      * @param summaryMessage 
-//      */
-//     gt(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     gt(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
-
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
      * 
      * @example
      * ```ts
      * greaterThanOrEqualValue(42);
+     * greaterThanOrEqualValue(valueHost('field2'));
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
      * greaterThanOrEqualValue(42, {
@@ -790,12 +582,12 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * ```
      * 
      * @param secondValue - The value to compare against the current value.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
-- Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
     greaterThanOrEqualValue(
@@ -817,45 +609,6 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
     gteValue(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
-
-
-//     /**
-//      * Adds a validator that ensures the value is greater than or equal to the second value host.
-//      * 
-//      * @example
-//      * ```ts
-//      * greaterThanOrEqual('fieldname2');
-//      * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
-//      * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
-//      * greaterThanOrEqual('fieldname2', {
-//      *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
-//      *      summaryMessage: "Summary message" });
-//      * ```
-//      *
-//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
-//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-//      * It can use tokens, which are resolved with current data at the time of validation.
-//      * If null, it will expect to be setup by one of several other sources including
-//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-//      * @param summaryMessage - optional summary message.
-// - Optional validator configuration parameters.
-//      * @returns The current instance of ValidatorBuilder for method chaining.
-//      */    
-//     greaterThanOrEqual(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     greaterThanOrEqual(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
-
-//     gte(
-//         secondValueHostName: ValueHostName,
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     gte(
-//         secondValueHostName: ValueHostName,
-//         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the text length is within limits.
@@ -1297,8 +1050,8 @@ export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
 //  protected configureRules(builder: IValueHostsManagerConfigBuilder,
 //      options?: ValueHostRulesOptions): void {
 //      builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
-//          .lessThan('EndDate')
-//          .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+//          .lessThanValue(valueHost('EndDate'))
+//          .lessThanOrEqualValue(valueHost('NumOfDays'),   // right operand of the comparison
 //              {
 //                  valueHostName: 'DiffDays',  // <<< HERE: compare to this valueHost, not StartDate
 //                  errorMessage: 'Less than {compareTo} days apart',
@@ -1311,28 +1064,22 @@ export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
 // ```
 export type OptionalEqualToValueConditionParams = Partial<Omit<EqualToValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-// export type OptionalEqualToConditionParams = Partial<Omit<EqualToConditionConfig,
-//     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalNotEqualToValueConditionParams = Partial<Omit<NotEqualToValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-// export type OptionalNotEqualToConditionParams = Partial<Omit<NotEqualToConditionConfig,
-//     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-    // export type OptionalLessThanConditionParams = Partial<Omit<LessThanConditionConfig,
-    //     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalLessThanOrEqualValueConditionParams = Partial<Omit<LessThanOrEqualValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-// export type OptionalLessThanOrEqualConditionParams = Partial<Omit<LessThanConditionConfig,
-//     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalGreaterThanValueConditionParams = Partial<Omit<GreaterThanValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-// export type OptionalGreaterThanConditionParams = Partial<Omit<GreaterThanConditionConfig,
-//     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalGreaterThanOrEqualValueConditionParams = Partial<Omit<GreaterThanOrEqualValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
-// export type OptionalGreaterThanOrEqualConditionParams = Partial<Omit<GreaterThanOrEqualConditionConfig,
-//     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValueHostName'>>;
+
 export type OptionalStringLengthConditionParams = Partial<Omit<StringLengthConditionConfig,
     'conditionType' | 'valueHostName' | 'category' | 'maximum'>>;
 
@@ -1342,17 +1089,11 @@ export type FluentNotNullValidatorConfig = FluentValidatorConfig;
 export type FluentRegExpValidatorConfig = FluentValidatorConfig & OptionalRegExpConditionParams;
 export type FluentRangeValidatorConfig = FluentValidatorConfig;
 export type FluentEqualToValueValidatorConfig = OptionalEqualToValueConditionParams & FluentValidatorConfig;
-//export type FluentEqualToValidatorConfig = OptionalEqualToConditionParams & FluentValidatorConfig;
 export type FluentNotEqualToValueValidatorConfig = OptionalNotEqualToValueConditionParams & FluentValidatorConfig;
-//export type FluentNotEqualToValidatorConfig = OptionalNotEqualToConditionParams & FluentValidatorConfig;
 export type FluentLessThanValueValidatorConfig = OptionalLessThanValueConditionParams & FluentValidatorConfig;
-//export type FluentLessThanValidatorConfig = OptionalLessThanConditionParams & FluentValidatorConfig;
 export type FluentLessThanOrEqualValueValidatorConfig = OptionalLessThanOrEqualValueConditionParams & FluentValidatorConfig;
-//export type FluentLessThanOrEqualValidatorConfig = OptionalLessThanOrEqualConditionParams & FluentValidatorConfig;
 export type FluentGreaterThanValueValidatorConfig = OptionalGreaterThanValueConditionParams & FluentValidatorConfig;
-//export type FluentGreaterThanValidatorConfig = OptionalGreaterThanConditionParams & FluentValidatorConfig;
 export type FluentGreaterThanOrEqualValueValidatorConfig = OptionalGreaterThanOrEqualValueConditionParams & FluentValidatorConfig;
-//export type FluentGreaterThanOrEqualValidatorConfig = OptionalGreaterThanOrEqualConditionParams & FluentValidatorConfig;
 export type FluentStringLengthValidatorConfig = OptionalStringLengthConditionParams & FluentValidatorConfig;
 export type FluentPositiveValidatorConfig = FluentValidatorConfig;
 export type FluentIntegerValidatorConfig = FluentValidatorConfig;
