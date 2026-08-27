@@ -176,14 +176,14 @@ but the UI wants to use tools around "Email". `modify(valueHostName).refineDataT
     + `modify(valueHostName).validator(validator name).or(your condition)`
     ```ts
     modify('Field1').validator(ConditionType.RegExp).and(
-        (childBuilder=> childBuilder.fieldValue('AnotherField').equalToValue(true)));
+        (childBuilder=> childBuilder.fieldValue('AnotherField').equalTo(true)));
     ```
 - Disable an existing validator. While frowned upon, this provides high visibility to the action.
     + `modify(valueHostName).validator(validator name).disable()`
 - Add another validator to an existing ValueHost
     + `modify(valueHostName).addValidator().[specify the validator]`.
     ```ts
-    modify('Field1').addValidator().equalToValue(true, 'error message');
+    modify('Field1').addValidator().equalTo(true, 'error message');
     ```
 
 See [Form Configuration Adapter](#the-form-configuration-adapter) for details.
@@ -337,7 +337,7 @@ class ValueHostsManagerConfigBuilder {
 - `whenToEnable` - Establishes the condition that must be met for the ValueHost to be enabled. When disabled, its validators do nothing.
     ```ts
     builder.whenToEnable('Field1', (whenBuilder)=>
-        whenBuilder.fieldName('Field2').equalToValue('YES'));
+        whenBuilder.fieldName('Field2').equalTo('YES'));
     builder.whenToEnable('Field1', (whenBuilder)=>
         whenBuilder.conditionConfig(existingConditionConfig));
     builder.whenToEnable('Field1', handler).any validator can be chained
@@ -472,7 +472,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).and(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         + `or()` - combine a condition with an existing validator's condition using an OR operator.
             ```ts
@@ -480,7 +480,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).or(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         + `whenToEnable() `- provide a condition that determines when the validator is enabled.
             ```ts
@@ -488,7 +488,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).whenToEnable(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         > While `and()` and `whenToEnable()` logically appear the same, `and()` evaluates as NoMatch
         and `whenToEnable()` evaluates as Undetermined if your condition evaluates as NoMatch.
@@ -502,7 +502,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
     + `whenToEnable()` - Establishes the condition that must be met for the ValueHost to be enabled. When disabled, its validators do nothing.
         ```ts
         adapter.modify('Field1').whenToEnable(
-            (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+            (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
     + `refineDataType()` - Updates the data type. The new data type must be able to fallback to 
         the original data type as specified in the `LookupFallbackService` of `JivsServices`.
         ```ts

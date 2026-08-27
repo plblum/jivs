@@ -72,7 +72,7 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
           // apply some properties to the fields and validators
           adapter.modify('firstName', {label: 'First Name'}).validator(ConditionType.RequireText, '{Label} is required.');
           adapter.modify('lastName', {label: 'Last Name'}).whenToEnable((whenBuilder) =>
-            whenBuilder.fieldValue('checkbox1').equalToValue(true));
+            whenBuilder.fieldValue('checkbox1').equalTo(true));
           // the UI adds its own field that is used in the previous line.
           adapter.field('checkbox1', LookupKey.Boolean);
         }

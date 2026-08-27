@@ -6,18 +6,12 @@ _Index_
 - [NotNull](#notnull)
 - [RegExp](#regexp)
 - [Range](#range)
-- [EqualToValue](#comparing-two-values-where-second-value-is-specified)
-- [NotEqualToValue](#comparing-two-values-where-second-value-is-specified)
-- [LessThanValue](#comparing-two-values-where-second-value-is-specified)
-- [LessThanOrEqualToValue](#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanValue](#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanOrEqualToValue](#comparing-two-values-where-second-value-is-specified)
-- [EqualTo](#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [NotEqualTo](#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThan](#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThanOrEqualTo](#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThan](#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThanOrEqualTo](#comparing-two-values-where-the-second-value-comes-from-another-field)
+- [EqualTo](#comparing-two-values)
+- [NotEqualTo](#comparing-two-values)
+- [LessThan](#comparing-two-values)
+- [LessThanOrEqualTo](#comparing-two-values)
+- [GreaterThan](#comparing-two-values)
+- [GreaterThanOrEqualTo](#comparing-two-values)
 - [StringLength](#stringlength)
 - [DataTypeCheck](#datatypecheck)
 - [Positive](#positive)
@@ -223,17 +217,26 @@ interface RangeConditionConfig = {
     maximum: any    // less than or equal to. When undefined/null, no maximum.
 }
 ```
-## Comparing two values where second value is specified
+## Comparing two values
 Compare two values. There are many comparison conditions:
-- `equalToValue(value)` or `eqValue(value)`
-- `notEqualToValue(value)` or `neqValue(value)`
-- `lessThanValue(value)` or `ltValue(value)`
-- `lessThanOrEqualValue(value)` or `lteValue(value)`
-- `greaterThanValue(value)` or `gtValue(value)`
-- `greaterThanOrEqualValue(value)` or `gteValue(value)`
+- `equalTo(value)` or `eq(value)`
+- `notEqualTo(value)` or `neq(value)`
+- `lessThan(value)` or `lt(value)`
+- `lessThanOrEqual(value)` or `lte(value)`
+- `greaterThan(value)` or `gt(value)`
+- `greaterThanOrEqual(value)` or `gte(value)`
+
+The value can come from a ValueHost like this:
+- `equalTo(valueHost('value_host_name'))` or `eq(valueHost('value_host_name'))`
+- `notEqualTo(valueHost('value_host_name'))` or `neq(valueHost('value_host_name'))`
+- `lessThan(valueHost('value_host_name'))` or `lt(valueHost('value_host_name'))`
+- `lessThanOrEqual(valueHost('value_host_name'))` or `lte(valueHost('value_host_name'))`
+- `greaterThan(valueHost('value_host_name'))` or `gt(valueHost('value_host_name'))`
+- `greaterThanOrEqual(valueHost('value_host_name'))` or `gte(valueHost('value_host_name'))`
+
 ```ts
-equalToValue(value, errorMessage?, summaryMessage?);
-equalToValue(value, 
+equalTo(value, errorMessage?, summaryMessage?);
+equalTo(value, 
     { // these are the validator parameters
         errorMessage?: null | string | ((host) => string);
         errorMessagel10n?: null | string;
@@ -247,28 +250,38 @@ equalToValue(value,
         secondConversionLookupKey?: string | null; 
     });
 ```
-Error message tokens: `{Label} {Value} {CompareTo}`
+Error message tokens: `{Label} {Value} {CompareTo} {SecondLabel}`
 
 **Examples**
 ```ts
-builder.field('fieldname').equalToValue(1);
-builder.field('fieldname').equalToValue(1, 'error message', 'summary message')
-builder.field('fieldname').equalToValue(1, 
+builder.field('fieldname').equalTo(1);
+builder.field('fieldname').equalTo(1, 'error message', 'summary message')
+builder.field('fieldname').equalTo(1, 
 { 
     errorMessage: 'error message',
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `EqualToValueCondition`, `NotEqualToValueCondition`, `LessThanValueCondition`, `LessThanOrEqualValueCondition`, `GreaterThanValueCondition`, `GreaterThanOrEqualValueCondition`.
+```ts
+builder.field('fieldname').equalTo(valueHost('Fieldname2'));
+builder.field('fieldname').equalTo(valueHost('Fieldname2'), 'error message', 'summary message')
+builder.field('fieldname').equalTo(valueHost('Fieldname2'), 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: `EqualToCondition`, `NotEqualToCondition`, `LessThanCondition`, `LessThanOrEqualCondition`, `GreaterThanCondition`, `GreaterThanOrEqualCondition`.
 
 Condition config:
 ```ts
 interface CompareToValueConditionBaseConfig = {
-    conditionType: ConditionType.[EqualToValue, NotEqualToValue, etc];
+    conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
     category: ConditionCategory.Comparison;
     valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
-    secondValue?: any;  // right operand.
-    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts secondValue into another type prior to evaluation
+    secondValue?: any;  // right operand
+    secondValueHostName?: string;  // right operand value comes from this valueHost 
+    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts right operand value into another type prior to evaluation
 }
 ```
 ## Comparing two values where the second value comes from another field

@@ -76,17 +76,17 @@ let compareVal: ValidatorConfig = {
     errorMessage: 'Error message',
     summaryMessage: 'Summary message',
     severity: ValidationSeverity.Error,
-    conditionConfig: <EqualToValueConditionConfig>{
-        conditionType: ConditionType.EqualToValue,
+    conditionConfig: <EqualToConditionConfig>{
+        conditionType: ConditionType.EqualTo,
         secondValue: 20
     }
 }
 ```
 Use the **Builder API** syntax to better convey what you are trying to do.
 ```ts
-builder.field('FieldName1').equalToValue(2, 'Error message', 'Summary message');
+builder.field('FieldName1').equalTo(2, 'Error message', 'Summary message');
 ```
-The Builder flattens the validator and condition, as the parameters for equalToValue are a combination of condition (_secondValue_) and validator (_errorMessage_ and _summaryMessage_).
+The Builder flattens the validator and condition, as the parameters for equalTo are a combination of condition (_secondValue_) and validator (_errorMessage_ and _summaryMessage_).
 
 ### Intro to configuring Validators
 Each validator has these two syntaxes within the Builder API.
@@ -132,18 +132,12 @@ Here are the Condition-building functions of the Builder API:
 - [NotNull](./Conditions.md#notnull)
 - [RegExp](./Conditions.md#regexp)
 - [Range](./Conditions.md#range)
-- [EqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [NotEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [LessThanValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [LessThanOrEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanOrEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [EqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [NotEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThan](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThanOrEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThan](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThanOrEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
+- [EqualTo](./Conditions.md#comparing-two-values)
+- [NotEqualTo](./Conditions.md#comparing-two-values)
+- [LessThan](./Conditions.md#comparing-two-values)
+- [LessThanOrEqualTo](./Conditions.md#comparing-two-values)
+- [GreaterThan](./Conditions.md#comparing-two-values)
+- [GreaterThanOrEqualTo](./Conditions.md#comparing-two-values)
 - [StringLength](./Conditions.md#stringlength)
 - [DataTypeCheck](./Conditions.md#datatypecheck)
 - [Positive](./Conditions.md#positive)
@@ -250,12 +244,13 @@ To use them, you need to provide a configuration with properties specific to its
 
 We'll work with this example: Compare a date from the Input to today's date.
 
-The `EqualToValueCondition` is the right Condition for the job.  Here are the properties available for configuration:
+The `EqualToCondition` is the right Condition for the job.  Here are the properties available for configuration:
 ```ts
-interface EqualToValueConditionConfig {
-    conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualToValue
+interface EqualToConditionConfig {
+    conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualTo
     valueHostName?: null | string; // leave null/undefined to inherit ValueHost.name.
-    secondValue?: any;
+    secondValue?: any;  // right operand
+    secondValueHostName?: string;   // right operand when the value is retrieved from a ValueHost
     conversionLookupKey?: null | string;
     secondConversionLookupKey?: null | string;
     category?: ConditionCategory; // ConditionCategory.Comparison
@@ -265,7 +260,7 @@ interface EqualToValueConditionConfig {
 
 We'll use the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) to deliver its properties as it is easier, and allows us to setup the error message too:
 ```ts
-builder.field('SignedOnDate').equalToValue(new Date(), "Enter today's date", { conversionLookupKey: LookupKey.Date });
+builder.field('SignedOnDate').equalTo(new Date(), "Enter today's date", { conversionLookupKey: LookupKey.Date });
 ```
 The Builder API assigns conditionType, category, and secondValue (to new Date()). We're using the conversionLookupKey here to ensure that the value of new Date() is just the date part.
 
@@ -956,7 +951,7 @@ There are two ways to set and change it: using the 'enabled' state, which is a b
   
   // example
   builder.field('field1').requireText();
-  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'));
+  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.equalTo('YES', 'Field2'));
   ```
 
 ## Validators: Connecting Conditions to Error Messages
@@ -1678,7 +1673,7 @@ dtcs.register(new NumericStringToNumberConverter());
 ```
 ```ts
 builder.field('Cycles', LookupKey.String) // dataType's Lookup Key
-    .lessThanValue(100, {
+    .lessThan(100, {
         conversionLookupKey: LookupKey.Number // converts 'Cycles' from string to number  
     });
 ```
