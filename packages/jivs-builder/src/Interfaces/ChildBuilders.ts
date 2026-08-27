@@ -19,8 +19,8 @@ import {
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import {
     EqualToConditionConfig,
-    GreaterThanOrEqualValueConditionConfig,
-    GreaterThanValueConditionConfig,
+    GreaterThanOrEqualConditionConfig,
+    GreaterThanConditionConfig,
     LessThanValueConditionConfig,
     LessThanOrEqualValueConditionConfig,
     NotEqualToConditionConfig
@@ -528,11 +528,11 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * 
      * @example
      * ```ts
-     * greaterThanValue(42);
-     * greaterThanValue(valueHost('field2'));
-     * greaterThanValue(42, "Value must be greater than {value}.");
-     * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
-     * greaterThanValue(42, {
+     * greaterThan(42);
+     * greaterThan(valueHost('field2'));
+     * greaterThan(42, "Value must be greater than {value}.");
+     * greaterThan(42, "Value must be greater than 42.", "Summary message");
+     * greaterThan(42, {
      *      errorMessage: "Value must be greater than 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -547,15 +547,15 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    greaterThanValue(
+    greaterThan(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    greaterThanValue(
+    greaterThan(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
 
     /**
-     * Alias for greaterThanValue
+     * Alias for greaterThan
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
@@ -565,18 +565,18 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     gtValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
      * 
      * @example
      * ```ts
-     * greaterThanOrEqualValue(42);
-     * greaterThanOrEqualValue(valueHost('field2'));
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
-     * greaterThanOrEqualValue(42, {
+     * greaterThanOrEqual(42);
+     * greaterThanOrEqual(valueHost('field2'));
+     * greaterThanOrEqual(42, "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqual(42, "Value must be greater than or equal to 42.", "Summary message");
+     * greaterThanOrEqual(42, {
      *      errorMessage: "Value must be greater than or equal to 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -590,15 +590,15 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    greaterThanOrEqualValue(
+    greaterThanOrEqual(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    greaterThanOrEqualValue(
+    greaterThanOrEqual(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
 
     /**
-     * Alias for greaterThanOrEqualValue
+     * Alias for greaterThanOrEqual
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
@@ -608,7 +608,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     gteValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the text length is within limits.
@@ -1074,10 +1074,10 @@ export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueCon
 export type OptionalLessThanOrEqualValueConditionParams = Partial<Omit<LessThanOrEqualValueConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
 
-export type OptionalGreaterThanValueConditionParams = Partial<Omit<GreaterThanValueConditionConfig,
+export type OptionalGreaterThanConditionParams = Partial<Omit<GreaterThanConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
 
-export type OptionalGreaterThanOrEqualValueConditionParams = Partial<Omit<GreaterThanOrEqualValueConditionConfig,
+export type OptionalGreaterThanOrEqualConditionParams = Partial<Omit<GreaterThanOrEqualConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
 
 export type OptionalStringLengthConditionParams = Partial<Omit<StringLengthConditionConfig,
@@ -1092,8 +1092,8 @@ export type FluentEqualToValidatorConfig = OptionalEqualToConditionParams & Flue
 export type FluentNotEqualToValidatorConfig = OptionalNotEqualToConditionParams & FluentValidatorConfig;
 export type FluentLessThanValueValidatorConfig = OptionalLessThanValueConditionParams & FluentValidatorConfig;
 export type FluentLessThanOrEqualValueValidatorConfig = OptionalLessThanOrEqualValueConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanValueValidatorConfig = OptionalGreaterThanValueConditionParams & FluentValidatorConfig;
-export type FluentGreaterThanOrEqualValueValidatorConfig = OptionalGreaterThanOrEqualValueConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanValidatorConfig = OptionalGreaterThanConditionParams & FluentValidatorConfig;
+export type FluentGreaterThanOrEqualValidatorConfig = OptionalGreaterThanOrEqualConditionParams & FluentValidatorConfig;
 export type FluentStringLengthValidatorConfig = OptionalStringLengthConditionParams & FluentValidatorConfig;
 export type FluentPositiveValidatorConfig = FluentValidatorConfig;
 export type FluentIntegerValidatorConfig = FluentValidatorConfig;
@@ -1286,40 +1286,40 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     lteValue(secondValue: any, conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void;
 
     /**
-     * Creates a configuration for the GreaterThanValueCondition.
+     * Creates a configuration for the GreaterThanCondition.
      * @param secondValue - The value to compare against.
      * To get a valueHosts value, pass in valueHost('valuehostname').
-     * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
      */
-    greaterThanValue(
+    greaterThan(
         secondValue: any,
-        conditionConfig?: OptionalGreaterThanValueConditionParams): void;
+        conditionConfig?: OptionalGreaterThanConditionParams): void;
 
     /**
-     * Creates a configuration for the GreaterThanValueCondition using an alias to greaterThanValue()
+     * Creates a configuration for the GreaterThanCondition using an alias to greaterThan()
      * @param secondValue - The value to compare against.
      * To get a valueHosts value, pass in valueHost('valuehostname').
-     * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
      */
-    gtValue(secondValue: any, conditionConfig?: OptionalGreaterThanValueConditionParams): void;
+    gtValue(secondValue: any, conditionConfig?: OptionalGreaterThanConditionParams): void;
 
     /**
-     * Creates a configuration for the GreaterThanOrEqualValueCondition.
+     * Creates a configuration for the GreaterThanOrEqualCondition.
      * @param secondValue - The value to compare against.
      * To get a valueHosts value, pass in valueHost('valuehostname').
-     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
      */
-    greaterThanOrEqualValue(
+    greaterThanOrEqual(
         secondValue: any,
-        conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void;
+        conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
 
     /**
-     * Creates a configuration for the GreaterThanOrEqualValueCondition using an alias to greaterThanOrEqualValue()
+     * Creates a configuration for the GreaterThanOrEqualCondition using an alias to greaterThanOrEqual()
      * @param secondValue - The value to compare against.
      * To get a valueHosts value, pass in valueHost('valuehostname').
-     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
+     * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
      */
-    gteValue(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void;
+    gteValue(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
     
 
     /**

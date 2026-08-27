@@ -1,8 +1,8 @@
 import
     {
         EqualToConditionConfig,
-        GreaterThanOrEqualValueConditionConfig,
-        GreaterThanValueConditionConfig,
+        GreaterThanOrEqualConditionConfig,
+        GreaterThanConditionConfig,
         LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
         NotEqualToConditionConfig
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
@@ -2313,166 +2313,166 @@ describe('lessThanOrEqualValue as a validator of a field()', () =>
     });    
 });
 
-describe('greaterThanValue as a validator of a field()', () =>
+describe('greaterThan as a validator of a field()', () =>
 {
     describe('secondValue', () =>
     {
 
-        test('greaterThanValue(1), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+        test('greaterThan(1), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanValue(1, null)
-        test('greaterThanValue(1, null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+        // greaterThan(1, null)
+        test('greaterThan(1, null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanValue(1, null, null)
-        test('greaterThanValue(1, null, null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+        // greaterThan(1, null, null)
+        test('greaterThan(1, null, null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanValue(1, 'Error')
-        test('greaterThanValue(1, "Error"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and errorMessage assigned', () =>
+        // greaterThan(1, 'Error')
+        test('greaterThan(1, "Error"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // greaterThanValue(1, 'Error', 'Summary')
-        test('greaterThanValue(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThan(1, 'Error', 'Summary')
+        test('greaterThan(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue(1, null, 'Summary')
-        test('greaterThanValue(1, null, "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and summaryMessage assigned', () =>
+        // greaterThan(1, null, 'Summary')
+        test('greaterThan(1, null, "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('greaterThanValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThan(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('greaterThan(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue(1, { secondConversionLookupKey: 'key' })
-        test('greaterThanValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // greaterThan(1, { secondConversionLookupKey: 'key' })
+        test('greaterThan(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1,
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // greaterThanValue(1, {})
-        test('greaterThanValue(1, {}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+        // greaterThan(1, {})
+        test('greaterThan(1, {}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanValue(null)
-        test('greaterThanValue(null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue unassigned', () =>
+        // greaterThan(null)
+        test('greaterThan(null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue unassigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanValue(null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan
                 }
             });
         });
-        describe('gtValue alias of greaterThanValue. Confirm overloaded interfaces', () =>
+        describe('gtValue alias of greaterThan. Confirm overloaded interfaces', () =>
         {
-            test('gtValue(1), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+            test('gtValue(1), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gtValue(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValue: 1
                     }
                 });
             });
-            test('gtValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+            test('gtValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gtValue(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('gtValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () =>
+            test('gtValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gtValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -2484,158 +2484,158 @@ describe('greaterThanValue as a validator of a field()', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('greaterThanValue("Field2"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+        test('greaterThan("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanValue("Field2", null)
-        test('greaterThanValue("Field2", null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+        // greaterThan("Field2", null)
+        test('greaterThan("Field2", null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanValue("Field2", null, null)
-        test('greaterThanValue("Field2", null, null), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+        // greaterThan("Field2", null, null)
+        test('greaterThan("Field2", null, null), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanValue("Field2", "Error")
-        test('greaterThanValue("Field2", "Error"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // greaterThan("Field2", "Error")
+        test('greaterThan("Field2", "Error"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // greaterThanValue("Field2", "Error", "Summary")
-        test('greaterThanValue("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThan("Field2", "Error", "Summary")
+        test('greaterThan("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue("Field2", null, "Summary")
-        test('greaterThanValue("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // greaterThan("Field2", null, "Summary")
+        test('greaterThan("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('greaterThanValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThan("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('greaterThan("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanValue("Field2", { secondConversionLookupKey: 'key' })
-        test('greaterThanValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // greaterThan("Field2", { secondConversionLookupKey: 'key' })
+        test('greaterThan("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), {
                 secondConversionLookupKey: 'key'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: 'key'
                 }
             });
         });
-        // greaterThanValue("Field2", {})
-        test('greaterThanValue("Field2", {}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+        // greaterThan("Field2", {})
+        test('greaterThan("Field2", {}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanValue("")
-        test('greaterThanValue(""), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+        // greaterThan("")
+        test('greaterThan(""), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').greaterThan(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanValue,
+                conditionConfig: <GreaterThanConditionConfig> {
+                    conditionType: ConditionType.GreaterThan,
                     secondValueHostName: ''
                 }
             });
         });
-        describe('gt alias of greaterThanValue. Confirm overloaded interfaces', () =>
+        describe('gt alias of greaterThan. Confirm overloaded interfaces', () =>
         {
-            test('gtValue("Field2"), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+            test('gtValue("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
                     }
                 });
             });
-            test('gtValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+            test('gtValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('gtValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValueHostName assigned', () =>
+            test('gtValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanValue,
+                    conditionConfig: <GreaterThanConditionConfig> {
+                        conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
@@ -2648,166 +2648,166 @@ describe('greaterThanValue as a validator of a field()', () =>
 });
 
 
-describe('greaterThanOrEqualValue as a validator of a field()', () =>
+describe('greaterThanOrEqual as a validator of a field()', () =>
 {
     describe('secondValue', () =>
     {
 
-        test('greaterThanOrEqualValue(1), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        test('greaterThanOrEqual(1), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanOrEqualValue(1, null)
-        test('greaterThanOrEqualValue(1, null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        // greaterThanOrEqual(1, null)
+        test('greaterThanOrEqual(1, null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanOrEqualValue(1, null, null)
-        test('greaterThanOrEqualValue(1, null, null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        // greaterThanOrEqual(1, null, null)
+        test('greaterThanOrEqual(1, null, null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanOrEqualValue(1, 'Error')
-        test('greaterThanOrEqualValue(1, "Error"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and errorMessage assigned', () =>
+        // greaterThanOrEqual(1, 'Error')
+        test('greaterThanOrEqual(1, "Error"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // greaterThanOrEqualValue(1, 'Error', 'Summary')
-        test('greaterThanOrEqualValue(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThanOrEqual(1, 'Error', 'Summary')
+        test('greaterThanOrEqual(1, "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue(1, null, 'Summary')
-        test('greaterThanOrEqualValue(1, null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and summaryMessage assigned', () =>
+        // greaterThanOrEqual(1, null, 'Summary')
+        test('greaterThanOrEqual(1, null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('greaterThanOrEqualValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThanOrEqual(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('greaterThanOrEqual(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue(1, { secondConversionLookupKey: 'key' })
-        test('greaterThanOrEqualValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // greaterThanOrEqual(1, { secondConversionLookupKey: 'key' })
+        test('greaterThanOrEqual(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1,
                 {
                     secondConversionLookupKey: 'key'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1,
                     secondConversionLookupKey: 'key'
                 }
             });
         });
-        // greaterThanOrEqualValue(1, {})
-        test('greaterThanOrEqualValue(1, {}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        // greaterThanOrEqual(1, {})
+        test('greaterThanOrEqual(1, {}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // greaterThanOrEqualValue(null)
-        test('greaterThanOrEqualValue(null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue unassigned', () =>
+        // greaterThanOrEqual(null)
+        test('greaterThanOrEqual(null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue unassigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqualValue(null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual
                 }
             });
         });
-        describe('gteValue alias of greaterThanOrEqualValue. Confirm overloaded interfaces', () =>
+        describe('gteValue alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('gteValue(1), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+            test('gteValue(1), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gteValue(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
                     }
                 });
             });
-            test('gteValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+            test('gteValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gteValue(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('gteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+            test('gteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gteValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -2819,158 +2819,158 @@ describe('greaterThanOrEqualValue as a validator of a field()', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('greaterThanOrEqualValue("Field2"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        test('greaterThanOrEqual("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanOrEqualValue("Field2", null)
-        test('greaterThanOrEqualValue("Field2", null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        // greaterThanOrEqual("Field2", null)
+        test('greaterThanOrEqual("Field2", null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanOrEqualValue("Field2", null, null)
-        test('greaterThanOrEqualValue("Field2", null, null), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        // greaterThanOrEqual("Field2", null, null)
+        test('greaterThanOrEqual("Field2", null, null), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanOrEqualValue("Field2", "Error")
-        test('greaterThanOrEqualValue("Field2", "Error"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // greaterThanOrEqual("Field2", "Error")
+        test('greaterThanOrEqual("Field2", "Error"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // greaterThanOrEqualValue("Field2", "Error", "Summary")
-        test('greaterThanOrEqualValue("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThanOrEqual("Field2", "Error", "Summary")
+        test('greaterThanOrEqual("Field2", "Error", "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue("Field2", null, "Summary")
-        test('greaterThanOrEqualValue("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // greaterThanOrEqual("Field2", null, "Summary")
+        test('greaterThanOrEqual("Field2", null, "Summary"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('greaterThanOrEqualValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // greaterThanOrEqual("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('greaterThanOrEqual("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // greaterThanOrEqualValue("Field2", { secondConversionLookupKey: 'key' })
-        test('greaterThanOrEqualValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // greaterThanOrEqual("Field2", { secondConversionLookupKey: 'key' })
+        test('greaterThanOrEqual("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), {
                 secondConversionLookupKey: 'key'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: 'key'
                 }
             });
         });
-        // greaterThanOrEqualValue("Field2", {})
-        test('greaterThanOrEqualValue("Field2", {}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        // greaterThanOrEqual("Field2", {})
+        test('greaterThanOrEqual("Field2", {}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // greaterThanOrEqualValue("")
-        test('greaterThanOrEqualValue(""), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        // greaterThanOrEqual("")
+        test('greaterThanOrEqual(""), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').greaterThanOrEqualValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.GreaterThanOrEqualValue,
+                conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: ''
                 }
             });
         });
-        describe('gteValue alias of greaterThanOrEqualValue. Confirm overloaded interfaces', () =>
+        describe('gteValue alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('gteValue("Field2"), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+            test('gteValue("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
                     }
                 });
             });
-            test('gteValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+            test('gteValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('gteValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+            test('gteValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <GreaterThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.GreaterThanOrEqualValue,
+                    conditionConfig: <GreaterThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',

@@ -68,17 +68,17 @@ export class NotEqualToCondition extends CompareToValueConditionBase<NotEqualToC
 
 
 /**
- * ConditionConfig for {@link GreaterThanValueCondition}
+ * ConditionConfig for {@link GreaterThanCondition}
  */
-export interface GreaterThanValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface GreaterThanConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
  * Value from ValueHost must be greater than a second value, assigned in its ConditionConfig.secondValue.
  * 
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class GreaterThanValueCondition extends CompareToValueConditionBase<GreaterThanValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanValue; }
+export class GreaterThanCondition extends CompareToValueConditionBase<GreaterThanConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -118,17 +118,17 @@ export class LessThanValueCondition extends CompareToValueConditionBase<LessThan
 }
 
 /**
- * ConditionConfig for {@link GreaterThanOrEqualValueCondition}
+ * ConditionConfig for {@link GreaterThanOrEqualCondition}
  */
-export interface GreaterThanOrEqualValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface GreaterThanOrEqualConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
  * Value from ValueHost must be greater than or equal to a second value, assigned in its ConditionConfig.secondValue.
  * 
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class GreaterThanOrEqualValueCondition extends CompareToValueConditionBase<GreaterThanOrEqualValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqualValue; }
+export class GreaterThanOrEqualCondition extends CompareToValueConditionBase<GreaterThanOrEqualConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqual; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {

@@ -53,9 +53,9 @@ export enum ConditionType
     NotEqualTo = 'NotEqualTo',
 
     /**
-     * Associated with GreaterThanValueCondition class.
+     * Associated with GreaterThanCondition class.
      */
-    GreaterThanValue = 'GreaterThanValue',
+    GreaterThan = 'GreaterThan',
 
     /**
      * Associated with LessThanValueCondition class.
@@ -63,9 +63,9 @@ export enum ConditionType
     LessThanValue = 'LessThanValue',
 
     /**
-     * Associated with GreaterThanOrEqualValueCondition class.
+     * Associated with GreaterThanOrEqualCondition class.
      */
-    GreaterThanOrEqualValue = 'GreaterThanOrEqualValue',
+    GreaterThanOrEqual = 'GreaterThanOrEqual',
 
     /**
      * Associated with LessThanOrEqualValueCondition class.

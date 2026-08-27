@@ -1,8 +1,8 @@
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from '../../src/Conditions/CompareToValueConditionBase';
 import
     {
-        EqualToCondition, EqualToConditionConfig, GreaterThanOrEqualValueCondition,
-        GreaterThanOrEqualValueConditionConfig, GreaterThanValueCondition, GreaterThanValueConditionConfig,
+        EqualToCondition, EqualToConditionConfig, GreaterThanOrEqualCondition,
+        GreaterThanOrEqualConditionConfig, GreaterThanCondition, GreaterThanConditionConfig,
         LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig, LessThanValueCondition,
         LessThanValueConditionConfig, NotEqualToCondition, NotEqualToConditionConfig
     } from '../../src/Conditions/ComparisonCondition_classes';
@@ -1172,29 +1172,29 @@ describe('class NotEqualToCondition', () => {
     });
 
 });
-describe('class GreaterThanValueCondition', () => {
+describe('class GreaterThanCondition', () => {
     test('DefaultConditionType', () => {
-        expect(GreaterThanValueCondition.DefaultConditionType).toBe(ConditionType.GreaterThanValue);
+        expect(GreaterThanCondition.DefaultConditionType).toBe(ConditionType.GreaterThan);
     });
     test('category is Comparison', () =>
     {
-        let config: GreaterThanValueConditionConfig = {
-            conditionType: ConditionType.GreaterThanValue,
+        let config: GreaterThanConditionConfig = {
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValue: 10
         };
-        let testItem = new GreaterThanValueCondition(config);
+        let testItem = new GreaterThanCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () =>
     {
-        let config: GreaterThanValueConditionConfig = {
-            conditionType: ConditionType.GreaterThanValue,
+        let config: GreaterThanConditionConfig = {
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new GreaterThanValueCondition(config);
+        let testItem = new GreaterThanCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });    
     describe('secondValue', () =>
@@ -1205,12 +1205,12 @@ describe('class GreaterThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);
@@ -1226,12 +1226,12 @@ describe('class GreaterThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValue: false
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1245,12 +1245,12 @@ describe('class GreaterThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -1264,12 +1264,12 @@ describe('class GreaterThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1291,12 +1291,12 @@ describe('class GreaterThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValue: null
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1319,19 +1319,19 @@ describe('class GreaterThanValueCondition', () => {
 
         test('evaluate using boolean results in Undetermined because no support for GT operator', () =>
         {
-            // boolean chosen because Comparers don't support GreaterThanValue/LessThan
+            // boolean chosen because Comparers don't support GreaterThan/LessThan
             let services = new MockJivsServices(false, true);
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setValue(true);
             vh2.setValue(false);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1347,12 +1347,12 @@ describe('class GreaterThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -1374,13 +1374,13 @@ describe('class GreaterThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
             vh2.setValue(100);
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -1396,13 +1396,13 @@ describe('class GreaterThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: GreaterThanValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanValue,
+            let config: GreaterThanConditionConfig = {
+                conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
             vh2.setValue(100);
-            let testItem = new GreaterThanValueCondition(config);
+            let testItem = new GreaterThanCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1421,29 +1421,29 @@ describe('class GreaterThanValueCondition', () => {
     });    
 
 });
-describe('class GreaterThanOrEqualValueCondition', () => {
+describe('class GreaterThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(GreaterThanOrEqualValueCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqualValue);
+        expect(GreaterThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqual);
     });
     test('category is Comparison', () =>
     {
-        let config: GreaterThanOrEqualValueConditionConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
+        let config: GreaterThanOrEqualConditionConfig = {
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10
         };
-        let testItem = new GreaterThanOrEqualValueCondition(config);
+        let testItem = new GreaterThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () =>
     {
-        let config: GreaterThanOrEqualValueConditionConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
+        let config: GreaterThanOrEqualConditionConfig = {
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new GreaterThanOrEqualValueCondition(config);
+        let testItem = new GreaterThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });    
     describe('secondValue', () =>
@@ -1454,12 +1454,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);
@@ -1475,12 +1475,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: false
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1494,12 +1494,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -1513,12 +1513,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1540,12 +1540,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: null
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1573,12 +1573,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Boolean, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh.setValue(true);
             vh2.setValue(false);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1597,12 +1597,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -1624,12 +1624,12 @@ describe('class GreaterThanOrEqualValueCondition', () => {
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
 
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: ''
             };
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             vh2.setValue(100);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1658,13 +1658,13 @@ describe('class GreaterThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: GreaterThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.GreaterThanOrEqualValue,
+            let config: GreaterThanOrEqualConditionConfig = {
+                conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
             vh2.setValue(100);
-            let testItem = new GreaterThanOrEqualValueCondition(config);
+            let testItem = new GreaterThanOrEqualCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([

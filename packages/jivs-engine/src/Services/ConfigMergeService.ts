@@ -32,7 +32,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * ```ts
  * let vmConfig: ValueHostsManagerConfig = { services: services };
  * let builder = build(vmConfig);
- * builder.field('Field1', LookupKey.Number, { label: 'Field 1' }).notNull().greaterThanValue(10);
+ * builder.field('Field1', LookupKey.Number, { label: 'Field 1' }).notNull().greaterThan(10);
  * // same as:
  * {
  *   valueHostType: 'Field',
@@ -44,7 +44,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  *       conditionConfig: { conditionType: 'NotNull' }
  *     },
  *     {
- *       conditionConfig: { conditionType: 'GreaterThanValue', value: 10 }
+ *       conditionConfig: { conditionType: 'GreaterThan', value: 10 }
  *     }
  *   ]
  * }
@@ -71,7 +71,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  *       conditionConfig: { conditionType: 'RequireText' } //* upscaled from NotNull
  *     },
  *     {
- *       conditionConfig: { conditionType: 'GreaterThanValue', value: 10 }
+ *       conditionConfig: { conditionType: 'GreaterThan', value: 10 }
  *     }
  *   ]
  * }

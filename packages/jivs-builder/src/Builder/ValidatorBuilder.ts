@@ -20,7 +20,7 @@
 import
     {
         EqualToConditionConfig,
-        GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
+        GreaterThanOrEqualConditionConfig, GreaterThanConditionConfig,
         LessThanOrEqualValueConditionConfig,
         LessThanValueConditionConfig,
         NotEqualToConditionConfig,
@@ -54,8 +54,8 @@ import
         FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
         FluentDataTypeCheckValidatorConfig, 
         FluentEqualToValidatorConfig, 
-        FluentGreaterThanOrEqualValueValidatorConfig, 
-        FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig,
+        FluentGreaterThanOrEqualValidatorConfig, 
+        FluentGreaterThanValidatorConfig, FluentIntegerValidatorConfig,
         FluentLessThanOrEqualValueValidatorConfig,
         FluentLessThanValueValidatorConfig,
         FluentMaxDecimalsValidatorConfig, 
@@ -1075,11 +1075,11 @@ export class ValidatorBuilder
      * Adds a validator that ensures the value is greater than the specified second value.
      * @example
      * ```ts
-     * greaterThanValue(42);
-     * greaterThanValue(valueHost('field2'));
-     * greaterThanValue(42, "Value must be greater than {value}.");
-     * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
-     * greaterThanValue(42, {
+     * greaterThan(42);
+     * greaterThan(valueHost('field2'));
+     * greaterThan(42, "Value must be greater than {value}.");
+     * greaterThan(42, "Value must be greater than 42.", "Summary message");
+     * greaterThan(42, {
      *      errorMessage: "Value must be greater than 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -1093,18 +1093,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public greaterThanValue(
+    public greaterThan(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is greater than the specified second value.
      * @example
      * ```ts
-     * greaterThanValue(42);
-     * greaterThanValue(valueHost('field2'));
-     * greaterThanValue(42, "Value must be greater than {value}.");
-     * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
-     * greaterThanValue(42, {
+     * greaterThan(42);
+     * greaterThan(valueHost('field2'));
+     * greaterThan(42, "Value must be greater than {value}.");
+     * greaterThan(42, "Value must be greater than 42.", "Summary message");
+     * greaterThan(42, {
      *      errorMessage: "Value must be greater than 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -1115,36 +1115,36 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public greaterThanValue(
+    public greaterThan(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
-    public greaterThanValue(
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
+    public greaterThan(
         secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
+        args2?: FluentGreaterThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        return this.greaterThanValue_common(secondValue, args2, args3);
+        return this.greaterThan_common(secondValue, args2, args3);
     }
     /**
-     * Allows aliases to setup greaterThanValue
+     * Allows aliases to setup greaterThan
      * @param secondValue 
      * @param args2 
      * @param args3 
      * @returns 
      */
-    protected greaterThanValue_common(
+    protected greaterThan_common(
         secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
+        args2?: FluentGreaterThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanValueConditionConfig>(args2, args3);
+            this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanValue(secondValue, conditionConfig as GreaterThanValueConditionConfig);
+        conditionBuilder.greaterThan(secondValue, conditionConfig as GreaterThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
 
     /**
-     * Alias for greaterThanValue
+     * Alias for greaterThan
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
@@ -1157,7 +1157,7 @@ export class ValidatorBuilder
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for greaterThanValue
+     * Alias for greaterThan
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
@@ -1165,23 +1165,23 @@ export class ValidatorBuilder
      */
     public gtValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
     public gtValue(
         secondValue: any,
-        args2?: FluentGreaterThanValueValidatorConfig | string | null,
+        args2?: FluentGreaterThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
-        return this.greaterThanValue_common(secondValue, args2, args3);
+        return this.greaterThan_common(secondValue, args2, args3);
     }
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
      * @example
      * ```ts
-     * greaterThanOrEqualValue(42);
-     * greaterThanOrEqualValue(valueHost('field2'));
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
-     * greaterThanOrEqualValue(42, {
+     * greaterThanOrEqual(42);
+     * greaterThanOrEqual(valueHost('field2'));
+     * greaterThanOrEqual(42, "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqual(42, "Value must be greater than or equal to 42.", "Summary message");
+     * greaterThanOrEqual(42, {
      *      errorMessage: "Value must be greater than or equal to 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -1195,18 +1195,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public greaterThanOrEqualValue(
+    public greaterThanOrEqual(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
      * @example
      * ```ts
-     * greaterThanOrEqualValue(42);
-     * greaterThanOrEqualValue(valueHost('field2'));
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
-     * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
-     * greaterThanOrEqualValue(42, {
+     * greaterThanOrEqual(42);
+     * greaterThanOrEqual(valueHost('field2'));
+     * greaterThanOrEqual(42, "Value must be greater than or equal to {value}.");
+     * greaterThanOrEqual(42, "Value must be greater than or equal to 42.", "Summary message");
+     * greaterThanOrEqual(42, {
      *      errorMessage: "Value must be greater than or equal to 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -1217,36 +1217,36 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public greaterThanOrEqualValue(
+    public greaterThanOrEqual(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
-    public greaterThanOrEqualValue(
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
+    public greaterThanOrEqual(
         secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
+        return this.greaterThanOrEqual_common(secondValue, arg2, arg3);
     }
     /**
-     * Allows aliases to setup greaterThanOrEqualValue
+     * Allows aliases to setup greaterThanOrEqual
      * @param secondValue 
      * @param arg2 
      * @param arg3 
      * @returns 
      */
-    protected greaterThanOrEqualValue_common(
+    protected greaterThanOrEqual_common(
         secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanOrEqualValueConditionConfig>(arg2, arg3);
+            this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanOrEqualValue(secondValue, conditionConfig as GreaterThanOrEqualValueConditionConfig);
+        conditionBuilder.greaterThanOrEqual(secondValue, conditionConfig as GreaterThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
 
     /**
-     * Alias for greaterThanOrEqualValue
+     * Alias for greaterThanOrEqual
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage 
@@ -1256,19 +1256,19 @@ export class ValidatorBuilder
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for greaterThanOrEqualValue
+     * Alias for greaterThanOrEqual
      * @param secondValue - The value to compare against the current value.
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
     public gteValue(
         secondValue: any,
-        validatorParameters: FluentGreaterThanOrEqualValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
     public gteValue(
         secondValue: any,
-        arg2?: FluentGreaterThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
+        return this.greaterThanOrEqual_common(secondValue, arg2, arg3);
     }
 
     /**

@@ -34,7 +34,7 @@
  * let builder = new ValueHostsManagerConfigBuilder(services);
  * builder.static('productVisible', LookupKey.Boolean);
  * builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
- * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
+ * builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0)`;
  * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
  * let vhm = new ValueHostsManager(builder);
  * ```
@@ -50,7 +50,7 @@
  *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  *   ```ts
  *   let builder = new ValueHostConfigBuilder(services);
- *   builder.field('Field1').requireText().regExp('pattern').greaterThanOrEqualValue(0);
+ *   builder.field('Field1').requireText().regExp('pattern').greaterThanOrEqual(0);
  *   builder.calc('Field2', LookupKey.Number, calcFn);
  *   builder.static('Field3');
  *   ```
@@ -60,7 +60,7 @@
  *   ```ts
  *   builder.field(field name) -> ValidatorBuilder
  *   ```
- *   It exposes functions specific to each Condition class, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
+ *   It exposes functions specific to each Condition class, like requireText(), regExp(), greaterThanOrEqual(), etc.
  *   ```ts
  *   builder.field('Field1').requireText(), regExp(), etc
  *   ```
@@ -100,7 +100,7 @@
  * 
  * - ConditionBuilder - Returned by StartConditionBuilder.parentValue() and fieldValue().
  *   Specifies the condition to apply to the parentValue/fieldValue.
- *   It has all available conditions as functions, like requireText(), regExp(), greaterThanOrEqualValue(), etc.
+ *   It has all available conditions as functions, like requireText(), regExp(), greaterThanOrEqual(), etc.
  *   The ultimate result is the syntax reading left to right.
  *     ```ts
  *     builder.fieldValue('Field1').requireText()

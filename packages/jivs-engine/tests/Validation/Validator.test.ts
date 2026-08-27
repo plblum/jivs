@@ -456,8 +456,8 @@ describe('Validator.severity', () => {
         checkDefaultSeverity(ConditionType.StringLength);
         checkDefaultSeverity(ConditionType.EqualTo);
         checkDefaultSeverity(ConditionType.NotEqualTo);
-        checkDefaultSeverity(ConditionType.GreaterThanValue);
-        checkDefaultSeverity(ConditionType.GreaterThanOrEqualValue);
+        checkDefaultSeverity(ConditionType.GreaterThan);
+        checkDefaultSeverity(ConditionType.GreaterThanOrEqual);
         checkDefaultSeverity(ConditionType.LessThanValue);
         checkDefaultSeverity(ConditionType.LessThanOrEqualValue);
         checkDefaultSeverity(ConditionType.All);

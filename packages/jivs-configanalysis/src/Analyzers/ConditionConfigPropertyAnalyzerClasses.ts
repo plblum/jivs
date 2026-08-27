@@ -251,9 +251,9 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
     private readonly _ensurePropertyIsDefinedConditionTypes = new Set<string>([
         ConditionType.EqualTo,
         ConditionType.NotEqualTo,
-        ConditionType.GreaterThanValue,
+        ConditionType.GreaterThan,
         ConditionType.LessThanValue,
-        ConditionType.GreaterThanOrEqualValue,
+        ConditionType.GreaterThanOrEqual,
         ConditionType.LessThanOrEqualValue
     ]);
     
@@ -300,9 +300,9 @@ export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPro
     private readonly _ensurePropertyIsDefinedConditionTypes = new Set<string>([
         ConditionType.EqualTo,
         ConditionType.NotEqualTo,
-        ConditionType.GreaterThanValue,
+        ConditionType.GreaterThan,
         ConditionType.LessThanValue,
-        ConditionType.GreaterThanOrEqualValue,
+        ConditionType.GreaterThanOrEqual,
         ConditionType.LessThanOrEqualValue
     ]);
     
