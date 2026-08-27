@@ -277,11 +277,11 @@ A restoring workflow assigns the transported saved state to `config.capturedStat
 
 `formValidated` receives changes to the overall validation state. Jivs SimpleDom supplies the [Form Dispatcher Function](../Presentation/Form_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function). Otherwise, the application supplies it. See [When Overall Validation Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-overall-validation-changes).
 
-`reconcileValueHostsWithEditors()` compares the generated editors with their `FieldValueHost` instances. It transfers editor Text Values when required and enables or disables each `FieldValueHost` based on whether its editor is present. See [Add the Editor Reconciliation Helpers](#add-the-editor-reconciliation-helpers).
+`reconcileValueHostsWithEditors()` compares the generated editors with their `FieldValueHost` instances. It transfers editor Text Values when required and enables or disables each `FieldValueHost` based on whether its editor is present. Provided in `jivs-dom-helpers.ts` and documented in [Add the Editor Reconciliation Helpers](#add-the-editor-reconciliation-helpers).
 
-`attachEditorEventHandlers()` represents the application code that attaches event handlers to the editors and supplies user-entered Text Values to their `FieldValueHost` instances. See [Sending User Input to Jivs](../Using_the_ValueHostsManager_within_the_Client.md#sending-user-input-to-jivs).
+`attachEditorEventHandlers()` represents the application code that attaches event handlers to the editors and supplies user-entered Text Values to their `FieldValueHost` instances. Provided in `jivs-dom-helpers.ts` and documented in [Sending User Input to Jivs](../Using_the_ValueHostsManager_within_the_Client.md#sending-user-input-to-jivs).
 
-`attachPresentationHandlers()` represents the application’s presentation setup. When using Jivs SimpleDom, it can attach the field and form presentations and initialize required indicators. Otherwise, the application supplies its own presentation setup. See [Initialize the Presentation](../Presentation/Presentation_Quick_Start.md#11-initialize-the-presentation).
+`attachPresentationHandlers()` represents the application’s presentation setup. When using Jivs SimpleDom, it can attach the field and form presentations and initialize required indicators. Otherwise, the application supplies its own presentation setup. Provided in `jivs-SimpleDom.ts` and documented in  [Initialize the Presentation](../Presentation/Presentation_Quick_Start.md#11-initialize-the-presentation).
 
 `broadcastState()` sends the current restored state through the configured callbacks after the handlers have been attached. This allows the regenerated page to present that state without changing it.
 

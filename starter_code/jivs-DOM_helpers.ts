@@ -7,6 +7,9 @@
  * [Using the ValueHostsManager within the Client](docs/Learning_Jivs/Using_the_ValueHostsManager_within_the_Client.md)
  * 
  * - getElement(): Retrieves the HTML element associated with a FieldValueHost.
+ * - getEditorValue(): Retrieves the value from a given editor element, 
+ *   supporting input, select, and textarea elements.
+ * 
  * - attachJivsToFormControl(): Attaches event listeners to any form control element (input, textarea, or select) 
  *      update a FieldValueHost's text value. Basically a front-end for using these three functions:
  * - attachJivsToInput(): Attaches an input element's event listeners to update a FieldValueHost's text value.
@@ -24,7 +27,11 @@
  * - ClientSubmitsToJivsOnServerBase: A subclass for clients whose server uses Jivs for validation.
  * - ClientSubmitsToServerBase: A subclass for clients whose server uses another validation system.
  *
- * It has a companion, jivs-simpleDom.ts, which offers the Jivs SimpleDom architecture for presentation
+ * It provides these functions described in
+ * [Using Jivs with Server-Generated Pages](docs/Learning_Jivs/Using_Jivs_with_Server-Generated_Pages.md)
+ * - reconcileElementWithValueHost(): Updates the HTML element to reflect the current value of the associated FieldValueHost.
+ * 
+ * For Jivs SimpleDom extensions, see jivs-simpleDom.ts. It provides tools for presentation
  * of validation issues in the DOM. It is described in the learning guide 
  * [Jivs Presentation Learning Guide](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md)
  ------------------------------------------------------------------------------------------ */
@@ -58,6 +65,29 @@ export function getElement(
 {
     const fldId = valueHost.getElementIdentifier(pattern);
     return fldId ? document.getElementById(fldId) : null;
+}
+
+/**
+ * Retrieves the value from a given editor element.
+ *
+ * @param element The editor element from which to retrieve the value.
+ * @returns The value of the editor as a string, or undefined if the element type is not supported.
+ */
+export function getEditorValue(
+    element: HTMLElement
+): string | undefined
+{
+    if (
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement
+    )
+    {
+        return element.value;
+    }
+
+    // Add support for other editor types here and return their Text Value.
+    return undefined;
 }
 
 /**
@@ -468,4 +498,83 @@ export abstract class ClientSubmitsToServerBase<TModel extends object, TError>
      * See [Handle the Server Issues](./learning/Submitting_the_Client_Form.md#handle-the-server-issues).
      */
     protected abstract convertToIssueFound(errors: TError[]): IssueFound[];
+}
+
+/** -----------------------------------------------------------
+ * Server-generated pages need a consistent way to align the `FieldValueHosts` with available editors. 
+ * The Rules objects configure every possible `FieldValueHost` your UI may use, 
+ * but only those with editors on the page should be enabled and supplied with values. 
+ * The `reconcileValueHostsWithEditors()` function supports that.
+ * 
+ * Modify getEditorValue to support any custom components that supply a value
+ * to the ValueHostsManager.
+ * ----------------------------------------------------------- */
+
+export interface ReconcileValueHostsWithEditorsOptions
+{
+    skipIfUnchanged?: boolean;
+    valueHostNames?: readonly string[];
+}
+
+/**
+ * Reconciles the values of ValueHosts with their corresponding editor elements in the DOM.
+ * 
+ * NOTE: Alternatively use the FormReader class with the values already populated from the elements.
+ * When you do, use:
+ * ```ts
+ * const formReader = new FormReader(vhm, formData, {
+ *      skipIfUnchanged: true, // use false if you consider every element's data as refreshed
+ *      alignEnabled: true
+ * });
+ * formReader.readFromModel();
+ * ```
+ * 
+ * @param vhm The ValueHostsManager containing the ValueHosts to reconcile with the DOM editors.
+ * @param options Options controlling the reconciliation process, such as which ValueHosts to update and whether to skip unchanged values.
+ */
+export function reconcileValueHostsWithEditors(
+    vhm: IValueHostsManager,
+    options: ReconcileValueHostsWithEditorsOptions = {}
+): void
+{
+    const valueHostNames = options.valueHostNames
+        ? new Set(options.valueHostNames)
+        : undefined;
+
+    const valueHosts = vhm.enumerateValueHosts(
+        (valueHost) =>
+            valueHost.getType() === 'Field' &&
+            (
+                valueHostNames === undefined ||
+                valueHostNames.has(valueHost.getName())
+            )
+    );
+
+    for (const vh of valueHosts)
+    {
+        const valueHost = vh as IFieldValueHost;
+        const element = getElement(valueHost);
+
+        if (element === null)
+        {
+            valueHost.setEnabled(false);
+            continue;
+        }
+
+        const editorValue = getEditorValue(element);
+
+        if (editorValue === undefined)
+        {
+            valueHost.setEnabled(false);
+            continue;
+        }
+
+        valueHost.setTextValue(editorValue, {
+            validate: false,
+            reset: true,
+            skipIfUnchanged:
+                options.skipIfUnchanged ?? false,
+            ensureEnabled: true
+        });
+    }
 }

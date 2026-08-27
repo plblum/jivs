@@ -35,7 +35,7 @@ attachPresentationHandlers(vhm);
 
 `PersonFormRules` represents the application’s Rules implementation. Every form needs an application-owned Rules class to configure its `ValueHostsManager`. See [Build the Configuration Rules](Using_Jivs_with_Server_Generated_Pages.md#build-the-configuration-rules).
 
-`reconcileValueHostsWithEditors()` is supplied in [Add the Editor Reconciliation Helpers](Using_Jivs_with_Server_Generated_Pages.md#add-the-editor-reconciliation-helpers). It transfers the Text Values from the form’s editors to their associated `FieldValueHost` instances.
+`reconcileValueHostsWithEditors()` is supplied in `jivs-dom-helpers.ts` and documented in [Add the Editor Reconciliation Helpers](Using_Jivs_with_Server_Generated_Pages.md#add-the-editor-reconciliation-helpers). It transfers the Text Values from the form’s editors to their associated `FieldValueHost` instances.
 
 `onTextValueChanged` allows Jivs to supply Text Values to the editors. Omit it when Jivs does not need to supply values to your editors. See [When a Text Value Changes](../Using_the_ValueHostsManager_within_the_Client.md#when-a-text-value-changes).
 
