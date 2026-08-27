@@ -17,11 +17,13 @@ import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
 import { createMinimalJivsServices } from "./support";
 import {
     DataTypeCheckConditionConfig, DataTypeCheckCondition,
-    LessThanConditionConfig, LessThanCondition,
     NotNullConditionConfig, NotNullCondition,
-    RequireTextConditionConfig, RequireTextCondition,
-    LessThanOrEqualConditionConfig, LessThanOrEqualCondition
+    RequireTextConditionConfig, RequireTextCondition
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import {
+    LessThanConditionConfig, LessThanCondition,
+    LessThanOrEqualConditionConfig, LessThanOrEqualCondition
+} from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";

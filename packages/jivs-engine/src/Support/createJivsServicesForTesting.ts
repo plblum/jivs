@@ -3,72 +3,97 @@
  * @module jivs-engine/Support/CreateJivsServicesForTesting
  */
 
-import {
-    DataTypeCheckCondition, RequireTextCondition, RegExpCondition, RangeCondition,
-    EqualToCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
-    AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
-    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig,
-    GreaterThanOrEqualConditionConfig,
-    LessThanOrEqualConditionConfig,
-    GreaterThanConditionConfig,
-    LessThanConditionConfig,
-    NotEqualToConditionConfig,
-    EqualToConditionConfig,
-    EqualToValueCondition,
-    EqualToValueConditionConfig,
-    GreaterThanOrEqualValueCondition,
-    GreaterThanOrEqualValueConditionConfig,
-    GreaterThanValueCondition,
-    LessThanOrEqualValueCondition,
-    LessThanOrEqualValueConditionConfig,
-    LessThanValueCondition,
-    LessThanValueConditionConfig,
-    NotEqualToValueCondition,
-    NotEqualToValueConditionConfig,
-    GreaterThanValueConditionConfig,
-    PositiveCondition,
-    PositiveConditionConfig,
-    IntegerCondition,
-    IntegerConditionConfig,
-    MaxDecimalsCondition,
-    MaxDecimalsConditionConfig
-} from '../Conditions/ConcreteConditions';
+import
+    {
+        EqualToCondition,
+        EqualToConditionConfig,
+        EqualToValueCondition,
+        EqualToValueConditionConfig,
+        GreaterThanCondition,
+        GreaterThanConditionConfig,
+        GreaterThanOrEqualCondition,
+        GreaterThanOrEqualConditionConfig,
+        GreaterThanOrEqualValueCondition,
+        GreaterThanOrEqualValueConditionConfig,
+        GreaterThanValueCondition,
+        GreaterThanValueConditionConfig,
+        LessThanCondition,
+        LessThanConditionConfig,
+        LessThanOrEqualCondition,
+        LessThanOrEqualConditionConfig,
+        LessThanOrEqualValueCondition,
+        LessThanOrEqualValueConditionConfig,
+        LessThanValueCondition,
+        LessThanValueConditionConfig,
+        NotEqualToCondition,
+        NotEqualToConditionConfig,
+        NotEqualToValueCondition,
+        NotEqualToValueConditionConfig,
+    } from '../Conditions/ComparisonCondition_classes';
+import
+    {
+        AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
+        AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig,
+        DataTypeCheckCondition,
+        IntegerCondition,
+        IntegerConditionConfig,
+        MaxDecimalsCondition,
+        MaxDecimalsConditionConfig,
+        NotNullCondition, NotNullConditionConfig,
+        PositiveCondition,
+        PositiveConditionConfig,
+        RangeCondition,
+        RegExpCondition,
+        RequireTextCondition,
+        StringLengthCondition,
+        StringLengthConditionConfig
+    } from '../Conditions/ConcreteConditions';
 
 import { NotCondition, NotConditionConfig } from '../Conditions/NotCondition';
 import { WhenCondition, WhenConditionConfig } from '../Conditions/WhenCondition';
 
+import { DataTypeCheckConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig } from '../Conditions/ConcreteConditions';
 import { ConditionFactory } from '../Conditions/ConditionFactory';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import {
-    StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, AbbrevDOWDateFormatter, AbbrevDateFormatter,
-    BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
-    LowercaseStringFormatter, Percentage100Formatter, PercentageFormatter, TimeofDayFormatter, TimeofDayHMSFormatter, UppercaseStringFormatter
-} from '../DataTypes/DataTypeFormatters';
+import
+    {
+        CaseInsensitiveStringConverter, DateTimeConverter, IntegerConverter, LocalDateOnlyConverter,
+        NumericStringToNumberConverter, TimeOfDayHMSOnlyConverter, TimeOfDayOnlyConverter, UTCDateOnlyConverter
+    } from '../DataTypes/DataTypeConverters';
+import
+    {
+        AbbrevDOWDateFormatter, AbbrevDateFormatter,
+        BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter,
+        DateFormatter,
+        DateTimeFormatter,
+        IntegerFormatter,
+        LongDOWDateFormatter, LongDateFormatter,
+        LowercaseStringFormatter,
+        NumberFormatter,
+        Percentage100Formatter, PercentageFormatter,
+        StringFormatter,
+        TimeofDayFormatter, TimeofDayHMSFormatter, UppercaseStringFormatter
+    } from '../DataTypes/DataTypeFormatters';
+import { CleanUpStringParser, CurrencyParser, NumberParser } from '../DataTypes/DataTypeParsers';
+import { LookupKey } from '../DataTypes/LookupKeys';
+import { IConditionFactory } from '../Interfaces/Conditions';
+import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
+import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
+import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { AutoGenerateDataTypeCheckService } from '../Services/AutoGenerateDataTypeCheckService';
+import { ValidatorConfigMergeService, ValueHostConfigMergeService } from '../Services/ConfigMergeService';
 import { ConsoleLoggerService } from '../Services/ConsoleLoggerService';
 import { DataTypeComparerService } from '../Services/DataTypeComparerService';
 import { DataTypeConverterService } from '../Services/DataTypeConverterService';
 import { DataTypeFormatterService } from '../Services/DataTypeFormatterService';
 import { DataTypeIdentifierService } from '../Services/DataTypeIdentifierService';
+import { DataTypeParserService } from '../Services/DataTypeParserService';
+import { JivsServices } from '../Services/JivsServices';
 import { MessageTokenResolverService } from '../Services/MessageTokenResolverService';
 import { TextLocalizerService } from '../Services/TextLocalizerService';
-import { JivsServices } from '../Services/JivsServices';
-import { DataTypeCheckConditionConfig, RequireTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from '../Conditions/ConcreteConditions';
-import { LookupKey } from '../DataTypes/LookupKeys';
-import { registerTestingOnlyConditions } from './conditionsForTesting';
-import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
-import { DataTypeParserService } from '../Services/DataTypeParserService';
-import { CleanUpStringParser, CurrencyParser, NumberParser } from '../DataTypes/DataTypeParsers';
-import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
-import { ValidatorConfigMergeService, ValueHostConfigMergeService } from '../Services/ConfigMergeService';
-import {
-    CaseInsensitiveStringConverter, DateTimeConverter, IntegerConverter, LocalDateOnlyConverter,
-    NumericStringToNumberConverter, TimeOfDayHMSOnlyConverter, TimeOfDayOnlyConverter, UTCDateOnlyConverter
-} from '../DataTypes/DataTypeConverters';
-import { IConditionFactory } from '../Interfaces/Conditions';
 import { CapturingLogger } from './CapturingLogger';
-import { IJivsServices } from '../Interfaces/JivsServices';
+import { registerTestingOnlyConditions } from './conditionsForTesting';
 
 
 /**

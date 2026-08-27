@@ -1,22 +1,28 @@
-import {
-    AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig,
-    DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig,
-    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
-    GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-    MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
-    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
-    RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import
+    {
+        EqualToConditionConfig, EqualToValueConditionConfig,
+        GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
+        GreaterThanValueConditionConfig, LessThanConditionConfig,
+        LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+        NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig,
+        DataTypeCheckConditionConfig, IntegerConditionConfig,
+        MaxDecimalsConditionConfig,
+        NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
+        RequireTextCondition, RequireTextConditionConfig, StringLengthConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';

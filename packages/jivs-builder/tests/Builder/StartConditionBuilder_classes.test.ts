@@ -1,7 +1,10 @@
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import {
-    EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
+    RangeConditionConfig, RequireTextConditionConfig
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import {
+    EqualToValueConditionConfig
+} from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
 import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";

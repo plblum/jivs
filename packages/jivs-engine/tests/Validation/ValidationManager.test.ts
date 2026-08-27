@@ -33,7 +33,7 @@ import { CalcValueHostConfig, ICalcValueHost } from "../../src/Interfaces/CalcVa
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { FieldValueHost, FieldValueHostGenerator } from '../../src/ValueHosts/FieldValueHost';
-import { RegExpConditionConfig, RegExpCondition, EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ConcreteConditions';
+import { RegExpConditionConfig, RegExpCondition } from '../../src/Conditions/ConcreteConditions';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
@@ -53,6 +53,7 @@ import { IDisposable } from '../../src/Interfaces/General_Purpose';
 import { createStateContainer, createCapturedStateAsString } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
+import { EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ComparisonCondition_classes';
 
 
 class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_ValueHostsManager {

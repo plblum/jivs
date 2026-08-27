@@ -1,9 +1,8 @@
 import {
     type RangeConditionConfig,
-    RequireTextCondition, EqualToCondition,
+    RequireTextCondition,
     type RequireTextConditionConfig,
-    RangeCondition,
-    EqualToConditionConfig,
+    RangeCondition
 
 } from "../../src/Conditions/ConcreteConditions";
 
@@ -30,6 +29,7 @@ import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHo
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
+import { EqualToCondition, EqualToConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 
 
 // subclass of Validator to expose many of its protected members so they

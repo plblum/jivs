@@ -13,6 +13,11 @@
 
 
 import {
+    RegExpConditionConfig,
+    RequireTextConditionConfig,
+    StringLengthConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
     EqualToConditionConfig,
     EqualToValueConditionConfig,
     GreaterThanConditionConfig,
@@ -22,11 +27,8 @@ import {
     LessThanConditionConfig,
     LessThanValueConditionConfig,
     NotEqualToConditionConfig,
-    NotEqualToValueConditionConfig,
-    RegExpConditionConfig,
-    RequireTextConditionConfig,
-    StringLengthConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+    NotEqualToValueConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';

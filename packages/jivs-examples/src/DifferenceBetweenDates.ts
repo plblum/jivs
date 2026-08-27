@@ -4,10 +4,13 @@
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
 import {
-    DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition,
+    DataTypeCheckCondition, DataTypeCheckConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+    LessThanOrEqualCondition,
     LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig,
     LessThanCondition, LessThanConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';

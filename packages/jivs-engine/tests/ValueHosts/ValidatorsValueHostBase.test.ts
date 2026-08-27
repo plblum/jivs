@@ -1,7 +1,7 @@
 import {
     RegExpConditionConfig, RegExpCondition, StringLengthConditionConfig,
     StringLengthCondition, AllMatchConditionConfig, AllMatchCondition, DataTypeCheckConditionConfig,
-    RequireTextConditionConfig, EqualToConditionConfig, EqualToCondition,
+    RequireTextConditionConfig, 
     RequireTextCondition, RangeConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
@@ -47,6 +47,7 @@ import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { restoreCapturedState } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
+import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.

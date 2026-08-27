@@ -20,17 +20,22 @@
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig,
     CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, EqualToValueConditionConfig,
-    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
-    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
-    IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig,
-    LessThanValueConditionConfig, MaxDecimalsConditionConfig,
-    NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    IntegerConditionConfig,
+     MaxDecimalsConditionConfig,
     NotNullConditionConfig, PositiveConditionConfig,
     RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+    EqualToConditionConfig, EqualToValueConditionConfig,
+    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
+    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
+    LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig,
+    LessThanValueConditionConfig, 
+    NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';

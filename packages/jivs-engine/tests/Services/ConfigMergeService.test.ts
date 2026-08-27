@@ -11,7 +11,7 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
-import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { LessThanValueConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';

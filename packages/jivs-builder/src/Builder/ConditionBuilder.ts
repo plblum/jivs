@@ -2,32 +2,41 @@
  *  @module jivs-builder/Builders/ConcreteClasses
 */
 
-import {
-    DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig,
-    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
-    GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-    MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
-    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
-    RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import
+    {
+        EqualToConditionConfig, EqualToValueConditionConfig,
+        GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
+        GreaterThanValueConditionConfig, LessThanConditionConfig,
+        LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+        NotEqualToConditionConfig,
+        NotEqualToValueConditionConfig,
+    } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        DataTypeCheckConditionConfig,
+        IntegerConditionConfig,
+        MaxDecimalsConditionConfig,
+        NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
+        RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import {
-    CompleteConfigBuilderHandler,
-    IBuilderConfigHost,
-    IConditionBuilder, OptionalEqualToConditionParams,
-    OptionalEqualToValueConditionParams, OptionalGreaterThanConditionParams,
-    OptionalGreaterThanOrEqualConditionParams, OptionalGreaterThanOrEqualValueConditionParams,
-    OptionalGreaterThanValueConditionParams, OptionalLessThanConditionParams,
-    OptionalLessThanOrEqualConditionParams, OptionalLessThanOrEqualValueConditionParams,
-    OptionalLessThanValueConditionParams, OptionalNotEqualToConditionParams,
-    OptionalNotEqualToValueConditionParams, OptionalRegExpConditionParams,
-    OptionalRequireTextConditionParams, OptionalStringLengthConditionParams,
-    SetConfigOptions
-} from '../Interfaces/ChildBuilders';
+import
+    {
+        CompleteConfigBuilderHandler,
+        IBuilderConfigHost,
+        IConditionBuilder, OptionalEqualToConditionParams,
+        OptionalEqualToValueConditionParams, OptionalGreaterThanConditionParams,
+        OptionalGreaterThanOrEqualConditionParams, OptionalGreaterThanOrEqualValueConditionParams,
+        OptionalGreaterThanValueConditionParams, OptionalLessThanConditionParams,
+        OptionalLessThanOrEqualConditionParams, OptionalLessThanOrEqualValueConditionParams,
+        OptionalLessThanValueConditionParams, OptionalNotEqualToConditionParams,
+        OptionalNotEqualToValueConditionParams, OptionalRegExpConditionParams,
+        OptionalRequireTextConditionParams, OptionalStringLengthConditionParams,
+        SetConfigOptions
+    } from '../Interfaces/ChildBuilders';
 import { ConditionBuilderBase } from './ConditionBuilderBase';
 
 /**

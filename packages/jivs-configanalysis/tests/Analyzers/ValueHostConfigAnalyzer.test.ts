@@ -8,7 +8,8 @@ import { NumberParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParser
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
-import { EqualToValueCondition, EqualToValueConditionConfig, RequireTextCondition, RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { RequireTextCondition, RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { EqualToValueCondition, EqualToValueConditionConfig } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 
 import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from './../../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
 import { ValueHostConfigAnalyzer } from './../../src/Analyzers/ValueHostConfigAnalyzer';

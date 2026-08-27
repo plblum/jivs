@@ -2,10 +2,13 @@ import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Inte
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 import {
+  RequireTextCondition, RequireTextConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
   LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition,
   LessThanOrEqualConditionConfig, LessThanOrEqualValueCondition,
-  LessThanOrEqualValueConditionConfig, RequireTextCondition, RequireTextConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+  LessThanOrEqualValueConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';

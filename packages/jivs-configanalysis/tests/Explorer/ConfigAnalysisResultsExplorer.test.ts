@@ -4,11 +4,13 @@ import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 
 import { ValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder';
 import {
-    LessThanOrEqualValueCondition,
-    LessThanOrEqualValueConditionConfig,
     RequireTextCondition,
     RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
